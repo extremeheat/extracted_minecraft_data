@@ -4,7 +4,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -59,15 +58,12 @@ public class EndCrystal extends Entity {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
-      if (this.getBeamTarget() != null) {
-         var1.put("beam_target", NbtUtils.writeBlockPos(this.getBeamTarget()));
-      }
-
+      var1.storeNullable("beam_target", BlockPos.CODEC, this.getBeamTarget());
       var1.putBoolean("ShowBottom", this.showsBottom());
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      NbtUtils.readBlockPos(var1, "beam_target").ifPresent(this::setBeamTarget);
+      this.setBeamTarget((BlockPos)var1.read("beam_target", BlockPos.CODEC).orElse((Object)null));
       if (var1.contains("ShowBottom", 1)) {
          this.setShowBottom(var1.getBoolean("ShowBottom"));
       }

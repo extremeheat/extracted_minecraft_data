@@ -29,7 +29,7 @@ public class ArmedEntityRenderState extends LivingEntityRenderState {
 
    public static void extractArmedEntityRenderState(LivingEntity var0, ArmedEntityRenderState var1, ItemModelResolver var2) {
       var1.mainArm = var0.getMainArm();
-      var2.updateForLiving(var1.rightHandItem, var0.getItemHeldByArm(HumanoidArm.RIGHT), ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, var0);
-      var2.updateForLiving(var1.leftHandItem, var0.getItemHeldByArm(HumanoidArm.LEFT), ItemDisplayContext.THIRD_PERSON_LEFT_HAND, true, var0);
+      var2.updateForLiving(var1.rightHandItem, var0.getItemHeldByArm(HumanoidArm.RIGHT), ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, var0);
+      var2.updateForLiving(var1.leftHandItem, var0.getItemHeldByArm(HumanoidArm.LEFT), ItemDisplayContext.THIRD_PERSON_LEFT_HAND, var0);
    }
 }

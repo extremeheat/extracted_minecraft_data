@@ -3,14 +3,7 @@ package net.minecraft.client.renderer.block.model;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 
-public class BakedQuad {
-   protected final int[] vertices;
-   protected final int tintIndex;
-   protected final Direction direction;
-   protected final TextureAtlasSprite sprite;
-   private final boolean shade;
-   private final int lightEmission;
-
+public record BakedQuad(int[] vertices, int tintIndex, Direction direction, TextureAtlasSprite sprite, boolean shade, int lightEmission) {
    public BakedQuad(int[] var1, int var2, Direction var3, TextureAtlasSprite var4, boolean var5, int var6) {
       super();
       this.vertices = var1;
@@ -21,31 +14,7 @@ public class BakedQuad {
       this.lightEmission = var6;
    }
 
-   public TextureAtlasSprite getSprite() {
-      return this.sprite;
-   }
-
-   public int[] getVertices() {
-      return this.vertices;
-   }
-
    public boolean isTinted() {
       return this.tintIndex != -1;
-   }
-
-   public int getTintIndex() {
-      return this.tintIndex;
-   }
-
-   public Direction getDirection() {
-      return this.direction;
-   }
-
-   public boolean isShade() {
-      return this.shade;
-   }
-
-   public int getLightEmission() {
-      return this.lightEmission;
    }
 }

@@ -6,9 +6,8 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -17,6 +16,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -266,7 +266,8 @@ public class FallingBlockEntity extends Entity {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
-      var1.put("BlockState", NbtUtils.writeBlockState(this.blockState));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.store("BlockState", BlockState.CODEC, var2, this.blockState);
       var1.putInt("Time", this.time);
       var1.putBoolean("DropItem", this.dropItem);
       var1.putBoolean("HurtEntities", this.hurtEntities);
@@ -280,7 +281,8 @@ public class FallingBlockEntity extends Entity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.blockState = NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("BlockState"));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.blockState = (BlockState)var1.read("BlockState", BlockState.CODEC, var2).orElse(Blocks.SAND.defaultBlockState());
       this.time = var1.getInt("Time");
       if (var1.contains("HurtEntities", 99)) {
          this.hurtEntities = var1.getBoolean("HurtEntities");
@@ -299,10 +301,6 @@ public class FallingBlockEntity extends Entity {
       }
 
       this.cancelDrop = var1.getBoolean("CancelDrop");
-      if (this.blockState.isAir()) {
-         this.blockState = Blocks.SAND.defaultBlockState();
-      }
-
    }
 
    public void setHurtsEntities(float var1, int var2) {

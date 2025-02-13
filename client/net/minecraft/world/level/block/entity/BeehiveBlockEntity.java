@@ -18,7 +18,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -251,16 +250,13 @@ public class BeehiveBlockEntity extends BlockEntity {
       super.loadAdditional(var1, var2);
       this.stored.clear();
       ((List)var1.read("bees", BeehiveBlockEntity.Occupant.LIST_CODEC).orElse(List.of())).forEach(this::storeBee);
-      this.savedFlowerPos = (BlockPos)NbtUtils.readBlockPos(var1, "flower_pos").orElse((Object)null);
+      this.savedFlowerPos = (BlockPos)var1.read("flower_pos", BlockPos.CODEC).orElse((Object)null);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.store("bees", BeehiveBlockEntity.Occupant.LIST_CODEC, this.getBees());
-      if (this.hasSavedFlowerPos()) {
-         var1.put("flower_pos", NbtUtils.writeBlockPos(this.savedFlowerPos));
-      }
-
+      var1.storeNullable("flower_pos", BlockPos.CODEC, this.savedFlowerPos);
    }
 
    protected void applyImplicitComponents(DataComponentGetter var1) {

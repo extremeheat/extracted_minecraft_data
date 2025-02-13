@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -26,8 +27,8 @@ public class WaterlilyBlock extends VegetationBlock {
       super(var1);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      super.entityInside(var1, var2, var3, var4);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      super.entityInside(var1, var2, var3, var4, var5);
       if (var2 instanceof ServerLevel && var4 instanceof AbstractBoat) {
          var2.destroyBlock(new BlockPos(var3), true, var4);
       }

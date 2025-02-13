@@ -622,10 +622,14 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    private static Vec2 modifyInputSpeedForSquareMovement(Vec2 var0) {
       float var1 = var0.length();
-      Vec2 var2 = var0.scale(1.0F / var1);
-      float var3 = distanceToUnitSquare(var2);
-      float var4 = Math.min(var1 * var3, 1.0F);
-      return var2.scale(var4);
+      if (var1 <= 0.0F) {
+         return var0;
+      } else {
+         Vec2 var2 = var0.scale(1.0F / var1);
+         float var3 = distanceToUnitSquare(var2);
+         float var4 = Math.min(var1 * var3, 1.0F);
+         return var2.scale(var4);
+      }
    }
 
    private static float distanceToUnitSquare(Vec2 var0) {

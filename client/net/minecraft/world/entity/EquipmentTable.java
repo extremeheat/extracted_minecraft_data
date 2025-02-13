@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootTable;
 
@@ -46,6 +45,6 @@ public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot
          boolean var2 = var0.keySet().containsAll(EquipmentSlot.VALUES);
          return var1 && var2 ? Either.left((Float)var0.values().stream().findFirst().orElse(0.0F)) : Either.right(var0);
       });
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(EquipmentTable::lootTable), DROP_CHANCES_CODEC.optionalFieldOf("slot_drop_chances", Map.of()).forGetter(EquipmentTable::slotDropChances)).apply(var0, EquipmentTable::new));
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(LootTable.KEY_CODEC.fieldOf("loot_table").forGetter(EquipmentTable::lootTable), DROP_CHANCES_CODEC.optionalFieldOf("slot_drop_chances", Map.of()).forGetter(EquipmentTable::slotDropChances)).apply(var0, EquipmentTable::new));
    }
 }

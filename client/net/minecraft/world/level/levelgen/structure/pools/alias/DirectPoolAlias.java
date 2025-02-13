@@ -9,10 +9,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
-record Direct(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTemplatePool> target) implements PoolAliasBinding {
-   static MapCodec<Direct> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Direct::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(Direct::target)).apply(var0, Direct::new));
+public record DirectPoolAlias(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTemplatePool> target) implements PoolAliasBinding {
+   static MapCodec<DirectPoolAlias> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(DirectPoolAlias::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(DirectPoolAlias::target)).apply(var0, DirectPoolAlias::new));
 
-   Direct(ResourceKey<StructureTemplatePool> var1, ResourceKey<StructureTemplatePool> var2) {
+   public DirectPoolAlias(ResourceKey<StructureTemplatePool> var1, ResourceKey<StructureTemplatePool> var2) {
       super();
       this.alias = var1;
       this.target = var2;
@@ -26,7 +26,7 @@ record Direct(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTem
       return Stream.of(this.target);
    }
 
-   public MapCodec<Direct> codec() {
+   public MapCodec<DirectPoolAlias> codec() {
       return CODEC;
    }
 }

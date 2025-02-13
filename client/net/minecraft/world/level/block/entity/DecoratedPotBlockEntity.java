@@ -9,8 +9,10 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +50,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
       }
 
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
-         var1.put("item", this.item.save(var2));
+         var1.store("item", ItemStack.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.item);
       }
 
    }
@@ -57,11 +59,10 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
       super.loadAdditional(var1, var2);
       this.decorations = (PotDecorations)var1.read("sherds", PotDecorations.CODEC).orElse(PotDecorations.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
-         if (var1.contains("item", 10)) {
-            this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
-         } else {
-            this.item = ItemStack.EMPTY;
-         }
+         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+         this.item = (ItemStack)var1.read("item", ItemStack.CODEC, var3).orElse(ItemStack.EMPTY);
+      } else {
+         this.item = ItemStack.EMPTY;
       }
 
    }

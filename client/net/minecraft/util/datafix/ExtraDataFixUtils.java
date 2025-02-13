@@ -1,6 +1,7 @@
 package net.minecraft.util.datafix;
 
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.RewriteResult;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
@@ -18,6 +19,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 
@@ -40,7 +42,7 @@ public class ExtraDataFixUtils {
       return !var5.isEmpty() && !var6.isEmpty() && !var7.isEmpty() ? var0.remove(var1).remove(var2).remove(var3).set(var4, createBlockPos(var0, ((Number)var5.get()).intValue(), ((Number)var6.get()).intValue(), ((Number)var7.get()).intValue())) : var0;
    }
 
-   private static Dynamic<?> createBlockPos(Dynamic<?> var0, int var1, int var2, int var3) {
+   public static Dynamic<?> createBlockPos(Dynamic<?> var0, int var1, int var2, int var3) {
       return var0.createIntList(IntStream.of(new int[]{var1, var2, var3}));
    }
 
@@ -118,5 +120,9 @@ public class ExtraDataFixUtils {
       }
 
       return var10000;
+   }
+
+   public static <T> Typed<?> readAndSet(Typed<?> var0, OpticFinder<T> var1, Dynamic<?> var2) {
+      return var0.set(var1, Util.readTypedOrThrow(var1.type(), var2, true));
    }
 }

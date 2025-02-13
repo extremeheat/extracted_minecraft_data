@@ -3,6 +3,7 @@ package net.minecraft.world.level.chunk;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -14,16 +15,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction8;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.Level;
@@ -49,6 +46,8 @@ public class UpgradeData {
    public static final UpgradeData EMPTY;
    private static final String TAG_INDICES = "Indices";
    private static final Direction8[] DIRECTIONS;
+   private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC;
+   private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC;
    private final EnumSet<Direction8> sides;
    private final List<SavedTick<Block>> neighborBlockTicks;
    private final List<SavedTick<Fluid>> neighborFluidTicks;
@@ -85,8 +84,14 @@ public class UpgradeData {
          }
       }
 
-      loadTicks(var1, "neighbor_block_ticks", (var0) -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Blocks.AIR)), this.neighborBlockTicks);
-      loadTicks(var1, "neighbor_fluid_ticks", (var0) -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Fluids.EMPTY)), this.neighborFluidTicks);
+      Optional var10000 = var1.read("neighbor_block_ticks", BLOCK_TICKS_CODEC);
+      List var10001 = this.neighborBlockTicks;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::addAll);
+      var10000 = var1.read("neighbor_fluid_ticks", FLUID_TICKS_CODEC);
+      var10001 = this.neighborFluidTicks;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::addAll);
    }
 
    private UpgradeData(UpgradeData var1) {
@@ -102,17 +107,6 @@ public class UpgradeData {
       for(int var2 = 0; var2 < var1.index.length; ++var2) {
          int[] var3 = var1.index[var2];
          this.index[var2] = var3 != null ? IntArrays.copy(var3) : null;
-      }
-
-   }
-
-   private static <T> void loadTicks(CompoundTag var0, String var1, Function<String, Optional<T>> var2, List<SavedTick<T>> var3) {
-      if (var0.contains(var1, 9)) {
-         for(Tag var6 : var0.getList(var1, 10)) {
-            Optional var10000 = SavedTick.loadTick((CompoundTag)var6, var2);
-            Objects.requireNonNull(var3);
-            var10000.ifPresent(var3::add);
-         }
       }
 
    }
@@ -253,15 +247,11 @@ public class UpgradeData {
 
       var1.putByte("Sides", (byte)var6);
       if (!this.neighborBlockTicks.isEmpty()) {
-         ListTag var8 = new ListTag();
-         this.neighborBlockTicks.forEach((var1x) -> var8.add(var1x.save((var0) -> BuiltInRegistries.BLOCK.getKey(var0).toString())));
-         var1.put("neighbor_block_ticks", var8);
+         var1.store("neighbor_block_ticks", BLOCK_TICKS_CODEC, this.neighborBlockTicks);
       }
 
       if (!this.neighborFluidTicks.isEmpty()) {
-         ListTag var9 = new ListTag();
-         this.neighborFluidTicks.forEach((var1x) -> var9.add(var1x.save((var0) -> BuiltInRegistries.FLUID.getKey(var0).toString())));
-         var1.put("neighbor_fluid_ticks", var9);
+         var1.store("neighbor_fluid_ticks", FLUID_TICKS_CODEC, this.neighborFluidTicks);
       }
 
       return var1;
@@ -274,6 +264,8 @@ public class UpgradeData {
    static {
       EMPTY = new UpgradeData(EmptyBlockGetter.INSTANCE);
       DIRECTIONS = Direction8.values();
+      BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec().orElse(Blocks.AIR)).listOf();
+      FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec().orElse(Fluids.EMPTY)).listOf();
       MAP = new IdentityHashMap();
       CHUNKY_FIXERS = Sets.newHashSet();
    }

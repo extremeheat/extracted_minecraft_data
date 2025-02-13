@@ -7,6 +7,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -66,13 +67,10 @@ public class ShulkerBullet extends Projectile {
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.finalTarget != null) {
-         var1.putUUID("Target", this.finalTarget.getUUID());
+         var1.store("Target", UUIDUtil.CODEC, this.finalTarget.getUUID());
       }
 
-      if (this.currentMoveDirection != null) {
-         var1.putInt("Dir", this.currentMoveDirection.get3DDataValue());
-      }
-
+      var1.storeNullable("Dir", Direction.LEGACY_ID_CODEC, this.currentMoveDirection);
       var1.putInt("Steps", this.flightSteps);
       var1.putDouble("TXD", this.targetDeltaX);
       var1.putDouble("TYD", this.targetDeltaY);
@@ -85,14 +83,8 @@ public class ShulkerBullet extends Projectile {
       this.targetDeltaX = var1.getDouble("TXD");
       this.targetDeltaY = var1.getDouble("TYD");
       this.targetDeltaZ = var1.getDouble("TZD");
-      if (var1.contains("Dir", 99)) {
-         this.currentMoveDirection = Direction.from3DDataValue(var1.getInt("Dir"));
-      }
-
-      if (var1.hasUUID("Target")) {
-         this.targetId = var1.getUUID("Target");
-      }
-
+      this.currentMoveDirection = (Direction)var1.read("Dir", Direction.LEGACY_ID_CODEC).orElse((Object)null);
+      this.targetId = (UUID)var1.read("Target", UUIDUtil.CODEC).orElse((Object)null);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

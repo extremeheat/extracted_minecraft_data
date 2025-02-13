@@ -34,7 +34,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -242,10 +241,6 @@ public final class ItemStack implements DataComponentHolder {
       return CODEC.parse(var0.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0x) -> LOGGER.error("Tried to load invalid item: '{}'", var0x));
    }
 
-   public static ItemStack parseOptional(HolderLookup.Provider var0, CompoundTag var1) {
-      return var1.isEmpty() ? EMPTY : (ItemStack)parse(var0, var1).orElse(EMPTY);
-   }
-
    public boolean isEmpty() {
       return this == EMPTY || this.item == Items.AIR || this.count <= 0;
    }
@@ -375,10 +370,6 @@ public final class ItemStack implements DataComponentHolder {
       } else {
          return (Tag)CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this).getOrThrow();
       }
-   }
-
-   public Tag saveOptional(HolderLookup.Provider var1) {
-      return (Tag)(this.isEmpty() ? new CompoundTag() : this.save(var1, new CompoundTag()));
    }
 
    public int getMaxStackSize() {

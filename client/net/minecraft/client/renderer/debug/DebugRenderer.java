@@ -24,6 +24,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Quaternionfc;
 
 public class DebugRenderer {
    public final PathfindingRenderer pathfindingRenderer = new PathfindingRenderer();
@@ -201,7 +202,7 @@ public class DebugRenderer {
          double var21 = var15.getPosition().z;
          var0.pushPose();
          var0.translate((float)(var3 - var17), (float)(var5 - var19) + 0.07F, (float)(var7 - var21));
-         var0.mulPose(var15.rotation());
+         var0.mulPose((Quaternionfc)var15.rotation());
          var0.scale(var10, -var10, var10);
          float var23 = var11 ? (float)(-var16.width(var2)) / 2.0F : 0.0F;
          var23 -= var12 / var10;

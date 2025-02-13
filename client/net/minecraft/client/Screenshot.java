@@ -34,15 +34,6 @@ public class Screenshot {
    }
 
    public static void grab(File var0, @Nullable String var1, RenderTarget var2, Consumer<Component> var3) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> _grab(var0, var1, var2, var3));
-      } else {
-         _grab(var0, var1, var2, var3);
-      }
-
-   }
-
-   private static void _grab(File var0, @Nullable String var1, RenderTarget var2, Consumer<Component> var3) {
       NativeImage var4 = takeScreenshot(var2);
       File var5 = new File(var0, "screenshots");
       var5.mkdir();
@@ -72,7 +63,7 @@ public class Screenshot {
       int var1 = var0.width;
       int var2 = var0.height;
       NativeImage var3 = new NativeImage(var1, var2, false);
-      RenderSystem.bindTexture(var0.getColorTextureId());
+      RenderSystem.bindTexture(var0.getColorTexture().glId());
       var3.downloadTexture(0, true);
       var3.flipY();
       return var3;

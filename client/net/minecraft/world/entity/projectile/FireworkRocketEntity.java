@@ -8,15 +8,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.item.ItemStack;
@@ -182,7 +185,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    protected void onHitBlock(BlockHitResult var1) {
       BlockPos var2 = new BlockPos(var1.getBlockPos());
-      this.level().getBlockState(var2).entityInside(this.level(), var2, this);
+      this.level().getBlockState(var2).entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP);
       Level var4 = this.level();
       if (var4 instanceof ServerLevel var3) {
          if (this.hasExplosion()) {
@@ -256,7 +259,8 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       super.addAdditionalSaveData(var1);
       var1.putInt("Life", this.life);
       var1.putInt("LifeTime", this.lifetime);
-      var1.put("FireworksItem", this.getItem().save(this.registryAccess()));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.store("FireworksItem", ItemStack.CODEC, var2, this.getItem());
       var1.putBoolean("ShotAtAngle", (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE));
    }
 
@@ -264,12 +268,8 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       super.readAdditionalSaveData(var1);
       this.life = var1.getInt("Life");
       this.lifetime = var1.getInt("LifeTime");
-      if (var1.contains("FireworksItem", 10)) {
-         this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("FireworksItem")).orElseGet(FireworkRocketEntity::getDefaultItem));
-      } else {
-         this.entityData.set(DATA_ID_FIREWORKS_ITEM, getDefaultItem());
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)var1.read("FireworksItem", ItemStack.CODEC, var2).orElse(getDefaultItem()));
       if (var1.contains("ShotAtAngle")) {
          this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBoolean("ShotAtAngle"));
       }

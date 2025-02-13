@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import org.joml.Quaternionfc;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
    public static final ResourceLocation DEFAULT_SKIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/armorstand/wood.png");
@@ -64,9 +65,9 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
    }
 
    protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {
-      var2.mulPose(Axis.YP.rotationDegrees(180.0F - var3));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
       if (var1.wiggle < 5.0F) {
-         var2.mulPose(Axis.YP.rotationDegrees(Mth.sin(var1.wiggle / 1.5F * 3.1415927F) * 3.0F));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin(var1.wiggle / 1.5F * 3.1415927F) * 3.0F));
       }
 
    }

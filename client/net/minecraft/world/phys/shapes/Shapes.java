@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.math.DoubleMath;
 import com.google.common.math.IntMath;
 import com.mojang.math.OctahedralGroup;
+import com.mojang.math.Quadrant;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
@@ -306,7 +307,7 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromAngles(0, 90), var1)));
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1)));
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0) {
@@ -314,7 +315,7 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromAngles(0, 90), var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.fromAngles(90, 0), var1)));
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R0), var1)));
    }
 
    public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0) {
@@ -322,7 +323,7 @@ public final class Shapes {
    }
 
    public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromAngles(0, 90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromAngles(0, 180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromAngles(0, 270), var1)));
+      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R270), var1)));
    }
 
    public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0) {
@@ -330,11 +331,11 @@ public final class Shapes {
    }
 
    public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromAngles(0, 90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromAngles(0, 180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromAngles(0, 270), var1), Direction.UP, rotate(var0, OctahedralGroup.fromAngles(270, 0), var1), Direction.DOWN, rotate(var0, OctahedralGroup.fromAngles(90, 0), var1)));
+      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R270), var1), Direction.UP, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R270, Quadrant.R0), var1), Direction.DOWN, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R0), var1)));
    }
 
    public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0) {
-      return Map.of(AttachFace.WALL, rotateHorizontal(var0), AttachFace.FLOOR, rotateHorizontal(rotate(var0, OctahedralGroup.fromAngles(270, 0))), AttachFace.CEILING, rotateHorizontal(rotate(var0, OctahedralGroup.fromAngles(90, 180))));
+      return Map.of(AttachFace.WALL, rotateHorizontal(var0), AttachFace.FLOOR, rotateHorizontal(rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R270, Quadrant.R0))), AttachFace.CEILING, rotateHorizontal(rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R180))));
    }
 
    public interface DoubleLineConsumer {

@@ -54,18 +54,12 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
          var1.store("patterns", BannerPatternLayers.CODEC, var3, this.patterns);
       }
 
-      if (this.name != null) {
-         var1.store("CustomName", ComponentSerialization.CODEC, var3, this.name);
-      }
-
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var3, this.name);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("CustomName")) {
-         this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
-      }
-
+      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       this.patterns = (BannerPatternLayers)var1.read("patterns", BannerPatternLayers.CODEC, var3).orElse(BannerPatternLayers.EMPTY);
    }

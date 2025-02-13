@@ -770,10 +770,7 @@ public abstract class Player extends LivingEntity {
       }
 
       this.lastDeathLocation.ifPresent((var1x) -> var1.store("LastDeathLocation", GlobalPos.CODEC, var1x));
-      if (this.currentImpulseImpactPos != null) {
-         var1.store("current_explosion_impact_pos", Vec3.CODEC, this.currentImpulseImpactPos);
-      }
-
+      var1.storeNullable("current_explosion_impact_pos", Vec3.CODEC, this.currentImpulseImpactPos);
       var1.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentImpulse);
       var1.putInt("current_impulse_context_reset_grace_time", this.currentImpulseContextResetGraceTime);
    }

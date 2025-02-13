@@ -82,7 +82,12 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest(this.registryLookup.listElementIds().map(ResourceKey::location).map(ResourceLocation::toString), var2);
+      Object var4 = var1.getSource();
+      if (var4 instanceof SharedSuggestionProvider var3) {
+         return var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, var2, var1);
+      } else {
+         return SharedSuggestionProvider.suggest(this.registryLookup.listElementIds().map(ResourceKey::location).map(ResourceLocation::toString), var2);
+      }
    }
 
    public Collection<String> getExamples() {

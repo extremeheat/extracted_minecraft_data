@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T> {
    public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
@@ -52,7 +53,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       float var14 = var8 < 0 ? var13 : -var13;
       float var15 = Mth.frac(var14 * 0.2F - (float)Mth.floor(var14 * 0.1F));
       var0.pushPose();
-      var0.mulPose(Axis.YP.rotationDegrees(var13 * 2.25F - 45.0F));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var13 * 2.25F - 45.0F));
       float var16 = 0.0F;
       float var19 = 0.0F;
       float var20 = -var10;

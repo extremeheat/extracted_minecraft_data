@@ -56,6 +56,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EntityRenderDispatcher implements ResourceManagerReloadListener {
@@ -261,7 +262,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       float var9 = 0.0F;
       float var10 = var3.boundingBoxHeight / var7;
       float var11 = 0.0F;
-      var1.mulPose(var4);
+      var1.mulPose((Quaternionfc)var4);
       var1.translate(0.0F, 0.0F, 0.3F - (float)((int)var10) * 0.02F);
       float var12 = 0.0F;
       int var13 = 0;

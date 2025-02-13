@@ -42,7 +42,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       return Items.ENDER_PEARL;
    }
 
-   protected void setOwnerThroughUUID(UUID var1) {
+   protected void setOwnerThroughUUID(@Nullable UUID var1) {
       this.deregisterFromCurrentOwner();
       super.setOwnerThroughUUID(var1);
       this.registerToCurrentOwner();

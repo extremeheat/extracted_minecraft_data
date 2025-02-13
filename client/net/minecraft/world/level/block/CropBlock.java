@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -140,14 +141,14 @@ public class CropBlock extends VegetationBlock implements BonemealableBlock {
       return var0.getRawBrightness(var1, 0) >= 8;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var2 instanceof ServerLevel var5) {
-         if (var4 instanceof Ravager && var5.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            var5.destroyBlock(var3, true, var4);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (var2 instanceof ServerLevel var6) {
+         if (var4 instanceof Ravager && var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            var6.destroyBlock(var3, true, var4);
          }
       }
 
-      super.entityInside(var1, var2, var3, var4);
+      super.entityInside(var1, var2, var3, var4, var5);
    }
 
    protected ItemLike getBaseSeedId() {

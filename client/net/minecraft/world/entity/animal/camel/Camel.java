@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
@@ -47,6 +48,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -114,6 +116,10 @@ public class Camel extends AbstractHorse {
       CamelAi.initMemories(this, var1.getRandom());
       this.resetLastPoseChangeTickToFullStand(var1.getLevel().getGameTime());
       return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
+   public static boolean checkCamelSpawnRules(EntityType<Camel> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      return var1.getBlockState(var3.below()).is(BlockTags.CAMELS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
    protected Brain.Provider<Camel> brainProvider() {

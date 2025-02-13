@@ -3,10 +3,12 @@ package net.minecraft.world.entity.animal;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -351,12 +353,12 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant().id);
+      var1.store("Variant", Parrot.Variant.LEGACY_CODEC, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Parrot.Variant.byId(var1.getInt("Variant")));
+      this.setVariant((Variant)var1.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE));
    }
 
    public boolean isFlying() {
@@ -431,9 +433,12 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       YELLOW_BLUE(3, "yellow_blue"),
       GRAY(4, "gray");
 
-      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
-      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Variant> LEGACY_CODEC;
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC;
       final int id;
       private final String name;
 
@@ -457,6 +462,14 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{RED_BLUE, BLUE, GREEN, YELLOW_BLUE, GRAY};
+      }
+
+      static {
+         PrimitiveCodec var10000 = Codec.INT;
+         IntFunction var10001 = BY_ID;
+         Objects.requireNonNull(var10001);
+         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::getId);
+         STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       }
    }
 

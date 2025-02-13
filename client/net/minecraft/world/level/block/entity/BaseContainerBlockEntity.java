@@ -39,10 +39,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.lockKey = LockCode.fromTag(var1, var2);
-      if (var1.contains("CustomName")) {
-         this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
-      }
-
+      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

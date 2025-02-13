@@ -12,7 +12,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemSpawnEggFix extends DataFix {
@@ -96,34 +96,32 @@ public class ItemSpawnEggFix extends DataFix {
       OpticFinder var5 = var2.findField("tag");
       OpticFinder var6 = var5.type().findField("EntityTag");
       OpticFinder var7 = DSL.typeFinder(var1.getTypeRaw(References.ENTITY));
-      Type var8 = this.getOutputSchema().getTypeRaw(References.ENTITY);
-      return this.fixTypeEverywhereTyped("ItemSpawnEggFix", var2, (var6x) -> {
-         Optional var7x = var6x.getOptional(var3);
-         if (var7x.isPresent() && Objects.equals(((Pair)var7x.get()).getSecond(), "minecraft:spawn_egg")) {
-            Dynamic var8x = (Dynamic)var6x.get(DSL.remainderFinder());
-            short var9 = var8x.get("Damage").asShort((short)0);
-            Optional var10 = var6x.getOptionalTyped(var5);
-            Optional var11 = var10.flatMap((var1) -> var1.getOptionalTyped(var6));
-            Optional var12 = var11.flatMap((var1) -> var1.getOptionalTyped(var7));
-            Optional var13 = var12.flatMap((var1) -> var1.getOptional(var4));
-            Typed var14 = var6x;
-            String var15 = ID_TO_ENTITY[var9 & 255];
-            if (var15 != null && (var13.isEmpty() || !Objects.equals(var13.get(), var15))) {
-               Typed var16 = var6x.getOrCreateTyped(var5);
-               Typed var17 = var16.getOrCreateTyped(var6);
-               Typed var18 = var17.getOrCreateTyped(var7);
-               Typed var20 = Util.writeAndReadTypedOrThrow(var18, var8, (var2) -> var2.set("id", var8x.createString(var15)));
-               var14 = var6x.set(var5, var16.set(var6, var17.set(var7, var20)));
+      return this.fixTypeEverywhereTyped("ItemSpawnEggFix", var2, (var5x) -> {
+         Optional var6x = var5x.getOptional(var3);
+         if (var6x.isPresent() && Objects.equals(((Pair)var6x.get()).getSecond(), "minecraft:spawn_egg")) {
+            Dynamic var7x = (Dynamic)var5x.get(DSL.remainderFinder());
+            short var8 = var7x.get("Damage").asShort((short)0);
+            Optional var9 = var5x.getOptionalTyped(var5);
+            Optional var10 = var9.flatMap((var1) -> var1.getOptionalTyped(var6));
+            Optional var11 = var10.flatMap((var1) -> var1.getOptionalTyped(var7));
+            Optional var12 = var11.flatMap((var1) -> var1.getOptional(var4));
+            Typed var13 = var5x;
+            String var14 = ID_TO_ENTITY[var8 & 255];
+            if (var14 != null && (var12.isEmpty() || !Objects.equals(var12.get(), var14))) {
+               Typed var15 = var5x.getOrCreateTyped(var5);
+               Dynamic var16 = (Dynamic)DataFixUtils.orElse(var15.getOptionalTyped(var6).map((var0) -> (Dynamic)var0.write().getOrThrow()), var7x.emptyMap());
+               var16 = var16.set("id", var16.createString(var14));
+               var13 = var5x.set(var5, ExtraDataFixUtils.readAndSet(var15, var6, var16));
             }
 
-            if (var9 != 0) {
-               var8x = var8x.set("Damage", var8x.createShort((short)0));
-               var14 = var14.set(DSL.remainderFinder(), var8x);
+            if (var8 != 0) {
+               var7x = var7x.set("Damage", var7x.createShort((short)0));
+               var13 = var13.set(DSL.remainderFinder(), var7x);
             }
 
-            return var14;
+            return var13;
          } else {
-            return var6x;
+            return var5x;
          }
       });
    }

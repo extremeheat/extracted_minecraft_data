@@ -11,10 +11,10 @@ import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
-record Random(ResourceKey<StructureTemplatePool> alias, WeightedList<ResourceKey<StructureTemplatePool>> targets) implements PoolAliasBinding {
-   static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Random::alias), WeightedList.nonEmptyCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(Random::targets)).apply(var0, Random::new));
+public record RandomPoolAlias(ResourceKey<StructureTemplatePool> alias, WeightedList<ResourceKey<StructureTemplatePool>> targets) implements PoolAliasBinding {
+   static MapCodec<RandomPoolAlias> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(RandomPoolAlias::alias), WeightedList.nonEmptyCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(RandomPoolAlias::targets)).apply(var0, RandomPoolAlias::new));
 
-   Random(ResourceKey<StructureTemplatePool> var1, WeightedList<ResourceKey<StructureTemplatePool>> var2) {
+   public RandomPoolAlias(ResourceKey<StructureTemplatePool> var1, WeightedList<ResourceKey<StructureTemplatePool>> var2) {
       super();
       this.alias = var1;
       this.targets = var2;
@@ -28,7 +28,7 @@ record Random(ResourceKey<StructureTemplatePool> alias, WeightedList<ResourceKey
       return this.targets.unwrap().stream().map(Weighted::value);
    }
 
-   public MapCodec<Random> codec() {
+   public MapCodec<RandomPoolAlias> codec() {
       return CODEC;
    }
 }

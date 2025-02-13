@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Quaternionfc;
 
 public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity, FireworkRocketRenderState> {
    private final ItemModelResolver itemModelResolver;
@@ -20,11 +21,11 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity,
 
    public void render(FireworkRocketRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
-      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
       if (var1.isShotAtAngle) {
-         var2.mulPose(Axis.ZP.rotationDegrees(180.0F));
-         var2.mulPose(Axis.YP.rotationDegrees(180.0F));
-         var2.mulPose(Axis.XP.rotationDegrees(90.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
       }
 
       var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);

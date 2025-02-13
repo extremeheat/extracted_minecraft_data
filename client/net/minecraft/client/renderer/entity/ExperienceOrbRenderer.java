@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ExperienceOrb;
+import org.joml.Quaternionfc;
 
 public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, ExperienceOrbRenderState> {
    private static final ResourceLocation EXPERIENCE_ORB_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/experience_orb.png");
@@ -42,7 +43,7 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
       boolean var16 = true;
       int var17 = (int)((Mth.sin(var14 + 4.1887903F) + 1.0F) * 0.1F * 255.0F);
       var2.translate(0.0F, 0.1F, 0.0F);
-      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
       float var18 = 0.3F;
       var2.scale(0.3F, 0.3F, 0.3F);
       VertexConsumer var19 = var3.getBuffer(RENDER_TYPE);

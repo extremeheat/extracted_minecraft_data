@@ -24,13 +24,11 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> cu
 
    public SpawnData(CompoundTag var1, Optional<CustomSpawnRules> var2, Optional<EquipmentTable> var3) {
       super();
-      if (var1.contains("id")) {
-         ResourceLocation var4 = ResourceLocation.tryParse(var1.getString("id"));
-         if (var4 != null) {
-            var1.putString("id", var4.toString());
-         } else {
-            var1.remove("id");
-         }
+      Optional var4 = var1.read("id", ResourceLocation.CODEC);
+      if (var4.isPresent()) {
+         var1.store("id", ResourceLocation.CODEC, (ResourceLocation)var4.get());
+      } else {
+         var1.remove("id");
       }
 
       this.entityToSpawn = var1;

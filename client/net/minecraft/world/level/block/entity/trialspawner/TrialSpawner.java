@@ -17,7 +17,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -162,66 +161,59 @@ public final class TrialSpawner {
       RandomSource var3 = var1.getRandom();
       SpawnData var4 = this.data.getOrCreateNextSpawnData(this, var1.getRandom());
       CompoundTag var5 = var4.entityToSpawn();
-      ListTag var6 = var5.getList("Pos", 6);
-      Optional var7 = EntityType.by(var5);
-      if (var7.isEmpty()) {
+      Optional var6 = EntityType.by(var5);
+      if (var6.isEmpty()) {
          return Optional.empty();
       } else {
-         int var8 = var6.size();
-         double var9 = var8 >= 1 ? var6.getDouble(0) : (double)var2.getX() + (var3.nextDouble() - var3.nextDouble()) * (double)this.getConfig().spawnRange() + 0.5;
-         double var11 = var8 >= 2 ? var6.getDouble(1) : (double)(var2.getY() + var3.nextInt(3) - 1);
-         double var13 = var8 >= 3 ? var6.getDouble(2) : (double)var2.getZ() + (var3.nextDouble() - var3.nextDouble()) * (double)this.getConfig().spawnRange() + 0.5;
-         if (!var1.noCollision(((EntityType)var7.get()).getSpawnAABB(var9, var11, var13))) {
+         Vec3 var7 = (Vec3)var5.read("Pos", Vec3.CODEC).orElseGet(() -> new Vec3((double)var2.getX() + (var3.nextDouble() - var3.nextDouble()) * (double)this.getConfig().spawnRange() + 0.5, (double)(var2.getY() + var3.nextInt(3) - 1), (double)var2.getZ() + (var3.nextDouble() - var3.nextDouble()) * (double)this.getConfig().spawnRange() + 0.5));
+         if (!var1.noCollision(((EntityType)var6.get()).getSpawnAABB(var7.x, var7.y, var7.z))) {
+            return Optional.empty();
+         } else if (!inLineOfSight(var1, var2.getCenter(), var7)) {
             return Optional.empty();
          } else {
-            Vec3 var15 = new Vec3(var9, var11, var13);
-            if (!inLineOfSight(var1, var2.getCenter(), var15)) {
+            BlockPos var8 = BlockPos.containing(var7);
+            if (!SpawnPlacements.checkSpawnRules((EntityType)var6.get(), var1, EntitySpawnReason.TRIAL_SPAWNER, var8, var1.getRandom())) {
                return Optional.empty();
             } else {
-               BlockPos var16 = BlockPos.containing(var15);
-               if (!SpawnPlacements.checkSpawnRules((EntityType)var7.get(), var1, EntitySpawnReason.TRIAL_SPAWNER, var16, var1.getRandom())) {
+               if (var4.getCustomSpawnRules().isPresent()) {
+                  SpawnData.CustomSpawnRules var9 = (SpawnData.CustomSpawnRules)var4.getCustomSpawnRules().get();
+                  if (!var9.isValidPosition(var8, var1)) {
+                     return Optional.empty();
+                  }
+               }
+
+               Entity var12 = EntityType.loadEntityRecursive(var5, var1, EntitySpawnReason.TRIAL_SPAWNER, (var2x) -> {
+                  var2x.snapTo(var7.x, var7.y, var7.z, var3.nextFloat() * 360.0F, 0.0F);
+                  return var2x;
+               });
+               if (var12 == null) {
                   return Optional.empty();
                } else {
-                  if (var4.getCustomSpawnRules().isPresent()) {
-                     SpawnData.CustomSpawnRules var17 = (SpawnData.CustomSpawnRules)var4.getCustomSpawnRules().get();
-                     if (!var17.isValidPosition(var16, var1)) {
+                  if (var12 instanceof Mob) {
+                     Mob var10 = (Mob)var12;
+                     if (!var10.checkSpawnObstruction(var1)) {
                         return Optional.empty();
                      }
+
+                     boolean var11 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().contains("id", 8);
+                     if (var11) {
+                        var10.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var10.blockPosition()), EntitySpawnReason.TRIAL_SPAWNER, (SpawnGroupData)null);
+                     }
+
+                     var10.setPersistenceRequired();
+                     Optional var10000 = var4.getEquipment();
+                     Objects.requireNonNull(var10);
+                     var10000.ifPresent(var10::equip);
                   }
 
-                  Entity var20 = EntityType.loadEntityRecursive(var5, var1, EntitySpawnReason.TRIAL_SPAWNER, (var7x) -> {
-                     var7x.snapTo(var9, var11, var13, var3.nextFloat() * 360.0F, 0.0F);
-                     return var7x;
-                  });
-                  if (var20 == null) {
+                  if (!var1.tryAddFreshEntityWithPassengers(var12)) {
                      return Optional.empty();
                   } else {
-                     if (var20 instanceof Mob) {
-                        Mob var18 = (Mob)var20;
-                        if (!var18.checkSpawnObstruction(var1)) {
-                           return Optional.empty();
-                        }
-
-                        boolean var19 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().contains("id", 8);
-                        if (var19) {
-                           var18.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var18.blockPosition()), EntitySpawnReason.TRIAL_SPAWNER, (SpawnGroupData)null);
-                        }
-
-                        var18.setPersistenceRequired();
-                        Optional var10000 = var4.getEquipment();
-                        Objects.requireNonNull(var18);
-                        var10000.ifPresent(var18::equip);
-                     }
-
-                     if (!var1.tryAddFreshEntityWithPassengers(var20)) {
-                        return Optional.empty();
-                     } else {
-                        FlameParticle var21 = this.isOminous ? TrialSpawner.FlameParticle.OMINOUS : TrialSpawner.FlameParticle.NORMAL;
-                        var1.levelEvent(3011, var2, var21.encode());
-                        var1.levelEvent(3012, var16, var21.encode());
-                        var1.gameEvent(var20, GameEvent.ENTITY_PLACE, var16);
-                        return Optional.of(var20.getUUID());
-                     }
+                     FlameParticle var13 = this.isOminous ? TrialSpawner.FlameParticle.OMINOUS : TrialSpawner.FlameParticle.NORMAL;
+                     var1.levelEvent(3011, var2, var13.encode());
+                     var1.levelEvent(3012, var8, var13.encode());
+                     var1.gameEvent(var12, GameEvent.ENTITY_PLACE, var8);
+                     return Optional.of(var12.getUUID());
                   }
                }
             }

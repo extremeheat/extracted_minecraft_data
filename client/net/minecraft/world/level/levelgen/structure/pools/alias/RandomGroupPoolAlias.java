@@ -11,10 +11,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
-record RandomGroup(WeightedList<List<PoolAliasBinding>> groups) implements PoolAliasBinding {
-   static MapCodec<RandomGroup> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeightedList.nonEmptyCodec(Codec.list(PoolAliasBinding.CODEC)).fieldOf("groups").forGetter(RandomGroup::groups)).apply(var0, RandomGroup::new));
+public record RandomGroupPoolAlias(WeightedList<List<PoolAliasBinding>> groups) implements PoolAliasBinding {
+   static MapCodec<RandomGroupPoolAlias> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeightedList.nonEmptyCodec(Codec.list(PoolAliasBinding.CODEC)).fieldOf("groups").forGetter(RandomGroupPoolAlias::groups)).apply(var0, RandomGroupPoolAlias::new));
 
-   RandomGroup(WeightedList<List<PoolAliasBinding>> var1) {
+   public RandomGroupPoolAlias(WeightedList<List<PoolAliasBinding>> var1) {
       super();
       this.groups = var1;
    }
@@ -27,7 +27,7 @@ record RandomGroup(WeightedList<List<PoolAliasBinding>> groups) implements PoolA
       return this.groups.unwrap().stream().flatMap((var0) -> ((List)var0.value()).stream()).flatMap(PoolAliasBinding::allTargets);
    }
 
-   public MapCodec<RandomGroup> codec() {
+   public MapCodec<RandomGroupPoolAlias> codec() {
       return CODEC;
    }
 }

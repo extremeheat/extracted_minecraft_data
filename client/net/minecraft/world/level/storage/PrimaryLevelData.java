@@ -209,10 +209,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.put("ScheduledEvents", this.scheduledEvents.store());
       var2.putInt("WanderingTraderSpawnDelay", this.wanderingTraderSpawnDelay);
       var2.putInt("WanderingTraderSpawnChance", this.wanderingTraderSpawnChance);
-      if (this.wanderingTraderId != null) {
-         var2.putUUID("WanderingTraderId", this.wanderingTraderId);
-      }
-
+      var2.storeNullable("WanderingTraderId", UUIDUtil.CODEC, this.wanderingTraderId);
    }
 
    private static ListTag stringCollectionToTag(Set<String> var0) {

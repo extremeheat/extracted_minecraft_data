@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import org.joml.Quaternionfc;
 
 public abstract class StuckInBodyLayer<M extends PlayerModel> extends RenderLayer<PlayerRenderState, M> {
    private final Model model;
@@ -31,8 +32,8 @@ public abstract class StuckInBodyLayer<M extends PlayerModel> extends RenderLaye
       float var7 = Mth.sqrt(var4 * var4 + var6 * var6);
       float var8 = (float)(Math.atan2((double)var4, (double)var6) * 57.2957763671875);
       float var9 = (float)(Math.atan2((double)var5, (double)var7) * 57.2957763671875);
-      var1.mulPose(Axis.YP.rotationDegrees(var8 - 90.0F));
-      var1.mulPose(Axis.ZP.rotationDegrees(var9));
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 - 90.0F));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var9));
       this.model.renderToBuffer(var1, var2.getBuffer(this.model.renderType(this.texture)), var3, OverlayTexture.NO_OVERLAY);
    }
 

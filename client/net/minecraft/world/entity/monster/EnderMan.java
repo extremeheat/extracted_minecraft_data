@@ -8,12 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -173,7 +173,8 @@ public class EnderMan extends Monster implements NeutralMob {
       super.addAdditionalSaveData(var1);
       BlockState var2 = this.getCarriedBlock();
       if (var2 != null) {
-         var1.put("carriedBlockState", NbtUtils.writeBlockState(var2));
+         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("carriedBlockState", BlockState.CODEC, var3, var2);
       }
 
       this.addPersistentAngerSaveData(var1);
@@ -181,15 +182,8 @@ public class EnderMan extends Monster implements NeutralMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      BlockState var2 = null;
-      if (var1.contains("carriedBlockState", 10)) {
-         var2 = NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("carriedBlockState"));
-         if (var2.isAir()) {
-            var2 = null;
-         }
-      }
-
-      this.setCarriedBlock(var2);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setCarriedBlock((BlockState)var1.read("carriedBlockState", BlockState.CODEC, var2).filter((var0) -> !var0.isAir()).orElse((Object)null));
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 

@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
+import org.joml.Quaternionfc;
 
 public class ScreenEffectRenderer {
    private static final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/underwater.png");
@@ -128,7 +129,7 @@ public class ScreenEffectRenderer {
          float var20 = 0.5F;
          float var21 = -0.5F;
          var0.translate((float)(-(var16 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
-         var0.mulPose(Axis.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
+         var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
          Matrix4f var22 = var0.last().pose();
          var3.addVertex(var22, -0.5F, -0.5F, -0.5F).setUv(var12, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
          var3.addVertex(var22, 0.5F, -0.5F, -0.5F).setUv(var11, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);

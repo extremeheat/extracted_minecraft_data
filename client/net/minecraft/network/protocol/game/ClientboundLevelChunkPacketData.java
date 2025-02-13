@@ -3,15 +3,16 @@ package net.minecraft.network.protocol.game;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -23,50 +24,40 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ClientboundLevelChunkPacketData {
+   private static final StreamCodec<ByteBuf, Map<Heightmap.Types, long[]>> HEIGHTMAPS_STREAM_CODEC;
    private static final int TWO_MEGABYTES = 2097152;
-   private final CompoundTag heightmaps;
+   private final Map<Heightmap.Types, long[]> heightmaps;
    private final byte[] buffer;
    private final List<BlockEntityInfo> blockEntitiesData;
 
    public ClientboundLevelChunkPacketData(LevelChunk var1) {
       super();
-      this.heightmaps = new CompoundTag();
-
-      for(Map.Entry var3 : var1.getHeightmaps()) {
-         if (((Heightmap.Types)var3.getKey()).sendToClient()) {
-            this.heightmaps.put(((Heightmap.Types)var3.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var3.getValue()).getRawData()));
-         }
-      }
-
+      this.heightmaps = (Map)var1.getHeightmaps().stream().filter((var0) -> ((Heightmap.Types)var0.getKey()).sendToClient()).collect(Collectors.toMap(Map.Entry::getKey, (var0) -> (long[])((Heightmap)var0.getValue()).getRawData().clone()));
       this.buffer = new byte[calculateChunkSize(var1)];
       extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1);
       this.blockEntitiesData = Lists.newArrayList();
 
-      for(Map.Entry var5 : var1.getBlockEntities().entrySet()) {
-         this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create((BlockEntity)var5.getValue()));
+      for(Map.Entry var3 : var1.getBlockEntities().entrySet()) {
+         this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create((BlockEntity)var3.getValue()));
       }
 
    }
 
    public ClientboundLevelChunkPacketData(RegistryFriendlyByteBuf var1, int var2, int var3) {
       super();
-      this.heightmaps = var1.readNbt();
-      if (this.heightmaps == null) {
-         throw new RuntimeException("Can't read heightmap in packet for [" + var2 + ", " + var3 + "]");
+      this.heightmaps = (Map)HEIGHTMAPS_STREAM_CODEC.decode(var1);
+      int var4 = var1.readVarInt();
+      if (var4 > 2097152) {
+         throw new RuntimeException("Chunk Packet trying to allocate too much memory on read.");
       } else {
-         int var4 = var1.readVarInt();
-         if (var4 > 2097152) {
-            throw new RuntimeException("Chunk Packet trying to allocate too much memory on read.");
-         } else {
-            this.buffer = new byte[var4];
-            var1.readBytes(this.buffer);
-            this.blockEntitiesData = (List)ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.decode(var1);
-         }
+         this.buffer = new byte[var4];
+         var1.readBytes(this.buffer);
+         this.blockEntitiesData = (List)ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.decode(var1);
       }
    }
 
    public void write(RegistryFriendlyByteBuf var1) {
-      var1.writeNbt(this.heightmaps);
+      HEIGHTMAPS_STREAM_CODEC.encode(var1, this.heightmaps);
       var1.writeVarInt(this.buffer.length);
       var1.writeBytes(this.buffer);
       ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.encode(var1, this.blockEntitiesData);
@@ -117,8 +108,12 @@ public class ClientboundLevelChunkPacketData {
       return new FriendlyByteBuf(Unpooled.wrappedBuffer(this.buffer));
    }
 
-   public CompoundTag getHeightmaps() {
+   public Map<Heightmap.Types, long[]> getHeightmaps() {
       return this.heightmaps;
+   }
+
+   static {
+      HEIGHTMAPS_STREAM_CODEC = ByteBufCodecs.map((var0) -> new EnumMap(Heightmap.Types.class), Heightmap.Types.STREAM_CODEC, ByteBufCodecs.LONG_ARRAY);
    }
 
    static class BlockEntityInfo {

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -224,8 +225,8 @@ public class BitmapProvider implements GlyphProvider {
                return (float)Glyph.this.ascent;
             }
 
-            public void upload(int var1, int var2) {
-               Glyph.this.image.upload(0, var1, var2, Glyph.this.offsetX, Glyph.this.offsetY, Glyph.this.width, Glyph.this.height, false);
+            public void upload(int var1, int var2, GpuTexture var3) {
+               var3.write(Glyph.this.image, 0, var1, var2, Glyph.this.width, Glyph.this.height, Glyph.this.offsetX, Glyph.this.offsetY);
             }
 
             public boolean isColored() {

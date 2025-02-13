@@ -57,13 +57,10 @@ public abstract class BaseCommandBlock implements CommandSource {
       var1.putString("Command", this.command);
       var1.putInt("SuccessCount", this.successCount);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (this.customName != null) {
-         var1.store("CustomName", ComponentSerialization.CODEC, var3, this.customName);
-      }
-
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var3, this.customName);
       var1.putBoolean("TrackOutput", this.trackOutput);
-      if (this.lastOutput != null && this.trackOutput) {
-         var1.store("LastOutput", ComponentSerialization.CODEC, var3, this.lastOutput);
+      if (this.trackOutput) {
+         var1.storeNullable("LastOutput", ComponentSerialization.CODEC, var3, this.lastOutput);
       }
 
       var1.putBoolean("UpdateLastExecution", this.updateLastExecution);

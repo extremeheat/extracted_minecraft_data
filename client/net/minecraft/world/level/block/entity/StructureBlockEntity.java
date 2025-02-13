@@ -78,9 +78,9 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       var1.putInt("sizeX", this.structureSize.getX());
       var1.putInt("sizeY", this.structureSize.getY());
       var1.putInt("sizeZ", this.structureSize.getZ());
-      var1.putString("rotation", this.rotation.toString());
-      var1.putString("mirror", this.mirror.toString());
-      var1.putString("mode", this.mode.toString());
+      var1.store("rotation", Rotation.LEGACY_CODEC, this.rotation);
+      var1.store("mirror", Mirror.LEGACY_CODEC, this.mirror);
+      var1.store("mode", StructureMode.LEGACY_CODEC, this.mode);
       var1.putBoolean("ignoreEntities", this.ignoreEntities);
       var1.putBoolean("strict", this.strict);
       var1.putBoolean("powered", this.powered);
@@ -103,25 +103,9 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       int var7 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
       int var8 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
       this.structureSize = new Vec3i(var6, var7, var8);
-
-      try {
-         this.rotation = Rotation.valueOf(var1.getString("rotation"));
-      } catch (IllegalArgumentException var12) {
-         this.rotation = Rotation.NONE;
-      }
-
-      try {
-         this.mirror = Mirror.valueOf(var1.getString("mirror"));
-      } catch (IllegalArgumentException var11) {
-         this.mirror = Mirror.NONE;
-      }
-
-      try {
-         this.mode = StructureMode.valueOf(var1.getString("mode"));
-      } catch (IllegalArgumentException var10) {
-         this.mode = StructureMode.DATA;
-      }
-
+      this.rotation = (Rotation)var1.read("rotation", Rotation.LEGACY_CODEC).orElse(Rotation.NONE);
+      this.mirror = (Mirror)var1.read("mirror", Mirror.LEGACY_CODEC).orElse(Mirror.NONE);
+      this.mode = (StructureMode)var1.read("mode", StructureMode.LEGACY_CODEC).orElse(StructureMode.DATA);
       this.ignoreEntities = var1.getBoolean("ignoreEntities");
       this.strict = var1.getBoolean("strict");
       this.powered = var1.getBoolean("powered");

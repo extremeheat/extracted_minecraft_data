@@ -8,7 +8,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -47,10 +46,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putLong("Age", this.age);
-      if (this.exitPortal != null) {
-         var1.put("exit_portal", NbtUtils.writeBlockPos(this.exitPortal));
-      }
-
+      var1.storeNullable("exit_portal", BlockPos.CODEC, this.exitPortal);
       if (this.exactTeleport) {
          var1.putBoolean("ExactTeleport", true);
       }
@@ -60,7 +56,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.age = var1.getLong("Age");
-      NbtUtils.readBlockPos(var1, "exit_portal").filter(Level::isInSpawnableBounds).ifPresent((var1x) -> this.exitPortal = var1x);
+      this.exitPortal = (BlockPos)var1.read("exit_portal", BlockPos.CODEC).filter(Level::isInSpawnableBounds).orElse((Object)null);
       this.exactTeleport = var1.getBoolean("ExactTeleport");
    }
 

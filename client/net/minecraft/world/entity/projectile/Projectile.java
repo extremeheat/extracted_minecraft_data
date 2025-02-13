@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -84,10 +85,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
-      if (this.ownerUUID != null) {
-         var1.putUUID("Owner", this.ownerUUID);
-      }
-
+      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
       if (this.leftOwner) {
          var1.putBoolean("LeftOwner", true);
       }
@@ -100,18 +98,15 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.hasUUID("Owner")) {
-         this.setOwnerThroughUUID(var1.getUUID("Owner"));
-      }
-
+      this.setOwnerThroughUUID((UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null));
       this.leftOwner = var1.getBoolean("LeftOwner");
       this.hasBeenShot = var1.getBoolean("HasBeenShot");
    }
 
-   protected void setOwnerThroughUUID(UUID var1) {
-      if (this.ownerUUID != var1) {
+   protected void setOwnerThroughUUID(@Nullable UUID var1) {
+      if (!Objects.equals(this.ownerUUID, var1)) {
          this.ownerUUID = var1;
-         this.cachedOwner = this.findOwner(var1);
+         this.cachedOwner = var1 != null ? this.findOwner(var1) : null;
       }
 
    }

@@ -94,6 +94,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private static final float TAME_HEALTH = 40.0F;
    private static final float ARMOR_REPAIR_UNIT = 0.125F;
    public static final float DEFAULT_TAIL_ANGLE = 0.62831855F;
+   private static final DyeColor DEFAULT_COLLAR_COLOR;
    private float interestedAngle;
    private float interestedAngleO;
    private boolean isWet;
@@ -186,7 +187,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       super.defineSynchedData(var1);
       var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), WolfVariants.DEFAULT));
       var1.define(DATA_INTERESTED_ID, false);
-      var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
+      var1.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
       var1.define(DATA_REMAINING_ANGER_TIME, 0);
    }
 
@@ -196,7 +197,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
+      var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
       VariantUtils.writeVariant(var1, this.getVariant());
       this.addPersistentAngerSaveData(var1);
    }
@@ -204,10 +205,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       VariantUtils.readVariant(var1, this.registryAccess(), Registries.WOLF_VARIANT).ifPresent(this::setVariant);
-      if (var1.contains("CollarColor", 99)) {
-         this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
-      }
-
+      this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 
@@ -646,6 +644,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          EntityType var2 = var0.getType();
          return var2 == EntityType.SHEEP || var2 == EntityType.RABBIT || var2 == EntityType.FOX;
       };
+      DEFAULT_COLLAR_COLOR = DyeColor.RED;
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 

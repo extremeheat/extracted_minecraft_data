@@ -101,12 +101,9 @@ public class Vex extends Monster implements TraceableEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("BoundX")) {
-         this.boundOrigin = new BlockPos(var1.getInt("BoundX"), var1.getInt("BoundY"), var1.getInt("BoundZ"));
-      }
-
-      if (var1.contains("LifeTicks")) {
-         this.setLimitedLife(var1.getInt("LifeTicks"));
+      this.boundOrigin = (BlockPos)var1.read("bound_pos", BlockPos.CODEC).orElse((Object)null);
+      if (var1.contains("life_ticks")) {
+         this.setLimitedLife(var1.getInt("life_ticks"));
       }
 
    }
@@ -121,14 +118,9 @@ public class Vex extends Monster implements TraceableEntity {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.boundOrigin != null) {
-         var1.putInt("BoundX", this.boundOrigin.getX());
-         var1.putInt("BoundY", this.boundOrigin.getY());
-         var1.putInt("BoundZ", this.boundOrigin.getZ());
-      }
-
+      var1.storeNullable("bound_pos", BlockPos.CODEC, this.boundOrigin);
       if (this.hasLimitedLife) {
-         var1.putInt("LifeTicks", this.limitedLifeTicks);
+         var1.putInt("life_ticks", this.limitedLifeTicks);
       }
 
    }

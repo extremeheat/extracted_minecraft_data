@@ -12,6 +12,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.BlockGetter;
@@ -55,11 +56,11 @@ public class WitherRoseBlock extends FlowerBlock {
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var2 instanceof ServerLevel var5) {
-         if (var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof LivingEntity var6) {
-            if (!var6.isInvulnerableTo(var5, var2.damageSources().wither())) {
-               var6.addEffect(this.getBeeInteractionEffect());
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (var2 instanceof ServerLevel var6) {
+         if (var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof LivingEntity var7) {
+            if (!var7.isInvulnerableTo(var6, var2.damageSources().wither())) {
+               var7.addEffect(this.getBeeInteractionEffect());
             }
          }
       }

@@ -320,6 +320,7 @@ public class ServerChunkCache extends ChunkSource {
       this.lastInhabitedUpdate = var1;
       if (!this.level.isDebug()) {
          ProfilerFiller var5 = Profiler.get();
+         var5.push("pollingChunks");
          if (this.level.tickRateManager().runsNormally()) {
             var5.push("tickingChunks");
             this.tickChunks(var5, var3);

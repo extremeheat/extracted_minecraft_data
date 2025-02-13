@@ -126,13 +126,13 @@ public class Painting extends HangingEntity {
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      var1.putByte("facing", (byte)this.direction.get2DDataValue());
+      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.direction);
       super.addAdditionalSaveData(var1);
       VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.direction = Direction.from2DDataValue(var1.getByte("facing"));
+      this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       super.readAdditionalSaveData(var1);
       this.setDirection(this.direction);
       VariantUtils.readVariant(var1, this.registryAccess(), Registries.PAINTING_VARIANT).ifPresent(this::setVariant);

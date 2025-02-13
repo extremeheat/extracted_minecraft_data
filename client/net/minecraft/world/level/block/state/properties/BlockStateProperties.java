@@ -143,6 +143,7 @@ public class BlockStateProperties {
    public static final EnumProperty<CreakingHeartState> CREAKING_HEART_STATE;
    public static final BooleanProperty OMINOUS;
    public static final EnumProperty<TestBlockMode> TEST_BLOCK_MODE;
+   public static final BooleanProperty MAP;
 
    public BlockStateProperties() {
       super();
@@ -233,5 +234,6 @@ public class BlockStateProperties {
       CREAKING_HEART_STATE = EnumProperty.<CreakingHeartState>create("creaking_heart_state", CreakingHeartState.class);
       OMINOUS = BooleanProperty.create("ominous");
       TEST_BLOCK_MODE = EnumProperty.<TestBlockMode>create("mode", TestBlockMode.class);
+      MAP = BooleanProperty.create("map");
    }
 }

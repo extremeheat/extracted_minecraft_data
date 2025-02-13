@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -23,7 +24,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -282,22 +282,17 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    @Nullable
    private static Holder<MobEffect> loadEffect(CompoundTag var0, String var1) {
-      if (var0.contains(var1, 8)) {
-         ResourceLocation var2 = ResourceLocation.tryParse(var0.getString(var1));
-         return var2 == null ? null : (Holder)BuiltInRegistries.MOB_EFFECT.get(var2).map(BeaconBlockEntity::filterEffect).orElse((Object)null);
-      } else {
-         return null;
-      }
+      Optional var10000 = var0.read(var1, BuiltInRegistries.MOB_EFFECT.holderByNameCodec());
+      Set var10001 = VALID_EFFECTS;
+      Objects.requireNonNull(var10001);
+      return (Holder)var10000.filter(var10001::contains).orElse((Object)null);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.primaryPower = loadEffect(var1, "primary_effect");
       this.secondaryPower = loadEffect(var1, "secondary_effect");
-      if (var1.contains("CustomName")) {
-         this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
-      }
-
+      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
       this.lockKey = LockCode.fromTag(var1, var2);
    }
 
@@ -306,10 +301,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       storeEffect(var1, "primary_effect", this.primaryPower);
       storeEffect(var1, "secondary_effect", this.secondaryPower);
       var1.putInt("Levels", this.levels);
-      if (this.name != null) {
-         var1.store("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
-      }
-
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
       this.lockKey.addToTag(var1, var2);
    }
 

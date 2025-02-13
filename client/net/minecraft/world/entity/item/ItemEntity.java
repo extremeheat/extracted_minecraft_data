@@ -4,11 +4,14 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -310,16 +313,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
       var1.putShort("PickupDelay", (short)this.pickupDelay);
-      if (this.thrower != null) {
-         var1.putUUID("Thrower", this.thrower);
-      }
-
-      if (this.target != null) {
-         var1.putUUID("Owner", this.target);
-      }
-
+      var1.storeNullable("Thrower", UUIDUtil.CODEC, this.thrower);
+      var1.storeNullable("Owner", UUIDUtil.CODEC, this.target);
       if (!this.getItem().isEmpty()) {
-         var1.put("Item", this.getItem().save(this.registryAccess()));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("Item", ItemStack.CODEC, var2, this.getItem());
       }
 
    }
@@ -331,22 +329,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
          this.pickupDelay = var1.getShort("PickupDelay");
       }
 
-      if (var1.hasUUID("Owner")) {
-         this.target = var1.getUUID("Owner");
-      }
-
-      if (var1.hasUUID("Thrower")) {
-         this.thrower = var1.getUUID("Thrower");
-         this.cachedThrower = null;
-      }
-
-      if (var1.contains("Item", 10)) {
-         CompoundTag var2 = var1.getCompound("Item");
-         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var2).orElse(ItemStack.EMPTY));
-      } else {
-         this.setItem(ItemStack.EMPTY);
-      }
-
+      this.target = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
+      this.thrower = (UUID)var1.read("Thrower", UUIDUtil.CODEC).orElse((Object)null);
+      this.cachedThrower = null;
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
       if (this.getItem().isEmpty()) {
          this.discard();
       }

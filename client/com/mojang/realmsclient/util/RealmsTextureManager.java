@@ -7,10 +7,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -40,7 +42,9 @@ public class RealmsTextureManager {
             return var5;
          } else {
             ResourceLocation var4 = ResourceLocation.fromNamespaceAndPath("realms", "dynamic/" + var0);
-            Minecraft.getInstance().getTextureManager().register(var4, new DynamicTexture(var3));
+            TextureManager var10000 = Minecraft.getInstance().getTextureManager();
+            Objects.requireNonNull(var4);
+            var10000.register(var4, new DynamicTexture(var4::toString, var3));
             TEXTURES.put(var0, new RealmsTexture(var1, var4));
             return var4;
          }

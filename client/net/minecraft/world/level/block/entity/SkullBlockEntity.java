@@ -113,33 +113,16 @@ public class SkullBlockEntity extends BlockEntity {
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      if (this.owner != null) {
-         var1.store("profile", ResolvableProfile.CODEC, this.owner);
-      }
-
-      if (this.noteBlockSound != null) {
-         var1.putString("note_block_sound", this.noteBlockSound.toString());
-      }
-
-      if (this.customName != null) {
-         var1.store("custom_name", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.customName);
-      }
-
+      var1.storeNullable("profile", ResolvableProfile.CODEC, this.owner);
+      var1.storeNullable("note_block_sound", ResourceLocation.CODEC, this.noteBlockSound);
+      var1.storeNullable("custom_name", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.customName);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.setOwner((ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null));
-      if (var1.contains("note_block_sound", 8)) {
-         this.noteBlockSound = ResourceLocation.tryParse(var1.getString("note_block_sound"));
-      }
-
-      if (var1.contains("custom_name")) {
-         this.customName = parseCustomNameSafe(var1.get("custom_name"), var2);
-      } else {
-         this.customName = null;
-      }
-
+      this.noteBlockSound = (ResourceLocation)var1.read("note_block_sound", ResourceLocation.CODEC).orElse((Object)null);
+      this.customName = parseCustomNameSafe(var1.get("custom_name"), var2);
    }
 
    public static void animation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {

@@ -3,9 +3,11 @@ package net.minecraft.world.entity.projectile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -154,16 +156,13 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      var1.put("Item", this.getItem().save(this.registryAccess()));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.store("Item", ItemStack.CODEC, var2, this.getItem());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.contains("Item", 10)) {
-         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
-      } else {
-         this.setItem(this.getDefaultItem());
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {

@@ -235,7 +235,7 @@ public class EndCityPieces {
       }
 
       public EndCityPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.END_CITY_PIECE, var2, var1, (var1x) -> makeSettings(var2.getBoolean("OW"), Rotation.valueOf(var2.getString("Rot"))));
+         super(StructurePieceType.END_CITY_PIECE, var2, var1, (var1x) -> makeSettings(var2.getBoolean("OW"), (Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
       }
 
       private static StructurePlaceSettings makeSettings(boolean var0, Rotation var1) {
@@ -253,7 +253,7 @@ public class EndCityPieces {
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
-         var2.putString("Rot", this.placeSettings.getRotation().name());
+         var2.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
          var2.putBoolean("OW", this.placeSettings.getProcessors().get(0) == BlockIgnoreProcessor.STRUCTURE_BLOCK);
       }
 

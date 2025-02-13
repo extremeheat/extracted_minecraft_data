@@ -18,6 +18,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -151,7 +152,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!var2.isClientSide) {
          if (var1.getValue(TILT) == Tilt.NONE && canEntityTilt(var3, var4) && !var2.hasNeighborSignal(var3)) {
             this.setTiltAndScheduleTick(var1, var2, var3, Tilt.UNSTABLE, (SoundEvent)null);

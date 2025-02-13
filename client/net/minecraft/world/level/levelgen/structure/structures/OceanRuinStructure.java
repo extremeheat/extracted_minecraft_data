@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -44,6 +45,9 @@ public class OceanRuinStructure extends Structure {
       COLD("cold");
 
       public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Type> LEGACY_CODEC = ExtraCodecs.<Type>legacyEnum(Type::valueOf);
       private final String name;
 
       private Type(final String var3) {

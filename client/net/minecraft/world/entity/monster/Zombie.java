@@ -8,8 +8,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -261,7 +259,7 @@ public class Zombie extends Monster {
       ZombieVillager var3 = (ZombieVillager)var2.convertTo(EntityType.ZOMBIE_VILLAGER, ConversionParams.single(var2, true, true), (var3x) -> {
          var3x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3x.blockPosition()), EntitySpawnReason.CONVERSION, new ZombieGroupData(false, true));
          var3x.setVillagerData(var2.getVillagerData());
-         var3x.setGossips((Tag)var2.getGossips().store(NbtOps.INSTANCE));
+         var3x.setGossips(var2.getGossips().copy());
          var3x.setTradeOffers(var2.getOffers().copy());
          var3x.setVillagerXp(var2.getVillagerXp());
          if (!this.isSilent()) {

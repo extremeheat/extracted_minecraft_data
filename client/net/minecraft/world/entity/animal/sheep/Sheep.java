@@ -1,9 +1,10 @@
-package net.minecraft.world.entity.animal;
+package net.minecraft.world.entity.animal.sheep;
 
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -18,7 +19,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -40,6 +40,7 @@ import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -184,13 +185,13 @@ public class Sheep extends Animal implements Shearable {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Sheared", this.isSheared());
-      var1.putByte("Color", (byte)this.getColor().getId());
+      var1.store("Color", DyeColor.LEGACY_ID_CODEC, this.getColor());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setSheared(var1.getBoolean("Sheared"));
-      this.setColor(DyeColor.byId(var1.getByte("Color")));
+      this.setColor((DyeColor)var1.read("Color", DyeColor.LEGACY_ID_CODEC).orElse(DyeColor.WHITE));
    }
 
    protected SoundEvent getAmbientSound() {
@@ -251,19 +252,9 @@ public class Sheep extends Animal implements Shearable {
 
    }
 
-   public static DyeColor getRandomSheepColor(RandomSource var0) {
-      int var1 = var0.nextInt(100);
-      if (var1 < 5) {
-         return DyeColor.BLACK;
-      } else if (var1 < 10) {
-         return DyeColor.GRAY;
-      } else if (var1 < 15) {
-         return DyeColor.LIGHT_GRAY;
-      } else if (var1 < 18) {
-         return DyeColor.BROWN;
-      } else {
-         return var0.nextInt(500) == 0 ? DyeColor.PINK : DyeColor.WHITE;
-      }
+   public static DyeColor getRandomSheepColor(ServerLevelAccessor var0, BlockPos var1) {
+      Holder var2 = var0.getBiome(var1);
+      return SheepColorSpawnRules.getSheepColor(var2, var0.getRandom());
    }
 
    @Nullable
@@ -289,7 +280,7 @@ public class Sheep extends Animal implements Shearable {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.setColor(getRandomSheepColor(var1.getRandom()));
+      this.setColor(getRandomSheepColor(var1, this.blockPosition()));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

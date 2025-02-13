@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.CatVariant;
+import org.joml.Quaternionfc;
 
 public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, CatModel> {
    public CatRenderer(EntityRendererProvider.Context var1) {
@@ -45,7 +46,7 @@ public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, CatMode
       float var5 = var1.lieDownAmount;
       if (var5 > 0.0F) {
          var2.translate(0.4F * var5, 0.15F * var5, 0.1F * var5);
-         var2.mulPose(Axis.ZP.rotationDegrees(Mth.rotLerp(var5, 0.0F, 90.0F)));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.rotLerp(var5, 0.0F, 90.0F)));
          if (var1.isLyingOnTopOfSleepingPlayer) {
             var2.translate(0.15F * var5, 0.0F, 0.0F);
          }

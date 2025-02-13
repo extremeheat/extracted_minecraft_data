@@ -105,7 +105,7 @@ public class JigsawBlockEntity extends BlockEntity {
       var1.putString("target", this.target.toString());
       var1.putString("pool", this.pool.location().toString());
       var1.putString("final_state", this.finalState);
-      var1.putString("joint", this.joint.getSerializedName());
+      var1.store("joint", JigsawBlockEntity.JointType.CODEC, this.joint);
       var1.putInt("placement_priority", this.placementPriority);
       var1.putInt("selection_priority", this.selectionPriority);
    }
@@ -116,7 +116,7 @@ public class JigsawBlockEntity extends BlockEntity {
       this.target = ResourceLocation.parse(var1.getString("target"));
       this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
-      this.joint = StructureTemplate.getJointType(var1, this.getBlockState());
+      this.joint = (JointType)var1.read("joint", JigsawBlockEntity.JointType.CODEC).orElseGet(() -> StructureTemplate.getDefaultJointType(this.getBlockState()));
       this.placementPriority = var1.getInt("placement_priority");
       this.selectionPriority = var1.getInt("selection_priority");
    }

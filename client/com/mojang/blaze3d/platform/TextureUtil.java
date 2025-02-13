@@ -6,15 +6,12 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntUnaryOperator;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -28,54 +25,8 @@ public class TextureUtil {
       super();
    }
 
-   public static int generateTextureId() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         int[] var0 = new int[ThreadLocalRandom.current().nextInt(15) + 1];
-         GlStateManager._genTextures(var0);
-         int var1 = GlStateManager._genTexture();
-         GlStateManager._deleteTextures(var0);
-         return var1;
-      } else {
-         return GlStateManager._genTexture();
-      }
-   }
-
-   public static void releaseTextureId(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._deleteTexture(var0);
-   }
-
-   public static void prepareImage(int var0, int var1, int var2) {
-      prepareImage(NativeImage.InternalGlFormat.RGBA, var0, 0, var1, var2);
-   }
-
-   public static void prepareImage(NativeImage.InternalGlFormat var0, int var1, int var2, int var3) {
-      prepareImage(var0, var1, 0, var2, var3);
-   }
-
-   public static void prepareImage(int var0, int var1, int var2, int var3) {
-      prepareImage(NativeImage.InternalGlFormat.RGBA, var0, var1, var2, var3);
-   }
-
-   public static void prepareImage(NativeImage.InternalGlFormat var0, int var1, int var2, int var3, int var4) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      bind(var1);
-      if (var2 >= 0) {
-         GlStateManager._texParameter(3553, 33085, var2);
-         GlStateManager._texParameter(3553, 33082, 0);
-         GlStateManager._texParameter(3553, 33083, var2);
-         GlStateManager._texParameter(3553, 34049, 0.0F);
-      }
-
-      for(int var5 = 0; var5 <= var2; ++var5) {
-         GlStateManager._texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, (IntBuffer)null);
-      }
-
-   }
-
    private static void bind(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GlStateManager._bindTexture(var0);
    }
 

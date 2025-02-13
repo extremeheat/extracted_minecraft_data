@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.math.OctahedralGroup;
+import com.mojang.math.Quadrant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -304,7 +305,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       OCCUPIED = BlockStateProperties.OCCUPIED;
       SHAPES = (Map)Util.make(() -> {
          VoxelShape var0 = Block.box(0.0, 0.0, 0.0, 3.0, 3.0, 3.0);
-         VoxelShape var1 = Shapes.rotate(var0, OctahedralGroup.fromAngles(0, 90));
+         VoxelShape var1 = Shapes.rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90));
          return Shapes.rotateHorizontal(Shapes.or(Block.column(16.0, 3.0, 9.0), var0, var1));
       });
    }

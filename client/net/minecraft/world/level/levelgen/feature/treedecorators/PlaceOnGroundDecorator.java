@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -63,7 +64,7 @@ public class PlaceOnGroundDecorator extends TreeDecorator {
 
    private void attemptToPlaceBlockAbove(TreeDecorator.Context var1, BlockPos var2) {
       BlockPos var3 = var2.above();
-      if (var1.level().isStateAtPosition(var3, (var0) -> var0.isAir() || var0.is(Blocks.VINE)) && TreeFeature.isGrassOrDirt(var1.level(), var2)) {
+      if (var1.level().isStateAtPosition(var3, (var0) -> var0.isAir() || var0.is(Blocks.VINE)) && var1.checkBlock(var2, BlockBehaviour.BlockStateBase::isSolidRender)) {
          var1.setBlock(var3, this.blockStateProvider.getState(var1.random(), var3));
       }
 

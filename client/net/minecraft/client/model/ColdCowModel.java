@@ -18,7 +18,7 @@ public class ColdCowModel extends CowModel {
       var0.getRoot().addOrReplaceChild("body", CubeListBuilder.create().texOffs(20, 32).addBox(-6.0F, -10.0F, -7.0F, 12.0F, 18.0F, 10.0F, new CubeDeformation(0.5F)).texOffs(18, 4).addBox(-6.0F, -10.0F, -7.0F, 12.0F, 18.0F, 10.0F).texOffs(52, 0).addBox(-2.0F, 2.0F, -8.0F, 4.0F, 6.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 5.0F, 2.0F, 1.5707964F, 0.0F, 0.0F));
       PartDefinition var1 = var0.getRoot().addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -6.0F, 8.0F, 8.0F, 6.0F).texOffs(8, 32).addBox(-3.0F, 0.99F, -7.0F, 6.0F, 3.0F, 2.0F), PartPose.offset(0.0F, 4.0F, -8.0F));
       var1.addOrReplaceChild("right_horn", CubeListBuilder.create().texOffs(0, 32).addBox(-1.5F, -4.5F, -0.5F, 2.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(-4.5F, -2.5F, -3.5F, 1.5708F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("left_horn", CubeListBuilder.create().texOffs(0, 32).addBox(-1.5F, -3.0F, -0.5F, 2.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(5.5F, -2.5F, -5.0F, 1.5708F, 0.0F, 0.0F));
+      var1.addOrReplaceChild("left_horn", CubeListBuilder.create().mirror().texOffs(0, 32).addBox(-1.5F, -3.0F, -0.5F, 2.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(5.5F, -2.5F, -5.0F, 1.5708F, 0.0F, 0.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
 }

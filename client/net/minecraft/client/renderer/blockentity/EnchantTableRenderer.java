@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity> {
    public static final Material BOOK_LOCATION;
@@ -38,8 +39,8 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       }
 
       float var10 = var1.oRot + var9 * var2;
-      var3.mulPose(Axis.YP.rotation(-var10));
-      var3.mulPose(Axis.ZP.rotationDegrees(80.0F));
+      var3.mulPose((Quaternionfc)Axis.YP.rotation(-var10));
+      var3.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));
       float var11 = Mth.lerp(var2, var1.oFlip, var1.flip);
       float var12 = Mth.frac(var11 + 0.25F) * 1.6F - 0.3F;
       float var13 = Mth.frac(var11 + 0.75F) * 1.6F - 0.3F;

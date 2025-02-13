@@ -7,8 +7,10 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
 public class FireflyParticle extends TextureSheetParticle {
-   private static final float PARTICLE_FADE_OUT_TIME = 0.5F;
-   private static final float PARTICLE_FADE_IN_TIME = 0.3F;
+   private static final float PARTICLE_FADE_OUT_LIGHT_TIME = 0.3F;
+   private static final float PARTICLE_FADE_IN_LIGHT_TIME = 0.1F;
+   private static final float PARTICLE_FADE_OUT_ALPHA_TIME = 0.5F;
+   private static final float PARTICLE_FADE_IN_ALPHA_TIME = 0.3F;
    private static final int PARTICLE_MIN_LIFETIME = 36;
    private static final int PARTICLE_MAX_LIFETIME = 180;
 
@@ -27,16 +29,7 @@ public class FireflyParticle extends TextureSheetParticle {
    }
 
    public int getLightColor(float var1) {
-      float var2 = Mth.clamp(((float)this.age + var1) / (float)this.lifetime, 0.0F, 1.0F);
-      if (var2 > 0.5F) {
-         float var4 = (1.0F - var2) / 0.5F;
-         return (int)(255.0F * var4);
-      } else if (var2 < 0.3F) {
-         float var3 = var2 / 0.3F;
-         return (int)(255.0F * var3);
-      } else {
-         return 255;
-      }
+      return (int)(255.0F * getFadeAmount(this.getLifetimeProgress((float)this.age + var1), 0.1F, 0.3F));
    }
 
    public void tick() {
@@ -44,10 +37,23 @@ public class FireflyParticle extends TextureSheetParticle {
       if (!this.level.getBlockState(BlockPos.containing(this.x, this.y, this.z)).isAir()) {
          this.remove();
       } else {
+         this.setAlpha(getFadeAmount(this.getLifetimeProgress((float)this.age), 0.3F, 0.5F));
          if (Math.random() > 0.95 || this.age == 1) {
             this.setParticleSpeed(-0.05000000074505806 + 0.10000000149011612 * Math.random(), -0.05000000074505806 + 0.10000000149011612 * Math.random(), -0.05000000074505806 + 0.10000000149011612 * Math.random());
          }
 
+      }
+   }
+
+   private float getLifetimeProgress(float var1) {
+      return Mth.clamp(var1 / (float)this.lifetime, 0.0F, 1.0F);
+   }
+
+   private static float getFadeAmount(float var0, float var1, float var2) {
+      if (var0 >= 1.0F - var1) {
+         return (1.0F - var0) / var1;
+      } else {
+         return var0 <= var2 ? var0 / var2 : 1.0F;
       }
    }
 
@@ -64,6 +70,7 @@ public class FireflyParticle extends TextureSheetParticle {
          var15.setLifetime(var2.random.nextIntBetweenInclusive(36, 180));
          var15.scale(1.5F);
          var15.pickSprite(this.sprite);
+         var15.setAlpha(0.0F);
          return var15;
       }
 

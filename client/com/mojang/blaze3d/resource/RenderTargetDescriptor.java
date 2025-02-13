@@ -14,7 +14,7 @@ public record RenderTargetDescriptor(int width, int height, boolean useDepth, in
    }
 
    public RenderTarget allocate() {
-      return new TextureTarget(this.width, this.height, this.useDepth);
+      return new TextureTarget((String)null, this.width, this.height, this.useDepth);
    }
 
    public void prepare(RenderTarget var1) {

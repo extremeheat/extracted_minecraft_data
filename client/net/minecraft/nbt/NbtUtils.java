@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,17 +17,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -118,37 +115,6 @@ public final class NbtUtils {
 
          return var0.equals(var1);
       }
-   }
-
-   public static IntArrayTag createUUID(UUID var0) {
-      return new IntArrayTag(UUIDUtil.uuidToIntArray(var0));
-   }
-
-   public static UUID loadUUID(Tag var0) {
-      if (var0.getType() != IntArrayTag.TYPE) {
-         String var10002 = IntArrayTag.TYPE.getName();
-         throw new IllegalArgumentException("Expected UUID-Tag to be of type " + var10002 + ", but found " + var0.getType().getName() + ".");
-      } else {
-         int[] var1 = ((IntArrayTag)var0).getAsIntArray();
-         if (var1.length != 4) {
-            throw new IllegalArgumentException("Expected UUID-Array to be of length 4, but found " + var1.length + ".");
-         } else {
-            return UUIDUtil.uuidFromIntArray(var1);
-         }
-      }
-   }
-
-   public static Optional<BlockPos> readBlockPos(CompoundTag var0, String var1) {
-      int[] var2 = var0.getIntArray(var1);
-      return var2.length == 3 ? Optional.of(new BlockPos(var2[0], var2[1], var2[2])) : Optional.empty();
-   }
-
-   public static Tag writeBlockPos(BlockPos var0) {
-      return writeVec3i(var0);
-   }
-
-   public static Tag writeVec3i(Vec3i var0) {
-      return new IntArrayTag(new int[]{var0.getX(), var0.getY(), var0.getZ()});
    }
 
    public static BlockState readBlockState(HolderGetter<Block> var0, CompoundTag var1) {
@@ -586,5 +552,9 @@ public final class NbtUtils {
 
    public static int getDataVersion(CompoundTag var0, int var1) {
       return var0.contains("DataVersion", 99) ? var0.getInt("DataVersion") : var1;
+   }
+
+   public static int getDataVersion(Dynamic<?> var0, int var1) {
+      return var0.get("DataVersion").asInt(var1);
    }
 }

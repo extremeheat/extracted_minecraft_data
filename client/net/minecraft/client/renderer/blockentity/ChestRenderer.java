@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T> {
    private final ChestModel singleModel;
@@ -54,7 +55,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
          var3.pushPose();
          float var15 = ((Direction)var10.getValue(ChestBlock.FACING)).toYRot();
          var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose(Axis.YP.rotationDegrees(-var15));
+         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var15));
          var3.translate(-0.5F, -0.5F, -0.5F);
          DoubleBlockCombiner.NeighborCombineResult var16;
          if (var9) {

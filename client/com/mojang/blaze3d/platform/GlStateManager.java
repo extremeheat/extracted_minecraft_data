@@ -8,7 +8,6 @@ import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -40,7 +39,6 @@ public class GlStateManager {
    private static final CullState CULL;
    private static final PolygonOffsetState POLY_OFFSET;
    private static final ColorLogicState COLOR_LOGIC;
-   private static final StencilState STENCIL;
    private static final ScissorState SCISSOR;
    private static final FramebufferState READ_FRAMEBUFFER;
    private static final FramebufferState DRAW_FRAMEBUFFER;
@@ -53,32 +51,32 @@ public class GlStateManager {
    }
 
    public static void _disableScissorTest() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       SCISSOR.mode.disable();
    }
 
    public static void _enableScissorTest() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       SCISSOR.mode.enable();
    }
 
    public static void _scissorBox(int var0, int var1, int var2, int var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL20.glScissor(var0, var1, var2, var3);
    }
 
    public static void _disableDepthTest() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       DEPTH.mode.disable();
    }
 
    public static void _enableDepthTest() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       DEPTH.mode.enable();
    }
 
    public static void _depthFunc(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       if (var0 != DEPTH.func) {
          DEPTH.func = var0;
          GL11.glDepthFunc(var0);
@@ -105,16 +103,6 @@ public class GlStateManager {
       BLEND.mode.enable();
    }
 
-   public static void _blendFunc(int var0, int var1) {
-      RenderSystem.assertOnRenderThread();
-      if (var0 != BLEND.srcRgb || var1 != BLEND.dstRgb) {
-         BLEND.srcRgb = var0;
-         BLEND.dstRgb = var1;
-         GL11.glBlendFunc(var0, var1);
-      }
-
-   }
-
    public static void _blendFuncSeparate(int var0, int var1, int var2, int var3) {
       RenderSystem.assertOnRenderThread();
       if (var0 != BLEND.srcRgb || var1 != BLEND.dstRgb || var2 != BLEND.srcAlpha || var3 != BLEND.dstAlpha) {
@@ -125,11 +113,6 @@ public class GlStateManager {
          glBlendFuncSeparate(var0, var1, var2, var3);
       }
 
-   }
-
-   public static void _blendEquation(int var0) {
-      RenderSystem.assertOnRenderThread();
-      GL14.glBlendEquation(var0);
    }
 
    public static int glGetProgrami(int var0, int var1) {
@@ -238,11 +221,6 @@ public class GlStateManager {
       GL20.glUniform1fv(var0, var1);
    }
 
-   public static void _glUniform2(int var0, IntBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform2iv(var0, var1);
-   }
-
    public static void _glUniform2(int var0, FloatBuffer var1) {
       RenderSystem.assertOnRenderThread();
       GL20.glUniform2fv(var0, var1);
@@ -258,34 +236,14 @@ public class GlStateManager {
       GL20.glUniform3fv(var0, var1);
    }
 
-   public static void _glUniform4(int var0, IntBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform4iv(var0, var1);
-   }
-
    public static void _glUniform4(int var0, FloatBuffer var1) {
       RenderSystem.assertOnRenderThread();
       GL20.glUniform4fv(var0, var1);
    }
 
-   public static void _glUniformMatrix2(int var0, boolean var1, FloatBuffer var2) {
+   public static void _glUniformMatrix4(int var0, FloatBuffer var1) {
       RenderSystem.assertOnRenderThread();
-      GL20.glUniformMatrix2fv(var0, var1, var2);
-   }
-
-   public static void _glUniformMatrix3(int var0, boolean var1, FloatBuffer var2) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniformMatrix3fv(var0, var1, var2);
-   }
-
-   public static void _glUniformMatrix4(int var0, boolean var1, FloatBuffer var2) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniformMatrix4fv(var0, var1, var2);
-   }
-
-   public static int _glGetAttribLocation(int var0, CharSequence var1) {
-      RenderSystem.assertOnRenderThread();
-      return GL20.glGetAttribLocation(var0, var1);
+      GL20.glUniformMatrix4fv(var0, false, var1);
    }
 
    public static void _glBindAttribLocation(int var0, int var1, CharSequence var2) {
@@ -294,56 +252,50 @@ public class GlStateManager {
    }
 
    public static int _glGenBuffers() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       ++numBuffers;
       PLOT_BUFFERS.setValue((double)numBuffers);
       return GL15.glGenBuffers();
    }
 
    public static int _glGenVertexArrays() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL30.glGenVertexArrays();
    }
 
    public static void _glBindBuffer(int var0, int var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL15.glBindBuffer(var0, var1);
    }
 
    public static void _glBindVertexArray(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL30.glBindVertexArray(var0);
    }
 
    public static void _glBufferData(int var0, ByteBuffer var1, int var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL15.glBufferData(var0, var1, var2);
    }
 
    public static void _glBufferSubData(int var0, int var1, ByteBuffer var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL15.glBufferSubData(var0, (long)var1, var2);
    }
 
    public static void _glBufferData(int var0, long var1, int var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL15.glBufferData(var0, var1, var3);
    }
 
    @Nullable
-   public static ByteBuffer _glMapBuffer(int var0, int var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      return GL15.glMapBuffer(var0, var1);
-   }
-
-   @Nullable
    public static ByteBuffer _glMapBufferRange(int var0, int var1, int var2, int var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL30.glMapBufferRange(var0, (long)var1, (long)var2, var3);
    }
 
    public static void _glUnmapBuffer(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL15.glUnmapBuffer(var0);
    }
 
@@ -360,18 +312,13 @@ public class GlStateManager {
       GL15.glDeleteBuffers(var0);
    }
 
-   public static void _glCopyTexSubImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL20.glCopyTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7);
-   }
-
    public static void _glDeleteVertexArrays(int var0) {
       RenderSystem.assertOnRenderThread();
       GL30.glDeleteVertexArrays(var0);
    }
 
    public static void _glBindFramebuffer(int var0, int var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       boolean var10000;
       switch (var0) {
          case 36008 -> var10000 = READ_FRAMEBUFFER.update(var1);
@@ -388,58 +335,28 @@ public class GlStateManager {
    }
 
    public static void _glBlitFrameBuffer(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL30.glBlitFramebuffer(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9);
    }
 
-   public static void _glBindRenderbuffer(int var0, int var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glBindRenderbuffer(var0, var1);
-   }
-
-   public static void _glDeleteRenderbuffers(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glDeleteRenderbuffers(var0);
-   }
-
    public static void _glDeleteFramebuffers(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL30.glDeleteFramebuffers(var0);
    }
 
    public static int glGenFramebuffers() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL30.glGenFramebuffers();
    }
 
-   public static int glGenRenderbuffers() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      return GL30.glGenRenderbuffers();
-   }
-
-   public static void _glRenderbufferStorage(int var0, int var1, int var2, int var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glRenderbufferStorage(var0, var1, var2, var3);
-   }
-
-   public static void _glFramebufferRenderbuffer(int var0, int var1, int var2, int var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glFramebufferRenderbuffer(var0, var1, var2, var3);
-   }
-
    public static int glCheckFramebufferStatus(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL30.glCheckFramebufferStatus(var0);
    }
 
    public static void _glFramebufferTexture2D(int var0, int var1, int var2, int var3, int var4) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glFramebufferTexture2D(var0, var1, var2, var3, var4);
-   }
-
-   public static int getBoundFramebuffer() {
       RenderSystem.assertOnRenderThread();
-      return _getInteger(36006);
+      GL30.glFramebufferTexture2D(var0, var1, var2, var3, var4);
    }
 
    public static void glActiveTexture(int var0) {
@@ -542,13 +459,8 @@ public class GlStateManager {
 
    }
 
-   public static void _texParameter(int var0, int var1, float var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GL11.glTexParameterf(var0, var1, var2);
-   }
-
    public static void _texParameter(int var0, int var1, int var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glTexParameteri(var0, var1, var2);
    }
 
@@ -557,21 +469,14 @@ public class GlStateManager {
    }
 
    public static int _genTexture() {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       ++numTextures;
       PLOT_TEXTURES.setValue((double)numTextures);
       return GL11.glGenTextures();
    }
 
-   public static void _genTextures(int[] var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      numTextures += var0.length;
-      PLOT_TEXTURES.setValue((double)numTextures);
-      GL11.glGenTextures(var0);
-   }
-
    public static void _deleteTexture(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glDeleteTextures(var0);
 
       for(TextureState var4 : TEXTURES) {
@@ -584,24 +489,8 @@ public class GlStateManager {
       PLOT_TEXTURES.setValue((double)numTextures);
    }
 
-   public static void _deleteTextures(int[] var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
-
-      for(TextureState var4 : TEXTURES) {
-         for(int var8 : var0) {
-            if (var4.binding == var8) {
-               var4.binding = -1;
-            }
-         }
-      }
-
-      GL11.glDeleteTextures(var0);
-      numTextures -= var0.length;
-      PLOT_TEXTURES.setValue((double)numTextures);
-   }
-
    public static void _bindTexture(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       if (var0 != TEXTURES[activeTexture].binding) {
          TEXTURES[activeTexture].binding = var0;
          GL11.glBindTexture(3553, var0);
@@ -614,36 +503,18 @@ public class GlStateManager {
    }
 
    public static void _texImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, @Nullable IntBuffer var8) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glTexImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    public static void _texSubImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, long var8) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   public static void upload(int var0, int var1, int var2, int var3, int var4, NativeImage.Format var5, IntBuffer var6, Consumer<IntBuffer> var7) {
-      if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> _upload(var0, var1, var2, var3, var4, var5, var6, var7));
-      } else {
-         _upload(var0, var1, var2, var3, var4, var5, var6, var7);
-      }
-
-   }
-
-   private static void _upload(int var0, int var1, int var2, int var3, int var4, NativeImage.Format var5, IntBuffer var6, Consumer<IntBuffer> var7) {
-      try {
-         RenderSystem.assertOnRenderThreadOrInit();
-         _pixelStore(3314, var3);
-         _pixelStore(3316, 0);
-         _pixelStore(3315, 0);
-         var5.setUnpackPixelStoreState();
-         GL11.glTexSubImage2D(3553, var0, var1, var2, var3, var4, var5.glFormat(), 5121, var6);
-      } finally {
-         var7.accept(var6);
-      }
-
+   public static void _texSubImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, IntBuffer var8) {
+      RenderSystem.assertOnRenderThread();
+      GL11.glTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    public static void _getTexImage(int var0, int var1, int var2, int var3, long var4) {
@@ -652,7 +523,7 @@ public class GlStateManager {
    }
 
    public static void _viewport(int var0, int var1, int var2, int var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GlStateManager.Viewport.INSTANCE.x = var0;
       GlStateManager.Viewport.INSTANCE.y = var1;
       GlStateManager.Viewport.INSTANCE.width = var2;
@@ -672,54 +543,18 @@ public class GlStateManager {
 
    }
 
-   public static void _stencilFunc(int var0, int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      if (var0 != STENCIL.func.func || var0 != STENCIL.func.ref || var0 != STENCIL.func.mask) {
-         STENCIL.func.func = var0;
-         STENCIL.func.ref = var1;
-         STENCIL.func.mask = var2;
-         GL11.glStencilFunc(var0, var1, var2);
-      }
-
-   }
-
-   public static void _stencilMask(int var0) {
-      RenderSystem.assertOnRenderThread();
-      if (var0 != STENCIL.mask) {
-         STENCIL.mask = var0;
-         GL11.glStencilMask(var0);
-      }
-
-   }
-
-   public static void _stencilOp(int var0, int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      if (var0 != STENCIL.fail || var1 != STENCIL.zfail || var2 != STENCIL.zpass) {
-         STENCIL.fail = var0;
-         STENCIL.zfail = var1;
-         STENCIL.zpass = var2;
-         GL11.glStencilOp(var0, var1, var2);
-      }
-
-   }
-
    public static void _clearDepth(double var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glClearDepth(var0);
    }
 
    public static void _clearColor(float var0, float var1, float var2, float var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glClearColor(var0, var1, var2, var3);
    }
 
-   public static void _clearStencil(int var0) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glClearStencil(var0);
-   }
-
    public static void _clear(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glClear(var0);
       if (MacosUtil.IS_MACOS) {
          _getError();
@@ -758,7 +593,7 @@ public class GlStateManager {
    }
 
    public static void _pixelStore(int var0, int var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL11.glPixelStorei(var0, var1);
    }
 
@@ -783,22 +618,22 @@ public class GlStateManager {
    }
 
    public static int _getInteger(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL11.glGetInteger(var0);
    }
 
    public static long _glFenceSync(int var0, int var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL32.glFenceSync(var0, var1);
    }
 
    public static int _glClientWaitSync(long var0, int var2, long var3) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       return GL32.glClientWaitSync(var0, var2, var3);
    }
 
    public static void _glDeleteSync(long var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       GL32.glDeleteSync(var0);
    }
 
@@ -813,7 +648,6 @@ public class GlStateManager {
       CULL = new CullState();
       POLY_OFFSET = new PolygonOffsetState();
       COLOR_LOGIC = new ColorLogicState();
-      STENCIL = new StencilState();
       SCISSOR = new ScissorState();
       READ_FRAMEBUFFER = new FramebufferState();
       DRAW_FRAMEBUFFER = new FramebufferState();
@@ -822,6 +656,7 @@ public class GlStateManager {
    }
 
    public static enum LogicOp {
+      NONE(-1),
       AND(5377),
       AND_INVERTED(5380),
       AND_REVERSE(5378),
@@ -847,17 +682,17 @@ public class GlStateManager {
 
       // $FF: synthetic method
       private static LogicOp[] $values() {
-         return new LogicOp[]{AND, AND_INVERTED, AND_REVERSE, CLEAR, COPY, COPY_INVERTED, EQUIV, INVERT, NAND, NOOP, NOR, OR, OR_INVERTED, OR_REVERSE, SET, XOR};
+         return new LogicOp[]{NONE, AND, AND_INVERTED, AND_REVERSE, CLEAR, COPY, COPY_INVERTED, EQUIV, INVERT, NAND, NOOP, NOR, OR, OR_INVERTED, OR_REVERSE, SET, XOR};
       }
    }
 
    public static enum Viewport {
       INSTANCE;
 
-      protected int x;
-      protected int y;
-      protected int width;
-      protected int height;
+      int x;
+      int y;
+      int width;
+      int height;
 
       private Viewport() {
       }
@@ -916,7 +751,6 @@ public class GlStateManager {
 
    static class CullState {
       public final BooleanState enable = new BooleanState(2884);
-      public int mode = 1029;
 
       CullState() {
          super();
@@ -925,7 +759,6 @@ public class GlStateManager {
 
    static class PolygonOffsetState {
       public final BooleanState fill = new BooleanState(32823);
-      public final BooleanState line = new BooleanState(10754);
       public float factor;
       public float units;
 
@@ -939,28 +772,6 @@ public class GlStateManager {
       public int op = 5379;
 
       ColorLogicState() {
-         super();
-      }
-   }
-
-   static class StencilFunc {
-      public int func = 519;
-      public int ref;
-      public int mask = -1;
-
-      StencilFunc() {
-         super();
-      }
-   }
-
-   static class StencilState {
-      public final StencilFunc func = new StencilFunc();
-      public int mask = -1;
-      public int fail = 7680;
-      public int zfail = 7680;
-      public int zpass = 7680;
-
-      StencilState() {
          super();
       }
    }
@@ -1002,7 +813,7 @@ public class GlStateManager {
       }
 
       public void setEnabled(boolean var1) {
-         RenderSystem.assertOnRenderThreadOrInit();
+         RenderSystem.assertOnRenderThread();
          if (var1 != this.enabled) {
             this.enabled = var1;
             if (var1) {

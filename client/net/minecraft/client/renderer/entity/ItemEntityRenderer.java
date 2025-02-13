@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.util.Objects;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
@@ -12,12 +13,13 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.phys.AABB;
+import org.joml.Quaternionfc;
 
 public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRenderState> {
+   private static final float ITEM_MIN_HOVER_HEIGHT = 0.0625F;
    private static final float ITEM_BUNDLE_OFFSET_SCALE = 0.15F;
-   private static final float FLAT_ITEM_BUNDLE_OFFSET_X = 0.0F;
-   private static final float FLAT_ITEM_BUNDLE_OFFSET_Y = 0.0F;
-   private static final float FLAT_ITEM_BUNDLE_OFFSET_Z = 0.09375F;
+   private static final float FLAT_ITEM_DEPTH_THRESHOLD = 0.0625F;
    private final ItemModelResolver itemModelResolver;
    private final RandomSource random = RandomSource.create();
 
@@ -39,58 +41,68 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
       var2.extractItemGroupRenderState(var1, var1.getItem(), this.itemModelResolver);
    }
 
+   private static AABB calculateModelBoundingBox(ItemStackRenderState var0) {
+      AABB.Builder var1 = new AABB.Builder();
+      Objects.requireNonNull(var1);
+      var0.visitExtents(var1::include);
+      return var1.build();
+   }
+
    public void render(ItemEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       if (!var1.item.isEmpty()) {
          var2.pushPose();
-         float var5 = 0.25F;
-         float var6 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
-         float var7 = var1.item.transform().scale.y();
-         var2.translate(0.0F, var6 + 0.25F * var7, 0.0F);
+         AABB var5 = calculateModelBoundingBox(var1.item);
+         float var6 = -((float)var5.minY) + 0.0625F;
+         float var7 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
+         var2.translate(0.0F, var7 + var6, 0.0F);
          float var8 = ItemEntity.getSpin(var1.ageInTicks, var1.bobOffset);
-         var2.mulPose(Axis.YP.rotation(var8));
-         renderMultipleFromCount(var2, var3, var4, var1, this.random);
+         var2.mulPose((Quaternionfc)Axis.YP.rotation(var8));
+         renderMultipleFromCount(var2, var3, var4, var1, this.random, var5);
          var2.popPose();
          super.render(var1, var2, var3, var4);
       }
    }
 
    public static void renderMultipleFromCount(PoseStack var0, MultiBufferSource var1, int var2, ItemClusterRenderState var3, RandomSource var4) {
-      var4.setSeed((long)var3.seed);
-      int var5 = var3.count;
-      ItemStackRenderState var6 = var3.item;
-      boolean var7 = var6.isGui3d();
-      float var8 = var6.transform().scale.x();
-      float var9 = var6.transform().scale.y();
-      float var10 = var6.transform().scale.z();
-      if (!var7) {
-         float var11 = -0.0F * (float)(var5 - 1) * 0.5F * var8;
-         float var12 = -0.0F * (float)(var5 - 1) * 0.5F * var9;
-         float var13 = -0.09375F * (float)(var5 - 1) * 0.5F * var10;
-         var0.translate(var11, var12, var13);
-      }
+      renderMultipleFromCount(var0, var1, var2, var3, var4, calculateModelBoundingBox(var3.item));
+   }
 
-      for(int var15 = 0; var15 < var5; ++var15) {
-         var0.pushPose();
-         if (var15 > 0) {
-            if (var7) {
-               float var16 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var18 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var14 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var0.translate(var16, var18, var14);
-            } else {
-               float var17 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               float var19 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var0.translate(var17, var19, 0.0F);
+   public static void renderMultipleFromCount(PoseStack var0, MultiBufferSource var1, int var2, ItemClusterRenderState var3, RandomSource var4, AABB var5) {
+      int var6 = var3.count;
+      if (var6 != 0) {
+         var4.setSeed((long)var3.seed);
+         ItemStackRenderState var7 = var3.item;
+         float var8 = (float)var5.getZsize();
+         if (var8 > 0.0625F) {
+            var7.render(var0, var1, var2, OverlayTexture.NO_OVERLAY);
+
+            for(int var9 = 1; var9 < var6; ++var9) {
+               var0.pushPose();
+               float var10 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float var11 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float var12 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               var0.translate(var10, var11, var12);
+               var7.render(var0, var1, var2, OverlayTexture.NO_OVERLAY);
+               var0.popPose();
+            }
+         } else {
+            float var13 = var8 * 1.5F;
+            var0.translate(0.0F, 0.0F, -(var13 * (float)(var6 - 1) / 2.0F));
+            var7.render(var0, var1, var2, OverlayTexture.NO_OVERLAY);
+            var0.translate(0.0F, 0.0F, var13);
+
+            for(int var14 = 1; var14 < var6; ++var14) {
+               var0.pushPose();
+               float var15 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               float var16 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               var0.translate(var15, var16, 0.0F);
+               var7.render(var0, var1, var2, OverlayTexture.NO_OVERLAY);
+               var0.popPose();
+               var0.translate(0.0F, 0.0F, var13);
             }
          }
 
-         var6.render(var0, var1, var2, OverlayTexture.NO_OVERLAY);
-         var0.popPose();
-         if (!var7) {
-            var0.translate(0.0F * var8, 0.0F * var9, 0.09375F * var10);
-         }
       }
-
    }
 
    // $FF: synthetic method

@@ -181,7 +181,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       Optional var2 = Optional.ofNullable(ResourceLocation.tryParse(this.idEdit.getValue()));
       Optional var3 = var2.map((var0) -> ResourceKey.create(Registries.TEST_INSTANCE, var0));
       Vec3i var4 = new Vec3i(parseSize(this.sizeXEdit.getValue()), parseSize(this.sizeYEdit.getValue()), parseSize(this.sizeZEdit.getValue()));
-      boolean var5 = (Boolean)this.includeEntitiesButton.getValue();
+      boolean var5 = !(Boolean)this.includeEntitiesButton.getValue();
       this.minecraft.getConnection().send(new ServerboundTestInstanceBlockActionPacket(this.blockEntity.getBlockPos(), var1, var3, var4, this.rotationButton.getValue(), var5));
       return var2.isPresent();
    }

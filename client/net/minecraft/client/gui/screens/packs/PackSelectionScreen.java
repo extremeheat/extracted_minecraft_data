@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -304,7 +305,8 @@ public class PackSelectionScreen extends Screen {
 
             try {
                NativeImage var8 = NativeImage.read(var7);
-               var1.register(var6, new DynamicTexture(var8));
+               Objects.requireNonNull(var6);
+               var1.register(var6, new DynamicTexture(var6::toString, var8));
                var9 = var6;
             } catch (Throwable var12) {
                if (var7 != null) {

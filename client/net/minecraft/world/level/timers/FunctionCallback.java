@@ -1,12 +1,13 @@
 package net.minecraft.world.level.timers;
 
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 
-public class FunctionCallback implements TimerCallback<MinecraftServer> {
-   final ResourceLocation functionId;
+public record FunctionCallback(ResourceLocation functionId) implements TimerCallback<MinecraftServer> {
+   public static final MapCodec<FunctionCallback> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("Name").forGetter(FunctionCallback::functionId)).apply(var0, FunctionCallback::new));
 
    public FunctionCallback(ResourceLocation var1) {
       super();
@@ -18,28 +19,7 @@ public class FunctionCallback implements TimerCallback<MinecraftServer> {
       var5.get(this.functionId).ifPresent((var1x) -> var5.execute(var1x, var5.getGameLoopSender()));
    }
 
-   // $FF: synthetic method
-   public void handle(final Object var1, final TimerQueue var2, final long var3) {
-      this.handle((MinecraftServer)var1, var2, var3);
-   }
-
-   public static class Serializer extends TimerCallback.Serializer<MinecraftServer, FunctionCallback> {
-      public Serializer() {
-         super(ResourceLocation.withDefaultNamespace("function"), FunctionCallback.class);
-      }
-
-      public void serialize(CompoundTag var1, FunctionCallback var2) {
-         var1.putString("Name", var2.functionId.toString());
-      }
-
-      public FunctionCallback deserialize(CompoundTag var1) {
-         ResourceLocation var2 = ResourceLocation.parse(var1.getString("Name"));
-         return new FunctionCallback(var2);
-      }
-
-      // $FF: synthetic method
-      public TimerCallback deserialize(final CompoundTag var1) {
-         return this.deserialize(var1);
-      }
+   public MapCodec<FunctionCallback> codec() {
+      return CODEC;
    }
 }

@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static final int MAX_PATTERNS = 16;
@@ -71,7 +72,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static void renderBanner(PoseStack var0, MultiBufferSource var1, int var2, int var3, float var4, BannerModel var5, BannerFlagModel var6, float var7, DyeColor var8, BannerPatternLayers var9) {
       var0.pushPose();
       var0.translate(0.5F, 0.0F, 0.5F);
-      var0.mulPose(Axis.YP.rotationDegrees(var4));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var4));
       var0.scale(0.6666667F, -0.6666667F, -0.6666667F);
       var5.renderToBuffer(var0, ModelBakery.BANNER_BASE.buffer(var1, RenderType::entitySolid), var2, var3);
       var6.setupAnim(var7);

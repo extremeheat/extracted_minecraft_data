@@ -21,7 +21,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -48,7 +47,7 @@ public class TrialSpawnerData {
    private static final String TAG_NEXT_MOB_SPAWNS_AT = "next_mob_spawns_at";
    private static final int DELAY_BETWEEN_PLAYER_SCANS = 20;
    private static final int TRIAL_OMEN_PER_BAD_OMEN_LEVEL = 18000;
-   public static MapCodec<TrialSpawnerData> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC_SET.lenientOptionalFieldOf("registered_players", Sets.newHashSet()).forGetter((var0x) -> var0x.detectedPlayers), UUIDUtil.CODEC_SET.lenientOptionalFieldOf("current_mobs", Sets.newHashSet()).forGetter((var0x) -> var0x.currentMobs), Codec.LONG.lenientOptionalFieldOf("cooldown_ends_at", 0L).forGetter((var0x) -> var0x.cooldownEndsAt), Codec.LONG.lenientOptionalFieldOf("next_mob_spawns_at", 0L).forGetter((var0x) -> var0x.nextMobSpawnsAt), Codec.intRange(0, 2147483647).lenientOptionalFieldOf("total_mobs_spawned", 0).forGetter((var0x) -> var0x.totalMobsSpawned), SpawnData.CODEC.lenientOptionalFieldOf("spawn_data").forGetter((var0x) -> var0x.nextSpawnData), ResourceKey.codec(Registries.LOOT_TABLE).lenientOptionalFieldOf("ejecting_loot_table").forGetter((var0x) -> var0x.ejectingLootTable)).apply(var0, TrialSpawnerData::new));
+   public static MapCodec<TrialSpawnerData> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC_SET.lenientOptionalFieldOf("registered_players", Sets.newHashSet()).forGetter((var0x) -> var0x.detectedPlayers), UUIDUtil.CODEC_SET.lenientOptionalFieldOf("current_mobs", Sets.newHashSet()).forGetter((var0x) -> var0x.currentMobs), Codec.LONG.lenientOptionalFieldOf("cooldown_ends_at", 0L).forGetter((var0x) -> var0x.cooldownEndsAt), Codec.LONG.lenientOptionalFieldOf("next_mob_spawns_at", 0L).forGetter((var0x) -> var0x.nextMobSpawnsAt), Codec.intRange(0, 2147483647).lenientOptionalFieldOf("total_mobs_spawned", 0).forGetter((var0x) -> var0x.totalMobsSpawned), SpawnData.CODEC.lenientOptionalFieldOf("spawn_data").forGetter((var0x) -> var0x.nextSpawnData), LootTable.KEY_CODEC.lenientOptionalFieldOf("ejecting_loot_table").forGetter((var0x) -> var0x.ejectingLootTable)).apply(var0, TrialSpawnerData::new));
    protected final Set<UUID> detectedPlayers;
    protected final Set<UUID> currentMobs;
    protected long cooldownEndsAt;

@@ -59,6 +59,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -71,7 +72,7 @@ public class ExtraCodecs {
    public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS;
    public static final Codec<AxisAngle4f> AXISANGLE4F;
    public static final Codec<Quaternionf> QUATERNIONF;
-   public static final Codec<Matrix4f> MATRIX4F;
+   public static final Codec<Matrix4fc> MATRIX4F;
    public static final Codec<Integer> RGB_COLOR_CODEC;
    public static final Codec<Integer> ARGB_COLOR_CODEC;
    public static final Codec<Integer> UNSIGNED_BYTE;
@@ -407,6 +408,18 @@ public class ExtraCodecs {
             return this.encode((Optional)var1, var2, var3);
          }
       };
+   }
+
+   /** @deprecated */
+   @Deprecated
+   public static <E extends Enum<E>> Codec<E> legacyEnum(Function<String, E> var0) {
+      return Codec.STRING.comapFlatMap((var1) -> {
+         try {
+            return DataResult.success((Enum)var0.apply(var1));
+         } catch (IllegalArgumentException var3) {
+            return DataResult.error(() -> "No value with id: " + var1);
+         }
+      }, Enum::toString);
    }
 
    static {

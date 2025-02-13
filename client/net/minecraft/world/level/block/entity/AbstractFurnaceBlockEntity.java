@@ -1,21 +1,21 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -56,6 +56,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    public static final int NUM_DATA_VALUES = 4;
    public static final int BURN_TIME_STANDARD = 200;
    public static final int BURN_COOL_SPEED = 2;
+   private static final Codec<Map<ResourceKey<Recipe<?>>, Integer>> RECIPES_USED_CODEC;
    protected NonNullList<ItemStack> items;
    int litTimeRemaining;
    int litTotalTime;
@@ -119,12 +120,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       this.cookingTotalTime = var1.getShort("cooking_total_time");
       this.litTimeRemaining = var1.getShort("lit_time_remaining");
       this.litTotalTime = var1.getShort("lit_total_time");
-      CompoundTag var3 = var1.getCompound("RecipesUsed");
-
-      for(String var5 : var3.getAllKeys()) {
-         this.recipesUsed.put(ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var5)), var3.getInt(var5));
-      }
-
+      this.recipesUsed.clear();
+      this.recipesUsed.putAll((Map)var1.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -134,9 +131,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       var1.putShort("lit_time_remaining", (short)this.litTimeRemaining);
       var1.putShort("lit_total_time", (short)this.litTotalTime);
       ContainerHelper.saveAllItems(var1, this.items, var2);
-      CompoundTag var3 = new CompoundTag();
-      this.recipesUsed.forEach((var1x, var2x) -> var3.putInt(var1x.location().toString(), var2x));
-      var1.put("RecipesUsed", var3);
+      var1.store("RecipesUsed", RECIPES_USED_CODEC, this.recipesUsed);
    }
 
    public static void serverTick(ServerLevel var0, BlockPos var1, BlockState var2, AbstractFurnaceBlockEntity var3) {
@@ -386,5 +381,9 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          this.getRecipesToAwardAndPopExperience(var3, Vec3.atCenterOf(var1));
       }
 
+   }
+
+   static {
+      RECIPES_USED_CODEC = Codec.unboundedMap(Recipe.KEY_CODEC, Codec.INT);
    }
 }

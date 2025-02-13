@@ -4,12 +4,12 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -107,8 +107,9 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.putShort("fuse", (short)this.getFuse());
-      var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
+      var1.store("block_state", BlockState.CODEC, var2, this.getBlockState());
       if (this.explosionPower != 4.0F) {
          var1.putFloat("explosion_power", this.explosionPower);
       }
@@ -116,11 +117,9 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.setFuse(var1.getShort("fuse"));
-      if (var1.contains("block_state", 10)) {
-         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
-      }
-
+      this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(Blocks.TNT.defaultBlockState()));
       if (var1.contains("explosion_power", 99)) {
          this.explosionPower = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
       }

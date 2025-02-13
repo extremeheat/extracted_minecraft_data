@@ -111,7 +111,9 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var4.isAbove(Shapes.block(), var3, true) && !var4.isDescending()) {
+      if (var4.isPlacement()) {
+         return Shapes.empty();
+      } else if (var4.isAbove(Shapes.block(), var3, true) && !var4.isDescending()) {
          return SHAPE_STABLE;
       } else {
          return (Integer)var1.getValue(DISTANCE) != 0 && (Boolean)var1.getValue(BOTTOM) && var4.isAbove(SHAPE_BELOW_BLOCK, var3, true) ? SHAPE_UNSTABLE_BOTTOM : Shapes.empty();

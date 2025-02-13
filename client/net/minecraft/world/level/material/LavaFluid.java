@@ -12,6 +12,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -100,6 +103,11 @@ public abstract class LavaFluid extends FlowingFluid {
 
          }
       }
+   }
+
+   protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+      var4.apply(InsideBlockEffectType.LAVA_IGNITE);
+      var4.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
    }
 
    private boolean hasFlammableNeighbours(LevelReader var1, BlockPos var2) {

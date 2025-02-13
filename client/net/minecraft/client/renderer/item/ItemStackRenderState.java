@@ -1,21 +1,27 @@
 package net.minecraft.client.renderer.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class ItemStackRenderState {
    ItemDisplayContext displayContext;
-   boolean isLeftHand;
    private int activeLayerCount;
    private LayerRenderState[] layers;
 
@@ -45,7 +51,6 @@ public class ItemStackRenderState {
 
    public void clear() {
       this.displayContext = ItemDisplayContext.NONE;
-      this.isLeftHand = false;
 
       for(int var1 = 0; var1 < this.activeLayerCount; ++var1) {
          this.layers[var1].clear();
@@ -62,26 +67,32 @@ public class ItemStackRenderState {
       return this.activeLayerCount == 0;
    }
 
-   public boolean isGui3d() {
-      return this.firstLayer().isGui3d();
-   }
-
    public boolean usesBlockLight() {
-      return this.firstLayer().usesBlockLight();
+      return this.firstLayer().usesBlockLight;
    }
 
    @Nullable
    public TextureAtlasSprite pickParticleIcon(RandomSource var1) {
-      if (this.activeLayerCount == 0) {
-         return null;
-      } else {
-         BakedModel var2 = this.layers[var1.nextInt(this.activeLayerCount)].model;
-         return var2 == null ? null : var2.getParticleIcon();
-      }
+      return this.activeLayerCount == 0 ? null : this.layers[var1.nextInt(this.activeLayerCount)].particleIcon;
    }
 
-   public ItemTransform transform() {
-      return this.firstLayer().transform();
+   public void visitExtents(Consumer<Vector3fc> var1) {
+      Vector3f var2 = new Vector3f();
+      PoseStack.Pose var3 = new PoseStack.Pose();
+
+      for(int var4 = 0; var4 < this.activeLayerCount; ++var4) {
+         LayerRenderState var5 = this.layers[var4];
+         var5.transform.apply(this.displayContext.leftHand(), var3);
+         Matrix4f var6 = var3.pose();
+         Vector3f[] var7 = (Vector3f[])var5.extents.get();
+
+         for(Vector3f var11 : var7) {
+            var1.accept(var2.set(var11).mulPosition(var6));
+         }
+
+         var3.setIdentity();
+      }
+
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, int var4) {
@@ -106,8 +117,13 @@ public class ItemStackRenderState {
    }
 
    public class LayerRenderState {
+      private static final Vector3f[] NO_EXTENTS = new Vector3f[0];
+      public static final Supplier<Vector3f[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
+      private final List<BakedQuad> quads = new ArrayList();
+      boolean usesBlockLight;
       @Nullable
-      BakedModel model;
+      TextureAtlasSprite particleIcon;
+      ItemTransform transform;
       @Nullable
       private RenderType renderType;
       private FoilType foilType;
@@ -116,29 +132,54 @@ public class ItemStackRenderState {
       private SpecialModelRenderer<Object> specialRenderer;
       @Nullable
       private Object argumentForSpecialRendering;
+      Supplier<Vector3f[]> extents;
 
       public LayerRenderState() {
          super();
+         this.transform = ItemTransform.NO_TRANSFORM;
          this.foilType = ItemStackRenderState.FoilType.NONE;
          this.tintLayers = new int[0];
+         this.extents = NO_EXTENTS_SUPPLIER;
       }
 
       public void clear() {
-         this.model = null;
+         this.quads.clear();
          this.renderType = null;
          this.foilType = ItemStackRenderState.FoilType.NONE;
          this.specialRenderer = null;
          this.argumentForSpecialRendering = null;
          Arrays.fill(this.tintLayers, -1);
+         this.usesBlockLight = false;
+         this.particleIcon = null;
+         this.transform = ItemTransform.NO_TRANSFORM;
+         this.extents = NO_EXTENTS_SUPPLIER;
       }
 
-      public void setupBlockModel(BakedModel var1, RenderType var2) {
-         this.model = var1;
-         this.renderType = var2;
+      public List<BakedQuad> prepareQuadList() {
+         return this.quads;
       }
 
-      public <T> void setupSpecialModel(SpecialModelRenderer<T> var1, @Nullable T var2, BakedModel var3) {
-         this.model = var3;
+      public void setRenderType(RenderType var1) {
+         this.renderType = var1;
+      }
+
+      public void setUsesBlockLight(boolean var1) {
+         this.usesBlockLight = var1;
+      }
+
+      public void setExtents(Supplier<Vector3f[]> var1) {
+         this.extents = var1;
+      }
+
+      public void setParticleIcon(TextureAtlasSprite var1) {
+         this.particleIcon = var1;
+      }
+
+      public void setTransform(ItemTransform var1) {
+         this.transform = var1;
+      }
+
+      public <T> void setupSpecialModel(SpecialModelRenderer<T> var1, @Nullable T var2) {
          this.specialRenderer = eraseSpecialRenderer(var1);
          this.argumentForSpecialRendering = var2;
       }
@@ -160,29 +201,16 @@ public class ItemStackRenderState {
          return this.tintLayers;
       }
 
-      ItemTransform transform() {
-         return this.model != null ? this.model.getTransforms().getTransform(ItemStackRenderState.this.displayContext) : ItemTransform.NO_TRANSFORM;
-      }
-
       void render(PoseStack var1, MultiBufferSource var2, int var3, int var4) {
          var1.pushPose();
-         this.transform().apply(ItemStackRenderState.this.isLeftHand, var1);
-         var1.translate(-0.5F, -0.5F, -0.5F);
+         this.transform.apply(ItemStackRenderState.this.displayContext.leftHand(), var1.last());
          if (this.specialRenderer != null) {
             this.specialRenderer.render(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.foilType != ItemStackRenderState.FoilType.NONE);
-         } else if (this.model != null) {
-            ItemRenderer.renderItem(ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.tintLayers, this.model, this.renderType, this.foilType);
+         } else if (this.renderType != null) {
+            ItemRenderer.renderItem(ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.tintLayers, this.quads, this.renderType, this.foilType);
          }
 
          var1.popPose();
-      }
-
-      boolean isGui3d() {
-         return this.model != null && this.model.isGui3d();
-      }
-
-      boolean usesBlockLight() {
-         return this.model != null && this.model.usesBlockLight();
       }
    }
 }

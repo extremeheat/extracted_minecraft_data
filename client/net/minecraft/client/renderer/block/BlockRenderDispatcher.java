@@ -10,8 +10,8 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SpecialBlockModelRenderer;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -45,7 +45,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
 
    public void renderBreakingTexture(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5) {
       if (var1.getRenderShape() == RenderShape.MODEL) {
-         BakedModel var6 = this.blockModelShaper.getBlockModel(var1);
+         BlockStateModel var6 = this.blockModelShaper.getBlockModel(var1);
          long var7 = var1.getSeed(var2);
          this.modelRenderer.tesselateBlock(var3, var6, var1, var2, var4, var5, true, this.random, var7, OverlayTexture.NO_OVERLAY);
       }
@@ -77,14 +77,14 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       return this.modelRenderer;
    }
 
-   public BakedModel getBlockModel(BlockState var1) {
+   public BlockStateModel getBlockModel(BlockState var1) {
       return this.blockModelShaper.getBlockModel(var1);
    }
 
    public void renderSingleBlock(BlockState var1, PoseStack var2, MultiBufferSource var3, int var4, int var5) {
       RenderShape var6 = var1.getRenderShape();
       if (var6 != RenderShape.INVISIBLE) {
-         BakedModel var7 = this.getBlockModel(var1);
+         BlockStateModel var7 = this.getBlockModel(var1);
          int var8 = this.blockColors.getColor(var1, (BlockAndTintGetter)null, (BlockPos)null, 0);
          float var9 = (float)(var8 >> 16 & 255) / 255.0F;
          float var10 = (float)(var8 >> 8 & 255) / 255.0F;

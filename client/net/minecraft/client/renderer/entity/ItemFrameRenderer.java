@@ -7,14 +7,13 @@ import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.BlockStateModelLoader;
-import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.resources.model.BlockStateDefinitions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, ItemFrameRenderState> {
    public static final int GLOW_FRAME_BRIGHTNESS = 5;
@@ -64,14 +64,14 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          var10 = 180.0F;
       }
 
-      var2.mulPose(Axis.XP.rotationDegrees(var9));
-      var2.mulPose(Axis.YP.rotationDegrees(var10));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var9));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var10));
       if (!var1.isInvisible) {
-         ModelManager var11 = this.blockRenderer.getBlockModelShaper().getModelManager();
-         ModelResourceLocation var12 = getFrameModelResourceLocation(var1);
+         BlockState var11 = BlockStateDefinitions.getItemFrameFakeState(var1.isGlowFrame, var1.mapId != null);
+         BlockStateModel var12 = this.blockRenderer.getBlockModel(var11);
          var2.pushPose();
          var2.translate(-0.5F, -0.5F, -0.5F);
-         this.blockRenderer.getModelRenderer().renderModel(var2.last(), var3.getBuffer(RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS)), (BlockState)null, var11.getModel(var12), 1.0F, 1.0F, 1.0F, var4, OverlayTexture.NO_OVERLAY);
+         this.blockRenderer.getModelRenderer().renderModel(var2.last(), var3.getBuffer(RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS)), var11, var12, 1.0F, 1.0F, 1.0F, var4, OverlayTexture.NO_OVERLAY);
          var2.popPose();
       }
 
@@ -83,8 +83,8 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
 
       if (var1.mapId != null) {
          int var14 = var1.rotation % 4 * 2;
-         var2.mulPose(Axis.ZP.rotationDegrees((float)var14 * 360.0F / 8.0F));
-         var2.mulPose(Axis.ZP.rotationDegrees(180.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var14 * 360.0F / 8.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
          float var16 = 0.0078125F;
          var2.scale(0.0078125F, 0.0078125F, 0.0078125F);
          var2.translate(-64.0F, -64.0F, 0.0F);
@@ -92,7 +92,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          int var13 = this.getLightCoords(var1.isGlowFrame, 15728850, var4);
          this.mapRenderer.render(var1.mapRenderState, var2, var3, true, var13);
       } else if (!var1.item.isEmpty()) {
-         var2.mulPose(Axis.ZP.rotationDegrees((float)var1.rotation * 360.0F / 8.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var1.rotation * 360.0F / 8.0F));
          int var15 = this.getLightCoords(var1.isGlowFrame, 15728880, var4);
          var2.scale(0.5F, 0.5F, 0.5F);
          var1.item.render(var2, var3, var15, OverlayTexture.NO_OVERLAY);
@@ -103,14 +103,6 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
 
    private int getLightCoords(boolean var1, int var2, int var3) {
       return var1 ? var2 : var3;
-   }
-
-   private static ModelResourceLocation getFrameModelResourceLocation(ItemFrameRenderState var0) {
-      if (var0.mapId != null) {
-         return var0.isGlowFrame ? BlockStateModelLoader.GLOW_MAP_FRAME_LOCATION : BlockStateModelLoader.MAP_FRAME_LOCATION;
-      } else {
-         return var0.isGlowFrame ? BlockStateModelLoader.GLOW_FRAME_LOCATION : BlockStateModelLoader.FRAME_LOCATION;
-      }
    }
 
    public Vec3 getRenderOffset(ItemFrameRenderState var1) {

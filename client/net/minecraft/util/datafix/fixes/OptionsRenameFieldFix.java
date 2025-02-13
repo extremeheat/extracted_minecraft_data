@@ -2,10 +2,8 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
-import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 
 public class OptionsRenameFieldFix extends DataFix {
    private final String fixName;
@@ -20,6 +18,6 @@ public class OptionsRenameFieldFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.fixName, this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> (Dynamic)DataFixUtils.orElse(var1x.get(this.fieldFrom).result().map((var2) -> var1x.set(this.fieldTo, var2).remove(this.fieldFrom)), var1x)));
+      return this.fixTypeEverywhereTyped(this.fixName, this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.renameField(this.fieldFrom, this.fieldTo)));
    }
 }

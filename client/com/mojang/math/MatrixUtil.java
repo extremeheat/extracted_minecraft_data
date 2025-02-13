@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -132,15 +133,31 @@ public class MatrixUtil {
       return Triple.of(var9, var18, var2.conjugate());
    }
 
-   public static boolean isIdentity(Matrix4f var0) {
-      return (var0.properties() & 4) != 0;
+   private static boolean checkPropertyRaw(Matrix4fc var0, int var1) {
+      return (var0.properties() & var1) != 0;
    }
 
-   public static boolean isPureTranslation(Matrix4f var0) {
-      return (var0.properties() & 8) != 0;
+   public static boolean checkProperty(Matrix4fc var0, int var1) {
+      if (checkPropertyRaw(var0, var1)) {
+         return true;
+      } else if (var0 instanceof Matrix4f) {
+         Matrix4f var2 = (Matrix4f)var0;
+         var2.determineProperties();
+         return checkPropertyRaw(var0, var1);
+      } else {
+         return false;
+      }
    }
 
-   public static boolean isOrthonormal(Matrix4f var0) {
-      return (var0.properties() & 16) != 0;
+   public static boolean isIdentity(Matrix4fc var0) {
+      return checkProperty(var0, 4);
+   }
+
+   public static boolean isPureTranslation(Matrix4fc var0) {
+      return checkProperty(var0, 8);
+   }
+
+   public static boolean isOrthonormal(Matrix4fc var0) {
+      return checkProperty(var0, 16);
    }
 }

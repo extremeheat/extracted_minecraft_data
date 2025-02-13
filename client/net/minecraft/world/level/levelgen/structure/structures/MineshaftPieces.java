@@ -651,13 +651,13 @@ public class MineshaftPieces {
       public MineShaftCrossing(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_CROSSING, var1);
          this.isTwoFloored = var1.getBoolean("tf");
-         this.direction = Direction.from2DDataValue(var1.getInt("D"));
+         this.direction = (Direction)var1.read("D", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
          var2.putBoolean("tf", this.isTwoFloored);
-         var2.putInt("D", this.direction.get2DDataValue());
+         var2.store("D", Direction.LEGACY_ID_CODEC_2D, this.direction);
       }
 
       public MineShaftCrossing(int var1, BoundingBox var2, @Nullable Direction var3, MineshaftStructure.Type var4) {

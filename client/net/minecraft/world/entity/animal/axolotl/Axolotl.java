@@ -3,9 +3,11 @@ package net.minecraft.world.entity.animal.axolotl;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
@@ -110,13 +112,13 @@ public class Axolotl extends Animal implements Bucketable {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant().getId());
+      var1.store("Variant", Axolotl.Variant.LEGACY_CODEC, this.getVariant());
       var1.putBoolean("FromBucket", this.fromBucket());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Axolotl.Variant.byId(var1.getInt("Variant")));
+      this.setVariant((Variant)var1.read("Variant", Axolotl.Variant.LEGACY_CODEC).orElse(Axolotl.Variant.LUCY));
       this.setFromBucket(var1.getBoolean("FromBucket"));
    }
 
@@ -495,6 +497,9 @@ public class Axolotl extends Animal implements Bucketable {
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Variant> LEGACY_CODEC;
       private final int id;
       private final String name;
       private final boolean common;
@@ -537,6 +542,13 @@ public class Axolotl extends Animal implements Bucketable {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{LUCY, WILD, GOLD, CYAN, BLUE};
+      }
+
+      static {
+         PrimitiveCodec var10000 = Codec.INT;
+         IntFunction var10001 = BY_ID;
+         Objects.requireNonNull(var10001);
+         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::getId);
       }
    }
 

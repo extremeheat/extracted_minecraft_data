@@ -6,13 +6,13 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -33,6 +33,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.gossip.GossipContainer;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
@@ -61,7 +62,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    @Nullable
    private UUID conversionStarter;
    @Nullable
-   private Tag gossips;
+   private GossipContainer gossips;
    @Nullable
    private MerchantOffers tradeOffers;
    private int villagerXp;
@@ -80,19 +81,10 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
-      if (this.tradeOffers != null) {
-         var1.store("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers);
-      }
-
-      if (this.gossips != null) {
-         var1.put("Gossips", this.gossips);
-      }
-
+      var1.storeNullable("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers);
+      var1.storeNullable("Gossips", GossipContainer.CODEC, this.gossips);
       var1.putInt("ConversionTime", this.isConverting() ? this.villagerConversionTime : -1);
-      if (this.conversionStarter != null) {
-         var1.putUUID("ConversionPlayer", this.conversionStarter);
-      }
-
+      var1.storeNullable("ConversionPlayer", UUIDUtil.CODEC, this.conversionStarter);
       var1.putInt("Xp", this.villagerXp);
    }
 
@@ -100,12 +92,10 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       super.readAdditionalSaveData(var1);
       this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
       this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse((Object)null);
-      if (var1.contains("Gossips", 9)) {
-         this.gossips = var1.getList("Gossips", 10);
-      }
-
+      this.gossips = (GossipContainer)var1.read("Gossips", GossipContainer.CODEC).orElse((Object)null);
       if (var1.contains("ConversionTime", 99) && var1.getInt("ConversionTime") > -1) {
-         this.startConverting(var1.hasUUID("ConversionPlayer") ? var1.getUUID("ConversionPlayer") : null, var1.getInt("ConversionTime"));
+         UUID var2 = (UUID)var1.read("ConversionPlayer", UUIDUtil.CODEC).orElse((Object)null);
+         this.startConverting(var2, var1.getInt("ConversionTime"));
       }
 
       if (var1.contains("Xp", 3)) {
@@ -269,7 +259,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.tradeOffers = var1;
    }
 
-   public void setGossips(Tag var1) {
+   public void setGossips(GossipContainer var1) {
       this.gossips = var1;
    }
 

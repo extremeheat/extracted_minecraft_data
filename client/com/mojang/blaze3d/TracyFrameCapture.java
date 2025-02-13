@@ -18,7 +18,7 @@ public class TracyFrameCapture implements AutoCloseable {
    private int targetHeight;
    private int width;
    private int height;
-   private final RenderTarget frameBuffer = new TextureTarget(320, 180, false);
+   private final RenderTarget frameBuffer = new TextureTarget("Tracy Frame Capture", 320, 180, false);
    private final GpuBuffer pixelbuffer;
    @Nullable
    private GpuFence fence;

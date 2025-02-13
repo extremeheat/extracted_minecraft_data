@@ -1,5 +1,8 @@
 package net.minecraft.world.phys;
 
+import com.mojang.serialization.Codec;
+import java.util.List;
+import net.minecraft.Util;
 import net.minecraft.util.Mth;
 
 public class Vec2 {
@@ -11,6 +14,7 @@ public class Vec2 {
    public static final Vec2 NEG_UNIT_Y = new Vec2(0.0F, -1.0F);
    public static final Vec2 MAX = new Vec2(3.4028235E38F, 3.4028235E38F);
    public static final Vec2 MIN = new Vec2(1.4E-45F, 1.4E-45F);
+   public static final Codec<Vec2> CODEC;
    public final float x;
    public final float y;
 
@@ -61,5 +65,9 @@ public class Vec2 {
 
    public Vec2 negated() {
       return new Vec2(-this.x, -this.y);
+   }
+
+   static {
+      CODEC = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 2).map((var0x) -> new Vec2((Float)var0x.get(0), (Float)var0x.get(1))), (var0) -> List.of(var0.x, var0.y));
    }
 }

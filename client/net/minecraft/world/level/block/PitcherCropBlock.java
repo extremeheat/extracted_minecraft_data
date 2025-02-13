@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.item.ItemStack;
@@ -101,14 +102,13 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       super.createBlockStateDefinition(var1);
    }
 
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var2 instanceof ServerLevel var5) {
-         if (var4 instanceof Ravager && var5.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            var5.destroyBlock(var3, true, var4);
+   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (var2 instanceof ServerLevel var6) {
+         if (var4 instanceof Ravager && var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            var6.destroyBlock(var3, true, var4);
          }
       }
 
-      super.entityInside(var1, var2, var3, var4);
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {

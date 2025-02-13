@@ -53,9 +53,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -99,22 +99,13 @@ public class TestCommand {
       CommandSourceStack var1 = var0.source();
       ServerLevel var2 = var1.getLevel();
       GameTestRunner.clearMarkers(var2);
-      Stream var3 = var0.findTestPos();
-      int var4 = var3.mapToInt((var1x) -> {
-         BlockEntity var3 = var2.getBlockEntity(var1x);
-         if (var3 instanceof TestInstanceBlockEntity var2x) {
-            BoundingBox var4 = var2x.getStructureBoundingBox();
-            StructureUtils.clearSpaceForStructure(var4, var2);
-            return 1;
-         } else {
-            return 0;
-         }
-      }).sum();
-      if (var4 == 0) {
+      List var3 = var0.findTestPos().flatMap((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK).stream()).map(TestInstanceBlockEntity::getStructureBoundingBox).toList();
+      var3.forEach((var1x) -> StructureUtils.clearSpaceForStructure(var1x, var2));
+      if (var3.isEmpty()) {
          throw CLEAR_NO_TESTS.create();
       } else {
-         var1.sendSuccess(() -> Component.translatable("commands.test.clear.success", var4), true);
-         return var4;
+         var1.sendSuccess(() -> Component.translatable("commands.test.clear.success", var3.size()), true);
+         return var3.size();
       }
    }
 
@@ -312,7 +303,7 @@ public class TestCommand {
          BlockPos var8 = var7.getStructurePos();
          BlockPos var9 = var8.offset(var2 - 1, 0, var4 - 1);
          BlockPos.betweenClosedStream(var8, var9).forEach((var1x) -> var5.setBlockAndUpdate(var1x, Blocks.BEDROCK.defaultBlockState()));
-         var0.sendSuccess(() -> Component.translatable("commands.test.success", var7.getTestName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.test.create.success", var7.getTestName()), true);
          return 1;
       } else {
          throw TOO_LARGE.create(48);

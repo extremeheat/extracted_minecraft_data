@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -91,6 +92,16 @@ public final class JigsawStructure extends Structure {
 
    public StructureType<?> type() {
       return StructureType.JIGSAW;
+   }
+
+   @VisibleForTesting
+   public Holder<StructureTemplatePool> getStartPool() {
+      return this.startPool;
+   }
+
+   @VisibleForTesting
+   public List<PoolAliasBinding> getPoolAliases() {
+      return this.poolAliases;
    }
 
    static {

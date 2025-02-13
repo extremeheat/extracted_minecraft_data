@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.TntRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
+import org.joml.Quaternionfc;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
    private final BlockRenderDispatcher blockRenderer;
@@ -31,9 +32,9 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
          var2.scale(var7, var7, var7);
       }
 
-      var2.mulPose(Axis.YP.rotationDegrees(-90.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
       var2.translate(-0.5F, -0.5F, 0.5F);
-      var2.mulPose(Axis.YP.rotationDegrees(90.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
       if (var1.blockState != null) {
          TntMinecartRenderer.renderWhiteSolidBlock(this.blockRenderer, var1.blockState, var2, var3, var4, (int)var5 / 5 % 2 == 0);
       }

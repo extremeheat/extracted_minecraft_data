@@ -7,7 +7,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.phys.Vec3;
 
 public record SheepPredicate(Optional<Boolean> sheared) implements EntitySubPredicate {

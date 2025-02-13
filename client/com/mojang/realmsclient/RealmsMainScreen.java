@@ -85,6 +85,7 @@ import net.minecraft.util.CommonLinks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameType;
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Quaternionfc;
 import org.slf4j.Logger;
 
 public class RealmsMainScreen extends RealmsScreen {
@@ -648,7 +649,7 @@ public class RealmsMainScreen extends RealmsScreen {
    private void renderEnvironment(GuiGraphics var1, String var2, int var3) {
       var1.pose().pushPose();
       var1.pose().translate((float)(this.width / 2 - 25), 20.0F, 0.0F);
-      var1.pose().mulPose(Axis.ZP.rotationDegrees(-20.0F));
+      var1.pose().mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-20.0F));
       var1.pose().scale(1.5F, 1.5F, 1.5F);
       var1.drawString(this.font, (String)var2, 0, 0, var3);
       var1.pose().popPose();

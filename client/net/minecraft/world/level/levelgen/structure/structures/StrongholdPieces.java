@@ -1,11 +1,13 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
@@ -211,11 +213,11 @@ public class StrongholdPieces {
       public StrongholdPiece(StructurePieceType var1, CompoundTag var2) {
          super(var1, var2);
          this.entryDoor = StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING;
-         this.entryDoor = StrongholdPieces.StrongholdPiece.SmallDoorType.valueOf(var2.getString("EntryDoor"));
+         this.entryDoor = (SmallDoorType)var2.read("EntryDoor", StrongholdPieces.StrongholdPiece.SmallDoorType.LEGACY_CODEC).orElseThrow();
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
-         var2.putString("EntryDoor", this.entryDoor.name());
+         var2.store("EntryDoor", StrongholdPieces.StrongholdPiece.SmallDoorType.LEGACY_CODEC, this.entryDoor);
       }
 
       protected void generateSmallDoor(WorldGenLevel var1, RandomSource var2, BoundingBox var3, SmallDoorType var4, int var5, int var6, int var7) {
@@ -355,6 +357,10 @@ public class StrongholdPieces {
          WOOD_DOOR,
          GRATES,
          IRON_DOOR;
+
+         /** @deprecated */
+         @Deprecated
+         public static final Codec<SmallDoorType> LEGACY_CODEC = ExtraCodecs.<SmallDoorType>legacyEnum(SmallDoorType::valueOf);
 
          private SmallDoorType() {
          }

@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBlockEntity> {
    private final ItemRenderer itemRenderer;
@@ -33,9 +34,9 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
                   var3.translate(0.0F, 0.5F, 0.0F);
                   float[] var11 = this.translations(var9, var8);
                   var3.translate(var11[0], var11[1], var11[2]);
-                  var3.mulPose(Axis.YP.rotationDegrees(75.0F));
+                  var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(75.0F));
                   boolean var12 = var9 == Direction.EAST || var9 == Direction.WEST;
-                  var3.mulPose(Axis.YP.rotationDegrees((float)((var12 ? 90 : 0) + 11)));
+                  var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((var12 ? 90 : 0) + 11)));
                   var3.scale(0.5F, 0.5F, 0.5F);
                   int var13 = LevelRenderer.getLightColor(var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var9));
                   this.itemRenderer.renderStatic(var10, ItemDisplayContext.FIXED, var13, OverlayTexture.NO_OVERLAY, var3, var4, var1.getLevel(), 0);

@@ -4,18 +4,14 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.world.level.ChunkPos;
 
 public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
    private final Queue<ScheduledTick<T>> tickQueue;
@@ -115,16 +111,6 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       return var3;
    }
 
-   public ListTag save(long var1, Function<T, String> var3) {
-      ListTag var4 = new ListTag();
-
-      for(SavedTick var7 : this.pack(var1)) {
-         var4.add(var7.save(var3));
-      }
-
-      return var4;
-   }
-
    public void unpack(long var1) {
       if (this.pendingTicks != null) {
          int var3 = -this.pendingTicks.size();
@@ -135,9 +121,5 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       }
 
       this.pendingTicks = null;
-   }
-
-   public static <T> LevelChunkTicks<T> load(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2) {
-      return new LevelChunkTicks<T>(SavedTick.loadTickList(var0, var1, var2));
    }
 }

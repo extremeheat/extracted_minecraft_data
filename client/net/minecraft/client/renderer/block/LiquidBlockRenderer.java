@@ -33,9 +33,9 @@ public class LiquidBlockRenderer {
    }
 
    protected void setupSprites() {
-      this.lavaIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).getParticleIcon();
+      this.lavaIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
       this.lavaIcons[1] = ModelBakery.LAVA_FLOW.sprite();
-      this.waterIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).getParticleIcon();
+      this.waterIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
       this.waterIcons[1] = ModelBakery.WATER_FLOW.sprite();
       this.waterOverlay = ModelBakery.WATER_OVERLAY.sprite();
    }

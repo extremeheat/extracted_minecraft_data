@@ -20,9 +20,11 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S extends MinecartRenderState> extends EntityRenderer<T, S> {
    private static final ResourceLocation MINECART_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/minecart.png");
+   private static final float DISPLAY_BLOCK_SCALE = 0.75F;
    protected final MinecartModel model;
    private final BlockRenderDispatcher blockRenderer;
 
@@ -49,30 +51,29 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
       float var10 = var1.hurtTime;
       if (var10 > 0.0F) {
-         var2.mulPose(Axis.XP.rotationDegrees(Mth.sin(var10) * var10 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var10) * var10 * var1.damageTime / 10.0F * (float)var1.hurtDir));
       }
 
       BlockState var11 = var1.displayBlockState;
       if (var11.getRenderShape() != RenderShape.INVISIBLE) {
          var2.pushPose();
-         float var12 = 0.75F;
          var2.scale(0.75F, 0.75F, 0.75F);
          var2.translate(-0.5F, (float)(var1.displayOffset - 8) / 16.0F, 0.5F);
-         var2.mulPose(Axis.YP.rotationDegrees(90.0F));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
          this.renderMinecartContents(var1, var11, var2, var3, var4);
          var2.popPose();
       }
 
       var2.scale(-1.0F, -1.0F, 1.0F);
       this.model.setupAnim(var1);
-      VertexConsumer var13 = var3.getBuffer(this.model.renderType(MINECART_LOCATION));
-      this.model.renderToBuffer(var2, var13, var4, OverlayTexture.NO_OVERLAY);
+      VertexConsumer var12 = var3.getBuffer(this.model.renderType(MINECART_LOCATION));
+      this.model.renderToBuffer(var2, var12, var4, OverlayTexture.NO_OVERLAY);
       var2.popPose();
    }
 
    private static <S extends MinecartRenderState> void newRender(S var0, PoseStack var1) {
-      var1.mulPose(Axis.YP.rotationDegrees(var0.yRot));
-      var1.mulPose(Axis.ZP.rotationDegrees(-var0.xRot));
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var0.yRot));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-var0.xRot));
       var1.translate(0.0F, 0.375F, 0.0F);
    }
 
@@ -95,8 +96,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       }
 
       var1.translate(0.0F, 0.375F, 0.0F);
-      var1.mulPose(Axis.YP.rotationDegrees(180.0F - var9));
-      var1.mulPose(Axis.ZP.rotationDegrees(-var8));
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var9));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-var8));
    }
 
    public void extractRenderState(T var1, S var2, float var3) {
@@ -163,7 +164,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
    protected AABB getBoundingBoxForCulling(T var1) {
       AABB var2 = super.getBoundingBoxForCulling(var1);
-      return var1.hasCustomDisplay() ? var2.inflate((double)Math.abs(var1.getDisplayOffset()) / 16.0) : var2;
+      return !var1.getDisplayBlockState().isAir() ? var2.expandTowards(0.0, (double)((float)var1.getDisplayOffset() * 0.75F / 16.0F), 0.0) : var2;
    }
 
    public Vec3 getRenderOffset(S var1) {

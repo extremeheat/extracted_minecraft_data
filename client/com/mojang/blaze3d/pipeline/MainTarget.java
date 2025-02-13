@@ -1,12 +1,16 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.nio.IntBuffer;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class MainTarget extends RenderTarget {
    public static final int DEFAULT_WIDTH = 854;
@@ -14,94 +18,79 @@ public class MainTarget extends RenderTarget {
    static final Dimension DEFAULT_DIMENSIONS = new Dimension(854, 480);
 
    public MainTarget(int var1, int var2) {
-      super(true);
+      super("Main", true);
       this.createFrameBuffer(var1, var2);
    }
 
    private void createFrameBuffer(int var1, int var2) {
       Dimension var3 = this.allocateAttachments(var1, var2);
-      this.frameBufferId = GlStateManager.glGenFramebuffers();
-      GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
-      GlStateManager._bindTexture(this.colorTextureId);
-      GlStateManager._texParameter(3553, 10241, 9728);
-      GlStateManager._texParameter(3553, 10240, 9728);
-      GlStateManager._texParameter(3553, 10242, 33071);
-      GlStateManager._texParameter(3553, 10243, 33071);
-      GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorTextureId, 0);
-      GlStateManager._bindTexture(this.depthBufferId);
-      GlStateManager._texParameter(3553, 34892, 0);
-      GlStateManager._texParameter(3553, 10241, 9728);
-      GlStateManager._texParameter(3553, 10240, 9728);
-      GlStateManager._texParameter(3553, 10242, 33071);
-      GlStateManager._texParameter(3553, 10243, 33071);
-      GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthBufferId, 0);
-      GlStateManager._bindTexture(0);
-      this.viewWidth = var3.width;
-      this.viewHeight = var3.height;
-      this.width = var3.width;
-      this.height = var3.height;
-      this.checkStatus();
-      GlStateManager._glBindFramebuffer(36160, 0);
+      if (this.colorTexture != null && this.depthTexture != null) {
+         this.frameBufferId = GlStateManager.glGenFramebuffers();
+         GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
+         this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
+         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
+         GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorTexture.glId(), 0);
+         this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
+         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
+         GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthTexture.glId(), 0);
+         GlStateManager._bindTexture(0);
+         this.viewWidth = var3.width;
+         this.viewHeight = var3.height;
+         this.width = var3.width;
+         this.height = var3.height;
+         this.checkStatus();
+         GlStateManager._glBindFramebuffer(36160, 0);
+      } else {
+         throw new IllegalStateException("Missing color and/or depth textures");
+      }
    }
 
    private Dimension allocateAttachments(int var1, int var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      this.colorTextureId = TextureUtil.generateTextureId();
-      this.depthBufferId = TextureUtil.generateTextureId();
-      AttachmentState var3 = MainTarget.AttachmentState.NONE;
+      RenderSystem.assertOnRenderThread();
 
-      for(Dimension var5 : MainTarget.Dimension.listWithFallback(var1, var2)) {
-         var3 = MainTarget.AttachmentState.NONE;
-         if (this.allocateColorAttachment(var5)) {
-            var3 = var3.with(MainTarget.AttachmentState.COLOR);
+      for(Dimension var4 : MainTarget.Dimension.listWithFallback(var1, var2)) {
+         if (this.colorTexture != null) {
+            this.colorTexture.close();
+            this.colorTexture = null;
          }
 
-         if (this.allocateDepthAttachment(var5)) {
-            var3 = var3.with(MainTarget.AttachmentState.DEPTH);
+         if (this.depthTexture != null) {
+            this.depthTexture.close();
+            this.depthTexture = null;
          }
 
-         if (var3 == MainTarget.AttachmentState.COLOR_DEPTH) {
-            return var5;
+         this.colorTexture = this.allocateColorAttachment(var4);
+         this.depthTexture = this.allocateDepthAttachment(var4);
+         if (this.colorTexture != null && this.depthTexture != null) {
+            return var4;
          }
       }
 
-      throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (allocated attachments = " + var3.name() + ")");
+      String var10002 = this.colorTexture == null ? "missing color" : "have color";
+      throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (" + var10002 + ", " + (this.depthTexture == null ? "missing depth" : "have depth") + ")");
    }
 
-   private boolean allocateColorAttachment(Dimension var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+   @Nullable
+   private GpuTexture allocateColorAttachment(Dimension var1) {
+      RenderSystem.assertOnRenderThread();
       GlStateManager._getError();
-      GlStateManager._bindTexture(this.colorTextureId);
-      GlStateManager._texImage2D(3553, 0, 32856, var1.width, var1.height, 0, 6408, 5121, (IntBuffer)null);
-      return GlStateManager._getError() != 1285;
+
+      try {
+         return new GpuTexture(() -> this.label + " / Color", TextureFormat.RGBA8, var1.width, var1.height, 1);
+      } catch (GpuOutOfMemoryException var3) {
+         return null;
+      }
    }
 
-   private boolean allocateDepthAttachment(Dimension var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+   @Nullable
+   private GpuTexture allocateDepthAttachment(Dimension var1) {
+      RenderSystem.assertOnRenderThread();
       GlStateManager._getError();
-      GlStateManager._bindTexture(this.depthBufferId);
-      GlStateManager._texImage2D(3553, 0, 6402, var1.width, var1.height, 0, 6402, 5126, (IntBuffer)null);
-      return GlStateManager._getError() != 1285;
-   }
 
-   static enum AttachmentState {
-      NONE,
-      COLOR,
-      DEPTH,
-      COLOR_DEPTH;
-
-      private static final AttachmentState[] VALUES = values();
-
-      private AttachmentState() {
-      }
-
-      AttachmentState with(AttachmentState var1) {
-         return VALUES[this.ordinal() | var1.ordinal()];
-      }
-
-      // $FF: synthetic method
-      private static AttachmentState[] $values() {
-         return new AttachmentState[]{NONE, COLOR, DEPTH, COLOR_DEPTH};
+      try {
+         return new GpuTexture(() -> this.label + " / Depth", TextureFormat.DEPTH32, var1.width, var1.height, 1);
+      } catch (GpuOutOfMemoryException var3) {
+         return null;
       }
    }
 
@@ -116,7 +105,7 @@ public class MainTarget extends RenderTarget {
       }
 
       static List<Dimension> listWithFallback(int var0, int var1) {
-         RenderSystem.assertOnRenderThreadOrInit();
+         RenderSystem.assertOnRenderThread();
          int var2 = RenderSystem.maxSupportedTextureSize();
          return var0 > 0 && var0 <= var2 && var1 > 0 && var1 <= var2 ? ImmutableList.of(new Dimension(var0, var1), MainTarget.DEFAULT_DIMENSIONS) : ImmutableList.of(MainTarget.DEFAULT_DIMENSIONS);
       }

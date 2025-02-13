@@ -24,6 +24,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
@@ -48,8 +49,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var2.pushPose();
       float var5 = var1.getHistoricalPos(7).yRot();
       float var6 = (float)(var1.getHistoricalPos(5).y() - var1.getHistoricalPos(10).y());
-      var2.mulPose(Axis.YP.rotationDegrees(-var5));
-      var2.mulPose(Axis.XP.rotationDegrees(var6 * 10.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var5));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var6 * 10.0F));
       var2.translate(0.0F, 0.0F, 1.0F);
       var2.scale(-1.0F, -1.0F, 1.0F);
       var2.translate(0.0F, -1.501F, 0.0F);
@@ -100,7 +101,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
 
       for(int var13 = 0; var13 < var12; ++var13) {
          var11.rotationXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F).rotateXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F + var1 * 1.5707964F);
-         var0.mulPose(var11);
+         var0.mulPose((Quaternionfc)var11);
          float var14 = var6.nextFloat() * 20.0F + 5.0F + var3 * 10.0F;
          float var15 = var6.nextFloat() * 2.0F + 1.0F + var3 * 2.0F;
          var8.set(-HALF_SQRT_3 * var15, var14, -0.5F * var15);
@@ -126,8 +127,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       float var8 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2);
       var4.pushPose();
       var4.translate(0.0F, 2.0F, 0.0F);
-      var4.mulPose(Axis.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
-      var4.mulPose(Axis.XP.rotation((float)(-Math.atan2((double)var7, (double)var1)) - 1.5707964F));
+      var4.mulPose((Quaternionfc)Axis.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
+      var4.mulPose((Quaternionfc)Axis.XP.rotation((float)(-Math.atan2((double)var7, (double)var1)) - 1.5707964F));
       VertexConsumer var9 = var5.getBuffer(BEAM);
       float var10 = 0.0F - var3 * 0.01F;
       float var11 = var8 / 32.0F - var3 * 0.01F;

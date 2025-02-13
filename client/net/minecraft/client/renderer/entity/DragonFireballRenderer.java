@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.DragonFireball;
+import org.joml.Quaternionfc;
 
 public class DragonFireballRenderer extends EntityRenderer<DragonFireball, EntityRenderState> {
    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon_fireball.png");
@@ -25,7 +26,7 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
    public void render(EntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
       var2.scale(2.0F, 2.0F, 2.0F);
-      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
       PoseStack.Pose var5 = var2.last();
       VertexConsumer var6 = var3.getBuffer(RENDER_TYPE);
       vertex(var6, var5, var4, 0.0F, 0, 0, 1);

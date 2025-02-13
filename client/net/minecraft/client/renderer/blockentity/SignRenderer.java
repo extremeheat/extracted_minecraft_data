@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class SignRenderer extends AbstractSignRenderer {
    private static final float RENDER_SCALE = 0.6666667F;
@@ -53,7 +54,7 @@ public class SignRenderer extends AbstractSignRenderer {
 
    private static void translateBase(PoseStack var0, float var1) {
       var0.translate(0.5F, 0.5F, 0.5F);
-      var0.mulPose(Axis.YP.rotationDegrees(var1));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1));
    }
 
    protected void translateSign(PoseStack var1, float var2, BlockState var3) {

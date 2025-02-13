@@ -90,7 +90,7 @@ public class SinglePoolElement extends StructurePoolElement {
       for(StructureTemplate.StructureBlockInfo var9 : var6) {
          CompoundTag var10 = var9.nbt();
          if (var10 != null) {
-            StructureMode var11 = StructureMode.valueOf(var10.getString("mode"));
+            StructureMode var11 = (StructureMode)var10.read("mode", StructureMode.LEGACY_CODEC).orElseThrow();
             if (var11 == StructureMode.DATA) {
                var7.add(var9);
             }
@@ -159,6 +159,11 @@ public class SinglePoolElement extends StructurePoolElement {
 
    public String toString() {
       return "Single[" + String.valueOf(this.template) + "]";
+   }
+
+   @VisibleForTesting
+   public ResourceLocation getTemplateLocation() {
+      return (ResourceLocation)this.template.orThrow();
    }
 
    static {

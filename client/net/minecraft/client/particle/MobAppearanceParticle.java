@@ -17,6 +17,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import org.joml.Quaternionfc;
 
 public class MobAppearanceParticle extends Particle {
    private final Model model;
@@ -39,8 +40,8 @@ public class MobAppearanceParticle extends Particle {
       float var6 = 0.05F + 0.5F * Mth.sin(var5 * 3.1415927F);
       int var7 = ARGB.colorFromFloat(var6, 1.0F, 1.0F, 1.0F);
       var1.pushPose();
-      var1.mulPose(var3.rotation());
-      var1.mulPose(Axis.XP.rotationDegrees(60.0F - 150.0F * var5));
+      var1.mulPose((Quaternionfc)var3.rotation());
+      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(60.0F - 150.0F * var5));
       float var8 = 0.42553192F;
       var1.scale(0.42553192F, -0.42553192F, -0.42553192F);
       var1.translate(0.0F, -0.56F, 3.5F);

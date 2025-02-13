@@ -3,6 +3,7 @@ package com.mojang.blaze3d.vertex;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
@@ -188,8 +189,27 @@ public class VertexBuffer implements AutoCloseable {
    }
 
    public void drawWithShader(Matrix4f var1, Matrix4f var2, @Nullable CompiledShaderProgram var3) {
+      this.drawWithShader(var1, var2, var3, (Consumer)null);
+   }
+
+   public void drawWithRenderPipeline(RenderPipeline var1, @Nullable Consumer<CompiledShaderProgram> var2) {
+      CompiledShaderProgram var3 = var1.getCompiledShaderProgram();
+      if (var3 != null) {
+         this.bind();
+         var1.apply();
+         this.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), var1.getCompiledShaderProgram(), var2);
+         var1.clear();
+         unbind();
+      }
+   }
+
+   private void drawWithShader(Matrix4f var1, Matrix4f var2, @Nullable CompiledShaderProgram var3, @Nullable Consumer<CompiledShaderProgram> var4) {
       if (var3 != null) {
          RenderSystem.assertOnRenderThread();
+         if (var4 != null) {
+            var4.accept(var3);
+         }
+
          var3.setDefaultUniforms(this.mode, var1, var2, Minecraft.getInstance().getWindow());
          var3.apply();
          this.draw();
@@ -198,9 +218,14 @@ public class VertexBuffer implements AutoCloseable {
    }
 
    public void drawWithRenderType(RenderType var1) {
+      this.drawWithRenderType(var1, (Consumer)null);
+   }
+
+   public void drawWithRenderType(RenderType var1, @Nullable Consumer<CompiledShaderProgram> var2) {
+      CompiledShaderProgram var3 = var1.getCompiledShaderProgram();
       var1.setupRenderState();
       this.bind();
-      this.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+      this.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), var3, var2);
       unbind();
       var1.clearRenderState();
    }

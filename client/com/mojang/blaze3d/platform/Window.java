@@ -271,7 +271,7 @@ public final class Window implements AutoCloseable {
    }
 
    public void updateVsync(boolean var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       this.vsync = var1;
       GLFW.glfwSwapInterval(var1 ? 1 : 0);
    }

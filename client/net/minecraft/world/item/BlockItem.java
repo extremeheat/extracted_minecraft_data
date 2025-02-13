@@ -128,7 +128,8 @@ public class BlockItem extends Item {
    }
 
    protected boolean canPlace(BlockPlaceContext var1, BlockState var2) {
-      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), CollisionContext.empty());
+      Player var3 = var1.getPlayer();
+      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), CollisionContext.placementContext(var3));
    }
 
    protected boolean mustSurvive() {

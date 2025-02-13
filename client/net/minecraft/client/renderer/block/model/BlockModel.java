@@ -11,94 +11,29 @@ import com.google.gson.JsonParseException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.ResolvableModel;
-import net.minecraft.client.resources.model.SimpleBakedModel;
+import net.minecraft.client.resources.model.UnbakedGeometry;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
-public class BlockModel implements UnbakedModel {
+public record BlockModel(@Nullable UnbakedGeometry geometry, @Nullable UnbakedModel.GuiLight guiLight, @Nullable Boolean ambientOcclusion, @Nullable ItemTransforms transforms, TextureSlots.Data textureSlots, @Nullable ResourceLocation parent) implements UnbakedModel {
    @VisibleForTesting
-   static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(BlockModel.class, new Deserializer()).registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer()).registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer()).registerTypeAdapter(BlockFaceUV.class, new BlockFaceUV.Deserializer()).registerTypeAdapter(ItemTransform.class, new ItemTransform.Deserializer()).registerTypeAdapter(ItemTransforms.class, new ItemTransforms.Deserializer()).create();
-   private final List<BlockElement> elements;
-   @Nullable
-   private final UnbakedModel.GuiLight guiLight;
-   @Nullable
-   private final Boolean hasAmbientOcclusion;
-   @Nullable
-   private final ItemTransforms transforms;
-   @VisibleForTesting
-   private final TextureSlots.Data textureSlots;
-   @Nullable
-   private UnbakedModel parent;
-   @Nullable
-   private final ResourceLocation parentLocation;
+   static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(BlockModel.class, new Deserializer()).registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer()).registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer()).registerTypeAdapter(ItemTransform.class, new ItemTransform.Deserializer()).registerTypeAdapter(ItemTransforms.class, new ItemTransforms.Deserializer()).create();
+
+   public BlockModel(@Nullable UnbakedGeometry var1, @Nullable UnbakedModel.GuiLight var2, @Nullable Boolean var3, @Nullable ItemTransforms var4, TextureSlots.Data var5, @Nullable ResourceLocation var6) {
+      super();
+      this.geometry = var1;
+      this.guiLight = var2;
+      this.ambientOcclusion = var3;
+      this.transforms = var4;
+      this.textureSlots = var5;
+      this.parent = var6;
+   }
 
    public static BlockModel fromStream(Reader var0) {
       return (BlockModel)GsonHelper.fromJson(GSON, var0, BlockModel.class);
-   }
-
-   public BlockModel(@Nullable ResourceLocation var1, List<BlockElement> var2, TextureSlots.Data var3, @Nullable Boolean var4, @Nullable UnbakedModel.GuiLight var5, @Nullable ItemTransforms var6) {
-      super();
-      this.elements = var2;
-      this.hasAmbientOcclusion = var4;
-      this.guiLight = var5;
-      this.textureSlots = var3;
-      this.parentLocation = var1;
-      this.transforms = var6;
-   }
-
-   @Nullable
-   public Boolean getAmbientOcclusion() {
-      return this.hasAmbientOcclusion;
-   }
-
-   @Nullable
-   public UnbakedModel.GuiLight getGuiLight() {
-      return this.guiLight;
-   }
-
-   public void resolveDependencies(ResolvableModel.Resolver var1) {
-      if (this.parentLocation != null) {
-         this.parent = var1.resolve(this.parentLocation);
-      }
-
-   }
-
-   @Nullable
-   public UnbakedModel getParent() {
-      return this.parent;
-   }
-
-   public TextureSlots.Data getTextureSlots() {
-      return this.textureSlots;
-   }
-
-   @Nullable
-   public ItemTransforms getTransforms() {
-      return this.transforms;
-   }
-
-   public BakedModel bake(TextureSlots var1, ModelBaker var2, ModelState var3, boolean var4, boolean var5, ItemTransforms var6) {
-      return this.elements.isEmpty() && this.parent != null ? this.parent.bake(var1, var2, var3, var4, var5, var6) : SimpleBakedModel.bakeElements(this.elements, var1, var2.sprites(), var3, var4, var5, true, var6);
-   }
-
-   @Nullable
-   @VisibleForTesting
-   List<BlockElement> getElements() {
-      return this.elements;
-   }
-
-   @Nullable
-   @VisibleForTesting
-   ResourceLocation getParentLocation() {
-      return this.parentLocation;
    }
 
    public static class Deserializer implements JsonDeserializer<BlockModel> {
@@ -108,7 +43,7 @@ public class BlockModel implements UnbakedModel {
 
       public BlockModel deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
          JsonObject var4 = var1.getAsJsonObject();
-         List var5 = this.getElements(var3, var4);
+         UnbakedGeometry var5 = this.getElements(var3, var4);
          String var6 = this.getParentName(var4);
          TextureSlots.Data var7 = this.getTextureMap(var4);
          Boolean var8 = this.getAmbientOcclusion(var4);
@@ -124,7 +59,7 @@ public class BlockModel implements UnbakedModel {
          }
 
          ResourceLocation var11 = var6.isEmpty() ? null : ResourceLocation.parse(var6);
-         return new BlockModel(var11, var5, var7, var8, var12, var9);
+         return new BlockModel(var5, var12, var8, var9, var7, var11);
       }
 
       private TextureSlots.Data getTextureMap(JsonObject var1) {
@@ -145,9 +80,10 @@ public class BlockModel implements UnbakedModel {
          return var1.has("ambientocclusion") ? GsonHelper.getAsBoolean(var1, "ambientocclusion") : null;
       }
 
-      protected List<BlockElement> getElements(JsonDeserializationContext var1, JsonObject var2) {
+      @Nullable
+      protected UnbakedGeometry getElements(JsonDeserializationContext var1, JsonObject var2) {
          if (!var2.has("elements")) {
-            return List.of();
+            return null;
          } else {
             ArrayList var3 = new ArrayList();
 
@@ -155,7 +91,7 @@ public class BlockModel implements UnbakedModel {
                var3.add((BlockElement)var1.deserialize(var5, BlockElement.class));
             }
 
-            return var3;
+            return new SimpleUnbakedGeometry(var3);
          }
       }
 

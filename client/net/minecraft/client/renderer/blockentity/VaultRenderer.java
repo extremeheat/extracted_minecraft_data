@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
 import net.minecraft.world.level.block.entity.vault.VaultClientData;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity> {
    private final ItemModelResolver itemModelResolver;
@@ -32,13 +33,13 @@ public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity> {
          if (var8 != null) {
             ItemStack var9 = var1.getSharedData().getDisplayItem();
             if (!var9.isEmpty()) {
-               this.itemModelResolver.updateForTopItem(this.renderState.item, var9, ItemDisplayContext.GROUND, false, var8, (LivingEntity)null, 0);
+               this.itemModelResolver.updateForTopItem(this.renderState.item, var9, ItemDisplayContext.GROUND, var8, (LivingEntity)null, 0);
                this.renderState.count = ItemClusterRenderState.getRenderedAmount(var9.getCount());
                this.renderState.seed = ItemClusterRenderState.getSeedForItemStack(var9);
                VaultClientData var10 = var1.getClientData();
                var3.pushPose();
                var3.translate(0.5F, 0.4F, 0.5F);
-               var3.mulPose(Axis.YP.rotationDegrees(Mth.rotLerp(var2, var10.previousSpin(), var10.currentSpin())));
+               var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.rotLerp(var2, var10.previousSpin(), var10.currentSpin())));
                ItemEntityRenderer.renderMultipleFromCount(var3, var4, var5, this.renderState, this.random);
                var3.popPose();
             }

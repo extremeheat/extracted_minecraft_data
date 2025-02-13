@@ -1,9 +1,11 @@
 package net.minecraft.world.entity.projectile;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
@@ -49,18 +51,13 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      super.addAdditionalSaveData(var1);
-      var1.put("Item", this.getItem().save(this.registryAccess()));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.store("Item", ItemStack.CODEC, var2, this.getItem());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      super.readAdditionalSaveData(var1);
-      if (var1.contains("Item", 10)) {
-         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
-      } else {
-         this.setItem(this.getDefaultItem());
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {

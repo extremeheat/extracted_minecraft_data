@@ -1,92 +1,241 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import net.minecraft.client.renderer.block.model.ItemModelGenerator;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.function.Function;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 public class ModelDiscovery {
-   static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<ResourceLocation, UnbakedModel> inputModels;
-   final UnbakedModel missingModel;
-   private final List<ResolvableModel> topModels = new ArrayList();
-   private final Map<ResourceLocation, UnbakedModel> referencedModels = new HashMap();
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private final Object2ObjectMap<ResourceLocation, ModelWrapper> modelWrappers = new Object2ObjectOpenHashMap();
+   private final ModelWrapper missingModel;
+   private final Object2ObjectFunction<ResourceLocation, ModelWrapper> uncachedResolver;
+   private final ResolvableModel.Resolver resolver;
+   private final Queue<ModelWrapper> parentDiscoveryQueue = new ArrayDeque();
 
    public ModelDiscovery(Map<ResourceLocation, UnbakedModel> var1, UnbakedModel var2) {
       super();
-      this.inputModels = var1;
-      this.missingModel = var2;
-      this.referencedModels.put(MissingBlockModel.LOCATION, var2);
+      this.missingModel = new ModelWrapper(MissingBlockModel.LOCATION, var2, true);
+      this.modelWrappers.put(MissingBlockModel.LOCATION, this.missingModel);
+      this.uncachedResolver = (var2x) -> {
+         ResourceLocation var3 = (ResourceLocation)var2x;
+         UnbakedModel var4 = (UnbakedModel)var1.get(var3);
+         if (var4 == null) {
+            LOGGER.warn("Missing block model: {}", var3);
+            return this.missingModel;
+         } else {
+            return this.createAndQueueWrapper(var3, var4);
+         }
+      };
+      this.resolver = this::getOrCreateModel;
    }
 
-   public void registerSpecialModels() {
-      this.referencedModels.put(ItemModelGenerator.GENERATED_ITEM_MODEL_ID, new ItemModelGenerator());
+   private static boolean isRoot(UnbakedModel var0) {
+      return var0.parent() == null;
+   }
+
+   private ModelWrapper getOrCreateModel(ResourceLocation var1) {
+      return (ModelWrapper)this.modelWrappers.computeIfAbsent(var1, this.uncachedResolver);
+   }
+
+   private ModelWrapper createAndQueueWrapper(ResourceLocation var1, UnbakedModel var2) {
+      boolean var3 = isRoot(var2);
+      ModelWrapper var4 = new ModelWrapper(var1, var2, var3);
+      if (!var3) {
+         this.parentDiscoveryQueue.add(var4);
+      }
+
+      return var4;
    }
 
    public void addRoot(ResolvableModel var1) {
-      this.topModels.add(var1);
+      var1.resolveDependencies(this.resolver);
    }
 
-   public void discoverDependencies() {
-      this.topModels.forEach((var1) -> var1.resolveDependencies(new ResolverImpl()));
-   }
-
-   public Map<ResourceLocation, UnbakedModel> getReferencedModels() {
-      return this.referencedModels;
-   }
-
-   public Set<ResourceLocation> getUnreferencedModels() {
-      return Sets.difference(this.inputModels.keySet(), this.referencedModels.keySet());
-   }
-
-   UnbakedModel getBlockModel(ResourceLocation var1) {
-      return (UnbakedModel)this.referencedModels.computeIfAbsent(var1, this::loadBlockModel);
-   }
-
-   private UnbakedModel loadBlockModel(ResourceLocation var1) {
-      UnbakedModel var2 = (UnbakedModel)this.inputModels.get(var1);
-      if (var2 == null) {
-         LOGGER.warn("Missing block model: '{}'", var1);
-         return this.missingModel;
+   public void addSpecialModel(ResourceLocation var1, UnbakedModel var2) {
+      if (!isRoot(var2)) {
+         LOGGER.warn("Trying to add non-root special model {}, ignoring", var1);
       } else {
-         return var2;
+         ModelWrapper var3 = (ModelWrapper)this.modelWrappers.put(var1, this.createAndQueueWrapper(var1, var2));
+         if (var3 != null) {
+            LOGGER.warn("Duplicate special model {}", var1);
+         }
+
       }
    }
 
-   class ResolverImpl implements ResolvableModel.Resolver {
-      private final List<ResourceLocation> stack = new ArrayList();
-      private final Set<ResourceLocation> resolvedModels = new HashSet();
+   public ResolvedModel missingModel() {
+      return this.missingModel;
+   }
 
-      ResolverImpl() {
-         super();
-      }
-
-      public UnbakedModel resolve(ResourceLocation var1) {
-         if (this.stack.contains(var1)) {
-            ModelDiscovery.LOGGER.warn("Detected model loading loop: {}->{}", this.stacktraceToString(), var1);
-            return ModelDiscovery.this.missingModel;
+   public Map<ResourceLocation, ResolvedModel> resolve() {
+      ArrayList var1 = new ArrayList();
+      this.discoverDependencies(var1);
+      propagateValidity(var1);
+      ImmutableMap.Builder var2 = ImmutableMap.builder();
+      this.modelWrappers.forEach((var1x, var2x) -> {
+         if (var2x.valid) {
+            var2.put(var1x, var2x);
          } else {
-            UnbakedModel var2 = ModelDiscovery.this.getBlockModel(var1);
-            if (this.resolvedModels.add(var1)) {
-               this.stack.add(var1);
-               var2.resolveDependencies(this);
-               this.stack.remove(var1);
-            }
+            LOGGER.warn("Model {} ignored due to cyclic dependency", var1x);
+         }
 
-            return var2;
+      });
+      return var2.build();
+   }
+
+   private void discoverDependencies(List<ModelWrapper> var1) {
+      ModelWrapper var2;
+      while((var2 = (ModelWrapper)this.parentDiscoveryQueue.poll()) != null) {
+         ResourceLocation var3 = (ResourceLocation)Objects.requireNonNull(var2.wrapped.parent());
+         ModelWrapper var4 = this.getOrCreateModel(var3);
+         var2.parent = var4;
+         if (var4.valid) {
+            var2.valid = true;
+         } else {
+            var1.add(var2);
          }
       }
 
-      private String stacktraceToString() {
-         return (String)this.stack.stream().map(ResourceLocation::toString).collect(Collectors.joining("->"));
+   }
+
+   private static void propagateValidity(List<ModelWrapper> var0) {
+      boolean var1 = true;
+
+      while(var1) {
+         var1 = false;
+         Iterator var2 = var0.iterator();
+
+         while(var2.hasNext()) {
+            ModelWrapper var3 = (ModelWrapper)var2.next();
+            if (((ModelWrapper)Objects.requireNonNull(var3.parent)).valid) {
+               var3.valid = true;
+               var2.remove();
+               var1 = true;
+            }
+         }
+      }
+
+   }
+
+   static record Slot<T>(int index) {
+      final int index;
+
+      Slot(int var1) {
+         super();
+         this.index = var1;
+      }
+   }
+
+   static class ModelWrapper implements ResolvedModel {
+      private static final Slot<Boolean> KEY_AMBIENT_OCCLUSION = slot(0);
+      private static final Slot<UnbakedModel.GuiLight> KEY_GUI_LIGHT = slot(1);
+      private static final Slot<UnbakedGeometry> KEY_GEOMETRY = slot(2);
+      private static final Slot<ItemTransforms> KEY_TRANSFORMS = slot(3);
+      private static final Slot<TextureSlots> KEY_TEXTURE_SLOTS = slot(4);
+      private static final Slot<TextureAtlasSprite> KEY_PARTICLE_SPRITE = slot(5);
+      private static final Slot<QuadCollection> KEY_DEFAULT_GEOMETRY = slot(6);
+      private static final int SLOT_COUNT = 7;
+      private final ResourceLocation id;
+      boolean valid;
+      @Nullable
+      ModelWrapper parent;
+      final UnbakedModel wrapped;
+      private final AtomicReferenceArray<Object> fixedSlots = new AtomicReferenceArray(7);
+      private final Map<ModelState, QuadCollection> modelBakeCache = new ConcurrentHashMap();
+
+      private static <T> Slot<T> slot(int var0) {
+         Objects.checkIndex(var0, 7);
+         return new Slot<T>(var0);
+      }
+
+      ModelWrapper(ResourceLocation var1, UnbakedModel var2, boolean var3) {
+         super();
+         this.id = var1;
+         this.wrapped = var2;
+         this.valid = var3;
+      }
+
+      public UnbakedModel wrapped() {
+         return this.wrapped;
+      }
+
+      @Nullable
+      public ResolvedModel parent() {
+         return this.parent;
+      }
+
+      public String debugName() {
+         return this.id.toString();
+      }
+
+      @Nullable
+      private <T> T getSlot(Slot<T> var1) {
+         return (T)this.fixedSlots.get(var1.index);
+      }
+
+      private <T> T updateSlot(Slot<T> var1, T var2) {
+         Object var3 = this.fixedSlots.compareAndExchange(var1.index, (Object)null, var2);
+         return var3 == null ? var2 : var3;
+      }
+
+      private <T> T getSimpleProperty(Slot<T> var1, Function<ResolvedModel, T> var2) {
+         Object var3 = this.getSlot(var1);
+         return (T)(var3 != null ? var3 : this.updateSlot(var1, var2.apply(this)));
+      }
+
+      public boolean getTopAmbientOcclusion() {
+         return (Boolean)this.getSimpleProperty(KEY_AMBIENT_OCCLUSION, ResolvedModel::findTopAmbientOcclusion);
+      }
+
+      public UnbakedModel.GuiLight getTopGuiLight() {
+         return (UnbakedModel.GuiLight)this.getSimpleProperty(KEY_GUI_LIGHT, ResolvedModel::findTopGuiLight);
+      }
+
+      public ItemTransforms getTopTransforms() {
+         return (ItemTransforms)this.getSimpleProperty(KEY_TRANSFORMS, ResolvedModel::findTopTransforms);
+      }
+
+      public UnbakedGeometry getTopGeometry() {
+         return (UnbakedGeometry)this.getSimpleProperty(KEY_GEOMETRY, ResolvedModel::findTopGeometry);
+      }
+
+      public TextureSlots getTopTextureSlots() {
+         return (TextureSlots)this.getSimpleProperty(KEY_TEXTURE_SLOTS, ResolvedModel::findTopTextureSlots);
+      }
+
+      public TextureAtlasSprite resolveParticleSprite(TextureSlots var1, ModelBaker var2) {
+         TextureAtlasSprite var3 = (TextureAtlasSprite)this.getSlot(KEY_PARTICLE_SPRITE);
+         return var3 != null ? var3 : (TextureAtlasSprite)this.updateSlot(KEY_PARTICLE_SPRITE, ResolvedModel.resolveParticleSprite(var1, var2, this));
+      }
+
+      private QuadCollection bakeDefaultState(TextureSlots var1, ModelBaker var2, ModelState var3) {
+         QuadCollection var4 = (QuadCollection)this.getSlot(KEY_DEFAULT_GEOMETRY);
+         return var4 != null ? var4 : (QuadCollection)this.updateSlot(KEY_DEFAULT_GEOMETRY, this.getTopGeometry().bake(var1, var2, var3, this));
+      }
+
+      public QuadCollection bakeTopGeometry(TextureSlots var1, ModelBaker var2, ModelState var3) {
+         return var3 == BlockModelRotation.X0_Y0 ? this.bakeDefaultState(var1, var2, var3) : (QuadCollection)this.modelBakeCache.computeIfAbsent(var3, (var3x) -> {
+            UnbakedGeometry var4 = this.getTopGeometry();
+            return var4.bake(var1, var2, var3x, this);
+         });
       }
    }
 }

@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.ItemStack;
@@ -78,14 +79,14 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       return false;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var4.canUsePortal(false)) {
-         BlockEntity var5 = var2.getBlockEntity(var3);
-         if (!var2.isClientSide && var5 instanceof TheEndGatewayBlockEntity) {
-            TheEndGatewayBlockEntity var6 = (TheEndGatewayBlockEntity)var5;
-            if (!var6.isCoolingDown()) {
+         BlockEntity var6 = var2.getBlockEntity(var3);
+         if (!var2.isClientSide && var6 instanceof TheEndGatewayBlockEntity) {
+            TheEndGatewayBlockEntity var7 = (TheEndGatewayBlockEntity)var6;
+            if (!var7.isCoolingDown()) {
                var4.setAsInsidePortal(this, var3);
-               TheEndGatewayBlockEntity.triggerCooldown(var2, var3, var1, var6);
+               TheEndGatewayBlockEntity.triggerCooldown(var2, var3, var1, var7);
             }
          }
       }

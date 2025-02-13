@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -9,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -67,20 +67,17 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
       }
    }
 
-   public static record Pass(ResourceLocation programId, List<Input> inputs, ResourceLocation outputTarget, List<Uniform> uniforms) {
+   public static record Pass(ResourceLocation vertexShaderId, ResourceLocation fragmentShaderId, List<Input> inputs, ResourceLocation outputTarget, List<Uniform> uniforms) {
       private static final Codec<List<Input>> INPUTS_CODEC;
       public static final Codec<Pass> CODEC;
 
-      public Pass(ResourceLocation var1, List<Input> var2, ResourceLocation var3, List<Uniform> var4) {
+      public Pass(ResourceLocation var1, ResourceLocation var2, List<Input> var3, ResourceLocation var4, List<Uniform> var5) {
          super();
-         this.programId = var1;
-         this.inputs = var2;
-         this.outputTarget = var3;
-         this.uniforms = var4;
-      }
-
-      public ShaderProgram program() {
-         return new ShaderProgram(this.programId, DefaultVertexFormat.POSITION, ShaderDefines.EMPTY);
+         this.vertexShaderId = var1;
+         this.fragmentShaderId = var2;
+         this.inputs = var3;
+         this.outputTarget = var4;
+         this.uniforms = var5;
       }
 
       public Stream<ResourceLocation> referencedTargets() {
@@ -100,7 +97,7 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
 
             return DataResult.success(var0);
          });
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("program").forGetter(Pass::programId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), PostChainConfig.Uniform.CODEC.listOf().optionalFieldOf("uniforms", List.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new));
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("vertex_shader").forGetter(Pass::vertexShaderId), ResourceLocation.CODEC.fieldOf("fragment_shader").forGetter(Pass::fragmentShaderId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), PostChainConfig.Uniform.CODEC.listOf().optionalFieldOf("uniforms", List.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new));
       }
    }
 
@@ -166,13 +163,14 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
       }
    }
 
-   public static record Uniform(String name, List<Float> values) {
-      public static final Codec<Uniform> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(Uniform::name), Codec.FLOAT.sizeLimitedListOf(4).fieldOf("values").forGetter(Uniform::values)).apply(var0, Uniform::new));
+   public static record Uniform(String name, String type, Optional<List<Float>> values) {
+      public static final Codec<Uniform> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(Uniform::name), Codec.STRING.fieldOf("type").forGetter(Uniform::type), Codec.FLOAT.sizeLimitedListOf(4).optionalFieldOf("values").forGetter(Uniform::values)).apply(var0, Uniform::new));
 
-      public Uniform(String var1, List<Float> var2) {
+      public Uniform(String var1, String var2, Optional<List<Float>> var3) {
          super();
          this.name = var1;
-         this.values = var2;
+         this.type = var2;
+         this.values = var3;
       }
    }
 }

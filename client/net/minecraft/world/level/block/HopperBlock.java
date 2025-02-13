@@ -12,6 +12,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -140,10 +141,10 @@ public class HopperBlock extends BaseEntityBlock {
       var1.add(FACING, ENABLED);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof HopperBlockEntity) {
-         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var5);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      BlockEntity var6 = var2.getBlockEntity(var3);
+      if (var6 instanceof HopperBlockEntity) {
+         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var6);
       }
 
    }

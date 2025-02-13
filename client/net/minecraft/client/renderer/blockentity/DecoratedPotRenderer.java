@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
    private static final String NECK = "neck";
@@ -98,7 +99,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       var3.pushPose();
       Direction var8 = var1.getDirection();
       var3.translate(0.5, 0.0, 0.5);
-      var3.mulPose(Axis.YP.rotationDegrees(180.0F - var8.toYRot()));
+      var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var8.toYRot()));
       var3.translate(-0.5, 0.0, -0.5);
       DecoratedPotBlockEntity.WobbleStyle var9 = var1.lastWobbleStyle;
       if (var9 != null && var1.getLevel() != null) {

@@ -2,13 +2,18 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.BitStorage;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.StringRepresentable;
@@ -154,22 +159,26 @@ public class Heightmap {
    }
 
    public static enum Types implements StringRepresentable {
-      WORLD_SURFACE_WG("WORLD_SURFACE_WG", Heightmap.Usage.WORLDGEN, Heightmap.NOT_AIR),
-      WORLD_SURFACE("WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
-      OCEAN_FLOOR_WG("OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
-      OCEAN_FLOOR("OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
-      MOTION_BLOCKING("MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> var0.blocksMotion() || !var0.getFluidState().isEmpty()),
-      MOTION_BLOCKING_NO_LEAVES("MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (var0) -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock));
+      WORLD_SURFACE_WG(0, "WORLD_SURFACE_WG", Heightmap.Usage.WORLDGEN, Heightmap.NOT_AIR),
+      WORLD_SURFACE(1, "WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
+      OCEAN_FLOOR_WG(2, "OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
+      OCEAN_FLOOR(3, "OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
+      MOTION_BLOCKING(4, "MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> var0.blocksMotion() || !var0.getFluidState().isEmpty()),
+      MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (var0) -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock));
 
       public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
+      private static final IntFunction<Types> BY_ID = ByIdMap.<Types>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Types> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private final int id;
       private final String serializationKey;
       private final Usage usage;
       private final Predicate<BlockState> isOpaque;
 
-      private Types(final String var3, final Usage var4, final Predicate<BlockState> var5) {
-         this.serializationKey = var3;
-         this.usage = var4;
-         this.isOpaque = var5;
+      private Types(final int var3, final String var4, final Usage var5, final Predicate<BlockState> var6) {
+         this.id = var3;
+         this.serializationKey = var4;
+         this.usage = var5;
+         this.isOpaque = var6;
       }
 
       public String getSerializationKey() {

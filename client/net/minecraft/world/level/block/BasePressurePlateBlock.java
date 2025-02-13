@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -63,11 +64,11 @@ public abstract class BasePressurePlateBlock extends Block {
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!var2.isClientSide) {
-         int var5 = this.getSignalForState(var1);
-         if (var5 == 0) {
-            this.checkPressed(var4, var2, var3, var1, var5);
+         int var6 = this.getSignalForState(var1);
+         if (var6 == 0) {
+            this.checkPressed(var4, var2, var3, var1, var6);
          }
 
       }

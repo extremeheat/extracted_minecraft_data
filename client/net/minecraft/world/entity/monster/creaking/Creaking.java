@@ -9,7 +9,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -370,19 +369,12 @@ public class Creaking extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("home_pos")) {
-         this.setTransient((BlockPos)NbtUtils.readBlockPos(var1, "home_pos").orElseThrow());
-      }
-
+      var1.read("home_pos", BlockPos.CODEC).ifPresent(this::setTransient);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      BlockPos var2 = this.getHomePos();
-      if (var2 != null) {
-         var1.put("home_pos", NbtUtils.writeBlockPos(var2));
-      }
-
+      var1.storeNullable("home_pos", BlockPos.CODEC, this.getHomePos());
    }
 
    public void setHomePos(BlockPos var1) {

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.EnumSet;
 import java.util.List;
@@ -17,9 +18,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -113,6 +111,7 @@ public class Fox extends Animal {
    private static final Predicate<Entity> AVOID_PLAYERS;
    private static final int MIN_TICKS_BEFORE_EAT = 600;
    private static final EntityDimensions BABY_DIMENSIONS;
+   private static final Codec<List<EntityReference<LivingEntity>>> TRUSTED_LIST_CODEC;
    private Goal landTargetGoal;
    private Goal turtleEggTargetGoal;
    private Goal fishTargetGoal;
@@ -364,31 +363,30 @@ public class Fox extends Animal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      Stream var2 = this.getTrustedEntities().map(EntityReference::getUUID);
-      ListTag var3 = new ListTag();
-      var2.forEach((var1x) -> var3.add(NbtUtils.createUUID(var1x)));
-      var1.put("Trusted", var3);
+      var1.store("Trusted", TRUSTED_LIST_CODEC, this.getTrustedEntities().toList());
       var1.putBoolean("Sleeping", this.isSleeping());
-      var1.putString("Type", this.getVariant().getSerializedName());
+      var1.store("Type", Fox.Variant.CODEC, this.getVariant());
       var1.putBoolean("Sitting", this.isSitting());
       var1.putBoolean("Crouching", this.isCrouching());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-
-      for(Tag var4 : var1.getList("Trusted", 11)) {
-         this.addTrustedEntity(new EntityReference(NbtUtils.loadUUID(var4)));
-      }
-
+      this.clearTrusted();
+      ((List)var1.read("Trusted", TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity);
       this.setSleeping(var1.getBoolean("Sleeping"));
-      this.setVariant(Fox.Variant.byName(var1.getString("Type")));
+      this.setVariant((Variant)var1.read("Type", Fox.Variant.CODEC).orElse(Fox.Variant.RED));
       this.setSitting(var1.getBoolean("Sitting"));
       this.setIsCrouching(var1.getBoolean("Crouching"));
       if (this.level() instanceof ServerLevel) {
          this.setTargetGoals();
       }
 
+   }
+
+   private void clearTrusted() {
+      this.entityData.set(DATA_TRUSTED_ID_0, Optional.empty());
+      this.entityData.set(DATA_TRUSTED_ID_1, Optional.empty());
    }
 
    public boolean isSitting() {
@@ -686,6 +684,7 @@ public class Fox extends Animal {
       STALKABLE_PREY = (var0) -> var0 instanceof Chicken || var0 instanceof Rabbit;
       AVOID_PLAYERS = (var0) -> !var0.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(var0);
       BABY_DIMENSIONS = EntityType.FOX.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
+      TRUSTED_LIST_CODEC = EntityReference.codec().listOf();
    }
 
    public static enum Variant implements StringRepresentable {
@@ -709,10 +708,6 @@ public class Fox extends Animal {
 
       public int getId() {
          return this.id;
-      }
-
-      public static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, RED);
       }
 
       public static Variant byId(int var0) {

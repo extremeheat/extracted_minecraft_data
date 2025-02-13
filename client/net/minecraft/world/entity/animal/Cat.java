@@ -75,6 +75,7 @@ public class Cat extends TamableAnimal {
    private static final EntityDataAccessor<Boolean> RELAX_STATE_ONE;
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
    private static final ResourceKey<CatVariant> DEFAULT_VARIANT;
+   private static final DyeColor DEFAULT_COLLAR_COLOR;
    @Nullable
    private CatAvoidEntityGoal<Player> avoidPlayersGoal;
    @Nullable
@@ -175,22 +176,19 @@ public class Cat extends TamableAnimal {
       var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
       var1.define(IS_LYING, false);
       var1.define(RELAX_STATE_ONE, false);
-      var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
+      var1.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       VariantUtils.writeVariant(var1, this.getVariant());
-      var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
+      var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       VariantUtils.readVariant(var1, this.registryAccess(), Registries.CAT_VARIANT).ifPresent(this::setVariant);
-      if (var1.contains("CollarColor", 99)) {
-         this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
-      }
-
+      this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
    }
 
    public void customServerAiStep(ServerLevel var1) {
@@ -466,6 +464,7 @@ public class Cat extends TamableAnimal {
       RELAX_STATE_ONE = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Cat.class, EntityDataSerializers.INT);
       DEFAULT_VARIANT = CatVariants.BLACK;
+      DEFAULT_COLLAR_COLOR = DyeColor.RED;
    }
 
    static class CatAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {

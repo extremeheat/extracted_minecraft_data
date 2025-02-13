@@ -50,7 +50,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       this.groundLevelDelta = var2.getInt("ground_level_delta");
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.element = (StructurePoolElement)var2.read("pool_element", StructurePoolElement.CODEC, var3).orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
-      this.rotation = Rotation.valueOf(var2.getString("rotation"));
+      this.rotation = (Rotation)var2.read("rotation", Rotation.LEGACY_CODEC).orElseThrow();
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
       ListTag var4 = var2.getList("junctions", 10);
       this.junctions.clear();
@@ -65,7 +65,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       var2.putInt("ground_level_delta", this.groundLevelDelta);
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var2.store("pool_element", StructurePoolElement.CODEC, var3, this.element);
-      var2.putString("rotation", this.rotation.name());
+      var2.store("rotation", Rotation.LEGACY_CODEC, this.rotation);
       ListTag var4 = new ListTag();
 
       for(JigsawJunction var6 : this.junctions) {

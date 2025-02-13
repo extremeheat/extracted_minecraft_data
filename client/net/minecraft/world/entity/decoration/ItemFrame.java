@@ -5,12 +5,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -309,40 +311,35 @@ public class ItemFrame extends HangingEntity {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (!this.getItem().isEmpty()) {
-         var1.put("Item", this.getItem().save(this.registryAccess()));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("Item", ItemStack.CODEC, var2, this.getItem());
          var1.putByte("ItemRotation", (byte)this.getRotation());
          var1.putFloat("ItemDropChance", this.dropChance);
       }
 
-      var1.putByte("Facing", (byte)this.direction.get3DDataValue());
+      var1.store("Facing", Direction.LEGACY_ID_CODEC, this.direction);
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Fixed", this.fixed);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      ItemStack var2;
-      if (var1.contains("Item", 10)) {
-         CompoundTag var3 = var1.getCompound("Item");
-         var2 = (ItemStack)ItemStack.parse(this.registryAccess(), var3).orElse(ItemStack.EMPTY);
-      } else {
-         var2 = ItemStack.EMPTY;
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      ItemStack var3 = (ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY);
       ItemStack var4 = this.getItem();
-      if (!var4.isEmpty() && !ItemStack.matches(var2, var4)) {
+      if (!var4.isEmpty() && !ItemStack.matches(var3, var4)) {
          this.removeFramedMap(var4);
       }
 
-      this.setItem(var2, false);
-      if (!var2.isEmpty()) {
+      this.setItem(var3, false);
+      if (!var3.isEmpty()) {
          this.setRotation(var1.getByte("ItemRotation"), false);
          if (var1.contains("ItemDropChance", 99)) {
             this.dropChance = var1.getFloat("ItemDropChance");
          }
       }
 
-      this.setDirection(Direction.from3DDataValue(var1.getByte("Facing")));
+      this.setDirection((Direction)var1.read("Facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));
       this.setInvisible(var1.getBoolean("Invisible"));
       this.fixed = var1.getBoolean("Fixed");
    }

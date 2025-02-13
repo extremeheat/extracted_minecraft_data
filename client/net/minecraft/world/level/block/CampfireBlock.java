@@ -18,6 +18,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -95,12 +96,12 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return InteractionResult.TRY_WITH_EMPTY_HAND;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if ((Boolean)var1.getValue(LIT) && var4 instanceof LivingEntity) {
          var4.hurt(var2.damageSources().campfire(), (float)this.fireDamage);
       }
 
-      super.entityInside(var1, var2, var3, var4);
+      super.entityInside(var1, var2, var3, var4, var5);
    }
 
    @Nullable

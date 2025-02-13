@@ -6,7 +6,6 @@ import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
@@ -175,7 +174,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.entityOutlineTarget.destroyBuffers();
       }
 
-      this.entityOutlineTarget = new TextureTarget(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), true);
+      this.entityOutlineTarget = new TextureTarget("Entity Outline", this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), true);
       this.entityOutlineTarget.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
    }
 
@@ -196,11 +195,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public void doEntityOutline() {
       if (this.shouldShowEntityOutlines()) {
-         RenderSystem.enableBlend();
-         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-         this.entityOutlineTarget.blitAndBlendToScreen(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
-         RenderSystem.disableBlend();
-         RenderSystem.defaultBlendFunc();
+         this.entityOutlineTarget.blitAndBlendToScreen();
       }
 
    }
@@ -472,7 +467,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          if (!Float.isNaN(var34)) {
             float var35 = (float)this.ticks + var8;
             int var36 = this.level.getCloudColor(var8);
-            this.addCloudsPass(var26, var6, var7, var33, var4.getPosition(), var35, var36, var34 + 0.33F);
+            this.addCloudsPass(var26, var33, var4.getPosition(), var35, var36, var34 + 0.33F);
          }
       }
 
@@ -633,15 +628,15 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       });
    }
 
-   private void addCloudsPass(FrameGraphBuilder var1, Matrix4f var2, Matrix4f var3, CloudStatus var4, Vec3 var5, float var6, int var7, float var8) {
-      FramePass var9 = var1.addPass("clouds");
+   private void addCloudsPass(FrameGraphBuilder var1, CloudStatus var2, Vec3 var3, float var4, int var5, float var6) {
+      FramePass var7 = var1.addPass("clouds");
       if (this.targets.clouds != null) {
-         this.targets.clouds = var9.<RenderTarget>readsAndWrites(this.targets.clouds);
+         this.targets.clouds = var7.<RenderTarget>readsAndWrites(this.targets.clouds);
       } else {
-         this.targets.main = var9.<RenderTarget>readsAndWrites(this.targets.main);
+         this.targets.main = var7.<RenderTarget>readsAndWrites(this.targets.main);
       }
 
-      var9.executes(() -> this.cloudRenderer.render(var7, var4, var8, var2, var3, var5, var6));
+      var7.executes(() -> this.cloudRenderer.render(var5, var2, var6, var3, var4));
    }
 
    private void addWeatherPass(FrameGraphBuilder var1, Vec3 var2, float var3, FogParameters var4) {
@@ -840,7 +835,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    private void checkPoseStack(PoseStack var1) {
-      if (!var1.clear()) {
+      if (!var1.isEmpty()) {
          throw new IllegalStateException("Pose stack not empty");
       }
    }
@@ -896,7 +891,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       boolean var11 = var1 != RenderType.translucent();
       ObjectListIterator var12 = this.visibleSections.listIterator(var11 ? 0 : this.visibleSections.size());
       var1.setupRenderState();
-      CompiledShaderProgram var13 = RenderSystem.getShader();
+      CompiledShaderProgram var13 = var1.getCompiledShaderProgram();
       if (var13 == null) {
          var1.clearRenderState();
          var10.close();
@@ -1010,7 +1005,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                   this.skyRenderer.renderSunMoonAndStars(var5, var16, var7x, var11, var8, var9, var4);
                   var16.endBatch();
                   if (this.shouldRenderDarkDisc(var3)) {
-                     this.skyRenderer.renderDarkDisc(var5);
+                     this.skyRenderer.renderDarkDisc();
                   }
 
                }

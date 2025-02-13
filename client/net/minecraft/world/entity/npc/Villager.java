@@ -23,9 +23,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -439,7 +436,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       super.addAdditionalSaveData(var1);
       var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
       var1.putByte("FoodLevel", (byte)this.foodLevel);
-      var1.put("Gossips", (Tag)this.gossips.store(NbtOps.INSTANCE));
+      var1.store("Gossips", GossipContainer.CODEC, this.gossips);
       var1.putInt("Xp", this.villagerXp);
       var1.putLong("LastRestock", this.lastRestockGameTime);
       var1.putLong("LastGossipDecay", this.lastGossipDecayTime);
@@ -457,8 +454,11 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.foodLevel = var1.getByte("FoodLevel");
       }
 
-      ListTag var2 = var1.getList("Gossips", 10);
-      this.gossips.update(new Dynamic(NbtOps.INSTANCE, var2));
+      this.gossips.clear();
+      Optional var10000 = var1.read("Gossips", GossipContainer.CODEC);
+      GossipContainer var10001 = this.gossips;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::putAll);
       if (var1.contains("Xp", 3)) {
          this.villagerXp = var1.getInt("Xp");
       }
@@ -837,8 +837,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.gossips;
    }
 
-   public void setGossips(Tag var1) {
-      this.gossips.update(new Dynamic(NbtOps.INSTANCE, var1));
+   public void setGossips(GossipContainer var1) {
+      this.gossips.putAll(var1);
    }
 
    protected void sendDebugPackets() {

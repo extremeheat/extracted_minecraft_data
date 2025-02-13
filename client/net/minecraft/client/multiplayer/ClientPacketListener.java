@@ -891,7 +891,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          PlayerInfo var4 = this.getPlayerInfo(var3);
          if (var4 == null) {
             LOGGER.error("Received player chat packet for unknown player with ID: {}", var3);
-            this.minecraft.getChatListener().handleChatMessageError(var3, var1.chatType());
+            this.minecraft.getChatListener().handleChatMessageError(var3, var1.signature(), var1.chatType());
          } else {
             RemoteChatSession var5 = var4.getChatSession();
             SignedMessageLink var6;
@@ -906,7 +906,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             if (var7 != null) {
                this.minecraft.getChatListener().handlePlayerChatMessage(var7, var4.getProfile(), var1.chatType());
             } else {
-               this.minecraft.getChatListener().handleChatMessageError(var3, var1.chatType());
+               this.minecraft.getChatListener().handleChatMessageError(var3, var1.signature(), var1.chatType());
             }
 
          }
@@ -2279,9 +2279,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       return this.registryAccess;
    }
 
-   public void markMessageAsProcessed(PlayerChatMessage var1, boolean var2) {
-      MessageSignature var3 = var1.signature();
-      if (var3 != null && this.lastSeenMessages.addPending(var3, var2) && this.lastSeenMessages.offset() > 64) {
+   public void markMessageAsProcessed(MessageSignature var1, boolean var2) {
+      if (this.lastSeenMessages.addPending(var1, var2) && this.lastSeenMessages.offset() > 64) {
          this.sendChatAcknowledgement();
       }
 

@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.font;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.textures.GpuTexture;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.nio.ByteBuffer;
@@ -203,13 +204,13 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
                return Glyph.this.bearingY;
             }
 
-            public void upload(int var1, int var2) {
-               FT_Face var3 = TrueTypeGlyphProvider.this.validateFontOpen();
-               NativeImage var4 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
-               if (var4.copyFromFont(var3, Glyph.this.index)) {
-                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, true);
-               } else {
-                  var4.close();
+            public void upload(int var1, int var2, GpuTexture var3) {
+               FT_Face var4 = TrueTypeGlyphProvider.this.validateFontOpen();
+
+               try (NativeImage var5 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false)) {
+                  if (var5.copyFromFont(var4, Glyph.this.index)) {
+                     var3.write(var5, 0, var1, var2, Glyph.this.width, Glyph.this.height, 0, 0);
+                  }
                }
 
             }

@@ -3,6 +3,7 @@ package net.minecraft.world.entity.projectile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -84,7 +85,7 @@ public abstract class ThrowableProjectile extends Projectile {
          for(BlockPos var2 : BlockPos.betweenClosed(this.getBoundingBox())) {
             BlockState var3 = this.level().getBlockState(var2);
             if (var3.is(Blocks.BUBBLE_COLUMN)) {
-               var3.entityInside(this.level(), var2, this);
+               var3.entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP);
             }
          }
       }

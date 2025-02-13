@@ -4,10 +4,10 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.core.Vec3i;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.lwjgl.system.MemoryStack;
 
 public interface VertexConsumer {
@@ -57,14 +57,14 @@ public interface VertexConsumer {
    }
 
    default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9, boolean var10) {
-      int[] var11 = var2.getVertices();
-      Vec3i var12 = var2.getDirection().getUnitVec3i();
+      int[] var11 = var2.vertices();
+      Vector3fc var12 = var2.direction().getUnitVec3f();
       Matrix4f var13 = var1.pose();
-      Vector3f var14 = var1.transformNormal((float)var12.getX(), (float)var12.getY(), (float)var12.getZ(), new Vector3f());
+      Vector3f var14 = var1.transformNormal(var12, new Vector3f());
       boolean var15 = true;
       int var16 = var11.length / 8;
       int var17 = (int)(var7 * 255.0F);
-      int var18 = var2.getLightEmission();
+      int var18 = var2.lightEmission();
       MemoryStack var19 = MemoryStack.stackPush();
 
       try {

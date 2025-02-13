@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
@@ -76,6 +77,11 @@ public class StructureTemplatePool {
       }
 
       return this.maxSize;
+   }
+
+   @VisibleForTesting
+   public List<Pair<StructurePoolElement, Integer>> getTemplates() {
+      return this.rawTemplates;
    }
 
    public Holder<StructureTemplatePool> getFallback() {

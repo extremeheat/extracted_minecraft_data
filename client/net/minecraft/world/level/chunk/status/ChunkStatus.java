@@ -1,6 +1,7 @@
 package net.minecraft.world.level.chunk.status;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -28,6 +29,7 @@ public class ChunkStatus {
    public static final ChunkStatus LIGHT;
    public static final ChunkStatus SPAWN;
    public static final ChunkStatus FULL;
+   public static final Codec<ChunkStatus> CODEC;
    private final int index;
    private final ChunkStatus parent;
    private final ChunkType chunkType;
@@ -122,5 +124,6 @@ public class ChunkStatus {
       LIGHT = register("light", INITIALIZE_LIGHT, FINAL_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       SPAWN = register("spawn", LIGHT, FINAL_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       FULL = register("full", SPAWN, FINAL_HEIGHTMAPS, ChunkType.LEVELCHUNK);
+      CODEC = BuiltInRegistries.CHUNK_STATUS.byNameCodec();
    }
 }

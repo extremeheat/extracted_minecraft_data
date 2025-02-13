@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -37,7 +37,7 @@ public class ModelBlockRenderer {
       this.blockColors = var1;
    }
 
-   public void tesselateBlock(BlockAndTintGetter var1, BakedModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
+   public void tesselateBlock(BlockAndTintGetter var1, BlockStateModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
       boolean var12 = Minecraft.useAmbientOcclusion() && var3.getLightEmission() == 0 && var2.useAmbientOcclusion();
       var5.translate(var3.getOffset(var4));
 
@@ -57,7 +57,7 @@ public class ModelBlockRenderer {
       }
    }
 
-   public void tesselateWithAO(BlockAndTintGetter var1, BakedModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
+   public void tesselateWithAO(BlockAndTintGetter var1, BlockStateModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
       float[] var12 = new float[DIRECTIONS.length * 2];
       BitSet var13 = new BitSet(3);
       AmbientOcclusionFace var14 = new AmbientOcclusionFace();
@@ -82,7 +82,7 @@ public class ModelBlockRenderer {
 
    }
 
-   public void tesselateWithoutAO(BlockAndTintGetter var1, BakedModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
+   public void tesselateWithoutAO(BlockAndTintGetter var1, BlockStateModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
       BitSet var12 = new BitSet(3);
       BlockPos.MutableBlockPos var13 = var4.mutable();
 
@@ -108,29 +108,29 @@ public class ModelBlockRenderer {
 
    private void renderModelFaceAO(BlockAndTintGetter var1, BlockState var2, BlockPos var3, PoseStack var4, VertexConsumer var5, List<BakedQuad> var6, float[] var7, BitSet var8, AmbientOcclusionFace var9, int var10) {
       for(BakedQuad var12 : var6) {
-         this.calculateShape(var1, var2, var3, var12.getVertices(), var12.getDirection(), var7, var8);
-         var9.calculate(var1, var2, var3, var12.getDirection(), var7, var8, var12.isShade());
-         this.putQuadData(var1, var2, var3, var5, var4.last(), var12, var9.brightness[0], var9.brightness[1], var9.brightness[2], var9.brightness[3], var9.lightmap[0], var9.lightmap[1], var9.lightmap[2], var9.lightmap[3], var10);
+         this.calculateShape(var1, var2, var3, var12.vertices(), var12.direction(), var7, var8);
+         var9.calculate(var1, var2, var3, var12.direction(), var7, var8, var12.shade());
+         this.putQuadData(var1, var2, var3, var5, var4.last(), var12, var9.brightness, var9.lightmap, var10);
       }
 
    }
 
-   private void putQuadData(BlockAndTintGetter var1, BlockState var2, BlockPos var3, VertexConsumer var4, PoseStack.Pose var5, BakedQuad var6, float var7, float var8, float var9, float var10, int var11, int var12, int var13, int var14, int var15) {
-      float var16;
-      float var17;
-      float var18;
+   private void putQuadData(BlockAndTintGetter var1, BlockState var2, BlockPos var3, VertexConsumer var4, PoseStack.Pose var5, BakedQuad var6, float[] var7, int[] var8, int var9) {
+      float var10;
+      float var11;
+      float var12;
       if (var6.isTinted()) {
-         int var19 = this.blockColors.getColor(var2, var1, var3, var6.getTintIndex());
-         var16 = (float)(var19 >> 16 & 255) / 255.0F;
-         var17 = (float)(var19 >> 8 & 255) / 255.0F;
-         var18 = (float)(var19 & 255) / 255.0F;
+         int var13 = this.blockColors.getColor(var2, var1, var3, var6.tintIndex());
+         var10 = (float)(var13 >> 16 & 255) / 255.0F;
+         var11 = (float)(var13 >> 8 & 255) / 255.0F;
+         var12 = (float)(var13 & 255) / 255.0F;
       } else {
-         var16 = 1.0F;
-         var17 = 1.0F;
-         var18 = 1.0F;
+         var10 = 1.0F;
+         var11 = 1.0F;
+         var12 = 1.0F;
       }
 
-      var4.putBulkData(var5, var6, new float[]{var7, var8, var9, var10}, var16, var17, var18, 1.0F, new int[]{var11, var12, var13, var14}, var15, true);
+      var4.putBulkData(var5, var6, var7, var10, var11, var12, 1.0F, var8, var9, true);
    }
 
    private void calculateShape(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int[] var4, Direction var5, @Nullable float[] var6, BitSet var7) {
@@ -202,18 +202,18 @@ public class ModelBlockRenderer {
    private void renderModelFaceFlat(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int var4, int var5, boolean var6, PoseStack var7, VertexConsumer var8, List<BakedQuad> var9, BitSet var10) {
       for(BakedQuad var12 : var9) {
          if (var6) {
-            this.calculateShape(var1, var2, var3, var12.getVertices(), var12.getDirection(), (float[])null, var10);
-            BlockPos var13 = var10.get(0) ? var3.relative(var12.getDirection()) : var3;
+            this.calculateShape(var1, var2, var3, var12.vertices(), var12.direction(), (float[])null, var10);
+            BlockPos var13 = var10.get(0) ? var3.relative(var12.direction()) : var3;
             var4 = LevelRenderer.getLightColor(var1, var2, var13);
          }
 
-         float var14 = var1.getShade(var12.getDirection(), var12.isShade());
-         this.putQuadData(var1, var2, var3, var8, var7.last(), var12, var14, var14, var14, var14, var4, var4, var4, var4, var5);
+         float var14 = var1.getShade(var12.direction(), var12.shade());
+         this.putQuadData(var1, var2, var3, var8, var7.last(), var12, new float[]{var14, var14, var14, var14}, new int[]{var4, var4, var4, var4}, var5);
       }
 
    }
 
-   public void renderModel(PoseStack.Pose var1, VertexConsumer var2, @Nullable BlockState var3, BakedModel var4, float var5, float var6, float var7, int var8, int var9) {
+   public void renderModel(PoseStack.Pose var1, VertexConsumer var2, BlockState var3, BlockStateModel var4, float var5, float var6, float var7, int var8, int var9) {
       RandomSource var10 = RandomSource.create();
       long var11 = 42L;
 

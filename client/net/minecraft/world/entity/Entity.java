@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
 import it.unimi.dsi.fastutil.floats.FloatArraySet;
@@ -42,6 +43,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
@@ -49,11 +51,8 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -151,18 +150,19 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public static final int BOARDING_COOLDOWN = 60;
    public static final int TOTAL_AIR_SUPPLY = 300;
    public static final int MAX_ENTITY_TAG_COUNT = 1024;
+   private static final Codec<List<String>> TAG_LIST_CODEC;
    public static final float DELTA_AFFECTED_BY_BLOCKS_BELOW_0_2 = 0.2F;
    public static final double DELTA_AFFECTED_BY_BLOCKS_BELOW_0_5 = 0.500001;
    public static final double DELTA_AFFECTED_BY_BLOCKS_BELOW_1_0 = 0.999999;
    public static final int BASE_TICKS_REQUIRED_TO_FREEZE = 140;
    public static final int FREEZE_HURT_FREQUENCY = 40;
    public static final int BASE_SAFE_FALL_DISTANCE = 3;
-   private static final AABB INITIAL_AABB = new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+   private static final AABB INITIAL_AABB;
    private static final double WATER_FLOW_SCALE = 0.014;
    private static final double LAVA_FAST_FLOW_SCALE = 0.007;
    private static final double LAVA_SLOW_FLOW_SCALE = 0.0023333333333333335;
    public static final String UUID_TAG = "UUID";
-   private static double viewScale = 1.0;
+   private static double viewScale;
    private final EntityType<?> type;
    private int id;
    public boolean blocksBuilding;
@@ -253,7 +253,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private BlockState inBlockState;
    private final List<Movement> movementThisTick;
    private final LongSet visitedBlocks;
-   private final FireStateVisitor fireStateVisitor;
+   private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
 
    public Entity(EntityType<?> var1, Level var2) {
       super();
@@ -279,7 +279,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.inBlockState = null;
       this.movementThisTick = new ArrayList();
       this.visitedBlocks = new LongOpenHashSet();
-      this.fireStateVisitor = new FireStateVisitor();
+      this.insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
       this.type = var1;
       this.level = var2;
       this.dimensions = var1.getDimensions();
@@ -500,11 +500,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
                this.setRemainingFireTicks(this.remainingFireTicks - 1);
             }
-
-            if (this.getTicksFrozen() > 0) {
-               this.setTicksFrozen(0);
-               this.playEntityOnFireExtinguishedSound();
-            }
          }
       } else {
          this.clearFire();
@@ -564,9 +559,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    }
 
-   public void lavaHurt() {
+   public void lavaIgnite() {
       if (!this.fireImmune()) {
          this.igniteForSeconds(15.0F);
+      }
+   }
+
+   public void lavaHurt() {
+      if (!this.fireImmune()) {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var1 = (ServerLevel)var2;
@@ -591,6 +591,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          this.setRemainingFireTicks(var1);
       }
 
+      this.clearFreeze();
    }
 
    public void setRemainingFireTicks(int var1) {
@@ -797,24 +798,17 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
 
          this.movementThisTick.add(new Movement(var1, var2));
-         List var5 = List.copyOf(this.movementThisTick);
+         List var6 = List.copyOf(this.movementThisTick);
          this.movementThisTick.clear();
-         boolean var6 = this.isOnFire();
-         this.fireStateVisitor.reset(var6);
-         this.checkInsideBlocks(var5, this.fireStateVisitor);
-         if (this.fireStateVisitor.touchedLava) {
-            this.lavaHurt();
-         }
-
-         if (!this.fireStateVisitor.isOnFire) {
-            this.clearFire();
-         }
-
-         if (var6 && !this.isOnFire()) {
+         boolean var7 = this.isOnFire();
+         boolean var5 = this.isFreezing();
+         this.checkInsideBlocks(var6, this.insideEffectCollector);
+         this.insideEffectCollector.applyAndClear(this);
+         if (var7 && !this.isOnFire() || var5 && !this.isFreezing()) {
             this.playEntityOnFireExtinguishedSound();
          }
 
-         if (!this.fireStateVisitor.isOnFire && this.remainingFireTicks <= 0) {
+         if (var7 && !this.isOnFire() && this.remainingFireTicks <= 0) {
             this.setRemainingFireTicks(-this.getFireImmuneTicks());
          }
 
@@ -1097,7 +1091,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.movementThisTick.add(new Movement(var1, var2));
    }
 
-   private void checkInsideBlocks(List<Movement> var1, StateVisitor var2) {
+   private void checkInsideBlocks(List<Movement> var1, InsideBlockEffectApplier.StepBasedCollector var2) {
       if (this.isAffectedByBlocks()) {
          LongSet var3 = this.visitedBlocks;
 
@@ -1105,34 +1099,38 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             Vec3 var6 = var5.from();
             Vec3 var7 = var5.to();
             AABB var8 = this.makeBoundingBox(var7).deflate(9.999999747378752E-6);
+            BlockGetter.forEachBlockIntersectedBetween(var6, var7, var8, (var5x, var6x) -> {
+               if (this.isAlive()) {
+                  BlockState var7x = this.level().getBlockState(var5x);
+                  if (!var7x.isAir()) {
+                     if (var3.add(var5x.asLong())) {
+                        VoxelShape var8 = var7x.getEntityInsideCollisionShape(this.level(), var5x, this);
+                        boolean var9 = var8 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var8.move(new Vec3(var5x)).toAabbs());
+                        if (var9) {
+                           try {
+                              var2.advanceStep(var6x);
+                              var7x.entityInside(this.level(), var5x, this, var2);
+                              this.onInsideBlock(var7x);
+                           } catch (Throwable var14) {
+                              CrashReport var11 = CrashReport.forThrowable(var14, "Colliding entity with block");
+                              CrashReportCategory var12 = var11.addCategory("Block being collided with");
+                              CrashReportCategory.populateBlockDetails(var12, this.level(), var5x, var7x);
+                              CrashReportCategory var13 = var11.addCategory("Entity being checked for collision");
+                              this.fillCrashReportCategory(var13);
+                              throw new ReportedException(var11);
+                           }
+                        }
 
-            for(BlockPos var10 : BlockGetter.boxTraverseBlocks(var6, var7, var8)) {
-               if (!this.isAlive()) {
-                  return;
-               }
+                        boolean var10 = this.collidedWithFluid(var7x.getFluidState(), var5x, var6, var7);
+                        if (var10) {
+                           var2.advanceStep(var6x);
+                           var7x.getFluidState().entityInside(this.level(), var5x, this, var2);
+                        }
 
-               BlockState var11 = this.level().getBlockState(var10);
-               if (!var11.isAir() && var3.add(var10.asLong())) {
-                  VoxelShape var12 = var11.getEntityInsideCollisionShape(this.level(), var10, this);
-                  boolean var13 = var12 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var12.move(new Vec3(var10)).toAabbs());
-                  if (var13) {
-                     try {
-                        var11.entityInside(this.level(), var10, this);
-                        this.onInsideBlock(var11);
-                     } catch (Throwable var18) {
-                        CrashReport var15 = CrashReport.forThrowable(var18, "Colliding entity with block");
-                        CrashReportCategory var16 = var15.addCategory("Block being collided with");
-                        CrashReportCategory.populateBlockDetails(var16, this.level(), var10, var11);
-                        CrashReportCategory var17 = var15.addCategory("Entity being checked for collision");
-                        this.fillCrashReportCategory(var17);
-                        throw new ReportedException(var15);
                      }
                   }
-
-                  boolean var14 = this.collidedWithFluid(var11.getFluidState(), var10, var6, var7);
-                  var2.visit(var11, var13, var14);
                }
-            }
+            });
          }
 
          var3.clear();
@@ -1816,25 +1814,24 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public CompoundTag saveWithoutId(CompoundTag var1) {
       try {
          if (this.vehicle != null) {
-            var1.put("Pos", this.newDoubleList(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
+            var1.store("Pos", Vec3.CODEC, new Vec3(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
          } else {
-            var1.put("Pos", this.newDoubleList(this.getX(), this.getY(), this.getZ()));
+            var1.store("Pos", Vec3.CODEC, this.position());
          }
 
-         Vec3 var2 = this.getDeltaMovement();
-         var1.put("Motion", this.newDoubleList(var2.x, var2.y, var2.z));
-         var1.put("Rotation", this.newFloatList(this.getYRot(), this.getXRot()));
+         var1.store("Motion", Vec3.CODEC, this.getDeltaMovement());
+         var1.store("Rotation", Vec2.CODEC, new Vec2(this.getYRot(), this.getXRot()));
          var1.putDouble("fall_distance", this.fallDistance);
          var1.putShort("Fire", (short)this.remainingFireTicks);
          var1.putShort("Air", (short)this.getAirSupply());
          var1.putBoolean("OnGround", this.onGround());
          var1.putBoolean("Invulnerable", this.invulnerable);
          var1.putInt("PortalCooldown", this.portalCooldown);
-         var1.putUUID("UUID", this.getUUID());
-         Component var10 = this.getCustomName();
-         if (var10 != null) {
-            RegistryOps var11 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            var1.store("CustomName", ComponentSerialization.CODEC, var11, var10);
+         var1.store("UUID", UUIDUtil.CODEC, this.getUUID());
+         Component var2 = this.getCustomName();
+         if (var2 != null) {
+            RegistryOps var9 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            var1.store("CustomName", ComponentSerialization.CODEC, var9, var2);
          }
 
          if (this.isCustomNameVisible()) {
@@ -1853,8 +1850,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             var1.putBoolean("Glowing", true);
          }
 
-         int var12 = this.getTicksFrozen();
-         if (var12 > 0) {
+         int var10 = this.getTicksFrozen();
+         if (var10 > 0) {
             var1.putInt("TicksFrozen", this.getTicksFrozen());
          }
 
@@ -1863,34 +1860,28 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
 
          if (!this.tags.isEmpty()) {
-            ListTag var5 = new ListTag();
-
-            for(String var7 : this.tags) {
-               var5.add(StringTag.valueOf(var7));
-            }
-
-            var1.put("Tags", var5);
+            var1.store("Tags", TAG_LIST_CODEC, List.copyOf(this.tags));
          }
 
          this.addAdditionalSaveData(var1);
          if (this.isVehicle()) {
-            ListTag var13 = new ListTag();
+            ListTag var11 = new ListTag();
 
-            for(Entity var15 : this.getPassengers()) {
-               CompoundTag var8 = new CompoundTag();
-               if (var15.saveAsPassenger(var8)) {
-                  var13.add(var8);
+            for(Entity var6 : this.getPassengers()) {
+               CompoundTag var7 = new CompoundTag();
+               if (var6.saveAsPassenger(var7)) {
+                  var11.add(var7);
                }
             }
 
-            if (!var13.isEmpty()) {
-               var1.put("Passengers", var13);
+            if (!var11.isEmpty()) {
+               var1.put("Passengers", var11);
             }
          }
 
          return var1;
-      } catch (Throwable var9) {
-         CrashReport var3 = CrashReport.forThrowable(var9, "Saving entity NBT");
+      } catch (Throwable var8) {
+         CrashReport var3 = CrashReport.forThrowable(var8, "Saving entity NBT");
          CrashReportCategory var4 = var3.addCategory("Entity being saved");
          this.fillCrashReportCategory(var4);
          throw new ReportedException(var3);
@@ -1899,18 +1890,15 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public void load(CompoundTag var1) {
       try {
-         ListTag var2 = var1.getList("Pos", 6);
-         ListTag var18 = var1.getList("Motion", 6);
-         ListTag var19 = var1.getList("Rotation", 5);
-         double var5 = var18.getDouble(0);
-         double var7 = var18.getDouble(1);
-         double var9 = var18.getDouble(2);
-         this.setDeltaMovement(Math.abs(var5) > 10.0 ? 0.0 : var5, Math.abs(var7) > 10.0 ? 0.0 : var7, Math.abs(var9) > 10.0 ? 0.0 : var9);
+         Vec3 var2 = (Vec3)var1.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
+         Vec3 var9 = (Vec3)var1.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
+         Vec2 var10 = (Vec2)var1.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
+         this.setDeltaMovement(Math.abs(var9.x) > 10.0 ? 0.0 : var9.x, Math.abs(var9.y) > 10.0 ? 0.0 : var9.y, Math.abs(var9.z) > 10.0 ? 0.0 : var9.z);
          this.hasImpulse = true;
-         double var11 = 3.0000512E7;
-         this.setPosRaw(Mth.clamp(var2.getDouble(0), -3.0000512E7, 3.0000512E7), Mth.clamp(var2.getDouble(1), -2.0E7, 2.0E7), Mth.clamp(var2.getDouble(2), -3.0000512E7, 3.0000512E7));
-         this.setYRot(var19.getFloat(0));
-         this.setXRot(var19.getFloat(1));
+         double var5 = 3.0000512E7;
+         this.setPosRaw(Mth.clamp(var2.x, -3.0000512E7, 3.0000512E7), Mth.clamp(var2.y, -2.0E7, 2.0E7), Mth.clamp(var2.z, -3.0000512E7, 3.0000512E7));
+         this.setYRot(var10.x);
+         this.setXRot(var10.y);
          this.setOldPosAndRot();
          this.setYHeadRot(this.getYRot());
          this.setYBodyRot(this.getYRot());
@@ -1923,33 +1911,27 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          this.onGround = var1.getBoolean("OnGround");
          this.invulnerable = var1.getBoolean("Invulnerable");
          this.portalCooldown = var1.getInt("PortalCooldown");
-         if (var1.hasUUID("UUID")) {
-            this.uuid = var1.getUUID("UUID");
+         var1.read("UUID", UUIDUtil.CODEC).ifPresent((var1x) -> {
+            this.uuid = var1x;
             this.stringUUID = this.uuid.toString();
-         }
-
+         });
          if (Double.isFinite(this.getX()) && Double.isFinite(this.getY()) && Double.isFinite(this.getZ())) {
             if (Double.isFinite((double)this.getYRot()) && Double.isFinite((double)this.getXRot())) {
                this.reapplyPosition();
                this.setRot(this.getYRot(), this.getXRot());
-               RegistryOps var13 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-               this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC, var13).orElse((Object)null));
+               RegistryOps var7 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+               this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC, var7).orElse((Object)null));
                this.setCustomNameVisible(var1.getBoolean("CustomNameVisible"));
                this.setSilent(var1.getBoolean("Silent"));
                this.setNoGravity(var1.getBoolean("NoGravity"));
                this.setGlowingTag(var1.getBoolean("Glowing"));
                this.setTicksFrozen(var1.getInt("TicksFrozen"));
                this.hasVisualFire = var1.getBoolean("HasVisualFire");
-               if (var1.contains("Tags", 9)) {
-                  this.tags.clear();
-                  ListTag var14 = var1.getList("Tags", 8);
-                  int var15 = Math.min(var14.size(), 1024);
-
-                  for(int var16 = 0; var16 < var15; ++var16) {
-                     this.tags.add(var14.getString(var16));
-                  }
-               }
-
+               this.tags.clear();
+               Optional var10000 = var1.read("Tags", TAG_LIST_CODEC);
+               Set var10001 = this.tags;
+               Objects.requireNonNull(var10001);
+               var10000.ifPresent(var10001::addAll);
                this.readAdditionalSaveData(var1);
                if (this.repositionEntityAfterLoad()) {
                   this.reapplyPosition();
@@ -1961,8 +1943,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          } else {
             throw new IllegalStateException("Entity has invalid position");
          }
-      } catch (Throwable var17) {
-         CrashReport var3 = CrashReport.forThrowable(var17, "Loading entity NBT");
+      } catch (Throwable var8) {
+         CrashReport var3 = CrashReport.forThrowable(var8, "Loading entity NBT");
          CrashReportCategory var4 = var3.addCategory("Entity being loaded");
          this.fillCrashReportCategory(var4);
          throw new ReportedException(var3);
@@ -1983,26 +1965,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    protected abstract void readAdditionalSaveData(CompoundTag var1);
 
    protected abstract void addAdditionalSaveData(CompoundTag var1);
-
-   protected ListTag newDoubleList(double... var1) {
-      ListTag var2 = new ListTag();
-
-      for(double var6 : var1) {
-         var2.add(DoubleTag.valueOf(var6));
-      }
-
-      return var2;
-   }
-
-   protected ListTag newFloatList(float... var1) {
-      ListTag var2 = new ListTag();
-
-      for(float var6 : var1) {
-         var2.add(FloatTag.valueOf(var6));
-      }
-
-      return var2;
-   }
 
    @Nullable
    public ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2) {
@@ -2502,6 +2464,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public void setAirSupply(int var1) {
       this.entityData.set(DATA_AIR_SUPPLY_ID, var1);
+   }
+
+   public void clearFreeze() {
+      this.setTicksFrozen(0);
    }
 
    public int getTicksFrozen() {
@@ -3552,7 +3518,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public boolean isFreezing() {
-      return (this.isInPowderSnow || this.wasInPowderSnow) && this.canFreeze();
+      return this.getTicksFrozen() > 0;
    }
 
    public float getYRot() {
@@ -3732,6 +3698,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    static {
+      TAG_LIST_CODEC = Codec.STRING.sizeLimitedListOf(1024);
+      INITIAL_AABB = new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+      viewScale = 1.0;
       DATA_SHARED_FLAGS_ID = SynchedEntityData.<Byte>defineId(Entity.class, EntityDataSerializers.BYTE);
       DATA_AIR_SUPPLY_ID = SynchedEntityData.<Integer>defineId(Entity.class, EntityDataSerializers.INT);
       DATA_CUSTOM_NAME = SynchedEntityData.<Optional<Component>>defineId(Entity.class, EntityDataSerializers.OPTIONAL_COMPONENT);
@@ -3747,36 +3716,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          super();
          this.from = var1;
          this.to = var2;
-      }
-   }
-
-   static class FireStateVisitor implements StateVisitor {
-      boolean isOnFire = false;
-      boolean touchedLava = false;
-
-      FireStateVisitor() {
-         super();
-      }
-
-      public void reset(boolean var1) {
-         this.isOnFire = var1;
-         this.touchedLava = false;
-      }
-
-      public void visit(BlockState var1, boolean var2, boolean var3) {
-         boolean var4 = var2 && var1.is(Blocks.POWDER_SNOW);
-         boolean var5 = var2 && var1.is(BlockTags.FIRE);
-         boolean var6 = var3 && var1.getFluidState().is(FluidTags.LAVA);
-         boolean var7 = var3 && var1.getFluidState().is(FluidTags.WATER);
-         if (var6) {
-            this.touchedLava = true;
-            this.isOnFire = true;
-         } else if (var5) {
-            this.isOnFire = true;
-         } else if (this.isOnFire && (var4 || var7)) {
-            this.isOnFire = false;
-         }
-
       }
    }
 
@@ -3844,9 +3783,5 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    @FunctionalInterface
    public interface MoveFunction {
       void accept(Entity var1, double var2, double var4, double var6);
-   }
-
-   interface StateVisitor {
-      void visit(BlockState var1, boolean var2, boolean var3);
    }
 }

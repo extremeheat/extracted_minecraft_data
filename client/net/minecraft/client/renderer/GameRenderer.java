@@ -65,7 +65,9 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
@@ -183,7 +185,7 @@ public class GameRenderer implements AutoCloseable {
 
    public void preloadUiShader(ResourceProvider var1) {
       try {
-         this.minecraft.getShaderManager().preloadForStartup(var1, CoreShaders.RENDERTYPE_GUI, CoreShaders.RENDERTYPE_GUI_OVERLAY, CoreShaders.POSITION_TEX_COLOR, CoreShaders.POSITION_COLOR);
+         this.minecraft.getShaderManager().preloadForStartup(var1, RenderPipelines.GUI, RenderPipelines.GUI_OVERLAY, RenderPipelines.GUI_TEXTURED_OVERLAY);
       } catch (ShaderManager.CompilationException | IOException var3) {
          throw new RuntimeException("Could not preload shaders for loading UI", var3);
       }
@@ -346,7 +348,7 @@ public class GameRenderer implements AutoCloseable {
          float var7 = (float)var3.hurtTime - var2;
          if (var3.isDeadOrDying()) {
             float var5 = Math.min((float)var3.deathTime + var2, 20.0F);
-            var1.mulPose(Axis.ZP.rotationDegrees(40.0F - 8000.0F / (var5 + 200.0F)));
+            var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(40.0F - 8000.0F / (var5 + 200.0F)));
          }
 
          if (var7 < 0.0F) {
@@ -356,10 +358,10 @@ public class GameRenderer implements AutoCloseable {
          var7 /= (float)var3.hurtDuration;
          var7 = Mth.sin(var7 * var7 * var7 * var7 * 3.1415927F);
          float var10 = var3.getHurtDir();
-         var1.mulPose(Axis.YP.rotationDegrees(-var10));
+         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var10));
          float var6 = (float)((double)(-var7) * 14.0 * (Double)this.minecraft.options.damageTiltStrength().get());
-         var1.mulPose(Axis.ZP.rotationDegrees(var6));
-         var1.mulPose(Axis.YP.rotationDegrees(var10));
+         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var6));
+         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var10));
       }
 
    }
@@ -371,8 +373,8 @@ public class GameRenderer implements AutoCloseable {
          float var5 = -(var3.walkDist + var7 * var2);
          float var6 = Mth.lerp(var2, var3.oBob, var3.bob);
          var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
-         var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
-         var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
+         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
+         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
       }
    }
 
@@ -392,7 +394,7 @@ public class GameRenderer implements AutoCloseable {
          RenderSystem.setProjectionMatrix(var4, ProjectionType.PERSPECTIVE);
          PoseStack var5 = new PoseStack();
          var5.pushPose();
-         var5.mulPose(var3.invert(new Matrix4f()));
+         var5.mulPose((Matrix4fc)var3.invert(new Matrix4f()));
          Matrix4fStack var6 = RenderSystem.getModelViewStack();
          var6.pushMatrix().mul(var3);
          this.bobHurt(var5, var2);
@@ -717,9 +719,9 @@ public class GameRenderer implements AutoCloseable {
          var11.translate((float)(var1.guiWidth() / 2) + var9 * Mth.abs(Mth.sin(var8 * 2.0F)), (float)(var1.guiHeight() / 2) + var10 * Mth.abs(Mth.sin(var8 * 2.0F)), -50.0F);
          float var12 = 50.0F + 175.0F * Mth.sin(var8);
          var11.scale(var12, -var12, var12);
-         var11.mulPose(Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
-         var11.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
-         var11.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
+         var11.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
+         var11.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
+         var11.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
          var1.drawSpecial((var2x) -> this.minecraft.getItemRenderer().renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var11, var2x, this.minecraft.level, 0));
          var11.popPose();
       }

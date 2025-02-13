@@ -80,12 +80,13 @@ public class TropicalFish extends AbstractSchoolingFish {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getPackedVariant());
+      var1.store("Variant", TropicalFish.Variant.CODEC, new Variant(this.getPackedVariant()));
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setPackedVariant(var1.getInt("Variant"));
+      Variant var2 = (Variant)var1.read("Variant", TropicalFish.Variant.CODEC).orElse(DEFAULT_VARIANT);
+      this.setPackedVariant(var2.getPackedId());
    }
 
    private void setPackedVariant(int var1) {

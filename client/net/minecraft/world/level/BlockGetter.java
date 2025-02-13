@@ -1,8 +1,8 @@
 package net.minecraft.world.level;
 
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -161,81 +161,93 @@ public interface BlockGetter extends LevelHeightAccessor {
       }
    }
 
-   static Iterable<BlockPos> boxTraverseBlocks(Vec3 var0, Vec3 var1, AABB var2) {
-      Vec3 var3 = var1.subtract(var0);
-      Iterable var4 = BlockPos.betweenClosed(var2);
-      if (var3.lengthSqr() < (double)Mth.square(0.99999F)) {
-         return var4;
-      } else {
-         ObjectLinkedOpenHashSet var5 = new ObjectLinkedOpenHashSet();
-         Vec3 var6 = var2.getMinPosition();
-         Vec3 var7 = var6.subtract(var3);
-         addCollisionsAlongTravel(var5, var7, var6, var2);
+   static void forEachBlockIntersectedBetween(Vec3 var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
+      Vec3 var4 = var1.subtract(var0);
+      if (!(var4.lengthSqr() < (double)Mth.square(0.99999F))) {
+         LongOpenHashSet var11 = new LongOpenHashSet();
+         Vec3 var12 = var2.getMinPosition();
+         Vec3 var7 = var12.subtract(var4);
+         int var8 = addCollisionsAlongTravel(var11, var7, var12, var2, var3);
 
-         for(BlockPos var9 : var4) {
-            var5.add(var9.immutable());
+         for(BlockPos var10 : BlockPos.betweenClosed(var2)) {
+            if (!var11.contains(var10.asLong())) {
+               var3.visit(var10, var8 + 1);
+            }
          }
 
-         return var5;
+      } else {
+         for(BlockPos var6 : BlockPos.betweenClosed(var2)) {
+            var3.visit(var6, 0);
+         }
+
       }
    }
 
-   private static void addCollisionsAlongTravel(Set<BlockPos> var0, Vec3 var1, Vec3 var2, AABB var3) {
-      Vec3 var4 = var2.subtract(var1);
-      int var5 = Mth.floor(var1.x);
-      int var6 = Mth.floor(var1.y);
-      int var7 = Mth.floor(var1.z);
-      int var8 = Mth.sign(var4.x);
-      int var9 = Mth.sign(var4.y);
-      int var10 = Mth.sign(var4.z);
-      double var11 = var8 == 0 ? 1.7976931348623157E308 : (double)var8 / var4.x;
-      double var13 = var9 == 0 ? 1.7976931348623157E308 : (double)var9 / var4.y;
-      double var15 = var10 == 0 ? 1.7976931348623157E308 : (double)var10 / var4.z;
-      double var17 = var11 * (var8 > 0 ? 1.0 - Mth.frac(var1.x) : Mth.frac(var1.x));
-      double var19 = var13 * (var9 > 0 ? 1.0 - Mth.frac(var1.y) : Mth.frac(var1.y));
-      double var21 = var15 * (var10 > 0 ? 1.0 - Mth.frac(var1.z) : Mth.frac(var1.z));
-      int var23 = 0;
+   private static int addCollisionsAlongTravel(LongSet var0, Vec3 var1, Vec3 var2, AABB var3, BlockStepVisitor var4) {
+      Vec3 var5 = var2.subtract(var1);
+      int var6 = Mth.floor(var1.x);
+      int var7 = Mth.floor(var1.y);
+      int var8 = Mth.floor(var1.z);
+      int var9 = Mth.sign(var5.x);
+      int var10 = Mth.sign(var5.y);
+      int var11 = Mth.sign(var5.z);
+      double var12 = var9 == 0 ? 1.7976931348623157E308 : (double)var9 / var5.x;
+      double var14 = var10 == 0 ? 1.7976931348623157E308 : (double)var10 / var5.y;
+      double var16 = var11 == 0 ? 1.7976931348623157E308 : (double)var11 / var5.z;
+      double var18 = var12 * (var9 > 0 ? 1.0 - Mth.frac(var1.x) : Mth.frac(var1.x));
+      double var20 = var14 * (var10 > 0 ? 1.0 - Mth.frac(var1.y) : Mth.frac(var1.y));
+      double var22 = var16 * (var11 > 0 ? 1.0 - Mth.frac(var1.z) : Mth.frac(var1.z));
+      int var24 = 0;
+      BlockPos.MutableBlockPos var25 = new BlockPos.MutableBlockPos();
 
-      while(var17 <= 1.0 || var19 <= 1.0 || var21 <= 1.0) {
-         if (var17 < var19) {
-            if (var17 < var21) {
-               var5 += var8;
-               var17 += var11;
+      while(var18 <= 1.0 || var20 <= 1.0 || var22 <= 1.0) {
+         if (var18 < var20) {
+            if (var18 < var22) {
+               var6 += var9;
+               var18 += var12;
             } else {
-               var7 += var10;
-               var21 += var15;
+               var8 += var11;
+               var22 += var16;
             }
-         } else if (var19 < var21) {
-            var6 += var9;
-            var19 += var13;
-         } else {
+         } else if (var20 < var22) {
             var7 += var10;
-            var21 += var15;
+            var20 += var14;
+         } else {
+            var8 += var11;
+            var22 += var16;
          }
 
-         if (var23++ > 16) {
+         if (var24++ > 16) {
             break;
          }
 
-         Optional var24 = AABB.clip((double)var5, (double)var6, (double)var7, (double)(var5 + 1), (double)(var6 + 1), (double)(var7 + 1), var1, var2);
-         if (!var24.isEmpty()) {
-            Vec3 var25 = (Vec3)var24.get();
-            double var26 = Mth.clamp(var25.x, (double)var5 + 9.999999747378752E-6, (double)var5 + 1.0 - 9.999999747378752E-6);
-            double var28 = Mth.clamp(var25.y, (double)var6 + 9.999999747378752E-6, (double)var6 + 1.0 - 9.999999747378752E-6);
-            double var30 = Mth.clamp(var25.z, (double)var7 + 9.999999747378752E-6, (double)var7 + 1.0 - 9.999999747378752E-6);
-            int var32 = Mth.floor(var26 + var3.getXsize());
-            int var33 = Mth.floor(var28 + var3.getYsize());
-            int var34 = Mth.floor(var30 + var3.getZsize());
+         Optional var26 = AABB.clip((double)var6, (double)var7, (double)var8, (double)(var6 + 1), (double)(var7 + 1), (double)(var8 + 1), var1, var2);
+         if (!var26.isEmpty()) {
+            Vec3 var27 = (Vec3)var26.get();
+            double var28 = Mth.clamp(var27.x, (double)var6 + 9.999999747378752E-6, (double)var6 + 1.0 - 9.999999747378752E-6);
+            double var30 = Mth.clamp(var27.y, (double)var7 + 9.999999747378752E-6, (double)var7 + 1.0 - 9.999999747378752E-6);
+            double var32 = Mth.clamp(var27.z, (double)var8 + 9.999999747378752E-6, (double)var8 + 1.0 - 9.999999747378752E-6);
+            int var34 = Mth.floor(var28 + var3.getXsize());
+            int var35 = Mth.floor(var30 + var3.getYsize());
+            int var36 = Mth.floor(var32 + var3.getZsize());
 
-            for(int var35 = var5; var35 <= var32; ++var35) {
-               for(int var36 = var6; var36 <= var33; ++var36) {
-                  for(int var37 = var7; var37 <= var34; ++var37) {
-                     var0.add(new BlockPos(var35, var36, var37));
+            for(int var37 = var6; var37 <= var34; ++var37) {
+               for(int var38 = var7; var38 <= var35; ++var38) {
+                  for(int var39 = var8; var39 <= var36; ++var39) {
+                     if (var0.add(BlockPos.asLong(var37, var38, var39))) {
+                        var4.visit(var25.set(var37, var38, var39), var24);
+                     }
                   }
                }
             }
          }
       }
 
+      return var24;
+   }
+
+   @FunctionalInterface
+   public interface BlockStepVisitor {
+      void visit(BlockPos var1, int var2);
    }
 }

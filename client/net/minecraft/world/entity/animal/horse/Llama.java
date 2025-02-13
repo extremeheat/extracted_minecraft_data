@@ -1,7 +1,9 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -100,14 +102,14 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant().id);
+      var1.store("Variant", Llama.Variant.LEGACY_CODEC, this.getVariant());
       var1.putInt("Strength", this.getStrength());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       this.setStrength(var1.getInt("Strength"));
       super.readAdditionalSaveData(var1);
-      this.setVariant(Llama.Variant.byId(var1.getInt("Variant")));
+      this.setVariant((Variant)var1.read("Variant", Llama.Variant.LEGACY_CODEC).orElse(Llama.Variant.CREAMY));
    }
 
    protected void registerGoals() {
@@ -418,9 +420,12 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       BROWN(2, "brown"),
       GRAY(3, "gray");
 
-      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
-      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Variant> LEGACY_CODEC;
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC;
       final int id;
       private final String name;
 
@@ -444,6 +449,14 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{CREAMY, WHITE, BROWN, GRAY};
+      }
+
+      static {
+         PrimitiveCodec var10000 = Codec.INT;
+         IntFunction var10001 = BY_ID;
+         Objects.requireNonNull(var10001);
+         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::getId);
+         STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       }
    }
 

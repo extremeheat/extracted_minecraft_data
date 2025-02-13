@@ -14,6 +14,7 @@ import net.minecraft.util.RandomSource;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class SkyRenderer implements AutoCloseable {
@@ -74,19 +75,20 @@ public class SkyRenderer implements AutoCloseable {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
-   public void renderDarkDisc(PoseStack var1) {
+   public void renderDarkDisc() {
       RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-      var1.pushPose();
+      Matrix4fStack var1 = RenderSystem.getModelViewStack();
+      var1.pushMatrix();
       var1.translate(0.0F, 12.0F, 0.0F);
       this.bottomSkyBuffer.drawWithRenderType(RenderType.sky());
-      var1.popPose();
+      var1.popMatrix();
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    public void renderSunMoonAndStars(PoseStack var1, MultiBufferSource.BufferSource var2, float var3, int var4, float var5, float var6, FogParameters var7) {
       var1.pushPose();
-      var1.mulPose(Axis.YP.rotationDegrees(-90.0F));
-      var1.mulPose(Axis.XP.rotationDegrees(var3 * 360.0F));
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
+      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var3 * 360.0F));
       this.renderSun(var5, var2, var1);
       this.renderMoon(var4, var5, var2, var1);
       var2.endBatch();
@@ -141,10 +143,10 @@ public class SkyRenderer implements AutoCloseable {
 
    public void renderSunriseAndSunset(PoseStack var1, MultiBufferSource.BufferSource var2, float var3, int var4) {
       var1.pushPose();
-      var1.mulPose(Axis.XP.rotationDegrees(90.0F));
+      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
       float var5 = Mth.sin(var3) < 0.0F ? 180.0F : 0.0F;
-      var1.mulPose(Axis.ZP.rotationDegrees(var5));
-      var1.mulPose(Axis.ZP.rotationDegrees(90.0F));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var5));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
       Matrix4f var6 = var1.last().pose();
       VertexConsumer var7 = var2.getBuffer(RenderType.sunriseSunset());
       float var8 = ARGB.alphaFloat(var4);

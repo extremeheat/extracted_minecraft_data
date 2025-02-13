@@ -48,7 +48,6 @@ import net.minecraft.data.tags.PoiTypeTagsProvider;
 import net.minecraft.data.tags.StructureTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.data.tags.TradeRebalanceEnchantmentTagsProvider;
-import net.minecraft.data.tags.TradeRebalanceStructureTagsProvider;
 import net.minecraft.data.tags.VanillaBlockTagsProvider;
 import net.minecraft.data.tags.VanillaEnchantmentTagsProvider;
 import net.minecraft.data.tags.VanillaItemTagsProvider;
@@ -138,7 +137,6 @@ public class Main {
       var13.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var12));
       var13.addProvider((var0x) -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.trade_rebalance.description"), FeatureFlagSet.of(FeatureFlags.TRADE_REBALANCE)));
       var13.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var14));
-      var13.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var14));
       var13.addProvider(bindRegistries(TradeRebalanceEnchantmentTagsProvider::new, var14));
       DataGenerator.PackGenerator var18 = var0.getBuiltinDatapack(var2, "redstone_experiments");
       var18.addProvider((var0x) -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.redstone_experiments.description"), FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS)));

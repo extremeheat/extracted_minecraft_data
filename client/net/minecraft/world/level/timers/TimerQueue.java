@@ -94,12 +94,11 @@ public class TimerQueue<T> {
    }
 
    private void loadEvent(CompoundTag var1) {
-      CompoundTag var2 = var1.getCompound("Callback");
-      TimerCallback var3 = this.callbacksRegistry.deserialize(var2);
-      if (var3 != null) {
-         String var4 = var1.getString("Name");
-         long var5 = var1.getLong("TriggerTime");
-         this.schedule(var4, var5, var3);
+      TimerCallback var2 = (TimerCallback)var1.read("Callback", this.callbacksRegistry.codec()).orElse((Object)null);
+      if (var2 != null) {
+         String var3 = var1.getString("Name");
+         long var4 = var1.getLong("TriggerTime");
+         this.schedule(var3, var4, var2);
       }
 
    }
@@ -108,7 +107,7 @@ public class TimerQueue<T> {
       CompoundTag var2 = new CompoundTag();
       var2.putString("Name", var1.id);
       var2.putLong("TriggerTime", var1.triggerTime);
-      var2.put("Callback", this.callbacksRegistry.serialize(var1.callback));
+      var2.store("Callback", this.callbacksRegistry.codec(), var1.callback);
       return var2;
    }
 

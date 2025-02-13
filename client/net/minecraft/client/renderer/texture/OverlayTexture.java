@@ -10,7 +10,7 @@ public class OverlayTexture implements AutoCloseable {
    public static final int RED_OVERLAY_V = 3;
    public static final int WHITE_OVERLAY_V = 10;
    public static final int NO_OVERLAY = pack(0, 10);
-   private final DynamicTexture texture = new DynamicTexture(16, 16, false);
+   private final DynamicTexture texture = new DynamicTexture("Entity Color Overlay", 16, 16, false);
 
    public OverlayTexture() {
       super();
@@ -31,7 +31,7 @@ public class OverlayTexture implements AutoCloseable {
       this.texture.bind();
       this.texture.setFilter(false, false);
       this.texture.setClamp(true);
-      var1.upload(0, 0, 0, 0, 0, var1.getWidth(), var1.getHeight(), false);
+      this.texture.upload();
       RenderSystem.activeTexture(33984);
    }
 
@@ -40,7 +40,7 @@ public class OverlayTexture implements AutoCloseable {
    }
 
    public void setupOverlayColor() {
-      RenderSystem.setupOverlayColor(this.texture.getId(), 16);
+      RenderSystem.setupOverlayColor(this.texture.getTexture());
    }
 
    public static int u(float var0) {

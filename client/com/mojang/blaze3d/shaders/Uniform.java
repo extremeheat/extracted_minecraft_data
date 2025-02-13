@@ -7,50 +7,33 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.List;
-import net.minecraft.client.renderer.ShaderProgramConfig;
-import org.joml.Matrix3f;
+import net.minecraft.util.StringRepresentable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class Uniform extends AbstractUniform implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final int UT_INT1 = 0;
-   public static final int UT_INT2 = 1;
-   public static final int UT_INT3 = 2;
-   public static final int UT_INT4 = 3;
-   public static final int UT_FLOAT1 = 4;
-   public static final int UT_FLOAT2 = 5;
-   public static final int UT_FLOAT3 = 6;
-   public static final int UT_FLOAT4 = 7;
-   public static final int UT_MAT2 = 8;
-   public static final int UT_MAT3 = 9;
-   public static final int UT_MAT4 = 10;
-   private static final boolean TRANSPOSE_MATRICIES = false;
    private int location;
-   private final int count;
-   private final int type;
+   private final Type type;
    private final IntBuffer intValues;
    private final FloatBuffer floatValues;
    private final String name;
 
-   public Uniform(String var1, int var2, int var3) {
+   public Uniform(String var1, Type var2) {
       super();
       this.name = var1;
-      this.count = var3;
       this.type = var2;
-      if (var2 <= 3) {
-         this.intValues = MemoryUtil.memAllocInt(var3);
+      if (var2.isIntStorage()) {
+         this.intValues = MemoryUtil.memAllocInt(var2.count);
          this.floatValues = null;
       } else {
          this.intValues = null;
-         this.floatValues = MemoryUtil.memAllocFloat(var3);
+         this.floatValues = MemoryUtil.memAllocFloat(var2.count);
       }
 
       this.location = -1;
-      this.markDirty();
    }
 
    public static int glGetUniformLocation(int var0, CharSequence var1) {
@@ -59,10 +42,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
 
    public static void uploadInteger(int var0, int var1) {
       RenderSystem.glUniform1i(var0, var1);
-   }
-
-   public void setFromConfig(ShaderProgramConfig.Uniform var1) {
-      this.setFromConfig(var1.values(), var1.count());
    }
 
    public void setFromConfig(List<Float> var1, int var2) {
@@ -75,10 +54,8 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
          }
       }
 
-      if (this.type <= 3) {
-         this.setSafe((int)var3[0], (int)var3[1], (int)var3[2], (int)var3[3]);
-      } else if (this.type <= 7) {
-         this.setSafe(var3[0], var3[1], var3[2], var3[3]);
+      if (this.type.isIntStorage()) {
+         this.setSafe((int)var3[0], (int)var3[1], (int)var3[2]);
       } else {
          this.set(Arrays.copyOfRange(var3, 0, var2));
       }
@@ -96,28 +73,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
 
    }
 
-   private void markDirty() {
-   }
-
-   public static int getTypeFromString(String var0) {
-      byte var1 = -1;
-      if ("int".equals(var0)) {
-         var1 = 0;
-      } else if ("float".equals(var0)) {
-         var1 = 4;
-      } else if (var0.startsWith("matrix")) {
-         if (var0.endsWith("2x2")) {
-            var1 = 8;
-         } else if (var0.endsWith("3x3")) {
-            var1 = 9;
-         } else if (var0.endsWith("4x4")) {
-            var1 = 10;
-         }
-      }
-
-      return var1;
-   }
-
    public void setLocation(int var1) {
       this.location = var1;
    }
@@ -126,23 +81,19 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
       return this.name;
    }
 
+   public Type getType() {
+      return this.type;
+   }
+
    public final void set(float var1) {
       this.floatValues.position(0);
       this.floatValues.put(0, var1);
-      this.markDirty();
    }
 
    public final void set(float var1, float var2) {
       this.floatValues.position(0);
       this.floatValues.put(0, var1);
       this.floatValues.put(1, var2);
-      this.markDirty();
-   }
-
-   public final void set(int var1, float var2) {
-      this.floatValues.position(0);
-      this.floatValues.put(var1, var2);
-      this.markDirty();
    }
 
    public final void set(float var1, float var2, float var3) {
@@ -150,13 +101,11 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
       this.floatValues.put(0, var1);
       this.floatValues.put(1, var2);
       this.floatValues.put(2, var3);
-      this.markDirty();
    }
 
    public final void set(Vector3f var1) {
       this.floatValues.position(0);
       var1.get(this.floatValues);
-      this.markDirty();
    }
 
    public final void set(float var1, float var2, float var3, float var4) {
@@ -166,68 +115,24 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
       this.floatValues.put(var3);
       this.floatValues.put(var4);
       this.floatValues.flip();
-      this.markDirty();
    }
 
-   public final void set(Vector4f var1) {
-      this.floatValues.position(0);
-      var1.get(this.floatValues);
-      this.markDirty();
-   }
-
-   public final void setSafe(float var1, float var2, float var3, float var4) {
-      this.floatValues.position(0);
-      if (this.type >= 4) {
-         this.floatValues.put(0, var1);
-      }
-
-      if (this.type >= 5) {
-         this.floatValues.put(1, var2);
-      }
-
-      if (this.type >= 6) {
-         this.floatValues.put(2, var3);
-      }
-
-      if (this.type >= 7) {
-         this.floatValues.put(3, var4);
-      }
-
-      this.markDirty();
-   }
-
-   public final void setSafe(int var1, int var2, int var3, int var4) {
+   private void setSafe(int var1, int var2, int var3) {
       this.intValues.position(0);
-      if (this.type >= 0) {
+      if (this.type == Uniform.Type.INT || this.type == Uniform.Type.IVEC3) {
          this.intValues.put(0, var1);
       }
 
-      if (this.type >= 1) {
+      if (this.type == Uniform.Type.IVEC3) {
          this.intValues.put(1, var2);
-      }
-
-      if (this.type >= 2) {
          this.intValues.put(2, var3);
       }
 
-      if (this.type >= 3) {
-         this.intValues.put(3, var4);
-      }
-
-      this.markDirty();
    }
 
    public final void set(int var1) {
       this.intValues.position(0);
       this.intValues.put(0, var1);
-      this.markDirty();
-   }
-
-   public final void set(int var1, int var2) {
-      this.intValues.position(0);
-      this.intValues.put(0, var1);
-      this.intValues.put(1, var2);
-      this.markDirty();
    }
 
    public final void set(int var1, int var2, int var3) {
@@ -235,234 +140,80 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
       this.intValues.put(0, var1);
       this.intValues.put(1, var2);
       this.intValues.put(2, var3);
-      this.markDirty();
-   }
-
-   public final void set(int var1, int var2, int var3, int var4) {
-      this.intValues.position(0);
-      this.intValues.put(0, var1);
-      this.intValues.put(1, var2);
-      this.intValues.put(2, var3);
-      this.intValues.put(3, var4);
-      this.markDirty();
    }
 
    public final void set(float[] var1) {
-      if (var1.length < this.count) {
-         LOGGER.warn("Uniform.set called with a too-small value array (expected {}, got {}). Ignoring.", this.count, var1.length);
+      if (var1.length < this.type.count) {
+         LOGGER.warn("Uniform.set called with a too-small value array (expected {}, got {}). Ignoring.", this.type.count, var1.length);
       } else {
          this.floatValues.position(0);
          this.floatValues.put(var1);
          this.floatValues.position(0);
-         this.markDirty();
       }
-   }
-
-   public final void setMat2x2(float var1, float var2, float var3, float var4) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.markDirty();
-   }
-
-   public final void setMat2x3(float var1, float var2, float var3, float var4, float var5, float var6) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.markDirty();
-   }
-
-   public final void setMat2x4(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.floatValues.put(6, var7);
-      this.floatValues.put(7, var8);
-      this.markDirty();
-   }
-
-   public final void setMat3x2(float var1, float var2, float var3, float var4, float var5, float var6) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.markDirty();
-   }
-
-   public final void setMat3x3(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.floatValues.put(6, var7);
-      this.floatValues.put(7, var8);
-      this.floatValues.put(8, var9);
-      this.markDirty();
-   }
-
-   public final void setMat3x4(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.floatValues.put(6, var7);
-      this.floatValues.put(7, var8);
-      this.floatValues.put(8, var9);
-      this.floatValues.put(9, var10);
-      this.floatValues.put(10, var11);
-      this.floatValues.put(11, var12);
-      this.markDirty();
-   }
-
-   public final void setMat4x2(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.floatValues.put(6, var7);
-      this.floatValues.put(7, var8);
-      this.markDirty();
-   }
-
-   public final void setMat4x3(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.floatValues.put(6, var7);
-      this.floatValues.put(7, var8);
-      this.floatValues.put(8, var9);
-      this.floatValues.put(9, var10);
-      this.floatValues.put(10, var11);
-      this.floatValues.put(11, var12);
-      this.markDirty();
-   }
-
-   public final void setMat4x4(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, float var13, float var14, float var15, float var16) {
-      this.floatValues.position(0);
-      this.floatValues.put(0, var1);
-      this.floatValues.put(1, var2);
-      this.floatValues.put(2, var3);
-      this.floatValues.put(3, var4);
-      this.floatValues.put(4, var5);
-      this.floatValues.put(5, var6);
-      this.floatValues.put(6, var7);
-      this.floatValues.put(7, var8);
-      this.floatValues.put(8, var9);
-      this.floatValues.put(9, var10);
-      this.floatValues.put(10, var11);
-      this.floatValues.put(11, var12);
-      this.floatValues.put(12, var13);
-      this.floatValues.put(13, var14);
-      this.floatValues.put(14, var15);
-      this.floatValues.put(15, var16);
-      this.markDirty();
    }
 
    public final void set(Matrix4f var1) {
       this.floatValues.position(0);
       var1.get(this.floatValues);
-      this.markDirty();
-   }
-
-   public final void set(Matrix3f var1) {
-      this.floatValues.position(0);
-      var1.get(this.floatValues);
-      this.markDirty();
    }
 
    public void upload() {
-      if (this.type <= 3) {
-         this.uploadAsInteger();
-      } else if (this.type <= 7) {
-         this.uploadAsFloat();
+      if (this.type.isIntStorage()) {
+         this.type.uploadIntBuffer(this.location, this.intValues);
       } else {
-         if (this.type > 10) {
-            LOGGER.warn("Uniform.upload called, but type value ({}) is not a valid type. Ignoring.", this.type);
-            return;
+         this.type.uploadFloatBuffer(this.location, this.floatValues);
+      }
+
+   }
+
+   public static enum Type implements StringRepresentable {
+      INT(1, "int"),
+      IVEC3(3, "ivec3"),
+      FLOAT(1, "float"),
+      VEC2(2, "vec2"),
+      VEC3(3, "vec3"),
+      VEC4(4, "vec4"),
+      MATRIX4X4(16, "matrix4x4");
+
+      public static final StringRepresentable.EnumCodec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+      final int count;
+      final String name;
+
+      private Type(final int var3, final String var4) {
+         this.count = var3;
+         this.name = var4;
+      }
+
+      boolean isIntStorage() {
+         return this == INT || this == IVEC3;
+      }
+
+      void uploadIntBuffer(int var1, IntBuffer var2) {
+         switch (this.ordinal()) {
+            case 0 -> RenderSystem.glUniform1(var1, var2);
+            case 1 -> RenderSystem.glUniform3(var1, var2);
          }
 
-         this.uploadAsMatrix();
       }
 
-   }
+      void uploadFloatBuffer(int var1, FloatBuffer var2) {
+         switch (this.ordinal()) {
+            case 2 -> RenderSystem.glUniform1(var1, var2);
+            case 3 -> RenderSystem.glUniform2(var1, var2);
+            case 4 -> RenderSystem.glUniform3(var1, var2);
+            case 5 -> RenderSystem.glUniform4(var1, var2);
+            case 6 -> RenderSystem.glUniformMatrix4(var1, var2);
+         }
 
-   private void uploadAsInteger() {
-      this.intValues.rewind();
-      switch (this.type) {
-         case 0 -> RenderSystem.glUniform1(this.location, this.intValues);
-         case 1 -> RenderSystem.glUniform2(this.location, this.intValues);
-         case 2 -> RenderSystem.glUniform3(this.location, this.intValues);
-         case 3 -> RenderSystem.glUniform4(this.location, this.intValues);
-         default -> LOGGER.warn("Uniform.upload called, but count value ({}) is  not in the range of 1 to 4. Ignoring.", this.count);
       }
 
-   }
-
-   private void uploadAsFloat() {
-      this.floatValues.rewind();
-      switch (this.type) {
-         case 4 -> RenderSystem.glUniform1(this.location, this.floatValues);
-         case 5 -> RenderSystem.glUniform2(this.location, this.floatValues);
-         case 6 -> RenderSystem.glUniform3(this.location, this.floatValues);
-         case 7 -> RenderSystem.glUniform4(this.location, this.floatValues);
-         default -> LOGGER.warn("Uniform.upload called, but count value ({}) is not in the range of 1 to 4. Ignoring.", this.count);
+      public String getSerializedName() {
+         return this.name;
       }
 
-   }
-
-   private void uploadAsMatrix() {
-      this.floatValues.clear();
-      switch (this.type) {
-         case 8 -> RenderSystem.glUniformMatrix2(this.location, false, this.floatValues);
-         case 9 -> RenderSystem.glUniformMatrix3(this.location, false, this.floatValues);
-         case 10 -> RenderSystem.glUniformMatrix4(this.location, false, this.floatValues);
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{INT, IVEC3, FLOAT, VEC2, VEC3, VEC4, MATRIX4X4};
       }
-
-   }
-
-   public int getLocation() {
-      return this.location;
-   }
-
-   public int getCount() {
-      return this.count;
-   }
-
-   public int getType() {
-      return this.type;
-   }
-
-   public IntBuffer getIntBuffer() {
-      return this.intValues;
-   }
-
-   public FloatBuffer getFloatBuffer() {
-      return this.floatValues;
    }
 }

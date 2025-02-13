@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
@@ -108,7 +109,9 @@ public class SkinTextureDownloader {
    private static CompletableFuture<ResourceLocation> registerTextureInManager(ResourceLocation var0, NativeImage var1) {
       Minecraft var2 = Minecraft.getInstance();
       return CompletableFuture.supplyAsync(() -> {
-         var2.getTextureManager().register(var0, new DynamicTexture(var1));
+         TextureManager var10000 = var2.getTextureManager();
+         Objects.requireNonNull(var0);
+         var10000.register(var0, new DynamicTexture(var0::toString, var1));
          return var0;
       }, var2);
    }

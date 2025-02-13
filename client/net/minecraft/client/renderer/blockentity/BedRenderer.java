@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
    private final Model headModel;
@@ -79,9 +80,9 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
    private void renderPiece(PoseStack var1, MultiBufferSource var2, Model var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
       var1.pushPose();
       var1.translate(0.0F, 0.5625F, var8 ? -1.0F : 0.0F);
-      var1.mulPose(Axis.XP.rotationDegrees(90.0F));
+      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
       var1.translate(0.5F, 0.5F, 0.5F);
-      var1.mulPose(Axis.ZP.rotationDegrees(180.0F + var4.toYRot()));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F + var4.toYRot()));
       var1.translate(-0.5F, -0.5F, -0.5F);
       VertexConsumer var9 = var5.buffer(var2, RenderType::entitySolid);
       var3.renderToBuffer(var1, var9, var6, var7);

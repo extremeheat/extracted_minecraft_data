@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import org.joml.Quaternionfc;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
    private static final ResourceLocation[] ENABLED_LEVEL_SPRITES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3")};
@@ -129,11 +130,11 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       var1.pose().translate((float)var2 + 33.0F, (float)var3 + 31.0F, 100.0F);
       float var7 = 40.0F;
       var1.pose().scale(-40.0F, 40.0F, 40.0F);
-      var1.pose().mulPose(Axis.XP.rotationDegrees(25.0F));
+      var1.pose().mulPose((Quaternionfc)Axis.XP.rotationDegrees(25.0F));
       var1.pose().translate((1.0F - var5) * 0.2F, (1.0F - var5) * 0.1F, (1.0F - var5) * 0.25F);
       float var8 = -(1.0F - var5) * 90.0F - 90.0F;
-      var1.pose().mulPose(Axis.YP.rotationDegrees(var8));
-      var1.pose().mulPose(Axis.XP.rotationDegrees(180.0F));
+      var1.pose().mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8));
+      var1.pose().mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
       float var9 = Mth.clamp(Mth.frac(var6 + 0.25F) * 1.6F - 0.3F, 0.0F, 1.0F);
       float var10 = Mth.clamp(Mth.frac(var6 + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       this.bookModel.setupAnim(0.0F, var9, var10, var5);

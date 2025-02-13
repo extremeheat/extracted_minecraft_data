@@ -52,6 +52,7 @@ import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
+import org.joml.Quaternionfc;
 
 public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerRenderState, PlayerModel> {
    public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
@@ -197,7 +198,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       if (var2.isUsingItem) {
          ItemStack var8 = var1.getItemInHand(var2.useItemHand);
          if (var8.is(Items.SPYGLASS)) {
-            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, false, var1);
+            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, var1);
          }
       }
 
@@ -243,7 +244,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    @Nullable
    private static Parrot.Variant getParrotOnShoulder(AbstractClientPlayer var0, boolean var1) {
       CompoundTag var2 = var1 ? var0.getShoulderEntityLeft() : var0.getShoulderEntityRight();
-      return EntityType.byString(var2.getString("id")).filter((var0x) -> var0x == EntityType.PARROT).isPresent() ? Parrot.Variant.byId(var2.getInt("Variant")) : null;
+      return EntityType.byString(var2.getString("id")).filter((var0x) -> var0x == EntityType.PARROT).isPresent() ? (Parrot.Variant)var2.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE) : null;
    }
 
    public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
@@ -272,17 +273,17 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          super.setupRotations(var1, var2, var3, var4);
          float var7 = var1.fallFlyingScale();
          if (!var1.isAutoSpinAttack) {
-            var2.mulPose(Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
+            var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
          }
 
          if (var1.shouldApplyFlyingYRot) {
-            var2.mulPose(Axis.YP.rotation(var1.flyingYRot));
+            var2.mulPose((Quaternionfc)Axis.YP.rotation(var1.flyingYRot));
          }
       } else if (var5 > 0.0F) {
          super.setupRotations(var1, var2, var3, var4);
          float var9 = var1.isInWater ? -90.0F - var6 : -90.0F;
          float var8 = Mth.lerp(var5, 0.0F, var9);
-         var2.mulPose(Axis.XP.rotationDegrees(var8));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var8));
          if (var1.isVisuallySwimming) {
             var2.translate(0.0F, -1.0F, 0.3F);
          }

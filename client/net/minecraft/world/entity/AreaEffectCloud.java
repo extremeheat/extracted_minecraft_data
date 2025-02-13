@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -343,10 +344,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.radiusOnUse = var1.getFloat("RadiusOnUse");
       this.radiusPerTick = var1.getFloat("RadiusPerTick");
       this.setRadius(var1.getFloat("Radius"));
-      if (var1.hasUUID("Owner")) {
-         this.ownerUUID = var1.getUUID("Owner");
-      }
-
+      this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.setParticle((ParticleOptions)var1.read("Particle", ParticleTypes.CODEC, var2).orElse(DEFAULT_PARTICLE));
       this.setPotionContents((PotionContents)var1.read("potion_contents", PotionContents.CODEC, var2).orElse(PotionContents.EMPTY));
@@ -364,10 +362,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       var1.putFloat("Radius", this.getRadius());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.store("Particle", ParticleTypes.CODEC, var2, this.getParticle());
-      if (this.ownerUUID != null) {
-         var1.putUUID("Owner", this.ownerUUID);
-      }
-
+      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
          var1.store("potion_contents", PotionContents.CODEC, var2, this.potionContents);
       }

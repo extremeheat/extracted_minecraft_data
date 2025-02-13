@@ -8,7 +8,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
@@ -189,12 +191,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("Book", 10)) {
-         this.book = this.resolveBook((ItemStack)ItemStack.parse(var2, var1.getCompound("Book")).orElse(ItemStack.EMPTY), (Player)null);
-      } else {
-         this.book = ItemStack.EMPTY;
-      }
-
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      this.book = (ItemStack)var1.read("Book", ItemStack.CODEC, var3).map((var1x) -> this.resolveBook(var1x, (Player)null)).orElse(ItemStack.EMPTY);
       this.pageCount = getPageCount(this.book);
       this.page = Mth.clamp(var1.getInt("Page"), 0, this.pageCount - 1);
    }
@@ -202,7 +200,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.getBook().isEmpty()) {
-         var1.put("Book", this.getBook().save(var2));
+         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+         var1.store("Book", ItemStack.CODEC, var3, this.getBook());
          var1.putInt("Page", this.page);
       }
 

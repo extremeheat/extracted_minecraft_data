@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBlockEntity> {
    private static final int BLACK_TEXT_OUTLINE_COLOR = -988212;
@@ -110,7 +111,7 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
 
    private void translateSignText(PoseStack var1, boolean var2, Vec3 var3) {
       if (!var2) {
-         var1.mulPose(Axis.YP.rotationDegrees(180.0F));
+         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
       }
 
       float var4 = 0.015625F * this.getSignTextRenderScale();

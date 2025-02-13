@@ -257,6 +257,25 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
+   StreamCodec<ByteBuf, long[]> LONG_ARRAY = new StreamCodec<ByteBuf, long[]>() {
+      public long[] decode(ByteBuf var1) {
+         return FriendlyByteBuf.readLongArray(var1);
+      }
+
+      public void encode(ByteBuf var1, long[] var2) {
+         FriendlyByteBuf.writeLongArray(var1, var2);
+      }
+
+      // $FF: synthetic method
+      public void encode(final Object var1, final Object var2) {
+         this.encode((ByteBuf)var1, (long[])var2);
+      }
+
+      // $FF: synthetic method
+      public Object decode(final Object var1) {
+         return this.decode((ByteBuf)var1);
+      }
+   };
    StreamCodec<ByteBuf, String> STRING_UTF8 = stringUtf8(32767);
    StreamCodec<ByteBuf, Tag> TAG = tagCodec(() -> NbtAccounter.create(2097152L));
    StreamCodec<ByteBuf, Tag> TRUSTED_TAG = tagCodec(NbtAccounter::unlimitedHeap);

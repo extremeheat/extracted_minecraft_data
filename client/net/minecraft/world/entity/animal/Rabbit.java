@@ -1,7 +1,9 @@
 package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -271,13 +273,13 @@ public class Rabbit extends Animal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("RabbitType", this.getVariant().id);
+      var1.store("RabbitType", Rabbit.Variant.LEGACY_CODEC, this.getVariant());
       var1.putInt("MoreCarrotTicks", this.moreCarrotTicks);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Rabbit.Variant.byId(var1.getInt("RabbitType")));
+      this.setVariant((Variant)var1.read("RabbitType", Rabbit.Variant.LEGACY_CODEC).orElse(Rabbit.Variant.BROWN));
       this.moreCarrotTicks = var1.getInt("MoreCarrotTicks");
    }
 
@@ -449,7 +451,10 @@ public class Rabbit extends Animal {
 
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>sparse(Variant::id, values(), BROWN);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
-      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Variant> LEGACY_CODEC;
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC;
       final int id;
       private final String name;
 
@@ -473,6 +478,14 @@ public class Rabbit extends Animal {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{BROWN, WHITE, BLACK, WHITE_SPLOTCHED, GOLD, SALT, EVIL};
+      }
+
+      static {
+         PrimitiveCodec var10000 = Codec.INT;
+         IntFunction var10001 = BY_ID;
+         Objects.requireNonNull(var10001);
+         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::id);
+         STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
       }
    }
 

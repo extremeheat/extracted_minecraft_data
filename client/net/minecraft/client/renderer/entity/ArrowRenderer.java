@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.ArrowRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import org.joml.Quaternionfc;
 
 public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRenderState> extends EntityRenderer<T, S> {
    private final ArrowModel model;
@@ -22,8 +23,8 @@ public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRend
 
    public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
-      var2.mulPose(Axis.YP.rotationDegrees(var1.yRot - 90.0F));
-      var2.mulPose(Axis.ZP.rotationDegrees(var1.xRot));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
+      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot));
       VertexConsumer var5 = var3.getBuffer(RenderType.entityCutout(this.getTextureLocation(var1)));
       this.model.setupAnim(var1);
       this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);

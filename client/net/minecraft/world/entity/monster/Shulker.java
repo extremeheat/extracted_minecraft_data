@@ -141,7 +141,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setAttachFace(Direction.from3DDataValue(var1.getByte("AttachFace")));
+      this.setAttachFace((Direction)var1.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));
       this.entityData.set(DATA_PEEK_ID, var1.getByte("Peek"));
       if (var1.contains("Color", 99)) {
          this.entityData.set(DATA_COLOR_ID, var1.getByte("Color"));
@@ -151,7 +151,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putByte("AttachFace", (byte)this.getAttachFace().get3DDataValue());
+      var1.store("AttachFace", Direction.LEGACY_ID_CODEC, this.getAttachFace());
       var1.putByte("Peek", (Byte)this.entityData.get(DATA_PEEK_ID));
       var1.putByte("Color", (Byte)this.entityData.get(DATA_COLOR_ID));
    }

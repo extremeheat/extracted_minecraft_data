@@ -96,7 +96,7 @@ public final class CustomData implements TooltipProvider {
 
    @Nullable
    public ResourceLocation parseEntityId() {
-      return !this.tag.contains("id", 8) ? null : ResourceLocation.tryParse(this.tag.getString("id"));
+      return (ResourceLocation)this.tag.read("id", ResourceLocation.CODEC).orElse((Object)null);
    }
 
    @Nullable

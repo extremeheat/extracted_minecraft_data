@@ -10,6 +10,7 @@ import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> {
    private final EntityRenderDispatcher entityRenderer;
@@ -41,9 +42,9 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
       }
 
       var1.translate(0.0F, 0.4F, 0.0F);
-      var1.mulPose(Axis.YP.rotationDegrees((float)Mth.lerp((double)var0, var6, var8) * 10.0F));
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)Mth.lerp((double)var0, var6, var8) * 10.0F));
       var1.translate(0.0F, -0.2F, 0.0F);
-      var1.mulPose(Axis.XP.rotationDegrees(-30.0F));
+      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-30.0F));
       var1.scale(var10, var10, var10);
       var5.render(var4, 0.0, 0.0, 0.0, var0, var1, var2, var3);
       var1.popPose();

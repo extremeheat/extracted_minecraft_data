@@ -70,7 +70,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       if (this.template.placeInWorld(var1, this.templatePosition, var7, this.placeSettings, var4, 2)) {
          for(StructureTemplate.StructureBlockInfo var10 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK)) {
             if (var10.nbt() != null) {
-               StructureMode var11 = StructureMode.valueOf(var10.nbt().getString("mode"));
+               StructureMode var11 = (StructureMode)var10.nbt().read("mode", StructureMode.LEGACY_CODEC).orElseThrow();
                if (var11 == StructureMode.DATA) {
                   this.handleDataMarker(var10.nbt().getString("metadata"), var10.pos(), var1, var4, var5);
                }

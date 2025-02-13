@@ -2,8 +2,9 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexBuffer;
-import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
@@ -29,10 +30,14 @@ public class LightTexture implements AutoCloseable {
       super();
       this.renderer = var1;
       this.minecraft = var2;
-      this.target = new TextureTarget(16, 16, false);
-      this.target.setFilterMode(9729);
+      this.target = new TextureTarget("Light Texture", 16, 16, false);
+      this.target.setFilterMode(FilterMode.LINEAR);
       this.target.setClearColor(1.0F, 1.0F, 1.0F, 1.0F);
       this.target.clear();
+   }
+
+   public TextureTarget getTarget() {
+      return this.target;
    }
 
    public void close() {
@@ -46,11 +51,11 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void turnOffLightLayer() {
-      RenderSystem.setShaderTexture(2, 0);
+      RenderSystem.setShaderTexture(2, (GpuTexture)((GpuTexture)null));
    }
 
    public void turnOnLightLayer() {
-      RenderSystem.setShaderTexture(2, this.target.getColorTextureId());
+      RenderSystem.setShaderTexture(2, (GpuTexture)this.target.getColorTexture());
    }
 
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {
@@ -91,22 +96,18 @@ public class LightTexture implements AutoCloseable {
             float var13 = var3.dimensionType().ambientLight();
             boolean var14 = var3.effects().forceBrightLightmap();
             float var15 = ((Double)this.minecraft.options.gamma().get()).floatValue();
-            CompiledShaderProgram var16 = (CompiledShaderProgram)Objects.requireNonNull(RenderSystem.setShader(CoreShaders.LIGHTMAP), "Lightmap shader not loaded");
-            var16.safeGetUniform("AmbientLightFactor").set(var13);
-            var16.safeGetUniform("SkyFactor").set(var5);
-            var16.safeGetUniform("BlockFactor").set(var12);
-            var16.safeGetUniform("UseBrightLightmap").set(var14 ? 1 : 0);
-            var16.safeGetUniform("SkyLightColor").set(var11);
-            var16.safeGetUniform("NightVisionFactor").set(var9);
-            var16.safeGetUniform("DarknessScale").set(var8);
-            var16.safeGetUniform("DarkenWorldFactor").set(this.renderer.getDarkenWorldAmount(var1));
-            var16.safeGetUniform("BrightnessFactor").set(Math.max(0.0F, var15 - var7));
-            this.target.bindWrite(true);
-            VertexBuffer var17 = RenderSystem.getQuadVertices();
-            var17.bind();
-            var17.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-            VertexBuffer.unbind();
-            this.target.unbindWrite();
+            VertexBuffer var16 = RenderSystem.getQuadVertices();
+            var16.drawWithRenderType(RenderType.createLightmap(), (var11x) -> {
+               var11x.getUniform("AmbientLightFactor").set(var13);
+               var11x.getUniform("SkyFactor").set(var5);
+               var11x.getUniform("BlockFactor").set(var12);
+               var11x.getUniform("UseBrightLightmap").set(var14 ? 1 : 0);
+               var11x.getUniform("SkyLightColor").set(var11);
+               var11x.getUniform("NightVisionFactor").set(var9);
+               var11x.getUniform("DarknessScale").set(var8);
+               var11x.getUniform("DarkenWorldFactor").set(this.renderer.getDarkenWorldAmount(var1));
+               var11x.getUniform("BrightnessFactor").set(Math.max(0.0F, var15 - var7));
+            });
             var2.pop();
          }
       }

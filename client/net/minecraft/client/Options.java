@@ -56,6 +56,8 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -1075,25 +1077,32 @@ public class Options {
 
          this.processOptions(new FieldAccess() {
             @Nullable
-            private String getValueOrNull(String var1) {
-               return var8.contains(var1) ? var8.get(var1).getAsString() : null;
+            private String getValue(String var1) {
+               Tag var2 = var8.get(var1);
+               if (var2 == null) {
+                  return null;
+               } else if (var2 instanceof StringTag) {
+                  StringTag var3 = (StringTag)var2;
+                  return var3.getAsString();
+               } else {
+                  throw new IllegalStateException("Cannot read field of wrong type, expected string: " + String.valueOf(var2));
+               }
             }
 
             public <T> void process(String var1, OptionInstance<T> var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                if (var3 != null) {
                   JsonReader var4 = new JsonReader(new StringReader(var3.isEmpty() ? "\"\"" : var3));
                   JsonElement var5 = JsonParser.parseReader(var4);
-                  DataResult var6 = var2.codec().parse(JsonOps.INSTANCE, var5);
-                  var6.error().ifPresent((var2x) -> Options.LOGGER.error("Error parsing option value " + var3 + " for option " + String.valueOf(var2) + ": " + var2x.message()));
+                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var5).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
                   Objects.requireNonNull(var2);
-                  var6.ifSuccess(var2::set);
+                  var10000.ifSuccess(var2::set);
                }
 
             }
 
             public int process(String var1, int var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                if (var3 != null) {
                   try {
                      return Integer.parseInt(var3);
@@ -1106,16 +1115,16 @@ public class Options {
             }
 
             public boolean process(String var1, boolean var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                return var3 != null ? Options.isTrue(var3) : var2;
             }
 
             public String process(String var1, String var2) {
-               return (String)MoreObjects.firstNonNull(this.getValueOrNull(var1), var2);
+               return (String)MoreObjects.firstNonNull(this.getValue(var1), var2);
             }
 
             public float process(String var1, float var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                if (var3 != null) {
                   if (Options.isTrue(var3)) {
                      return 1.0F;
@@ -1136,7 +1145,7 @@ public class Options {
             }
 
             public <T> T process(String var1, T var2, Function<String, T> var3, Function<T, String> var4) {
-               String var5 = this.getValueOrNull(var1);
+               String var5 = this.getValue(var1);
                return var5 == null ? var2 : var3.apply(var5);
             }
          });

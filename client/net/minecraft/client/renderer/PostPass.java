@@ -3,10 +3,12 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +19,16 @@ import org.joml.Matrix4f;
 
 public class PostPass {
    private final String name;
+   private final RenderPipeline pipeline;
    private final CompiledShaderProgram shader;
    private final ResourceLocation outputTargetId;
    private final List<PostChainConfig.Uniform> uniforms;
    private final List<Input> inputs = new ArrayList();
 
-   public PostPass(String var1, CompiledShaderProgram var2, ResourceLocation var3, List<PostChainConfig.Uniform> var4) {
+   public PostPass(RenderPipeline var1, CompiledShaderProgram var2, ResourceLocation var3, List<PostChainConfig.Uniform> var4) {
       super();
-      this.name = var1;
+      this.pipeline = var1;
+      this.name = var1.getLocation().toString();
       this.shader = var2;
       this.outputTargetId = var3;
       this.uniforms = var4;
@@ -48,52 +52,37 @@ public class PostPass {
          var4.executes(() -> {
             RenderTarget var4 = (RenderTarget)var7.get();
             RenderSystem.viewport(0, 0, var4.width, var4.height);
-
-            for(Input var6 : this.inputs) {
-               var6.bindTo(this.shader, var2);
-            }
-
-            this.shader.safeGetUniform("OutSize").set((float)var4.width, (float)var4.height);
-
-            for(PostChainConfig.Uniform var10 : this.uniforms) {
-               Uniform var7x = this.shader.getUniform(var10.name());
-               if (var7x != null) {
-                  var7x.setFromConfig(var10.values(), var10.values().size());
-               }
-            }
-
             var4.bindWrite(false);
-            RenderSystem.depthFunc(519);
-            RenderSystem.setShader(this.shader);
             RenderSystem.backupProjectionMatrix();
             RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
-            VertexBuffer var9 = RenderSystem.getQuadVertices();
-            var9.bind();
-            var9.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-            VertexBuffer.unbind();
-            RenderSystem.depthFunc(515);
+            VertexBuffer var5 = RenderSystem.getQuadVertices();
+            var5.drawWithRenderPipeline(this.pipeline, (var3x) -> {
+               for(Input var5 : this.inputs) {
+                  var5.bindTo(var3x, var2);
+               }
+
+               var3x.safeGetUniform("OutSize").set((float)var4.width, (float)var4.height);
+
+               for(PostChainConfig.Uniform var9 : this.uniforms) {
+                  if (var9.values().isPresent()) {
+                     Uniform var6 = var3x.getUniform(var9.name());
+                     if (var6 != null) {
+                        List var7 = (List)var9.values().get();
+                        var6.setFromConfig(var7, var7.size());
+                     }
+                  }
+               }
+
+            });
             RenderSystem.restoreProjectionMatrix();
             var4.unbindWrite();
 
-            for(Input var12 : this.inputs) {
-               var12.cleanup(var2);
+            for(Input var7x : this.inputs) {
+               var7x.cleanup(var2);
             }
 
-            this.restoreDefaultUniforms();
          });
       }
-   }
-
-   private void restoreDefaultUniforms() {
-      for(PostChainConfig.Uniform var2 : this.uniforms) {
-         String var3 = var2.name();
-         Uniform var4 = this.shader.getUniform(var3);
-         ShaderProgramConfig.Uniform var5 = this.shader.getUniformConfig(var3);
-         if (var4 != null && var5 != null && !var2.values().equals(var5.values())) {
-            var4.setFromConfig(var5);
-         }
-      }
-
    }
 
    public CompiledShaderProgram getShader() {
@@ -122,7 +111,7 @@ public class PostPass {
       }
 
       public void bindTo(CompiledShaderProgram var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
-         var1.bindSampler(this.samplerName + "Sampler", this.texture.getId());
+         var1.bindSampler(this.samplerName + "Sampler", this.texture.getTexture());
          var1.safeGetUniform(this.samplerName + "Size").set((float)this.width, (float)this.height);
       }
    }
@@ -152,14 +141,14 @@ public class PostPass {
       public void bindTo(CompiledShaderProgram var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
          ResourceHandle var3 = this.getHandle(var2);
          RenderTarget var4 = (RenderTarget)var3.get();
-         var4.setFilterMode(this.bilinear ? 9729 : 9728);
-         var1.bindSampler(this.samplerName + "Sampler", this.depthBuffer ? var4.getDepthTextureId() : var4.getColorTextureId());
+         var4.setFilterMode(this.bilinear ? FilterMode.LINEAR : FilterMode.NEAREST);
+         var1.bindSampler(this.samplerName + "Sampler", this.depthBuffer ? var4.getDepthTexture() : var4.getColorTexture());
          var1.safeGetUniform(this.samplerName + "Size").set((float)var4.width, (float)var4.height);
       }
 
       public void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
          if (this.bilinear) {
-            ((RenderTarget)this.getHandle(var1).get()).setFilterMode(9728);
+            ((RenderTarget)this.getHandle(var1).get()).setFilterMode(FilterMode.NEAREST);
          }
 
       }

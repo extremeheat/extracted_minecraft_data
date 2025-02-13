@@ -1,22 +1,16 @@
 package net.minecraft.world.entity;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -256,11 +250,7 @@ public abstract class Display extends Entity {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
       var1.putInt("glow_color_override", this.getGlowColorOverride());
-      Brightness var2 = this.getBrightnessOverride();
-      if (var2 != null) {
-         var1.store("brightness", Brightness.CODEC, var2);
-      }
-
+      var1.storeNullable("brightness", Brightness.CODEC, this.getBrightnessOverride());
    }
 
    public AABB getBoundingBoxForCulling() {
@@ -537,19 +527,15 @@ public abstract class Display extends Entity {
 
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
-         if (var1.contains("item")) {
-            this.setItemStack((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(ItemStack.EMPTY));
-         } else {
-            this.setItemStack(ItemStack.EMPTY);
-         }
-
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         this.setItemStack((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
          this.setItemTransform((ItemDisplayContext)var1.read("item_display", ItemDisplayContext.CODEC).orElse(ItemDisplayContext.NONE));
       }
 
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
          if (!this.getItemStack().isEmpty()) {
-            var1.put("item", this.getItemStack().save(this.registryAccess()));
+            var1.store("item", ItemStack.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getItemStack());
          }
 
          var1.store("item_display", ItemDisplayContext.CODEC, this.getItemTransform());
@@ -617,12 +603,14 @@ public abstract class Display extends Entity {
 
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
-         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(Blocks.AIR.defaultBlockState()));
       }
 
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
-         var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("block_state", BlockState.CODEC, var2, this.getBlockState());
       }
 
       @Nullable
@@ -755,20 +743,17 @@ public abstract class Display extends Entity {
          byte var2 = loadFlag((byte)0, var1, "shadow", (byte)1);
          var2 = loadFlag(var2, var1, "see_through", (byte)2);
          var2 = loadFlag(var2, var1, "default_background", (byte)4);
-         DataResult var10000 = Display.TextDisplay.Align.CODEC.decode(NbtOps.INSTANCE, var1.get("alignment"));
-         Logger var10002 = Display.LOGGER;
-         Objects.requireNonNull(var10002);
-         Optional var3 = var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).map(Pair::getFirst);
+         Optional var3 = var1.read("alignment", Display.TextDisplay.Align.CODEC);
          if (var3.isPresent()) {
-            byte var14;
+            byte var10000;
             switch (((Align)var3.get()).ordinal()) {
-               case 0 -> var14 = var2;
-               case 1 -> var14 = (byte)(var2 | 8);
-               case 2 -> var14 = (byte)(var2 | 16);
+               case 0 -> var10000 = var2;
+               case 1 -> var10000 = (byte)(var2 | 8);
+               case 2 -> var10000 = (byte)(var2 | 16);
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var2 = var14;
+            var2 = var10000;
          }
 
          this.setFlags(var2);

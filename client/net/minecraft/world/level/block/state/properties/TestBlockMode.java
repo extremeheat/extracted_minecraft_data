@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.state.properties;
 
+import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,7 @@ public enum TestBlockMode implements StringRepresentable {
    ACCEPT(3, "accept");
 
    private static final IntFunction<TestBlockMode> BY_ID = ByIdMap.<TestBlockMode>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StringRepresentable.EnumCodec<TestBlockMode> CODEC = StringRepresentable.<TestBlockMode>fromEnum(TestBlockMode::values);
+   public static final Codec<TestBlockMode> CODEC = StringRepresentable.<TestBlockMode>fromEnum(TestBlockMode::values);
    public static final StreamCodec<ByteBuf, TestBlockMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
    private final int id;
    private final String name;

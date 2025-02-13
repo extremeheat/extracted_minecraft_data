@@ -451,9 +451,9 @@ public class GuiGraphics {
 
    private void renderItem(@Nullable LivingEntity var1, @Nullable Level var2, ItemStack var3, int var4, int var5, int var6, int var7) {
       if (!var3.isEmpty()) {
-         this.minecraft.getItemModelResolver().updateForTopItem(this.scratchItemStackRenderState, var3, ItemDisplayContext.GUI, false, var2, var1, var6);
+         this.minecraft.getItemModelResolver().updateForTopItem(this.scratchItemStackRenderState, var3, ItemDisplayContext.GUI, var2, var1, var6);
          this.pose.pushPose();
-         this.pose.translate((float)(var4 + 8), (float)(var5 + 8), (float)(150 + (this.scratchItemStackRenderState.isGui3d() ? var7 : 0)));
+         this.pose.translate((float)(var4 + 8), (float)(var5 + 8), (float)(150 + var7));
 
          try {
             this.pose.scale(16.0F, -16.0F, 16.0F);

@@ -44,7 +44,7 @@ public class DryVegetationBlock extends VegetationBlock {
 
          BlockState var6 = var2.getBlockState(var3.below(2));
          if (var5.is(BlockTags.PLAYS_AMBIENT_DESERT_BLOCK_SOUNDS) && var6.is(BlockTags.PLAYS_AMBIENT_DESERT_BLOCK_SOUNDS)) {
-            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.DEAD_BUSH_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.DEAD_BUSH_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
       }
 

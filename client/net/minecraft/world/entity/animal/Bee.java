@@ -15,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -191,14 +190,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.hasHive()) {
-         var1.put("hive_pos", NbtUtils.writeBlockPos(this.getHivePos()));
-      }
-
-      if (this.hasSavedFlowerPos()) {
-         var1.put("flower_pos", NbtUtils.writeBlockPos(this.getSavedFlowerPos()));
-      }
-
+      var1.storeNullable("hive_pos", BlockPos.CODEC, this.hivePos);
+      var1.storeNullable("flower_pos", BlockPos.CODEC, this.savedFlowerPos);
       var1.putBoolean("HasNectar", this.hasNectar());
       var1.putBoolean("HasStung", this.hasStung());
       var1.putInt("TicksSincePollination", this.ticksWithoutNectarSinceExitingHive);
@@ -214,8 +207,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       this.ticksWithoutNectarSinceExitingHive = var1.getInt("TicksSincePollination");
       this.stayOutOfHiveCountdown = var1.getInt("CannotEnterHiveTicks");
       this.numCropsGrownSincePollination = var1.getInt("CropsGrownSincePollination");
-      this.hivePos = (BlockPos)NbtUtils.readBlockPos(var1, "hive_pos").orElse((Object)null);
-      this.savedFlowerPos = (BlockPos)NbtUtils.readBlockPos(var1, "flower_pos").orElse((Object)null);
+      this.hivePos = (BlockPos)var1.read("hive_pos", BlockPos.CODEC).orElse((Object)null);
+      this.savedFlowerPos = (BlockPos)var1.read("flower_pos", BlockPos.CODEC).orElse((Object)null);
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 

@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -12,7 +13,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.world.level.BlockGetter;
@@ -25,6 +25,7 @@ import net.minecraft.world.level.chunk.EmptyLevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.slf4j.Logger;
 
@@ -99,7 +100,7 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    @Nullable
-   public LevelChunk replaceWithPacketData(int var1, int var2, FriendlyByteBuf var3, CompoundTag var4, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var5) {
+   public LevelChunk replaceWithPacketData(int var1, int var2, FriendlyByteBuf var3, Map<Heightmap.Types, long[]> var4, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var5) {
       if (!this.storage.inRange(var1, var2)) {
          LOGGER.warn("Ignoring chunk since it's not in the view range: {}, {}", var1, var2);
          return null;

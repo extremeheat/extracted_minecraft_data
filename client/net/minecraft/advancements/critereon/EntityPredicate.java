@@ -99,7 +99,7 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
          } else {
             if (this.location.steppingOn.isPresent()) {
                Vec3 var6 = Vec3.atCenterOf(var3.getOnPos());
-               if (!((LocationPredicate)this.location.steppingOn.get()).matches(var1, var6.x(), var6.y(), var6.z())) {
+               if (!var3.onGround() || !((LocationPredicate)this.location.steppingOn.get()).matches(var1, var6.x(), var6.y(), var6.z())) {
                   return false;
                }
             }

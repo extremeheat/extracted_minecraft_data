@@ -1,17 +1,15 @@
 package net.minecraft.core;
 
 import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
+import com.mojang.math.MatrixUtil;
 import com.mojang.math.Transformation;
 import java.util.Map;
 import net.minecraft.Util;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.slf4j.Logger;
 
 public class BlockMath {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL;
    private static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL;
 
@@ -33,15 +31,15 @@ public class BlockMath {
       return new Transformation(var1);
    }
 
-   public static Transformation getUVLockTransform(Transformation var0, Direction var1) {
-      Direction var2 = Direction.rotate(var0.getMatrix(), var1);
-      Transformation var3 = var0.inverse();
-      if (var3 == null) {
-         LOGGER.debug("Failed to invert transformation {}", var0);
-         return Transformation.identity();
+   public static Transformation getFaceTransformation(Transformation var0, Direction var1) {
+      if (MatrixUtil.isIdentity(var0.getMatrix())) {
+         return var0;
       } else {
-         Transformation var4 = ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(var1)).compose(var3).compose((Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var2));
-         return blockCenterToCorner(var4);
+         Transformation var2 = (Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var1);
+         var2 = var0.compose(var2);
+         Vector3f var3 = var2.getMatrix().transformDirection(new Vector3f(0.0F, 0.0F, 1.0F));
+         Direction var4 = Direction.getApproximateNearest(var3.x, var3.y, var3.z);
+         return ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(var4)).compose(var2);
       }
    }
 

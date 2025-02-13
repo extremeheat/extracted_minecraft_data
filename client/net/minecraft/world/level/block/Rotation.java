@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 
@@ -22,6 +23,9 @@ public enum Rotation implements StringRepresentable {
    public static final IntFunction<Rotation> BY_ID = ByIdMap.<Rotation>continuous(Rotation::getIndex, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final Codec<Rotation> CODEC = StringRepresentable.<Rotation>fromEnum(Rotation::values);
    public static final StreamCodec<ByteBuf, Rotation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Rotation::getIndex);
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<Rotation> LEGACY_CODEC = ExtraCodecs.<Rotation>legacyEnum(Rotation::valueOf);
    private final int index;
    private final String id;
    private final OctahedralGroup rotation;

@@ -12,6 +12,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -66,6 +69,10 @@ public abstract class WaterFluid extends FlowingFluid {
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
       BlockEntity var4 = var3.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
       Block.dropResources(var3, var1, var2, var4);
+   }
+
+   protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+      var4.apply(InsideBlockEffectType.EXTINGUISH);
    }
 
    public int getSlopeFindDistance(LevelReader var1) {

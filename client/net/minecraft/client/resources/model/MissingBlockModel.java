@@ -1,13 +1,14 @@
 package net.minecraft.client.resources.model;
 
+import com.mojang.math.Quadrant;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
-import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.SimpleUnbakedGeometry;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -16,23 +17,17 @@ import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 
 public class MissingBlockModel {
-   private static final String NAME = "missing";
    private static final String TEXTURE_SLOT = "missingno";
    public static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("builtin/missing");
-   public static final ModelResourceLocation VARIANT;
 
    public MissingBlockModel() {
       super();
    }
 
    public static UnbakedModel missingModel() {
-      BlockFaceUV var0 = new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0);
-      Map var1 = Util.makeEnumMap(Direction.class, (var1x) -> new BlockElementFace(var1x, -1, "missingno", var0));
+      BlockElementFace.UVs var0 = new BlockElementFace.UVs(0.0F, 0.0F, 16.0F, 16.0F);
+      Map var1 = Util.makeEnumMap(Direction.class, (var1x) -> new BlockElementFace(var1x, -1, "missingno", var0, Quadrant.R0));
       BlockElement var2 = new BlockElement(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(16.0F, 16.0F, 16.0F), var1);
-      return new BlockModel((ResourceLocation)null, List.of(var2), (new TextureSlots.Data.Builder()).addReference("particle", "missingno").addTexture("missingno", new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation())).build(), (Boolean)null, (UnbakedModel.GuiLight)null, ItemTransforms.NO_TRANSFORMS);
-   }
-
-   static {
-      VARIANT = new ModelResourceLocation(LOCATION, "missing");
+      return new BlockModel(new SimpleUnbakedGeometry(List.of(var2)), (UnbakedModel.GuiLight)null, (Boolean)null, ItemTransforms.NO_TRANSFORMS, (new TextureSlots.Data.Builder()).addReference("particle", "missingno").addTexture("missingno", new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation())).build(), (ResourceLocation)null);
    }
 }

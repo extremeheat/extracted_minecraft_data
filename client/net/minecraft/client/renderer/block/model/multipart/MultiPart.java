@@ -1,30 +1,22 @@
 package net.minecraft.client.renderer.block.model.multipart;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.block.model.MultiVariant;
-import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.MultiPartBakedModel;
 import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
-public class MultiPart implements UnbakedBlockStateModel {
+public class MultiPart implements BlockStateModel.Unbaked {
    private final List<InstantiatedSelector> selectors;
 
    MultiPart(List<InstantiatedSelector> var1) {
@@ -56,11 +48,11 @@ public class MultiPart implements UnbakedBlockStateModel {
       this.selectors.forEach((var1x) -> var1x.variant.resolveDependencies(var1));
    }
 
-   public BakedModel bake(ModelBaker var1) {
+   public BlockStateModel bake(ModelBaker var1) {
       ArrayList var2 = new ArrayList(this.selectors.size());
 
       for(InstantiatedSelector var4 : this.selectors) {
-         BakedModel var5 = var4.variant.bake(var1);
+         BlockStateModel var5 = var4.variant.bake(var1);
          var2.add(new MultiPartBakedModel.Selector(var4.predicate, var5));
       }
 
@@ -79,46 +71,25 @@ public class MultiPart implements UnbakedBlockStateModel {
    }
 
    public static record Definition(List<Selector> selectors) {
+      public static final Codec<Definition> CODEC;
+
       public Definition(List<Selector> var1) {
          super();
          this.selectors = var1;
       }
 
       public MultiPart instantiate(StateDefinition<Block, BlockState> var1) {
-         List var2 = this.selectors.stream().map((var1x) -> new InstantiatedSelector(var1x.getPredicate(var1), var1x.getVariant())).toList();
+         ArrayList var2 = new ArrayList(this.selectors.size());
+
+         for(Selector var4 : this.selectors) {
+            var2.add(new InstantiatedSelector(var4.instantiate(var1), var4.variant()));
+         }
+
          return new MultiPart(var2);
       }
 
-      public Set<MultiVariant> getMultiVariants() {
-         return (Set)this.selectors.stream().map(Selector::getVariant).collect(Collectors.toSet());
-      }
-   }
-
-   public static class Deserializer implements JsonDeserializer<Definition> {
-      public Deserializer() {
-         super();
-      }
-
-      public Definition deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return new Definition(this.getSelectors(var3, var1.getAsJsonArray()));
-      }
-
-      private List<Selector> getSelectors(JsonDeserializationContext var1, JsonArray var2) {
-         ArrayList var3 = new ArrayList();
-         if (var2.isEmpty()) {
-            throw new JsonSyntaxException("Empty selector array");
-         } else {
-            for(JsonElement var5 : var2) {
-               var3.add((Selector)var1.deserialize(var5, Selector.class));
-            }
-
-            return var3;
-         }
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
+      static {
+         CODEC = ExtraCodecs.nonEmptyList(Selector.CODEC.listOf()).xmap(Definition::new, Definition::selectors);
       }
    }
 }

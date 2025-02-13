@@ -27,15 +27,13 @@ public class TestBlockEntity extends BlockEntity {
    }
 
    public void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      var1.putString("mode", this.mode.getSerializedName());
+      var1.store("mode", TestBlockMode.CODEC, this.mode);
       var1.putString("message", this.message);
       var1.putBoolean("powered", this.powered);
    }
 
    public void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      String var3 = var1.getString("mode");
-      TestBlockMode var4 = TestBlockMode.CODEC.byName(var3);
-      this.mode = var4 != null ? var4 : TestBlockMode.FAIL;
+      this.mode = (TestBlockMode)var1.read("mode", TestBlockMode.CODEC).orElse(TestBlockMode.FAIL);
       this.message = var1.getString("message");
       this.powered = var1.getBoolean("powered");
    }

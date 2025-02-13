@@ -77,12 +77,12 @@ public class Salmon extends AbstractSchoolingFish {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("type", this.getVariant().getSerializedName());
+      var1.store("type", Salmon.Variant.CODEC, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Salmon.Variant.byName(var1.getString("type")));
+      this.setVariant((Variant)var1.read("type", Salmon.Variant.CODEC).orElse(Salmon.Variant.MEDIUM));
    }
 
    public void saveToBucketTag(ItemStack var1) {
@@ -163,10 +163,6 @@ public class Salmon extends AbstractSchoolingFish {
 
       int id() {
          return this.id;
-      }
-
-      static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, MEDIUM);
       }
 
       // $FF: synthetic method

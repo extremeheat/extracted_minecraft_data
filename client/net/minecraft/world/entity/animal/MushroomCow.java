@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import java.util.UUID;
@@ -165,16 +166,13 @@ public class MushroomCow extends AbstractCow implements Shearable {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("Type", this.getVariant().getSerializedName());
-      if (this.stewEffects != null) {
-         var1.store("stew_effects", SuspiciousStewEffects.CODEC, this.stewEffects);
-      }
-
+      var1.store("Type", MushroomCow.Variant.CODEC, this.getVariant());
+      var1.storeNullable("stew_effects", SuspiciousStewEffects.CODEC, this.stewEffects);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(MushroomCow.Variant.byName(var1.getString("Type")));
+      this.setVariant((Variant)var1.read("Type", MushroomCow.Variant.CODEC).orElse(MushroomCow.Variant.RED));
       this.stewEffects = (SuspiciousStewEffects)var1.read("stew_effects", SuspiciousStewEffects.CODEC).orElse(SuspiciousStewEffects.EMPTY);
    }
 
@@ -247,7 +245,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
       RED("red", 0, Blocks.RED_MUSHROOM.defaultBlockState()),
       BROWN("brown", 1, Blocks.BROWN_MUSHROOM.defaultBlockState());
 
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
       private final String type;
@@ -270,10 +268,6 @@ public class MushroomCow extends AbstractCow implements Shearable {
 
       private int id() {
          return this.id;
-      }
-
-      static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, RED);
       }
 
       static Variant byId(int var0) {

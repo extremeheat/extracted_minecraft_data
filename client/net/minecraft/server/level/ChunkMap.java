@@ -787,7 +787,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             return false;
          }
 
-         ChunkType var4 = SerializableChunkData.getChunkTypeFromTag(var3);
+         ChunkType var4 = SerializableChunkData.getChunkStatusFromTag(var3).getChunkType();
          return this.markPosition(var1, var4) == 1;
       }
    }

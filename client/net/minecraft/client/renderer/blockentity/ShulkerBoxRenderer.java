@@ -16,6 +16,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity> {
    private final ShulkerBoxModel model;
@@ -48,7 +49,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       var1.translate(0.5F, 0.5F, 0.5F);
       float var8 = 0.9995F;
       var1.scale(0.9995F, 0.9995F, 0.9995F);
-      var1.mulPose(var5.getRotation());
+      var1.mulPose((Quaternionfc)var5.getRotation());
       var1.scale(1.0F, -1.0F, -1.0F);
       var1.translate(0.0F, -1.0F, 0.0F);
       this.model.animate(var6);

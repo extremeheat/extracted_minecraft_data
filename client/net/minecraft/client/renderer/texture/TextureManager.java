@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
 import java.io.FileNotFoundException;
@@ -36,7 +35,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       super();
       this.resourceManager = var1;
       NativeImage var2 = MissingTextureAtlasSprite.generateMissingImage();
-      this.register(MissingTextureAtlasSprite.getLocation(), new DynamicTexture(var2));
+      this.register(MissingTextureAtlasSprite.getLocation(), new DynamicTexture(() -> "(intentionally-)Missing Texture", var2));
    }
 
    public void registerAndLoad(ResourceLocation var1, ReloadableTexture var2) {
@@ -146,15 +145,6 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    }
 
    public void dumpAllSheets(Path var1) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this._dumpAllSheets(var1));
-      } else {
-         this._dumpAllSheets(var1);
-      }
-
-   }
-
-   private void _dumpAllSheets(Path var1) {
       try {
          Files.createDirectories(var1);
       } catch (IOException var3) {

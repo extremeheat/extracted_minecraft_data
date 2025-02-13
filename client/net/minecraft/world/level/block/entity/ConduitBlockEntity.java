@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -53,18 +54,13 @@ public class ConduitBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.hasUUID("Target")) {
-         this.destroyTargetUUID = var1.getUUID("Target");
-      } else {
-         this.destroyTargetUUID = null;
-      }
-
+      this.destroyTargetUUID = (UUID)var1.read("Target", UUIDUtil.CODEC).orElse((Object)null);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (this.destroyTarget != null) {
-         var1.putUUID("Target", this.destroyTarget.getUUID());
+         var1.store("Target", UUIDUtil.CODEC, this.destroyTarget.getUUID());
       }
 
    }

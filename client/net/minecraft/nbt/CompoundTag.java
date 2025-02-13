@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -99,19 +98,6 @@ public class CompoundTag implements Tag {
 
    public void putLong(String var1, long var2) {
       this.tags.put(var1, LongTag.valueOf(var2));
-   }
-
-   public void putUUID(String var1, UUID var2) {
-      this.tags.put(var1, NbtUtils.createUUID(var2));
-   }
-
-   public UUID getUUID(String var1) {
-      return NbtUtils.loadUUID(this.get(var1));
-   }
-
-   public boolean hasUUID(String var1) {
-      Tag var2 = this.get(var1);
-      return var2 != null && var2.getType() == IntArrayTag.TYPE && ((IntArrayTag)var2).getAsIntArray().length == 4;
    }
 
    public void putFloat(String var1, float var2) {
@@ -202,25 +188,33 @@ public class CompoundTag implements Tag {
    }
 
    public int getInt(String var1) {
+      return this.getIntOrDefault(var1, 0);
+   }
+
+   public int getIntOrDefault(String var1, int var2) {
       try {
          if (this.contains(var1, 99)) {
             return ((NumericTag)this.tags.get(var1)).getAsInt();
          }
-      } catch (ClassCastException var3) {
+      } catch (ClassCastException var4) {
       }
 
-      return 0;
+      return var2;
    }
 
    public long getLong(String var1) {
+      return this.getLongOrDefault(var1, 0L);
+   }
+
+   public long getLongOrDefault(String var1, long var2) {
       try {
          if (this.contains(var1, 99)) {
             return ((NumericTag)this.tags.get(var1)).getAsLong();
          }
-      } catch (ClassCastException var3) {
+      } catch (ClassCastException var5) {
       }
 
-      return 0L;
+      return var2;
    }
 
    public float getFloat(String var1) {
@@ -459,8 +453,22 @@ public class CompoundTag implements Tag {
       this.store(var1, var2, NbtOps.INSTANCE, var3);
    }
 
+   public <T> void storeNullable(String var1, Codec<T> var2, @Nullable T var3) {
+      if (var3 != null) {
+         this.store(var1, var2, var3);
+      }
+
+   }
+
    public <T> void store(String var1, Codec<T> var2, DynamicOps<Tag> var3, T var4) {
       this.put(var1, (Tag)var2.encodeStart(var3, var4).getOrThrow());
+   }
+
+   public <T> void storeNullable(String var1, Codec<T> var2, DynamicOps<Tag> var3, @Nullable T var4) {
+      if (var4 != null) {
+         this.store(var1, var2, var3, var4);
+      }
+
    }
 
    public <T> void store(MapCodec<T> var1, T var2) {

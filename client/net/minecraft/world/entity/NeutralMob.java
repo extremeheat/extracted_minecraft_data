@@ -3,6 +3,7 @@ package net.minecraft.world.entity;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -26,27 +27,19 @@ public interface NeutralMob {
 
    default void addPersistentAngerSaveData(CompoundTag var1) {
       var1.putInt("AngerTime", this.getRemainingPersistentAngerTime());
-      if (this.getPersistentAngerTarget() != null) {
-         var1.putUUID("AngryAt", this.getPersistentAngerTarget());
-      }
-
+      var1.storeNullable("AngryAt", UUIDUtil.CODEC, this.getPersistentAngerTarget());
    }
 
    default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
       this.setRemainingPersistentAngerTime(var2.getInt("AngerTime"));
       if (var1 instanceof ServerLevel var3) {
-         if (!var2.hasUUID("AngryAt")) {
-            this.setPersistentAngerTarget((UUID)null);
-         } else {
-            UUID var4 = var2.getUUID("AngryAt");
-            this.setPersistentAngerTarget(var4);
-            Entity var5 = var3.getEntity(var4);
-            if (var5 instanceof LivingEntity) {
-               LivingEntity var6 = (LivingEntity)var5;
-               this.setTarget(var6);
-            }
-
+         UUID var4 = (UUID)var2.read("AngryAt", UUIDUtil.CODEC).orElse((Object)null);
+         this.setPersistentAngerTarget(var4);
+         Entity var5 = var4 != null ? var3.getEntity(var4) : null;
+         if (var5 instanceof LivingEntity var6) {
+            this.setTarget(var6);
          }
+
       }
    }
 

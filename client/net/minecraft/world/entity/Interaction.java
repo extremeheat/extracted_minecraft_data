@@ -64,14 +64,8 @@ public class Interaction extends Entity implements Attackable, Targeting {
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
-      if (this.attack != null) {
-         var1.store("attack", Interaction.PlayerAction.CODEC, this.attack);
-      }
-
-      if (this.interaction != null) {
-         var1.store("interaction", Interaction.PlayerAction.CODEC, this.interaction);
-      }
-
+      var1.storeNullable("attack", Interaction.PlayerAction.CODEC, this.attack);
+      var1.storeNullable("interaction", Interaction.PlayerAction.CODEC, this.interaction);
       var1.putBoolean("response", this.getResponse());
    }
 

@@ -187,7 +187,7 @@ public class TextureSlots {
                }
 
                if (!var3.isEmpty()) {
-                  LOGGER.warn("Unresolved texture references in {}:\n{}", var1.get(), var3.entrySet().stream().map((var0) -> {
+                  LOGGER.warn("Unresolved texture references in {}:\n{}", var1.debugName(), var3.entrySet().stream().map((var0) -> {
                      String var10000 = (String)var0.getKey();
                      return "\t#" + var10000 + "-> #" + ((Reference)var0.getValue()).target + "\n";
                   }).collect(Collectors.joining()));

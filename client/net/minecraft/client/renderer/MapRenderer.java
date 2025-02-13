@@ -17,6 +17,7 @@ import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
+import org.joml.Quaternionfc;
 
 public class MapRenderer {
    private static final float MAP_Z_OFFSET = -0.01F;
@@ -45,7 +46,7 @@ public class MapRenderer {
          if (!var4 || var10.renderOnFrame) {
             var2.pushPose();
             var2.translate((float)var10.x / 2.0F + 64.0F, (float)var10.y / 2.0F + 64.0F, -0.02F);
-            var2.mulPose(Axis.ZP.rotationDegrees((float)(var10.rot * 360) / 16.0F));
+            var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)(var10.rot * 360) / 16.0F));
             var2.scale(4.0F, 4.0F, 3.0F);
             var2.translate(-0.125F, 0.125F, 0.0F);
             Matrix4f var11 = var2.last().pose();

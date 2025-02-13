@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -545,11 +545,12 @@ public class UnihexProvider implements GlyphProvider {
                return 16;
             }
 
-            public void upload(int var1, int var2) {
-               IntBuffer var3 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
-               UnihexProvider.unpackBitsToBytes(var3, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
-               var3.rewind();
-               GlStateManager.upload(0, var1, var2, Glyph.this.width(), 16, NativeImage.Format.RGBA, var3, MemoryUtil::memFree);
+            public void upload(int var1, int var2, GpuTexture var3) {
+               IntBuffer var4 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
+               UnihexProvider.unpackBitsToBytes(var4, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
+               var4.rewind();
+               var3.write(var4, NativeImage.Format.RGBA, 0, var1, var2, Glyph.this.width(), 16);
+               MemoryUtil.memFree(var4);
             }
 
             public boolean isColored() {

@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity> {
    private static final float SIZE = 0.375F;
@@ -33,8 +34,8 @@ public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity
             var3.translate(0.5F, 0.44921875F, 0.5F);
             Direction var13 = Direction.from2DDataValue((var11 + var8.get2DDataValue()) % 4);
             float var14 = -var13.toYRot();
-            var3.mulPose(Axis.YP.rotationDegrees(var14));
-            var3.mulPose(Axis.XP.rotationDegrees(90.0F));
+            var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var14));
+            var3.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
             var3.translate(-0.3125F, -0.3125F, 0.0F);
             var3.scale(0.375F, 0.375F, 0.375F);
             this.itemRenderer.renderStatic(var12, ItemDisplayContext.FIXED, var5, var6, var3, var4, var1.getLevel(), var10 + var11);

@@ -504,20 +504,14 @@ public class LevelChunk extends ChunkAccess {
       return false;
    }
 
-   public void replaceWithPacketData(FriendlyByteBuf var1, CompoundTag var2, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var3) {
+   public void replaceWithPacketData(FriendlyByteBuf var1, Map<Heightmap.Types, long[]> var2, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var3) {
       this.clearAllBlockEntities();
 
       for(LevelChunkSection var7 : this.sections) {
          var7.read(var1);
       }
 
-      for(Heightmap.Types var12 : Heightmap.Types.values()) {
-         String var8 = var12.getSerializationKey();
-         if (var2.contains(var8, 12)) {
-            this.setHeightmap(var12, var2.getLongArray(var8));
-         }
-      }
-
+      var2.forEach(this::setHeightmap);
       this.initializeLightSources();
       var3.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(var1x, var2x, var3x) -> {
          BlockEntity var4 = this.getBlockEntity(var1x, LevelChunk.EntityCreationType.IMMEDIATE);

@@ -5,12 +5,10 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -51,7 +49,6 @@ import net.minecraft.world.entity.animal.PolarBear;
 import net.minecraft.world.entity.animal.Pufferfish;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.Salmon;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.animal.SnowGolem;
 import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.TropicalFish;
@@ -71,6 +68,7 @@ import net.minecraft.world.entity.animal.horse.Mule;
 import net.minecraft.world.entity.animal.horse.SkeletonHorse;
 import net.minecraft.world.entity.animal.horse.TraderLlama;
 import net.minecraft.world.entity.animal.horse.ZombieHorse;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -609,29 +607,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       }).orElse((Object)null);
    }
 
-   public static Stream<Entity> loadEntitiesRecursive(final List<? extends Tag> var0, final Level var1, final EntitySpawnReason var2) {
-      final Spliterator var3 = var0.spliterator();
-      return StreamSupport.stream(new Spliterator<Entity>() {
-         public boolean tryAdvance(Consumer<? super Entity> var1x) {
-            return var3.tryAdvance((var3x) -> EntityType.loadEntityRecursive((CompoundTag)var3x, var1, var2, (var1xx) -> {
-                  var1x.accept(var1xx);
-                  return var1xx;
-               }));
-         }
-
-         @Nullable
-         public Spliterator<Entity> trySplit() {
-            return null;
-         }
-
-         public long estimateSize() {
-            return (long)var0.size();
-         }
-
-         public int characteristics() {
-            return 1297;
-         }
-      }, false);
+   public static Stream<Entity> loadEntitiesRecursive(List<? extends Tag> var0, Level var1, EntitySpawnReason var2) {
+      return var0.stream().mapMulti((var2x, var3) -> loadEntityRecursive((CompoundTag)var2x, var1, var2, (var1x) -> {
+            var3.accept(var1x);
+            return var1x;
+         }));
    }
 
    private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1, EntitySpawnReason var2) {

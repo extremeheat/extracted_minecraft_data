@@ -1,16 +1,18 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.CompiledShader;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,14 +23,13 @@ import org.joml.Matrix4f;
 
 public class CompiledShaderProgram implements AutoCloseable {
    private static final AbstractUniform DUMMY_UNIFORM = new AbstractUniform();
-   private static final int NO_SAMPLER_TEXTURE = -1;
-   private final List<ShaderProgramConfig.Sampler> samplers = new ArrayList();
-   private final Object2IntMap<String> samplerTextures = new Object2IntArrayMap();
+   private final List<String> samplers = new ArrayList();
+   private final Object2ObjectMap<String, GpuTexture> samplerTextures = new Object2ObjectOpenHashMap();
    private final IntList samplerLocations = new IntArrayList();
    private final List<Uniform> uniforms = new ArrayList();
    private final Map<String, Uniform> uniformsByName = new HashMap();
-   private final Map<String, ShaderProgramConfig.Uniform> uniformConfigs = new HashMap();
    private final int programId;
+   private final String shaderName;
    @Nullable
    public Uniform MODEL_VIEW_MATRIX;
    @Nullable
@@ -60,49 +61,48 @@ public class CompiledShaderProgram implements AutoCloseable {
    @Nullable
    public Uniform MODEL_OFFSET;
 
-   private CompiledShaderProgram(int var1) {
+   private CompiledShaderProgram(int var1, String var2) {
       super();
       this.programId = var1;
-      this.samplerTextures.defaultReturnValue(-1);
+      this.shaderName = var2;
    }
 
-   public static CompiledShaderProgram link(CompiledShader var0, CompiledShader var1, VertexFormat var2) throws ShaderManager.CompilationException {
-      int var3 = GlStateManager.glCreateProgram();
-      if (var3 <= 0) {
-         throw new ShaderManager.CompilationException("Could not create shader program (returned program ID " + var3 + ")");
+   public static CompiledShaderProgram link(CompiledShader var0, CompiledShader var1, VertexFormat var2, String var3) throws ShaderManager.CompilationException {
+      int var4 = GlStateManager.glCreateProgram();
+      if (var4 <= 0) {
+         throw new ShaderManager.CompilationException("Could not create shader program (returned program ID " + var4 + ")");
       } else {
-         var2.bindAttributes(var3);
-         GlStateManager.glAttachShader(var3, var0.getShaderId());
-         GlStateManager.glAttachShader(var3, var1.getShaderId());
-         GlStateManager.glLinkProgram(var3);
-         int var4 = GlStateManager.glGetProgrami(var3, 35714);
-         if (var4 == 0) {
-            String var5 = GlStateManager.glGetProgramInfoLog(var3, 32768);
+         var2.bindAttributes(var4);
+         GlStateManager.glAttachShader(var4, var0.getShaderId());
+         GlStateManager.glAttachShader(var4, var1.getShaderId());
+         GlStateManager.glLinkProgram(var4);
+         int var5 = GlStateManager.glGetProgrami(var4, 35714);
+         if (var5 == 0) {
+            String var6 = GlStateManager.glGetProgramInfoLog(var4, 32768);
             String var10002 = String.valueOf(var0.getId());
-            throw new ShaderManager.CompilationException("Error encountered when linking program containing VS " + var10002 + " and FS " + String.valueOf(var1.getId()) + ". Log output: " + var5);
+            throw new ShaderManager.CompilationException("Error encountered when linking program containing VS " + var10002 + " and FS " + String.valueOf(var1.getId()) + ". Log output: " + var6);
          } else {
-            return new CompiledShaderProgram(var3);
+            return new CompiledShaderProgram(var4, var3);
          }
       }
    }
 
-   public void setupUniforms(List<ShaderProgramConfig.Uniform> var1, List<ShaderProgramConfig.Sampler> var2) {
+   public void setupUniforms(List<RenderPipeline.UniformDescription> var1, List<String> var2) {
       RenderSystem.assertOnRenderThread();
 
-      for(ShaderProgramConfig.Uniform var4 : var1) {
+      for(RenderPipeline.UniformDescription var4 : var1) {
          String var5 = var4.name();
          int var6 = Uniform.glGetUniformLocation(this.programId, var5);
          if (var6 != -1) {
-            Uniform var7 = this.parseUniformNode(var4);
+            Uniform var7 = this.createUniform(var4);
             var7.setLocation(var6);
             this.uniforms.add(var7);
             this.uniformsByName.put(var5, var7);
-            this.uniformConfigs.put(var5, var4);
          }
       }
 
-      for(ShaderProgramConfig.Sampler var9 : var2) {
-         int var10 = Uniform.glGetUniformLocation(this.programId, var9.name());
+      for(String var9 : var2) {
+         int var10 = Uniform.glGetUniformLocation(this.programId, var9);
          if (var10 != -1) {
             this.samplers.add(var9);
             this.samplerLocations.add(var10);
@@ -126,6 +126,10 @@ public class CompiledShaderProgram implements AutoCloseable {
       this.MODEL_OFFSET = this.getUniform("ModelOffset");
    }
 
+   private Uniform createUniform(RenderPipeline.UniformDescription var1) {
+      return new Uniform(var1.name(), var1.type());
+   }
+
    public void close() {
       this.uniforms.forEach(Uniform::close);
       GlStateManager.glDeleteProgram(this.programId);
@@ -137,8 +141,8 @@ public class CompiledShaderProgram implements AutoCloseable {
       int var1 = GlStateManager._getActiveTexture();
 
       for(int var2 = 0; var2 < this.samplerLocations.size(); ++var2) {
-         ShaderProgramConfig.Sampler var3 = (ShaderProgramConfig.Sampler)this.samplers.get(var2);
-         if (!this.samplerTextures.containsKey(var3.name())) {
+         String var3 = (String)this.samplers.get(var2);
+         if (!this.samplerTextures.containsKey(var3)) {
             GlStateManager._activeTexture('\u84c0' + var2);
             GlStateManager._bindTexture(0);
          }
@@ -153,13 +157,13 @@ public class CompiledShaderProgram implements AutoCloseable {
       int var1 = GlStateManager._getActiveTexture();
 
       for(int var2 = 0; var2 < this.samplerLocations.size(); ++var2) {
-         String var3 = ((ShaderProgramConfig.Sampler)this.samplers.get(var2)).name();
-         int var4 = this.samplerTextures.getInt(var3);
-         if (var4 != -1) {
+         String var3 = (String)this.samplers.get(var2);
+         GpuTexture var4 = (GpuTexture)this.samplerTextures.get(var3);
+         if (var4 != null) {
             int var5 = this.samplerLocations.getInt(var2);
             Uniform.uploadInteger(var5, var2);
             RenderSystem.activeTexture('\u84c0' + var2);
-            RenderSystem.bindTexture(var4);
+            var4.bind();
          }
       }
 
@@ -177,32 +181,18 @@ public class CompiledShaderProgram implements AutoCloseable {
       return (Uniform)this.uniformsByName.get(var1);
    }
 
-   @Nullable
-   public ShaderProgramConfig.Uniform getUniformConfig(String var1) {
-      return (ShaderProgramConfig.Uniform)this.uniformConfigs.get(var1);
-   }
-
    public AbstractUniform safeGetUniform(String var1) {
       Uniform var2 = this.getUniform(var1);
       return (AbstractUniform)(var2 == null ? DUMMY_UNIFORM : var2);
    }
 
-   public void bindSampler(String var1, int var2) {
+   public void bindSampler(String var1, @Nullable GpuTexture var2) {
       this.samplerTextures.put(var1, var2);
-   }
-
-   private Uniform parseUniformNode(ShaderProgramConfig.Uniform var1) {
-      int var2 = Uniform.getTypeFromString(var1.type());
-      int var3 = var1.count();
-      int var4 = var3 > 1 && var3 <= 4 && var2 < 8 ? var3 - 1 : 0;
-      Uniform var5 = new Uniform(var1.name(), var2 + var4, var3);
-      var5.setFromConfig(var1);
-      return var5;
    }
 
    public void setDefaultUniforms(VertexFormat.Mode var1, Matrix4f var2, Matrix4f var3, Window var4) {
       for(int var5 = 0; var5 < 12; ++var5) {
-         int var6 = RenderSystem.getShaderTexture(var5);
+         GpuTexture var6 = RenderSystem.getShaderTexture(var5);
          this.bindSampler("Sampler" + var5, var6);
       }
 
@@ -271,5 +261,9 @@ public class CompiledShaderProgram implements AutoCloseable {
    @VisibleForTesting
    public int getProgramId() {
       return this.programId;
+   }
+
+   public String toString() {
+      return this.shaderName;
    }
 }

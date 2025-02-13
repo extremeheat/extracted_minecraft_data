@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -48,11 +49,11 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
       return (6.0 + (double)(Integer)var1.getValue(LEVEL) * 3.0) / 16.0;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var2 instanceof ServerLevel var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (var2 instanceof ServerLevel var6) {
          if (var4.isOnFire() && this.isEntityInsideContent(var1, var3, var4)) {
             var4.clearFire();
-            if (var4.mayInteract(var5, var3)) {
+            if (var4.mayInteract(var6, var3)) {
                this.handleEntityOnFireInside(var1, var2, var3);
             }
          }

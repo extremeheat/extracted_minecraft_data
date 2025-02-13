@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.LlamaSpitRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.LlamaSpit;
+import org.joml.Quaternionfc;
 
 public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit, LlamaSpitRenderState> {
    private static final ResourceLocation LLAMA_SPIT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/llama/spit.png");
@@ -24,8 +25,8 @@ public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit, LlamaSpitRender
    public void render(LlamaSpitRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
       var2.translate(0.0F, 0.15F, 0.0F);
-      var2.mulPose(Axis.YP.rotationDegrees(var1.yRot - 90.0F));
-      var2.mulPose(Axis.ZP.rotationDegrees(var1.xRot));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
+      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot));
       this.model.setupAnim(var1);
       VertexConsumer var5 = var3.getBuffer(this.model.renderType(LLAMA_SPIT_LOCATION));
       this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);

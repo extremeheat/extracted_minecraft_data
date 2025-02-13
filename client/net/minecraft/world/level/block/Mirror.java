@@ -4,6 +4,7 @@ import com.mojang.math.OctahedralGroup;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
 public enum Mirror implements StringRepresentable {
@@ -12,6 +13,9 @@ public enum Mirror implements StringRepresentable {
    FRONT_BACK("front_back", OctahedralGroup.INVERT_X);
 
    public static final Codec<Mirror> CODEC = StringRepresentable.<Mirror>fromEnum(Mirror::values);
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<Mirror> LEGACY_CODEC = ExtraCodecs.<Mirror>legacyEnum(Mirror::valueOf);
    private final String id;
    private final Component symbol;
    private final OctahedralGroup rotation;

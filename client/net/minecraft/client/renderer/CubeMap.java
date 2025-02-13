@@ -40,10 +40,6 @@ public class CubeMap {
       Matrix4fStack var6 = RenderSystem.getModelViewStack();
       var6.pushMatrix();
       var6.rotationX(3.1415927F);
-      RenderSystem.setShader(CoreShaders.POSITION_TEX);
-      RenderSystem.enableBlend();
-      RenderSystem.disableCull();
-      RenderSystem.depthMask(false);
       boolean var7 = true;
 
       for(int var8 = 0; var8 < 4; ++var8) {
@@ -57,9 +53,8 @@ public class CubeMap {
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var4 / (float)(var8 + 1));
 
          for(int var12 = 0; var12 < 6; ++var12) {
-            RenderSystem.setShaderTexture(0, (ResourceLocation)this.sides.get(var12));
             this.vertices[var12].bind();
-            this.vertices[var12].drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+            this.vertices[var12].drawWithRenderType(RenderType.panorama((ResourceLocation)this.sides.get(var12)));
          }
 
          VertexBuffer.unbind();
@@ -71,9 +66,6 @@ public class CubeMap {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.restoreProjectionMatrix();
       var6.popMatrix();
-      RenderSystem.depthMask(true);
-      RenderSystem.enableCull();
-      RenderSystem.enableDepthTest();
    }
 
    private void initializeVertices() {

@@ -10,9 +10,11 @@ public class GameTestTicker {
    private final Collection<GameTestInfo> testInfos = Lists.newCopyOnWriteArrayList();
    @Nullable
    private GameTestRunner runner;
+   private State state;
 
    private GameTestTicker() {
       super();
+      this.state = GameTestTicker.State.IDLE;
    }
 
    public void add(GameTestInfo var1) {
@@ -20,12 +22,16 @@ public class GameTestTicker {
    }
 
    public void clear() {
-      this.testInfos.clear();
-      if (this.runner != null) {
-         this.runner.stop();
-         this.runner = null;
-      }
+      if (this.state != GameTestTicker.State.IDLE) {
+         this.state = GameTestTicker.State.HALTING;
+      } else {
+         this.testInfos.clear();
+         if (this.runner != null) {
+            this.runner.stop();
+            this.runner = null;
+         }
 
+      }
    }
 
    public void setRunner(GameTestRunner var1) {
@@ -38,8 +44,29 @@ public class GameTestTicker {
 
    public void tick() {
       if (this.runner != null) {
-         this.testInfos.forEach((var1) -> var1.tick(this.runner));
+         this.state = GameTestTicker.State.RUNNING;
+         this.testInfos.forEach((var1x) -> var1x.tick(this.runner));
          this.testInfos.removeIf(GameTestInfo::isDone);
+         State var1 = this.state;
+         this.state = GameTestTicker.State.IDLE;
+         if (var1 == GameTestTicker.State.HALTING) {
+            this.clear();
+         }
+
+      }
+   }
+
+   static enum State {
+      IDLE,
+      RUNNING,
+      HALTING;
+
+      private State() {
+      }
+
+      // $FF: synthetic method
+      private static State[] $values() {
+         return new State[]{IDLE, RUNNING, HALTING};
       }
    }
 }

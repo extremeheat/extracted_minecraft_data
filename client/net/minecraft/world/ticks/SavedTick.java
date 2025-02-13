@@ -1,23 +1,16 @@
 package net.minecraft.world.ticks;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.Hash;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.ChunkPos;
 
 public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priority) {
-   private static final String TAG_ID = "i";
-   private static final String TAG_X = "x";
-   private static final String TAG_Y = "y";
-   private static final String TAG_Z = "z";
-   private static final String TAG_DELAY = "t";
-   private static final String TAG_PRIORITY = "p";
    public static final Hash.Strategy<SavedTick<?>> UNIQUE_TICK_HASH = new Hash.Strategy<SavedTick<?>>() {
       public int hashCode(SavedTick<?> var1) {
          return 31 * var1.pos().hashCode() + var1.type().hashCode();
@@ -52,43 +45,14 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
       this.priority = var4;
    }
 
-   public static <T> List<SavedTick<T>> loadTickList(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2) {
-      ArrayList var3 = new ArrayList(var0.size());
-      long var4 = var2.toLong();
-
-      for(int var6 = 0; var6 < var0.size(); ++var6) {
-         CompoundTag var7 = var0.getCompound(var6);
-         loadTick(var7, var1).ifPresent((var3x) -> {
-            if (ChunkPos.asLong(var3x.pos()) == var4) {
-               var3.add(var3x);
-            }
-
-         });
-      }
-
-      return var3;
+   public static <T> Codec<SavedTick<T>> codec(Codec<T> var0) {
+      MapCodec var1 = RecordCodecBuilder.mapCodec((var0x) -> var0x.group(Codec.INT.fieldOf("x").forGetter(Vec3i::getX), Codec.INT.fieldOf("y").forGetter(Vec3i::getY), Codec.INT.fieldOf("z").forGetter(Vec3i::getZ)).apply(var0x, BlockPos::new));
+      return RecordCodecBuilder.create((var2) -> var2.group(var0.fieldOf("i").forGetter(SavedTick::type), var1.forGetter(SavedTick::pos), Codec.INT.fieldOf("t").forGetter(SavedTick::delay), TickPriority.CODEC.fieldOf("p").forGetter(SavedTick::priority)).apply(var2, SavedTick::new));
    }
 
-   public static <T> Optional<SavedTick<T>> loadTick(CompoundTag var0, Function<String, Optional<T>> var1) {
-      return ((Optional)var1.apply(var0.getString("i"))).map((var1x) -> {
-         BlockPos var2 = new BlockPos(var0.getInt("x"), var0.getInt("y"), var0.getInt("z"));
-         return new SavedTick(var1x, var2, var0.getInt("t"), TickPriority.byValue(var0.getInt("p")));
-      });
-   }
-
-   private static CompoundTag saveTick(String var0, BlockPos var1, int var2, TickPriority var3) {
-      CompoundTag var4 = new CompoundTag();
-      var4.putString("i", var0);
-      var4.putInt("x", var1.getX());
-      var4.putInt("y", var1.getY());
-      var4.putInt("z", var1.getZ());
-      var4.putInt("t", var2);
-      var4.putInt("p", var3.getValue());
-      return var4;
-   }
-
-   public CompoundTag save(Function<T, String> var1) {
-      return saveTick((String)var1.apply(this.type), this.pos, this.delay, this.priority);
+   public static <T> List<SavedTick<T>> filterTickListForChunk(List<SavedTick<T>> var0, ChunkPos var1) {
+      long var2 = var1.toLong();
+      return var0.stream().filter((var2x) -> ChunkPos.asLong(var2x.pos()) == var2).toList();
    }
 
    public ScheduledTick<T> unpack(long var1, long var3) {

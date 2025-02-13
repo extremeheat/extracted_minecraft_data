@@ -136,6 +136,7 @@ import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.VirtualScreen;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -156,7 +157,6 @@ import net.minecraft.client.resources.SkinManager;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
@@ -968,7 +968,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private void selfTest() {
       boolean var1 = false;
       BlockModelShaper var2 = this.getBlockRenderer().getBlockModelShaper();
-      BakedModel var3 = var2.getModelManager().getMissingModel();
+      BlockStateModel var3 = var2.getModelManager().getMissingBlockStateModel();
 
       for(Block var5 : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var6 = var5.getStateDefinition().getPossibleStates().iterator();
@@ -976,7 +976,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          while(var6.hasNext()) {
             BlockState var7 = (BlockState)var6.next();
             if (var7.getRenderShape() == RenderShape.MODEL) {
-               BakedModel var8 = var2.getBlockModel(var7);
+               BlockStateModel var8 = var2.getBlockModel(var7);
                if (var8 == var3) {
                   LOGGER.debug("Missing model for: {}", var7);
                   var1 = true;
@@ -985,7 +985,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      TextureAtlasSprite var12 = var3.getParticleIcon();
+      TextureAtlasSprite var12 = var3.particleIcon();
 
       for(Block var14 : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var15 = var14.getStateDefinition().getPossibleStates().iterator();
@@ -2644,7 +2644,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          for(int var11 = (var5 - 1) / var3 * var3; var11 >= 0; var11 -= var3) {
             for(int var12 = 0; var12 < var4; var12 += var2) {
-               RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+               RenderSystem.setShaderTexture(0, (ResourceLocation)TextureAtlas.LOCATION_BLOCKS);
                float var13 = (float)(var4 - var2) / 2.0F * 2.0F - (float)(var12 * 2);
                float var14 = (float)(var5 - var3) / 2.0F * 2.0F - (float)(var11 * 2);
                var13 /= (float)var2;

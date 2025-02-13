@@ -17,6 +17,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.util.Mth;
+import org.joml.Quaternionfc;
 
 public class PlayerSkinWidget extends AbstractWidget {
    private static final float MODEL_OFFSET = 0.0625F;
@@ -44,7 +45,7 @@ public class PlayerSkinWidget extends AbstractWidget {
       var1.pose().scale(var5, var5, var5);
       var1.pose().translate(0.0F, -0.0625F, 0.0F);
       var1.pose().rotateAround(Axis.XP.rotationDegrees(this.rotationX), 0.0F, -1.0625F, 0.0F);
-      var1.pose().mulPose(Axis.YP.rotationDegrees(this.rotationY));
+      var1.pose().mulPose((Quaternionfc)Axis.YP.rotationDegrees(this.rotationY));
       var1.flush();
       Lighting.setupForEntityInInventory(Axis.XP.rotationDegrees(this.rotationX));
       this.model.render(var1, (PlayerSkin)this.skin.get());

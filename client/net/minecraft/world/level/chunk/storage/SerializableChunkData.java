@@ -68,6 +68,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import net.minecraft.world.ticks.SavedTick;
@@ -75,6 +76,8 @@ import org.slf4j.Logger;
 
 public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, @Nullable BlendingData.Packed blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, UpgradeData upgradeData, @Nullable long[] carvingMask, Map<Heightmap.Types, long[]> heightmaps, ChunkAccess.PackedTicks packedTicks, ShortList[] postProcessingSections, boolean lightCorrect, List<SectionData> sectionData, List<CompoundTag> entities, List<CompoundTag> blockEntities, CompoundTag structureData) {
    private static final Codec<PalettedContainer<BlockState>> BLOCK_STATE_CODEC;
+   private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC;
+   private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC;
    private static final Logger LOGGER;
    private static final String TAG_UPGRADE_DATA = "UpgradeData";
    private static final String BLOCK_TICKS_TAG = "block_ticks";
@@ -117,7 +120,7 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
          ChunkPos var3 = new ChunkPos(var2.getInt("xPos"), var2.getInt("zPos"));
          long var4 = var2.getLong("LastUpdate");
          long var6 = var2.getLong("InhabitedTime");
-         ChunkStatus var8 = ChunkStatus.byName(var2.getString("Status"));
+         ChunkStatus var8 = (ChunkStatus)var2.read("Status", ChunkStatus.CODEC).orElse(ChunkStatus.EMPTY);
          UpgradeData var9 = var2.contains("UpgradeData", 10) ? new UpgradeData(var2.getCompound("UpgradeData"), var0) : UpgradeData.EMPTY;
          boolean var10 = var2.getBoolean("isLightOn");
          BlendingData.Packed var11 = (BlendingData.Packed)var2.read("blending_data", BlendingData.Packed.CODEC).orElse((Object)null);
@@ -139,8 +142,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
             }
          }
 
-         List var34 = SavedTick.loadTickList(var2.getList("block_ticks", 10), (var0x) -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var3);
-         List var35 = SavedTick.loadTickList(var2.getList("fluid_ticks", 10), (var0x) -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0x)), var3);
+         List var34 = SavedTick.filterTickListForChunk((List)var2.read("block_ticks", BLOCK_TICKS_CODEC).orElse(List.of()), var3);
+         List var35 = SavedTick.filterTickListForChunk((List)var2.read("fluid_ticks", FLUID_TICKS_CODEC).orElse(List.of()), var3);
          ChunkAccess.PackedTicks var36 = new ChunkAccess.PackedTicks(var34, var35);
          ListTag var19 = var2.getList("PostProcessing", 9);
          ShortList[] var20 = new ShortList[var19.size()];
@@ -373,14 +376,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
       var1.putLong("LastUpdate", this.lastUpdateTime);
       var1.putLong("InhabitedTime", this.inhabitedTime);
       var1.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(this.chunkStatus).toString());
-      if (this.blendingData != null) {
-         var1.store("blending_data", BlendingData.Packed.CODEC, this.blendingData);
-      }
-
-      if (this.belowZeroRetrogen != null) {
-         var1.store("below_zero_retrogen", BelowZeroRetrogen.CODEC, this.belowZeroRetrogen);
-      }
-
+      var1.storeNullable("blending_data", BlendingData.Packed.CODEC, this.blendingData);
+      var1.storeNullable("below_zero_retrogen", BelowZeroRetrogen.CODEC, this.belowZeroRetrogen);
       if (!this.upgradeData.isEmpty()) {
          var1.put("UpgradeData", this.upgradeData.write());
       }
@@ -437,24 +434,12 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
    }
 
    private static void saveTicks(CompoundTag var0, ChunkAccess.PackedTicks var1) {
-      ListTag var2 = new ListTag();
-
-      for(SavedTick var4 : var1.blocks()) {
-         var2.add(var4.save((var0x) -> BuiltInRegistries.BLOCK.getKey(var0x).toString()));
-      }
-
-      var0.put("block_ticks", var2);
-      ListTag var6 = new ListTag();
-
-      for(SavedTick var5 : var1.fluids()) {
-         var6.add(var5.save((var0x) -> BuiltInRegistries.FLUID.getKey(var0x).toString()));
-      }
-
-      var0.put("fluid_ticks", var6);
+      var0.store("block_ticks", BLOCK_TICKS_CODEC, var1.blocks());
+      var0.store("fluid_ticks", FLUID_TICKS_CODEC, var1.fluids());
    }
 
-   public static ChunkType getChunkTypeFromTag(@Nullable CompoundTag var0) {
-      return var0 != null ? ChunkStatus.byName(var0.getString("Status")).getChunkType() : ChunkType.PROTOCHUNK;
+   public static ChunkStatus getChunkStatusFromTag(@Nullable CompoundTag var0) {
+      return var0 != null ? (ChunkStatus)var0.read("Status", ChunkStatus.CODEC).orElse(ChunkStatus.EMPTY) : ChunkStatus.EMPTY;
    }
 
    @Nullable
@@ -573,6 +558,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
 
    static {
       BLOCK_STATE_CODEC = PalettedContainer.codecRW(Block.BLOCK_STATE_REGISTRY, BlockState.CODEC, PalettedContainer.Strategy.SECTION_STATES, Blocks.AIR.defaultBlockState());
+      BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec()).listOf();
+      FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec()).listOf();
       LOGGER = LogUtils.getLogger();
    }
 

@@ -134,7 +134,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 public abstract class LivingEntity extends Entity implements Attackable {
@@ -255,7 +255,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.brain = this.makeBrain(new Dynamic(var3, (Tag)var3.createMap(ImmutableMap.of(var3.createString("memories"), (Tag)var3.emptyMap()))));
    }
 
-   @SideEffectFree
+   @Contract(
+      pure = true
+   )
    protected EntityEquipment createEquipment() {
       return new EntityEquipment();
    }
@@ -682,11 +684,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
 
       var1.putBoolean("FallFlying", this.isFallFlying());
-      this.getSleepingPos().ifPresent((var1x) -> {
-         var1.putInt("SleepingX", var1x.getX());
-         var1.putInt("SleepingY", var1x.getY());
-         var1.putInt("SleepingZ", var1x.getZ());
-      });
+      this.getSleepingPos().ifPresent((var1x) -> var1.store("sleeping_pos", BlockPos.CODEC, var1x));
       DataResult var3 = this.brain.serializeStart(NbtOps.INSTANCE);
       Logger var10001 = LOGGER;
       java.util.Objects.requireNonNull(var10001);
@@ -747,9 +745,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.lastHurtByMobTimestamp = var1.getInt("HurtByTimestamp");
       if (var1.contains("Team", 8)) {
          String var8 = var1.getString("Team");
-         Scoreboard var10 = this.level().getScoreboard();
-         PlayerTeam var6 = var10.getPlayerTeam(var8);
-         boolean var7 = var6 != null && var10.addPlayerToTeam(this.getStringUUID(), var6);
+         Scoreboard var9 = this.level().getScoreboard();
+         PlayerTeam var6 = var9.getPlayerTeam(var8);
+         boolean var7 = var6 != null && var9.addPlayerToTeam(this.getStringUUID(), var6);
          if (!var7) {
             LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", var8);
          }
@@ -759,15 +757,14 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.setSharedFlag(7, true);
       }
 
-      if (var1.contains("SleepingX", 99) && var1.contains("SleepingY", 99) && var1.contains("SleepingZ", 99)) {
-         BlockPos var9 = new BlockPos(var1.getInt("SleepingX"), var1.getInt("SleepingY"), var1.getInt("SleepingZ"));
-         this.setSleepingPos(var9);
+      var1.read("sleeping_pos", BlockPos.CODEC).ifPresentOrElse((var1x) -> {
+         this.setSleepingPos(var1x);
          this.entityData.set(DATA_POSE, Pose.SLEEPING);
          if (!this.firstTick) {
-            this.setPosToBed(var9);
+            this.setPosToBed(var1x);
          }
-      }
 
+      }, this::clearSleepingPos);
       if (var1.contains("Brain", 10)) {
          this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1.get("Brain")));
       }
@@ -2386,7 +2383,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.setDeltaMovement(this.handleOnClimbable(this.getDeltaMovement()));
       this.move(MoverType.SELF, this.getDeltaMovement());
       Vec3 var3 = this.getDeltaMovement();
-      if ((this.horizontalCollision || this.jumping) && (this.onClimbable() || this.getInBlockState().is(Blocks.POWDER_SNOW) && PowderSnowBlock.canEntityWalkOnPowderSnow(this))) {
+      if ((this.horizontalCollision || this.jumping) && (this.onClimbable() || this.wasInPowderSnow && PowderSnowBlock.canEntityWalkOnPowderSnow(this))) {
          var3 = new Vec3(var3.x, 0.2, var3.z);
       }
 
@@ -2752,12 +2749,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.resetFallDistance();
       }
 
-      label126: {
+      label122: {
          LivingEntity var18 = this.getControllingPassenger();
          if (var18 instanceof Player var15) {
             if (this.isAlive()) {
                this.travelRidden(var15, var10);
-               break label126;
+               break label122;
             }
          }
 
@@ -2778,13 +2775,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       Level var19 = this.level();
       if (var19 instanceof ServerLevel var16) {
          var8.push("freezing");
-         if (!this.isDeadOrDying()) {
-            int var20 = this.getTicksFrozen();
-            if (this.isInPowderSnow && this.canFreeze()) {
-               this.setTicksFrozen(Math.min(this.getTicksRequiredToFreeze(), var20 + 1));
-            } else {
-               this.setTicksFrozen(Math.max(0, var20 - 2));
-            }
+         if (!this.isInPowderSnow || !this.canFreeze()) {
+            this.setTicksFrozen(Math.max(0, this.getTicksFrozen() - 2));
          }
 
          this.removeFrost();

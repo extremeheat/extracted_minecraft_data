@@ -4,12 +4,11 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -313,9 +312,9 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK;
-      this.movedState = NbtUtils.readBlockState((HolderGetter)var3, var1.getCompound("blockState"));
-      this.direction = Direction.from3DDataValue(var1.getInt("facing"));
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      this.movedState = (BlockState)var1.read("blockState", BlockState.CODEC, var3).orElse(Blocks.AIR.defaultBlockState());
+      this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN);
       this.progress = var1.getFloat("progress");
       this.progressO = this.progress;
       this.extending = var1.getBoolean("extending");
@@ -324,8 +323,9 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      var1.put("blockState", NbtUtils.writeBlockState(this.movedState));
-      var1.putInt("facing", this.direction.get3DDataValue());
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      var1.store("blockState", BlockState.CODEC, var3, this.movedState);
+      var1.store("facing", Direction.LEGACY_ID_CODEC, this.direction);
       var1.putFloat("progress", this.progressO);
       var1.putBoolean("extending", this.extending);
       var1.putBoolean("source", this.isSourcePiston);

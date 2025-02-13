@@ -1,9 +1,12 @@
 package net.minecraft.client.gui.font;
 
 import com.mojang.blaze3d.font.SheetGlyphInfo;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -16,17 +19,13 @@ public class FontTexture extends AbstractTexture implements Dumpable {
    private final boolean colored;
    private final Node root;
 
-   public FontTexture(GlyphRenderTypes var1, boolean var2) {
+   public FontTexture(Supplier<String> var1, GlyphRenderTypes var2, boolean var3) {
       super();
-      this.colored = var2;
+      this.colored = var3;
       this.root = new Node(0, 0, 256, 256);
-      TextureUtil.prepareImage(var2 ? NativeImage.InternalGlFormat.RGBA : NativeImage.InternalGlFormat.RED, this.getId(), 256, 256);
-      this.setFilter(false, false);
-      this.renderTypes = var1;
-   }
-
-   public void close() {
-      this.releaseId();
+      this.texture = new GpuTexture(var1, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1);
+      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.renderTypes = var2;
    }
 
    @Nullable
@@ -35,9 +34,9 @@ public class FontTexture extends AbstractTexture implements Dumpable {
          return null;
       } else {
          Node var2 = this.root.insert(var1);
-         if (var2 != null) {
-            this.bind();
-            var1.upload(var2.x, var2.y);
+         if (var2 != null && this.texture != null) {
+            this.texture.bind();
+            var1.upload(var2.x, var2.y, this.texture);
             float var3 = 256.0F;
             float var4 = 256.0F;
             float var5 = 0.01F;
@@ -49,8 +48,10 @@ public class FontTexture extends AbstractTexture implements Dumpable {
    }
 
    public void dumpContents(ResourceLocation var1, Path var2) {
-      String var3 = var1.toDebugFileName();
-      TextureUtil.writeAsPNG(var2, var3, this.getId(), 0, 256, 256, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
+      if (this.texture != null) {
+         String var3 = var1.toDebugFileName();
+         TextureUtil.writeAsPNG(var2, var3, this.texture.glId(), 0, 256, 256, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
+      }
    }
 
    static class Node {

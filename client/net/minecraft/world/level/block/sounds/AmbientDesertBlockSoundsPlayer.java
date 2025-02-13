@@ -27,11 +27,11 @@ public class AmbientDesertBlockSoundsPlayer {
    public static void playAmbientBlockSounds(BlockState var0, Level var1, BlockPos var2, RandomSource var3) {
       if (var0.is(BlockTags.PLAYS_AMBIENT_DESERT_BLOCK_SOUNDS) && var1.canSeeSky(var2.above())) {
          if (var3.nextInt(1600) == 0 && shouldPlayAmbientSound(var1, var2)) {
-            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.SAND_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.SAND_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
 
          if (var3.nextInt(10000) == 0 && isInAmbientSoundBiome(var1.getBiome(var2)) && shouldPlayAmbientSound(var1, var2)) {
-            var1.playPlayerSound(SoundEvents.SAND_WIND, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var1.playPlayerSound(SoundEvents.SAND_WIND, SoundSource.AMBIENT, 1.0F, 1.0F);
          }
 
       }

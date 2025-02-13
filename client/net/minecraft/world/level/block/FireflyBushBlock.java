@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -45,7 +44,7 @@ public class FireflyBushBlock extends VegetationBlock implements BonemealableBlo
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return true;
+      return BonemealableBlock.hasSpreadableNeighbourPos(var1, var2, var3);
    }
 
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
@@ -53,6 +52,6 @@ public class FireflyBushBlock extends VegetationBlock implements BonemealableBlo
    }
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      popResource(var1, var3, new ItemStack(this));
+      BonemealableBlock.findSpreadableNeighbourPos(var1, var3, var4).ifPresent((var2x) -> var1.setBlockAndUpdate(var2x, this.defaultBlockState()));
    }
 }

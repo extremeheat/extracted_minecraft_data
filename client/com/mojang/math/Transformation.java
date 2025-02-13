@@ -9,13 +9,14 @@ import net.minecraft.util.ExtraCodecs;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public final class Transformation {
-   private final Matrix4f matrix;
+   private final Matrix4fc matrix;
    public static final Codec<Transformation> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter((var0x) -> var0x.translation), ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter((var0x) -> var0x.leftRotation), ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter((var0x) -> var0x.scale), ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter((var0x) -> var0x.rightRotation)).apply(var0, Transformation::new));
    public static final Codec<Transformation> EXTENDED_CODEC;
    private boolean decomposed;
@@ -29,7 +30,7 @@ public final class Transformation {
    private Quaternionf rightRotation;
    private static final Transformation IDENTITY;
 
-   public Transformation(@Nullable Matrix4f var1) {
+   public Transformation(@Nullable Matrix4fc var1) {
       super();
       if (var1 == null) {
          this.matrix = new Matrix4f();
@@ -54,7 +55,7 @@ public final class Transformation {
    }
 
    public Transformation compose(Transformation var1) {
-      Matrix4f var2 = this.getMatrix();
+      Matrix4f var2 = this.getMatrixCopy();
       var2.mul(var1.getMatrix());
       return new Transformation(var2);
    }
@@ -64,7 +65,7 @@ public final class Transformation {
       if (this == IDENTITY) {
          return this;
       } else {
-         Matrix4f var1 = this.getMatrix().invert();
+         Matrix4f var1 = this.getMatrixCopy().invertAffine();
          return var1.isFinite() ? new Transformation(var1) : null;
       }
    }
@@ -103,7 +104,11 @@ public final class Transformation {
       return var4;
    }
 
-   public Matrix4f getMatrix() {
+   public Matrix4fc getMatrix() {
+      return this.matrix;
+   }
+
+   public Matrix4f getMatrixCopy() {
       return new Matrix4f(this.matrix);
    }
 

@@ -13,7 +13,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -708,7 +707,11 @@ public class StructureTemplate {
    }
 
    public static JigsawBlockEntity.JointType getJointType(CompoundTag var0, BlockState var1) {
-      return (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var0.getString("joint"), (Supplier)(() -> JigsawBlock.getFrontFacing(var1).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE));
+      return (JigsawBlockEntity.JointType)var0.read("joint", JigsawBlockEntity.JointType.CODEC).orElseGet(() -> getDefaultJointType(var1));
+   }
+
+   public static JigsawBlockEntity.JointType getDefaultJointType(BlockState var0) {
+      return JigsawBlock.getFrontFacing(var0).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
    }
 
    static class SimplePalette implements Iterable<BlockState> {

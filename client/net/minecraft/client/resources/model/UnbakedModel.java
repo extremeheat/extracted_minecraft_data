@@ -1,108 +1,40 @@
 package net.minecraft.client.resources.model;
 
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.resources.ResourceLocation;
 
-public interface UnbakedModel extends ResolvableModel {
-   boolean DEFAULT_AMBIENT_OCCLUSION = true;
-   GuiLight DEFAULT_GUI_LIGHT = UnbakedModel.GuiLight.SIDE;
-
-   BakedModel bake(TextureSlots var1, ModelBaker var2, ModelState var3, boolean var4, boolean var5, ItemTransforms var6);
+public interface UnbakedModel {
+   String PARTICLE_TEXTURE_REFERENCE = "particle";
 
    @Nullable
-   default Boolean getAmbientOcclusion() {
+   default Boolean ambientOcclusion() {
       return null;
    }
 
    @Nullable
-   default GuiLight getGuiLight() {
+   default GuiLight guiLight() {
       return null;
    }
 
    @Nullable
-   default ItemTransforms getTransforms() {
+   default ItemTransforms transforms() {
       return null;
    }
 
-   default TextureSlots.Data getTextureSlots() {
+   default TextureSlots.Data textureSlots() {
       return TextureSlots.Data.EMPTY;
    }
 
    @Nullable
-   default UnbakedModel getParent() {
+   default UnbakedGeometry geometry() {
       return null;
    }
 
-   static BakedModel bakeWithTopModelValues(UnbakedModel var0, ModelBaker var1, ModelState var2) {
-      TextureSlots var3 = getTopTextureSlots(var0, var1.rootName());
-      boolean var4 = getTopAmbientOcclusion(var0);
-      boolean var5 = getTopGuiLight(var0).lightLikeBlock();
-      ItemTransforms var6 = getTopTransforms(var0);
-      return var0.bake(var3, var1, var2, var4, var5, var6);
-   }
-
-   static TextureSlots getTopTextureSlots(UnbakedModel var0, ModelDebugName var1) {
-      TextureSlots.Resolver var2;
-      for(var2 = new TextureSlots.Resolver(); var0 != null; var0 = var0.getParent()) {
-         var2.addLast(var0.getTextureSlots());
-      }
-
-      return var2.resolve(var1);
-   }
-
-   static boolean getTopAmbientOcclusion(UnbakedModel var0) {
-      while(var0 != null) {
-         Boolean var1 = var0.getAmbientOcclusion();
-         if (var1 != null) {
-            return var1;
-         }
-
-         var0 = var0.getParent();
-      }
-
-      return true;
-   }
-
-   static GuiLight getTopGuiLight(UnbakedModel var0) {
-      while(var0 != null) {
-         GuiLight var1 = var0.getGuiLight();
-         if (var1 != null) {
-            return var1;
-         }
-
-         var0 = var0.getParent();
-      }
-
-      return DEFAULT_GUI_LIGHT;
-   }
-
-   static ItemTransform getTopTransform(UnbakedModel var0, ItemDisplayContext var1) {
-      for(; var0 != null; var0 = var0.getParent()) {
-         ItemTransforms var2 = var0.getTransforms();
-         if (var2 != null) {
-            ItemTransform var3 = var2.getTransform(var1);
-            if (var3 != ItemTransform.NO_TRANSFORM) {
-               return var3;
-            }
-         }
-      }
-
-      return ItemTransform.NO_TRANSFORM;
-   }
-
-   static ItemTransforms getTopTransforms(UnbakedModel var0) {
-      ItemTransform var1 = getTopTransform(var0, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
-      ItemTransform var2 = getTopTransform(var0, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
-      ItemTransform var3 = getTopTransform(var0, ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
-      ItemTransform var4 = getTopTransform(var0, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
-      ItemTransform var5 = getTopTransform(var0, ItemDisplayContext.HEAD);
-      ItemTransform var6 = getTopTransform(var0, ItemDisplayContext.GUI);
-      ItemTransform var7 = getTopTransform(var0, ItemDisplayContext.GROUND);
-      ItemTransform var8 = getTopTransform(var0, ItemDisplayContext.FIXED);
-      return new ItemTransforms(var1, var2, var3, var4, var5, var6, var7, var8);
+   @Nullable
+   default ResourceLocation parent() {
+      return null;
    }
 
    public static enum GuiLight {

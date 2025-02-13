@@ -15,14 +15,16 @@ import net.minecraft.world.level.entity.UUIDLookup;
 import net.minecraft.world.level.entity.UniquelyIdentifyable;
 
 public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
+   private static final Codec<? extends EntityReference<?>> CODEC;
+   private static final StreamCodec<ByteBuf, ? extends EntityReference<?>> STREAM_CODEC;
    private Either<UUID, StoredEntityType> entity;
 
    public static <Type extends UniquelyIdentifyable> Codec<EntityReference<Type>> codec() {
-      return UUIDUtil.CODEC.xmap(EntityReference::new, EntityReference::getUUID);
+      return CODEC;
    }
 
    public static <Type extends UniquelyIdentifyable> StreamCodec<ByteBuf, EntityReference<Type>> streamCodec() {
-      return UUIDUtil.STREAM_CODEC.map(EntityReference::new, EntityReference::getUUID);
+      return STREAM_CODEC;
    }
 
    public EntityReference(StoredEntityType var1) {
@@ -73,7 +75,7 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    }
 
    public void store(CompoundTag var1, String var2) {
-      var1.putUUID(var2, this.getUUID());
+      var1.store(var2, UUIDUtil.CODEC, this.getUUID());
    }
 
    @Nullable
@@ -83,17 +85,23 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
 
    @Nullable
    public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> read(CompoundTag var0, String var1) {
-      return var0.hasUUID(var1) ? new EntityReference(var0.getUUID(var1)) : null;
+      return (EntityReference)var0.read(var1, codec()).orElse((Object)null);
    }
 
    @Nullable
    public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> readWithOldOwnerConversion(CompoundTag var0, String var1, Level var2) {
-      if (var0.hasUUID(var1)) {
-         return read(var0, var1);
+      Optional var3 = var0.read(var1, UUIDUtil.CODEC);
+      if (var3.isPresent()) {
+         return new EntityReference<StoredEntityType>((UUID)var3.get());
       } else {
-         String var3 = var0.getString(var1);
-         UUID var4 = OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var3);
-         return var4 != null ? new EntityReference(var4) : null;
+         String var4 = var0.getString(var1);
+         UUID var5 = OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var4);
+         return var5 != null ? new EntityReference(var5) : null;
       }
+   }
+
+   static {
+      CODEC = UUIDUtil.CODEC.xmap(EntityReference::new, EntityReference::getUUID);
+      STREAM_CODEC = UUIDUtil.STREAM_CODEC.map(EntityReference::new, EntityReference::getUUID);
    }
 }

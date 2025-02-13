@@ -78,10 +78,12 @@ public class RespawnAnchorBlock extends Block {
 
          return InteractionResult.SUCCESS;
       } else {
-         if (!var2.isClientSide) {
+         if (var4 instanceof ServerPlayer) {
             ServerPlayer var6 = (ServerPlayer)var4;
-            if (var6.getRespawnDimension() != var2.dimension() || !var3.equals(var6.getRespawnPosition())) {
-               var6.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
+            ServerPlayer.RespawnConfig var7 = var6.getRespawnConfig();
+            ServerPlayer.RespawnConfig var8 = new ServerPlayer.RespawnConfig(var2.dimension(), var3, 0.0F, false);
+            if (var7 == null || !var7.isSamePosition(var8)) {
+               var6.setRespawnPosition(var8, true);
                var2.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                return InteractionResult.SUCCESS_SERVER;
             }

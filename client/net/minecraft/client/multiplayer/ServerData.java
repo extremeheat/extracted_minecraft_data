@@ -1,15 +1,18 @@
 package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.PngInfo;
 import org.slf4j.Logger;
 
@@ -45,16 +48,8 @@ public class ServerData {
       CompoundTag var1 = new CompoundTag();
       var1.putString("name", this.name);
       var1.putString("ip", this.ip);
-      if (this.iconBytes != null) {
-         var1.putString("icon", Base64.getEncoder().encodeToString(this.iconBytes));
-      }
-
-      if (this.packStatus == ServerData.ServerPackStatus.ENABLED) {
-         var1.putBoolean("acceptTextures", true);
-      } else if (this.packStatus == ServerData.ServerPackStatus.DISABLED) {
-         var1.putBoolean("acceptTextures", false);
-      }
-
+      var1.storeNullable("icon", ExtraCodecs.BASE64_STRING, this.iconBytes);
+      var1.store(ServerData.ServerPackStatus.FIELD_CODEC, this.packStatus);
       return var1;
    }
 
@@ -68,25 +63,8 @@ public class ServerData {
 
    public static ServerData read(CompoundTag var0) {
       ServerData var1 = new ServerData(var0.getString("name"), var0.getString("ip"), ServerData.Type.OTHER);
-      if (var0.contains("icon", 8)) {
-         try {
-            byte[] var2 = Base64.getDecoder().decode(var0.getString("icon"));
-            var1.setIconBytes(validateIcon(var2));
-         } catch (IllegalArgumentException var3) {
-            LOGGER.warn("Malformed base64 server icon", var3);
-         }
-      }
-
-      if (var0.contains("acceptTextures", 99)) {
-         if (var0.getBoolean("acceptTextures")) {
-            var1.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
-         } else {
-            var1.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
-         }
-      } else {
-         var1.setResourcePackStatus(ServerData.ServerPackStatus.PROMPT);
-      }
-
+      var1.setIconBytes((byte[])var0.read("icon", ExtraCodecs.BASE64_STRING).orElse((Object)null));
+      var1.setResourcePackStatus((ServerPackStatus)var0.read(ServerData.ServerPackStatus.FIELD_CODEC).orElse(ServerData.ServerPackStatus.PROMPT));
       return var1;
    }
 
@@ -152,6 +130,17 @@ public class ServerData {
       DISABLED("disabled"),
       PROMPT("prompt");
 
+      public static final MapCodec<ServerPackStatus> FIELD_CODEC = Codec.BOOL.optionalFieldOf("acceptTextures").xmap((var0) -> (ServerPackStatus)var0.map((var0x) -> var0x ? ENABLED : DISABLED).orElse(PROMPT), (var0) -> {
+         Optional var10000;
+         switch (var0.ordinal()) {
+            case 0 -> var10000 = Optional.of(true);
+            case 1 -> var10000 = Optional.of(false);
+            case 2 -> var10000 = Optional.empty();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      });
       private final Component name;
 
       private ServerPackStatus(final String var3) {

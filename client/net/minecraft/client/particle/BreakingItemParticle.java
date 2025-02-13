@@ -71,7 +71,7 @@ public class BreakingItemParticle extends TextureSheetParticle {
       }
 
       protected ItemStackRenderState calculateState(ItemStack var1, ClientLevel var2) {
-         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, false, var2, (LivingEntity)null, 0);
+         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, var2, (LivingEntity)null, 0);
          return this.scratchRenderState;
       }
    }

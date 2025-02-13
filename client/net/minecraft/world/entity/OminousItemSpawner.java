@@ -3,9 +3,11 @@ package net.minecraft.world.entity;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -107,14 +109,15 @@ public class OminousItemSpawner extends Entity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      ItemStack var2 = var1.contains("item", 10) ? (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(ItemStack.EMPTY) : ItemStack.EMPTY;
-      this.setItem(var2);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setItem((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
       this.spawnItemAfterTicks = var1.getLong("spawn_item_after_ticks");
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
       if (!this.getItem().isEmpty()) {
-         var1.put("item", this.getItem().save(this.registryAccess()).copy());
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("item", ItemStack.CODEC, var2, this.getItem());
       }
 
       var1.putLong("spawn_item_after_ticks", this.spawnItemAfterTicks);

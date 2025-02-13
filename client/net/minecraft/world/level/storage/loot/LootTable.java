@@ -17,6 +17,7 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -32,11 +33,12 @@ import org.slf4j.Logger;
 
 public class LootTable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final LootTable EMPTY;
+   public static final Codec<ResourceKey<LootTable>> KEY_CODEC;
    public static final ContextKeySet DEFAULT_PARAM_SET;
    public static final long RANDOMIZE_SEED = 0L;
    public static final Codec<LootTable> DIRECT_CODEC;
    public static final Codec<Holder<LootTable>> CODEC;
+   public static final LootTable EMPTY;
    private final ContextKeySet paramSet;
    private final Optional<ResourceLocation> randomSequence;
    private final List<LootPool> pools;
@@ -214,10 +216,11 @@ public class LootTable {
    }
 
    static {
-      EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
+      KEY_CODEC = ResourceKey.codec(Registries.LOOT_TABLE);
       DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
-      DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> var0x.paramSet), ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> var0x.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> var0x.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions)).apply(var0, LootTable::new));
+      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> var0x.paramSet), ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> var0x.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> var0x.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions)).apply(var0, LootTable::new)));
       CODEC = RegistryFileCodec.<Holder<LootTable>>create(Registries.LOOT_TABLE, DIRECT_CODEC);
+      EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
    }
 
    public static class Builder implements FunctionUserBuilder<Builder> {

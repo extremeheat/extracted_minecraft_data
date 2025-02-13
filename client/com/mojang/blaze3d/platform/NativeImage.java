@@ -362,42 +362,6 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   public void upload(int var1, int var2, int var3, boolean var4) {
-      this.upload(var1, var2, var3, 0, 0, this.width, this.height, var4);
-   }
-
-   public void upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
-      if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> this._upload(var1, var2, var3, var4, var5, var6, var7, var8));
-      } else {
-         this._upload(var1, var2, var3, var4, var5, var6, var7, var8);
-      }
-
-   }
-
-   private void _upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
-      try {
-         RenderSystem.assertOnRenderThreadOrInit();
-         this.checkAllocated();
-         if (var6 == this.getWidth()) {
-            GlStateManager._pixelStore(3314, 0);
-         } else {
-            GlStateManager._pixelStore(3314, this.getWidth());
-         }
-
-         GlStateManager._pixelStore(3316, var4);
-         GlStateManager._pixelStore(3315, var5);
-         this.format.setUnpackPixelStoreState();
-         GlStateManager._texSubImage2D(3553, var1, var2, var3, var6, var7, this.format.glFormat(), 5121, this.pixels);
-      } finally {
-         if (var8) {
-            this.close();
-         }
-
-      }
-
-   }
-
    public void downloadTexture(int var1, boolean var2) {
       RenderSystem.assertOnRenderThread();
       this.checkAllocated();
@@ -592,6 +556,10 @@ public final class NativeImage implements AutoCloseable {
       DebugMemoryUntracker.untrack(this.pixels);
    }
 
+   public long getPointer() {
+      return this.pixels;
+   }
+
    static {
       OPEN_OPTIONS = EnumSet.of(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
    }
@@ -621,28 +589,6 @@ public final class NativeImage implements AutoCloseable {
          if (this.exception != null) {
             throw this.exception;
          }
-      }
-   }
-
-   public static enum InternalGlFormat {
-      RGBA(6408),
-      RGB(6407),
-      RG(33319),
-      RED(6403);
-
-      private final int glFormat;
-
-      private InternalGlFormat(final int var3) {
-         this.glFormat = var3;
-      }
-
-      public int glFormat() {
-         return this.glFormat;
-      }
-
-      // $FF: synthetic method
-      private static InternalGlFormat[] $values() {
-         return new InternalGlFormat[]{RGBA, RGB, RG, RED};
       }
    }
 
@@ -692,7 +638,7 @@ public final class NativeImage implements AutoCloseable {
       }
 
       public void setUnpackPixelStoreState() {
-         RenderSystem.assertOnRenderThreadOrInit();
+         RenderSystem.assertOnRenderThread();
          GlStateManager._pixelStore(3317, this.components());
       }
 

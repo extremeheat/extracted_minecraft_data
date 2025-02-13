@@ -406,16 +406,16 @@ public abstract class PlayerList {
          var6.addTag(var8);
       }
 
-      Vec3 var14 = var4.position();
-      var6.snapTo(var14.x, var14.y, var14.z, var4.yRot(), var4.xRot());
+      Vec3 var15 = var4.position();
+      var6.snapTo(var15.x, var15.y, var15.z, var4.yRot(), var4.xRot());
       if (var4.missingRespawnBlock()) {
          var6.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
       }
 
-      int var15 = var2 ? 1 : 0;
+      int var16 = var2 ? 1 : 0;
       ServerLevel var9 = var6.serverLevel();
       LevelData var10 = var9.getLevelData();
-      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var15));
+      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var16));
       var6.connection.teleport(var6.getX(), var6.getY(), var6.getZ(), var6.getYRot(), var6.getXRot());
       var6.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var5.getSharedSpawnPos(), var5.getSharedSpawnAngle()));
       var6.connection.send(new ClientboundChangeDifficultyPacket(var10.getDifficulty(), var10.isDifficultyLocked()));
@@ -428,12 +428,15 @@ public abstract class PlayerList {
       this.playersByUUID.put(var6.getUUID(), var6);
       var6.initInventoryMenu();
       var6.setHealth(var6.getHealth());
-      BlockPos var11 = var6.getRespawnPosition();
-      ServerLevel var12 = this.server.getLevel(var6.getRespawnDimension());
-      if (!var2 && var11 != null && var12 != null) {
-         BlockState var13 = var12.getBlockState(var11);
-         if (var13.is(Blocks.RESPAWN_ANCHOR)) {
-            var6.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)var11.getX(), (double)var11.getY(), (double)var11.getZ(), 1.0F, 1.0F, var5.getRandom().nextLong()));
+      ServerPlayer.RespawnConfig var11 = var6.getRespawnConfig();
+      if (!var2 && var11 != null) {
+         ServerLevel var12 = this.server.getLevel(var11.dimension());
+         if (var12 != null) {
+            BlockPos var13 = var11.pos();
+            BlockState var14 = var12.getBlockState(var13);
+            if (var14.is(Blocks.RESPAWN_ANCHOR)) {
+               var6.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)var13.getX(), (double)var13.getY(), (double)var13.getZ(), 1.0F, 1.0F, var5.getRandom().nextLong()));
+            }
          }
       }
 

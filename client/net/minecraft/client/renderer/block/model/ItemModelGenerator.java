@@ -1,17 +1,18 @@
 package net.minecraft.client.renderer.block.model;
 
+import com.mojang.math.Quadrant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.ResolvableModel;
-import net.minecraft.client.resources.model.SimpleBakedModel;
+import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.UnbakedGeometry;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -23,60 +24,62 @@ public class ItemModelGenerator implements UnbakedModel {
    private static final float MIN_Z = 7.5F;
    private static final float MAX_Z = 8.5F;
    private static final TextureSlots.Data TEXTURE_SLOTS = (new TextureSlots.Data.Builder()).addReference("particle", "layer0").build();
+   private static final BlockElementFace.UVs SOUTH_FACE_UVS = new BlockElementFace.UVs(0.0F, 0.0F, 16.0F, 16.0F);
+   private static final BlockElementFace.UVs NORTH_FACE_UVS = new BlockElementFace.UVs(16.0F, 0.0F, 0.0F, 16.0F);
 
    public ItemModelGenerator() {
       super();
    }
 
-   public TextureSlots.Data getTextureSlots() {
+   public TextureSlots.Data textureSlots() {
       return TEXTURE_SLOTS;
    }
 
-   public void resolveDependencies(ResolvableModel.Resolver var1) {
+   public UnbakedGeometry geometry() {
+      return ItemModelGenerator::bake;
    }
 
    @Nullable
-   public UnbakedModel.GuiLight getGuiLight() {
+   public UnbakedModel.GuiLight guiLight() {
       return UnbakedModel.GuiLight.FRONT;
    }
 
-   public BakedModel bake(TextureSlots var1, ModelBaker var2, ModelState var3, boolean var4, boolean var5, ItemTransforms var6) {
-      return this.bake(var1, var2.sprites(), var3, var4, var5, var6);
+   private static QuadCollection bake(TextureSlots var0, ModelBaker var1, ModelState var2, ModelDebugName var3) {
+      return bake(var0, var1.sprites(), var2, var3);
    }
 
-   private BakedModel bake(TextureSlots var1, SpriteGetter var2, ModelState var3, boolean var4, boolean var5, ItemTransforms var6) {
-      TextureSlots.Data.Builder var7 = new TextureSlots.Data.Builder();
-      ArrayList var8 = new ArrayList();
+   private static QuadCollection bake(TextureSlots var0, SpriteGetter var1, ModelState var2, ModelDebugName var3) {
+      ArrayList var4 = new ArrayList();
 
-      for(int var9 = 0; var9 < LAYERS.size(); ++var9) {
-         String var10 = (String)LAYERS.get(var9);
-         Material var11 = var1.getMaterial(var10);
-         if (var11 == null) {
+      for(int var5 = 0; var5 < LAYERS.size(); ++var5) {
+         String var6 = (String)LAYERS.get(var5);
+         Material var7 = var0.getMaterial(var6);
+         if (var7 == null) {
             break;
          }
 
-         var7.addTexture(var10, var11);
-         SpriteContents var12 = var2.get(var11).contents();
-         var8.addAll(this.processFrames(var9, var10, var12));
+         SpriteContents var8 = var1.get(var7, var3).contents();
+         var4.addAll(processFrames(var5, var6, var8));
       }
 
-      return SimpleBakedModel.bakeElements(var8, var1, var2, var3, var4, var5, false, var6);
+      return SimpleUnbakedGeometry.bake(var4, var0, var1, var2, var3);
    }
 
-   private List<BlockElement> processFrames(int var1, String var2, SpriteContents var3) {
-      Map var4 = Map.of(Direction.SOUTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0)), Direction.NORTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{16.0F, 0.0F, 0.0F, 16.0F}, 0)));
+   private static List<BlockElement> processFrames(int var0, String var1, SpriteContents var2) {
+      Map var3 = Map.of(Direction.SOUTH, new BlockElementFace((Direction)null, var0, var1, SOUTH_FACE_UVS, Quadrant.R0), Direction.NORTH, new BlockElementFace((Direction)null, var0, var1, NORTH_FACE_UVS, Quadrant.R0));
+      ArrayList var4 = new ArrayList();
+      var4.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var3));
+      var4.addAll(createSideElements(var2, var1, var0));
+      return var4;
+   }
+
+   private static List<BlockElement> createSideElements(SpriteContents var0, String var1, int var2) {
+      float var3 = (float)var0.width();
+      float var4 = (float)var0.height();
       ArrayList var5 = new ArrayList();
-      var5.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var4));
-      var5.addAll(this.createSideElements(var3, var2, var1));
-      return var5;
-   }
 
-   private List<BlockElement> createSideElements(SpriteContents var1, String var2, int var3) {
-      float var4 = (float)var1.width();
-      float var5 = (float)var1.height();
-      ArrayList var6 = new ArrayList();
-
-      for(Span var8 : this.getSpans(var1)) {
+      for(Span var7 : getSpans(var0)) {
+         float var8 = 0.0F;
          float var9 = 0.0F;
          float var10 = 0.0F;
          float var11 = 0.0F;
@@ -84,132 +87,131 @@ public class ItemModelGenerator implements UnbakedModel {
          float var13 = 0.0F;
          float var14 = 0.0F;
          float var15 = 0.0F;
-         float var16 = 0.0F;
+         float var16 = 16.0F / var3;
          float var17 = 16.0F / var4;
-         float var18 = 16.0F / var5;
-         float var19 = (float)var8.getMin();
-         float var20 = (float)var8.getMax();
-         float var21 = (float)var8.getAnchor();
-         SpanFacing var22 = var8.getFacing();
-         switch (var22.ordinal()) {
+         float var18 = (float)var7.getMin();
+         float var19 = (float)var7.getMax();
+         float var20 = (float)var7.getAnchor();
+         SpanFacing var21 = var7.getFacing();
+         switch (var21.ordinal()) {
             case 0:
-               var13 = var19;
-               var9 = var19;
-               var11 = var14 = var20 + 1.0F;
-               var15 = var21;
-               var10 = var21;
-               var12 = var21;
-               var16 = var21 + 1.0F;
+               var12 = var18;
+               var8 = var18;
+               var10 = var13 = var19 + 1.0F;
+               var14 = var20;
+               var9 = var20;
+               var11 = var20;
+               var15 = var20 + 1.0F;
                break;
             case 1:
-               var15 = var21;
-               var16 = var21 + 1.0F;
-               var13 = var19;
-               var9 = var19;
-               var11 = var14 = var20 + 1.0F;
-               var10 = var21 + 1.0F;
-               var12 = var21 + 1.0F;
+               var14 = var20;
+               var15 = var20 + 1.0F;
+               var12 = var18;
+               var8 = var18;
+               var10 = var13 = var19 + 1.0F;
+               var9 = var20 + 1.0F;
+               var11 = var20 + 1.0F;
                break;
             case 2:
-               var13 = var21;
-               var9 = var21;
-               var11 = var21;
-               var14 = var21 + 1.0F;
-               var16 = var19;
-               var10 = var19;
-               var12 = var15 = var20 + 1.0F;
+               var12 = var20;
+               var8 = var20;
+               var10 = var20;
+               var13 = var20 + 1.0F;
+               var15 = var18;
+               var9 = var18;
+               var11 = var14 = var19 + 1.0F;
                break;
             case 3:
-               var13 = var21;
-               var14 = var21 + 1.0F;
-               var9 = var21 + 1.0F;
-               var11 = var21 + 1.0F;
-               var16 = var19;
-               var10 = var19;
-               var12 = var15 = var20 + 1.0F;
+               var12 = var20;
+               var13 = var20 + 1.0F;
+               var8 = var20 + 1.0F;
+               var10 = var20 + 1.0F;
+               var15 = var18;
+               var9 = var18;
+               var11 = var14 = var19 + 1.0F;
          }
 
+         var8 *= var16;
+         var10 *= var16;
          var9 *= var17;
          var11 *= var17;
-         var10 *= var18;
-         var12 *= var18;
-         var10 = 16.0F - var10;
-         var12 = 16.0F - var12;
-         var13 *= var17;
+         var9 = 16.0F - var9;
+         var11 = 16.0F - var11;
+         var12 *= var16;
+         var13 *= var16;
          var14 *= var17;
-         var15 *= var18;
-         var16 *= var18;
-         Map var23 = Map.of(var22.getDirection(), new BlockElementFace((Direction)null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
-         switch (var22.ordinal()) {
+         var15 *= var17;
+         Map var22 = Map.of(var21.getDirection(), new BlockElementFace((Direction)null, var2, var1, new BlockElementFace.UVs(var12, var14, var13, var15), Quadrant.R0));
+         switch (var21.ordinal()) {
             case 0:
-               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23));
+               var5.add(new BlockElement(new Vector3f(var8, var9, 7.5F), new Vector3f(var10, var9, 8.5F), var22));
                break;
             case 1:
-               var6.add(new BlockElement(new Vector3f(var9, var12, 7.5F), new Vector3f(var11, var12, 8.5F), var23));
+               var5.add(new BlockElement(new Vector3f(var8, var11, 7.5F), new Vector3f(var10, var11, 8.5F), var22));
                break;
             case 2:
-               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var9, var12, 8.5F), var23));
+               var5.add(new BlockElement(new Vector3f(var8, var9, 7.5F), new Vector3f(var8, var11, 8.5F), var22));
                break;
             case 3:
-               var6.add(new BlockElement(new Vector3f(var11, var10, 7.5F), new Vector3f(var11, var12, 8.5F), var23));
+               var5.add(new BlockElement(new Vector3f(var10, var9, 7.5F), new Vector3f(var10, var11, 8.5F), var22));
          }
       }
 
-      return var6;
+      return var5;
    }
 
-   private List<Span> getSpans(SpriteContents var1) {
-      int var2 = var1.width();
-      int var3 = var1.height();
-      ArrayList var4 = new ArrayList();
-      var1.getUniqueFrames().forEach((var5) -> {
-         for(int var6 = 0; var6 < var3; ++var6) {
-            for(int var7 = 0; var7 < var2; ++var7) {
-               boolean var8 = !this.isTransparent(var1, var5, var7, var6, var2, var3);
-               this.checkTransition(ItemModelGenerator.SpanFacing.UP, var4, var1, var5, var7, var6, var2, var3, var8);
-               this.checkTransition(ItemModelGenerator.SpanFacing.DOWN, var4, var1, var5, var7, var6, var2, var3, var8);
-               this.checkTransition(ItemModelGenerator.SpanFacing.LEFT, var4, var1, var5, var7, var6, var2, var3, var8);
-               this.checkTransition(ItemModelGenerator.SpanFacing.RIGHT, var4, var1, var5, var7, var6, var2, var3, var8);
+   private static List<Span> getSpans(SpriteContents var0) {
+      int var1 = var0.width();
+      int var2 = var0.height();
+      ArrayList var3 = new ArrayList();
+      var0.getUniqueFrames().forEach((var4) -> {
+         for(int var5 = 0; var5 < var2; ++var5) {
+            for(int var6 = 0; var6 < var1; ++var6) {
+               boolean var7 = !isTransparent(var0, var4, var6, var5, var1, var2);
+               checkTransition(ItemModelGenerator.SpanFacing.UP, var3, var0, var4, var6, var5, var1, var2, var7);
+               checkTransition(ItemModelGenerator.SpanFacing.DOWN, var3, var0, var4, var6, var5, var1, var2, var7);
+               checkTransition(ItemModelGenerator.SpanFacing.LEFT, var3, var0, var4, var6, var5, var1, var2, var7);
+               checkTransition(ItemModelGenerator.SpanFacing.RIGHT, var3, var0, var4, var6, var5, var1, var2, var7);
             }
          }
 
       });
-      return var4;
+      return var3;
    }
 
-   private void checkTransition(SpanFacing var1, List<Span> var2, SpriteContents var3, int var4, int var5, int var6, int var7, int var8, boolean var9) {
-      boolean var10 = this.isTransparent(var3, var4, var5 + var1.getXOffset(), var6 + var1.getYOffset(), var7, var8) && var9;
-      if (var10) {
-         this.createOrExpandSpan(var2, var1, var5, var6);
+   private static void checkTransition(SpanFacing var0, List<Span> var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
+      boolean var9 = isTransparent(var2, var3, var4 + var0.getXOffset(), var5 + var0.getYOffset(), var6, var7) && var8;
+      if (var9) {
+         createOrExpandSpan(var1, var0, var4, var5);
       }
 
    }
 
-   private void createOrExpandSpan(List<Span> var1, SpanFacing var2, int var3, int var4) {
-      Span var5 = null;
+   private static void createOrExpandSpan(List<Span> var0, SpanFacing var1, int var2, int var3) {
+      Span var4 = null;
 
-      for(Span var7 : var1) {
-         if (var7.getFacing() == var2) {
-            int var8 = var2.isHorizontal() ? var4 : var3;
-            if (var7.getAnchor() == var8) {
-               var5 = var7;
+      for(Span var6 : var0) {
+         if (var6.getFacing() == var1) {
+            int var7 = var1.isHorizontal() ? var3 : var2;
+            if (var6.getAnchor() == var7) {
+               var4 = var6;
                break;
             }
          }
       }
 
-      int var9 = var2.isHorizontal() ? var4 : var3;
-      int var10 = var2.isHorizontal() ? var3 : var4;
-      if (var5 == null) {
-         var1.add(new Span(var2, var10, var9));
+      int var8 = var1.isHorizontal() ? var3 : var2;
+      int var9 = var1.isHorizontal() ? var2 : var3;
+      if (var4 == null) {
+         var0.add(new Span(var1, var9, var8));
       } else {
-         var5.expand(var10);
+         var4.expand(var9);
       }
 
    }
 
-   private boolean isTransparent(SpriteContents var1, int var2, int var3, int var4, int var5, int var6) {
-      return var3 >= 0 && var4 >= 0 && var3 < var5 && var4 < var6 ? var1.isTransparent(var2, var3, var4) : true;
+   private static boolean isTransparent(SpriteContents var0, int var1, int var2, int var3, int var4, int var5) {
+      return var2 >= 0 && var3 >= 0 && var2 < var4 && var3 < var5 ? var0.isTransparent(var1, var2, var3) : true;
    }
 
    static enum SpanFacing {

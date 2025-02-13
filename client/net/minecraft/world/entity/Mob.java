@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -365,10 +364,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
       this.writeLeashData(var1, this.leashData);
       var1.putBoolean("LeftHanded", this.isLeftHanded());
-      if (this.lootTable.isPresent()) {
-         var1.putString("DeathLootTable", ((ResourceKey)this.lootTable.get()).location().toString());
-      }
-
+      this.lootTable.ifPresent((var1x) -> var1.store("DeathLootTable", LootTable.KEY_CODEC, var1x));
       if (this.lootTableSeed != 0L) {
          var1.putLong("DeathLootTableSeed", this.lootTableSeed);
       }
@@ -387,13 +383,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC, var2).orElse(DropChances.DEFAULT);
       this.readLeashData(var1);
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
-      if (var1.contains("DeathLootTable", 8)) {
-         this.lootTable = Optional.of(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("DeathLootTable"))));
-      } else {
-         this.lootTable = Optional.empty();
-      }
-
-      this.lootTableSeed = var1.getLong("DeathLootTableSeed");
+      this.lootTable = var1.read("DeathLoothTable", LootTable.KEY_CODEC);
+      this.lootTableSeed = var1.getLongOrDefault("DeathLootTableSeed", 0L);
       this.setNoAi(var1.getBoolean("NoAI"));
    }
 

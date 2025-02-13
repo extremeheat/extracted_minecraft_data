@@ -20,9 +20,11 @@ public class WorldBorderRenderer {
    public static final ResourceLocation FORCEFIELD_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
    private boolean needsRebuild = true;
    private double lastMinX;
-   private double lastMaxX;
    private double lastMinZ;
-   private double lastMaxZ;
+   private double lastBorderMinX;
+   private double lastBorderMaxX;
+   private double lastBorderMinZ;
+   private double lastBorderMaxZ;
    private VertexBuffer[] worldBorderBuffers = new VertexBuffer[4];
 
    public WorldBorderRenderer() {
@@ -53,28 +55,28 @@ public class WorldBorderRenderer {
             BufferBuilder var34 = new BufferBuilder(var11, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
             switch (var33) {
                case EAST:
-                  var34.addVertex((float)(var14 - var12), -var8, (float)(var22 - var16)).setUv(var24, var9);
-                  var34.addVertex((float)(var14 - var12), -var8, (float)(var20 - var16)).setUv(var25 + var24, var9);
-                  var34.addVertex((float)(var14 - var12), var8, (float)(var20 - var16)).setUv(var25 + var24, var10);
-                  var34.addVertex((float)(var14 - var12), var8, (float)(var22 - var16)).setUv(var24, var10);
+                  var34.addVertex((float)(var14 - var26), -var8, (float)(var22 - var20)).setUv(var24, var9);
+                  var34.addVertex((float)(var14 - var26), -var8, 0.0F).setUv(var25 + var24, var9);
+                  var34.addVertex((float)(var14 - var26), var8, 0.0F).setUv(var25 + var24, var10);
+                  var34.addVertex((float)(var14 - var26), var8, (float)(var22 - var20)).setUv(var24, var10);
                   break;
                case WEST:
-                  var34.addVertex(0.0F, -var8, (float)(var20 - var16)).setUv(var24, var9);
-                  var34.addVertex(0.0F, -var8, (float)(var22 - var16)).setUv(var25 + var24, var9);
-                  var34.addVertex(0.0F, var8, (float)(var22 - var16)).setUv(var25 + var24, var10);
-                  var34.addVertex(0.0F, var8, (float)(var20 - var16)).setUv(var24, var10);
+                  var34.addVertex(0.0F, -var8, 0.0F).setUv(var24, var9);
+                  var34.addVertex(0.0F, -var8, (float)(var22 - var20)).setUv(var25 + var24, var9);
+                  var34.addVertex(0.0F, var8, (float)(var22 - var20)).setUv(var25 + var24, var10);
+                  var34.addVertex(0.0F, var8, 0.0F).setUv(var24, var10);
                   break;
                case SOUTH:
-                  var34.addVertex((float)(var26 - var12), -var8, (float)(var18 - var16)).setUv(var30, var9);
-                  var34.addVertex((float)(var28 - var12), -var8, (float)(var18 - var16)).setUv(var31 + var30, var9);
-                  var34.addVertex((float)(var28 - var12), var8, (float)(var18 - var16)).setUv(var31 + var30, var10);
-                  var34.addVertex((float)(var26 - var12), var8, (float)(var18 - var16)).setUv(var30, var10);
+                  var34.addVertex(0.0F, -var8, (float)(var18 - var20)).setUv(var30, var9);
+                  var34.addVertex((float)(var28 - var26), -var8, (float)(var18 - var20)).setUv(var31 + var30, var9);
+                  var34.addVertex((float)(var28 - var26), var8, (float)(var18 - var20)).setUv(var31 + var30, var10);
+                  var34.addVertex(0.0F, var8, (float)(var18 - var20)).setUv(var30, var10);
                   break;
                case NORTH:
-                  var34.addVertex((float)(var28 - var12), -var8, 0.0F).setUv(var30, var9);
-                  var34.addVertex((float)(var26 - var12), -var8, 0.0F).setUv(var31 + var30, var9);
-                  var34.addVertex((float)(var26 - var12), var8, 0.0F).setUv(var31 + var30, var10);
-                  var34.addVertex((float)(var28 - var12), var8, 0.0F).setUv(var30, var10);
+                  var34.addVertex((float)(var28 - var26), -var8, 0.0F).setUv(var30, var9);
+                  var34.addVertex(0.0F, -var8, 0.0F).setUv(var31 + var30, var9);
+                  var34.addVertex(0.0F, var8, 0.0F).setUv(var31 + var30, var10);
+                  var34.addVertex((float)(var28 - var26), var8, 0.0F).setUv(var30, var10);
             }
 
             this.worldBorderBuffers[var33.get2DDataValue()].bind();
@@ -82,10 +84,12 @@ public class WorldBorderRenderer {
          }
 
          VertexBuffer.unbind();
-         this.lastMinX = var1.getMinX();
-         this.lastMaxX = var1.getMaxX();
-         this.lastMinZ = var1.getMinZ();
-         this.lastMaxZ = var1.getMaxZ();
+         this.lastBorderMinX = var12;
+         this.lastBorderMaxX = var14;
+         this.lastBorderMinZ = var16;
+         this.lastBorderMaxZ = var18;
+         this.lastMinX = var26;
+         this.lastMinZ = var20;
          this.needsRebuild = false;
       }
 
@@ -113,10 +117,11 @@ public class WorldBorderRenderer {
          RenderSystem.setTextureMatrix((new Matrix4f()).translation(var27, var27, 0.0F));
          float var28 = (float)(-Mth.frac(var2.y * 0.5));
          float var29 = var28 + var21;
-         RenderSystem.setModelOffset((float)(this.lastMinX - var17), (float)(-var2.y), (float)(this.lastMinZ - var19));
          if (this.shouldRebuildWorldBorderBuffer(var1)) {
             this.rebuildWorldBorderBuffer(var1, var3, var19, var17, var21, var29, var28);
          }
+
+         RenderSystem.setModelOffset((float)(this.lastMinX - var17), (float)(-var2.y), (float)(this.lastMinZ - var19));
 
          for(WorldBorder.DistancePerDirection var31 : var1.closestBorder(var17, var19)) {
             if (var31.distance() < var3) {
@@ -135,6 +140,6 @@ public class WorldBorderRenderer {
    }
 
    private boolean shouldRebuildWorldBorderBuffer(WorldBorder var1) {
-      return this.needsRebuild || var1.getMinX() != this.lastMinX || var1.getMinZ() != this.lastMinZ || var1.getMaxX() != this.lastMaxX || var1.getMaxZ() != this.lastMaxZ;
+      return this.needsRebuild || var1.getMinX() != this.lastBorderMinX || var1.getMinZ() != this.lastBorderMinZ || var1.getMaxX() != this.lastBorderMaxX || var1.getMaxZ() != this.lastBorderMaxZ;
    }
 }

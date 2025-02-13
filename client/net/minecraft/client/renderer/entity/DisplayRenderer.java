@@ -29,6 +29,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 
 public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEntityRenderState> extends EntityRenderer<T, ST> {
    private final EntityRenderDispatcher entityRenderDispatcher;
@@ -77,7 +78,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          float var6 = var1.interpolationProgress;
          super.render(var1, var2, var3, var4);
          var2.pushPose();
-         var2.mulPose(this.calculateOrientation(var5, var1, new Quaternionf()));
+         var2.mulPose((Quaternionfc)this.calculateOrientation(var5, var1, new Quaternionf()));
          Transformation var7 = (Transformation)var5.transformation().get(var6);
          var2.mulPose(var7.getMatrix());
          this.renderInner(var1, var2, var3, var4, var6);
@@ -207,7 +208,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
 
       public void renderInner(ItemDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
          if (!var1.item.isEmpty()) {
-            var2.mulPose(Axis.YP.rotation(3.1415927F));
+            var2.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
             var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);
          }
       }

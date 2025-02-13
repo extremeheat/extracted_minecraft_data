@@ -214,9 +214,7 @@ public class Main {
       try {
          Thread.currentThread().setName("Render thread");
          RenderSystem.initRenderThread();
-         RenderSystem.beginInitialization();
          var87 = new Minecraft(var36);
-         RenderSystem.finishInitialization();
       } catch (SilentInitException var79) {
          Util.shutdownExecutors();
          var35.warn("Failed to create window: ", var79);

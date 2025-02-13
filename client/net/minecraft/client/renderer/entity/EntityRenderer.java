@@ -24,6 +24,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Quaternionfc;
 
 public abstract class EntityRenderer<T extends Entity, S extends EntityRenderState> {
    protected static final float NAMETAG_SCALE = 0.025F;
@@ -159,7 +160,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          int var8 = "deadmau5".equals(var2.getString()) ? -10 : 0;
          var3.pushPose();
          var3.translate(var6.x, var6.y + 0.5, var6.z);
-         var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
+         var3.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
          var3.scale(0.025F, -0.025F, 0.025F);
          Matrix4f var9 = var3.last().pose();
          Font var10 = this.getFont();

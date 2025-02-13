@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -18,7 +17,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class NestedLootTable extends LootPoolSingletonContainer {
-   public static final MapCodec<NestedLootTable> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.either(ResourceKey.codec(Registries.LOOT_TABLE), LootTable.DIRECT_CODEC).fieldOf("value").forGetter((var0x) -> var0x.contents)).and(singletonFields(var0)).apply(var0, NestedLootTable::new));
+   public static final MapCodec<NestedLootTable> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.either(LootTable.KEY_CODEC, LootTable.DIRECT_CODEC).fieldOf("value").forGetter((var0x) -> var0x.contents)).and(singletonFields(var0)).apply(var0, NestedLootTable::new));
    private final Either<ResourceKey<LootTable>, LootTable> contents;
 
    private NestedLootTable(Either<ResourceKey<LootTable>, LootTable> var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {

@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.joml.Quaternionfc;
 
 public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M> {
    private static final float EYE_BED_OFFSET = 0.1F;
@@ -170,7 +171,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
 
       if (!var1.hasPose(Pose.SLEEPING)) {
-         var2.mulPose(Axis.YP.rotationDegrees(180.0F - var3));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
       }
 
       if (var1.deathTime > 0.0F) {
@@ -180,19 +181,19 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
             var5 = 1.0F;
          }
 
-         var2.mulPose(Axis.ZP.rotationDegrees(var5 * this.getFlipDegrees()));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var5 * this.getFlipDegrees()));
       } else if (var1.isAutoSpinAttack) {
-         var2.mulPose(Axis.XP.rotationDegrees(-90.0F - var1.xRot));
-         var2.mulPose(Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F - var1.xRot));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
       } else if (var1.hasPose(Pose.SLEEPING)) {
          Direction var8 = var1.bedOrientation;
          float var6 = var8 != null ? sleepDirectionToRotation(var8) : var3;
-         var2.mulPose(Axis.YP.rotationDegrees(var6));
-         var2.mulPose(Axis.ZP.rotationDegrees(this.getFlipDegrees()));
-         var2.mulPose(Axis.YP.rotationDegrees(270.0F));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var6));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(this.getFlipDegrees()));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(270.0F));
       } else if (var1.isUpsideDown) {
          var2.translate(0.0F, (var1.boundingBoxHeight + 0.1F) / var4, 0.0F);
-         var2.mulPose(Axis.ZP.rotationDegrees(180.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
       }
 
    }
@@ -329,7 +330,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.wornHeadType = null;
          var2.wornHeadProfile = null;
          if (!HumanoidArmorLayer.shouldRender(var9, EquipmentSlot.HEAD)) {
-            this.itemModelResolver.updateForLiving(var2.headItem, var9, ItemDisplayContext.HEAD, false, var1);
+            this.itemModelResolver.updateForLiving(var2.headItem, var9, ItemDisplayContext.HEAD, var1);
          } else {
             var2.headItem.clear();
          }

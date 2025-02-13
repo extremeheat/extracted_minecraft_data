@@ -1,11 +1,13 @@
 package com.mojang.blaze3d.font;
 
+import com.mojang.blaze3d.textures.GpuTexture;
+
 public interface SheetGlyphInfo {
    int getPixelWidth();
 
    int getPixelHeight();
 
-   void upload(int var1, int var2);
+   void upload(int var1, int var2, GpuTexture var3);
 
    boolean isColored();
 

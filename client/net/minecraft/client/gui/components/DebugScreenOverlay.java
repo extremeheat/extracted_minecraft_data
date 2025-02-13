@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.buffers.BufferUsage;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -42,7 +41,7 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -601,20 +600,12 @@ public class DebugScreenOverlay {
    }
 
    public void render3dCrosshair() {
-      GlStateManager._depthMask(false);
-      GlStateManager._disableCull();
-      RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
       this.crosshairBuffer.bind();
-      RenderSystem.lineWidth(4.0F);
       RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-      this.crosshairBuffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-      RenderSystem.lineWidth(2.0F);
+      this.crosshairBuffer.drawWithRenderType(RenderType.debugLine(4.0));
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      this.crosshairBuffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+      this.crosshairBuffer.drawWithRenderType(RenderType.debugLine(2.0));
       VertexBuffer.unbind();
-      RenderSystem.lineWidth(1.0F);
-      GlStateManager._enableCull();
-      GlStateManager._depthMask(true);
    }
 
    static {

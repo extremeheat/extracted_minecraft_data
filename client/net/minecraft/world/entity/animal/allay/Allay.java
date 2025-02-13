@@ -411,7 +411,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.store("listener", VibrationSystem.Data.CODEC, var2, this.vibrationData);
       var1.putLong("DuplicationCooldown", this.duplicationCooldown);
-      var1.putBoolean("CanDuplicate", this.canDuplicate());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -419,8 +418,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       this.readInventoryFromTag(var1, this.registryAccess());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var2).orElseGet(VibrationSystem.Data::new);
-      this.duplicationCooldown = (long)var1.getInt("DuplicationCooldown");
-      this.entityData.set(DATA_CAN_DUPLICATE, var1.getBoolean("CanDuplicate"));
+      this.setDuplicationCooldown((long)var1.getInt("DuplicationCooldown"));
    }
 
    protected boolean shouldStayCloseToLeashHolder() {
@@ -428,14 +426,15 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void updateDuplicationCooldown() {
-      if (this.duplicationCooldown > 0L) {
-         --this.duplicationCooldown;
+      if (!this.level().isClientSide() && this.duplicationCooldown > 0L) {
+         this.setDuplicationCooldown(this.duplicationCooldown - 1L);
       }
 
-      if (!this.level().isClientSide() && this.duplicationCooldown == 0L && !this.canDuplicate()) {
-         this.entityData.set(DATA_CAN_DUPLICATE, true);
-      }
+   }
 
+   private void setDuplicationCooldown(long var1) {
+      this.duplicationCooldown = var1;
+      this.entityData.set(DATA_CAN_DUPLICATE, var1 == 0L);
    }
 
    private void duplicateAllay() {
@@ -451,8 +450,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void resetDuplicationCooldown() {
-      this.duplicationCooldown = 6000L;
-      this.entityData.set(DATA_CAN_DUPLICATE, false);
+      this.setDuplicationCooldown(6000L);
    }
 
    private boolean canDuplicate() {

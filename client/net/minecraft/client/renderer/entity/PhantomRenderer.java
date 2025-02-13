@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PhantomRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Phantom;
+import org.joml.Quaternionfc;
 
 public class PhantomRenderer extends MobRenderer<Phantom, PhantomRenderState, PhantomModel> {
    private static final ResourceLocation PHANTOM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/phantom.png");
@@ -41,7 +42,7 @@ public class PhantomRenderer extends MobRenderer<Phantom, PhantomRenderState, Ph
 
    protected void setupRotations(PhantomRenderState var1, PoseStack var2, float var3, float var4) {
       super.setupRotations(var1, var2, var3, var4);
-      var2.mulPose(Axis.XP.rotationDegrees(var1.xRot));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var1.xRot));
    }
 
    // $FF: synthetic method
