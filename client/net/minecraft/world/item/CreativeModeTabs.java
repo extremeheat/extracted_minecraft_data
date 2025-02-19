@@ -1594,7 +1594,7 @@ public class CreativeModeTabs {
             generateEnchantmentBookTypesAllLevels(var1, var1x, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
          });
       }).build());
-      Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> new ItemStack(Items.PIG_SPAWN_EGG)).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> new ItemStack(Items.CREEPER_SPAWN_EGG)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.SPAWNER);
          var1.accept((ItemLike)Items.TRIAL_SPAWNER);
          var1.accept((ItemLike)Items.CREAKING_HEART);

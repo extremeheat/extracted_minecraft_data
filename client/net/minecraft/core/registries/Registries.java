@@ -33,8 +33,9 @@ import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
-import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
+import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
@@ -240,6 +241,7 @@ public class Registries {
    public static final ResourceKey<Registry<TrimMaterial>> TRIM_MATERIAL = createRegistryKey("trim_material");
    public static final ResourceKey<Registry<TrimPattern>> TRIM_PATTERN = createRegistryKey("trim_pattern");
    public static final ResourceKey<Registry<WolfVariant>> WOLF_VARIANT = createRegistryKey("wolf_variant");
+   public static final ResourceKey<Registry<WolfSoundVariant>> WOLF_SOUND_VARIANT = createRegistryKey("wolf_sound_variant");
    public static final ResourceKey<Registry<WorldPreset>> WORLD_PRESET = createRegistryKey("worldgen/world_preset");
    public static final ResourceKey<Registry<Level>> DIMENSION = createRegistryKey("dimension");
    public static final ResourceKey<Registry<LevelStem>> LEVEL_STEM = createRegistryKey("dimension");

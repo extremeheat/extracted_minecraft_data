@@ -46,7 +46,6 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class WanderingTrader extends AbstractVillager implements Consumable.OverrideConsumeSound {
-   private static final int NUMBER_OF_TRADE_OFFERS = 5;
    @Nullable
    private BlockPos wanderTarget;
    private int despawnDelay;

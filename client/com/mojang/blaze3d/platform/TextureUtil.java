@@ -1,7 +1,11 @@
 package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,8 +14,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -23,11 +27,6 @@ public class TextureUtil {
 
    public TextureUtil() {
       super();
-   }
-
-   private static void bind(int var0) {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager._bindTexture(var0);
    }
 
    public static ByteBuffer readResource(InputStream var0) throws IOException {
@@ -56,30 +55,55 @@ public class TextureUtil {
       }
    }
 
-   public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5) {
-      writeAsPNG(var0, var1, var2, var3, var4, var5, (IntUnaryOperator)null);
-   }
-
-   public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5, @Nullable IntUnaryOperator var6) {
+   public static void writeAsPNG(Path var0, String var1, GpuTexture var2, int var3, IntUnaryOperator var4) {
       RenderSystem.assertOnRenderThread();
-      bind(var2);
+      int var5 = 0;
 
-      for(int var7 = 0; var7 <= var3; ++var7) {
-         int var8 = var4 >> var7;
-         int var9 = var5 >> var7;
+      for(int var6 = 0; var6 <= var3; ++var6) {
+         var5 += var2.getFormat().pixelSize() * var2.getWidth(var6) * var2.getHeight(var6);
+      }
 
-         try (NativeImage var10 = new NativeImage(var8, var9, false)) {
-            var10.downloadTexture(var7, false);
-            if (var6 != null) {
-               var10.applyToAllPixels(var6);
+      GpuBuffer var11 = new GpuBuffer(BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var5);
+      Runnable var7 = () -> {
+         try (GpuBuffer.ReadView var6 = var11.read()) {
+            int var7 = 0;
+
+            for(int var8 = 0; var8 <= var3; ++var8) {
+               int var9 = var2.getWidth(var8);
+               int var10 = var2.getHeight(var8);
+
+               try (NativeImage var11x = new NativeImage(var9, var10, false)) {
+                  for(int var12 = 0; var12 < var10; ++var12) {
+                     for(int var13 = 0; var13 < var9; ++var13) {
+                        int var14 = var6.data().getInt(var7 + (var13 + var12 * var9) * var2.getFormat().pixelSize());
+                        var11x.setPixelABGR(var13, var12, var4.applyAsInt(var14));
+                     }
+                  }
+
+                  Path var20 = var0.resolve(var1 + "_" + var8 + ".png");
+                  var11x.writeToFile(var20);
+                  LOGGER.debug("Exported png to: {}", var20.toAbsolutePath());
+               } catch (IOException var18) {
+                  LOGGER.debug("Unable to write: ", var18);
+               }
+
+               var7 += var2.getFormat().pixelSize() * var9 * var10;
+            }
+         }
+
+         var11.close();
+      };
+      AtomicInteger var8 = new AtomicInteger();
+      int var9 = 0;
+
+      for(int var10 = 0; var10 <= var3; ++var10) {
+         var2.copyToBuffer(var11, var9, () -> {
+            if (var8.getAndIncrement() == var3) {
+               var7.run();
             }
 
-            Path var11 = var0.resolve(var1 + "_" + var7 + ".png");
-            var10.writeToFile(var11);
-            LOGGER.debug("Exported png to: {}", var11.toAbsolutePath());
-         } catch (IOException var15) {
-            LOGGER.debug("Unable to write: ", var15);
-         }
+         }, var10);
+         var9 += var2.getFormat().pixelSize() * var2.getWidth(var10) * var2.getHeight(var10);
       }
 
    }

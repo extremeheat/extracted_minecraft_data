@@ -1,11 +1,16 @@
 package net.minecraft.sounds;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariants;
 
 public class SoundEvents {
    public static final SoundEvent ALLAY_AMBIENT_WITH_ITEM = register("entity.allay.ambient_with_item");
@@ -1610,15 +1615,9 @@ public class SoundEvents {
    public static final SoundEvent WOLF_ARMOR_CRACK = register("item.wolf_armor.crack");
    public static final SoundEvent WOLF_ARMOR_DAMAGE = register("item.wolf_armor.damage");
    public static final SoundEvent WOLF_ARMOR_REPAIR = register("item.wolf_armor.repair");
-   public static final SoundEvent WOLF_AMBIENT = register("entity.wolf.ambient");
-   public static final SoundEvent WOLF_DEATH = register("entity.wolf.death");
-   public static final SoundEvent WOLF_GROWL = register("entity.wolf.growl");
-   public static final SoundEvent WOLF_HOWL = register("entity.wolf.howl");
-   public static final SoundEvent WOLF_HURT = register("entity.wolf.hurt");
-   public static final SoundEvent WOLF_PANT = register("entity.wolf.pant");
    public static final SoundEvent WOLF_SHAKE = register("entity.wolf.shake");
    public static final SoundEvent WOLF_STEP = register("entity.wolf.step");
-   public static final SoundEvent WOLF_WHINE = register("entity.wolf.whine");
+   public static final Map<WolfSoundVariants.SoundSet, WolfSoundVariant> WOLF_SOUNDS = registerWolfSoundVariants();
    public static final SoundEvent WOODEN_DOOR_CLOSE = register("block.wooden_door.close");
    public static final SoundEvent WOODEN_DOOR_OPEN = register("block.wooden_door.open");
    public static final SoundEvent WOODEN_TRAPDOOR_CLOSE = register("block.wooden_trapdoor.close");
@@ -1704,5 +1703,12 @@ public class SoundEvents {
 
    private static ImmutableList<Holder.Reference<SoundEvent>> registerGoatHornSoundVariants() {
       return (ImmutableList)IntStream.range(0, 8).mapToObj((var0) -> registerForHolder("item.goat_horn.sound." + var0)).collect(ImmutableList.toImmutableList());
+   }
+
+   private static Map<WolfSoundVariants.SoundSet, WolfSoundVariant> registerWolfSoundVariants() {
+      return (Map)Stream.of(WolfSoundVariants.SoundSet.values()).collect(Collectors.toMap((var0) -> var0, (var0) -> {
+         String var1 = var0.getSoundEventSuffix();
+         return new WolfSoundVariant(registerForHolder("entity.wolf" + var1 + ".ambient"), registerForHolder("entity.wolf" + var1 + ".death"), registerForHolder("entity.wolf" + var1 + ".growl"), registerForHolder("entity.wolf" + var1 + ".hurt"), registerForHolder("entity.wolf" + var1 + ".pant"), registerForHolder("entity.wolf" + var1 + ".whine"));
+      }));
    }
 }

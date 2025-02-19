@@ -20,7 +20,6 @@ import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -48,7 +47,7 @@ public class EquipmentLayerRenderer {
    public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7, @Nullable ResourceLocation var8) {
       List var9 = this.equipmentAssets.get(var2).getLayers(var1);
       if (!var9.isEmpty()) {
-         int var10 = var4.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var4, 0) : 0;
+         int var10 = DyedItemColor.getOrDefault(var4, 0);
          boolean var11 = var4.hasFoil();
 
          for(EquipmentClientInfo.Layer var13 : var9) {

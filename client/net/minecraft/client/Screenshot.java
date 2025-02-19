@@ -1,14 +1,13 @@
 package net.minecraft.client;
 
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -22,51 +21,83 @@ import org.slf4j.Logger;
 public class Screenshot {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String SCREENSHOT_DIR = "screenshots";
-   private int rowHeight;
-   private final DataOutputStream outputStream;
-   private final byte[] bytes;
-   private final int width;
-   private final int height;
-   private File file;
+
+   public Screenshot() {
+      super();
+   }
 
    public static void grab(File var0, RenderTarget var1, Consumer<Component> var2) {
       grab(var0, (String)null, var1, var2);
    }
 
    public static void grab(File var0, @Nullable String var1, RenderTarget var2, Consumer<Component> var3) {
-      NativeImage var4 = takeScreenshot(var2);
-      File var5 = new File(var0, "screenshots");
-      var5.mkdir();
-      File var6;
-      if (var1 == null) {
-         var6 = getFile(var5);
-      } else {
-         var6 = new File(var5, var1);
-      }
-
-      Util.ioPool().execute(() -> {
-         try {
-            var4.writeToFile(var6);
-            MutableComponent var3x = Component.literal(var6.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.OpenFile(var6.getAbsoluteFile()))));
-            var3.accept(Component.translatable("screenshot.success", var3x));
-         } catch (Exception var7) {
-            LOGGER.warn("Couldn't save screenshot", var7);
-            var3.accept(Component.translatable("screenshot.failure", var7.getMessage()));
-         } finally {
-            var4.close();
+      takeScreenshot(var2, (var3x) -> {
+         File var4 = new File(var0, "screenshots");
+         var4.mkdir();
+         File var5;
+         if (var1 == null) {
+            var5 = getFile(var4);
+         } else {
+            var5 = new File(var4, var1);
          }
 
+         Util.ioPool().execute(() -> {
+            try {
+               NativeImage var3xx = var3x;
+
+               try {
+                  var3x.writeToFile(var5);
+                  MutableComponent var4 = Component.literal(var5.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.OpenFile(var5.getAbsoluteFile()))));
+                  var3.accept(Component.translatable("screenshot.success", var4));
+               } catch (Throwable var7) {
+                  if (var3x != null) {
+                     try {
+                        var3xx.close();
+                     } catch (Throwable var6) {
+                        var7.addSuppressed(var6);
+                     }
+                  }
+
+                  throw var7;
+               }
+
+               if (var3x != null) {
+                  var3x.close();
+               }
+            } catch (Exception var8) {
+               LOGGER.warn("Couldn't save screenshot", var8);
+               var3.accept(Component.translatable("screenshot.failure", var8.getMessage()));
+            }
+
+         });
       });
    }
 
-   public static NativeImage takeScreenshot(RenderTarget var0) {
-      int var1 = var0.width;
-      int var2 = var0.height;
-      NativeImage var3 = new NativeImage(var1, var2, false);
-      RenderSystem.bindTexture(var0.getColorTexture().glId());
-      var3.downloadTexture(0, true);
-      var3.flipY();
-      return var3;
+   public static void takeScreenshot(RenderTarget var0, Consumer<NativeImage> var1) {
+      int var2 = var0.width;
+      int var3 = var0.height;
+      GpuTexture var4 = var0.getColorTexture();
+      if (var4 == null) {
+         throw new IllegalStateException("Tried to capture screenshot of an incomplete framebuffer");
+      } else {
+         GpuBuffer var5 = new GpuBuffer(BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var2 * var3 * var4.getFormat().pixelSize());
+         var4.copyToBuffer(var5, 0, () -> {
+            try (GpuBuffer.ReadView var5x = var5.read()) {
+               NativeImage var6 = new NativeImage(var2, var3, false);
+
+               for(int var7 = 0; var7 < var3; ++var7) {
+                  for(int var8 = 0; var8 < var2; ++var8) {
+                     int var9 = var5x.data().getInt((var8 + var7 * var2) * var4.getFormat().pixelSize());
+                     var6.setPixelABGR(var8, var3 - var7 - 1, var9 | -16777216);
+                  }
+               }
+
+               var1.accept(var6);
+            }
+
+            var5.close();
+         }, 0);
+      }
    }
 
    private static File getFile(File var0) {
@@ -81,59 +112,5 @@ public class Screenshot {
 
          ++var2;
       }
-   }
-
-   public Screenshot(File var1, int var2, int var3, int var4) throws IOException {
-      super();
-      this.width = var2;
-      this.height = var3;
-      this.rowHeight = var4;
-      File var5 = new File(var1, "screenshots");
-      var5.mkdir();
-      String var6 = "huge_" + Util.getFilenameFormattedDateTime();
-
-      for(int var7 = 1; (this.file = new File(var5, var6 + (var7 == 1 ? "" : "_" + var7) + ".tga")).exists(); ++var7) {
-      }
-
-      byte[] var8 = new byte[18];
-      var8[2] = 2;
-      var8[12] = (byte)(var2 % 256);
-      var8[13] = (byte)(var2 / 256);
-      var8[14] = (byte)(var3 % 256);
-      var8[15] = (byte)(var3 / 256);
-      var8[16] = 24;
-      this.bytes = new byte[var2 * var4 * 3];
-      this.outputStream = new DataOutputStream(new FileOutputStream(this.file));
-      this.outputStream.write(var8);
-   }
-
-   public void addRegion(ByteBuffer var1, int var2, int var3, int var4, int var5) {
-      int var6 = var4;
-      int var7 = var5;
-      if (var4 > this.width - var2) {
-         var6 = this.width - var2;
-      }
-
-      if (var5 > this.height - var3) {
-         var7 = this.height - var3;
-      }
-
-      this.rowHeight = var7;
-
-      for(int var8 = 0; var8 < var7; ++var8) {
-         var1.position((var5 - var7) * var4 * 3 + var8 * var4 * 3);
-         int var9 = (var2 + var8 * this.width) * 3;
-         var1.get(this.bytes, var9, var6 * 3);
-      }
-
-   }
-
-   public void saveRow() throws IOException {
-      this.outputStream.write(this.bytes, 0, this.width * 3 * this.rowHeight);
-   }
-
-   public File close() throws IOException {
-      this.outputStream.close();
-      return this.file;
    }
 }

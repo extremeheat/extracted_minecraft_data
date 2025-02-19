@@ -120,7 +120,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.FENCE_GATES).add(Blocks.ACACIA_FENCE_GATE, Blocks.BIRCH_FENCE_GATE, Blocks.DARK_OAK_FENCE_GATE, Blocks.PALE_OAK_FENCE_GATE, Blocks.JUNGLE_FENCE_GATE, Blocks.OAK_FENCE_GATE, Blocks.SPRUCE_FENCE_GATE, Blocks.CRIMSON_FENCE_GATE, Blocks.WARPED_FENCE_GATE, Blocks.MANGROVE_FENCE_GATE, Blocks.BAMBOO_FENCE_GATE, Blocks.CHERRY_FENCE_GATE);
       this.tag(BlockTags.UNSTABLE_BOTTOM_CENTER).addTag(BlockTags.FENCE_GATES);
       this.tag(BlockTags.MUSHROOM_GROW_BLOCK).add(Blocks.MYCELIUM).add(Blocks.PODZOL).add(Blocks.CRIMSON_NYLIUM).add(Blocks.WARPED_NYLIUM);
-      this.tag(BlockTags.EDIBLE_FOR_SHEEP).add(Blocks.SHORT_GRASS).add(Blocks.SHORT_DRY_GRASS).add(Blocks.TALL_DRY_GRASS);
+      this.tag(BlockTags.EDIBLE_FOR_SHEEP).add(Blocks.SHORT_GRASS).add(Blocks.SHORT_DRY_GRASS).add(Blocks.TALL_DRY_GRASS).add(Blocks.FERN);
       this.tag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.NETHERRACK, Blocks.MAGMA_BLOCK);
       this.tag(BlockTags.INFINIBURN_NETHER).addTag(BlockTags.INFINIBURN_OVERWORLD);
       this.tag(BlockTags.INFINIBURN_END).addTag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.BEDROCK);

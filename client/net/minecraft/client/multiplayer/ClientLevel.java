@@ -126,6 +126,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (var1x) -> {
       var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.GRASS_COLOR_RESOLVER)));
       var1x.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
+      var1x.put(BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER)));
       var1x.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.WATER_COLOR_RESOLVER)));
    });
    private final ClientChunkCache chunkSource;

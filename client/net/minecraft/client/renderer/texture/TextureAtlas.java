@@ -93,7 +93,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
    public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
       String var3 = var1.toDebugFileName();
-      TextureUtil.writeAsPNG(var2, var3, this.getId(), this.mipLevel, this.width, this.height);
+      TextureUtil.writeAsPNG(var2, var3, this.getTexture(), this.mipLevel, (var0) -> var0);
       dumpSpriteNames(var2, var3, this.texturesByName);
    }
 

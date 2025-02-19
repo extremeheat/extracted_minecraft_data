@@ -61,7 +61,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private void resetTextures() {
-      this.closeTextures();
+      this.textures.clear();
       this.glyphs.clear();
       this.glyphInfos.clear();
       this.glyphsByWidth.clear();
@@ -100,14 +100,6 @@ public class FontSet implements AutoCloseable {
    }
 
    public void close() {
-      this.closeTextures();
-   }
-
-   private void closeTextures() {
-      for(FontTexture var2 : this.textures) {
-         var2.close();
-      }
-
       this.textures.clear();
    }
 

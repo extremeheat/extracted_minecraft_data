@@ -27,10 +27,11 @@ import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
-import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
+import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.item.ItemStack;
@@ -70,6 +71,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Holder<ChickenVariant>> CHICKEN_VARIANT;
    public static final EntityDataSerializer<Holder<CowVariant>> COW_VARIANT;
    public static final EntityDataSerializer<Holder<WolfVariant>> WOLF_VARIANT;
+   public static final EntityDataSerializer<Holder<WolfSoundVariant>> WOLF_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<FrogVariant>> FROG_VARIANT;
    public static final EntityDataSerializer<Holder<PigVariant>> PIG_VARIANT;
    public static final EntityDataSerializer<Holder<PaintingVariant>> PAINTING_VARIANT;
@@ -194,6 +196,7 @@ public class EntityDataSerializers {
       CHICKEN_VARIANT = EntityDataSerializer.<Holder<ChickenVariant>>forValueType(ChickenVariant.STREAM_CODEC);
       COW_VARIANT = EntityDataSerializer.<Holder<CowVariant>>forValueType(CowVariant.STREAM_CODEC);
       WOLF_VARIANT = EntityDataSerializer.<Holder<WolfVariant>>forValueType(WolfVariant.STREAM_CODEC);
+      WOLF_SOUND_VARIANT = EntityDataSerializer.<Holder<WolfSoundVariant>>forValueType(WolfSoundVariant.STREAM_CODEC);
       FROG_VARIANT = EntityDataSerializer.<Holder<FrogVariant>>forValueType(FrogVariant.STREAM_CODEC);
       PIG_VARIANT = EntityDataSerializer.<Holder<PigVariant>>forValueType(PigVariant.STREAM_CODEC);
       PAINTING_VARIANT = EntityDataSerializer.<Holder<PaintingVariant>>forValueType(PaintingVariant.STREAM_CODEC);
@@ -226,6 +229,7 @@ public class EntityDataSerializers {
       registerSerializer(CAT_VARIANT);
       registerSerializer(COW_VARIANT);
       registerSerializer(WOLF_VARIANT);
+      registerSerializer(WOLF_SOUND_VARIANT);
       registerSerializer(FROG_VARIANT);
       registerSerializer(PIG_VARIANT);
       registerSerializer(CHICKEN_VARIANT);

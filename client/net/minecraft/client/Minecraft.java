@@ -40,7 +40,6 @@ import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.Proxy;
 import java.net.SocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -147,6 +146,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.ClientPackSource;
+import net.minecraft.client.resources.DryFoliageColorReloadListener;
 import net.minecraft.client.resources.FoliageColorReloadListener;
 import net.minecraft.client.resources.GrassColorReloadListener;
 import net.minecraft.client.resources.MapDecorationTextureManager;
@@ -522,6 +522,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.updateFontOptions();
       this.resourceManager.registerReloadListener(new GrassColorReloadListener());
       this.resourceManager.registerReloadListener(new FoliageColorReloadListener());
+      this.resourceManager.registerReloadListener(new DryFoliageColorReloadListener());
       this.window.setErrorSection("Startup");
       RenderSystem.setupDefaultState(0, 0, this.window.getWidth(), this.window.getHeight());
       this.window.setErrorSection("Post startup");
@@ -1195,7 +1196,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       this.window.setErrorSection("Render");
-      var4.push("sound");
+      var4.push("gpuAsync");
+      RenderSystem.executePendingTasks();
+      var4.popPush("sound");
       this.soundManager.updateSource(this.gameRenderer.getMainCamera());
       var4.popPush("toasts");
       this.toastManager.update();
@@ -2632,42 +2635,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       return var12;
-   }
-
-   private Component grabHugeScreenshot(File var1, int var2, int var3, int var4, int var5) {
-      try {
-         ByteBuffer var6 = GlUtil.allocateMemory(var2 * var3 * 3);
-         Screenshot var7 = new Screenshot(var1, var4, var5, var3);
-         float var8 = (float)var4 / (float)var2;
-         float var9 = (float)var5 / (float)var3;
-         float var10 = var8 > var9 ? var8 : var9;
-
-         for(int var11 = (var5 - 1) / var3 * var3; var11 >= 0; var11 -= var3) {
-            for(int var12 = 0; var12 < var4; var12 += var2) {
-               RenderSystem.setShaderTexture(0, (ResourceLocation)TextureAtlas.LOCATION_BLOCKS);
-               float var13 = (float)(var4 - var2) / 2.0F * 2.0F - (float)(var12 * 2);
-               float var14 = (float)(var5 - var3) / 2.0F * 2.0F - (float)(var11 * 2);
-               var13 /= (float)var2;
-               var14 /= (float)var3;
-               this.gameRenderer.renderZoomed(var10, var13, var14);
-               var6.clear();
-               RenderSystem.pixelStore(3333, 1);
-               RenderSystem.pixelStore(3317, 1);
-               RenderSystem.readPixels(0, 0, var2, var3, 32992, 5121, var6);
-               var7.addRegion(var6, var12, var11, var2, var3);
-            }
-
-            var7.saveRow();
-         }
-
-         File var16 = var7.close();
-         GlUtil.freeMemory(var6);
-         MutableComponent var17 = Component.literal(var16.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var16.getAbsoluteFile()))));
-         return Component.translatable("screenshot.success", var17);
-      } catch (Exception var15) {
-         LOGGER.warn("Couldn't save screenshot", var15);
-         return Component.translatable("screenshot.failure", var15.getMessage());
-      }
    }
 
    @Nullable

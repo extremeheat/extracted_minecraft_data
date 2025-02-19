@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
@@ -74,7 +73,7 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   private NativeImage(Format var1, int var2, int var3, boolean var4, long var5) {
+   public NativeImage(Format var1, int var2, int var3, boolean var4, long var5) {
       super();
       if (var2 > 0 && var3 > 0) {
          this.format = var1;
@@ -258,7 +257,7 @@ public final class NativeImage implements AutoCloseable {
       return ARGB.fromABGR(this.getPixelABGR(var1, var2));
    }
 
-   private void setPixelABGR(int var1, int var2, int var3) {
+   public void setPixelABGR(int var1, int var2, int var3) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
@@ -291,23 +290,6 @@ public final class NativeImage implements AutoCloseable {
          }
 
          return var2;
-      }
-   }
-
-   public void applyToAllPixels(IntUnaryOperator var1) {
-      if (this.format != NativeImage.Format.RGBA) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "function application only works on RGBA images; have %s", this.format));
-      } else {
-         this.checkAllocated();
-         int var2 = this.width * this.height;
-         IntBuffer var3 = MemoryUtil.memIntBuffer(this.pixels, var2);
-
-         for(int var4 = 0; var4 < var2; ++var4) {
-            int var5 = ARGB.fromABGR(var3.get(var4));
-            int var6 = var1.applyAsInt(var5);
-            var3.put(var4, ARGB.toABGR(var6));
-         }
-
       }
    }
 
@@ -360,38 +342,6 @@ public final class NativeImage implements AutoCloseable {
 
          return var1;
       }
-   }
-
-   public void downloadTexture(int var1, boolean var2) {
-      RenderSystem.assertOnRenderThread();
-      this.checkAllocated();
-      this.format.setPackPixelStoreState();
-      GlStateManager._getTexImage(3553, var1, this.format.glFormat(), 5121, this.pixels);
-      if (var2 && this.format.hasAlpha()) {
-         for(int var3 = 0; var3 < this.getHeight(); ++var3) {
-            for(int var4 = 0; var4 < this.getWidth(); ++var4) {
-               this.setPixelABGR(var4, var3, this.getPixelABGR(var4, var3) | 255 << this.format.alphaOffset());
-            }
-         }
-      }
-
-   }
-
-   public void downloadDepthBuffer(float var1) {
-      RenderSystem.assertOnRenderThread();
-      if (this.format.components() != 1) {
-         throw new IllegalStateException("Depth buffer must be stored in NativeImage with 1 component.");
-      } else {
-         this.checkAllocated();
-         this.format.setPackPixelStoreState();
-         GlStateManager._readPixels(0, 0, this.width, this.height, 6402, 5121, this.pixels);
-      }
-   }
-
-   public void drawPixels() {
-      RenderSystem.assertOnRenderThread();
-      this.format.setUnpackPixelStoreState();
-      GlStateManager._glDrawPixels(this.width, this.height, this.format.glFormat(), 5121, this.pixels);
    }
 
    public void writeToFile(File var1) throws IOException {
@@ -522,26 +472,6 @@ public final class NativeImage implements AutoCloseable {
 
    }
 
-   public void flipY() {
-      this.checkAllocated();
-      int var1 = this.format.components();
-      int var2 = this.getWidth() * var1;
-      long var3 = MemoryUtil.nmemAlloc((long)var2);
-
-      try {
-         for(int var5 = 0; var5 < this.getHeight() / 2; ++var5) {
-            int var6 = var5 * this.getWidth() * var1;
-            int var7 = (this.getHeight() - 1 - var5) * this.getWidth() * var1;
-            MemoryUtil.memCopy(this.pixels + (long)var6, var3, (long)var2);
-            MemoryUtil.memCopy(this.pixels + (long)var7, this.pixels + (long)var6, (long)var2);
-            MemoryUtil.memCopy(var3, this.pixels + (long)var7, (long)var2);
-         }
-      } finally {
-         MemoryUtil.nmemFree(var3);
-      }
-
-   }
-
    public void resizeSubRectTo(int var1, int var2, int var3, int var4, NativeImage var5) {
       this.checkAllocated();
       if (var5.format() != this.format) {
@@ -630,16 +560,6 @@ public final class NativeImage implements AutoCloseable {
 
       public int components() {
          return this.components;
-      }
-
-      public void setPackPixelStoreState() {
-         RenderSystem.assertOnRenderThread();
-         GlStateManager._pixelStore(3333, this.components());
-      }
-
-      public void setUnpackPixelStoreState() {
-         RenderSystem.assertOnRenderThread();
-         GlStateManager._pixelStore(3317, this.components());
       }
 
       public int glFormat() {

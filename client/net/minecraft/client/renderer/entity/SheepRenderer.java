@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.SheepModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SheepWoolLayer;
+import net.minecraft.client.renderer.entity.layers.SheepWoolUndercoatLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SheepRenderState;
@@ -14,6 +15,7 @@ public class SheepRenderer extends AgeableMobRenderer<Sheep, SheepRenderState, S
 
    public SheepRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SheepModel(var1.bakeLayer(ModelLayers.SHEEP)), new SheepModel(var1.bakeLayer(ModelLayers.SHEEP_BABY)), 0.7F);
+      this.addLayer(new SheepWoolUndercoatLayer(this, var1.getModelSet()));
       this.addLayer(new SheepWoolLayer(this, var1.getModelSet()));
    }
 

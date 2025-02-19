@@ -209,6 +209,8 @@ public class ModelLayers {
    public static final ModelLayerLocation SHEEP_BABY = register("sheep_baby");
    public static final ModelLayerLocation SHEEP_BABY_WOOL = register("sheep_baby", "wool");
    public static final ModelLayerLocation SHEEP_WOOL = register("sheep", "wool");
+   public static final ModelLayerLocation SHEEP_WOOL_UNDERCOAT = register("sheep", "wool_undercoat");
+   public static final ModelLayerLocation SHEEP_BABY_WOOL_UNDERCOAT = register("sheep_baby", "wool_undercoat");
    public static final ModelLayerLocation SHIELD = register("shield");
    public static final ModelLayerLocation SHULKER = register("shulker");
    public static final ModelLayerLocation SHULKER_BOX = register("shulker_box");

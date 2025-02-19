@@ -1,4 +1,4 @@
-package net.minecraft.world.entity.animal;
+package net.minecraft.world.entity.animal.wolf;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

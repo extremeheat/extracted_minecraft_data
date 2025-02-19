@@ -383,7 +383,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC, var2).orElse(DropChances.DEFAULT);
       this.readLeashData(var1);
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
-      this.lootTable = var1.read("DeathLoothTable", LootTable.KEY_CODEC);
+      this.lootTable = var1.read("DeathLootTable", LootTable.KEY_CODEC);
       this.lootTableSeed = var1.getLongOrDefault("DeathLootTableSeed", 0L);
       this.setNoAi(var1.getBoolean("NoAI"));
    }

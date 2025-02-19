@@ -93,7 +93,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.entity.animal.FlyingAnimal;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -1253,7 +1253,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
                      var10 = (new Vec3(var10.x, 0.0, var10.z)).normalize();
                      var12 = Math.acos(var10.dot(var9));
                   } else {
-                     var12 = 0.0;
+                     var12 = 3.1415927410125732;
                   }
 
                   float var13 = var5.resolveBlockedDamage(var2, var3, var12);

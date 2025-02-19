@@ -89,7 +89,6 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
          LOGGER.warn("Failed to close texture {}", var1, var4);
       }
 
-      var2.releaseId();
    }
 
    public AbstractTexture getTexture(ResourceLocation var1) {

@@ -517,11 +517,6 @@ public class GlStateManager {
       GL11.glTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   public static void _getTexImage(int var0, int var1, int var2, int var3, long var4) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glGetTexImage(var0, var1, var2, var3, var4);
-   }
-
    public static void _viewport(int var0, int var1, int var2, int var3) {
       RenderSystem.assertOnRenderThread();
       GlStateManager.Viewport.INSTANCE.x = var0;
@@ -562,11 +557,6 @@ public class GlStateManager {
 
    }
 
-   public static void _glDrawPixels(int var0, int var1, int var2, int var3, long var4) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glDrawPixels(var0, var1, var2, var3, var4);
-   }
-
    public static void _vertexAttribPointer(int var0, int var1, int var2, boolean var3, int var4, long var5) {
       RenderSystem.assertOnRenderThread();
       GL20.glVertexAttribPointer(var0, var1, var2, var3, var4, var5);
@@ -595,11 +585,6 @@ public class GlStateManager {
    public static void _pixelStore(int var0, int var1) {
       RenderSystem.assertOnRenderThread();
       GL11.glPixelStorei(var0, var1);
-   }
-
-   public static void _readPixels(int var0, int var1, int var2, int var3, int var4, int var5, ByteBuffer var6) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glReadPixels(var0, var1, var2, var3, var4, var5, var6);
    }
 
    public static void _readPixels(int var0, int var1, int var2, int var3, int var4, int var5, long var6) {

@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.level.DryFoliageColor;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.LevelReader;
@@ -202,6 +203,16 @@ public final class Biome {
       double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
       double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return FoliageColor.get(var1, var3);
+   }
+
+   public int getDryFoliageColor() {
+      return (Integer)this.specialEffects.getDryFoliageColorOverride().orElseGet(this::getDryFoliageColorFromTexture);
+   }
+
+   private int getDryFoliageColorFromTexture() {
+      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      return DryFoliageColor.get(var1, var3);
    }
 
    public float getBaseTemperature() {

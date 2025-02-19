@@ -1,8 +1,11 @@
 package com.mojang.blaze3d.textures;
 
 import com.mojang.blaze3d.GpuOutOfMemoryException;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.IntBuffer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -129,6 +132,40 @@ public class GpuTexture implements AutoCloseable {
          }
       } else {
          throw new IllegalArgumentException("Invalid mipLevel " + var2 + ", must be >= 0 and < " + this.mipLevels);
+      }
+   }
+
+   public void copyToBuffer(GpuBuffer var1, int var2, Runnable var3, int var4) {
+      this.copyToBuffer(var1, var2, var3, var4, 0, 0, this.getWidth(var4), this.getHeight(var4));
+   }
+
+   public void copyToBuffer(GpuBuffer var1, int var2, Runnable var3, int var4, int var5, int var6, int var7, int var8) {
+      if (var4 >= 0 && var4 < this.mipLevels) {
+         if (this.getWidth(var4) * this.getHeight(var4) * this.format.pixelSize() + var2 > var1.size()) {
+            int var10002 = var1.size();
+            throw new IllegalArgumentException("Buffer of size " + var10002 + " is not large enough to hold " + var7 + "x" + var8 + " pixels (" + this.format.pixelSize() + " bytes each) starting from offset " + var2);
+         } else if (var1.type() != BufferType.PIXEL_PACK) {
+            throw new IllegalArgumentException("Buffer of type " + String.valueOf(var1.type()) + " cannot be used to retrieve a texture");
+         } else if (var5 + var7 <= this.getWidth(var4) && var6 + var8 <= this.getHeight(var4)) {
+            int var9 = GlStateManager.glGenFramebuffers();
+            GlStateManager._glBindFramebuffer(36008, var9);
+            var1.bind();
+            GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, this.id, var4);
+            GlStateManager._pixelStore(3330, var7);
+            GlStateManager._readPixels(var5, var6, var7, var8, this.format.glExternalFormatId(), this.format.glType(), (long)var2);
+            RenderSystem.queueFencedTask(var3);
+            GlStateManager._glBindFramebuffer(36008, 0);
+            GlStateManager._glDeleteFramebuffers(var9);
+            var1.unbind();
+            int var10 = GlStateManager._getError();
+            if (var10 != 0) {
+               throw new IllegalStateException("Couldn't perform copyTobuffer for texture " + this.label + ": GL error " + var10);
+            }
+         } else {
+            throw new IllegalArgumentException("Copy source texture (" + this.getWidth(var4) + "x" + this.getHeight(var4) + ") is not large enough to read a rectangle of " + var7 + "x" + var8 + " from " + var5 + "," + var6);
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid mipLevel " + var4 + ", must be >= 0 and < " + this.mipLevels);
       }
    }
 

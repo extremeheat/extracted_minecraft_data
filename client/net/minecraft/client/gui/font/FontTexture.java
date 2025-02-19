@@ -50,7 +50,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
    public void dumpContents(ResourceLocation var1, Path var2) {
       if (this.texture != null) {
          String var3 = var1.toDebugFileName();
-         TextureUtil.writeAsPNG(var2, var3, this.texture.glId(), 0, 256, 256, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
+         TextureUtil.writeAsPNG(var2, var3, this.texture, 0, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
       }
    }
 

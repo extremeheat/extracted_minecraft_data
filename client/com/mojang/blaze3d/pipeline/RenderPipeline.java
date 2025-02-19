@@ -61,6 +61,8 @@ public class RenderPipeline {
       if (this.depthTestFunction != DepthTestFunction.NO_DEPTH_TEST) {
          RenderSystem.enableDepthTest();
          RenderSystem.depthFunc(this.toGl(this.depthTestFunction));
+      } else {
+         RenderSystem.disableDepthTest();
       }
 
       if (!this.cull) {

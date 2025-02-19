@@ -75,7 +75,6 @@ public class GameRenderer implements AutoCloseable {
    private static final ResourceLocation BLUR_POST_CHAIN_ID = ResourceLocation.withDefaultNamespace("blur");
    public static final int MAX_BLUR_RADIUS = 10;
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final boolean DEPTH_BUFFER_DEBUG = false;
    public static final float PROJECTION_Z_NEAR = 0.05F;
    private static final float GUI_Z_NEAR = 1000.0F;
    private static final float PORTAL_SPINNING_SPEED = 20.0F;
@@ -460,8 +459,6 @@ public class GameRenderer implements AutoCloseable {
             this.tryTakeScreenshotIfNeeded();
             this.minecraft.levelRenderer.doEntityOutline();
             if (this.postEffectId != null && this.effectActive) {
-               RenderSystem.disableBlend();
-               RenderSystem.disableDepthTest();
                RenderSystem.resetTextureMatrix();
                PostChain var7 = this.minecraft.getShaderManager().getPostChain(this.postEffectId, LevelTargetBundle.MAIN_TARGETS);
                if (var7 != null) {
@@ -564,44 +561,43 @@ public class GameRenderer implements AutoCloseable {
 
    private void takeAutoScreenshot(Path var1) {
       if (this.minecraft.levelRenderer.countRenderedSections() > 10 && this.minecraft.levelRenderer.hasRenderedAllSections()) {
-         NativeImage var2 = Screenshot.takeScreenshot(this.minecraft.getMainRenderTarget());
-         Util.ioPool().execute(() -> {
-            int var2x = var2.getWidth();
-            int var3 = var2.getHeight();
-            int var4 = 0;
-            int var5 = 0;
-            if (var2x > var3) {
-               var4 = (var2x - var3) / 2;
-               var2x = var3;
-            } else {
-               var5 = (var3 - var2x) / 2;
-               var3 = var2x;
-            }
-
-            try {
-               NativeImage var6 = new NativeImage(64, 64, false);
-
-               try {
-                  var2.resizeSubRectTo(var4, var5, var2x, var3, var6);
-                  var6.writeToFile(var1);
-               } catch (Throwable var15) {
-                  try {
-                     var6.close();
-                  } catch (Throwable var14) {
-                     var15.addSuppressed(var14);
-                  }
-
-                  throw var15;
+         Screenshot.takeScreenshot(this.minecraft.getMainRenderTarget(), (var1x) -> Util.ioPool().execute(() -> {
+               int var2 = var1x.getWidth();
+               int var3 = var1x.getHeight();
+               int var4 = 0;
+               int var5 = 0;
+               if (var2 > var3) {
+                  var4 = (var2 - var3) / 2;
+                  var2 = var3;
+               } else {
+                  var5 = (var3 - var2) / 2;
+                  var3 = var2;
                }
 
-               var6.close();
-            } catch (IOException var16) {
-               LOGGER.warn("Couldn't save auto screenshot", var16);
-            } finally {
-               var2.close();
-            }
+               try {
+                  NativeImage var6 = new NativeImage(64, 64, false);
 
-         });
+                  try {
+                     var1x.resizeSubRectTo(var4, var5, var2, var3, var6);
+                     var6.writeToFile(var1);
+                  } catch (Throwable var15) {
+                     try {
+                        var6.close();
+                     } catch (Throwable var14) {
+                        var15.addSuppressed(var14);
+                     }
+
+                     throw var15;
+                  }
+
+                  var6.close();
+               } catch (IOException var16) {
+                  LOGGER.warn("Couldn't save auto screenshot", var16);
+               } finally {
+                  var1x.close();
+               }
+
+            }));
       }
 
    }

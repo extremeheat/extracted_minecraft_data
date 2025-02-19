@@ -370,6 +370,8 @@ public class LayerDefinitions {
       var0.put(ModelLayers.SHEEP_BABY, var42.apply(SheepModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.SHEEP_WOOL, var43);
       var0.put(ModelLayers.SHEEP_BABY_WOOL, var43.apply(SheepModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.SHEEP_WOOL_UNDERCOAT, var42);
+      var0.put(ModelLayers.SHEEP_BABY_WOOL_UNDERCOAT, var42.apply(SheepModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.SHIELD, ShieldModel.createLayer());
       var0.put(ModelLayers.SHULKER, ShulkerModel.createBodyLayer());
       var0.put(ModelLayers.SHULKER_BOX, ShulkerModel.createBoxLayer());

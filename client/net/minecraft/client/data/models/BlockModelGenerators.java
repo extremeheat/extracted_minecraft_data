@@ -676,7 +676,7 @@ public class BlockModelGenerators {
       MultiVariant var3 = plainVariant(TexturedModel.LEAF_LITTER_2.create(var1, this.modelOutput));
       MultiVariant var4 = plainVariant(TexturedModel.LEAF_LITTER_3.create(var1, this.modelOutput));
       MultiVariant var5 = plainVariant(TexturedModel.LEAF_LITTER_4.create(var1, this.modelOutput));
-      this.registerSimpleFlatItemModel(var1);
+      this.registerSimpleFlatItemModel(var1.asItem());
       this.createSegmentedBlock(var1, BlockStateProperties.SEGMENT_AMOUNT, var2, var3, var4, var5);
    }
 

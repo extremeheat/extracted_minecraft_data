@@ -1,9 +1,10 @@
 package net.minecraft.world.level;
 
-public class GrassColor {
+public class DryFoliageColor {
+   public static final int FOLIAGE_DRY_DEFAULT = -10732494;
    private static int[] pixels = new int[65536];
 
-   public GrassColor() {
+   public DryFoliageColor() {
       super();
    }
 
@@ -12,10 +13,6 @@ public class GrassColor {
    }
 
    public static int get(double var0, double var2) {
-      return ColorMapColorUtil.get(var0, var2, pixels, -65281);
-   }
-
-   public static int getDefaultColor() {
-      return get(0.5, 1.0);
+      return ColorMapColorUtil.get(var0, var2, pixels, -10732494);
    }
 }

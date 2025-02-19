@@ -6,6 +6,7 @@ import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -34,6 +35,7 @@ import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TimeSource;
 import org.joml.Matrix4f;
@@ -88,6 +90,7 @@ public class RenderSystem {
    private static final AtomicBoolean pollingEvents;
    @Nullable
    private static VertexBuffer QUAD_VERTICES;
+   private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
 
    public RenderSystem() {
       super();
@@ -330,15 +333,6 @@ public class RenderSystem {
    public static float getShaderLineWidth() {
       assertOnRenderThread();
       return shaderLineWidth;
-   }
-
-   public static void pixelStore(int var0, int var1) {
-      GlStateManager._pixelStore(var0, var1);
-   }
-
-   public static void readPixels(int var0, int var1, int var2, int var3, int var4, int var5, ByteBuffer var6) {
-      assertOnRenderThread();
-      GlStateManager._readPixels(var0, var1, var2, var3, var4, var5, var6);
    }
 
    public static void getString(int var0, Consumer<String> var1) {
@@ -612,6 +606,27 @@ public class RenderSystem {
       return modelOffset;
    }
 
+   public static void queueFencedTask(Runnable var0) {
+      PENDING_FENCES.addLast(new GpuAsyncTask(var0, new GpuFence()));
+   }
+
+   public static void executePendingTasks() {
+      for(GpuAsyncTask var0 = PENDING_FENCES.peekFirst(); var0 != null; var0 = PENDING_FENCES.peekFirst()) {
+         if (!var0.fence.awaitCompletion(0L)) {
+            return;
+         }
+
+         try {
+            var0.callback.run();
+         } finally {
+            var0.fence.close();
+         }
+
+         PENDING_FENCES.removeFirst();
+      }
+
+   }
+
    static {
       projectionType = ProjectionType.PERSPECTIVE;
       savedProjectionType = ProjectionType.PERSPECTIVE;
@@ -627,6 +642,7 @@ public class RenderSystem {
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
+      PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
    }
 
    public static final class AutoStorageIndexBuffer {
@@ -705,6 +721,17 @@ public class RenderSystem {
 
       interface IndexGenerator {
          void accept(it.unimi.dsi.fastutil.ints.IntConsumer var1, int var2);
+      }
+   }
+
+   static record GpuAsyncTask(Runnable callback, GpuFence fence) {
+      final Runnable callback;
+      final GpuFence fence;
+
+      GpuAsyncTask(Runnable var1, GpuFence var2) {
+         super();
+         this.callback = var1;
+         this.fence = var2;
       }
    }
 }

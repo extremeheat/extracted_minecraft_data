@@ -1,10 +1,12 @@
-package net.minecraft.world.entity.animal;
+package net.minecraft.world.entity.animal.wolf;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -59,6 +62,8 @@ import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -89,6 +94,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
    private static final EntityDataAccessor<Integer> DATA_REMAINING_ANGER_TIME;
    private static final EntityDataAccessor<Holder<WolfVariant>> DATA_VARIANT_ID;
+   private static final EntityDataAccessor<Holder<WolfSoundVariant>> DATA_SOUND_VARIANT_ID;
    public static final TargetingConditions.Selector PREY_SELECTOR;
    private static final float START_HEALTH = 8.0F;
    private static final float TAME_HEALTH = 40.0F;
@@ -152,10 +158,20 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_VARIANT_ID, var1);
    }
 
+   private Holder<WolfSoundVariant> getSoundVariant() {
+      return (Holder)this.entityData.get(DATA_SOUND_VARIANT_ID);
+   }
+
+   private void setSoundVariant(Holder<WolfSoundVariant> var1) {
+      this.entityData.set(DATA_SOUND_VARIANT_ID, var1);
+   }
+
    @Nullable
    public <T> T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.WOLF_VARIANT) {
          return (T)castComponentValue(var1, this.getVariant());
+      } else if (var1 == DataComponents.WOLF_SOUND_VARIANT) {
+         return (T)castComponentValue(var1, this.getSoundVariant());
       } else {
          return (T)(var1 == DataComponents.WOLF_COLLAR ? castComponentValue(var1, this.getCollarColor()) : super.get(var1));
       }
@@ -163,6 +179,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    protected void applyImplicitComponents(DataComponentGetter var1) {
       this.applyImplicitComponentIfPresent(var1, DataComponents.WOLF_VARIANT);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.WOLF_SOUND_VARIANT);
       this.applyImplicitComponentIfPresent(var1, DataComponents.WOLF_COLLAR);
       super.applyImplicitComponents(var1);
    }
@@ -170,6 +187,9 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
       if (var1 == DataComponents.WOLF_VARIANT) {
          this.setVariant((Holder)castComponentValue(DataComponents.WOLF_VARIANT, var2));
+         return true;
+      } else if (var1 == DataComponents.WOLF_SOUND_VARIANT) {
+         this.setSoundVariant((Holder)castComponentValue(DataComponents.WOLF_SOUND_VARIANT, var2));
          return true;
       } else if (var1 == DataComponents.WOLF_COLLAR) {
          this.setCollarColor((DyeColor)castComponentValue(DataComponents.WOLF_COLLAR, var2));
@@ -185,7 +205,12 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
+      Registry var2 = this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT);
       var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), WolfVariants.DEFAULT));
+      EntityDataAccessor var10001 = DATA_SOUND_VARIANT_ID;
+      Optional var10002 = var2.get(WolfSoundVariants.CLASSIC);
+      Objects.requireNonNull(var2);
+      var1.define(var10001, (Holder)var10002.or(var2::getAny).orElseThrow());
       var1.define(DATA_INTERESTED_ID, false);
       var1.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
       var1.define(DATA_REMAINING_ANGER_TIME, 0);
@@ -200,6 +225,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
       VariantUtils.writeVariant(var1, this.getVariant());
       this.addPersistentAngerSaveData(var1);
+      this.getSoundVariant().unwrapKey().ifPresent((var1x) -> var1.putString("sound_variant", var1x.location().toString()));
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -207,6 +233,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       VariantUtils.readVariant(var1, this.registryAccess(), Registries.WOLF_VARIANT).ifPresent(this::setVariant);
       this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
       this.readPersistentAngerSaveData(this.level(), var1);
+      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("sound_variant"))).map((var0) -> ResourceKey.create(Registries.WOLF_SOUND_VARIANT, var0)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);
    }
 
    @Nullable
@@ -221,25 +248,26 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          }
       }
 
+      this.setSoundVariant(WolfSoundVariants.pickRandomSoundVariant(this.registryAccess(), this.random));
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    protected SoundEvent getAmbientSound() {
       if (this.isAngry()) {
-         return SoundEvents.WOLF_GROWL;
+         return (SoundEvent)((WolfSoundVariant)this.getSoundVariant().value()).growlSound().value();
       } else if (this.random.nextInt(3) == 0) {
-         return this.isTame() && this.getHealth() < 20.0F ? SoundEvents.WOLF_WHINE : SoundEvents.WOLF_PANT;
+         return this.isTame() && this.getHealth() < 20.0F ? (SoundEvent)((WolfSoundVariant)this.getSoundVariant().value()).whineSound().value() : (SoundEvent)((WolfSoundVariant)this.getSoundVariant().value()).pantSound().value();
       } else {
-         return SoundEvents.WOLF_AMBIENT;
+         return (SoundEvent)((WolfSoundVariant)this.getSoundVariant().value()).ambientSound().value();
       }
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
-      return this.canArmorAbsorb(var1) ? SoundEvents.WOLF_ARMOR_DAMAGE : SoundEvents.WOLF_HURT;
+      return this.canArmorAbsorb(var1) ? SoundEvents.WOLF_ARMOR_DAMAGE : (SoundEvent)((WolfSoundVariant)this.getSoundVariant().value()).hurtSound().value();
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.WOLF_DEATH;
+      return (SoundEvent)((WolfSoundVariant)this.getSoundVariant().value()).deathSound().value();
    }
 
    protected float getSoundVolume() {
@@ -545,6 +573,8 @@ public class Wolf extends TamableAnimal implements NeutralMob {
             DyeColor var6 = var4.getCollarColor();
             var3.setCollarColor(DyeColor.getMixedColor(var1, var5, var6));
          }
+
+         var3.setSoundVariant(WolfSoundVariants.pickRandomSoundVariant(this.registryAccess(), this.random));
       }
 
       return var3;
@@ -640,6 +670,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
       DATA_REMAINING_ANGER_TIME = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<WolfVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
+      DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<WolfSoundVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_SOUND_VARIANT);
       PREY_SELECTOR = (var0, var1) -> {
          EntityType var2 = var0.getType();
          return var2 == EntityType.SHEEP || var2 == EntityType.RABBIT || var2 == EntityType.FOX;

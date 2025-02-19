@@ -35,22 +35,6 @@ public abstract class AbstractTexture implements AutoCloseable {
       }
    }
 
-   public int getId() {
-      if (this.texture == null) {
-         throw new IllegalStateException("Texture does not exist, can't get its ID before something initializes it");
-      } else {
-         return this.texture.glId();
-      }
-   }
-
-   public void releaseId() {
-      if (this.texture != null) {
-         this.texture.close();
-         this.texture = null;
-      }
-
-   }
-
    public void bind() {
       if (this.texture == null) {
          throw new IllegalStateException("Texture does not exist, can't bind it before something initializes it");
@@ -60,6 +44,11 @@ public abstract class AbstractTexture implements AutoCloseable {
    }
 
    public void close() {
+      if (this.texture != null) {
+         this.texture.close();
+         this.texture = null;
+      }
+
    }
 
    public GpuTexture getTexture() {

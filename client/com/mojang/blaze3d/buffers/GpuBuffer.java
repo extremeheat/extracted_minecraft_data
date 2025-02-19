@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
-import javax.annotation.Nullable;
+import org.lwjgl.opengl.GL11;
 
 public class GpuBuffer implements AutoCloseable {
    private static final MemoryPool MEMORY_POOl = TracyClient.createMemoryPool("GPU Buffers");
@@ -22,6 +22,13 @@ public class GpuBuffer implements AutoCloseable {
       this.size = var3;
       this.usage = var2;
       this.handle = GlStateManager._glGenBuffers();
+      if (var2.readable) {
+         this.bind();
+         GlStateManager._glBufferData(var1.id, (long)var3, var2.id);
+         MEMORY_POOl.malloc((long)this.handle, var3);
+         this.initialized = true;
+      }
+
    }
 
    public GpuBuffer(BufferType var1, BufferUsage var2, ByteBuffer var3) {
@@ -78,12 +85,10 @@ public class GpuBuffer implements AutoCloseable {
       }
    }
 
-   @Nullable
    public ReadView read() {
       return this.read(0, this.size);
    }
 
-   @Nullable
    public ReadView read(int var1, int var2) {
       if (this.closed) {
          throw new IllegalStateException("Buffer already closed");
@@ -92,9 +97,14 @@ public class GpuBuffer implements AutoCloseable {
       } else if (var1 + var2 > this.size) {
          throw new IllegalArgumentException("Cannot read more data than this buffer can hold (attempting to read " + var2 + " bytes at offset " + var1 + " from " + this.size + " size buffer)");
       } else {
+         GL11.glGetError();
          this.bind();
          ByteBuffer var3 = GlStateManager._glMapBufferRange(this.type.id, var1, var2, 1);
-         return var3 == null ? null : new ReadView(this.type.id, var3);
+         if (var3 == null) {
+            throw new IllegalStateException("Can't read buffer, opengl error " + GlStateManager._getError());
+         } else {
+            return new ReadView(this.type.id, var3);
+         }
       }
    }
 
@@ -111,6 +121,18 @@ public class GpuBuffer implements AutoCloseable {
 
    public void bind() {
       GlStateManager._glBindBuffer(this.type.id, this.handle);
+   }
+
+   public void unbind() {
+      GlStateManager._glBindBuffer(this.type.id, 0);
+   }
+
+   public int size() {
+      return this.size;
+   }
+
+   public BufferType type() {
+      return this.type;
    }
 
    public static class ReadView implements AutoCloseable {
