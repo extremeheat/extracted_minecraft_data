@@ -2,8 +2,6 @@ package net.minecraft.nbt.visitors;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Objects;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.ByteTag;
@@ -23,26 +21,24 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagType;
 
 public class CollectToTag implements StreamTagVisitor {
-   private String lastId = "";
-   @Nullable
-   private Tag rootTag;
-   private final Deque<Consumer<Tag>> consumerStack = new ArrayDeque();
+   private final Deque<ContainerBuilder> containerStack = new ArrayDeque();
 
    public CollectToTag() {
       super();
+      this.containerStack.addLast(new RootBuilder());
    }
 
    @Nullable
    public Tag getResult() {
-      return this.rootTag;
+      return ((ContainerBuilder)this.containerStack.getFirst()).build();
    }
 
    protected int depth() {
-      return this.consumerStack.size();
+      return this.containerStack.size() - 1;
    }
 
    private void appendEntry(Tag var1) {
-      ((Consumer)this.consumerStack.getLast()).accept(var1);
+      ((ContainerBuilder)this.containerStack.getLast()).acceptValue(var1);
    }
 
    public StreamTagVisitor.ValueResult visitEnd() {
@@ -114,46 +110,97 @@ public class CollectToTag implements StreamTagVisitor {
    }
 
    public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
-      this.lastId = var2;
+      ((ContainerBuilder)this.containerStack.getLast()).acceptKey(var2);
       this.enterContainerIfNeeded(var1);
       return StreamTagVisitor.EntryResult.ENTER;
    }
 
    private void enterContainerIfNeeded(TagType<?> var1) {
       if (var1 == ListTag.TYPE) {
-         ListTag var2 = new ListTag();
-         this.appendEntry(var2);
-         Deque var10000 = this.consumerStack;
-         Objects.requireNonNull(var2);
-         var10000.addLast(var2::add);
+         this.containerStack.addLast(new ListBuilder());
       } else if (var1 == CompoundTag.TYPE) {
-         CompoundTag var3 = new CompoundTag();
-         this.appendEntry(var3);
-         this.consumerStack.addLast((Consumer)(var2x) -> var3.put(this.lastId, var2x));
+         this.containerStack.addLast(new CompoundBuilder());
       }
 
    }
 
    public StreamTagVisitor.ValueResult visitContainerEnd() {
-      this.consumerStack.removeLast();
+      ContainerBuilder var1 = (ContainerBuilder)this.containerStack.removeLast();
+      Tag var2 = var1.build();
+      if (var2 != null) {
+         ((ContainerBuilder)this.containerStack.getLast()).acceptValue(var2);
+      }
+
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
    public StreamTagVisitor.ValueResult visitRootEntry(TagType<?> var1) {
-      if (var1 == ListTag.TYPE) {
-         ListTag var2 = new ListTag();
-         this.rootTag = var2;
-         Deque var10000 = this.consumerStack;
-         Objects.requireNonNull(var2);
-         var10000.addLast(var2::add);
-      } else if (var1 == CompoundTag.TYPE) {
-         CompoundTag var3 = new CompoundTag();
-         this.rootTag = var3;
-         this.consumerStack.addLast((Consumer)(var2x) -> var3.put(this.lastId, var2x));
-      } else {
-         this.consumerStack.addLast((Consumer)(var1x) -> this.rootTag = var1x);
+      this.enterContainerIfNeeded(var1);
+      return StreamTagVisitor.ValueResult.CONTINUE;
+   }
+
+   interface ContainerBuilder {
+      default void acceptKey(String var1) {
       }
 
-      return StreamTagVisitor.ValueResult.CONTINUE;
+      void acceptValue(Tag var1);
+
+      @Nullable
+      Tag build();
+   }
+
+   static class RootBuilder implements ContainerBuilder {
+      @Nullable
+      private Tag result;
+
+      RootBuilder() {
+         super();
+      }
+
+      public void acceptValue(Tag var1) {
+         this.result = var1;
+      }
+
+      @Nullable
+      public Tag build() {
+         return this.result;
+      }
+   }
+
+   static class CompoundBuilder implements ContainerBuilder {
+      private final CompoundTag compound = new CompoundTag();
+      private String lastId = "";
+
+      CompoundBuilder() {
+         super();
+      }
+
+      public void acceptKey(String var1) {
+         this.lastId = var1;
+      }
+
+      public void acceptValue(Tag var1) {
+         this.compound.put(this.lastId, var1);
+      }
+
+      public Tag build() {
+         return this.compound;
+      }
+   }
+
+   static class ListBuilder implements ContainerBuilder {
+      private final ListTag list = new ListTag();
+
+      ListBuilder() {
+         super();
+      }
+
+      public void acceptValue(Tag var1) {
+         this.list.addAndUnwrap(var1);
+      }
+
+      public Tag build() {
+         return this.list;
+      }
    }
 }

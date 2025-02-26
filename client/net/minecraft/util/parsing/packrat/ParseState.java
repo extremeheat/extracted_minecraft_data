@@ -1,82 +1,38 @@
 package net.minecraft.util.parsing.packrat;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
-public abstract class ParseState<S> {
-   private final Map<CacheKey<?>, CacheEntry<?>> ruleCache = new HashMap();
-   private final Dictionary<S> dictionary;
-   private final ErrorCollector<S> errorCollector;
+public interface ParseState<S> {
+   Scope scope();
 
-   protected ParseState(Dictionary<S> var1, ErrorCollector<S> var2) {
-      super();
-      this.dictionary = var1;
-      this.errorCollector = var2;
-   }
+   ErrorCollector<S> errorCollector();
 
-   public ErrorCollector<S> errorCollector() {
-      return this.errorCollector;
-   }
-
-   public <T> Optional<T> parseTopRule(Atom<T> var1) {
-      Optional var2 = this.parse(var1);
-      if (var2.isPresent()) {
-         this.errorCollector.finish(this.mark());
+   default <T> Optional<T> parseTopRule(NamedRule<S, T> var1) {
+      Object var2 = this.parse(var1);
+      if (var2 != null) {
+         this.errorCollector().finish(this.mark());
       }
 
-      return var2;
-   }
-
-   public <T> Optional<T> parse(Atom<T> var1) {
-      CacheKey var2 = new CacheKey(var1, this.mark());
-      CacheEntry var3 = this.lookupInCache(var2);
-      if (var3 != null) {
-         this.restore(var3.mark());
-         return var3.value;
+      if (!this.scope().hasOnlySingleFrame()) {
+         throw new IllegalStateException("Malformed scope: " + String.valueOf(this.scope()));
       } else {
-         Rule var4 = this.dictionary.get(var1);
-         if (var4 == null) {
-            throw new IllegalStateException("No symbol " + String.valueOf(var1));
-         } else {
-            Optional var5 = var4.parse(this);
-            this.storeInCache(var2, var5);
-            return var5;
-         }
+         return Optional.ofNullable(var2);
       }
    }
 
    @Nullable
-   private <T> CacheEntry<T> lookupInCache(CacheKey<T> var1) {
-      return (CacheEntry)this.ruleCache.get(var1);
-   }
+   <T> T parse(NamedRule<S, T> var1);
 
-   private <T> void storeInCache(CacheKey<T> var1, Optional<T> var2) {
-      this.ruleCache.put(var1, new CacheEntry(var2, this.mark()));
-   }
+   S input();
 
-   public abstract S input();
+   int mark();
 
-   public abstract int mark();
+   void restore(int var1);
 
-   public abstract void restore(int var1);
+   Control acquireControl();
 
-   static record CacheKey<T>(Atom<T> name, int mark) {
-      CacheKey(Atom<T> var1, int var2) {
-         super();
-         this.name = var1;
-         this.mark = var2;
-      }
-   }
+   void releaseControl();
 
-   static record CacheEntry<T>(Optional<T> value, int mark) {
-      final Optional<T> value;
-
-      CacheEntry(Optional<T> var1, int var2) {
-         super();
-         this.value = var1;
-         this.mark = var2;
-      }
-   }
+   ParseState<S> silent();
 }

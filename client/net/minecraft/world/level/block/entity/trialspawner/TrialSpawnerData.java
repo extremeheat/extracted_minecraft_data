@@ -93,7 +93,7 @@ public class TrialSpawnerData {
    }
 
    public boolean hasMobToSpawn(TrialSpawner var1, RandomSource var2) {
-      boolean var3 = this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().contains("id", 8);
+      boolean var3 = this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().getString("id").isPresent();
       return var3 || !var1.getConfig().spawnPotentialsDefinition().isEmpty();
    }
 
@@ -243,7 +243,7 @@ public class TrialSpawnerData {
       } else {
          if (this.displayEntity == null) {
             CompoundTag var4 = this.getOrCreateNextSpawnData(var1, var2.getRandom()).getEntityToSpawn();
-            if (var4.contains("id", 8)) {
+            if (var4.getString("id").isPresent()) {
                this.displayEntity = EntityType.loadEntityRecursive(var4, var2, EntitySpawnReason.TRIAL_SPAWNER, Function.identity());
             }
          }

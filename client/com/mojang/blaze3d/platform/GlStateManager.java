@@ -40,8 +40,6 @@ public class GlStateManager {
    private static final PolygonOffsetState POLY_OFFSET;
    private static final ColorLogicState COLOR_LOGIC;
    private static final ScissorState SCISSOR;
-   private static final FramebufferState READ_FRAMEBUFFER;
-   private static final FramebufferState DRAW_FRAMEBUFFER;
    private static int activeTexture;
    private static final TextureState[] TEXTURES;
    private static final ColorMask COLOR_MASK;
@@ -312,26 +310,8 @@ public class GlStateManager {
       GL15.glDeleteBuffers(var0);
    }
 
-   public static void _glDeleteVertexArrays(int var0) {
-      RenderSystem.assertOnRenderThread();
-      GL30.glDeleteVertexArrays(var0);
-   }
-
    public static void _glBindFramebuffer(int var0, int var1) {
-      RenderSystem.assertOnRenderThread();
-      boolean var10000;
-      switch (var0) {
-         case 36008 -> var10000 = READ_FRAMEBUFFER.update(var1);
-         case 36009 -> var10000 = DRAW_FRAMEBUFFER.update(var1);
-         case 36160 -> var10000 = READ_FRAMEBUFFER.update(var1) | DRAW_FRAMEBUFFER.update(var1);
-         default -> var10000 = true;
-      }
-
-      boolean var2 = var10000;
-      if (var2) {
-         GL30.glBindFramebuffer(var0, var1);
-      }
-
+      GL30.glBindFramebuffer(var0, var1);
    }
 
    public static void _glBlitFrameBuffer(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
@@ -347,11 +327,6 @@ public class GlStateManager {
    public static int glGenFramebuffers() {
       RenderSystem.assertOnRenderThread();
       return GL30.glGenFramebuffers();
-   }
-
-   public static int glCheckFramebufferStatus(int var0) {
-      RenderSystem.assertOnRenderThread();
-      return GL30.glCheckFramebufferStatus(var0);
    }
 
    public static void _glFramebufferTexture2D(int var0, int var1, int var2, int var3, int var4) {
@@ -518,11 +493,6 @@ public class GlStateManager {
    }
 
    public static void _viewport(int var0, int var1, int var2, int var3) {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager.Viewport.INSTANCE.x = var0;
-      GlStateManager.Viewport.INSTANCE.y = var1;
-      GlStateManager.Viewport.INSTANCE.width = var2;
-      GlStateManager.Viewport.INSTANCE.height = var3;
       GL11.glViewport(var0, var1, var2, var3);
    }
 
@@ -536,16 +506,6 @@ public class GlStateManager {
          GL11.glColorMask(var0, var1, var2, var3);
       }
 
-   }
-
-   public static void _clearDepth(double var0) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glClearDepth(var0);
-   }
-
-   public static void _clearColor(float var0, float var1, float var2, float var3) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glClearColor(var0, var1, var2, var3);
    }
 
    public static void _clear(int var0) {
@@ -572,14 +532,14 @@ public class GlStateManager {
       GL20.glEnableVertexAttribArray(var0);
    }
 
-   public static void _disableVertexAttribArray(int var0) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glDisableVertexAttribArray(var0);
-   }
-
    public static void _drawElements(int var0, int var1, int var2, long var3) {
       RenderSystem.assertOnRenderThread();
       GL11.glDrawElements(var0, var1, var2, var3);
+   }
+
+   public static void _drawArrays(int var0, int var1, int var2) {
+      RenderSystem.assertOnRenderThread();
+      GL11.glDrawArrays(var0, var1, var2);
    }
 
    public static void _pixelStore(int var0, int var1) {
@@ -595,6 +555,14 @@ public class GlStateManager {
    public static int _getError() {
       RenderSystem.assertOnRenderThread();
       return GL11.glGetError();
+   }
+
+   public static void clearGlErrors() {
+      RenderSystem.assertOnRenderThread();
+
+      while(GL11.glGetError() != 0) {
+      }
+
    }
 
    public static String _getString(int var0) {
@@ -634,74 +602,8 @@ public class GlStateManager {
       POLY_OFFSET = new PolygonOffsetState();
       COLOR_LOGIC = new ColorLogicState();
       SCISSOR = new ScissorState();
-      READ_FRAMEBUFFER = new FramebufferState();
-      DRAW_FRAMEBUFFER = new FramebufferState();
       TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((var0) -> new TextureState()).toArray((var0) -> new TextureState[var0]);
       COLOR_MASK = new ColorMask();
-   }
-
-   public static enum LogicOp {
-      NONE(-1),
-      AND(5377),
-      AND_INVERTED(5380),
-      AND_REVERSE(5378),
-      CLEAR(5376),
-      COPY(5379),
-      COPY_INVERTED(5388),
-      EQUIV(5385),
-      INVERT(5386),
-      NAND(5390),
-      NOOP(5381),
-      NOR(5384),
-      OR(5383),
-      OR_INVERTED(5389),
-      OR_REVERSE(5387),
-      SET(5391),
-      XOR(5382);
-
-      public final int value;
-
-      private LogicOp(final int var3) {
-         this.value = var3;
-      }
-
-      // $FF: synthetic method
-      private static LogicOp[] $values() {
-         return new LogicOp[]{NONE, AND, AND_INVERTED, AND_REVERSE, CLEAR, COPY, COPY_INVERTED, EQUIV, INVERT, NAND, NOOP, NOR, OR, OR_INVERTED, OR_REVERSE, SET, XOR};
-      }
-   }
-
-   public static enum Viewport {
-      INSTANCE;
-
-      int x;
-      int y;
-      int width;
-      int height;
-
-      private Viewport() {
-      }
-
-      public static int x() {
-         return INSTANCE.x;
-      }
-
-      public static int y() {
-         return INSTANCE.y;
-      }
-
-      public static int width() {
-         return INSTANCE.width;
-      }
-
-      public static int height() {
-         return INSTANCE.height;
-      }
-
-      // $FF: synthetic method
-      private static Viewport[] $values() {
-         return new Viewport[]{INSTANCE};
-      }
    }
 
    static class TextureState {
@@ -808,82 +710,6 @@ public class GlStateManager {
             }
          }
 
-      }
-   }
-
-   static class FramebufferState {
-      public int binding;
-
-      FramebufferState() {
-         super();
-      }
-
-      public boolean update(int var1) {
-         if (var1 != this.binding) {
-            this.binding = var1;
-            return true;
-         } else {
-            return false;
-         }
-      }
-   }
-
-   @DontObfuscate
-   public static enum SourceFactor {
-      CONSTANT_ALPHA(32771),
-      CONSTANT_COLOR(32769),
-      DST_ALPHA(772),
-      DST_COLOR(774),
-      ONE(1),
-      ONE_MINUS_CONSTANT_ALPHA(32772),
-      ONE_MINUS_CONSTANT_COLOR(32770),
-      ONE_MINUS_DST_ALPHA(773),
-      ONE_MINUS_DST_COLOR(775),
-      ONE_MINUS_SRC_ALPHA(771),
-      ONE_MINUS_SRC_COLOR(769),
-      SRC_ALPHA(770),
-      SRC_ALPHA_SATURATE(776),
-      SRC_COLOR(768),
-      ZERO(0);
-
-      public final int value;
-
-      private SourceFactor(final int var3) {
-         this.value = var3;
-      }
-
-      // $FF: synthetic method
-      private static SourceFactor[] $values() {
-         return new SourceFactor[]{CONSTANT_ALPHA, CONSTANT_COLOR, DST_ALPHA, DST_COLOR, ONE, ONE_MINUS_CONSTANT_ALPHA, ONE_MINUS_CONSTANT_COLOR, ONE_MINUS_DST_ALPHA, ONE_MINUS_DST_COLOR, ONE_MINUS_SRC_ALPHA, ONE_MINUS_SRC_COLOR, SRC_ALPHA, SRC_ALPHA_SATURATE, SRC_COLOR, ZERO};
-      }
-   }
-
-   @DontObfuscate
-   public static enum DestFactor {
-      CONSTANT_ALPHA(32771),
-      CONSTANT_COLOR(32769),
-      DST_ALPHA(772),
-      DST_COLOR(774),
-      ONE(1),
-      ONE_MINUS_CONSTANT_ALPHA(32772),
-      ONE_MINUS_CONSTANT_COLOR(32770),
-      ONE_MINUS_DST_ALPHA(773),
-      ONE_MINUS_DST_COLOR(775),
-      ONE_MINUS_SRC_ALPHA(771),
-      ONE_MINUS_SRC_COLOR(769),
-      SRC_ALPHA(770),
-      SRC_COLOR(768),
-      ZERO(0);
-
-      public final int value;
-
-      private DestFactor(final int var3) {
-         this.value = var3;
-      }
-
-      // $FF: synthetic method
-      private static DestFactor[] $values() {
-         return new DestFactor[]{CONSTANT_ALPHA, CONSTANT_COLOR, DST_ALPHA, DST_COLOR, ONE, ONE_MINUS_CONSTANT_ALPHA, ONE_MINUS_CONSTANT_COLOR, ONE_MINUS_DST_ALPHA, ONE_MINUS_DST_COLOR, ONE_MINUS_SRC_ALPHA, ONE_MINUS_SRC_COLOR, SRC_ALPHA, SRC_COLOR, ZERO};
       }
    }
 }

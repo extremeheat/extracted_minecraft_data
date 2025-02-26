@@ -50,6 +50,7 @@ import net.minecraft.world.phys.Vec3;
 public class IronGolem extends AbstractGolem implements NeutralMob {
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final int IRON_INGOT_HEAL_AMOUNT = 25;
+   private static final boolean DEFAULT_PLAYER_CREATED = false;
    private int attackAnimationTick;
    private int offerFlowerTick;
    private static final UniformInt PERSISTENT_ANGER_TIME;
@@ -133,7 +134,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setPlayerCreated(var1.getBoolean("PlayerCreated"));
+      this.setPlayerCreated(var1.getBooleanOr("PlayerCreated", false));
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 

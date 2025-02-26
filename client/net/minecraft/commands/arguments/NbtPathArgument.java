@@ -1,5 +1,6 @@
 package net.minecraft.commands.arguments;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -119,7 +120,9 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
    }
 
    private static Node readObjectNode(StringReader var0, String var1) throws CommandSyntaxException {
-      if (var0.canRead() && var0.peek() == '{') {
+      if (var1.isEmpty()) {
+         throw ERROR_INVALID_NODE.createWithContext(var0);
+      } else if (var0.canRead() && var0.peek() == '{') {
          CompoundTag var2 = TagParser.parseCompoundAsArgument(var0);
          return new MatchObjectNode(var1, var2);
       } else {
@@ -235,15 +238,14 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
             if (var0 instanceof CompoundTag) {
                CompoundTag var2 = (CompoundTag)var0;
 
-               for(String var5 : var2.getAllKeys()) {
-                  Tag var6 = var2.get(var5);
-                  if (var6 != null && isTooDeep(var6, var1 + 1)) {
+               for(Tag var5 : var2.values()) {
+                  if (isTooDeep(var5, var1 + 1)) {
                      return true;
                   }
                }
             } else if (var0 instanceof ListTag) {
-               for(Tag var8 : (ListTag)var0) {
-                  if (isTooDeep(var8, var1 + 1)) {
+               for(Tag var7 : (ListTag)var0) {
+                  if (isTooDeep(var7, var1 + 1)) {
                      return true;
                   }
                }
@@ -463,7 +465,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
             int var4 = var3.size();
             int var5 = this.index < 0 ? var4 + this.index : this.index;
             if (0 <= var5 && var5 < var4) {
-               var2.add((Tag)var3.get(var5));
+               var2.add(var3.get(var5));
             }
          }
 
@@ -482,7 +484,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
             int var4 = var3.size();
             int var5 = this.index < 0 ? var4 + this.index : this.index;
             if (0 <= var5 && var5 < var4) {
-               Tag var6 = (Tag)var3.get(var5);
+               Tag var6 = var3.get(var5);
                Tag var7 = (Tag)var2.get();
                if (!var7.equals(var6) && var3.setTag(var5, var7)) {
                   return 1;
@@ -592,8 +594,8 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       public void getTag(Tag var1, List<Tag> var2) {
-         if (var1 instanceof CollectionTag) {
-            var2.addAll((CollectionTag)var1);
+         if (var1 instanceof CollectionTag var3) {
+            Iterables.addAll(var2, var3);
          }
 
       }
@@ -606,7 +608,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
                   var3.add(var5);
                }
             } else {
-               var3.addAll(var4);
+               Iterables.addAll(var3, var4);
             }
          }
 

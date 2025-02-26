@@ -235,7 +235,7 @@ public class EndCityPieces {
       }
 
       public EndCityPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.END_CITY_PIECE, var2, var1, (var1x) -> makeSettings(var2.getBoolean("OW"), (Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
+         super(StructurePieceType.END_CITY_PIECE, var2, var1, (var1x) -> makeSettings(var2.getBooleanOr("OW", false), (Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
       }
 
       private static StructurePlaceSettings makeSettings(boolean var0, Rotation var1) {

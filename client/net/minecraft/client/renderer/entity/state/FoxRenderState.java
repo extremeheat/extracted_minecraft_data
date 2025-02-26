@@ -14,6 +14,6 @@ public class FoxRenderState extends HoldingEntityRenderState {
 
    public FoxRenderState() {
       super();
-      this.variant = Fox.Variant.RED;
+      this.variant = Fox.Variant.DEFAULT;
    }
 }

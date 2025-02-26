@@ -48,7 +48,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 public class Vindicator extends AbstractIllager {
    private static final String TAG_JOHNNY = "Johnny";
    static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (var0) -> var0 == Difficulty.NORMAL || var0 == Difficulty.HARD;
-   boolean isJohnny;
+   private static final boolean DEFAULT_JOHNNY = false;
+   boolean isJohnny = false;
 
    public Vindicator(EntityType<? extends Vindicator> var1, Level var2) {
       super(var1, var2);
@@ -103,10 +104,7 @@ public class Vindicator extends AbstractIllager {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("Johnny", 99)) {
-         this.isJohnny = var1.getBoolean("Johnny");
-      }
-
+      this.isJohnny = var1.getBooleanOr("Johnny", false);
    }
 
    public SoundEvent getCelebrateSound() {

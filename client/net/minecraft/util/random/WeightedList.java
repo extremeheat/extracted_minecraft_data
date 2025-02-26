@@ -1,12 +1,14 @@
 package net.minecraft.util.random;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
@@ -55,6 +57,10 @@ public final class WeightedList<E> {
 
    public boolean isEmpty() {
       return this.items.isEmpty();
+   }
+
+   public <T> WeightedList<T> map(Function<E, T> var1) {
+      return new WeightedList<T>(Lists.transform(this.items, (var1x) -> var1x.map(var1)));
    }
 
    public Optional<E> getRandom(RandomSource var1) {

@@ -61,6 +61,7 @@ public class EnderDragon extends Mob implements Enemy {
    private static final float SITTING_ALLOWED_DAMAGE_PERCENTAGE = 0.25F;
    private static final String DRAGON_DEATH_TIME_KEY = "DragonDeathTime";
    private static final String DRAGON_PHASE_KEY = "DragonPhase";
+   private static final int DEFAULT_DEATH_TIME = 0;
    public final DragonFlightHistory flightHistory = new DragonFlightHistory();
    private final EnderDragonPart[] subEntities;
    public final EnderDragonPart head;
@@ -74,7 +75,7 @@ public class EnderDragon extends Mob implements Enemy {
    public float oFlapTime;
    public float flapTime;
    public boolean inWall;
-   public int dragonDeathTime;
+   public int dragonDeathTime = 0;
    public float yRotA;
    @Nullable
    public EndCrystal nearestCrystal;
@@ -721,14 +722,8 @@ public class EnderDragon extends Mob implements Enemy {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("DragonPhase")) {
-         this.phaseManager.setPhase(EnderDragonPhase.getById(var1.getInt("DragonPhase")));
-      }
-
-      if (var1.contains("DragonDeathTime")) {
-         this.dragonDeathTime = var1.getInt("DragonDeathTime");
-      }
-
+      var1.getInt("DragonPhase").ifPresent((var1x) -> this.phaseManager.setPhase(EnderDragonPhase.getById(var1x)));
+      this.dragonDeathTime = var1.getIntOr("DragonDeathTime", 0);
    }
 
    public void checkDespawn() {

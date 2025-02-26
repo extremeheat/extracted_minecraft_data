@@ -16,9 +16,11 @@ import org.slf4j.Logger;
 
 public class TestBlockEntity extends BlockEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final String DEFAULT_MESSAGE = "";
+   private static final boolean DEFAULT_POWERED = false;
    private TestBlockMode mode;
    private String message = "";
-   private boolean powered;
+   private boolean powered = false;
    private boolean triggered;
 
    public TestBlockEntity(BlockPos var1, BlockState var2) {
@@ -34,8 +36,8 @@ public class TestBlockEntity extends BlockEntity {
 
    public void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       this.mode = (TestBlockMode)var1.read("mode", TestBlockMode.CODEC).orElse(TestBlockMode.FAIL);
-      this.message = var1.getString("message");
-      this.powered = var1.getBoolean("powered");
+      this.message = var1.getStringOr("message", "");
+      this.powered = var1.getBooleanOr("powered", false);
    }
 
    private void updateBlockState() {

@@ -33,11 +33,13 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    private static final int ATTENTION_INTERVAL = 2400;
    private static final int EVENT_COOLDOWN = 1;
    private static final int GATEWAY_HEIGHT_ABOVE_SURFACE = 10;
-   private long age;
+   private static final long DEFAULT_AGE = 0L;
+   private static final boolean DEFAULT_EXACT_TELEPORT = false;
+   private long age = 0L;
    private int teleportCooldown;
    @Nullable
    private BlockPos exitPortal;
-   private boolean exactTeleport;
+   private boolean exactTeleport = false;
 
    public TheEndGatewayBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.END_GATEWAY, var1, var2);
@@ -55,9 +57,9 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.age = var1.getLong("Age");
+      this.age = var1.getLongOr("Age", 0L);
       this.exitPortal = (BlockPos)var1.read("exit_portal", BlockPos.CODEC).filter(Level::isInSpawnableBounds).orElse((Object)null);
-      this.exactTeleport = var1.getBoolean("ExactTeleport");
+      this.exactTeleport = var1.getBooleanOr("ExactTeleport", false);
    }
 
    public static void beamAnimationTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {

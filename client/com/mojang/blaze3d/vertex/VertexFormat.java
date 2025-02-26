@@ -2,11 +2,15 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -19,7 +23,9 @@ public class VertexFormat {
    private final int elementsMask;
    private final int[] offsetsByElement = new int[32];
    @Nullable
-   private VertexBuffer immediateDrawVertexBuffer;
+   private GpuBuffer immediateDrawVertexBuffer;
+   @Nullable
+   private GpuBuffer immediateDrawIndexBuffer;
 
    VertexFormat(List<VertexFormatElement> var1, List<String> var2, IntList var3, int var4) {
       super();
@@ -38,16 +44,6 @@ public class VertexFormat {
 
    public static Builder builder() {
       return new Builder();
-   }
-
-   public void bindAttributes(int var1) {
-      int var2 = 0;
-
-      for(String var4 : this.getElementAttributeNames()) {
-         GlStateManager._glBindAttribLocation(var1, var2, var4);
-         ++var2;
-      }
-
    }
 
    public String toString() {
@@ -113,34 +109,36 @@ public class VertexFormat {
       return this.elementsMask * 31 + Arrays.hashCode(this.offsetsByElement);
    }
 
-   public void setupBufferState() {
-      RenderSystem.assertOnRenderThread();
-      int var1 = this.getVertexSize();
+   public GpuBuffer uploadImmediateVertexBuffer(ByteBuffer var1) {
+      GpuDevice var2 = RenderSystem.getDevice();
+      if (this.immediateDrawVertexBuffer == null) {
+         this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, var1);
+      } else {
+         CommandEncoder var3 = var2.createCommandEncoder();
+         if (this.immediateDrawVertexBuffer.size() < var1.remaining()) {
+            var3.resizeBuffer(this.immediateDrawVertexBuffer, var1.remaining());
+         }
 
-      for(int var2 = 0; var2 < this.elements.size(); ++var2) {
-         GlStateManager._enableVertexAttribArray(var2);
-         VertexFormatElement var3 = (VertexFormatElement)this.elements.get(var2);
-         var3.setupBufferState(var2, (long)this.getOffset(var3), var1);
+         var3.writeToBuffer(this.immediateDrawVertexBuffer, var1, 0);
       }
 
+      return this.immediateDrawVertexBuffer;
    }
 
-   public void clearBufferState() {
-      RenderSystem.assertOnRenderThread();
+   public GpuBuffer uploadImmediateIndexBuffer(ByteBuffer var1) {
+      GpuDevice var2 = RenderSystem.getDevice();
+      if (this.immediateDrawIndexBuffer == null) {
+         this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, var1);
+      } else {
+         CommandEncoder var3 = var2.createCommandEncoder();
+         if (this.immediateDrawIndexBuffer.size() < var1.remaining()) {
+            var3.resizeBuffer(this.immediateDrawIndexBuffer, var1.remaining());
+         }
 
-      for(int var1 = 0; var1 < this.elements.size(); ++var1) {
-         GlStateManager._disableVertexAttribArray(var1);
+         var3.writeToBuffer(this.immediateDrawIndexBuffer, var1, 0);
       }
 
-   }
-
-   public VertexBuffer getImmediateDrawVertexBuffer() {
-      VertexBuffer var1 = this.immediateDrawVertexBuffer;
-      if (var1 == null) {
-         this.immediateDrawVertexBuffer = var1 = new VertexBuffer(BufferUsage.DYNAMIC_WRITE);
-      }
-
-      return var1;
+      return this.immediateDrawIndexBuffer;
    }
 
    public static class Builder {
@@ -173,15 +171,13 @@ public class VertexFormat {
    }
 
    public static enum IndexType {
-      SHORT(5123, 2),
-      INT(5125, 4);
+      SHORT(2),
+      INT(4);
 
-      public final int asGLType;
       public final int bytes;
 
-      private IndexType(final int var3, final int var4) {
-         this.asGLType = var3;
-         this.bytes = var4;
+      private IndexType(final int var3) {
+         this.bytes = var3;
       }
 
       public static IndexType least(int var0) {
@@ -195,25 +191,23 @@ public class VertexFormat {
    }
 
    public static enum Mode {
-      LINES(4, 2, 2, false),
-      LINE_STRIP(5, 2, 1, true),
-      DEBUG_LINES(1, 2, 2, false),
-      DEBUG_LINE_STRIP(3, 2, 1, true),
-      TRIANGLES(4, 3, 3, false),
-      TRIANGLE_STRIP(5, 3, 1, true),
-      TRIANGLE_FAN(6, 3, 1, true),
-      QUADS(4, 4, 4, false);
+      LINES(2, 2, false),
+      LINE_STRIP(2, 1, true),
+      DEBUG_LINES(2, 2, false),
+      DEBUG_LINE_STRIP(2, 1, true),
+      TRIANGLES(3, 3, false),
+      TRIANGLE_STRIP(3, 1, true),
+      TRIANGLE_FAN(3, 1, true),
+      QUADS(4, 4, false);
 
-      public final int asGLMode;
       public final int primitiveLength;
       public final int primitiveStride;
       public final boolean connectedPrimitives;
 
-      private Mode(final int var3, final int var4, final int var5, final boolean var6) {
-         this.asGLMode = var3;
-         this.primitiveLength = var4;
-         this.primitiveStride = var5;
-         this.connectedPrimitives = var6;
+      private Mode(final int var3, final int var4, final boolean var5) {
+         this.primitiveLength = var3;
+         this.primitiveStride = var4;
+         this.connectedPrimitives = var5;
       }
 
       public int indexCount(int var1) {

@@ -41,7 +41,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -198,6 +197,8 @@ public class ServerPlayer extends Player {
    private static final AttributeModifier CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER;
    private static final AttributeModifier CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER;
    private static final Component SPAWN_SET_MESSAGE;
+   private static final boolean DEFAULT_SEEN_CREDITS = false;
+   private static final boolean DEFAULT_SPAWN_EXTRA_PARTICLES_ON_FALL = false;
    public ServerGamePacketListenerImpl connection;
    public final MinecraftServer server;
    public final ServerPlayerGameMode gameMode;
@@ -264,10 +265,12 @@ public class ServerPlayer extends Player {
       this.particleStatus = ParticleStatus.ALL;
       this.canChatColor = true;
       this.lastActionTime = Util.getMillis();
+      this.seenCredits = false;
       this.requestedViewDistance = 2;
       this.language = "en_us";
       this.lastSectionPos = SectionPos.of(0, 0, 0);
       this.chunkTrackingView = ChunkTrackingView.EMPTY;
+      this.spawnExtraParticlesOnFall = false;
       this.wardenSpawnTracker = new WardenSpawnTracker();
       this.lastKnownClientMovement = Vec3.ZERO;
       this.lastClientInput = Input.EMPTY;
@@ -410,17 +413,14 @@ public class ServerPlayer extends Player {
       super.readAdditionalSaveData(var1);
       this.wardenSpawnTracker = (WardenSpawnTracker)var1.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
       this.enteredNetherPosition = (Vec3)var1.read("entered_nether_pos", Vec3.CODEC).orElse((Object)null);
-      this.seenCredits = var1.getBoolean("seenCredits");
-      if (var1.contains("recipeBook", 10)) {
-         this.recipeBook.fromNbt(var1.getCompound("recipeBook"), (var1x) -> this.server.getRecipeManager().byKey(var1x).isPresent());
-      }
-
+      this.seenCredits = var1.getBooleanOr("seenCredits", false);
+      this.recipeBook.fromNbt(var1.getCompoundOrEmpty("recipeBook"), (var1x) -> this.server.getRecipeManager().byKey(var1x).isPresent());
       if (this.isSleeping()) {
          this.stopSleeping();
       }
 
       this.respawnConfig = (RespawnConfig)var1.read("respawn", ServerPlayer.RespawnConfig.CODEC).orElse((Object)null);
-      this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
+      this.spawnExtraParticlesOnFall = var1.getBooleanOr("spawn_extra_particles_on_fall", false);
       this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
    }
 
@@ -453,18 +453,13 @@ public class ServerPlayer extends Player {
 
    }
 
-   public void loadAndSpawnParentVehicle(Optional<CompoundTag> var1) {
-      if (var1.isPresent() && ((CompoundTag)var1.get()).contains("RootVehicle", 10)) {
-         Level var3 = this.level();
-         if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            CompoundTag var8 = ((CompoundTag)var1.get()).getCompound("RootVehicle");
-            Entity var4 = EntityType.loadEntityRecursive(var8.getCompound("Entity"), var2, EntitySpawnReason.LOAD, (var1x) -> !var2.addWithUUID(var1x) ? null : var1x);
-            if (var4 == null) {
-               return;
-            }
-
-            UUID var5 = (UUID)var8.read("Attach", UUIDUtil.CODEC).orElse((Object)null);
+   public void loadAndSpawnParentVehicle(CompoundTag var1) {
+      Optional var2 = var1.getCompound("RootVehicle");
+      if (!var2.isEmpty()) {
+         ServerLevel var3 = this.serverLevel();
+         Entity var4 = EntityType.loadEntityRecursive(((CompoundTag)var2.get()).getCompoundOrEmpty("Entity"), var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
+         if (var4 != null) {
+            UUID var5 = (UUID)((CompoundTag)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
             if (var4.getUUID().equals(var5)) {
                this.startRiding(var4, true);
             } else {
@@ -480,13 +475,13 @@ public class ServerPlayer extends Player {
                LOGGER.warn("Couldn't reattach entity to player");
                var4.discard();
 
-               for(Entity var10 : var4.getIndirectPassengers()) {
-                  var10.discard();
+               for(Entity var9 : var4.getIndirectPassengers()) {
+                  var9.discard();
                }
             }
+
          }
       }
-
    }
 
    private void saveEnderPearls(CompoundTag var1) {
@@ -509,38 +504,26 @@ public class ServerPlayer extends Player {
 
    }
 
-   public void loadAndSpawnEnderpearls(Optional<CompoundTag> var1) {
-      if (var1.isPresent() && ((CompoundTag)var1.get()).contains("ender_pearls", 9)) {
-         Tag var2 = ((CompoundTag)var1.get()).get("ender_pearls");
-         if (var2 instanceof ListTag) {
-            ListTag var3 = (ListTag)var2;
-            var3.forEach((var1x) -> {
-               if (var1x instanceof CompoundTag var2) {
-                  if (var2.contains("ender_pearl_dimension")) {
-                     Optional var3 = var2.read("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC);
-                     if (var3.isEmpty()) {
-                        LOGGER.warn("No dimension defined for ender pearl, skipping");
-                        return;
-                     }
+   public void loadAndSpawnEnderPearls(CompoundTag var1) {
+      var1.getList("ender_pearls").ifPresent((var1x) -> var1x.compoundStream().forEach(this::loadAndSpawnEnderPearl));
+   }
 
-                     ServerLevel var4 = this.level().getServer().getLevel((ResourceKey)var3.get());
-                     if (var4 != null) {
-                        Entity var5 = EntityType.loadEntityRecursive(var2, var4, EntitySpawnReason.LOAD, (var1) -> !var4.addWithUUID(var1) ? null : var1);
-                        if (var5 != null) {
-                           placeEnderPearlTicket(var4, var5.chunkPosition());
-                        } else {
-                           LOGGER.warn("Failed to spawn player ender pearl in level ({}), skipping", var3.get());
-                        }
-                     } else {
-                        LOGGER.warn("Trying to load ender pearl without level ({}) being loaded, skipping", var3.get());
-                     }
-                  }
-               }
-
-            });
+   private void loadAndSpawnEnderPearl(CompoundTag var1) {
+      Optional var2 = var1.read("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC);
+      if (!var2.isEmpty()) {
+         ServerLevel var3 = this.serverLevel().getServer().getLevel((ResourceKey)var2.get());
+         if (var3 != null) {
+            Entity var4 = EntityType.loadEntityRecursive(var1, var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
+            if (var4 != null) {
+               placeEnderPearlTicket(var3, var4.chunkPosition());
+            } else {
+               LOGGER.warn("Failed to spawn player ender pearl in level ({}), skipping", var2.get());
+            }
+         } else {
+            LOGGER.warn("Trying to load ender pearl without level ({}) being loaded, skipping", var2.get());
          }
-      }
 
+      }
    }
 
    public void setExperiencePoints(int var1) {

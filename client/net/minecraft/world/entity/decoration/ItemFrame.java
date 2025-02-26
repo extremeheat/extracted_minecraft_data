@@ -49,12 +49,18 @@ public class ItemFrame extends HangingEntity {
    private static final float DEPTH = 0.0625F;
    private static final float WIDTH = 0.75F;
    private static final float HEIGHT = 0.75F;
+   private static final byte DEFAULT_ROTATION = 0;
+   private static final float DEFAULT_DROP_CHANCE = 1.0F;
+   private static final boolean DEFAULT_INVISIBLE = false;
+   private static final boolean DEFAULT_FIXED = false;
    private float dropChance;
    private boolean fixed;
 
    public ItemFrame(EntityType<? extends ItemFrame> var1, Level var2) {
       super(var1, var2);
       this.dropChance = 1.0F;
+      this.fixed = false;
+      this.setInvisible(false);
    }
 
    public ItemFrame(Level var1, BlockPos var2, Direction var3) {
@@ -64,7 +70,9 @@ public class ItemFrame extends HangingEntity {
    public ItemFrame(EntityType<? extends ItemFrame> var1, Level var2, BlockPos var3, Direction var4) {
       super(var1, var2, var3);
       this.dropChance = 1.0F;
+      this.fixed = false;
       this.setDirection(var4);
+      this.setInvisible(false);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -333,15 +341,13 @@ public class ItemFrame extends HangingEntity {
 
       this.setItem(var3, false);
       if (!var3.isEmpty()) {
-         this.setRotation(var1.getByte("ItemRotation"), false);
-         if (var1.contains("ItemDropChance", 99)) {
-            this.dropChance = var1.getFloat("ItemDropChance");
-         }
+         this.setRotation(var1.getByteOr("ItemRotation", (byte)0), false);
+         this.dropChance = var1.getFloatOr("ItemDropChance", 1.0F);
       }
 
       this.setDirection((Direction)var1.read("Facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));
-      this.setInvisible(var1.getBoolean("Invisible"));
-      this.fixed = var1.getBoolean("Fixed");
+      this.setInvisible(var1.getBooleanOr("Invisible", false));
+      this.fixed = var1.getBooleanOr("Fixed", false);
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {

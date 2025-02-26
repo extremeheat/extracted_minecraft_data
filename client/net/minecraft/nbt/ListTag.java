@@ -1,17 +1,21 @@
 package net.minecraft.nbt;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
-public class ListTag extends CollectionTag<Tag> {
-   private static final int SELF_SIZE_IN_BYTES = 37;
+public final class ListTag extends AbstractList<Tag> implements CollectionTag {
+   private static final String WRAPPER_MARKER = "";
+   private static final int SELF_SIZE_IN_BYTES = 36;
    public static final TagType<ListTag> TYPE = new TagType.VariableSize<ListTag>() {
       public ListTag load(DataInput var1, NbtAccounter var2) throws IOException {
          var2.pushDepth();
@@ -27,7 +31,7 @@ public class ListTag extends CollectionTag<Tag> {
       }
 
       private static ListTag loadList(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(37L);
+         var1.accountBytes(36L);
          byte var2 = var0.readByte();
          int var3 = var0.readInt();
          if (var2 == 0 && var3 > 0) {
@@ -35,13 +39,13 @@ public class ListTag extends CollectionTag<Tag> {
          } else {
             var1.accountBytes(4L, (long)var3);
             TagType var4 = TagTypes.getType(var2);
-            ArrayList var5 = Lists.newArrayListWithCapacity(var3);
+            ListTag var5 = new ListTag(new ArrayList(var3));
 
             for(int var6 = 0; var6 < var3; ++var6) {
-               var5.add(var4.load(var0, var1));
+               var5.addAndUnwrap(var4.load(var0, var1));
             }
 
-            return new ListTag(var5, var2);
+            return var5;
          }
       }
 
@@ -59,7 +63,7 @@ public class ListTag extends CollectionTag<Tag> {
       }
 
       private static StreamTagVisitor.ValueResult parseList(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-         var2.accountBytes(37L);
+         var2.accountBytes(36L);
          TagType var3 = TagTypes.getType(var0.readByte());
          int var4 = var0.readInt();
          switch (var1.visitList(var3, var4)) {
@@ -135,36 +139,88 @@ public class ListTag extends CollectionTag<Tag> {
       }
    };
    private final List<Tag> list;
-   private byte type;
-
-   ListTag(List<Tag> var1, byte var2) {
-      super();
-      this.list = var1;
-      this.type = var2;
-   }
 
    public ListTag() {
-      this(Lists.newArrayList(), (byte)0);
+      this(new ArrayList());
+   }
+
+   ListTag(List<Tag> var1) {
+      super();
+      this.list = var1;
+   }
+
+   private static Tag tryUnwrap(CompoundTag var0) {
+      if (var0.size() == 1) {
+         Tag var1 = var0.get("");
+         if (var1 != null) {
+            return var1;
+         }
+      }
+
+      return var0;
+   }
+
+   private static boolean isWrapper(CompoundTag var0) {
+      return var0.size() == 1 && var0.contains("");
+   }
+
+   private static Tag wrapIfNeeded(byte var0, Tag var1) {
+      if (var0 != 10) {
+         return var1;
+      } else {
+         if (var1 instanceof CompoundTag) {
+            CompoundTag var2 = (CompoundTag)var1;
+            if (!isWrapper(var2)) {
+               return var2;
+            }
+         }
+
+         return wrapElement(var1);
+      }
+   }
+
+   private static CompoundTag wrapElement(Tag var0) {
+      return new CompoundTag(Map.of("", var0));
    }
 
    public void write(DataOutput var1) throws IOException {
-      if (this.list.isEmpty()) {
-         this.type = 0;
-      } else {
-         this.type = ((Tag)this.list.get(0)).getId();
-      }
-
-      var1.writeByte(this.type);
+      byte var2 = this.identifyRawElementType();
+      var1.writeByte(var2);
       var1.writeInt(this.list.size());
 
+      for(Tag var4 : this.list) {
+         wrapIfNeeded(var2, var4).write(var1);
+      }
+
+   }
+
+   @VisibleForTesting
+   byte identifyRawElementType() {
+      byte var1 = 0;
+
       for(Tag var3 : this.list) {
-         var3.write(var1);
+         byte var4 = var3.getId();
+         if (var1 == 0) {
+            var1 = var4;
+         } else if (var1 != var4) {
+            return 10;
+         }
+      }
+
+      return var1;
+   }
+
+   public void addAndUnwrap(Tag var1) {
+      if (var1 instanceof CompoundTag var2) {
+         this.add(tryUnwrap(var2));
+      } else {
+         this.add(var1);
       }
 
    }
 
    public int sizeInBytes() {
-      int var1 = 37;
+      int var1 = 36;
       var1 += 4 * this.list.size();
 
       for(Tag var3 : this.list) {
@@ -183,121 +239,144 @@ public class ListTag extends CollectionTag<Tag> {
    }
 
    public String toString() {
-      return this.getAsString();
-   }
-
-   private void updateTypeAfterRemove() {
-      if (this.list.isEmpty()) {
-         this.type = 0;
-      }
-
+      StringTagVisitor var1 = new StringTagVisitor();
+      var1.visitList(this);
+      return var1.build();
    }
 
    public Tag remove(int var1) {
-      Tag var2 = (Tag)this.list.remove(var1);
-      this.updateTypeAfterRemove();
-      return var2;
+      return (Tag)this.list.remove(var1);
    }
 
    public boolean isEmpty() {
       return this.list.isEmpty();
    }
 
-   public CompoundTag getCompound(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 10) {
-            return (CompoundTag)var2;
-         }
-      }
-
-      return new CompoundTag();
-   }
-
-   public ListTag getList(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 9) {
-            return (ListTag)var2;
-         }
-      }
-
-      return new ListTag();
-   }
-
-   public short getShort(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 2) {
-            return ((ShortTag)var2).getAsShort();
-         }
-      }
-
-      return 0;
-   }
-
-   public int getInt(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 3) {
-            return ((IntTag)var2).getAsInt();
-         }
-      }
-
-      return 0;
-   }
-
-   public int[] getIntArray(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 11) {
-            return ((IntArrayTag)var2).getAsIntArray();
-         }
-      }
-
-      return new int[0];
-   }
-
-   public long[] getLongArray(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 12) {
-            return ((LongArrayTag)var2).getAsLongArray();
-         }
-      }
-
-      return new long[0];
-   }
-
-   public double getDouble(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 6) {
-            return ((DoubleTag)var2).getAsDouble();
-         }
-      }
-
-      return 0.0;
-   }
-
-   public float getFloat(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         if (var2.getId() == 5) {
-            return ((FloatTag)var2).getAsFloat();
-         }
-      }
-
-      return 0.0F;
-   }
-
-   public String getString(int var1) {
-      if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = (Tag)this.list.get(var1);
-         return var2.getId() == 8 ? var2.getAsString() : var2.toString();
+   public Optional<CompoundTag> getCompound(int var1) {
+      Tag var3 = this.getNullable(var1);
+      if (var3 instanceof CompoundTag var2) {
+         return Optional.of(var2);
       } else {
-         return "";
+         return Optional.empty();
       }
+   }
+
+   public CompoundTag getCompoundOrEmpty(int var1) {
+      return (CompoundTag)this.getCompound(var1).orElseGet(CompoundTag::new);
+   }
+
+   public Optional<ListTag> getList(int var1) {
+      Tag var3 = this.getNullable(var1);
+      if (var3 instanceof ListTag var2) {
+         return Optional.of(var2);
+      } else {
+         return Optional.empty();
+      }
+   }
+
+   public ListTag getListOrEmpty(int var1) {
+      return (ListTag)this.getList(var1).orElseGet(ListTag::new);
+   }
+
+   public Optional<Short> getShort(int var1) {
+      return this.getOptional(var1).flatMap(Tag::asShort);
+   }
+
+   public short getShortOr(int var1, short var2) {
+      Tag var4 = this.getNullable(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.shortValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<Integer> getInt(int var1) {
+      return this.getOptional(var1).flatMap(Tag::asInt);
+   }
+
+   public int getIntOr(int var1, int var2) {
+      Tag var4 = this.getNullable(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.intValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<int[]> getIntArray(int var1) {
+      Tag var3 = this.getNullable(var1);
+      if (var3 instanceof IntArrayTag var2) {
+         return Optional.of(var2.getAsIntArray());
+      } else {
+         return Optional.empty();
+      }
+   }
+
+   public Optional<long[]> getLongArray(int var1) {
+      Tag var3 = this.getNullable(var1);
+      if (var3 instanceof LongArrayTag var2) {
+         return Optional.of(var2.getAsLongArray());
+      } else {
+         return Optional.empty();
+      }
+   }
+
+   public Optional<Double> getDouble(int var1) {
+      return this.getOptional(var1).flatMap(Tag::asDouble);
+   }
+
+   public double getDoubleOr(int var1, double var2) {
+      Tag var5 = this.getNullable(var1);
+      if (var5 instanceof NumericTag var4) {
+         return var4.doubleValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<Float> getFloat(int var1) {
+      return this.getOptional(var1).flatMap(Tag::asFloat);
+   }
+
+   public float getFloatOr(int var1, float var2) {
+      Tag var4 = this.getNullable(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.floatValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<String> getString(int var1) {
+      return this.getOptional(var1).flatMap(Tag::asString);
+   }
+
+   public String getStringOr(int var1, String var2) {
+      Tag var3 = this.getNullable(var1);
+      if (var3 instanceof StringTag var4) {
+         StringTag var10000 = var4;
+
+         try {
+            var8 = var10000.value();
+         } catch (Throwable var7) {
+            throw new MatchException(var7.toString(), var7);
+         }
+
+         String var6 = var8;
+         return var6;
+      } else {
+         return var2;
+      }
+   }
+
+   @Nullable
+   private Tag getNullable(int var1) {
+      return var1 >= 0 && var1 < this.list.size() ? (Tag)this.list.get(var1) : null;
+   }
+
+   private Optional<Tag> getOptional(int var1) {
+      return Optional.ofNullable(this.getNullable(var1));
    }
 
    public int size() {
@@ -309,53 +388,35 @@ public class ListTag extends CollectionTag<Tag> {
    }
 
    public Tag set(int var1, Tag var2) {
-      Tag var3 = this.get(var1);
-      if (!this.setTag(var1, var2)) {
-         throw new UnsupportedOperationException(String.format(Locale.ROOT, "Trying to add tag of type %d to list of %d", var2.getId(), this.type));
-      } else {
-         return var3;
-      }
+      return (Tag)this.list.set(var1, var2);
    }
 
    public void add(int var1, Tag var2) {
-      if (!this.addTag(var1, var2)) {
-         throw new UnsupportedOperationException(String.format(Locale.ROOT, "Trying to add tag of type %d to list of %d", var2.getId(), this.type));
-      }
+      this.list.add(var1, var2);
    }
 
    public boolean setTag(int var1, Tag var2) {
-      if (this.updateType(var2)) {
-         this.list.set(var1, var2);
-         return true;
-      } else {
-         return false;
-      }
+      this.list.set(var1, var2);
+      return true;
    }
 
    public boolean addTag(int var1, Tag var2) {
-      if (this.updateType(var2)) {
-         this.list.add(var1, var2);
-         return true;
-      } else {
-         return false;
-      }
-   }
-
-   private boolean updateType(Tag var1) {
-      if (var1.getId() == 0) {
-         return false;
-      } else if (this.type == 0) {
-         this.type = var1.getId();
-         return true;
-      } else {
-         return this.type == var1.getId();
-      }
+      this.list.add(var1, var2);
+      return true;
    }
 
    public ListTag copy() {
-      Object var1 = TagTypes.getType(this.type).isValue() ? this.list : Iterables.transform(this.list, Tag::copy);
-      ArrayList var2 = Lists.newArrayList((Iterable)var1);
-      return new ListTag(var2, this.type);
+      ArrayList var1 = new ArrayList(this.list.size());
+
+      for(Tag var3 : this.list) {
+         var1.add(var3.copy());
+      }
+
+      return new ListTag(var1);
+   }
+
+   public Optional<ListTag> asList() {
+      return Optional.of(this);
    }
 
    public boolean equals(Object var1) {
@@ -370,37 +431,46 @@ public class ListTag extends CollectionTag<Tag> {
       return this.list.hashCode();
    }
 
+   public Stream<Tag> stream() {
+      return super.stream();
+   }
+
+   public Stream<CompoundTag> compoundStream() {
+      return this.stream().mapMulti((var0, var1) -> {
+         if (var0 instanceof CompoundTag var2) {
+            var1.accept(var2);
+         }
+
+      });
+   }
+
    public void accept(TagVisitor var1) {
       var1.visitList(this);
    }
 
-   public byte getElementType() {
-      return this.type;
-   }
-
    public void clear() {
       this.list.clear();
-      this.type = 0;
    }
 
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      switch (var1.visitList(TagTypes.getType(this.type), this.list.size())) {
+      byte var2 = this.identifyRawElementType();
+      switch (var1.visitList(TagTypes.getType(var2), this.list.size())) {
          case HALT:
             return StreamTagVisitor.ValueResult.HALT;
          case BREAK:
             return var1.visitContainerEnd();
          default:
-            int var2 = 0;
+            int var3 = 0;
 
-            while(var2 < this.list.size()) {
-               Tag var3 = (Tag)this.list.get(var2);
-               switch (var1.visitElement(var3.getType(), var2)) {
+            while(var3 < this.list.size()) {
+               Tag var4 = wrapIfNeeded(var2, (Tag)this.list.get(var3));
+               switch (var1.visitElement(var4.getType(), var3)) {
                   case HALT:
                      return StreamTagVisitor.ValueResult.HALT;
                   case BREAK:
                      return var1.visitContainerEnd();
                   default:
-                     switch (var3.accept(var1)) {
+                     switch (var4.accept(var1)) {
                         case HALT -> {
                            return StreamTagVisitor.ValueResult.HALT;
                         }
@@ -409,17 +479,12 @@ public class ListTag extends CollectionTag<Tag> {
                         }
                      }
                   case SKIP:
-                     ++var2;
+                     ++var3;
                }
             }
 
             return var1.visitContainerEnd();
       }
-   }
-
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
    }
 
    // $FF: synthetic method
@@ -440,5 +505,10 @@ public class ListTag extends CollectionTag<Tag> {
    // $FF: synthetic method
    public Object get(final int var1) {
       return this.get(var1);
+   }
+
+   // $FF: synthetic method
+   public Tag copy() {
+      return this.copy();
    }
 }

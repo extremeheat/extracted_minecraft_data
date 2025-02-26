@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 public abstract class BaseCommandBlock implements CommandSource {
    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
    private static final Component DEFAULT_NAME = Component.literal("@");
+   private static final int NO_LAST_EXECUTION = -1;
    private long lastExecution = -1L;
    private boolean updateLastExecution = true;
    private int successCount;
@@ -64,7 +65,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       }
 
       var1.putBoolean("UpdateLastExecution", this.updateLastExecution);
-      if (this.updateLastExecution && this.lastExecution > 0L) {
+      if (this.updateLastExecution && this.lastExecution != -1L) {
          var1.putLong("LastExecution", this.lastExecution);
       }
 
@@ -72,25 +73,19 @@ public abstract class BaseCommandBlock implements CommandSource {
    }
 
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      this.command = var1.getString("Command");
-      this.successCount = var1.getInt("SuccessCount");
+      this.command = var1.getStringOr("Command", "");
+      this.successCount = var1.getIntOr("SuccessCount", 0);
       this.setCustomName(BlockEntity.parseCustomNameSafe(var1.get("CustomName"), var2));
-      if (var1.contains("TrackOutput", 1)) {
-         this.trackOutput = var1.getBoolean("TrackOutput");
-      }
-
-      if (var1.contains("LastOutput") && this.trackOutput) {
+      this.trackOutput = var1.getBooleanOr("TrackOutput", true);
+      if (this.trackOutput) {
          this.lastOutput = BlockEntity.parseCustomNameSafe(var1.get("LastOutput"), var2);
       } else {
          this.lastOutput = null;
       }
 
-      if (var1.contains("UpdateLastExecution")) {
-         this.updateLastExecution = var1.getBoolean("UpdateLastExecution");
-      }
-
-      if (this.updateLastExecution && var1.contains("LastExecution")) {
-         this.lastExecution = var1.getLong("LastExecution");
+      this.updateLastExecution = var1.getBooleanOr("UpdateLastExecution", true);
+      if (this.updateLastExecution) {
+         this.lastExecution = var1.getLongOr("LastExecution", -1L);
       } else {
          this.lastExecution = -1L;
       }

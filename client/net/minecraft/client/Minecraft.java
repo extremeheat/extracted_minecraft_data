@@ -20,11 +20,11 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.ClientShutdownWatchdog;
 import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.platform.FramerateLimitTracker;
-import com.mojang.blaze3d.platform.GlDebug;
-import com.mojang.blaze3d.platform.GlUtil;
+import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.IconSet;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.WindowEventHandler;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.TimerQuery;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -481,18 +481,16 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       try {
          this.window.setIcon(this.vanillaPackResources, SharedConstants.getCurrentVersion().isStable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
-      } catch (IOException var14) {
-         LOGGER.error("Couldn't set icon", var14);
+      } catch (IOException var15) {
+         LOGGER.error("Couldn't set icon", var15);
       }
 
       this.mouseHandler = new MouseHandler(this);
       this.mouseHandler.setup(this.window.getWindow());
       this.keyboardHandler = new KeyboardHandler(this);
       this.keyboardHandler.setup(this.window.getWindow());
-      RenderSystem.initRenderer(this.options.glDebugVerbosity, false);
+      RenderSystem.initRenderer(this.window.getWindow(), this.options.glDebugVerbosity, false, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
       this.mainRenderTarget = new MainTarget(this.window.getWidth(), this.window.getHeight());
-      this.mainRenderTarget.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-      this.mainRenderTarget.clear();
       this.resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
       this.resourcePackRepository.reload();
       this.options.loadSelectedResourcePacks(this.resourcePackRepository);
@@ -524,7 +522,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(new FoliageColorReloadListener());
       this.resourceManager.registerReloadListener(new DryFoliageColorReloadListener());
       this.window.setErrorSection("Startup");
-      RenderSystem.setupDefaultState(0, 0, this.window.getWidth(), this.window.getHeight());
+      RenderSystem.setupDefaultState();
       this.window.setErrorSection("Post startup");
       this.blockColors = BlockColors.createDefault();
       this.modelManager = new ModelManager(this.textureManager, this.blockColors, (Integer)this.options.mipmapLevels().get());
@@ -542,9 +540,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          int var9 = Runtime.getRuntime().availableProcessors();
          Tesselator.init();
          this.renderBuffers = new RenderBuffers(var9);
-      } catch (OutOfMemoryError var13) {
+      } catch (OutOfMemoryError var14) {
          TinyFileDialogs.tinyfd_messageBox("Minecraft", "Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: " + String.valueOf(CommonLinks.GENERAL_HELP), "ok", "error", true);
-         throw new SilentInitException("Unable to allocate render buffers", var13);
+         throw new SilentInitException("Unable to allocate render buffers", var14);
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
@@ -571,8 +569,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.regionalCompliancies);
       this.gui = new Gui(this);
       this.debugRenderer = new DebugRenderer(this);
-      RealmsClient var15 = RealmsClient.create(this);
-      this.realmsDataFetcher = new RealmsDataFetcher(var15);
+      RealmsClient var16 = RealmsClient.getOrCreate(this);
+      this.realmsDataFetcher = new RealmsDataFetcher(var16);
       RenderSystem.setErrorCallback(this::onFullscreenError);
       if (this.mainRenderTarget.width == this.window.getWidth() && this.mainRenderTarget.height == this.window.getHeight()) {
          if ((Boolean)this.options.fullscreen().get() && !this.window.isFullscreen()) {
@@ -586,8 +584,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       } else {
          int var10002 = this.window.getWidth();
          StringBuilder var10 = new StringBuilder("Recovering from unsupported resolution (" + var10002 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
-         if (GlDebug.isDebugEnabled()) {
-            var10.append("\n\nReported GL debug messages:\n").append(String.join("\n", GlDebug.getLastOpenGlDebugMessages()));
+
+         try {
+            GpuDevice var11 = RenderSystem.getDevice();
+            List var12 = var11.getLastDebugMessages();
+            if (!var12.isEmpty()) {
+               var10.append("\n\nReported GL debug messages:\n").append(String.join("\n", var12));
+            }
+         } catch (Throwable var13) {
          }
 
          this.window.setWindowed(this.mainRenderTarget.width, this.mainRenderTarget.height);
@@ -609,18 +613,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       TitleScreen.registerTextures(this.textureManager);
       LoadingOverlay.registerTextures(this.textureManager);
       this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
-      List var16 = this.resourcePackRepository.openAllSelected();
-      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var16);
-      ReloadInstance var11 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var16);
+      List var17 = this.resourcePackRepository.openAllSelected();
+      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var17);
+      ReloadInstance var18 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var17);
       GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS);
-      GameLoadCookie var12 = new GameLoadCookie(var15, var1.quickPlay);
-      this.setOverlay(new LoadingOverlay(this, var11, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var12), () -> {
+      GameLoadCookie var19 = new GameLoadCookie(var16, var1.quickPlay);
+      this.setOverlay(new LoadingOverlay(this, var18, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var19), () -> {
             if (SharedConstants.IS_RUNNING_IN_IDE) {
                this.selfTest();
             }
 
             this.reloadStateTracker.finishReload();
-            this.onResourceLoadFinished(var12);
+            this.onResourceLoadFinished(var19);
          }), false));
       this.quickPlayLog = QuickPlayLog.of(var1.quickPlay.path());
       this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
@@ -1174,9 +1178,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.reloadResourcePacks().thenRun(() -> var2.complete((Object)null));
       }
 
-      Runnable var14;
-      while((var14 = (Runnable)this.progressTasks.poll()) != null) {
-         var14.run();
+      Runnable var15;
+      while((var15 = (Runnable)this.progressTasks.poll()) != null) {
+         var15.run();
       }
 
       int var3 = this.deltaTracker.advanceTime(Util.getMillis(), var1);
@@ -1203,7 +1207,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var4.popPush("toasts");
       this.toastManager.update();
       var4.popPush("render");
-      long var15 = Util.getNanos();
+      long var16 = Util.getNanos();
       boolean var7;
       if (!this.getDebugOverlay().showDebugScreen() && !this.metricsRecorder.isRecording()) {
          var7 = false;
@@ -1215,12 +1219,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      RenderSystem.clear(16640);
-      this.mainRenderTarget.bindWrite(true);
+      RenderTarget var8 = this.getMainRenderTarget();
+      RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var8.getColorTexture(), 0, var8.getDepthTexture(), 1.0);
       RenderSystem.setShaderFog(FogParameters.NO_FOG);
-      var4.push("display");
-      RenderSystem.enableCull();
-      var4.popPush("mouse");
+      var4.push("mouse");
       this.mouseHandler.handleAccumulatedMovement();
       var4.pop();
       if (!this.noRender) {
@@ -1230,12 +1232,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       var4.push("blit");
-      this.mainRenderTarget.unbindWrite();
       if (!this.window.isMinimized()) {
-         this.mainRenderTarget.blitToScreen(this.window.getWidth(), this.window.getHeight());
+         var8.blitToScreen();
       }
 
-      this.frameTimeNs = Util.getNanos() - var15;
+      this.frameTimeNs = Util.getNanos() - var16;
       if (var7) {
          TimerQuery.getInstance().ifPresent((var1x) -> this.currentFrameProfile = var1x.endProfile());
       }
@@ -1243,13 +1244,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var4.popPush("updateDisplay");
       if (this.tracyFrameCapture != null) {
          this.tracyFrameCapture.upload();
-         this.tracyFrameCapture.capture(this.mainRenderTarget);
+         this.tracyFrameCapture.capture(var8);
       }
 
       this.window.updateDisplay(this.tracyFrameCapture);
-      int var8 = this.framerateLimitTracker.getFramerateLimit();
-      if (var8 < 260) {
-         RenderSystem.limitDisplayFPS(var8);
+      int var9 = this.framerateLimitTracker.getFramerateLimit();
+      if (var9 < 260) {
+         RenderSystem.limitDisplayFPS(var9);
       }
 
       var4.popPush("yield");
@@ -1260,30 +1261,30 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.pause = this.hasSingleplayerServer() && (this.screen != null && this.screen.isPauseScreen() || this.overlay != null && this.overlay.isPauseScreen()) && !this.singleplayerServer.isPublished();
       this.deltaTracker.updatePauseState(this.pause);
       this.deltaTracker.updateFrozenState(!this.isLevelRunningNormally());
-      long var9 = Util.getNanos();
-      long var11 = var9 - this.lastNanoTime;
+      long var10 = Util.getNanos();
+      long var12 = var10 - this.lastNanoTime;
       if (var7) {
-         this.savedCpuDuration = var11;
+         this.savedCpuDuration = var12;
       }
 
-      this.getDebugOverlay().logFrameDuration(var11);
-      this.lastNanoTime = var9;
+      this.getDebugOverlay().logFrameDuration(var12);
+      this.lastNanoTime = var10;
       var4.push("fpsUpdate");
       if (this.currentFrameProfile != null && this.currentFrameProfile.isDone()) {
          this.gpuUtilization = (double)this.currentFrameProfile.get() * 100.0 / (double)this.savedCpuDuration;
       }
 
       while(Util.getMillis() >= this.lastTime + 1000L) {
-         String var13;
+         String var14;
          if (this.gpuUtilization > 0.0) {
             String var10000 = this.gpuUtilization > 100.0 ? String.valueOf(ChatFormatting.RED) + "100%" : Math.round(this.gpuUtilization) + "%";
-            var13 = " GPU: " + var10000;
+            var14 = " GPU: " + var10000;
          } else {
-            var13 = "";
+            var14 = "";
          }
 
          fps = this.frames;
-         this.fpsString = String.format(Locale.ROOT, "%d fps T: %s%s%s%s B: %d%s", fps, var8 == 260 ? "inf" : var8, (Boolean)this.options.enableVsync().get() ? " vsync " : " ", this.options.graphicsMode().get(), this.options.cloudStatus().get() == CloudStatus.OFF ? "" : (this.options.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius().get(), var13);
+         this.fpsString = String.format(Locale.ROOT, "%d fps T: %s%s%s%s B: %d%s", fps, var9 == 260 ? "inf" : var9, (Boolean)this.options.enableVsync().get() ? " vsync " : " ", this.options.graphicsMode().get(), this.options.cloudStatus().get() == CloudStatus.OFF ? "" : (this.options.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius().get(), var14);
          this.lastTime += 1000L;
          this.frames = 0;
       }
@@ -2273,7 +2274,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var0.setDetail("Window size", (Supplier)(() -> var1 != null ? var1.window.getWidth() + "x" + var1.window.getHeight() : "<not initialized>"));
       var0.setDetail("GFLW Platform", Window::getPlatform);
       var0.setDetail("GL Caps", RenderSystem::getCapsString);
-      var0.setDetail("GL debug messages", (Supplier)(() -> GlDebug.isDebugEnabled() ? String.join("\n", GlDebug.getLastOpenGlDebugMessages()) : "<disabled>"));
+      var0.setDetail("GL debug messages", (Supplier)(() -> {
+         GpuDevice var0 = RenderSystem.tryGetDevice();
+         if (var0 == null) {
+            return "<no renderer available>";
+         } else {
+            return var0.isDebuggingEnabled() ? String.join("\n", var0.getLastDebugMessages()) : "<debugging unavailable>";
+         }
+      }));
       var0.setDetail("Is Modded", (Supplier)(() -> checkModStatus().fullDescription()));
       var0.setDetail("Universe", (Supplier)(() -> var1 != null ? Long.toHexString(var1.canary) : "404"));
       var0.setDetail("Type", "Client (map_client.txt)");
@@ -2301,7 +2309,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var0.setDetail("Locale", String.valueOf(Locale.getDefault()));
       var0.setDetail("System encoding", (Supplier)(() -> System.getProperty("sun.jnu.encoding", "<not set>")));
       var0.setDetail("File encoding", (Supplier)(() -> System.getProperty("file.encoding", "<not set>")));
-      var0.setDetail("CPU", GlUtil::getCpuInfo);
+      var0.setDetail("CPU", GLX::_getCpuInfo);
       return var0;
    }
 
@@ -2603,7 +2611,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
             this.player.yRotO = this.player.getYRot();
             this.player.xRotO = this.player.getXRot();
-            var6.bindWrite(true);
             this.gameRenderer.renderLevel(DeltaTracker.ONE);
 
             try {
@@ -2631,7 +2638,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.window.setHeight(var5);
          var6.resize(var4, var5);
          this.gameRenderer.setPanoramicMode(false);
-         this.getMainRenderTarget().bindWrite(true);
       }
 
       return var12;

@@ -2,6 +2,7 @@ package net.minecraft.commands.arguments.item;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.ImmutableStringReader;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JavaOps;
@@ -14,7 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
-import net.minecraft.util.parsing.packrat.Rule;
+import net.minecraft.util.parsing.packrat.NamedRule;
+import net.minecraft.util.parsing.packrat.Scope;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.util.parsing.packrat.commands.ResourceLocationParseRule;
@@ -43,7 +45,8 @@ public class ComponentPredicateParser {
       Atom var13 = Atom.of("id");
       Atom var14 = Atom.of("tag");
       Dictionary var15 = new Dictionary();
-      var15.put(var1, Term.alternative(Term.sequence(Term.named(var2), StringReaderTerms.character('['), Term.cut(), Term.optional(Term.named(var6)), StringReaderTerms.character(']')), Term.named(var2)), (Rule.SimpleRuleAction)((var2x) -> {
+      NamedRule var16 = var15.put(var13, ResourceLocationParseRule.INSTANCE);
+      NamedRule var17 = var15.put(var1, Term.alternative(Term.sequence(var15.named(var2), StringReaderTerms.character('['), Term.cut(), Term.optional(var15.named(var6)), StringReaderTerms.character(']')), var15.named(var2)), (var2x) -> {
          ImmutableList.Builder var3 = ImmutableList.builder();
          Optional var10000 = (Optional)var2x.getOrThrow(var2);
          Objects.requireNonNull(var3);
@@ -54,47 +57,47 @@ public class ComponentPredicateParser {
          }
 
          return var3.build();
-      }));
-      var15.put(var2, Term.alternative(Term.named(var4), Term.sequence(StringReaderTerms.character('#'), Term.cut(), Term.named(var5)), Term.named(var3)), (Rule.SimpleRuleAction)((var2x) -> Optional.ofNullable(var2x.getAny(var4, var5))));
-      var15.put(var3, StringReaderTerms.character('*'), (Rule.SimpleRuleAction)((var0x) -> Unit.INSTANCE));
-      var15.put(var4, new ElementLookupRule(var13, var0));
-      var15.put(var5, new TagLookupRule(var13, var0));
-      var15.put(var6, Term.sequence(Term.named(var7), Term.optional(Term.sequence(StringReaderTerms.character(','), Term.named(var6)))), (Rule.SimpleRuleAction)((var3x) -> {
+      });
+      var15.put(var2, Term.alternative(var15.named(var4), Term.sequence(StringReaderTerms.character('#'), Term.cut(), var15.named(var5)), var15.named(var3)), (var2x) -> Optional.ofNullable(var2x.getAny(var4, var5)));
+      var15.put(var3, StringReaderTerms.character('*'), (var0x) -> Unit.INSTANCE);
+      var15.put(var4, new ElementLookupRule(var16, var0));
+      var15.put(var5, new TagLookupRule(var16, var0));
+      var15.put(var6, Term.sequence(var15.named(var7), Term.optional(Term.sequence(StringReaderTerms.character(','), var15.named(var6)))), (var3x) -> {
          Object var4 = var0.anyOf((List)var3x.getOrThrow(var7));
          return (List)Optional.ofNullable((List)var3x.get(var6)).map((var1) -> Util.copyAndAdd(var4, var1)).orElse(List.of(var4));
-      }));
-      var15.put(var7, Term.sequence(Term.named(var8), Term.optional(Term.sequence(StringReaderTerms.character('|'), Term.named(var7)))), (Rule.SimpleRuleAction)((var2x) -> {
+      });
+      var15.put(var7, Term.sequence(var15.named(var8), Term.optional(Term.sequence(StringReaderTerms.character('|'), var15.named(var7)))), (var2x) -> {
          Object var3 = var2x.getOrThrow(var8);
          return (List)Optional.ofNullable((List)var2x.get(var7)).map((var1) -> Util.copyAndAdd(var3, var1)).orElse(List.of(var3));
-      }));
-      var15.put(var8, Term.alternative(Term.named(var10), Term.sequence(StringReaderTerms.character('!'), Term.named(var9))), (Rule.SimpleRuleAction)((var2x) -> var2x.getAnyOrThrow(var10, var9)));
-      var15.put(var9, Term.named(var10), (Rule.SimpleRuleAction)((var2x) -> var0.negate(var2x.getOrThrow(var10))));
-      var15.put(var10, Term.alternative(Term.sequence(Term.named(var11), StringReaderTerms.character('='), Term.cut(), Term.named(var14)), Term.sequence(Term.named(var12), StringReaderTerms.character('~'), Term.cut(), Term.named(var14)), Term.named(var11)), (Rule.RuleAction)((var4x, var5x) -> {
-         Object var6 = var5x.get(var12);
+      });
+      var15.put(var8, Term.alternative(var15.named(var10), Term.sequence(StringReaderTerms.character('!'), var15.named(var9))), (var2x) -> var2x.getAnyOrThrow(var10, var9));
+      var15.put(var9, var15.named(var10), (var2x) -> var0.negate(var2x.getOrThrow(var10)));
+      var15.putComplex(var10, Term.alternative(Term.sequence(var15.named(var11), StringReaderTerms.character('='), Term.cut(), var15.named(var14)), Term.sequence(var15.named(var12), StringReaderTerms.character('~'), Term.cut(), var15.named(var14)), var15.named(var11)), (var4x) -> {
+         Scope var5 = var4x.scope();
+         Object var6 = var5.get(var12);
 
          try {
             if (var6 != null) {
-               Dynamic var10 = (Dynamic)var5x.getOrThrow(var14);
-               return Optional.of(var0.createPredicateTest((ImmutableStringReader)var4x.input(), var6, var10));
+               Dynamic var10 = (Dynamic)var5.getOrThrow(var14);
+               return var0.createPredicateTest((ImmutableStringReader)var4x.input(), var6, var10);
             } else {
-               Object var7 = var5x.getOrThrow(var11);
-               Dynamic var8 = (Dynamic)var5x.get(var14);
-               return Optional.of(var8 != null ? var0.createComponentTest((ImmutableStringReader)var4x.input(), var7, var8) : var0.createComponentTest((ImmutableStringReader)var4x.input(), var7));
+               Object var7 = var5.getOrThrow(var11);
+               Dynamic var8 = (Dynamic)var5.get(var14);
+               return var8 != null ? var0.createComponentTest((ImmutableStringReader)var4x.input(), var7, var8) : var0.createComponentTest((ImmutableStringReader)var4x.input(), var7);
             }
          } catch (CommandSyntaxException var9) {
             var4x.errorCollector().store(var4x.mark(), var9);
-            return Optional.empty();
+            return null;
          }
-      }));
-      var15.put(var11, new ComponentLookupRule(var13, var0));
-      var15.put(var12, new PredicateLookupRule(var13, var0));
+      });
+      var15.put(var11, new ComponentLookupRule(var16, var0));
+      var15.put(var12, new PredicateLookupRule(var16, var0));
       var15.put(var14, new TagParseRule(JavaOps.INSTANCE));
-      var15.put(var13, ResourceLocationParseRule.INSTANCE);
-      return new Grammar<List<T>>(var15, var1);
+      return new Grammar<List<T>>(var15, var17);
    }
 
    static class ElementLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, T> {
-      ElementLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
+      ElementLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
@@ -108,7 +111,7 @@ public class ComponentPredicateParser {
    }
 
    static class TagLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, T> {
-      TagLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
+      TagLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
@@ -122,7 +125,7 @@ public class ComponentPredicateParser {
    }
 
    static class ComponentLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, C> {
-      ComponentLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
+      ComponentLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
@@ -136,7 +139,7 @@ public class ComponentPredicateParser {
    }
 
    static class PredicateLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, P> {
-      PredicateLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
+      PredicateLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 

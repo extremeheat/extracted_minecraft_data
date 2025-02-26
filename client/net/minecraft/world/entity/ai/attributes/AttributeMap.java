@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.attributes;
 
 import com.google.common.collect.Multimap;
-import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collection;
@@ -9,16 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
-import org.slf4j.Logger;
 
 public class AttributeMap {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap();
    private final Set<AttributeInstance> attributesToSync = new ObjectOpenHashSet();
    private final Set<AttributeInstance> attributesToUpdate = new ObjectOpenHashSet();
@@ -154,20 +149,8 @@ public class AttributeMap {
 
    public void load(ListTag var1) {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompound(var2);
-         String var4 = var3.getString("id");
-         ResourceLocation var5 = ResourceLocation.tryParse(var4);
-         if (var5 != null) {
-            Util.ifElse(BuiltInRegistries.ATTRIBUTE.get(var5), (var2x) -> {
-               AttributeInstance var3x = this.getInstance(var2x);
-               if (var3x != null) {
-                  var3x.load(var3);
-               }
-
-            }, () -> LOGGER.warn("Ignoring unknown attribute '{}'", var5));
-         } else {
-            LOGGER.warn("Ignoring malformed attribute '{}'", var4);
-         }
+         CompoundTag var3 = var1.getCompoundOrEmpty(var2);
+         var3.read("id", AttributeInstance.TYPE_CODEC).map(this::getInstance).ifPresent((var1x) -> var1x.load(var3));
       }
 
    }

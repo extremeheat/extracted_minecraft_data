@@ -313,7 +313,7 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
 
       public boolean hasNectar() {
-         return this.occupant.entityData.getUnsafe().getBoolean("HasNectar");
+         return this.occupant.entityData.getUnsafe().getBooleanOr("HasNectar", false);
       }
    }
 
@@ -337,7 +337,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var1);
          var10000.forEach(var1::remove);
-         boolean var2 = var1.getBoolean("HasNectar");
+         boolean var2 = var1.getBooleanOr("HasNectar", false);
          return new Occupant(CustomData.of(var1), 0, var2 ? 2400 : 600);
       }
 

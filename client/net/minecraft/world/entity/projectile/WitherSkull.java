@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class WitherSkull extends AbstractHurtingProjectile {
    private static final EntityDataAccessor<Boolean> DATA_DANGEROUS;
+   private static final boolean DEFAULT_DANGEROUS = false;
 
    public WitherSkull(EntityType<? extends WitherSkull> var1, Level var2) {
       super(var1, var2);
@@ -116,7 +117,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setDangerous(var1.getBoolean("dangerous"));
+      this.setDangerous(var1.getBooleanOr("dangerous", false));
    }
 
    static {

@@ -214,7 +214,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    public void loadFromTag(CompoundTag var1, HolderLookup.Provider var2) {
       this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var1) && var1.contains("Items", 9)) {
+      if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.itemStacks, var2);
       }
 

@@ -45,8 +45,8 @@ public abstract class TemplateStructurePiece extends StructurePiece {
    public TemplateStructurePiece(StructurePieceType var1, CompoundTag var2, StructureTemplateManager var3, Function<ResourceLocation, StructurePlaceSettings> var4) {
       super(var1, var2);
       this.setOrientation(Direction.NORTH);
-      this.templateName = var2.getString("Template");
-      this.templatePosition = new BlockPos(var2.getInt("TPX"), var2.getInt("TPY"), var2.getInt("TPZ"));
+      this.templateName = var2.getStringOr("Template", "");
+      this.templatePosition = new BlockPos(var2.getIntOr("TPX", 0), var2.getIntOr("TPY", 0), var2.getIntOr("TPZ", 0));
       ResourceLocation var5 = this.makeTemplateLocation();
       this.template = var3.getOrCreate(var5);
       this.placeSettings = (StructurePlaceSettings)var4.apply(var5);
@@ -72,14 +72,14 @@ public abstract class TemplateStructurePiece extends StructurePiece {
             if (var10.nbt() != null) {
                StructureMode var11 = (StructureMode)var10.nbt().read("mode", StructureMode.LEGACY_CODEC).orElseThrow();
                if (var11 == StructureMode.DATA) {
-                  this.handleDataMarker(var10.nbt().getString("metadata"), var10.pos(), var1, var4, var5);
+                  this.handleDataMarker(var10.nbt().getStringOr("metadata", ""), var10.pos(), var1, var4, var5);
                }
             }
          }
 
          for(StructureTemplate.StructureBlockInfo var18 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW)) {
             if (var18.nbt() != null) {
-               String var12 = var18.nbt().getString("final_state");
+               String var12 = var18.nbt().getStringOr("final_state", "minecraft:air");
                BlockState var13 = Blocks.AIR.defaultBlockState();
 
                try {

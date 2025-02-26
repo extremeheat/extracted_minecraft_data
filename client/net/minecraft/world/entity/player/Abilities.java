@@ -3,6 +3,13 @@ package net.minecraft.world.entity.player;
 import net.minecraft.nbt.CompoundTag;
 
 public class Abilities {
+   private static final boolean DEFAULT_INVULNERABLE = false;
+   private static final boolean DEFAULY_FLYING = false;
+   private static final boolean DEFAULT_MAY_FLY = false;
+   private static final boolean DEFAULT_INSTABUILD = false;
+   private static final boolean DEFAULT_MAY_BUILD = true;
+   private static final float DEFAULT_FLYING_SPEED = 0.05F;
+   private static final float DEFAULT_WALKING_SPEED = 0.1F;
    public boolean invulnerable;
    public boolean flying;
    public boolean mayfly;
@@ -28,22 +35,14 @@ public class Abilities {
    }
 
    public void loadSaveData(CompoundTag var1) {
-      if (var1.contains("abilities", 10)) {
-         CompoundTag var2 = var1.getCompound("abilities");
-         this.invulnerable = var2.getBoolean("invulnerable");
-         this.flying = var2.getBoolean("flying");
-         this.mayfly = var2.getBoolean("mayfly");
-         this.instabuild = var2.getBoolean("instabuild");
-         if (var2.contains("flySpeed", 99)) {
-            this.flyingSpeed = var2.getFloat("flySpeed");
-            this.walkingSpeed = var2.getFloat("walkSpeed");
-         }
-
-         if (var2.contains("mayBuild", 1)) {
-            this.mayBuild = var2.getBoolean("mayBuild");
-         }
-      }
-
+      CompoundTag var2 = var1.getCompoundOrEmpty("abilities");
+      this.invulnerable = var2.getBooleanOr("invulnerable", false);
+      this.flying = var2.getBooleanOr("flying", false);
+      this.mayfly = var2.getBooleanOr("mayfly", false);
+      this.instabuild = var2.getBooleanOr("instabuild", false);
+      this.flyingSpeed = var2.getFloatOr("flySpeed", 0.05F);
+      this.walkingSpeed = var2.getFloatOr("walkSpeed", 0.1F);
+      this.mayBuild = var2.getBooleanOr("mayBuild", true);
    }
 
    public float getFlyingSpeed() {

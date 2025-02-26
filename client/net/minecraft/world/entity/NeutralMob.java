@@ -31,7 +31,7 @@ public interface NeutralMob {
    }
 
    default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
-      this.setRemainingPersistentAngerTime(var2.getInt("AngerTime"));
+      this.setRemainingPersistentAngerTime(var2.getIntOr("AngerTime", 0));
       if (var1 instanceof ServerLevel var3) {
          UUID var4 = (UUID)var2.read("AngryAt", UUIDUtil.CODEC).orElse((Object)null);
          this.setPersistentAngerTarget(var4);

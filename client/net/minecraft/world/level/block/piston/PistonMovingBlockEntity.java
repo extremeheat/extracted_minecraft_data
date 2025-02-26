@@ -33,11 +33,15 @@ public class PistonMovingBlockEntity extends BlockEntity {
    private static final int TICKS_TO_EXTEND = 2;
    private static final double PUSH_OFFSET = 0.01;
    public static final double TICK_MOVEMENT = 0.51;
+   private static final BlockState DEFAULT_BLOCK_STATE;
+   private static final float DEFAULT_PROGRESS = 0.0F;
+   private static final boolean DEFAULT_EXTENDING = false;
+   private static final boolean DEFAULT_SOURCE = false;
    private BlockState movedState;
    private Direction direction;
    private boolean extending;
    private boolean isSourcePiston;
-   private static final ThreadLocal<Direction> NOCLIP = ThreadLocal.withInitial(() -> null);
+   private static final ThreadLocal<Direction> NOCLIP;
    private float progress;
    private float progressO;
    private long lastTicked;
@@ -45,7 +49,11 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    public PistonMovingBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.PISTON, var1, var2);
-      this.movedState = Blocks.AIR.defaultBlockState();
+      this.movedState = DEFAULT_BLOCK_STATE;
+      this.extending = false;
+      this.isSourcePiston = false;
+      this.progress = 0.0F;
+      this.progressO = 0.0F;
    }
 
    public PistonMovingBlockEntity(BlockPos var1, BlockState var2, BlockState var3, Direction var4, boolean var5, boolean var6) {
@@ -170,7 +178,6 @@ public class PistonMovingBlockEntity extends BlockEntity {
    private static void moveEntityByPiston(Direction var0, Entity var1, double var2, Direction var4) {
       NOCLIP.set(var0);
       var1.move(MoverType.PISTON, new Vec3(var2 * (double)var4.getStepX(), var2 * (double)var4.getStepY(), var2 * (double)var4.getStepZ()));
-      var1.applyEffectsFromBlocks();
       NOCLIP.set((Object)null);
    }
 
@@ -313,12 +320,12 @@ public class PistonMovingBlockEntity extends BlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.movedState = (BlockState)var1.read("blockState", BlockState.CODEC, var3).orElse(Blocks.AIR.defaultBlockState());
+      this.movedState = (BlockState)var1.read("blockState", BlockState.CODEC, var3).orElse(DEFAULT_BLOCK_STATE);
       this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN);
-      this.progress = var1.getFloat("progress");
+      this.progress = var1.getFloatOr("progress", 0.0F);
       this.progressO = this.progress;
-      this.extending = var1.getBoolean("extending");
-      this.isSourcePiston = var1.getBoolean("source");
+      this.extending = var1.getBooleanOr("extending", false);
+      this.isSourcePiston = var1.getBooleanOr("source", false);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -368,5 +375,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
          this.movedState = Blocks.AIR.defaultBlockState();
       }
 
+   }
+
+   static {
+      DEFAULT_BLOCK_STATE = Blocks.AIR.defaultBlockState();
+      NOCLIP = ThreadLocal.withInitial(() -> null);
    }
 }

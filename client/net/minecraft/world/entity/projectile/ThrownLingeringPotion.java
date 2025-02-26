@@ -37,6 +37,7 @@ public class ThrownLingeringPotion extends AbstractThrownPotion {
 
       var4.setRadius(3.0F);
       var4.setRadiusOnUse(-0.5F);
+      var4.setDuration(600);
       var4.setWaitTime(10);
       var4.setRadiusPerTick(-var4.getRadius() / (float)var4.getDuration());
       var4.applyComponentsFromItemStack(var2);

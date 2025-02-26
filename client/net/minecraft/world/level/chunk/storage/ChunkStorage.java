@@ -47,7 +47,7 @@ public class ChunkStorage implements AutoCloseable {
          try {
             if (var5 < 1493) {
                var3 = DataFixTypes.CHUNK.update(this.fixerUpper, var3, var5, 1493);
-               if (var3.getCompound("Level").getBoolean("hasLegacyStructureData")) {
+               if ((Boolean)var3.getCompound("Level").flatMap((var0) -> var0.getBoolean("hasLegacyStructureData")).orElse(false)) {
                   LegacyStructureDataHandler var6 = this.getLegacyStructureHandler(var1, var2);
                   var3 = var6.updateFromLegacy(var3);
                }

@@ -53,9 +53,12 @@ public class Ravager extends Raider {
    private static final float STUNNED_COLOR_RED = 0.49803922F;
    public static final int ATTACK_DURATION = 10;
    public static final int STUN_DURATION = 40;
-   private int attackTick;
-   private int stunnedTick;
-   private int roarTick;
+   private static final int DEFAULT_ATTACK_TICK = 0;
+   private static final int DEFAULT_STUN_TICK = 0;
+   private static final int DEFAULT_ROAR_TICK = 0;
+   private int attackTick = 0;
+   private int stunnedTick = 0;
+   private int roarTick = 0;
 
    public Ravager(EntityType<? extends Ravager> var1, Level var2) {
       super(var1, var2);
@@ -98,9 +101,9 @@ public class Ravager extends Raider {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.attackTick = var1.getInt("AttackTick");
-      this.stunnedTick = var1.getInt("StunTick");
-      this.roarTick = var1.getInt("RoarTick");
+      this.attackTick = var1.getIntOr("AttackTick", 0);
+      this.stunnedTick = var1.getIntOr("StunTick", 0);
+      this.roarTick = var1.getIntOr("RoarTick", 0);
    }
 
    public SoundEvent getCelebrateSound() {

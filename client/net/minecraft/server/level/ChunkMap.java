@@ -898,7 +898,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    void forEachBlockTickingChunk(Consumer<LevelChunk> var1) {
-      this.distanceManager.forEachBlockTickingChunks((var2) -> {
+      this.distanceManager.forEachEntityTickingChunk((var2) -> {
          ChunkHolder var4 = (ChunkHolder)this.visibleChunkMap.get(var2);
          if (var4 != null) {
             LevelChunk var5 = var4.getTickingChunk();

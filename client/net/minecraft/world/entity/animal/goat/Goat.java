@@ -65,6 +65,9 @@ public class Goat extends Animal {
    private static final EntityDataAccessor<Boolean> DATA_IS_SCREAMING_GOAT;
    private static final EntityDataAccessor<Boolean> DATA_HAS_LEFT_HORN;
    private static final EntityDataAccessor<Boolean> DATA_HAS_RIGHT_HORN;
+   private static final boolean DEFAULT_IS_SCREAMING = false;
+   private static final boolean DEFAULT_HAS_LEFT_HORN = true;
+   private static final boolean DEFAULT_HAS_RIGHT_HORN = true;
    private boolean isLoweringHead;
    private int lowerHeadTick;
 
@@ -242,9 +245,9 @@ public class Goat extends Animal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setScreamingGoat(var1.getBoolean("IsScreamingGoat"));
-      this.entityData.set(DATA_HAS_LEFT_HORN, var1.getBoolean("HasLeftHorn"));
-      this.entityData.set(DATA_HAS_RIGHT_HORN, var1.getBoolean("HasRightHorn"));
+      this.setScreamingGoat(var1.getBooleanOr("IsScreamingGoat", false));
+      this.entityData.set(DATA_HAS_LEFT_HORN, var1.getBooleanOr("HasLeftHorn", true));
+      this.entityData.set(DATA_HAS_RIGHT_HORN, var1.getBooleanOr("HasRightHorn", true));
    }
 
    public void handleEntityEvent(byte var1) {

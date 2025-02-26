@@ -52,7 +52,7 @@ public interface RandomizableContainer extends Container {
    default boolean tryLoadLootTable(CompoundTag var1) {
       ResourceKey var2 = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
       this.setLootTable(var2);
-      this.setLootTableSeed(var1.getLongOrDefault("LootTableSeed", 0L));
+      this.setLootTableSeed(var1.getLongOr("LootTableSeed", 0L));
       return var2 != null;
    }
 

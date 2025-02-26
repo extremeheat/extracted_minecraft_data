@@ -35,6 +35,7 @@ public class Bat extends AmbientCreature {
    private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
    private static final int FLAG_RESTING = 1;
    private static final TargetingConditions BAT_RESTING_TARGETING;
+   private static final byte DEFAULT_FLAGS = 0;
    public final AnimationState flyAnimationState = new AnimationState();
    public final AnimationState restAnimationState = new AnimationState();
    @Nullable
@@ -192,7 +193,7 @@ public class Bat extends AmbientCreature {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_ID_FLAGS, var1.getByte("BatFlags"));
+      this.entityData.set(DATA_ID_FLAGS, var1.getByteOr("BatFlags", (byte)0));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

@@ -47,7 +47,8 @@ public class LeafLitterBlock extends VegetationBlock implements SegmentableBlock
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return canSupportCenter(var2, var3.below(), Direction.UP);
+      BlockPos var4 = var3.below();
+      return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

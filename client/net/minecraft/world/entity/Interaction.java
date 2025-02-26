@@ -30,6 +30,9 @@ public class Interaction extends Entity implements Attackable, Targeting {
    private static final String TAG_ATTACK = "attack";
    private static final String TAG_INTERACTION = "interaction";
    private static final String TAG_RESPONSE = "response";
+   private static final float DEFAULT_WIDTH = 1.0F;
+   private static final float DEFAULT_HEIGHT = 1.0F;
+   private static final boolean DEFAULT_RESPONSE = false;
    @Nullable
    private PlayerAction attack;
    @Nullable
@@ -47,17 +50,11 @@ public class Interaction extends Entity implements Attackable, Targeting {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.contains("width", 99)) {
-         this.setWidth(var1.getFloat("width"));
-      }
-
-      if (var1.contains("height", 99)) {
-         this.setHeight(var1.getFloat("height"));
-      }
-
+      this.setWidth(var1.getFloatOr("width", 1.0F));
+      this.setHeight(var1.getFloatOr("height", 1.0F));
       this.attack = (PlayerAction)var1.read("attack", Interaction.PlayerAction.CODEC).orElse((Object)null);
       this.interaction = (PlayerAction)var1.read("interaction", Interaction.PlayerAction.CODEC).orElse((Object)null);
-      this.setResponse(var1.getBoolean("response"));
+      this.setResponse(var1.getBooleanOr("response", false));
       this.setBoundingBox(this.makeBoundingBox());
    }
 

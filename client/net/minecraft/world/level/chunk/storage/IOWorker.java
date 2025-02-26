@@ -116,7 +116,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private boolean isOldChunk(CompoundTag var1) {
-      return var1.contains("DataVersion", 99) && var1.getInt("DataVersion") >= 4295 ? var1.contains("blending_data", 10) : true;
+      return var1.getIntOr("DataVersion", 0) < 4295 ? true : var1.getCompound("blending_data").isPresent();
    }
 
    public CompletableFuture<Void> store(ChunkPos var1, @Nullable CompoundTag var2) {

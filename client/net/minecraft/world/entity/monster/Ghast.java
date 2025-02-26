@@ -35,6 +35,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Ghast extends FlyingMob implements Enemy {
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING;
+   private static final byte DEFAULT_EXPLOSION_POWER = 1;
    private int explosionPower = 1;
 
    public Ghast(EntityType<? extends Ghast> var1, Level var2) {
@@ -127,10 +128,7 @@ public class Ghast extends FlyingMob implements Enemy {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("ExplosionPower", 99)) {
-         this.explosionPower = var1.getByte("ExplosionPower");
-      }
-
+      this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
    }
 
    static {

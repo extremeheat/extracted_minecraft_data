@@ -72,6 +72,8 @@ public class Shulker extends AbstractGolem implements Enemy {
    private static final int OTHER_SHULKER_SCAN_RADIUS = 8;
    private static final int OTHER_SHULKER_LIMIT = 5;
    private static final float PEEK_PER_TICK = 0.05F;
+   private static final byte DEFAULT_PEEK = 0;
+   private static final Direction DEFAULT_ATTACH_FACE;
    static final Vector3f FORWARD;
    private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
@@ -126,7 +128,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_ATTACH_FACE_ID, Direction.DOWN);
+      var1.define(DATA_ATTACH_FACE_ID, DEFAULT_ATTACH_FACE);
       var1.define(DATA_PEEK_ID, (byte)0);
       var1.define(DATA_COLOR_ID, (byte)16);
    }
@@ -141,12 +143,9 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setAttachFace((Direction)var1.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));
-      this.entityData.set(DATA_PEEK_ID, var1.getByte("Peek"));
-      if (var1.contains("Color", 99)) {
-         this.entityData.set(DATA_COLOR_ID, var1.getByte("Color"));
-      }
-
+      this.setAttachFace((Direction)var1.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(DEFAULT_ATTACH_FACE));
+      this.entityData.set(DATA_PEEK_ID, var1.getByteOr("Peek", (byte)0));
+      this.entityData.set(DATA_COLOR_ID, var1.getByteOr("Color", (byte)16));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -540,6 +539,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       DATA_ATTACH_FACE_ID = SynchedEntityData.<Direction>defineId(Shulker.class, EntityDataSerializers.DIRECTION);
       DATA_PEEK_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
       DATA_COLOR_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
+      DEFAULT_ATTACH_FACE = Direction.DOWN;
       FORWARD = (Vector3f)Util.make(() -> {
          Vec3i var0 = Direction.SOUTH.getUnitVec3i();
          return new Vector3f((float)var0.getX(), (float)var0.getY(), (float)var0.getZ());

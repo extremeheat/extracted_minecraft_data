@@ -46,9 +46,10 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class WanderingTrader extends AbstractVillager implements Consumable.OverrideConsumeSound {
+   private static final int DEFAULT_DESPAWN_DELAY = 0;
    @Nullable
    private BlockPos wanderTarget;
-   private int despawnDelay;
+   private int despawnDelay = 0;
 
    public WanderingTrader(EntityType<? extends WanderingTrader> var1, Level var2) {
       super(var1, var2);
@@ -124,10 +125,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("DespawnDelay", 99)) {
-         this.despawnDelay = var1.getInt("DespawnDelay");
-      }
-
+      this.despawnDelay = var1.getIntOr("DespawnDelay", 0);
       this.wanderTarget = (BlockPos)var1.read("wander_target", BlockPos.CODEC).orElse((Object)null);
       this.setAge(Math.max(0, this.getAge()));
    }

@@ -8,6 +8,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 
 public class FoodData {
+   private static final int DEFAULT_TICK_TIMER = 0;
+   private static final float DEFAULT_EXHAUSTION_LEVEL = 0.0F;
    private int foodLevel = 20;
    private float saturationLevel = 5.0F;
    private float exhaustionLevel;
@@ -74,13 +76,10 @@ public class FoodData {
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.contains("foodLevel", 99)) {
-         this.foodLevel = var1.getInt("foodLevel");
-         this.tickTimer = var1.getInt("foodTickTimer");
-         this.saturationLevel = var1.getFloat("foodSaturationLevel");
-         this.exhaustionLevel = var1.getFloat("foodExhaustionLevel");
-      }
-
+      this.foodLevel = var1.getIntOr("foodLevel", 20);
+      this.tickTimer = var1.getIntOr("foodTickTimer", 0);
+      this.saturationLevel = var1.getFloatOr("foodSaturationLevel", 5.0F);
+      this.exhaustionLevel = var1.getFloatOr("foodExhaustionLevel", 0.0F);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

@@ -45,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
 public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackMob {
    private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID;
    private static final byte PUMPKIN_FLAG = 16;
+   private static final boolean DEFAULT_PUMPKIN = true;
 
    public SnowGolem(EntityType<? extends SnowGolem> var1, Level var2) {
       super(var1, var2);
@@ -74,10 +75,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("Pumpkin")) {
-         this.setPumpkin(var1.getBoolean("Pumpkin"));
-      }
-
+      this.setPumpkin(var1.getBooleanOr("Pumpkin", true));
    }
 
    public boolean isSensitiveToWater() {

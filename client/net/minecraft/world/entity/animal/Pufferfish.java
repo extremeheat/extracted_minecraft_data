@@ -35,6 +35,7 @@ public class Pufferfish extends AbstractFish {
    public static final int STATE_SMALL = 0;
    public static final int STATE_MID = 1;
    public static final int STATE_FULL = 2;
+   private static final int DEFAULT_PUFF_STATE = 0;
 
    public Pufferfish(EntityType<? extends Pufferfish> var1, Level var2) {
       super(var1, var2);
@@ -69,7 +70,7 @@ public class Pufferfish extends AbstractFish {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setPuffState(Math.min(var1.getInt("PuffState"), 2));
+      this.setPuffState(Math.min(var1.getIntOr("PuffState", 0), 2));
    }
 
    public ItemStack getBucketItemStack() {

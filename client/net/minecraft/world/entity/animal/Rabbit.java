@@ -80,6 +80,7 @@ public class Rabbit extends Animal {
    public static final double FLEE_SPEED_MOD = 2.2;
    public static final double ATTACK_SPEED_MOD = 1.4;
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID;
+   private static final int DEFAULT_MORE_CARROT_TICKS = 0;
    private static final ResourceLocation KILLER_BUNNY;
    private static final int DEFAULT_ATTACK_POWER = 3;
    private static final int EVIL_ATTACK_POWER_INCREMENT = 5;
@@ -90,7 +91,7 @@ public class Rabbit extends Animal {
    private int jumpDuration;
    private boolean wasOnGround;
    private int jumpDelayTicks;
-   int moreCarrotTicks;
+   int moreCarrotTicks = 0;
 
    public Rabbit(EntityType<? extends Rabbit> var1, Level var2) {
       super(var1, var2);
@@ -175,7 +176,7 @@ public class Rabbit extends Animal {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
+      var1.define(DATA_TYPE_ID, Rabbit.Variant.DEFAULT.id);
    }
 
    public void customServerAiStep(ServerLevel var1) {
@@ -280,8 +281,8 @@ public class Rabbit extends Animal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("RabbitType", Rabbit.Variant.LEGACY_CODEC).orElse(Rabbit.Variant.BROWN));
-      this.moreCarrotTicks = var1.getInt("MoreCarrotTicks");
+      this.setVariant((Variant)var1.read("RabbitType", Rabbit.Variant.LEGACY_CODEC).orElse(Rabbit.Variant.DEFAULT));
+      this.moreCarrotTicks = var1.getIntOr("MoreCarrotTicks", 0);
    }
 
    protected SoundEvent getJumpSound() {
@@ -450,7 +451,8 @@ public class Rabbit extends Animal {
       SALT(5, "salt"),
       EVIL(99, "evil");
 
-      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>sparse(Variant::id, values(), BROWN);
+      public static final Variant DEFAULT = BROWN;
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>sparse(Variant::id, values(), DEFAULT);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       /** @deprecated */
       @Deprecated

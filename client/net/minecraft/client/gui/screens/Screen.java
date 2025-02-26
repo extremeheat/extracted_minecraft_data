@@ -422,7 +422,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected void renderBlurredBackground() {
       this.minecraft.gameRenderer.processBlurEffect();
-      this.minecraft.getMainRenderTarget().bindWrite(false);
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {

@@ -38,6 +38,7 @@ public class SignBlockEntity extends BlockEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TEXT_LINE_WIDTH = 90;
    private static final int TEXT_LINE_HEIGHT = 10;
+   private static final boolean DEFAULT_IS_WAXED = false;
    @Nullable
    private UUID playerWhoMayEdit;
    private SignText frontText;
@@ -50,6 +51,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public SignBlockEntity(BlockEntityType var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
+      this.isWaxed = false;
       this.frontText = this.createDefaultSignText();
       this.backText = this.createDefaultSignText();
    }
@@ -105,7 +107,7 @@ public class SignBlockEntity extends BlockEntity {
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
       this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
-      this.isWaxed = var1.getBoolean("is_waxed");
+      this.isWaxed = var1.getBooleanOr("is_waxed", false);
    }
 
    private SignText loadLines(SignText var1) {

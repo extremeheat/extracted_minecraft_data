@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -23,20 +24,11 @@ import oshi.hardware.CentralProcessor;
 @DontObfuscate
 public class GLX {
    private static final Logger LOGGER = LogUtils.getLogger();
+   @Nullable
    private static String cpuInfo;
 
    public GLX() {
       super();
-   }
-
-   public static String getOpenGLVersionString() {
-      RenderSystem.assertOnRenderThread();
-      if (GLFW.glfwGetCurrentContext() == 0L) {
-         return "NO CONTEXT";
-      } else {
-         String var10000 = GlStateManager._getString(7937);
-         return var10000 + " GL version " + GlStateManager._getString(7938) + ", " + GlStateManager._getString(7936);
-      }
    }
 
    public static int _getRefreshRate(Window var0) {
@@ -89,18 +81,18 @@ public class GLX {
       return GLFW.glfwWindowShouldClose(var0.getWindow());
    }
 
-   public static void _init(int var0, boolean var1) {
-      try {
-         CentralProcessor var2 = (new SystemInfo()).getHardware().getProcessor();
-         cpuInfo = String.format(Locale.ROOT, "%dx %s", var2.getLogicalProcessorCount(), var2.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");
-      } catch (Throwable var3) {
+   public static String _getCpuInfo() {
+      if (cpuInfo == null) {
+         cpuInfo = "<unknown>";
+
+         try {
+            CentralProcessor var0 = (new SystemInfo()).getHardware().getProcessor();
+            cpuInfo = String.format(Locale.ROOT, "%dx %s", var0.getLogicalProcessorCount(), var0.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");
+         } catch (Throwable var1) {
+         }
       }
 
-      GlDebug.enableDebugCallback(var0, var1);
-   }
-
-   public static String _getCpuInfo() {
-      return cpuInfo == null ? "<unknown>" : cpuInfo;
+      return cpuInfo;
    }
 
    public static <T> T make(Supplier<T> var0) {

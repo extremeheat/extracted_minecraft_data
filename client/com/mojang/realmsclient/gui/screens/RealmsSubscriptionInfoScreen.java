@@ -72,7 +72,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
       (new Thread("Realms-delete-realm") {
          public void run() {
             try {
-               RealmsClient var1 = RealmsClient.create();
+               RealmsClient var1 = RealmsClient.getOrCreate();
                var1.deleteRealm(RealmsSubscriptionInfoScreen.this.serverData.id);
             } catch (RealmsServiceException var2) {
                RealmsSubscriptionInfoScreen.LOGGER.error("Couldn't delete world", var2);
@@ -85,7 +85,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    }
 
    private void getSubscription(long var1) {
-      RealmsClient var3 = RealmsClient.create();
+      RealmsClient var3 = RealmsClient.getOrCreate();
 
       try {
          Subscription var4 = var3.subscriptionFor(var1);

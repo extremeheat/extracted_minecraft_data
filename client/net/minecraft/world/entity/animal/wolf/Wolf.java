@@ -225,7 +225,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
       VariantUtils.writeVariant(var1, this.getVariant());
       this.addPersistentAngerSaveData(var1);
-      this.getSoundVariant().unwrapKey().ifPresent((var1x) -> var1.putString("sound_variant", var1x.location().toString()));
+      this.getSoundVariant().unwrapKey().ifPresent((var1x) -> var1.store("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT), var1x));
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -233,7 +233,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       VariantUtils.readVariant(var1, this.registryAccess(), Registries.WOLF_VARIANT).ifPresent(this::setVariant);
       this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
       this.readPersistentAngerSaveData(this.level(), var1);
-      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("sound_variant"))).map((var0) -> ResourceKey.create(Registries.WOLF_SOUND_VARIANT, var0)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);
+      var1.read("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);
    }
 
    @Nullable

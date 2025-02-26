@@ -58,9 +58,14 @@ public abstract class Display extends Entity {
    private static final EntityDataAccessor<Float> DATA_HEIGHT_ID;
    private static final EntityDataAccessor<Integer> DATA_GLOW_COLOR_OVERRIDE_ID;
    private static final IntSet RENDER_STATE_IDS;
+   private static final int INITIAL_TRANSFORMATION_INTERPOLATION_DURATION = 0;
+   private static final int INITIAL_TRANSFORMATION_START_INTERPOLATION = 0;
    private static final int INITIAL_POS_ROT_INTERPOLATION_DURATION = 0;
    private static final float INITIAL_SHADOW_RADIUS = 0.0F;
    private static final float INITIAL_SHADOW_STRENGTH = 1.0F;
+   private static final float INITIAL_VIEW_RANGE = 1.0F;
+   private static final float INITIAL_WIDTH = 0.0F;
+   private static final float INITIAL_HEIGHT = 0.0F;
    private static final int NO_GLOW_COLOR_OVERRIDE = -1;
    public static final String TAG_POS_ROT_INTERPOLATION_DURATION = "teleport_duration";
    public static final String TAG_TRANSFORMATION_INTERPOLATION_DURATION = "interpolation_duration";
@@ -189,46 +194,17 @@ public abstract class Display extends Entity {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.setTransformation((Transformation)var1.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.identity()));
-      if (var1.contains("interpolation_duration", 99)) {
-         int var2 = var1.getInt("interpolation_duration");
-         this.setTransformationInterpolationDuration(var2);
-      }
-
-      if (var1.contains("start_interpolation", 99)) {
-         int var3 = var1.getInt("start_interpolation");
-         this.setTransformationInterpolationDelay(var3);
-      }
-
-      if (var1.contains("teleport_duration", 99)) {
-         int var4 = var1.getInt("teleport_duration");
-         this.setPosRotInterpolationDuration(Mth.clamp(var4, 0, 59));
-      }
-
+      this.setTransformationInterpolationDuration(var1.getIntOr("interpolation_duration", 0));
+      this.setTransformationInterpolationDelay(var1.getIntOr("start_interpolation", 0));
+      int var2 = var1.getIntOr("teleport_duration", 0);
+      this.setPosRotInterpolationDuration(Mth.clamp(var2, 0, 59));
       this.setBillboardConstraints((BillboardConstraints)var1.read("billboard", Display.BillboardConstraints.CODEC).orElse(Display.BillboardConstraints.FIXED));
-      if (var1.contains("view_range", 99)) {
-         this.setViewRange(var1.getFloat("view_range"));
-      }
-
-      if (var1.contains("shadow_radius", 99)) {
-         this.setShadowRadius(var1.getFloat("shadow_radius"));
-      }
-
-      if (var1.contains("shadow_strength", 99)) {
-         this.setShadowStrength(var1.getFloat("shadow_strength"));
-      }
-
-      if (var1.contains("width", 99)) {
-         this.setWidth(var1.getFloat("width"));
-      }
-
-      if (var1.contains("height", 99)) {
-         this.setHeight(var1.getFloat("height"));
-      }
-
-      if (var1.contains("glow_color_override", 99)) {
-         this.setGlowColorOverride(var1.getInt("glow_color_override"));
-      }
-
+      this.setViewRange(var1.getFloatOr("view_range", 1.0F));
+      this.setShadowRadius(var1.getFloatOr("shadow_radius", 0.0F));
+      this.setShadowStrength(var1.getFloatOr("shadow_strength", 1.0F));
+      this.setWidth(var1.getFloatOr("width", 0.0F));
+      this.setHeight(var1.getFloatOr("height", 0.0F));
+      this.setGlowColorOverride(var1.getIntOr("glow_color_override", -1));
       this.setBrightnessOverride((Brightness)var1.read("brightness", Brightness.CODEC).orElse((Object)null));
    }
 
@@ -650,6 +626,7 @@ public abstract class Display extends Entity {
       public static final byte FLAG_ALIGN_RIGHT = 16;
       private static final byte INITIAL_TEXT_OPACITY = -1;
       public static final int INITIAL_BACKGROUND = 1073741824;
+      private static final int INITIAL_LINE_WIDTH = 200;
       private static final EntityDataAccessor<Component> DATA_TEXT_ID;
       private static final EntityDataAccessor<Integer> DATA_LINE_WIDTH_ID;
       private static final EntityDataAccessor<Integer> DATA_BACKGROUND_COLOR_ID;
@@ -723,23 +700,14 @@ public abstract class Display extends Entity {
       }
 
       private static byte loadFlag(byte var0, CompoundTag var1, String var2, byte var3) {
-         return var1.getBoolean(var2) ? (byte)(var0 | var3) : var0;
+         return var1.getBooleanOr(var2, false) ? (byte)(var0 | var3) : var0;
       }
 
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
-         if (var1.contains("line_width", 99)) {
-            this.setLineWidth(var1.getInt("line_width"));
-         }
-
-         if (var1.contains("text_opacity", 99)) {
-            this.setTextOpacity(var1.getByte("text_opacity"));
-         }
-
-         if (var1.contains("background", 99)) {
-            this.setBackgroundColor(var1.getInt("background"));
-         }
-
+         this.setLineWidth(var1.getIntOr("line_width", 200));
+         this.setTextOpacity(var1.getByteOr("text_opacity", (byte)-1));
+         this.setBackgroundColor(var1.getIntOr("background", 1073741824));
          byte var2 = loadFlag((byte)0, var1, "shadow", (byte)1);
          var2 = loadFlag(var2, var1, "see_through", (byte)2);
          var2 = loadFlag(var2, var1, "default_background", (byte)4);

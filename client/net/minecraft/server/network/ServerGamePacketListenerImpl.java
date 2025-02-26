@@ -455,11 +455,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             if (var28 && (var32 || !var33)) {
                var2.absSnapTo(var4, var6, var8, var16, var17);
                this.send(ClientboundMoveVehiclePacket.fromEntity(var2));
+               var2.removeLatestMovementRecordingBatch();
                return;
             }
 
             this.player.serverLevel().getChunkSource().move(this.player);
-            var2.recordMovementThroughBlocks(new Vec3(var4, var6, var8), var2.position());
             Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
             this.handlePlayerKnownMovement(var34);
             var2.setOnGroundWithMovement(var1.onGround(), var34);
@@ -1060,7 +1060,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                            this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
                            this.player.doCheckFallDamage(var35.x, var35.y, var35.z, var1.isOnGround());
-                           this.player.recordMovementThroughBlocks(new Vec3(var11, var13, var15), this.player.position());
                            this.handlePlayerKnownMovement(var35);
                            if (var44) {
                               this.player.resetFallDistance();
@@ -1077,6 +1076,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         } else {
                            this.teleport(var11, var13, var15, var3, var4);
                            this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
+                           this.player.removeLatestMovementRecordingBatch();
                         }
                      }
                   }

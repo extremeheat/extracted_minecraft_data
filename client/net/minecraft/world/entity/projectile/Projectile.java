@@ -37,12 +37,14 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Projectile extends Entity implements TraceableEntity {
+   private static final boolean DEFAULT_LEFT_OWNER = false;
+   private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
    @Nullable
    private UUID ownerUUID;
    @Nullable
    private Entity cachedOwner;
-   private boolean leftOwner;
-   private boolean hasBeenShot;
+   private boolean leftOwner = false;
+   private boolean hasBeenShot = false;
    @Nullable
    private Entity lastDeflectedBy;
 
@@ -99,8 +101,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.setOwnerThroughUUID((UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null));
-      this.leftOwner = var1.getBoolean("LeftOwner");
-      this.hasBeenShot = var1.getBoolean("HasBeenShot");
+      this.leftOwner = var1.getBooleanOr("LeftOwner", false);
+      this.hasBeenShot = var1.getBooleanOr("HasBeenShot", false);
    }
 
    protected void setOwnerThroughUUID(@Nullable UUID var1) {

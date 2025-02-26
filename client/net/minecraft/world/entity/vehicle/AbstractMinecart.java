@@ -50,6 +50,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_OFFSET;
    private static final ImmutableMap<Pose, ImmutableList<Integer>> POSE_DISMOUNT_HEIGHTS;
    protected static final float WATER_SLOWDOWN_FACTOR = 0.95F;
+   private static final boolean DEFAULT_FLIPPED_ROTATION = false;
    private boolean onRails;
    private boolean flipped;
    private final MinecartBehavior behavior;
@@ -57,6 +58,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    protected AbstractMinecart(EntityType<?> var1, Level var2) {
       super(var1, var2);
+      this.flipped = false;
       this.blocksBuilding = true;
       if (useExperimentalMovement(var2)) {
          this.behavior = new NewMinecartBehavior(this);
@@ -397,9 +399,9 @@ public abstract class AbstractMinecart extends VehicleEntity {
    protected void readAdditionalSaveData(CompoundTag var1) {
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.setCustomDisplayBlockState(var1.read("DisplayState", BlockState.CODEC, var2));
-      this.setDisplayOffset(var1.getIntOrDefault("DisplayOffset", this.getDefaultDisplayOffset()));
-      this.flipped = var1.getBoolean("FlippedRotation");
-      this.firstTick = var1.getBoolean("HasTicked");
+      this.setDisplayOffset(var1.getIntOr("DisplayOffset", this.getDefaultDisplayOffset()));
+      this.flipped = var1.getBooleanOr("FlippedRotation", false);
+      this.firstTick = var1.getBooleanOr("HasTicked", false);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

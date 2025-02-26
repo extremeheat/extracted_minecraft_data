@@ -33,6 +33,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    public static final int MOVE_ITEM_SPEED = 8;
    public static final int HOPPER_CONTAINER_SIZE = 5;
    private static final int[][] CACHED_SLOTS = new int[54][];
+   private static final int NO_COOLDOWN_TIME = -1;
    private NonNullList<ItemStack> items;
    private int cooldownTime;
    private long tickedGameTime;
@@ -52,7 +53,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          ContainerHelper.loadAllItems(var1, this.items, var2);
       }
 
-      this.cooldownTime = var1.getInt("TransferCooldown");
+      this.cooldownTime = var1.getIntOr("TransferCooldown", -1);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

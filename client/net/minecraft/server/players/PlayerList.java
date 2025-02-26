@@ -220,8 +220,10 @@ public abstract class PlayerList {
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendActivePlayerEffects(var2);
-      var2.loadAndSpawnEnderpearls(var21);
-      var2.loadAndSpawnParentVehicle(var21);
+      var21.ifPresent((var1x) -> {
+         var2.loadAndSpawnEnderPearls(var1x);
+         var2.loadAndSpawnParentVehicle(var1x);
+      });
       var2.initInventoryMenu();
    }
 

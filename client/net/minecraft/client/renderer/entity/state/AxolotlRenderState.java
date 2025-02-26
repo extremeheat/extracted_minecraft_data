@@ -11,7 +11,7 @@ public class AxolotlRenderState extends LivingEntityRenderState {
 
    public AxolotlRenderState() {
       super();
-      this.variant = Axolotl.Variant.LUCY;
+      this.variant = Axolotl.Variant.DEFAULT;
       this.inWaterFactor = 1.0F;
    }
 }

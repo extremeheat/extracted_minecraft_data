@@ -28,11 +28,11 @@ public class VariantUtils {
    }
 
    public static <T> void writeVariant(CompoundTag var0, Holder<T> var1) {
-      var1.unwrapKey().ifPresent((var1x) -> var0.putString("variant", var1x.location().toString()));
+      var1.unwrapKey().ifPresent((var1x) -> var0.store("variant", ResourceLocation.CODEC, var1x.location()));
    }
 
    public static <T> Optional<Holder<T>> readVariant(CompoundTag var0, RegistryAccess var1, ResourceKey<? extends Registry<T>> var2) {
-      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var0.getString("variant"))).map((var1x) -> ResourceKey.create(var2, var1x));
+      Optional var10000 = var0.read("variant", ResourceLocation.CODEC).map((var1x) -> ResourceKey.create(var2, var1x));
       Objects.requireNonNull(var1);
       return var10000.flatMap(var1::get);
    }

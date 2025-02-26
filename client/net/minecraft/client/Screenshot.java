@@ -5,6 +5,8 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
 import java.io.File;
@@ -80,19 +82,20 @@ public class Screenshot {
       if (var4 == null) {
          throw new IllegalStateException("Tried to capture screenshot of an incomplete framebuffer");
       } else {
-         GpuBuffer var5 = new GpuBuffer(BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var2 * var3 * var4.getFormat().pixelSize());
-         var4.copyToBuffer(var5, 0, () -> {
-            try (GpuBuffer.ReadView var5x = var5.read()) {
-               NativeImage var6 = new NativeImage(var2, var3, false);
+         GpuBuffer var5 = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var2 * var3 * var4.getFormat().pixelSize());
+         CommandEncoder var6 = RenderSystem.getDevice().createCommandEncoder();
+         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(var4, var5, 0, () -> {
+            try (GpuBuffer.ReadView var6x = var6.readBuffer(var5)) {
+               NativeImage var7 = new NativeImage(var2, var3, false);
 
-               for(int var7 = 0; var7 < var3; ++var7) {
-                  for(int var8 = 0; var8 < var2; ++var8) {
-                     int var9 = var5x.data().getInt((var8 + var7 * var2) * var4.getFormat().pixelSize());
-                     var6.setPixelABGR(var8, var3 - var7 - 1, var9 | -16777216);
+               for(int var8 = 0; var8 < var3; ++var8) {
+                  for(int var9 = 0; var9 < var2; ++var9) {
+                     int var10 = var6x.data().getInt((var9 + var8 * var2) * var4.getFormat().pixelSize());
+                     var7.setPixelABGR(var9, var3 - var8 - 1, var10 | -16777216);
                   }
                }
 
-               var1.accept(var6);
+               var1.accept(var7);
             }
 
             var5.close();

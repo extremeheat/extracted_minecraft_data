@@ -65,21 +65,16 @@ public class UpgradeData {
 
    public UpgradeData(CompoundTag var1, LevelHeightAccessor var2) {
       this(var2);
-      if (var1.contains("Indices", 10)) {
-         CompoundTag var3 = var1.getCompound("Indices");
-
-         for(int var4 = 0; var4 < this.index.length; ++var4) {
-            String var5 = String.valueOf(var4);
-            if (var3.contains(var5, 11)) {
-               this.index[var4] = var3.getIntArray(var5);
-            }
+      var1.getCompound("Indices").ifPresent((var1x) -> {
+         for(int var2 = 0; var2 < this.index.length; ++var2) {
+            this.index[var2] = (int[])var1x.getIntArray(String.valueOf(var2)).orElse((Object)null);
          }
-      }
 
-      int var8 = var1.getInt("Sides");
+      });
+      int var3 = var1.getIntOr("Sides", 0);
 
       for(Direction8 var7 : Direction8.values()) {
-         if ((var8 & 1 << var7.ordinal()) != 0) {
+         if ((var3 & 1 << var7.ordinal()) != 0) {
             this.sides.add(var7);
          }
       }

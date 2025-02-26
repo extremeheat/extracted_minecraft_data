@@ -3,11 +3,8 @@ package net.minecraft.world.level;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.component.CustomData;
@@ -29,18 +26,6 @@ public interface Spawner {
 
    @Nullable
    static Component getSpawnEntityDisplayName(CustomData var0, String var1) {
-      CompoundTag var2 = var0.getUnsafe();
-      ResourceLocation var3 = getEntityKey(var2, var1);
-      return var3 != null ? (Component)BuiltInRegistries.ENTITY_TYPE.getOptional(var3).map((var0x) -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY)).orElse((Object)null) : null;
-   }
-
-   @Nullable
-   private static ResourceLocation getEntityKey(CompoundTag var0, String var1) {
-      if (var0.contains(var1, 10)) {
-         String var2 = var0.getCompound(var1).getCompound("entity").getString("id");
-         return ResourceLocation.tryParse(var2);
-      } else {
-         return null;
-      }
+      return (Component)var0.getUnsafe().getCompound(var1).flatMap((var0x) -> var0x.getCompound("entity")).flatMap((var0x) -> var0x.read("id", EntityType.CODEC)).map((var0x) -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY)).orElse((Object)null);
    }
 }

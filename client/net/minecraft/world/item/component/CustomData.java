@@ -191,7 +191,7 @@ public final class CustomData implements TooltipProvider {
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      ResourceLocation var5 = ResourceLocation.tryParse(this.tag.getString("id"));
+      ResourceLocation var5 = (ResourceLocation)this.tag.read("id", ResourceLocation.CODEC).orElse((Object)null);
       if (MOB_SPAWNER_ID.equals(var5) || TRIAL_SPAWNER_ID.equals(var5)) {
          Spawner.appendHoverText(this, var2, "SpawnData");
       }
@@ -200,7 +200,7 @@ public final class CustomData implements TooltipProvider {
 
    static {
       CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.FLATTENED_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
-      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
+      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().getString("id").isPresent() ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
       STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
       MOB_SPAWNER_ID = BlockEntityType.MOB_SPAWNER.builtInRegistryHolder().key().location();
       TRIAL_SPAWNER_ID = BlockEntityType.TRIAL_SPAWNER.builtInRegistryHolder().key().location();

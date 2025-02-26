@@ -1,0 +1,153 @@
+package com.mojang.blaze3d.opengl;
+
+import com.mojang.blaze3d.platform.GlConst;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.lwjgl.opengl.ARBVertexAttribBinding;
+import org.lwjgl.opengl.GLCapabilities;
+
+public abstract class VertexArrayCache {
+   public VertexArrayCache() {
+      super();
+   }
+
+   public static VertexArrayCache create(GLCapabilities var0, GlDebugLabel var1) {
+      return (VertexArrayCache)(var0.GL_ARB_vertex_attrib_binding ? new Separate(var1) : new Emulated(var1));
+   }
+
+   public abstract void bindVertexArray(VertexFormat var1, GlBuffer var2);
+
+   static class Emulated extends VertexArrayCache {
+      private final Map<VertexFormat, VertexArray> cache = new HashMap();
+      private final GlDebugLabel debugLabels;
+
+      public Emulated(GlDebugLabel var1) {
+         super();
+         this.debugLabels = var1;
+      }
+
+      public void bindVertexArray(VertexFormat var1, GlBuffer var2) {
+         VertexArray var3 = (VertexArray)this.cache.get(var1);
+         if (var3 == null) {
+            int var4 = GlStateManager._glGenVertexArrays();
+            GlStateManager._glBindVertexArray(var4);
+            GlStateManager._glBindBuffer(34962, var2.handle);
+            setupCombinedAttributes(var1, true);
+            VertexArray var5 = new VertexArray(var4, var1, var2);
+            this.debugLabels.applyLabel(var5);
+            this.cache.put(var1, var5);
+         } else {
+            GlStateManager._glBindVertexArray(var3.id);
+            if (var3.lastVertexBuffer != var2) {
+               GlStateManager._glBindBuffer(34962, var2.handle);
+               var3.lastVertexBuffer = var2;
+               setupCombinedAttributes(var1, false);
+            }
+
+         }
+      }
+
+      private static void setupCombinedAttributes(VertexFormat var0, boolean var1) {
+         int var2 = var0.getVertexSize();
+         List var3 = var0.getElements();
+
+         for(int var4 = 0; var4 < var3.size(); ++var4) {
+            VertexFormatElement var5 = (VertexFormatElement)var3.get(var4);
+            if (var1) {
+               GlStateManager._enableVertexAttribArray(var4);
+            }
+
+            switch (var5.usage()) {
+               case POSITION:
+               case GENERIC:
+                  GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), false, var2, (long)var0.getOffset(var5));
+                  break;
+               case NORMAL:
+               case COLOR:
+                  GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), true, var2, (long)var0.getOffset(var5));
+                  break;
+               case UV:
+                  if (var5.type() == VertexFormatElement.Type.FLOAT) {
+                     GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), true, var2, (long)var0.getOffset(var5));
+                  } else {
+                     GlStateManager._vertexAttribIPointer(var4, var5.count(), GlConst.toGl(var5.type()), var2, (long)var0.getOffset(var5));
+                  }
+            }
+         }
+
+      }
+   }
+
+   static class Separate extends VertexArrayCache {
+      private final Map<VertexFormat, VertexArray> cache = new HashMap();
+      private final GlDebugLabel debugLabels;
+
+      public Separate(GlDebugLabel var1) {
+         super();
+         this.debugLabels = var1;
+      }
+
+      public void bindVertexArray(VertexFormat var1, GlBuffer var2) {
+         VertexArray var3 = (VertexArray)this.cache.get(var1);
+         if (var3 == null) {
+            int var4 = GlStateManager._glGenVertexArrays();
+            GlStateManager._glBindVertexArray(var4);
+            ARBVertexAttribBinding.glBindVertexBuffer(0, var2.handle, 0L, var1.getVertexSize());
+            List var5 = var1.getElements();
+
+            for(int var6 = 0; var6 < var5.size(); ++var6) {
+               VertexFormatElement var7 = (VertexFormatElement)var5.get(var6);
+               GlStateManager._enableVertexAttribArray(var6);
+               switch (var7.usage()) {
+                  case POSITION:
+                  case GENERIC:
+                     ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), false, var1.getOffset(var7));
+                     break;
+                  case NORMAL:
+                  case COLOR:
+                     ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), true, var1.getOffset(var7));
+                     break;
+                  case UV:
+                     if (var7.type() == VertexFormatElement.Type.FLOAT) {
+                        ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), true, var1.getOffset(var7));
+                     } else {
+                        ARBVertexAttribBinding.glVertexAttribIFormat(var6, var7.count(), GlConst.toGl(var7.type()), var1.getOffset(var7));
+                     }
+               }
+
+               ARBVertexAttribBinding.glVertexAttribBinding(var6, 0);
+            }
+
+            VertexArray var8 = new VertexArray(var4, var1, var2);
+            this.debugLabels.applyLabel(var8);
+            this.cache.put(var1, var8);
+         } else {
+            GlStateManager._glBindVertexArray(var3.id);
+            if (var3.lastVertexBuffer != var2) {
+               ARBVertexAttribBinding.glBindVertexBuffer(0, var2.handle, 0L, var1.getVertexSize());
+               var3.lastVertexBuffer = var2;
+            }
+
+         }
+      }
+   }
+
+   public static class VertexArray {
+      final int id;
+      final VertexFormat format;
+      @Nullable
+      GlBuffer lastVertexBuffer;
+
+      VertexArray(int var1, VertexFormat var2, @Nullable GlBuffer var3) {
+         super();
+         this.id = var1;
+         this.format = var2;
+         this.lastVertexBuffer = var3;
+      }
+   }
+}

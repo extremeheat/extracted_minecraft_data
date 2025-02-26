@@ -523,13 +523,12 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public static enum Format {
-      RGBA(4, 6408, true, true, true, false, true, 0, 8, 16, 255, 24, true),
-      RGB(3, 6407, true, true, true, false, false, 0, 8, 16, 255, 255, true),
-      LUMINANCE_ALPHA(2, 33319, false, false, false, true, true, 255, 255, 255, 0, 8, true),
-      LUMINANCE(1, 6403, false, false, false, true, false, 0, 0, 0, 0, 255, true);
+      RGBA(4, true, true, true, false, true, 0, 8, 16, 255, 24, true),
+      RGB(3, true, true, true, false, false, 0, 8, 16, 255, 255, true),
+      LUMINANCE_ALPHA(2, false, false, false, true, true, 255, 255, 255, 0, 8, true),
+      LUMINANCE(1, false, false, false, true, false, 0, 0, 0, 0, 255, true);
 
       final int components;
-      private final int glFormat;
       private final boolean hasRed;
       private final boolean hasGreen;
       private final boolean hasBlue;
@@ -542,28 +541,23 @@ public final class NativeImage implements AutoCloseable {
       private final int alphaOffset;
       private final boolean supportedByStb;
 
-      private Format(final int var3, final int var4, final boolean var5, final boolean var6, final boolean var7, final boolean var8, final boolean var9, final int var10, final int var11, final int var12, final int var13, final int var14, final boolean var15) {
+      private Format(final int var3, final boolean var4, final boolean var5, final boolean var6, final boolean var7, final boolean var8, final int var9, final int var10, final int var11, final int var12, final int var13, final boolean var14) {
          this.components = var3;
-         this.glFormat = var4;
-         this.hasRed = var5;
-         this.hasGreen = var6;
-         this.hasBlue = var7;
-         this.hasLuminance = var8;
-         this.hasAlpha = var9;
-         this.redOffset = var10;
-         this.greenOffset = var11;
-         this.blueOffset = var12;
-         this.luminanceOffset = var13;
-         this.alphaOffset = var14;
-         this.supportedByStb = var15;
+         this.hasRed = var4;
+         this.hasGreen = var5;
+         this.hasBlue = var6;
+         this.hasLuminance = var7;
+         this.hasAlpha = var8;
+         this.redOffset = var9;
+         this.greenOffset = var10;
+         this.blueOffset = var11;
+         this.luminanceOffset = var12;
+         this.alphaOffset = var13;
+         this.supportedByStb = var14;
       }
 
       public int components() {
          return this.components;
-      }
-
-      public int glFormat() {
-         return this.glFormat;
       }
 
       public boolean hasRed() {

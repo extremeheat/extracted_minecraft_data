@@ -444,7 +444,7 @@ public class WorldUpgrader implements AutoCloseable {
             int var5 = ChunkStorage.getVersion(var4);
             ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(var3))).generator();
             CompoundTag var7 = var1.upgradeChunkTag(var3, () -> WorldUpgrader.this.overworldDataStorage, var4, var6.getTypeNameForDataFixer());
-            ChunkPos var8 = new ChunkPos(var7.getInt("xPos"), var7.getInt("zPos"));
+            ChunkPos var8 = new ChunkPos(var7.getIntOr("xPos", 0), var7.getIntOr("zPos", 0));
             if (!var8.equals(var2)) {
                WorldUpgrader.LOGGER.warn("Chunk {} has invalid position {}", var2, var8);
             }
@@ -455,14 +455,17 @@ public class WorldUpgrader implements AutoCloseable {
                var7.remove("Heightmaps");
                var9 = var9 || var7.contains("isLightOn");
                var7.remove("isLightOn");
-               ListTag var10 = var7.getList("sections", 10);
+               ListTag var10 = var7.getListOrEmpty("sections");
 
                for(int var11 = 0; var11 < var10.size(); ++var11) {
-                  CompoundTag var12 = var10.getCompound(var11);
-                  var9 = var9 || var12.contains("BlockLight");
-                  var12.remove("BlockLight");
-                  var9 = var9 || var12.contains("SkyLight");
-                  var12.remove("SkyLight");
+                  Optional var12 = var10.getCompound(var11);
+                  if (!var12.isEmpty()) {
+                     CompoundTag var13 = (CompoundTag)var12.get();
+                     var9 = var9 || var13.contains("BlockLight");
+                     var13.remove("BlockLight");
+                     var9 = var9 || var13.contains("SkyLight");
+                     var13.remove("SkyLight");
+                  }
                }
             }
 

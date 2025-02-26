@@ -56,31 +56,31 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
    }
 
    public void visitString(StringTag var1) {
-      this.result = StringTag.quoteAndEscape(var1.getAsString());
+      this.result = StringTag.quoteAndEscape(var1.value());
    }
 
    public void visitByte(ByteTag var1) {
-      this.result = String.valueOf(var1.getAsNumber()) + "b";
+      this.result = var1.value() + "b";
    }
 
    public void visitShort(ShortTag var1) {
-      this.result = String.valueOf(var1.getAsNumber()) + "s";
+      this.result = var1.value() + "s";
    }
 
    public void visitInt(IntTag var1) {
-      this.result = String.valueOf(var1.getAsNumber());
+      this.result = String.valueOf(var1.value());
    }
 
    public void visitLong(LongTag var1) {
-      this.result = String.valueOf(var1.getAsNumber()) + "L";
+      this.result = var1.value() + "L";
    }
 
    public void visitFloat(FloatTag var1) {
-      this.result = var1.getAsFloat() + "f";
+      this.result = var1.value() + "f";
    }
 
    public void visitDouble(DoubleTag var1) {
-      this.result = var1.getAsDouble() + "d";
+      this.result = var1.value() + "d";
    }
 
    public void visitByteArray(ByteArrayTag var1) {
@@ -202,7 +202,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
    }
 
    protected List<String> getKeys(CompoundTag var1) {
-      HashSet var2 = Sets.newHashSet(var1.getAllKeys());
+      HashSet var2 = Sets.newHashSet(var1.keySet());
       ArrayList var3 = Lists.newArrayList();
       List var4 = (List)KEY_ORDER.get(this.pathString());
       if (var4 != null) {

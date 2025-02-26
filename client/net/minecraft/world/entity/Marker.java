@@ -26,7 +26,7 @@ public class Marker extends Entity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.data = var1.getCompound("data");
+      this.data = var1.getCompoundOrEmpty("data");
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

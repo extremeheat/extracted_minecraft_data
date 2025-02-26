@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
@@ -126,11 +127,28 @@ public class NbtContents implements ComponentContents {
                }
             }).reduce((var1x, var2x) -> var1x.append(var6).append((Component)var2x)).orElseGet(Component::empty);
          } else {
-            Stream var5 = var4.map(Tag::getAsString);
+            Stream var5 = var4.map(NbtContents::asString);
             return (MutableComponent)ComponentUtils.updateForEntity(var1, this.separator, var2, var3).map((var1x) -> (MutableComponent)var5.map(Component::literal).reduce((var1, var2) -> var1.append((Component)var1x).append((Component)var2)).orElseGet(Component::empty)).orElseGet(() -> Component.literal((String)var5.collect(Collectors.joining(", "))));
          }
       } else {
          return Component.empty();
+      }
+   }
+
+   private static String asString(Tag var0) {
+      if (var0 instanceof StringTag var1) {
+         StringTag var10000 = var1;
+
+         try {
+            var5 = var10000.value();
+         } catch (Throwable var4) {
+            throw new MatchException(var4.toString(), var4);
+         }
+
+         String var3 = var5;
+         return var3;
+      } else {
+         return var0.toString();
       }
    }
 

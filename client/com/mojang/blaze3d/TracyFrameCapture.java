@@ -3,12 +3,16 @@ package com.mojang.blaze3d;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.jtracy.TracyClient;
-import javax.annotation.Nullable;
+import java.util.OptionalInt;
+import net.minecraft.client.renderer.RenderPipelines;
 
 public class TracyFrameCapture implements AutoCloseable {
    private static final int MAX_WIDTH = 320;
@@ -18,16 +22,17 @@ public class TracyFrameCapture implements AutoCloseable {
    private int targetHeight;
    private int width;
    private int height;
-   private final RenderTarget frameBuffer = new TextureTarget("Tracy Frame Capture", 320, 180, false);
+   private GpuTexture frameBuffer;
    private final GpuBuffer pixelbuffer;
-   @Nullable
-   private GpuFence fence;
    private int lastCaptureDelay;
    private boolean capturedThisFrame;
+   private Status status;
 
    public TracyFrameCapture() {
       super();
-      this.pixelbuffer = new GpuBuffer(BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, 0);
+      this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
+      this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", TextureFormat.RGBA8, 320, 180, 1);
+      this.pixelbuffer = RenderSystem.getDevice().createBuffer(() -> "Tracy Frame Capture buffer", BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, 0);
    }
 
    private void resize(int var1, int var2) {
@@ -47,18 +52,15 @@ public class TracyFrameCapture implements AutoCloseable {
       if (this.width != var1 || this.height != var2) {
          this.width = var1;
          this.height = var2;
-         this.frameBuffer.resize(var1, var2);
-         this.pixelbuffer.resize(var1 * var2 * 4);
-         if (this.fence != null) {
-            this.fence.close();
-            this.fence = null;
-         }
+         this.frameBuffer.close();
+         this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", TextureFormat.RGBA8, var1, var2, 1);
+         RenderSystem.getDevice().createCommandEncoder().resizeBuffer(this.pixelbuffer, var1 * var2 * 4);
       }
 
    }
 
    public void capture(RenderTarget var1) {
-      if (this.fence == null && !this.capturedThisFrame) {
+      if (this.status == TracyFrameCapture.Status.WAITING_FOR_CAPTURE && !this.capturedThisFrame && var1.getColorTexture() != null) {
          this.capturedThisFrame = true;
          if (var1.width != this.targetWidth || var1.height != this.targetHeight) {
             this.targetWidth = var1.width;
@@ -66,30 +68,31 @@ public class TracyFrameCapture implements AutoCloseable {
             this.resize(this.targetWidth, this.targetHeight);
          }
 
-         GlStateManager._glBindFramebuffer(36009, this.frameBuffer.frameBufferId);
-         GlStateManager._glBindFramebuffer(36008, var1.frameBufferId);
-         GlStateManager._glBlitFrameBuffer(0, 0, var1.width, var1.height, 0, 0, this.width, this.height, 16384, 9729);
-         GlStateManager._glBindFramebuffer(36008, 0);
-         GlStateManager._glBindFramebuffer(36009, 0);
-         this.pixelbuffer.bind();
-         GlStateManager._glBindFramebuffer(36008, this.frameBuffer.frameBufferId);
-         GlStateManager._readPixels(0, 0, this.width, this.height, 6408, 5121, 0L);
-         GlStateManager._glBindFramebuffer(36008, 0);
-         this.fence = new GpuFence();
+         this.status = TracyFrameCapture.Status.WAITING_FOR_COPY;
+         CommandEncoder var2 = RenderSystem.getDevice().createCommandEncoder();
+
+         try (RenderPass var3 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(this.frameBuffer, OptionalInt.empty())) {
+            RenderSystem.AutoStorageIndexBuffer var4 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            var3.setPipeline(RenderPipelines.TRACY_BLIT);
+            var3.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer(() -> "Tracy vertex buffer"));
+            var3.setIndexBuffer(var4.getBuffer(6), var4.type());
+            var3.bindSampler("InSampler", var1.getColorTexture());
+            var3.drawIndexed(0, 6);
+         }
+
+         var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
          this.lastCaptureDelay = 0;
       }
    }
 
    public void upload() {
-      if (this.fence != null) {
-         if (this.fence.awaitCompletion(0L)) {
-            this.fence = null;
+      if (this.status == TracyFrameCapture.Status.WAITING_FOR_UPLOAD) {
+         this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
 
-            try (GpuBuffer.ReadView var1 = this.pixelbuffer.read()) {
-               TracyClient.frameImage(var1.data(), this.width, this.height, this.lastCaptureDelay, true);
-            }
-
+         try (GpuBuffer.ReadView var1 = RenderSystem.getDevice().createCommandEncoder().readBuffer(this.pixelbuffer)) {
+            TracyClient.frameImage(var1.data(), this.width, this.height, this.lastCaptureDelay, true);
          }
+
       }
    }
 
@@ -100,12 +103,21 @@ public class TracyFrameCapture implements AutoCloseable {
    }
 
    public void close() {
-      if (this.fence != null) {
-         this.fence.close();
-         this.fence = null;
+      this.frameBuffer.close();
+      this.pixelbuffer.close();
+   }
+
+   static enum Status {
+      WAITING_FOR_CAPTURE,
+      WAITING_FOR_COPY,
+      WAITING_FOR_UPLOAD;
+
+      private Status() {
       }
 
-      this.pixelbuffer.close();
-      this.frameBuffer.destroyBuffers();
+      // $FF: synthetic method
+      private static Status[] $values() {
+         return new Status[]{WAITING_FOR_CAPTURE, WAITING_FOR_COPY, WAITING_FOR_UPLOAD};
+      }
    }
 }

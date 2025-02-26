@@ -86,6 +86,7 @@ public class Axolotl extends Animal implements Bucketable {
    public static final String VARIANT_TAG = "Variant";
    private static final int REHYDRATE_AIR_SUPPLY = 1800;
    private static final int REGEN_BUFF_MAX_DURATION = 2400;
+   private static final boolean DEFAULT_FROM_BUCKET = false;
    public final BinaryAnimator playingDeadAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
    public final BinaryAnimator inWaterAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
    public final BinaryAnimator onGroundAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
@@ -118,8 +119,8 @@ public class Axolotl extends Animal implements Bucketable {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("Variant", Axolotl.Variant.LEGACY_CODEC).orElse(Axolotl.Variant.LUCY));
-      this.setFromBucket(var1.getBoolean("FromBucket"));
+      this.setVariant((Variant)var1.read("Variant", Axolotl.Variant.LEGACY_CODEC).orElse(Axolotl.Variant.DEFAULT));
+      this.setFromBucket(var1.getBooleanOr("FromBucket", false));
    }
 
    public void playAmbientSound() {
@@ -353,14 +354,8 @@ public class Axolotl extends Animal implements Bucketable {
 
    public void loadFromBucketTag(CompoundTag var1) {
       Bucketable.loadDefaultDataFromBucketTag(this, var1);
-      if (var1.contains("Age")) {
-         this.setAge(var1.getInt("Age"));
-      }
-
-      if (var1.contains("HuntingCooldown")) {
-         this.getBrain().setMemoryWithExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN, true, var1.getLong("HuntingCooldown"));
-      }
-
+      this.setAge(var1.getIntOr("Age", 0));
+      var1.getLong("HuntingCooldown").ifPresentOrElse((var2) -> this.getBrain().setMemoryWithExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN, true, var1.getLongOr("HuntingCooldown", 0L)), () -> this.getBrain().setMemory(MemoryModuleType.HAS_HUNTING_COOLDOWN, Optional.empty()));
    }
 
    public ItemStack getBucketItemStack() {
@@ -494,6 +489,7 @@ public class Axolotl extends Animal implements Bucketable {
       CYAN(3, "cyan", true),
       BLUE(4, "blue", false);
 
+      public static final Variant DEFAULT = LUCY;
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);

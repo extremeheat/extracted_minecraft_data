@@ -34,6 +34,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
    public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", var0));
    private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.resource_or_id.invalid"));
+   private static final TagParser<Object> JAVA_OPS_PARSER;
    private final HolderLookup.Provider registryLookup;
    private final boolean hasRegistry;
    private final Codec<Holder<T>> codec;
@@ -76,24 +77,24 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    @Nullable
    public Holder<T> parse(StringReader var1) throws CommandSyntaxException {
       RegistryOps var2 = this.registryLookup.createSerializationContext(JavaOps.INSTANCE);
-      Dynamic var3 = parseInlineOrId(var2, var1);
+      Dynamic var3 = parseInlineOrId(var2, JAVA_OPS_PARSER, var1);
       return !this.hasRegistry ? null : (Holder)this.codec.parse(var3).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
    }
 
    @VisibleForTesting
-   static <T> Dynamic<T> parseInlineOrId(DynamicOps<T> var0, StringReader var1) throws CommandSyntaxException {
-      int var2 = var1.getCursor();
-      Object var3 = TagParser.parseAsArgument(var0, var1);
-      if (hasConsumedWholeArg(var1)) {
-         return new Dynamic(var0, var3);
+   static <T> Dynamic<T> parseInlineOrId(DynamicOps<T> var0, TagParser<T> var1, StringReader var2) throws CommandSyntaxException {
+      int var3 = var2.getCursor();
+      Object var4 = var1.parseAsArgument(var2);
+      if (hasConsumedWholeArg(var2)) {
+         return new Dynamic(var0, var4);
       } else {
-         var1.setCursor(var2);
-         ResourceLocation var4 = ResourceLocation.read(var1);
-         if (hasConsumedWholeArg(var1)) {
-            return new Dynamic(var0, var0.createString(var4.toString()));
+         var2.setCursor(var3);
+         ResourceLocation var5 = ResourceLocation.read(var2);
+         if (hasConsumedWholeArg(var2)) {
+            return new Dynamic(var0, var0.createString(var5.toString()));
          } else {
-            var1.setCursor(var2);
-            throw ERROR_INVALID.createWithContext(var1);
+            var2.setCursor(var3);
+            throw ERROR_INVALID.createWithContext(var2);
          }
       }
    }
@@ -110,6 +111,10 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    @Nullable
    public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
+   }
+
+   static {
+      JAVA_OPS_PARSER = TagParser.<Object>create(JavaOps.INSTANCE);
    }
 
    public static class LootTableArgument extends ResourceOrIdArgument<LootTable> {

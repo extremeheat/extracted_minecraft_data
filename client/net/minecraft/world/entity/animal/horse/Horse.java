@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.SoundType;
 public class Horse extends AbstractHorse {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT;
    private static final EntityDimensions BABY_DIMENSIONS;
+   private static final int DEFAULT_VARIANT = 0;
 
    public Horse(EntityType<? extends Horse> var1, Level var2) {
       super(var1, var2);
@@ -68,7 +69,7 @@ public class Horse extends AbstractHorse {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setTypeVariant(var1.getInt("Variant"));
+      this.setTypeVariant(var1.getIntOr("Variant", 0));
    }
 
    private void setTypeVariant(int var1) {

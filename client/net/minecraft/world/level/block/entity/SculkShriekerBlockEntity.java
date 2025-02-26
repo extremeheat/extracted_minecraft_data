@@ -53,7 +53,8 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       var0.put(3, SoundEvents.WARDEN_NEARBY_CLOSEST);
       var0.put(4, SoundEvents.WARDEN_LISTENING_ANGRY);
    });
-   private int warningLevel;
+   private static final int DEFAULT_WARNING_LEVEL = 0;
+   private int warningLevel = 0;
    private final VibrationSystem.User vibrationUser = new VibrationUser();
    private VibrationSystem.Data vibrationData = new VibrationSystem.Data();
    private final VibrationSystem.Listener vibrationListener = new VibrationSystem.Listener(this);
@@ -72,10 +73,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("warning_level", 99)) {
-         this.warningLevel = var1.getInt("warning_level");
-      }
-
+      this.warningLevel = var1.getIntOr("warning_level", 0);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var3).orElseGet(VibrationSystem.Data::new);
    }

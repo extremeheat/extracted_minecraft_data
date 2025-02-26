@@ -2,19 +2,21 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.shaders.Uniform;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
@@ -31,8 +33,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -175,7 +180,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
 
       this.entityOutlineTarget = new TextureTarget("Entity Outline", this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), true);
-      this.entityOutlineTarget.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
    }
 
    @Nullable
@@ -195,7 +199,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public void doEntityOutline() {
       if (this.shouldShowEntityOutlines()) {
-         this.entityOutlineTarget.blitAndBlendToScreen();
+         this.entityOutlineTarget.blitAndBlendToTexture(this.minecraft.getMainRenderTarget().getColorTexture());
       }
 
    }
@@ -447,8 +451,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       FramePass var31 = var26.addPass("clear");
       this.targets.main = var31.<RenderTarget>readsAndWrites(this.targets.main);
       var31.executes(() -> {
-         RenderSystem.clearColor(var21.x, var21.y, var21.z, 0.0F);
-         RenderSystem.clear(16640);
+         RenderTarget var2 = this.minecraft.getMainRenderTarget();
+         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var2.getColorTexture(), ARGB.colorFromFloat(0.0F, var21.x, var21.y, var21.z), var2.getDepthTexture(), 1.0);
       });
       if (!var20) {
          this.addSkyPass(var26, var4, var8, var23);
@@ -457,7 +461,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.addMainPass(var26, var18, var4, var6, var7, var22, var3, var24, var2, var9);
       PostChain var32 = this.minecraft.getShaderManager().getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
       if (var24 && var32 != null) {
-         var32.addToFrame(var26, var27, var28, this.targets);
+         var32.addToFrame(var26, var27, var28, this.targets, (Consumer)null);
       }
 
       this.addParticlesPass(var26, var4, var8, var22);
@@ -473,7 +477,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       this.addWeatherPass(var26, var4.getPosition(), var8, var22);
       if (var30 != null) {
-         var30.addToFrame(var26, var27, var28, this.targets);
+         var30.addToFrame(var26, var27, var28, this.targets, (Consumer)null);
       }
 
       this.addLateDebugPass(var26, var10, var22);
@@ -487,12 +491,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             var9.pop();
          }
       });
-      this.minecraft.getMainRenderTarget().bindWrite(false);
       this.visibleEntities.clear();
       this.targets.clear();
       var25.popMatrix();
-      RenderSystem.depthMask(true);
-      RenderSystem.disableBlend();
       RenderSystem.setShaderFog(FogParameters.NO_FOG);
    }
 
@@ -538,26 +539,24 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
          if (var14 != null) {
             ((RenderTarget)var14.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
-            ((RenderTarget)var12.get()).bindWrite(false);
          }
 
          if (this.shouldShowEntityOutlines() && var15 != null) {
-            ((RenderTarget)var15.get()).setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            ((RenderTarget)var15.get()).clear();
-            ((RenderTarget)var12.get()).bindWrite(false);
+            RenderTarget var21 = (RenderTarget)var15.get();
+            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var21.getColorTexture(), 0, var21.getDepthTexture(), 1.0);
          }
 
-         PoseStack var21 = new PoseStack();
+         PoseStack var24 = new PoseStack();
          MultiBufferSource.BufferSource var22 = this.renderBuffers.bufferSource();
          MultiBufferSource.BufferSource var23 = this.renderBuffers.crumblingBufferSource();
          var10.popPush("entities");
-         this.renderEntities(var21, var22, var3, var9, this.visibleEntities);
+         this.renderEntities(var24, var22, var3, var9, this.visibleEntities);
          var22.endLastBatch();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var24);
          var10.popPush("blockentities");
-         this.renderBlockEntities(var21, var22, var23, var3, var13x);
+         this.renderBlockEntities(var24, var22, var23, var3, var13x);
          var22.endLastBatch();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var24);
          var22.endBatch(RenderType.solid());
          var22.endBatch(RenderType.endPortal());
          var22.endBatch(RenderType.endGateway());
@@ -570,13 +569,13 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var22.endBatch(Sheets.chestSheet());
          this.renderBuffers.outlineBufferSource().endOutlineBatch();
          if (var7) {
-            this.renderBlockOutline(var3, var22, var21, false);
+            this.renderBlockOutline(var3, var22, var24, false);
          }
 
          var10.popPush("debug");
-         this.minecraft.debugRenderer.render(var21, var2, var22, var15x, var17, var19);
+         this.minecraft.debugRenderer.render(var24, var2, var22, var15x, var17, var19);
          var22.endLastBatch();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var24);
          var22.endBatch(Sheets.translucentItemSheet());
          var22.endBatch(Sheets.bannerSheet());
          var22.endBatch(Sheets.shieldSheet());
@@ -585,9 +584,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var22.endBatch(RenderType.glintTranslucent());
          var22.endBatch(RenderType.entityGlint());
          var10.popPush("destroyProgress");
-         this.renderBlockDestroyAnimation(var21, var3, var23);
+         this.renderBlockDestroyAnimation(var24, var3, var23);
          var23.endBatch();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var24);
          var22.endBatch(RenderType.waterMask());
          var22.endBatch();
          if (var13 != null) {
@@ -599,7 +598,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var10.popPush("string");
          this.renderSectionLayer(RenderType.tripwire(), var15x, var17, var19, var4, var5);
          if (var7) {
-            this.renderBlockOutline(var3, var22, var21, true);
+            this.renderBlockOutline(var3, var22, var24, true);
          }
 
          var22.endBatch();
@@ -668,12 +667,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       ResourceHandle var5 = this.targets.main;
       var4.executes(() -> {
          RenderSystem.setShaderFog(var3);
-         ((RenderTarget)var5.get()).bindWrite(false);
-         PoseStack var4 = new PoseStack();
-         MultiBufferSource.BufferSource var5x = this.renderBuffers.bufferSource();
-         this.minecraft.debugRenderer.renderAfterTranslucents(var4, var5x, var2.x, var2.y, var2.z);
-         var5x.endLastBatch();
-         this.checkPoseStack(var4);
+         PoseStack var3x = new PoseStack();
+         MultiBufferSource.BufferSource var4 = this.renderBuffers.bufferSource();
+         this.minecraft.debugRenderer.renderAfterTranslucents(var3x, var4, var2.x, var2.y, var2.z);
+         var4.endLastBatch();
+         this.checkPoseStack(var3x);
       });
    }
 
@@ -891,14 +889,19 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       boolean var11 = var1 != RenderType.translucent();
       ObjectListIterator var12 = this.visibleSections.listIterator(var11 ? 0 : this.visibleSections.size());
       var1.setupRenderState();
-      CompiledShaderProgram var13 = var1.getCompiledShaderProgram();
-      if (var13 == null) {
-         var1.clearRenderState();
-         var10.close();
-      } else {
-         var13.setDefaultUniforms(VertexFormat.Mode.QUADS, var8, var9, this.minecraft.getWindow());
-         var13.apply();
-         Uniform var14 = var13.MODEL_OFFSET;
+      RenderPipeline var13 = var1.getRenderPipeline();
+
+      try (RenderPass var14 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1.getRenderTarget().getColorTexture(), OptionalInt.empty(), var1.getRenderTarget().getDepthTexture(), OptionalDouble.empty())) {
+         var14.setPipeline(var13);
+
+         for(int var15 = 0; var15 < 12; ++var15) {
+            GpuTexture var16 = RenderSystem.getShaderTexture(var15);
+            if (var16 != null) {
+               var14.bindSampler("Sampler" + var15, var16);
+            }
+         }
+
+         ArrayList var23 = new ArrayList();
 
          while(true) {
             if (var11) {
@@ -909,29 +912,30 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                break;
             }
 
-            SectionRenderDispatcher.RenderSection var15 = var11 ? (SectionRenderDispatcher.RenderSection)var12.next() : (SectionRenderDispatcher.RenderSection)var12.previous();
-            if (!var15.getCompiled().isEmpty(var1)) {
-               VertexBuffer var16 = var15.getBuffer(var1);
-               BlockPos var17 = var15.getRenderOrigin();
-               if (var14 != null) {
-                  var14.set((float)((double)var17.getX() - var2), (float)((double)var17.getY() - var4), (float)((double)var17.getZ() - var6));
-                  var14.upload();
+            SectionRenderDispatcher.RenderSection var24 = var11 ? (SectionRenderDispatcher.RenderSection)var12.next() : (SectionRenderDispatcher.RenderSection)var12.previous();
+            SectionRenderDispatcher.SectionBuffers var17 = var24.getBuffers(var1);
+            if (!var24.getCompiled().isEmpty(var1) && var17 != null) {
+               GpuBuffer var18;
+               VertexFormat.IndexType var19;
+               if (var17.getIndexBuffer() == null) {
+                  RenderSystem.AutoStorageIndexBuffer var20 = RenderSystem.getSequentialBuffer(var1.mode());
+                  var18 = var20.getBuffer(var17.getIndexCount());
+                  var19 = var20.type();
+               } else {
+                  var18 = var17.getIndexBuffer();
+                  var19 = var17.getIndexType();
                }
 
-               var16.bind();
-               var16.draw();
+               BlockPos var25 = var24.getRenderOrigin();
+               var23.add(new RenderPass.Draw(0, var17.getVertexBuffer(), var18, var19, 0, var17.getIndexCount(), (var7) -> var7.upload("ModelOffset", (float)((double)var25.getX() - var2), (float)((double)var25.getY() - var4), (float)((double)var25.getZ() - var6))));
             }
          }
 
-         if (var14 != null) {
-            var14.set(0.0F, 0.0F, 0.0F);
-         }
-
-         var13.clear();
-         VertexBuffer.unbind();
-         var10.close();
-         var1.clearRenderState();
+         var14.drawMultipleIndexed(var23);
       }
+
+      var10.close();
+      var1.clearRenderState();
    }
 
    public void captureFrustum() {

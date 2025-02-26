@@ -53,6 +53,7 @@ import net.minecraft.world.phys.Vec3;
 public class Chicken extends Animal {
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final EntityDataAccessor<Holder<ChickenVariant>> DATA_VARIANT_ID;
+   private static final boolean DEFAULT_CHICKEN_JOCKEY = false;
    public float flap;
    public float flapSpeed;
    public float oFlapSpeed;
@@ -60,7 +61,7 @@ public class Chicken extends Animal {
    public float flapping = 1.0F;
    private float nextFlap = 1.0F;
    public int eggTime;
-   public boolean isChickenJockey;
+   public boolean isChickenJockey = false;
 
    public Chicken(EntityType<? extends Chicken> var1, Level var2) {
       super(var1, var2);
@@ -172,11 +173,8 @@ public class Chicken extends Animal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.isChickenJockey = var1.getBoolean("IsChickenJockey");
-      if (var1.contains("EggLayTime")) {
-         this.eggTime = var1.getInt("EggLayTime");
-      }
-
+      this.isChickenJockey = var1.getBooleanOr("IsChickenJockey", false);
+      var1.getInt("EggLayTime").ifPresent((var1x) -> this.eggTime = var1x);
       VariantUtils.readVariant(var1, this.registryAccess(), Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
    }
 

@@ -46,11 +46,13 @@ public class ItemParser {
    static final Function<SuggestionsBuilder, CompletableFuture<Suggestions>> SUGGEST_NOTHING = SuggestionsBuilder::buildFuture;
    final HolderLookup.RegistryLookup<Item> items;
    final RegistryOps<Object> registryOps;
+   final TagParser<Object> tagParser;
 
    public ItemParser(HolderLookup.Provider var1) {
       super();
       this.items = var1.lookupOrThrow(Registries.ITEM);
       this.registryOps = var1.<Object>createSerializationContext(JavaOps.INSTANCE);
+      this.tagParser = TagParser.<Object>create(this.registryOps);
    }
 
    public ItemResult parse(StringReader var1) throws CommandSyntaxException {
@@ -165,7 +167,7 @@ public class ItemParser {
                this.reader.expect('=');
                this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
                this.reader.skipWhitespace();
-               this.readComponent(ItemParser.this.registryOps, var2);
+               this.readComponent(ItemParser.this.tagParser, ItemParser.this.registryOps, var2);
                this.reader.skipWhitespace();
             }
 
@@ -202,13 +204,13 @@ public class ItemParser {
          }
       }
 
-      private <T, O> void readComponent(RegistryOps<O> var1, DataComponentType<T> var2) throws CommandSyntaxException {
-         int var3 = this.reader.getCursor();
-         Object var4 = TagParser.parseAsArgument(var1, this.reader);
-         DataResult var5 = var2.codecOrThrow().parse(var1, var4);
-         this.visitor.visitComponent(var2, var5.getOrThrow((var3x) -> {
-            this.reader.setCursor(var3);
-            return ItemParser.ERROR_MALFORMED_COMPONENT.createWithContext(this.reader, var2.toString(), var3x);
+      private <T, O> void readComponent(TagParser<O> var1, RegistryOps<O> var2, DataComponentType<T> var3) throws CommandSyntaxException {
+         int var4 = this.reader.getCursor();
+         Object var5 = var1.parseAsArgument(this.reader);
+         DataResult var6 = var3.codecOrThrow().parse(var2, var5);
+         this.visitor.visitComponent(var3, var6.getOrThrow((var3x) -> {
+            this.reader.setCursor(var4);
+            return ItemParser.ERROR_MALFORMED_COMPONENT.createWithContext(this.reader, var3.toString(), var3x);
          }));
       }
 

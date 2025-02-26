@@ -10,16 +10,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.util.parsing.packrat.Atom;
+import net.minecraft.util.parsing.packrat.DelayedException;
 import net.minecraft.util.parsing.packrat.Dictionary;
 import net.minecraft.util.parsing.packrat.ErrorCollector;
 import net.minecraft.util.parsing.packrat.ErrorEntry;
+import net.minecraft.util.parsing.packrat.NamedRule;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.SuggestionSupplier;
 
-public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
-   public Grammar(Dictionary<StringReader> var1, Atom<T> var2) {
+public record Grammar<T>(Dictionary<StringReader> rules, NamedRule<StringReader, T> top) implements CommandArgumentParser<T> {
+   public Grammar(Dictionary<StringReader> var1, NamedRule<StringReader, T> var2) {
       super();
+      var1.checkAllBound();
       this.rules = var1;
       this.top = var2;
    }
@@ -30,35 +32,41 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
 
    public T parseForCommands(StringReader var1) throws CommandSyntaxException {
       ErrorCollector.LongestOnly var2 = new ErrorCollector.LongestOnly();
-      StringReaderParserState var3 = new StringReaderParserState(this.rules(), var2, var1);
+      StringReaderParserState var3 = new StringReaderParserState(var2, var1);
       Optional var4 = this.parse(var3);
       if (var4.isPresent()) {
          return (T)var4.get();
       } else {
-         List var5 = var2.entries().stream().mapMulti((var0, var1x) -> {
-            Object var3 = var0.reason();
-            if (var3 instanceof Exception var2) {
-               var1x.accept(var2);
+         List var5 = var2.entries();
+         List var6 = var5.stream().mapMulti((var1x, var2x) -> {
+            Object var5 = var1x.reason();
+            if (var5 instanceof DelayedException var3) {
+               var2x.accept(var3.create(var1.getString(), var1x.cursor()));
+            } else {
+               var5 = var1x.reason();
+               if (var5 instanceof Exception var4) {
+                  var2x.accept(var4);
+               }
             }
 
          }).toList();
 
-         for(Exception var7 : var5) {
-            if (var7 instanceof CommandSyntaxException) {
-               CommandSyntaxException var8 = (CommandSyntaxException)var7;
-               throw var8;
-            }
-         }
-
-         if (var5.size() == 1) {
-            Object var10 = var5.get(0);
-            if (var10 instanceof RuntimeException) {
-               RuntimeException var9 = (RuntimeException)var10;
+         for(Exception var8 : var6) {
+            if (var8 instanceof CommandSyntaxException) {
+               CommandSyntaxException var9 = (CommandSyntaxException)var8;
                throw var9;
             }
          }
 
-         Stream var10002 = var2.entries().stream().map(ErrorEntry::toString);
+         if (var6.size() == 1) {
+            Object var11 = var6.get(0);
+            if (var11 instanceof RuntimeException) {
+               RuntimeException var10 = (RuntimeException)var11;
+               throw var10;
+            }
+         }
+
+         Stream var10002 = var5.stream().map(ErrorEntry::toString);
          throw new IllegalStateException("Failed to parse: " + (String)var10002.collect(Collectors.joining(", ")));
       }
    }
@@ -67,7 +75,7 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
       StringReader var2 = new StringReader(var1.getInput());
       var2.setCursor(var1.getStart());
       ErrorCollector.LongestOnly var3 = new ErrorCollector.LongestOnly();
-      StringReaderParserState var4 = new StringReaderParserState(this.rules(), var3, var2);
+      StringReaderParserState var4 = new StringReaderParserState(var3, var2);
       this.parse(var4);
       List var5 = var3.entries();
       if (var5.isEmpty()) {

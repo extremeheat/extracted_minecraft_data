@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -157,6 +158,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public static final int BASE_TICKS_REQUIRED_TO_FREEZE = 140;
    public static final int FREEZE_HURT_FREQUENCY = 40;
    public static final int BASE_SAFE_FALL_DISTANCE = 3;
+   private static final ImmutableList<Direction.Axis> YXZ_AXIS_ORDER;
+   private static final ImmutableList<Direction.Axis> YZX_AXIS_ORDER;
    private static final AABB INITIAL_AABB;
    private static final double WATER_FLOW_SCALE = 0.014;
    private static final double LAVA_FAST_FLOW_SCALE = 0.007;
@@ -251,7 +254,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private boolean hasVisualFire;
    @Nullable
    private BlockState inBlockState;
-   private final List<Movement> movementThisTick;
+   private final List<List<Movement>> movementThisTick;
+   private final List<Movement> finalMovementsThisTick;
    private final LongSet visitedBlocks;
    private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
 
@@ -277,7 +281,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.mainSupportingBlockPos = Optional.empty();
       this.onGroundNoBlocks = false;
       this.inBlockState = null;
-      this.movementThisTick = new ArrayList();
+      this.movementThisTick = new ObjectArrayList();
+      this.finalMovementsThisTick = new ObjectArrayList();
       this.visitedBlocks = new LongOpenHashSet();
       this.insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
       this.type = var1;
@@ -696,14 +701,27 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                }
             }
 
-            this.setPos(this.getX() + var4.x, this.getY() + var4.y, this.getZ() + var4.z);
+            Vec3 var15 = this.position();
+            ObjectArrayList var8 = new ObjectArrayList();
+
+            for(Direction.Axis var10 : axisStepOrder(var4)) {
+               double var11 = var4.get(var10);
+               if (var11 != 0.0) {
+                  Vec3 var13 = var15.relative(var10.getPositive(), var11);
+                  var8.add(new Movement(var15, var13));
+                  var15 = var13;
+               }
+            }
+
+            this.movementThisTick.add(var8);
+            this.setPos(var15);
          }
 
          var3.pop();
          var3.push("rest");
-         boolean var13 = !Mth.equal(var2.x, var4.x);
-         boolean var8 = !Mth.equal(var2.z, var4.z);
-         this.horizontalCollision = var13 || var8;
+         boolean var16 = !Mth.equal(var2.x, var4.x);
+         boolean var17 = !Mth.equal(var2.z, var4.z);
+         this.horizontalCollision = var16 || var17;
          if (Math.abs(var2.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
             this.verticalCollision = var2.y != var4.y;
             this.verticalCollisionBelow = this.verticalCollision && var2.y < 0.0;
@@ -716,36 +734,36 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             this.minorHorizontalCollision = false;
          }
 
-         BlockPos var9 = this.getOnPosLegacy();
-         BlockState var10 = this.level().getBlockState(var9);
+         BlockPos var18 = this.getOnPosLegacy();
+         BlockState var19 = this.level().getBlockState(var18);
          if (this.isLocalInstanceAuthoritative()) {
-            this.checkFallDamage(var4.y, this.onGround(), var10, var9);
+            this.checkFallDamage(var4.y, this.onGround(), var19, var18);
          }
 
          if (this.isRemoved()) {
             var3.pop();
          } else {
             if (this.horizontalCollision) {
-               Vec3 var11 = this.getDeltaMovement();
-               this.setDeltaMovement(var13 ? 0.0 : var11.x, var11.y, var8 ? 0.0 : var11.z);
+               Vec3 var20 = this.getDeltaMovement();
+               this.setDeltaMovement(var16 ? 0.0 : var20.x, var20.y, var17 ? 0.0 : var20.z);
             }
 
             if (this.canSimulateMovement()) {
-               Block var14 = var10.getBlock();
+               Block var21 = var19.getBlock();
                if (var2.y != var4.y) {
-                  var14.updateEntityMovementAfterFallOn(this.level(), this);
+                  var21.updateEntityMovementAfterFallOn(this.level(), this);
                }
             }
 
             if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
-               MovementEmission var15 = this.getMovementEmission();
-               if (var15.emitsAnything() && !this.isPassenger()) {
-                  this.applyMovementEmissionAndPlaySound(var15, var4, var9, var10);
+               MovementEmission var22 = this.getMovementEmission();
+               if (var22.emitsAnything() && !this.isPassenger()) {
+                  this.applyMovementEmissionAndPlaySound(var22, var4, var18, var19);
                }
             }
 
-            float var16 = this.getBlockSpeedFactor();
-            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var16, 1.0, (double)var16));
+            float var23 = this.getBlockSpeedFactor();
+            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var23, 1.0, (double)var23));
             var3.pop();
          }
       }
@@ -785,30 +803,47 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    }
 
-   public void applyEffectsFromBlocks() {
-      this.applyEffectsFromBlocks(this.oldPosition(), this.position);
+   protected void applyEffectsFromBlocks() {
+      this.finalMovementsThisTick.clear();
+      List var10000 = this.movementThisTick;
+      List var10001 = this.finalMovementsThisTick;
+      Objects.requireNonNull(var10001);
+      var10000.forEach(var10001::addAll);
+      this.movementThisTick.clear();
+      if (this.finalMovementsThisTick.isEmpty()) {
+         this.finalMovementsThisTick.add(new Movement(this.oldPosition(), this.position()));
+      } else if (((Movement)this.finalMovementsThisTick.getLast()).to.distanceToSqr(this.position()) > 9.999999439624929E-11) {
+         this.finalMovementsThisTick.add(new Movement(((Movement)this.finalMovementsThisTick.getLast()).to, this.position()));
+      }
+
+      this.applyEffectsFromBlocks(this.finalMovementsThisTick);
    }
 
-   public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
+   public void removeLatestMovementRecordingBatch() {
+      this.movementThisTick.removeLast();
+   }
+
+   protected void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
+      this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
+   }
+
+   private void applyEffectsFromBlocks(List<Movement> var1) {
       if (this.isAffectedByBlocks()) {
          if (this.onGround()) {
-            BlockPos var3 = this.getOnPosLegacy();
-            BlockState var4 = this.level().getBlockState(var3);
-            var4.getBlock().stepOn(this.level(), var3, var4, this);
+            BlockPos var2 = this.getOnPosLegacy();
+            BlockState var3 = this.level().getBlockState(var2);
+            var3.getBlock().stepOn(this.level(), var2, var3, this);
          }
 
-         this.movementThisTick.add(new Movement(var1, var2));
-         List var6 = List.copyOf(this.movementThisTick);
-         this.movementThisTick.clear();
-         boolean var7 = this.isOnFire();
+         boolean var4 = this.isOnFire();
          boolean var5 = this.isFreezing();
-         this.checkInsideBlocks(var6, this.insideEffectCollector);
+         this.checkInsideBlocks(var1, this.insideEffectCollector);
          this.insideEffectCollector.applyAndClear(this);
-         if (var7 && !this.isOnFire() || var5 && !this.isFreezing()) {
+         if (var4 && !this.isOnFire() || var5 && !this.isFreezing()) {
             this.playEntityOnFireExtinguishedSound();
          }
 
-         if (var7 && !this.isOnFire() && this.remainingFireTicks <= 0) {
+         if (var4 && !this.isOnFire() && this.remainingFireTicks <= 0) {
             this.setRemainingFireTicks(-this.getFireImmuneTicks());
          }
 
@@ -980,7 +1015,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             Vec3 var18 = collideWithShapes(new Vec3(var1.x, (double)var17, var1.z), var9, var11);
             if (var18.horizontalDistanceSqr() > var4.horizontalDistanceSqr()) {
                double var19 = var2.minY - var9.minY;
-               return var18.add(0.0, -var19, 0.0);
+               return var18.subtract(0.0, var19, 0.0);
             }
          }
       }
@@ -1038,37 +1073,22 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (var2.isEmpty()) {
          return var0;
       } else {
-         double var3 = var0.x;
-         double var5 = var0.y;
-         double var7 = var0.z;
-         if (var5 != 0.0) {
-            var5 = Shapes.collide(Direction.Axis.Y, var1, var2, var5);
-            if (var5 != 0.0) {
-               var1 = var1.move(0.0, var5, 0.0);
+         Vec3 var3 = Vec3.ZERO;
+
+         for(Direction.Axis var5 : axisStepOrder(var0)) {
+            double var6 = var0.get(var5);
+            if (var6 != 0.0) {
+               double var8 = Shapes.collide(var5, var1.move(var3), var2, var6);
+               var3 = var3.with(var5, var8);
             }
          }
 
-         boolean var9 = Math.abs(var3) < Math.abs(var7);
-         if (var9 && var7 != 0.0) {
-            var7 = Shapes.collide(Direction.Axis.Z, var1, var2, var7);
-            if (var7 != 0.0) {
-               var1 = var1.move(0.0, 0.0, var7);
-            }
-         }
-
-         if (var3 != 0.0) {
-            var3 = Shapes.collide(Direction.Axis.X, var1, var2, var3);
-            if (!var9 && var3 != 0.0) {
-               var1 = var1.move(var3, 0.0, 0.0);
-            }
-         }
-
-         if (!var9 && var7 != 0.0) {
-            var7 = Shapes.collide(Direction.Axis.Z, var1, var2, var7);
-         }
-
-         return new Vec3(var3, var5, var7);
+         return var3;
       }
+   }
+
+   private static Iterable<Direction.Axis> axisStepOrder(Vec3 var0) {
+      return Math.abs(var0.x) < Math.abs(var0.z) ? YZX_AXIS_ORDER : YXZ_AXIS_ORDER;
    }
 
    protected float nextStep() {
@@ -1085,10 +1105,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    protected SoundEvent getSwimHighSpeedSplashSound() {
       return SoundEvents.GENERIC_SPLASH;
-   }
-
-   public void recordMovementThroughBlocks(Vec3 var1, Vec3 var2) {
-      this.movementThisTick.add(new Movement(var1, var2));
    }
 
    private void checkInsideBlocks(List<Movement> var1, InsideBlockEffectApplier.StepBasedCollector var2) {
@@ -1902,15 +1918,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          this.setOldPosAndRot();
          this.setYHeadRot(this.getYRot());
          this.setYBodyRot(this.getYRot());
-         this.fallDistance = var1.getDouble("fall_distance");
-         this.remainingFireTicks = var1.getShort("Fire");
-         if (var1.contains("Air")) {
-            this.setAirSupply(var1.getShort("Air"));
-         }
-
-         this.onGround = var1.getBoolean("OnGround");
-         this.invulnerable = var1.getBoolean("Invulnerable");
-         this.portalCooldown = var1.getInt("PortalCooldown");
+         this.fallDistance = var1.getDoubleOr("fall_distance", 0.0);
+         this.remainingFireTicks = var1.getShortOr("Fire", (short)0);
+         this.setAirSupply(var1.getIntOr("Air", this.getMaxAirSupply()));
+         this.onGround = var1.getBooleanOr("OnGround", false);
+         this.invulnerable = var1.getBooleanOr("Invulnerable", false);
+         this.portalCooldown = var1.getIntOr("PortalCooldown", 0);
          var1.read("UUID", UUIDUtil.CODEC).ifPresent((var1x) -> {
             this.uuid = var1x;
             this.stringUUID = this.uuid.toString();
@@ -1921,12 +1934,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                this.setRot(this.getYRot(), this.getXRot());
                RegistryOps var7 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
                this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC, var7).orElse((Object)null));
-               this.setCustomNameVisible(var1.getBoolean("CustomNameVisible"));
-               this.setSilent(var1.getBoolean("Silent"));
-               this.setNoGravity(var1.getBoolean("NoGravity"));
-               this.setGlowingTag(var1.getBoolean("Glowing"));
-               this.setTicksFrozen(var1.getInt("TicksFrozen"));
-               this.hasVisualFire = var1.getBoolean("HasVisualFire");
+               this.setCustomNameVisible(var1.getBooleanOr("CustomNameVisible", false));
+               this.setSilent(var1.getBooleanOr("Silent", false));
+               this.setNoGravity(var1.getBooleanOr("NoGravity", false));
+               this.setGlowingTag(var1.getBooleanOr("Glowing", false));
+               this.setTicksFrozen(var1.getIntOr("TicksFrozen", 0));
+               this.hasVisualFire = var1.getBooleanOr("HasVisualFire", false);
                this.tags.clear();
                Optional var10000 = var1.read("Tags", TAG_LIST_CODEC);
                Set var10001 = this.tags;
@@ -3699,6 +3712,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    static {
       TAG_LIST_CODEC = Codec.STRING.sizeLimitedListOf(1024);
+      YXZ_AXIS_ORDER = ImmutableList.of(Direction.Axis.Y, Direction.Axis.X, Direction.Axis.Z);
+      YZX_AXIS_ORDER = ImmutableList.of(Direction.Axis.Y, Direction.Axis.Z, Direction.Axis.X);
       INITIAL_AABB = new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
       viewScale = 1.0;
       DATA_SHARED_FLAGS_ID = SynchedEntityData.<Byte>defineId(Entity.class, EntityDataSerializers.BYTE);
@@ -3712,6 +3727,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    static record Movement(Vec3 from, Vec3 to) {
+      final Vec3 to;
+
       Movement(Vec3 var1, Vec3 var2) {
          super();
          this.from = var1;

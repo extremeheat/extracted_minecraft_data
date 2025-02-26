@@ -207,7 +207,7 @@ public class WorldGenRegion implements WorldGenLevel {
          CompoundTag var4 = var2.getBlockEntityNbt(var1);
          BlockState var5 = var2.getBlockState(var1);
          if (var4 != null) {
-            if ("DUMMY".equals(var4.getString("id"))) {
+            if ("DUMMY".equals(var4.getStringOr("id", ""))) {
                if (!var5.hasBlockEntity()) {
                   return null;
                }

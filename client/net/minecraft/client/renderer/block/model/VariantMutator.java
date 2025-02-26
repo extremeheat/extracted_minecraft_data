@@ -10,7 +10,6 @@ public interface VariantMutator extends UnaryOperator<Variant> {
    VariantProperty<Quadrant> Y_ROT = Variant::withYRot;
    VariantProperty<ResourceLocation> MODEL = Variant::withModel;
    VariantProperty<Boolean> UV_LOCK = Variant::withUvLock;
-   VariantProperty<Integer> WEIGHT = Variant::withWeight;
 
    default VariantMutator then(VariantMutator var1) {
       return (var2) -> (Variant)var1.apply((Variant)this.apply(var2));

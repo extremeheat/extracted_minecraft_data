@@ -173,14 +173,14 @@ public abstract class DistanceManager {
       }
    }
 
-   public void forEachBlockTickingChunks(LongConsumer var1) {
+   public void forEachEntityTickingChunk(LongConsumer var1) {
       ObjectIterator var2 = Long2ByteMaps.fastIterable(this.simulationChunkTracker.chunks).iterator();
 
       while(var2.hasNext()) {
          Long2ByteMap.Entry var3 = (Long2ByteMap.Entry)var2.next();
          byte var4 = var3.getByteValue();
          long var5 = var3.getLongKey();
-         if (ChunkLevel.isBlockTicking(var4)) {
+         if (ChunkLevel.isEntityTicking(var4)) {
             var1.accept(var5);
          }
       }

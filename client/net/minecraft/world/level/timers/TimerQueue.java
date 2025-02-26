@@ -96,8 +96,8 @@ public class TimerQueue<T> {
    private void loadEvent(CompoundTag var1) {
       TimerCallback var2 = (TimerCallback)var1.read("Callback", this.callbacksRegistry.codec()).orElse((Object)null);
       if (var2 != null) {
-         String var3 = var1.getString("Name");
-         long var4 = var1.getLong("TriggerTime");
+         String var3 = var1.getStringOr("Name", "");
+         long var4 = var1.getLongOr("TriggerTime", 0L);
          this.schedule(var3, var4, var2);
       }
 

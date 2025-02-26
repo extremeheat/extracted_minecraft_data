@@ -96,7 +96,7 @@ public class ParticleUnflatteningFix extends DataFix {
    @Nullable
    private static <T> Dynamic<T> parseTag(DynamicOps<T> var0, String var1) {
       try {
-         return new Dynamic(var0, TagParser.parseFully(var0, var1));
+         return new Dynamic(var0, TagParser.create(var0).parseFully(var1));
       } catch (Exception var3) {
          LOGGER.warn("Failed to parse tag: {}", var1, var3);
          return null;

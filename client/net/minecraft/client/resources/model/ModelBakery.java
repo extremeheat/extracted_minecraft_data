@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -15,6 +17,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
+import net.minecraft.client.renderer.block.model.SingleVariant;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -42,12 +45,12 @@ public class ModelBakery {
    public static final List<RenderType> DESTROY_TYPES;
    static final Logger LOGGER;
    private final EntityModelSet entityModelSet;
-   private final Map<BlockState, BlockStateModel.Unbaked> unbakedBlockStateModels;
+   private final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels;
    private final Map<ResourceLocation, ClientItem> clientInfos;
    final Map<ResourceLocation, ResolvedModel> resolvedModels;
    final ResolvedModel missingModel;
 
-   public ModelBakery(EntityModelSet var1, Map<BlockState, BlockStateModel.Unbaked> var2, Map<ResourceLocation, ClientItem> var3, Map<ResourceLocation, ResolvedModel> var4, ResolvedModel var5) {
+   public ModelBakery(EntityModelSet var1, Map<BlockState, BlockStateModel.UnbakedRoot> var2, Map<ResourceLocation, ClientItem> var3, Map<ResourceLocation, ResolvedModel> var4, ResolvedModel var5) {
       super();
       this.entityModelSet = var1;
       this.unbakedBlockStateModels = var2;
@@ -61,7 +64,7 @@ public class ModelBakery {
       ModelBakerImpl var4 = new ModelBakerImpl(var1);
       CompletableFuture var5 = ParallelMapTransform.schedule(this.unbakedBlockStateModels, (var1x, var2x) -> {
          try {
-            return var2x.bake(var4);
+            return var2x.bake(var1x, var4);
          } catch (Exception var4x) {
             LOGGER.warn("Unable to bake model: '{}': {}", var1x, var4x);
             return null;
@@ -116,6 +119,10 @@ public class ModelBakery {
                throw new IllegalStateException("Missing model can't have dependencies, but asked for " + String.valueOf(var1x));
             }
 
+            public <T> T compute(ModelBaker.SharedOperationKey<T> var1x) {
+               return (T)var1x.compute(this);
+            }
+
             public SpriteGetter sprites() {
                return var1;
             }
@@ -126,7 +133,7 @@ public class ModelBakery {
          ItemTransforms var6 = var0.getTopTransforms();
          QuadCollection var7 = var0.bakeTopGeometry(var3, var2, BlockModelRotation.X0_Y0);
          TextureAtlasSprite var8 = var0.resolveParticleSprite(var3, var2);
-         SimpleModelWrapper var9 = new SimpleModelWrapper(var7, var4, var8);
+         SingleVariant var9 = new SingleVariant(new SimpleModelWrapper(var7, var4, var8));
          MissingItemModel var10 = new MissingItemModel(var7.getAll(), new ModelRenderProperties(var5, var8, var6));
          return new MissingModels(var9, var10);
       }
@@ -134,6 +141,8 @@ public class ModelBakery {
 
    class ModelBakerImpl implements ModelBaker {
       private final SpriteGetter sprites;
+      private final Map<ModelBaker.SharedOperationKey<Object>, Object> operationCache = new ConcurrentHashMap();
+      private final Function<ModelBaker.SharedOperationKey<Object>, Object> cacheComputeFunction = (var1x) -> var1x.compute(this);
 
       ModelBakerImpl(final SpriteGetter var2) {
          super();
@@ -152,6 +161,10 @@ public class ModelBakery {
          } else {
             return var2;
          }
+      }
+
+      public <T> T compute(ModelBaker.SharedOperationKey<T> var1) {
+         return (T)this.operationCache.computeIfAbsent(var1, this.cacheComputeFunction);
       }
    }
 

@@ -27,6 +27,13 @@ import net.minecraft.world.phys.Vec3;
 public abstract class BaseSpawner {
    public static final String SPAWN_DATA_TAG = "SpawnData";
    private static final int EVENT_SPAWN = 1;
+   private static final int DEFAULT_SPAWN_DELAY = 20;
+   private static final int DEFAULT_MIN_SPAWN_DELAY = 200;
+   private static final int DEFAULT_MAX_SPAWN_DELAY = 800;
+   private static final int DEFAULT_SPAWN_COUNT = 4;
+   private static final int DEFAULT_MAX_NEARBY_ENTITIES = 6;
+   private static final int DEFAULT_REQUIRED_PLAYER_RANGE = 16;
+   private static final int DEFAULT_SPAWN_RANGE = 4;
    private int spawnDelay = 20;
    private WeightedList<SpawnData> spawnPotentials = WeightedList.<SpawnData>of();
    @Nullable
@@ -133,7 +140,7 @@ public abstract class BaseSpawner {
                         continue;
                      }
 
-                     boolean var14 = var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8);
+                     boolean var14 = var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().getString("id").isPresent();
                      if (var14) {
                         ((Mob)var15).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var15.blockPosition()), EntitySpawnReason.SPAWNER, (SpawnGroupData)null);
                      }
@@ -179,24 +186,15 @@ public abstract class BaseSpawner {
    }
 
    public void load(@Nullable Level var1, BlockPos var2, CompoundTag var3) {
-      this.spawnDelay = var3.getShort("Delay");
+      this.spawnDelay = var3.getShortOr("Delay", (short)20);
       var3.read("SpawnData", SpawnData.CODEC).ifPresent((var3x) -> this.setNextSpawnData(var1, var2, var3x));
       this.spawnPotentials = (WeightedList)var3.read("SpawnPotentials", SpawnData.LIST_CODEC).orElseGet(() -> WeightedList.of(this.nextSpawnData != null ? this.nextSpawnData : new SpawnData()));
-      if (var3.contains("MinSpawnDelay", 99)) {
-         this.minSpawnDelay = var3.getShort("MinSpawnDelay");
-         this.maxSpawnDelay = var3.getShort("MaxSpawnDelay");
-         this.spawnCount = var3.getShort("SpawnCount");
-      }
-
-      if (var3.contains("MaxNearbyEntities", 99)) {
-         this.maxNearbyEntities = var3.getShort("MaxNearbyEntities");
-         this.requiredPlayerRange = var3.getShort("RequiredPlayerRange");
-      }
-
-      if (var3.contains("SpawnRange", 99)) {
-         this.spawnRange = var3.getShort("SpawnRange");
-      }
-
+      this.minSpawnDelay = var3.getIntOr("MinSpawnDelay", 200);
+      this.maxSpawnDelay = var3.getIntOr("MaxSpawnDelay", 800);
+      this.spawnCount = var3.getIntOr("SpawnCount", 4);
+      this.maxNearbyEntities = var3.getIntOr("MaxNearbyEntities", 6);
+      this.requiredPlayerRange = var3.getIntOr("RequiredPlayerRange", 16);
+      this.spawnRange = var3.getIntOr("SpawnRange", 4);
       this.displayEntity = null;
    }
 
@@ -217,7 +215,7 @@ public abstract class BaseSpawner {
    public Entity getOrCreateDisplayEntity(Level var1, BlockPos var2) {
       if (this.displayEntity == null) {
          CompoundTag var3 = this.getOrCreateNextSpawnData(var1, var1.getRandom(), var2).getEntityToSpawn();
-         if (!var3.contains("id", 8)) {
+         if (var3.getString("id").isEmpty()) {
             return null;
          }
 

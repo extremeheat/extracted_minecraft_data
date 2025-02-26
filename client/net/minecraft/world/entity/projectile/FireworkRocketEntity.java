@@ -38,6 +38,9 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    private static final EntityDataAccessor<ItemStack> DATA_ID_FIREWORKS_ITEM;
    private static final EntityDataAccessor<OptionalInt> DATA_ATTACHED_TO_TARGET;
    private static final EntityDataAccessor<Boolean> DATA_SHOT_AT_ANGLE;
+   private static final int DEFAULT_LIFE = 0;
+   private static final int DEFAULT_LIFE_TIME = 0;
+   private static final boolean DEFAULT_SHOT_AT_ANGLE = false;
    private int life;
    private int lifetime;
    @Nullable
@@ -45,10 +48,14 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    public FireworkRocketEntity(EntityType<? extends FireworkRocketEntity> var1, Level var2) {
       super(var1, var2);
+      this.life = 0;
+      this.lifetime = 0;
    }
 
    public FireworkRocketEntity(Level var1, double var2, double var4, double var6, ItemStack var8) {
       super(EntityType.FIREWORK_ROCKET, var1);
+      this.life = 0;
+      this.lifetime = 0;
       this.life = 0;
       this.setPos(var2, var4, var6);
       this.entityData.set(DATA_ID_FIREWORKS_ITEM, var8.copy());
@@ -266,14 +273,11 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.life = var1.getInt("Life");
-      this.lifetime = var1.getInt("LifeTime");
+      this.life = var1.getIntOr("Life", 0);
+      this.lifetime = var1.getIntOr("LifeTime", 0);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)var1.read("FireworksItem", ItemStack.CODEC, var2).orElse(getDefaultItem()));
-      if (var1.contains("ShotAtAngle")) {
-         this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBoolean("ShotAtAngle"));
-      }
-
+      this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBooleanOr("ShotAtAngle", false));
    }
 
    private List<FireworkExplosion> getExplosions() {

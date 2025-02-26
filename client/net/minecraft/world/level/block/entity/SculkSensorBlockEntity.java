@@ -19,6 +19,7 @@ import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 
 public class SculkSensorBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
+   private static final int DEFAULT_LAST_VIBRATION_FREQUENCY = 0;
    private VibrationSystem.Data vibrationData;
    private final VibrationSystem.Listener vibrationListener;
    private final VibrationSystem.User vibrationUser;
@@ -26,6 +27,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
 
    protected SculkSensorBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
+      this.lastVibrationFrequency = 0;
       this.vibrationUser = this.createVibrationUser();
       this.vibrationData = new VibrationSystem.Data();
       this.vibrationListener = new VibrationSystem.Listener(this);
@@ -41,7 +43,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.lastVibrationFrequency = var1.getInt("last_vibration_frequency");
+      this.lastVibrationFrequency = var1.getIntOr("last_vibration_frequency", 0);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var3).orElseGet(VibrationSystem.Data::new);
    }

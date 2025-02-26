@@ -20,11 +20,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.Vec3i;
+import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomizableContainer;
@@ -49,6 +51,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -626,64 +629,47 @@ public class StructureTemplate {
    public void load(HolderGetter<Block> var1, CompoundTag var2) {
       this.palettes.clear();
       this.entityInfoList.clear();
-      ListTag var3 = var2.getList("size", 3);
-      this.size = new Vec3i(var3.getInt(0), var3.getInt(1), var3.getInt(2));
-      ListTag var4 = var2.getList("blocks", 10);
-      if (var2.contains("palettes", 9)) {
-         ListTag var5 = var2.getList("palettes", 9);
-
-         for(int var6 = 0; var6 < var5.size(); ++var6) {
-            this.loadPalette(var1, var5.getList(var6), var4);
+      ListTag var3 = var2.getListOrEmpty("size");
+      this.size = new Vec3i(var3.getIntOr(0, 0), var3.getIntOr(1, 0), var3.getIntOr(2, 0));
+      ListTag var4 = var2.getListOrEmpty("blocks");
+      Optional var5 = var2.getList("palettes");
+      if (var5.isPresent()) {
+         for(int var6 = 0; var6 < ((ListTag)var5.get()).size(); ++var6) {
+            this.loadPalette(var1, ((ListTag)var5.get()).getListOrEmpty(var6), var4);
          }
       } else {
-         this.loadPalette(var1, var2.getList("palette", 10), var4);
+         this.loadPalette(var1, var2.getListOrEmpty("palette"), var4);
       }
 
-      ListTag var13 = var2.getList("entities", 10);
-
-      for(int var14 = 0; var14 < var13.size(); ++var14) {
-         CompoundTag var7 = var13.getCompound(var14);
-         ListTag var8 = var7.getList("pos", 6);
-         Vec3 var9 = new Vec3(var8.getDouble(0), var8.getDouble(1), var8.getDouble(2));
-         ListTag var10 = var7.getList("blockPos", 3);
-         BlockPos var11 = new BlockPos(var10.getInt(0), var10.getInt(1), var10.getInt(2));
-         if (var7.contains("nbt")) {
-            CompoundTag var12 = var7.getCompound("nbt");
-            this.entityInfoList.add(new StructureEntityInfo(var9, var11, var12));
-         }
-      }
-
+      var2.getListOrEmpty("entities").compoundStream().forEach((var1x) -> {
+         ListTag var2 = var1x.getListOrEmpty("pos");
+         Vec3 var3 = new Vec3(var2.getDoubleOr(0, 0.0), var2.getDoubleOr(1, 0.0), var2.getDoubleOr(2, 0.0));
+         ListTag var4 = var1x.getListOrEmpty("blockPos");
+         BlockPos var5 = new BlockPos(var4.getIntOr(0, 0), var4.getIntOr(1, 0), var4.getIntOr(2, 0));
+         var1x.getCompound("nbt").ifPresent((var3x) -> this.entityInfoList.add(new StructureEntityInfo(var3, var5, var3x)));
+      });
    }
 
    private void loadPalette(HolderGetter<Block> var1, ListTag var2, ListTag var3) {
       SimplePalette var4 = new SimplePalette();
 
       for(int var5 = 0; var5 < var2.size(); ++var5) {
-         var4.addMapping(NbtUtils.readBlockState(var1, var2.getCompound(var5)), var5);
+         var4.addMapping(NbtUtils.readBlockState(var1, var2.getCompoundOrEmpty(var5)), var5);
       }
 
-      ArrayList var15 = Lists.newArrayList();
+      ArrayList var9 = Lists.newArrayList();
       ArrayList var6 = Lists.newArrayList();
       ArrayList var7 = Lists.newArrayList();
-
-      for(int var8 = 0; var8 < var3.size(); ++var8) {
-         CompoundTag var9 = var3.getCompound(var8);
-         ListTag var10 = var9.getList("pos", 3);
-         BlockPos var11 = new BlockPos(var10.getInt(0), var10.getInt(1), var10.getInt(2));
-         BlockState var12 = var4.stateFor(var9.getInt("state"));
-         CompoundTag var13;
-         if (var9.contains("nbt")) {
-            var13 = var9.getCompound("nbt");
-         } else {
-            var13 = null;
-         }
-
-         StructureBlockInfo var14 = new StructureBlockInfo(var11, var12, var13);
-         addToLists(var14, var15, var6, var7);
-      }
-
-      List var16 = buildInfoList(var15, var6, var7);
-      this.palettes.add(new Palette(var16));
+      var3.compoundStream().forEach((var4x) -> {
+         ListTag var5 = var4x.getListOrEmpty("pos");
+         BlockPos var6x = new BlockPos(var5.getIntOr(0, 0), var5.getIntOr(1, 0), var5.getIntOr(2, 0));
+         BlockState var7x = var4.stateFor(var4x.getIntOr("state", 0));
+         CompoundTag var8 = (CompoundTag)var4x.getCompound("nbt").orElse((Object)null);
+         StructureBlockInfo var9x = new StructureBlockInfo(var6x, var7x, var8);
+         addToLists(var9x, var9, var6, var7);
+      });
+      List var8 = buildInfoList(var9, var6, var7);
+      this.palettes.add(new Palette(var8));
    }
 
    private ListTag newIntegerList(int... var1) {
@@ -770,10 +756,10 @@ public class StructureTemplate {
       }
    }
 
-   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, ResourceLocation name, ResourceLocation pool, ResourceLocation target, int placementPriority, int selectionPriority) {
+   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, ResourceLocation name, ResourceKey<StructureTemplatePool> pool, ResourceLocation target, int placementPriority, int selectionPriority) {
       final StructureBlockInfo info;
 
-      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, int var6, int var7) {
+      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, ResourceLocation var3, ResourceKey<StructureTemplatePool> var4, ResourceLocation var5, int var6, int var7) {
          super();
          this.info = var1;
          this.jointType = var2;
@@ -786,11 +772,11 @@ public class StructureTemplate {
 
       public static JigsawBlockInfo of(StructureBlockInfo var0) {
          CompoundTag var1 = (CompoundTag)Objects.requireNonNull(var0.nbt(), () -> String.valueOf(var0) + " nbt was null");
-         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), ResourceLocation.parse(var1.getString("name")), ResourceLocation.parse(var1.getString("pool")), ResourceLocation.parse(var1.getString("target")), var1.getInt("placement_priority"), var1.getInt("selection_priority"));
+         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), (ResourceLocation)var1.read("name", ResourceLocation.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), (ResourceKey)var1.read("pool", JigsawBlockEntity.POOL_CODEC).orElse(Pools.EMPTY), (ResourceLocation)var1.read("target", ResourceLocation.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), var1.getIntOr("placement_priority", 0), var1.getIntOr("selection_priority", 0));
       }
 
       public String toString() {
-         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
+         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool.location(), this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
       }
 
       public JigsawBlockInfo withInfo(StructureBlockInfo var1) {

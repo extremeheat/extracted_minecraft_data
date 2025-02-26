@@ -79,10 +79,10 @@ public class ShulkerBullet extends Projectile {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.flightSteps = var1.getInt("Steps");
-      this.targetDeltaX = var1.getDouble("TXD");
-      this.targetDeltaY = var1.getDouble("TYD");
-      this.targetDeltaZ = var1.getDouble("TZD");
+      this.flightSteps = var1.getIntOr("Steps", 0);
+      this.targetDeltaX = var1.getDoubleOr("TXD", 0.0);
+      this.targetDeltaY = var1.getDoubleOr("TYD", 0.0);
+      this.targetDeltaZ = var1.getDoubleOr("TZD", 0.0);
       this.currentMoveDirection = (Direction)var1.read("Dir", Direction.LEGACY_ID_CODEC).orElse((Object)null);
       this.targetId = (UUID)var1.read("Target", UUIDUtil.CODEC).orElse((Object)null);
    }

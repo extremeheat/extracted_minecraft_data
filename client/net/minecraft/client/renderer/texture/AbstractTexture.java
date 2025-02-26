@@ -35,14 +35,6 @@ public abstract class AbstractTexture implements AutoCloseable {
       }
    }
 
-   public void bind() {
-      if (this.texture == null) {
-         throw new IllegalStateException("Texture does not exist, can't bind it before something initializes it");
-      } else {
-         this.texture.bind();
-      }
-   }
-
    public void close() {
       if (this.texture != null) {
          this.texture.close();

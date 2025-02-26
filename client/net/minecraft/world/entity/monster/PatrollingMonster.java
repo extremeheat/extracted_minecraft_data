@@ -23,10 +23,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class PatrollingMonster extends Monster {
+   private static final boolean DEFAULT_PATROL_LEADER = false;
+   private static final boolean DEFAULT_PATROLLING = false;
    @Nullable
    private BlockPos patrolTarget;
-   private boolean patrolLeader;
-   private boolean patrolling;
+   private boolean patrolLeader = false;
+   private boolean patrolling = false;
 
    protected PatrollingMonster(EntityType<? extends PatrollingMonster> var1, Level var2) {
       super(var1, var2);
@@ -47,8 +49,8 @@ public abstract class PatrollingMonster extends Monster {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.patrolTarget = (BlockPos)var1.read("patrol_target", BlockPos.CODEC).orElse((Object)null);
-      this.patrolLeader = var1.getBoolean("PatrolLeader");
-      this.patrolling = var1.getBoolean("Patrolling");
+      this.patrolLeader = var1.getBooleanOr("PatrolLeader", false);
+      this.patrolling = var1.getBooleanOr("Patrolling", false);
    }
 
    public boolean canBeLeader() {

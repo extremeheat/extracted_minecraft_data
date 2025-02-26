@@ -7,33 +7,30 @@ import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuFence;
+import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CompiledShaderProgram;
 import net.minecraft.client.renderer.FogParameters;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.Mth;
@@ -48,11 +45,13 @@ import org.slf4j.Logger;
 
 @DontObfuscate
 public class RenderSystem {
+   public static final ScissorState SCISSOR_STATE = new ScissorState();
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
+   public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    @Nullable
    private static Thread renderThread;
-   private static int MAX_SUPPORTED_TEXTURE_SIZE = -1;
+   @Nullable
+   private static GpuDevice DEVICE;
    private static double lastDrawTime = 4.9E-324;
    private static final AutoStorageIndexBuffer sharedSequential = new AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
    private static final AutoStorageIndexBuffer sharedSequentialQuad = new AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
@@ -89,7 +88,7 @@ public class RenderSystem {
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
    @Nullable
-   private static VertexBuffer QUAD_VERTICES;
+   private static GpuBuffer QUAD_VERTEX_BUFFER;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
 
    public RenderSystem() {
@@ -151,118 +150,17 @@ public class RenderSystem {
       lastDrawTime = var3;
    }
 
-   public static void disableDepthTest() {
-      assertOnRenderThread();
-      GlStateManager._disableDepthTest();
-   }
-
-   public static void enableDepthTest() {
-      GlStateManager._enableDepthTest();
-   }
-
    public static void enableScissor(int var0, int var1, int var2, int var3) {
-      GlStateManager._enableScissorTest();
-      GlStateManager._scissorBox(var0, var1, var2, var3);
+      SCISSOR_STATE.enable(var0, var1, var2, var3);
    }
 
    public static void disableScissor() {
-      GlStateManager._disableScissorTest();
-   }
-
-   public static void depthFunc(int var0) {
-      assertOnRenderThread();
-      GlStateManager._depthFunc(var0);
-   }
-
-   public static void depthMask(boolean var0) {
-      assertOnRenderThread();
-      GlStateManager._depthMask(var0);
-   }
-
-   public static void enableBlend() {
-      assertOnRenderThread();
-      GlStateManager._enableBlend();
-   }
-
-   public static void disableBlend() {
-      assertOnRenderThread();
-      GlStateManager._disableBlend();
-   }
-
-   public static void blendFuncSeparate(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1, GlStateManager.SourceFactor var2, GlStateManager.DestFactor var3) {
-      assertOnRenderThread();
-      GlStateManager._blendFuncSeparate(var0.value, var1.value, var2.value, var3.value);
-   }
-
-   public static void enableCull() {
-      assertOnRenderThread();
-      GlStateManager._enableCull();
-   }
-
-   public static void disableCull() {
-      assertOnRenderThread();
-      GlStateManager._disableCull();
-   }
-
-   public static void polygonMode(int var0, int var1) {
-      assertOnRenderThread();
-      GlStateManager._polygonMode(var0, var1);
-   }
-
-   public static void enablePolygonOffset() {
-      assertOnRenderThread();
-      GlStateManager._enablePolygonOffset();
-   }
-
-   public static void disablePolygonOffset() {
-      assertOnRenderThread();
-      GlStateManager._disablePolygonOffset();
-   }
-
-   public static void polygonOffset(float var0, float var1) {
-      assertOnRenderThread();
-      GlStateManager._polygonOffset(var0, var1);
-   }
-
-   public static void enableColorLogicOp() {
-      assertOnRenderThread();
-      GlStateManager._enableColorLogicOp();
-   }
-
-   public static void disableColorLogicOp() {
-      assertOnRenderThread();
-      GlStateManager._disableColorLogicOp();
-   }
-
-   public static void logicOp(GlStateManager.LogicOp var0) {
-      assertOnRenderThread();
-      GlStateManager._logicOp(var0.value);
+      SCISSOR_STATE.disable();
    }
 
    public static void activeTexture(int var0) {
       assertOnRenderThread();
       GlStateManager._activeTexture(var0);
-   }
-
-   public static void bindTexture(int var0) {
-      GlStateManager._bindTexture(var0);
-   }
-
-   public static void viewport(int var0, int var1, int var2, int var3) {
-      GlStateManager._viewport(var0, var1, var2, var3);
-   }
-
-   public static void colorMask(boolean var0, boolean var1, boolean var2, boolean var3) {
-      assertOnRenderThread();
-      GlStateManager._colorMask(var0, var1, var2, var3);
-   }
-
-   public static void clearColor(float var0, float var1, float var2, float var3) {
-      GlStateManager._clearColor(var0, var1, var2, var3);
-   }
-
-   public static void clear(int var0) {
-      GlStateManager._clear(var0);
    }
 
    public static void setShaderFog(FogParameters var0) {
@@ -295,16 +193,8 @@ public class RenderSystem {
       shaderLightDirections[1] = var1;
    }
 
-   public static void setupShaderLights(CompiledShaderProgram var0) {
-      assertOnRenderThread();
-      if (var0.LIGHT0_DIRECTION != null) {
-         var0.LIGHT0_DIRECTION.set(shaderLightDirections[0]);
-      }
-
-      if (var0.LIGHT1_DIRECTION != null) {
-         var0.LIGHT1_DIRECTION.set(shaderLightDirections[1]);
-      }
-
+   public static Vector3f[] getShaderLights() {
+      return shaderLightDirections;
    }
 
    public static void setShaderColor(float var0, float var1, float var2, float var3) {
@@ -320,11 +210,6 @@ public class RenderSystem {
       return shaderColor;
    }
 
-   public static void drawElements(int var0, int var1, int var2) {
-      assertOnRenderThread();
-      GlStateManager._drawElements(var0, var1, var2, 0L);
-   }
-
    public static void lineWidth(float var0) {
       assertOnRenderThread();
       shaderLineWidth = var0;
@@ -333,11 +218,6 @@ public class RenderSystem {
    public static float getShaderLineWidth() {
       assertOnRenderThread();
       return shaderLineWidth;
-   }
-
-   public static void getString(int var0, Consumer<String> var1) {
-      assertOnRenderThread();
-      var1.accept(GlStateManager._getString(var0));
    }
 
    public static String getBackendDescription() {
@@ -354,9 +234,9 @@ public class RenderSystem {
       return var10000::getAsLong;
    }
 
-   public static void initRenderer(int var0, boolean var1) {
-      GLX._init(var0, var1);
-      apiDescription = GLX.getOpenGLVersionString();
+   public static void initRenderer(long var0, int var2, boolean var3, BiFunction<ResourceLocation, ShaderType, String> var4, boolean var5) {
+      DEVICE = new GlDevice(var0, var2, var3, var4, var5);
+      apiDescription = getDevice().getImplementationInformation();
    }
 
    public static void setErrorCallback(GLFWErrorCallbackI var0) {
@@ -368,91 +248,21 @@ public class RenderSystem {
       return "Using framebuffer using OpenGL 3.2";
    }
 
-   public static void setupDefaultState(int var0, int var1, int var2, int var3) {
-      GlStateManager._clearDepth(1.0);
-      GlStateManager._enableDepthTest();
-      GlStateManager._depthFunc(515);
+   public static void setupDefaultState() {
       projectionMatrix.identity();
       savedProjectionMatrix.identity();
       modelViewStack.clear();
       textureMatrix.identity();
-      GlStateManager._viewport(var0, var1, var2, var3);
-   }
-
-   public static int maxSupportedTextureSize() {
-      if (MAX_SUPPORTED_TEXTURE_SIZE == -1) {
-         assertOnRenderThread();
-         int var0 = GlStateManager._getInteger(3379);
-
-         for(int var1 = Math.max(32768, var0); var1 >= 1024; var1 >>= 1) {
-            GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, (IntBuffer)null);
-            int var2 = GlStateManager._getTexLevelParameter(32868, 0, 4096);
-            if (var2 != 0) {
-               MAX_SUPPORTED_TEXTURE_SIZE = var1;
-               return var1;
-            }
-         }
-
-         MAX_SUPPORTED_TEXTURE_SIZE = Math.max(var0, 1024);
-         LOGGER.info("Failed to determine maximum texture size by probing, trying GL_MAX_TEXTURE_SIZE = {}", MAX_SUPPORTED_TEXTURE_SIZE);
-      }
-
-      return MAX_SUPPORTED_TEXTURE_SIZE;
-   }
-
-   public static void glDeleteVertexArrays(int var0) {
-      assertOnRenderThread();
-      GlStateManager._glDeleteVertexArrays(var0);
-   }
-
-   public static void glUniform1i(int var0, int var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform1i(var0, var1);
-   }
-
-   public static void glUniform1(int var0, IntBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform1(var0, var1);
-   }
-
-   public static void glUniform3(int var0, IntBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform3(var0, var1);
-   }
-
-   public static void glUniform1(int var0, FloatBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform1(var0, var1);
-   }
-
-   public static void glUniform2(int var0, FloatBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform2(var0, var1);
-   }
-
-   public static void glUniform3(int var0, FloatBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform3(var0, var1);
-   }
-
-   public static void glUniform4(int var0, FloatBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniform4(var0, var1);
-   }
-
-   public static void glUniformMatrix4(int var0, FloatBuffer var1) {
-      assertOnRenderThread();
-      GlStateManager._glUniformMatrix4(var0, var1);
    }
 
    public static void setupOverlayColor(@Nullable GpuTexture var0) {
       assertOnRenderThread();
-      setShaderTexture(1, (GpuTexture)var0);
+      setShaderTexture(1, var0);
    }
 
    public static void teardownOverlayColor() {
       assertOnRenderThread();
-      setShaderTexture(1, (GpuTexture)((GpuTexture)null));
+      setShaderTexture(1, (GpuTexture)null);
    }
 
    public static void setupLevelDiffuseLighting(Vector3f var0, Vector3f var1) {
@@ -468,20 +278,6 @@ public class RenderSystem {
    public static void setupGui3DDiffuseLighting(Vector3f var0, Vector3f var1) {
       assertOnRenderThread();
       GlStateManager.setupGui3DDiffuseLighting(var0, var1);
-   }
-
-   public static void defaultBlendFunc() {
-      blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-   }
-
-   public static void setShaderTexture(int var0, ResourceLocation var1) {
-      assertOnRenderThread();
-      if (var0 >= 0 && var0 < shaderTextures.length) {
-         TextureManager var2 = Minecraft.getInstance().getTextureManager();
-         AbstractTexture var3 = var2.getTexture(var1);
-         shaderTextures[var0] = var3.getTexture();
-      }
-
    }
 
    public static void setShaderTexture(int var0, @Nullable GpuTexture var1) {
@@ -573,22 +369,22 @@ public class RenderSystem {
       return projectionType;
    }
 
-   public static VertexBuffer getQuadVertices() {
-      if (QUAD_VERTICES == null) {
-         try (ByteBufferBuilder var0 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
-            BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            var1.addVertex(0.0F, 0.0F, 0.0F);
-            var1.addVertex(1.0F, 0.0F, 0.0F);
-            var1.addVertex(1.0F, 1.0F, 0.0F);
-            var1.addVertex(0.0F, 1.0F, 0.0F);
-            QUAD_VERTICES = new VertexBuffer(BufferUsage.STATIC_WRITE);
-            QUAD_VERTICES.bind();
-            QUAD_VERTICES.upload(var1.buildOrThrow());
-            VertexBuffer.unbind();
+   public static GpuBuffer getQuadVertexBuffer(@Nullable Supplier<String> var0) {
+      if (QUAD_VERTEX_BUFFER == null) {
+         try (ByteBufferBuilder var1 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
+            BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            var2.addVertex(0.0F, 0.0F, 0.0F);
+            var2.addVertex(1.0F, 0.0F, 0.0F);
+            var2.addVertex(1.0F, 1.0F, 0.0F);
+            var2.addVertex(0.0F, 1.0F, 0.0F);
+
+            try (MeshData var3 = var2.buildOrThrow()) {
+               QUAD_VERTEX_BUFFER = getDevice().createBuffer(var0, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var3.vertexBuffer());
+            }
          }
       }
 
-      return QUAD_VERTICES;
+      return QUAD_VERTEX_BUFFER;
    }
 
    public static void setModelOffset(float var0, float var1, float var2) {
@@ -625,6 +421,19 @@ public class RenderSystem {
          PENDING_FENCES.removeFirst();
       }
 
+   }
+
+   public static GpuDevice getDevice() {
+      if (DEVICE == null) {
+         throw new IllegalStateException("Can't getDevice() before it was initialized");
+      } else {
+         return DEVICE;
+      }
+   }
+
+   @Nullable
+   public static GpuDevice tryGetDevice() {
+      return DEVICE;
    }
 
    static {
@@ -666,13 +475,13 @@ public class RenderSystem {
          return var1 <= this.indexCount;
       }
 
-      public void bind(int var1) {
+      public GpuBuffer getBuffer(int var1) {
          if (this.buffer == null) {
-            this.buffer = new GpuBuffer(BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, 0);
+            this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, 0);
          }
 
-         this.buffer.bind();
          this.ensureStorage(var1);
+         return this.buffer;
       }
 
       private void ensureStorage(int var1) {
@@ -694,8 +503,9 @@ public class RenderSystem {
                }
 
                var6.flip();
-               this.buffer.resize(var5);
-               this.buffer.write(var6, 0);
+               CommandEncoder var13 = RenderSystem.getDevice().createCommandEncoder();
+               var13.resizeBuffer(this.buffer, var5);
+               var13.writeToBuffer(this.buffer, var6, 0);
             } finally {
                MemoryUtil.memFree(var6);
             }

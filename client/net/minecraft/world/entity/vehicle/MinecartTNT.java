@@ -33,6 +33,7 @@ public class MinecartTNT extends AbstractMinecart {
    private static final String TAG_FUSE = "fuse";
    private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
    private static final float DEFAULT_EXPLOSION_SPEED_FACTOR = 1.0F;
+   private static final int NO_FUSE = -1;
    @Nullable
    private DamageSource ignitionSource;
    private int fuse = -1;
@@ -170,18 +171,9 @@ public class MinecartTNT extends AbstractMinecart {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("fuse", 99)) {
-         this.fuse = var1.getInt("fuse");
-      }
-
-      if (var1.contains("explosion_power", 99)) {
-         this.explosionPowerBase = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
-      }
-
-      if (var1.contains("explosion_speed_factor", 99)) {
-         this.explosionSpeedFactor = Mth.clamp(var1.getFloat("explosion_speed_factor"), 0.0F, 128.0F);
-      }
-
+      this.fuse = var1.getIntOr("fuse", -1);
+      this.explosionPowerBase = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
+      this.explosionSpeedFactor = Mth.clamp(var1.getFloatOr("explosion_speed_factor", 1.0F), 0.0F, 128.0F);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

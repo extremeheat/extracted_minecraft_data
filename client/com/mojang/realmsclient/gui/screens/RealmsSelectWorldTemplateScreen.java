@@ -157,7 +157,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             WorldTemplatePaginatedList var1x = var1;
 
             Either var3;
-            for(RealmsClient var2 = RealmsClient.create(); var1x != null; var1x = (WorldTemplatePaginatedList)RealmsSelectWorldTemplateScreen.this.minecraft.submit(() -> {
+            for(RealmsClient var2 = RealmsClient.getOrCreate(); var1x != null; var1x = (WorldTemplatePaginatedList)RealmsSelectWorldTemplateScreen.this.minecraft.submit(() -> {
                if (var3.right().isPresent()) {
                   RealmsSelectWorldTemplateScreen.LOGGER.error("Couldn't fetch templates", (Throwable)var3.right().get());
                   if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {

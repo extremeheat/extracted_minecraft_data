@@ -2,7 +2,7 @@ package com.mojang.blaze3d.resource;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import net.minecraft.util.ARGB;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public record RenderTargetDescriptor(int width, int height, boolean useDepth, int clearColor) implements ResourceDescriptor<RenderTarget> {
    public RenderTargetDescriptor(int var1, int var2, boolean var3, int var4) {
@@ -18,7 +18,12 @@ public record RenderTargetDescriptor(int width, int height, boolean useDepth, in
    }
 
    public void prepare(RenderTarget var1) {
-      var1.clear(ARGB.redFloat(this.clearColor), ARGB.greenFloat(this.clearColor), ARGB.blueFloat(this.clearColor), ARGB.alphaFloat(this.clearColor));
+      if (this.useDepth) {
+         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var1.getColorTexture(), this.clearColor, var1.getDepthTexture(), 1.0);
+      } else {
+         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(var1.getColorTexture(), this.clearColor);
+      }
+
    }
 
    public void free(RenderTarget var1) {

@@ -37,19 +37,17 @@ public class ServerList {
             return;
          }
 
-         ListTag var2 = var1.getList("servers", 10);
-
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            CompoundTag var4 = var2.getCompound(var3);
-            ServerData var5 = ServerData.read(var4);
-            if (var4.getBoolean("hidden")) {
-               this.hiddenServerList.add(var5);
+         var1.getListOrEmpty("servers").compoundStream().forEach((var1x) -> {
+            ServerData var2 = ServerData.read(var1x);
+            if (var1x.getBooleanOr("hidden", false)) {
+               this.hiddenServerList.add(var2);
             } else {
-               this.serverList.add(var5);
+               this.serverList.add(var2);
             }
-         }
-      } catch (Exception var6) {
-         LOGGER.error("Couldn't load server list", var6);
+
+         });
+      } catch (Exception var2) {
+         LOGGER.error("Couldn't load server list", var2);
       }
 
    }

@@ -238,9 +238,9 @@ public class LocalPlayer extends AbstractClientPlayer {
          boolean var11 = Mth.lengthSquared(var1, var3, var5) > Mth.square(2.0E-4) || this.positionReminder >= 20;
          boolean var12 = var7 != 0.0 || var9 != 0.0;
          if (var11 && var12) {
-            this.connection.send(new ServerboundMovePlayerPacket.PosRot(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
+            this.connection.send(new ServerboundMovePlayerPacket.PosRot(this.position(), this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
          } else if (var11) {
-            this.connection.send(new ServerboundMovePlayerPacket.Pos(this.getX(), this.getY(), this.getZ(), this.onGround(), this.horizontalCollision));
+            this.connection.send(new ServerboundMovePlayerPacket.Pos(this.position(), this.onGround(), this.horizontalCollision));
          } else if (var12) {
             this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
          } else if (this.lastOnGround != this.onGround() || this.lastHorizontalCollision != this.horizontalCollision) {
@@ -692,7 +692,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35, this.getZ() + (double)this.getBbWidth() * 0.35);
       }
 
-      if (var2 || this.isUsingItem() && !this.isPassenger()) {
+      if (var2 || this.isUsingItem() && !this.isPassenger() || this.input.keyPresses.backward()) {
          this.sprintTriggerTime = 0;
       }
 

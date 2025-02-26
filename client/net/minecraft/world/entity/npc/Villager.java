@@ -106,6 +106,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private static final long TIME_SINCE_SLEEPING_FOR_GOLEM_SPAWNING = 24000L;
    @VisibleForTesting
    public static final float SPEED_MODIFIER = 0.5F;
+   private static final int DEFAULT_XP = 0;
+   private static final byte DEFAULT_FOOD_LEVEL = 0;
+   private static final int DEFAULT_LAST_RESTOCK = 0;
+   private static final int DEFAULT_LAST_GOSSIP_DECAY = 0;
+   private static final int DEFAULT_RESTOCKS_TODAY = 0;
+   private static final boolean DEFAULT_ASSIGN_PROFESSION_WHEN_SPAWNED = false;
    private int updateMerchantTimer;
    private boolean increaseProfessionLevelOnUpdate;
    @Nullable
@@ -134,7 +140,13 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    public Villager(EntityType<? extends Villager> var1, Level var2, Holder<VillagerType> var3) {
       super(var1, var2);
+      this.foodLevel = 0;
       this.gossips = new GossipContainer();
+      this.lastGossipDecayTime = 0L;
+      this.villagerXp = 0;
+      this.lastRestockGameTime = 0L;
+      this.numberOfRestocksToday = 0;
+      this.assignProfessionWhenSpawned = false;
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
       this.getNavigation().setCanFloat(true);
       this.getNavigation().setRequiredPathLength(48.0F);
@@ -450,30 +462,21 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
-      if (var1.contains("FoodLevel", 1)) {
-         this.foodLevel = var1.getByte("FoodLevel");
-      }
-
+      this.foodLevel = var1.getByteOr("FoodLevel", (byte)0);
       this.gossips.clear();
       Optional var10000 = var1.read("Gossips", GossipContainer.CODEC);
       GossipContainer var10001 = this.gossips;
       Objects.requireNonNull(var10001);
       var10000.ifPresent(var10001::putAll);
-      if (var1.contains("Xp", 3)) {
-         this.villagerXp = var1.getInt("Xp");
-      }
-
-      this.lastRestockGameTime = var1.getLong("LastRestock");
-      this.lastGossipDecayTime = var1.getLong("LastGossipDecay");
+      this.villagerXp = var1.getIntOr("Xp", 0);
+      this.lastRestockGameTime = var1.getLongOr("LastRestock", 0L);
+      this.lastGossipDecayTime = var1.getLongOr("LastGossipDecay", 0L);
       if (this.level() instanceof ServerLevel) {
          this.refreshBrain((ServerLevel)this.level());
       }
 
-      this.numberOfRestocksToday = var1.getInt("RestocksToday");
-      if (var1.contains("AssignProfessionWhenSpawned")) {
-         this.assignProfessionWhenSpawned = var1.getBoolean("AssignProfessionWhenSpawned");
-      }
-
+      this.numberOfRestocksToday = var1.getIntOr("RestocksToday", 0);
+      this.assignProfessionWhenSpawned = var1.getBooleanOr("AssignProfessionWhenSpawned", false);
    }
 
    public boolean removeWhenFarAway(double var1) {

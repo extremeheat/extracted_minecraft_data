@@ -74,8 +74,10 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    private static final float PROBABILITY_OF_SPAWNING_AS_BABY = 0.2F;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final double PROBABILITY_OF_SPAWNING_WITH_CROSSBOW_INSTEAD_OF_SWORD = 0.5;
+   private static final boolean DEFAULT_IS_BABY = false;
+   private static final boolean DEFAULT_CANNOT_HUNT = false;
    private final SimpleContainer inventory = new SimpleContainer(8);
-   private boolean cannotHunt;
+   private boolean cannotHunt = false;
    protected static final ImmutableList<SensorType<? extends Sensor<? super Piglin>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -86,21 +88,15 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.isBaby()) {
-         var1.putBoolean("IsBaby", true);
-      }
-
-      if (this.cannotHunt) {
-         var1.putBoolean("CannotHunt", true);
-      }
-
+      var1.putBoolean("IsBaby", this.isBaby());
+      var1.putBoolean("CannotHunt", this.cannotHunt);
       this.writeInventoryToTag(var1, this.registryAccess());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setBaby(var1.getBoolean("IsBaby"));
-      this.setCannotHunt(var1.getBoolean("CannotHunt"));
+      this.setBaby(var1.getBooleanOr("IsBaby", false));
+      this.setCannotHunt(var1.getBooleanOr("CannotHunt", false));
       this.readInventoryFromTag(var1, this.registryAccess());
    }
 

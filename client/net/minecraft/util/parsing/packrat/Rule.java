@@ -1,16 +1,26 @@
 package net.minecraft.util.parsing.packrat;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 public interface Rule<S, T> {
-   Optional<T> parse(ParseState<S> var1);
+   @Nullable
+   T parse(ParseState<S> var1);
 
    static <S, T> Rule<S, T> fromTerm(Term<S> var0, RuleAction<S, T> var1) {
       return new WrappedTerm<S, T>(var1, var0);
    }
 
-   static <S, T> Rule<S, T> fromTerm(Term<S> var0, SimpleRuleAction<T> var1) {
-      return new WrappedTerm<S, T>((var1x, var2) -> Optional.of(var1.run(var2)), var0);
+   static <S, T> Rule<S, T> fromTerm(Term<S> var0, SimpleRuleAction<S, T> var1) {
+      return new WrappedTerm<S, T>(var1, var0);
+   }
+
+   @FunctionalInterface
+   public interface SimpleRuleAction<S, T> extends RuleAction<S, T> {
+      T run(Scope var1);
+
+      default T run(ParseState<S> var1) {
+         return (T)this.run(var1.scope());
+      }
    }
 
    public static record WrappedTerm<S, T>(RuleAction<S, T> action, Term<S> child) implements Rule<S, T> {
@@ -20,19 +30,30 @@ public interface Rule<S, T> {
          this.child = var2;
       }
 
-      public Optional<T> parse(ParseState<S> var1) {
-         Scope var2 = new Scope();
-         return this.child.parse(var1, var2, Control.UNBOUND) ? this.action.run(var1, var2) : Optional.empty();
+      @Nullable
+      public T parse(ParseState<S> var1) {
+         Scope var2 = var1.scope();
+         var2.pushFrame();
+
+         Object var3;
+         try {
+            if (!this.child.parse(var1, var2, Control.UNBOUND)) {
+               var3 = null;
+               return (T)var3;
+            }
+
+            var3 = this.action.run(var1);
+         } finally {
+            var2.popFrame();
+         }
+
+         return (T)var3;
       }
    }
 
    @FunctionalInterface
    public interface RuleAction<S, T> {
-      Optional<T> run(ParseState<S> var1, Scope var2);
-   }
-
-   @FunctionalInterface
-   public interface SimpleRuleAction<T> {
-      T run(Scope var1);
+      @Nullable
+      T run(ParseState<S> var1);
    }
 }

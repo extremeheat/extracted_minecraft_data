@@ -2,18 +2,16 @@ package net.minecraft.client.data.models.blockstates;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import net.minecraft.client.data.models.MultiVariant;
 import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.multipart.Condition;
-import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
 import net.minecraft.world.level.block.Block;
 
 public class MultiPartGenerator implements BlockModelDefinitionGenerator {
    private final Block block;
-   private final List<Selector> parts = new ArrayList();
+   private final List<Entry> parts = new ArrayList();
 
    private MultiPartGenerator(Block var1) {
       super();
@@ -29,7 +27,7 @@ public class MultiPartGenerator implements BlockModelDefinitionGenerator {
    }
 
    public MultiPartGenerator with(MultiVariant var1) {
-      this.parts.add(new Selector(Optional.empty(), var1));
+      this.parts.add(new Entry(Optional.empty(), var1));
       return this;
    }
 
@@ -39,7 +37,7 @@ public class MultiPartGenerator implements BlockModelDefinitionGenerator {
 
    public MultiPartGenerator with(Condition var1, MultiVariant var2) {
       this.validateCondition(var1);
-      this.parts.add(new Selector(Optional.of(var1), var2));
+      this.parts.add(new Entry(Optional.of(var1), var2));
       return this;
    }
 
@@ -48,6 +46,18 @@ public class MultiPartGenerator implements BlockModelDefinitionGenerator {
    }
 
    public BlockModelDefinition create() {
-      return new BlockModelDefinition(Map.of(), Optional.of(new MultiPart.Definition(List.copyOf(this.parts))));
+      return new BlockModelDefinition(Optional.empty(), Optional.of(new BlockModelDefinition.MultiPartDefinition(this.parts.stream().map(Entry::toUnbaked).toList())));
+   }
+
+   static record Entry(Optional<Condition> condition, MultiVariant variants) {
+      Entry(Optional<Condition> var1, MultiVariant var2) {
+         super();
+         this.condition = var1;
+         this.variants = var2;
+      }
+
+      public Selector toUnbaked() {
+         return new Selector(this.condition, this.variants.toUnbaked());
+      }
    }
 }

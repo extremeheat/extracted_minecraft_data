@@ -38,11 +38,24 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    public static final int MAX_OFFSET_PER_AXIS = 48;
    public static final int MAX_SIZE_PER_AXIS = 48;
    public static final String AUTHOR_TAG = "author";
+   private static final String DEFAULT_AUTHOR = "";
+   private static final String DEFAULT_METADATA = "";
+   private static final BlockPos DEFAULT_POS = new BlockPos(0, 1, 0);
+   private static final Vec3i DEFAULT_SIZE;
+   private static final Rotation DEFAULT_ROTATION;
+   private static final Mirror DEFAULT_MIRROR;
+   private static final boolean DEFAULT_IGNORE_ENTITIES = true;
+   private static final boolean DEFAULT_STRICT = false;
+   private static final boolean DEFAULT_POWERED = false;
+   private static final boolean DEFAULT_SHOW_AIR = false;
+   private static final boolean DEFAULT_SHOW_BOUNDING_BOX = true;
+   private static final float DEFAULT_INTEGRITY = 1.0F;
+   private static final long DEFAULT_SEED = 0L;
    @Nullable
    private ResourceLocation structureName;
    private String author = "";
    private String metaData = "";
-   private BlockPos structurePos = new BlockPos(0, 1, 0);
+   private BlockPos structurePos;
    private Vec3i structureSize;
    private Mirror mirror;
    private Rotation rotation;
@@ -57,13 +70,17 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
 
    public StructureBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.STRUCTURE_BLOCK, var1, var2);
-      this.structureSize = Vec3i.ZERO;
+      this.structurePos = DEFAULT_POS;
+      this.structureSize = DEFAULT_SIZE;
       this.mirror = Mirror.NONE;
       this.rotation = Rotation.NONE;
       this.ignoreEntities = true;
       this.strict = false;
+      this.powered = false;
+      this.showAir = false;
       this.showBoundingBox = true;
       this.integrity = 1.0F;
+      this.seed = 0L;
       this.mode = (StructureMode)var2.getValue(StructureBlock.MODE);
    }
 
@@ -92,32 +109,27 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.setStructureName(var1.getString("name"));
-      this.author = var1.getString("author");
-      this.metaData = var1.getString("metadata");
-      int var3 = Mth.clamp(var1.getInt("posX"), -48, 48);
-      int var4 = Mth.clamp(var1.getInt("posY"), -48, 48);
-      int var5 = Mth.clamp(var1.getInt("posZ"), -48, 48);
+      this.setStructureName(var1.getStringOr("name", ""));
+      this.author = var1.getStringOr("author", "");
+      this.metaData = var1.getStringOr("metadata", "");
+      int var3 = Mth.clamp(var1.getIntOr("posX", DEFAULT_POS.getX()), -48, 48);
+      int var4 = Mth.clamp(var1.getIntOr("posY", DEFAULT_POS.getY()), -48, 48);
+      int var5 = Mth.clamp(var1.getIntOr("posZ", DEFAULT_POS.getZ()), -48, 48);
       this.structurePos = new BlockPos(var3, var4, var5);
-      int var6 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
-      int var7 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
-      int var8 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
+      int var6 = Mth.clamp(var1.getIntOr("sizeX", DEFAULT_SIZE.getX()), 0, 48);
+      int var7 = Mth.clamp(var1.getIntOr("sizeY", DEFAULT_SIZE.getY()), 0, 48);
+      int var8 = Mth.clamp(var1.getIntOr("sizeZ", DEFAULT_SIZE.getZ()), 0, 48);
       this.structureSize = new Vec3i(var6, var7, var8);
-      this.rotation = (Rotation)var1.read("rotation", Rotation.LEGACY_CODEC).orElse(Rotation.NONE);
-      this.mirror = (Mirror)var1.read("mirror", Mirror.LEGACY_CODEC).orElse(Mirror.NONE);
+      this.rotation = (Rotation)var1.read("rotation", Rotation.LEGACY_CODEC).orElse(DEFAULT_ROTATION);
+      this.mirror = (Mirror)var1.read("mirror", Mirror.LEGACY_CODEC).orElse(DEFAULT_MIRROR);
       this.mode = (StructureMode)var1.read("mode", StructureMode.LEGACY_CODEC).orElse(StructureMode.DATA);
-      this.ignoreEntities = var1.getBoolean("ignoreEntities");
-      this.strict = var1.getBoolean("strict");
-      this.powered = var1.getBoolean("powered");
-      this.showAir = var1.getBoolean("showair");
-      this.showBoundingBox = var1.getBoolean("showboundingbox");
-      if (var1.contains("integrity")) {
-         this.integrity = var1.getFloat("integrity");
-      } else {
-         this.integrity = 1.0F;
-      }
-
-      this.seed = var1.getLong("seed");
+      this.ignoreEntities = var1.getBooleanOr("ignoreEntities", true);
+      this.strict = var1.getBooleanOr("strict", false);
+      this.powered = var1.getBooleanOr("powered", false);
+      this.showAir = var1.getBooleanOr("showair", false);
+      this.showBoundingBox = var1.getBooleanOr("showboundingbox", true);
+      this.integrity = var1.getFloatOr("integrity", 1.0F);
+      this.seed = var1.getLongOr("seed", 0L);
       this.updateBlockState();
    }
 
@@ -531,6 +543,12 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    // $FF: synthetic method
    private static void lambda$placeStructure$5(ServerLevel var0, BlockPos var1) {
       var0.setBlock(var1, Blocks.STRUCTURE_VOID.defaultBlockState(), 2);
+   }
+
+   static {
+      DEFAULT_SIZE = Vec3i.ZERO;
+      DEFAULT_ROTATION = Rotation.NONE;
+      DEFAULT_MIRROR = Mirror.NONE;
    }
 
    public static enum UpdateType {

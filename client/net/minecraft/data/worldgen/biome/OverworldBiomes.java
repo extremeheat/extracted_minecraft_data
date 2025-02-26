@@ -524,7 +524,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(var3);
       BiomeDefaultFeatures.addMangroveSwampDisks(var3);
       BiomeDefaultFeatures.addMangroveSwampVegetation(var3);
-      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
+      BiomeDefaultFeatures.addMangroveSwampExtraVegetation(var3);
       Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
       return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.8F).downfall(0.9F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).waterFogColor(5077600).fogColor(12638463).skyColor(calculateSkyColor(0.8F)).foliageColorOverride(9285927).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(var4).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
    }

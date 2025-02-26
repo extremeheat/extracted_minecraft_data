@@ -37,10 +37,19 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<Boolean> DATA_WAITING;
    private static final EntityDataAccessor<ParticleOptions> DATA_PARTICLE;
    private static final float MAX_RADIUS = 32.0F;
+   private static final int DEFAULT_AGE = 0;
+   private static final int DEFAULT_DURATION_ON_USE = 0;
+   private static final float DEFAULT_RADIUS_ON_USE = 0.0F;
+   private static final float DEFAULT_RADIUS_PER_TICK = 0.0F;
+   private static final float DEFAULT_POTION_DURATION_SCALE = 1.0F;
    private static final float MINIMAL_RADIUS = 0.5F;
    private static final float DEFAULT_RADIUS = 3.0F;
    public static final float DEFAULT_WIDTH = 6.0F;
    public static final float HEIGHT = 0.5F;
+   public static final int INFINITE_DURATION = -1;
+   public static final int DEFAULT_LINGERING_DURATION = 600;
+   private static final int DEFAULT_WAIT_TIME = 20;
+   private static final int DEFAULT_REAPPLICATION_DELAY = 20;
    private static final ColorParticleOption DEFAULT_PARTICLE;
    private PotionContents potionContents;
    private float potionDurationScale;
@@ -61,9 +70,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.potionContents = PotionContents.EMPTY;
       this.potionDurationScale = 1.0F;
       this.victims = Maps.newHashMap();
-      this.duration = 600;
+      this.duration = -1;
       this.waitTime = 20;
       this.reapplicationDelay = 20;
+      this.durationOnUse = 0;
+      this.radiusOnUse = 0.0F;
+      this.radiusPerTick = 0.0F;
       this.noPhysics = true;
    }
 
@@ -192,7 +204,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    private void serverTick(ServerLevel var1) {
-      if (this.tickCount >= this.waitTime + this.duration) {
+      if (this.duration != -1 && this.tickCount >= this.waitTime + this.duration) {
          this.discard();
       } else {
          boolean var2 = this.isWaiting();
@@ -253,7 +265,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
                                     this.setRadius(var4);
                                  }
 
-                                 if (this.durationOnUse != 0) {
+                                 if (this.durationOnUse != 0 && this.duration != -1) {
                                     this.duration += this.durationOnUse;
                                     if (this.duration <= 0) {
                                        this.discard();
@@ -336,19 +348,19 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.tickCount = var1.getInt("Age");
-      this.duration = var1.getInt("Duration");
-      this.waitTime = var1.getInt("WaitTime");
-      this.reapplicationDelay = var1.getInt("ReapplicationDelay");
-      this.durationOnUse = var1.getInt("DurationOnUse");
-      this.radiusOnUse = var1.getFloat("RadiusOnUse");
-      this.radiusPerTick = var1.getFloat("RadiusPerTick");
-      this.setRadius(var1.getFloat("Radius"));
+      this.tickCount = var1.getIntOr("Age", 0);
+      this.duration = var1.getIntOr("Duration", -1);
+      this.waitTime = var1.getIntOr("WaitTime", 20);
+      this.reapplicationDelay = var1.getIntOr("ReapplicationDelay", 20);
+      this.durationOnUse = var1.getIntOr("DurationOnUse", 0);
+      this.radiusOnUse = var1.getFloatOr("RadiusOnUse", 0.0F);
+      this.radiusPerTick = var1.getFloatOr("RadiusPerTick", 0.0F);
+      this.setRadius(var1.getFloatOr("Radius", 3.0F));
       this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.setParticle((ParticleOptions)var1.read("Particle", ParticleTypes.CODEC, var2).orElse(DEFAULT_PARTICLE));
       this.setPotionContents((PotionContents)var1.read("potion_contents", PotionContents.CODEC, var2).orElse(PotionContents.EMPTY));
-      this.potionDurationScale = var1.getFloatOrDefault("potion_duration_scale", 1.0F);
+      this.potionDurationScale = var1.getFloatOr("potion_duration_scale", 1.0F);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

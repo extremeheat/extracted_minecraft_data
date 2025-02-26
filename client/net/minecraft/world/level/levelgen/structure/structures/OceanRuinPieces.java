@@ -186,9 +186,9 @@ public class OceanRuinPieces {
 
       public static OceanRuinPiece create(StructureTemplateManager var0, CompoundTag var1) {
          Rotation var2 = (Rotation)var1.read("Rot", Rotation.LEGACY_CODEC).orElseThrow();
-         float var3 = var1.getFloat("Integrity");
+         float var3 = var1.getFloatOr("Integrity", 0.0F);
          OceanRuinStructure.Type var4 = (OceanRuinStructure.Type)var1.read("BiomeType", OceanRuinStructure.Type.LEGACY_CODEC).orElseThrow();
-         boolean var5 = var1.getBoolean("IsLarge");
+         boolean var5 = var1.getBooleanOr("IsLarge", false);
          return new OceanRuinPiece(var0, var1, var2, var3, var4, var5);
       }
 

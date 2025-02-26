@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 public class ChiseledBookShelfBlockEntity extends BlockEntity implements Container {
    public static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int DEFAULT_LAST_INTERACTED_SLOT = -1;
    private final NonNullList<ItemStack> items;
    private int lastInteractedSlot;
 
@@ -57,7 +58,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      this.lastInteractedSlot = var1.getInt("last_interacted_slot");
+      this.lastInteractedSlot = var1.getIntOr("last_interacted_slot", -1);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

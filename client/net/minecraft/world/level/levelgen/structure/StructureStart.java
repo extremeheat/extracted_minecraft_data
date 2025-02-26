@@ -40,7 +40,7 @@ public final class StructureStart {
 
    @Nullable
    public static StructureStart loadStaticStart(StructurePieceSerializationContext var0, CompoundTag var1, long var2) {
-      String var4 = var1.getString("id");
+      String var4 = var1.getStringOr("id", "");
       if ("INVALID".equals(var4)) {
          return INVALID_START;
       } else {
@@ -50,9 +50,9 @@ public final class StructureStart {
             LOGGER.error("Unknown stucture id: {}", var4);
             return null;
          } else {
-            ChunkPos var7 = new ChunkPos(var1.getInt("ChunkX"), var1.getInt("ChunkZ"));
-            int var8 = var1.getInt("references");
-            ListTag var9 = var1.getList("Children", 10);
+            ChunkPos var7 = new ChunkPos(var1.getIntOr("ChunkX", 0), var1.getIntOr("ChunkZ", 0));
+            int var8 = var1.getIntOr("references", 0);
+            ListTag var9 = var1.getListOrEmpty("Children");
 
             try {
                PiecesContainer var10 = PiecesContainer.load(var9, var0);

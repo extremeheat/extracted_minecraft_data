@@ -33,8 +33,8 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
 
    public SwampHutPiece(CompoundTag var1) {
       super(StructurePieceType.SWAMPLAND_HUT, var1);
-      this.spawnedWitch = var1.getBoolean("Witch");
-      this.spawnedCat = var1.getBoolean("Cat");
+      this.spawnedWitch = var1.getBooleanOr("Witch", false);
+      this.spawnedCat = var1.getBooleanOr("Cat", false);
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

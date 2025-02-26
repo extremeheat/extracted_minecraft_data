@@ -90,7 +90,7 @@ public class GetServerDetailsTask extends LongRunningTask {
    }
 
    private RealmsServerAddress fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
 
       for(int var2 = 0; var2 < 40; ++var2) {
          if (this.aborted()) {

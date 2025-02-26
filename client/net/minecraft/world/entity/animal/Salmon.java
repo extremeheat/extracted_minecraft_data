@@ -64,7 +64,7 @@ public class Salmon extends AbstractSchoolingFish {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE, Salmon.Variant.MEDIUM.id());
+      var1.define(DATA_TYPE, Salmon.Variant.DEFAULT.id());
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -82,7 +82,7 @@ public class Salmon extends AbstractSchoolingFish {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("type", Salmon.Variant.CODEC).orElse(Salmon.Variant.MEDIUM));
+      this.setVariant((Variant)var1.read("type", Salmon.Variant.CODEC).orElse(Salmon.Variant.DEFAULT));
    }
 
    public void saveToBucketTag(ItemStack var1) {
@@ -144,6 +144,7 @@ public class Salmon extends AbstractSchoolingFish {
       MEDIUM("medium", 1, 1.0F),
       LARGE("large", 2, 1.5F);
 
+      public static final Variant DEFAULT = MEDIUM;
       public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);

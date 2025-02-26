@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedWriter;
@@ -45,14 +45,15 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    public TextureAtlas(ResourceLocation var1) {
       super();
       this.location = var1;
-      this.maxSupportedTextureSize = RenderSystem.maxSupportedTextureSize();
+      this.maxSupportedTextureSize = RenderSystem.getDevice().getMaxTextureSize();
    }
 
    public void upload(SpriteLoader.Preparations var1) {
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{var1.width(), var1.height(), var1.mipLevel(), this.location});
-      ResourceLocation var10003 = this.location;
-      Objects.requireNonNull(var10003);
-      this.texture = new GpuTexture(var10003::toString, TextureFormat.RGBA8, var1.width(), var1.height(), var1.mipLevel() + 1);
+      GpuDevice var10001 = RenderSystem.getDevice();
+      ResourceLocation var10002 = this.location;
+      Objects.requireNonNull(var10002);
+      this.texture = var10001.createTexture(var10002::toString, TextureFormat.RGBA8, var1.width(), var1.height(), var1.mipLevel() + 1);
       this.width = var1.width();
       this.height = var1.height();
       this.mipLevel = var1.mipLevel();
@@ -61,8 +62,8 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       this.texturesByName = Map.copyOf(var1.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {
-         String var10002 = String.valueOf(this.location);
-         throw new IllegalStateException("Atlas '" + var10002 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
+         String var10 = String.valueOf(this.location);
+         throw new IllegalStateException("Atlas '" + var10 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
       } else {
          ArrayList var2 = new ArrayList();
          ArrayList var3 = new ArrayList();

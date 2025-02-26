@@ -70,6 +70,7 @@ public class Dolphin extends AgeableWaterCreature {
    private static final int TOTAL_MOISTNESS_LEVEL = 2400;
    public static final Predicate<ItemEntity> ALLOWED_ITEMS;
    public static final float BABY_SCALE = 0.65F;
+   private static final boolean DEFAULT_GOT_FISH = false;
    @Nullable
    BlockPos treasurePos;
 
@@ -130,8 +131,8 @@ public class Dolphin extends AgeableWaterCreature {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setGotFish(var1.getBoolean("GotFish"));
-      this.setMoisntessLevel(var1.getInt("Moistness"));
+      this.setGotFish(var1.getBooleanOr("GotFish", false));
+      this.setMoisntessLevel(var1.getIntOr("Moistness", 2400));
    }
 
    protected void registerGoals() {

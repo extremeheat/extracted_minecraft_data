@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
 import java.util.Objects;
@@ -22,7 +23,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
 public abstract class BlockEntity {
-   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Codec<BlockEntityType<?>> TYPE_CODEC;
+   private static final Logger LOGGER;
    private final BlockEntityType<?> type;
    @Nullable
    protected Level level;
@@ -61,7 +62,7 @@ public abstract class BlockEntity {
    }
 
    public static BlockPos getPosFromTag(CompoundTag var0) {
-      return new BlockPos(var0.getInt("x"), var0.getInt("y"), var0.getInt("z"));
+      return new BlockPos(var0.getIntOr("x", 0), var0.getIntOr("y", 0), var0.getIntOr("z", 0));
    }
 
    @Nullable
@@ -124,16 +125,11 @@ public abstract class BlockEntity {
    }
 
    private void saveId(CompoundTag var1) {
-      ResourceLocation var2 = BlockEntityType.getKey(this.getType());
-      if (var2 == null) {
-         throw new RuntimeException(String.valueOf(this.getClass()) + " is missing a mapping! This is a bug!");
-      } else {
-         var1.putString("id", var2.toString());
-      }
+      addEntityType(var1, this.getType());
    }
 
    public static void addEntityType(CompoundTag var0, BlockEntityType<?> var1) {
-      var0.putString("id", BlockEntityType.getKey(var1).toString());
+      var0.store("id", TYPE_CODEC, var1);
    }
 
    private void saveMetadata(CompoundTag var1) {
@@ -145,31 +141,30 @@ public abstract class BlockEntity {
 
    @Nullable
    public static BlockEntity loadStatic(BlockPos var0, BlockState var1, CompoundTag var2, HolderLookup.Provider var3) {
-      String var4 = var2.getString("id");
-      ResourceLocation var5 = ResourceLocation.tryParse(var4);
-      if (var5 == null) {
-         LOGGER.error("Block entity has invalid type: {}", var4);
+      BlockEntityType var4 = (BlockEntityType)var2.read("id", TYPE_CODEC).orElse((Object)null);
+      if (var4 == null) {
+         LOGGER.error("Skipping block entity with invalid type: {}", var2.get("id"));
          return null;
       } else {
-         return (BlockEntity)BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(var5).map((var3x) -> {
-            try {
-               return var3x.create(var0, var1);
-            } catch (Throwable var5) {
-               LOGGER.error("Failed to create block entity {}", var4, var5);
-               return null;
-            }
-         }).map((var3x) -> {
-            try {
-               var3x.loadWithComponents(var2, var3);
-               return var3x;
-            } catch (Throwable var5) {
-               LOGGER.error("Failed to load data for block entity {}", var4, var5);
-               return null;
-            }
-         }).orElseGet(() -> {
-            LOGGER.warn("Skipping BlockEntity with id {}", var4);
+         BlockEntity var5;
+         try {
+            var5 = var4.create(var0, var1);
+         } catch (Throwable var8) {
+            LOGGER.error("Failed to create block entity {}", var4, var8);
             return null;
-         });
+         }
+
+         if (var5 == null) {
+            return null;
+         } else {
+            try {
+               var5.loadWithComponents(var2, var3);
+               return var5;
+            } catch (Throwable var7) {
+               LOGGER.error("Failed to load data for block entity {}", var4, var7);
+               return null;
+            }
+         }
       }
    }
 
@@ -309,6 +304,11 @@ public abstract class BlockEntity {
    @Nullable
    public static Component parseCustomNameSafe(@Nullable Tag var0, HolderLookup.Provider var1) {
       return var0 == null ? null : (Component)ComponentSerialization.CODEC.parse(var1.createSerializationContext(NbtOps.INSTANCE), var0).resultOrPartial((var0x) -> LOGGER.warn("Failed to parse custom name, discarding: {}", var0x)).orElse((Object)null);
+   }
+
+   static {
+      TYPE_CODEC = BuiltInRegistries.BLOCK_ENTITY_TYPE.byNameCodec();
+      LOGGER = LogUtils.getLogger();
    }
 
    static class ComponentHelper {

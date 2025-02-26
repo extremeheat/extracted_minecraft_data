@@ -149,10 +149,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("acceleration_power", 6)) {
-         this.accelerationPower = var1.getDouble("acceleration_power");
-      }
-
+      this.accelerationPower = var1.getDoubleOr("acceleration_power", 0.1);
    }
 
    public float getLightLevelDependentMagicValue() {

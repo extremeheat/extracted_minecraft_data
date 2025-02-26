@@ -3,11 +3,11 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -34,17 +34,13 @@ public abstract class RenderStateShard {
    protected static final OverlayStateShard OVERLAY;
    protected static final OverlayStateShard NO_OVERLAY;
    protected static final LayeringStateShard NO_LAYERING;
-   protected static final LayeringStateShard POLYGON_OFFSET_LAYERING;
    protected static final LayeringStateShard VIEW_OFFSET_Z_LAYERING;
    protected static final LayeringStateShard VIEW_OFFSET_Z_LAYERING_FORWARD;
-   protected static final LayeringStateShard WORLD_BORDER_LAYERING;
    protected static final OutputStateShard MAIN_TARGET;
-   protected static final OutputStateShard LIGHT_TEXTURE_TARGET;
    protected static final OutputStateShard OUTLINE_TARGET;
    protected static final OutputStateShard TRANSLUCENT_TARGET;
    protected static final OutputStateShard PARTICLES_TARGET;
    protected static final OutputStateShard WEATHER_TARGET;
-   protected static final OutputStateShard CLOUDS_TARGET;
    protected static final OutputStateShard ITEM_ENTITY_TARGET;
    protected static final LineStateShard DEFAULT_LINE;
 
@@ -64,6 +60,10 @@ public abstract class RenderStateShard {
    }
 
    public String toString() {
+      return this.name;
+   }
+
+   public String getName() {
       return this.name;
    }
 
@@ -92,13 +92,6 @@ public abstract class RenderStateShard {
       NO_LAYERING = new LayeringStateShard("no_layering", () -> {
       }, () -> {
       });
-      POLYGON_OFFSET_LAYERING = new LayeringStateShard("polygon_offset_layering", () -> {
-         RenderSystem.polygonOffset(-1.0F, -10.0F);
-         RenderSystem.enablePolygonOffset();
-      }, () -> {
-         RenderSystem.polygonOffset(0.0F, 0.0F);
-         RenderSystem.disablePolygonOffset();
-      });
       VIEW_OFFSET_Z_LAYERING = new LayeringStateShard("view_offset_z_layering", () -> {
          Matrix4fStack var0 = RenderSystem.getModelViewStack();
          var0.pushMatrix();
@@ -115,70 +108,27 @@ public abstract class RenderStateShard {
          Matrix4fStack var0 = RenderSystem.getModelViewStack();
          var0.popMatrix();
       });
-      WORLD_BORDER_LAYERING = new LayeringStateShard("world_border_layering", () -> {
-         RenderSystem.polygonOffset(-3.0F, -3.0F);
-         RenderSystem.enablePolygonOffset();
-      }, () -> {
-         RenderSystem.polygonOffset(0.0F, 0.0F);
-         RenderSystem.disablePolygonOffset();
-      });
-      MAIN_TARGET = new OutputStateShard("main_target", () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false), () -> {
-      });
-      LIGHT_TEXTURE_TARGET = new OutputStateShard("light_texture_target", () -> Minecraft.getInstance().gameRenderer.lightTexture().getTarget().bindWrite(true), () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(true));
+      MAIN_TARGET = new OutputStateShard("main_target", () -> Minecraft.getInstance().getMainRenderTarget());
       OUTLINE_TARGET = new OutputStateShard("outline_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.entityOutlineTarget();
-         if (var0 != null) {
-            var0.bindWrite(false);
-         } else {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-         }
-
-      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
+         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
+      });
       TRANSLUCENT_TARGET = new OutputStateShard("translucent_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getTranslucentTarget();
-         if (var0 != null) {
-            var0.bindWrite(false);
-         } else {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-         }
-
-      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
+         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
+      });
       PARTICLES_TARGET = new OutputStateShard("particles_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getParticlesTarget();
-         if (var0 != null) {
-            var0.bindWrite(false);
-         } else {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-         }
-
-      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
+         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
+      });
       WEATHER_TARGET = new OutputStateShard("weather_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getWeatherTarget();
-         if (var0 != null) {
-            var0.bindWrite(false);
-         } else {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-         }
-
-      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
-      CLOUDS_TARGET = new OutputStateShard("clouds_target", () -> {
-         RenderTarget var0 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
-         if (var0 != null) {
-            var0.bindWrite(false);
-         } else {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-         }
-
-      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
+         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
+      });
       ITEM_ENTITY_TARGET = new OutputStateShard("item_entity_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getItemEntityTarget();
-         if (var0 != null) {
-            var0.bindWrite(false);
-         } else {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-         }
-
-      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
+         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
+      });
       DEFAULT_LINE = new LineStateShard(OptionalDouble.of(1.0));
    }
 
@@ -265,7 +215,7 @@ public abstract class RenderStateShard {
             TextureManager var3x = Minecraft.getInstance().getTextureManager();
             AbstractTexture var4 = var3x.getTexture(var1);
             var4.setFilter(var2, var3);
-            RenderSystem.setShaderTexture(0, (GpuTexture)var4.getTexture());
+            RenderSystem.setShaderTexture(0, var4.getTexture());
          }, () -> {
          });
          this.texture = Optional.of(var1);
@@ -347,8 +297,17 @@ public abstract class RenderStateShard {
    }
 
    protected static class OutputStateShard extends RenderStateShard {
-      public OutputStateShard(String var1, Runnable var2, Runnable var3) {
-         super(var1, var2, var3);
+      private final Supplier<RenderTarget> renderTargetSupplier;
+
+      public OutputStateShard(String var1, Supplier<RenderTarget> var2) {
+         super(var1, () -> {
+         }, () -> {
+         });
+         this.renderTargetSupplier = var2;
+      }
+
+      public RenderTarget getRenderTarget() {
+         return (RenderTarget)this.renderTargetSupplier.get();
       }
    }
 

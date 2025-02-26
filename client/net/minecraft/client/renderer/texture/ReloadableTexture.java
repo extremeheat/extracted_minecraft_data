@@ -1,7 +1,8 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.io.IOException;
 import java.util.Objects;
@@ -32,12 +33,13 @@ public abstract class ReloadableTexture extends AbstractTexture {
    }
 
    private void doLoad(NativeImage var1, boolean var2, boolean var3) {
-      ResourceLocation var10003 = this.resourceId;
-      Objects.requireNonNull(var10003);
-      this.texture = new GpuTexture(var10003::toString, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1);
+      GpuDevice var4 = RenderSystem.getDevice();
+      ResourceLocation var10002 = this.resourceId;
+      Objects.requireNonNull(var10002);
+      this.texture = var4.createTexture(var10002::toString, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1);
       this.setFilter(var2, false);
       this.setClamp(var3);
-      this.texture.write(var1);
+      var4.createCommandEncoder().writeToTexture(this.texture, var1);
    }
 
    public abstract TextureContents loadContents(ResourceManager var1) throws IOException;

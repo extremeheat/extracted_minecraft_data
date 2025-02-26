@@ -246,10 +246,7 @@ public class Armadillo extends Animal {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.switchToState((ArmadilloState)var1.read("state", Armadillo.ArmadilloState.CODEC).orElse(Armadillo.ArmadilloState.IDLE));
-      if (var1.contains("scute_time")) {
-         this.scuteTime = var1.getInt("scute_time");
-      }
-
+      var1.getInt("scute_time").ifPresent((var1x) -> this.scuteTime = var1x);
    }
 
    public void rollUp() {

@@ -72,7 +72,7 @@ public interface ContainerEntity extends Container, MenuProvider {
       this.clearItemStacks();
       ResourceKey var3 = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
       this.setContainerLootTable(var3);
-      this.setContainerLootTableSeed(var1.getLongOrDefault("LootTableSeed", 0L));
+      this.setContainerLootTableSeed(var1.getLongOr("LootTableSeed", 0L));
       if (var3 == null) {
          ContainerHelper.loadAllItems(var1, this.getItemStacks(), var2);
       }

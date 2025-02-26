@@ -144,6 +144,15 @@ public abstract class Player extends LivingEntity {
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_LEFT;
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_RIGHT;
    public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
+   private static final short DEFAULT_SLEEP_TIMER = 0;
+   private static final float DEFAULT_EXPERIENCE_PROGRESS = 0.0F;
+   private static final int DEFAULT_EXPERIENCE_LEVEL = 0;
+   private static final int DEFAULT_TOTAL_EXPERIENCE = 0;
+   private static final int NO_ENCHANTMENT_SEED = 0;
+   private static final int DEFAULT_SELECTED_SLOT = 0;
+   private static final int DEFAULT_SCORE = 0;
+   private static final boolean DEFAULT_IGNORE_FALL_DAMAGE_FROM_CURRENT_IMPULSE = false;
+   private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
    private long timeEntitySatOnShoulder;
    final Inventory inventory;
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
@@ -162,13 +171,13 @@ public abstract class Player extends LivingEntity {
    public double xCloak;
    public double yCloak;
    public double zCloak;
-   private int sleepCounter;
+   private int sleepCounter = 0;
    protected boolean wasUnderwater;
    private final Abilities abilities = new Abilities();
-   public int experienceLevel;
-   public int totalExperience;
-   public float experienceProgress;
-   protected int enchantmentSeed;
+   public int experienceLevel = 0;
+   public int totalExperience = 0;
+   public float experienceProgress = 0.0F;
+   protected int enchantmentSeed = 0;
    protected final float defaultFlySpeed = 0.02F;
    private int lastLevelUpTime;
    private final GameProfile gameProfile;
@@ -191,6 +200,8 @@ public abstract class Player extends LivingEntity {
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
+      this.ignoreFallDamageFromCurrentImpulse = false;
+      this.currentImpulseContextResetGraceTime = 0;
       this.setUUID(var4.getId());
       this.gameProfile = var4;
       this.inventory = new Inventory(this, this.equipment);
@@ -565,17 +576,16 @@ public abstract class Player extends LivingEntity {
    protected void tickRegeneration() {
    }
 
-   private void playShoulderEntityAmbientSound(@Nullable CompoundTag var1) {
-      if (var1 != null && (!var1.contains("Silent") || !var1.getBoolean("Silent")) && this.level().random.nextInt(200) == 0) {
-         String var2 = var1.getString("id");
-         EntityType.byString(var2).filter((var0) -> var0 == EntityType.PARROT).ifPresent((var1x) -> {
-            if (!Parrot.imitateNearbyMobs(this.level(), this)) {
+   private void playShoulderEntityAmbientSound(CompoundTag var1) {
+      if (!var1.isEmpty() && !var1.getBooleanOr("Silent", false)) {
+         if (this.level().random.nextInt(200) == 0) {
+            EntityType var2 = (EntityType)var1.read("id", EntityType.CODEC).orElse((Object)null);
+            if (var2 == EntityType.PARROT && !Parrot.imitateNearbyMobs(this.level(), this)) {
                this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level(), this.level().random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.level().random));
             }
+         }
 
-         });
       }
-
    }
 
    private void touch(Entity var1) {
@@ -713,38 +723,29 @@ public abstract class Player extends LivingEntity {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setUUID(this.gameProfile.getId());
-      ListTag var2 = var1.getList("Inventory", 10);
+      ListTag var2 = var1.getListOrEmpty("Inventory");
       this.inventory.load(var2);
-      this.inventory.setSelectedSlot(var1.getInt("SelectedItemSlot"));
-      this.sleepCounter = var1.getShort("SleepTimer");
-      this.experienceProgress = var1.getFloat("XpP");
-      this.experienceLevel = var1.getInt("XpLevel");
-      this.totalExperience = var1.getInt("XpTotal");
-      this.enchantmentSeed = var1.getInt("XpSeed");
+      this.inventory.setSelectedSlot(var1.getIntOr("SelectedItemSlot", 0));
+      this.sleepCounter = var1.getShortOr("SleepTimer", (short)0);
+      this.experienceProgress = var1.getFloatOr("XpP", 0.0F);
+      this.experienceLevel = var1.getIntOr("XpLevel", 0);
+      this.totalExperience = var1.getIntOr("XpTotal", 0);
+      this.enchantmentSeed = var1.getIntOr("XpSeed", 0);
       if (this.enchantmentSeed == 0) {
          this.enchantmentSeed = this.random.nextInt();
       }
 
-      this.setScore(var1.getInt("Score"));
+      this.setScore(var1.getIntOr("Score", 0));
       this.foodData.readAdditionalSaveData(var1);
       this.abilities.loadSaveData(var1);
       this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.abilities.getWalkingSpeed());
-      if (var1.contains("EnderItems", 9)) {
-         this.enderChestInventory.fromTag(var1.getList("EnderItems", 10), this.registryAccess());
-      }
-
-      if (var1.contains("ShoulderEntityLeft", 10)) {
-         this.setShoulderEntityLeft(var1.getCompound("ShoulderEntityLeft"));
-      }
-
-      if (var1.contains("ShoulderEntityRight", 10)) {
-         this.setShoulderEntityRight(var1.getCompound("ShoulderEntityRight"));
-      }
-
+      var1.getList("EnderItems").ifPresent((var1x) -> this.enderChestInventory.fromTag(var1x, this.registryAccess()));
+      this.setShoulderEntityLeft(var1.getCompoundOrEmpty("ShoulderEntityLeft"));
+      this.setShoulderEntityRight(var1.getCompoundOrEmpty("ShoulderEntityRight"));
       this.setLastDeathLocation(var1.read("LastDeathLocation", GlobalPos.CODEC));
       this.currentImpulseImpactPos = (Vec3)var1.read("current_explosion_impact_pos", Vec3.CODEC).orElse((Object)null);
-      this.ignoreFallDamageFromCurrentImpulse = var1.getBoolean("ignore_fall_damage_from_current_explosion");
-      this.currentImpulseContextResetGraceTime = var1.getInt("current_impulse_context_reset_grace_time");
+      this.ignoreFallDamageFromCurrentImpulse = var1.getBooleanOr("ignore_fall_damage_from_current_explosion", false);
+      this.currentImpulseContextResetGraceTime = var1.getIntOr("current_impulse_context_reset_grace_time", 0);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

@@ -62,7 +62,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                }
 
                CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
-               ListTag var4 = var7.getList("Entities", 10);
+               ListTag var4 = var7.getListOrEmpty("Entities");
                List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
                return new ChunkEntities(var1, var5);
             }

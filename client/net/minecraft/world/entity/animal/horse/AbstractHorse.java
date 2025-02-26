@@ -106,6 +106,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private static final int FLAG_STANDING = 32;
    private static final int FLAG_OPEN_MOUTH = 64;
    public static final int INVENTORY_ROWS = 3;
+   private static final int DEFAULT_TEMPER = 0;
+   private static final boolean DEFAULT_EATING_HAYSTACK = false;
+   private static final boolean DEFAULT_BRED = false;
+   private static final boolean DEFAULT_TAME = false;
    private int eatingCounter;
    private int mouthCounter;
    private int standCounter;
@@ -113,7 +117,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    public int sprintCounter;
    protected boolean isJumping;
    protected SimpleContainer inventory;
-   protected int temper;
+   protected int temper = 0;
    protected float playerJumpPendingScale;
    protected boolean allowStandSliding;
    private float eatAnim;
@@ -770,10 +774,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setEating(var1.getBoolean("EatingHaystack"));
-      this.setBred(var1.getBoolean("Bred"));
-      this.setTemper(var1.getInt("Temper"));
-      this.setTamed(var1.getBoolean("Tame"));
+      this.setEating(var1.getBooleanOr("EatingHaystack", false));
+      this.setBred(var1.getBooleanOr("Bred", false));
+      this.setTemper(var1.getIntOr("Temper", 0));
+      this.setTamed(var1.getBooleanOr("Tame", false));
       this.owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(var1, "Owner", this.level());
    }
 

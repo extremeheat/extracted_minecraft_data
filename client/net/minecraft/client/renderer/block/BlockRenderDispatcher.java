@@ -2,6 +2,8 @@ package net.minecraft.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -10,6 +12,7 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SpecialBlockModelRenderer;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -27,7 +30,8 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final ModelBlockRenderer modelRenderer;
    private final Supplier<SpecialBlockModelRenderer> specialBlockModelRenderer;
    private final LiquidBlockRenderer liquidBlockRenderer;
-   private final RandomSource random = RandomSource.create();
+   private final RandomSource singleThreadRandom = RandomSource.create();
+   private final List<BlockModelPart> singleThreadPartList = new ArrayList();
    private final BlockColors blockColors;
 
    public BlockRenderDispatcher(BlockModelShaper var1, Supplier<SpecialBlockModelRenderer> var2, BlockColors var3) {
@@ -46,14 +50,16 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    public void renderBreakingTexture(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5) {
       if (var1.getRenderShape() == RenderShape.MODEL) {
          BlockStateModel var6 = this.blockModelShaper.getBlockModel(var1);
-         long var7 = var1.getSeed(var2);
-         this.modelRenderer.tesselateBlock(var3, var6, var1, var2, var4, var5, true, this.random, var7, OverlayTexture.NO_OVERLAY);
+         this.singleThreadRandom.setSeed(var1.getSeed(var2));
+         this.singleThreadPartList.clear();
+         var6.collectParts(this.singleThreadRandom, this.singleThreadPartList);
+         this.modelRenderer.tesselateBlock(var3, this.singleThreadPartList, var1, var2, var4, var5, true, OverlayTexture.NO_OVERLAY);
       }
    }
 
-   public void renderBatched(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5, boolean var6, RandomSource var7) {
+   public void renderBatched(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5, boolean var6, List<BlockModelPart> var7) {
       try {
-         this.modelRenderer.tesselateBlock(var3, this.getBlockModel(var1), var1, var2, var4, var5, var6, var7, var1.getSeed(var2), OverlayTexture.NO_OVERLAY);
+         this.modelRenderer.tesselateBlock(var3, var7, var1, var2, var4, var5, var6, OverlayTexture.NO_OVERLAY);
       } catch (Throwable var11) {
          CrashReport var9 = CrashReport.forThrowable(var11, "Tesselating block in world");
          CrashReportCategory var10 = var9.addCategory("Block being tesselated");
@@ -89,7 +95,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
          float var9 = (float)(var8 >> 16 & 255) / 255.0F;
          float var10 = (float)(var8 >> 8 & 255) / 255.0F;
          float var11 = (float)(var8 & 255) / 255.0F;
-         this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var1, var7, var9, var10, var11, var4, var5);
+         this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var7, var9, var10, var11, var4, var5);
          ((SpecialBlockModelRenderer)this.specialBlockModelRenderer.get()).renderByBlock(var1.getBlock(), ItemDisplayContext.NONE, var2, var3, var4, var5);
       }
    }

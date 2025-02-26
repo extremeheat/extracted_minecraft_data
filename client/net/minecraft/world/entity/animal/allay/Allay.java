@@ -75,6 +75,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private static final int LIFTING_ITEM_ANIMATION_DURATION = 5;
    private static final float DANCING_LOOP_DURATION = 55.0F;
    private static final float SPINNING_ANIMATION_DURATION = 15.0F;
+   private static final int DEFAULT_DUPLICATION_COOLDOWN = 0;
    private static final int DUPLICATION_COOLDOWN_TICKS = 6000;
    private static final int NUM_OF_DUPLICATION_HEARTS = 3;
    public static final int MAX_NOTEBLOCK_DISTANCE = 1024;
@@ -90,7 +91,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private final SimpleContainer inventory = new SimpleContainer(1);
    @Nullable
    private BlockPos jukeboxPos;
-   private long duplicationCooldown;
+   private long duplicationCooldown = 0L;
    private float holdingItemAnimationTicks;
    private float holdingItemAnimationTicks0;
    private float dancingAnimationTicks;
@@ -418,7 +419,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       this.readInventoryFromTag(var1, this.registryAccess());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var2).orElseGet(VibrationSystem.Data::new);
-      this.setDuplicationCooldown((long)var1.getInt("DuplicationCooldown"));
+      this.setDuplicationCooldown((long)var1.getIntOr("DuplicationCooldown", 0));
    }
 
    protected boolean shouldStayCloseToLeashHolder() {

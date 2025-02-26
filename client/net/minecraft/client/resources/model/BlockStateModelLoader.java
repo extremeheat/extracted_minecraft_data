@@ -126,8 +126,8 @@ public class BlockStateModelLoader {
       }
    }
 
-   public static record LoadedModels(Map<BlockState, BlockStateModel.Unbaked> models) {
-      public LoadedModels(Map<BlockState, BlockStateModel.Unbaked> var1) {
+   public static record LoadedModels(Map<BlockState, BlockStateModel.UnbakedRoot> models) {
+      public LoadedModels(Map<BlockState, BlockStateModel.UnbakedRoot> var1) {
          super();
          this.models = var1;
       }

@@ -32,7 +32,8 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    private static final int HARD_ATTACK_INTERVAL = 50;
    private static final int NORMAL_ATTACK_INTERVAL = 70;
    private static final EntityDataAccessor<Boolean> DATA_SHEARED;
-   public static final String SHEARED_TAG_NAME = "sheared";
+   private static final String SHEARED_TAG_NAME = "sheared";
+   private static final boolean DEFAULT_SHEARED = false;
 
    public static AttributeSupplier.Builder createAttributes() {
       return AbstractSkeleton.createAttributes().add(Attributes.MAX_HEALTH, 16.0);
@@ -54,7 +55,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setSheared(var1.getBoolean("sheared"));
+      this.setSheared(var1.getBooleanOr("sheared", false));
    }
 
    public boolean isSheared() {

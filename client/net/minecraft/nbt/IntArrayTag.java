@@ -4,10 +4,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.ArrayUtils;
 
-public class IntArrayTag extends CollectionTag<IntTag> {
+public final class IntArrayTag implements CollectionTag {
    private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<IntArrayTag> TYPE = new TagType.VariableSize<IntArrayTag>() {
       public IntArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
@@ -55,21 +55,6 @@ public class IntArrayTag extends CollectionTag<IntTag> {
       this.data = var1;
    }
 
-   public IntArrayTag(List<Integer> var1) {
-      this(toArray(var1));
-   }
-
-   private static int[] toArray(List<Integer> var0) {
-      int[] var1 = new int[var0.size()];
-
-      for(int var2 = 0; var2 < var0.size(); ++var2) {
-         Integer var3 = (Integer)var0.get(var2);
-         var1[var2] = var3 == null ? 0 : var3;
-      }
-
-      return var1;
-   }
-
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
 
@@ -92,7 +77,9 @@ public class IntArrayTag extends CollectionTag<IntTag> {
    }
 
    public String toString() {
-      return this.getAsString();
+      StringTagVisitor var1 = new StringTagVisitor();
+      var1.visitIntArray(this);
+      return var1.build();
    }
 
    public IntArrayTag copy() {
@@ -129,19 +116,9 @@ public class IntArrayTag extends CollectionTag<IntTag> {
       return IntTag.valueOf(this.data[var1]);
    }
 
-   public IntTag set(int var1, IntTag var2) {
-      int var3 = this.data[var1];
-      this.data[var1] = var2.getAsInt();
-      return IntTag.valueOf(var3);
-   }
-
-   public void add(int var1, IntTag var2) {
-      this.data = ArrayUtils.add(this.data, var1, var2.getAsInt());
-   }
-
    public boolean setTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag) {
-         this.data[var1] = ((NumericTag)var2).getAsInt();
+      if (var2 instanceof NumericTag var3) {
+         this.data[var1] = var3.intValue();
          return true;
       } else {
          return false;
@@ -149,8 +126,8 @@ public class IntArrayTag extends CollectionTag<IntTag> {
    }
 
    public boolean addTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag) {
-         this.data = ArrayUtils.add(this.data, var1, ((NumericTag)var2).getAsInt());
+      if (var2 instanceof NumericTag var3) {
+         this.data = ArrayUtils.add(this.data, var1, var3.intValue());
          return true;
       } else {
          return false;
@@ -163,16 +140,21 @@ public class IntArrayTag extends CollectionTag<IntTag> {
       return IntTag.valueOf(var2);
    }
 
-   public byte getElementType() {
-      return 3;
-   }
-
    public void clear() {
       this.data = new int[0];
    }
 
+   public Optional<int[]> asIntArray() {
+      return Optional.of(this.data);
+   }
+
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
       return var1.visit(this.data);
+   }
+
+   // $FF: synthetic method
+   public Tag get(final int var1) {
+      return this.get(var1);
    }
 
    // $FF: synthetic method
@@ -181,37 +163,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
    }
 
    // $FF: synthetic method
-   public void add(final int var1, final Tag var2) {
-      this.add(var1, (IntTag)var2);
-   }
-
-   // $FF: synthetic method
-   public Tag set(final int var1, final Tag var2) {
-      return this.set(var1, (IntTag)var2);
-   }
-
-   // $FF: synthetic method
    public Tag copy() {
       return this.copy();
-   }
-
-   // $FF: synthetic method
-   public Object remove(final int var1) {
-      return this.remove(var1);
-   }
-
-   // $FF: synthetic method
-   public void add(final int var1, final Object var2) {
-      this.add(var1, (IntTag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object set(final int var1, final Object var2) {
-      return this.set(var1, (IntTag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object get(final int var1) {
-      return this.get(var1);
    }
 }

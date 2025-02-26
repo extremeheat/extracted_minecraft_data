@@ -22,6 +22,7 @@ import net.minecraft.world.level.dimension.end.EndDragonFight;
 public class EndCrystal extends Entity {
    private static final EntityDataAccessor<Optional<BlockPos>> DATA_BEAM_TARGET;
    private static final EntityDataAccessor<Boolean> DATA_SHOW_BOTTOM;
+   private static final boolean DEFAULT_SHOW_BOTTOM = true;
    public int time;
 
    public EndCrystal(EntityType<? extends EndCrystal> var1, Level var2) {
@@ -64,10 +65,7 @@ public class EndCrystal extends Entity {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.setBeamTarget((BlockPos)var1.read("beam_target", BlockPos.CODEC).orElse((Object)null));
-      if (var1.contains("ShowBottom", 1)) {
-         this.setShowBottom(var1.getBoolean("ShowBottom"));
-      }
-
+      this.setShowBottom(var1.getBooleanOr("ShowBottom", true));
    }
 
    public boolean isPickable() {

@@ -173,7 +173,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    private boolean tryLoadLootTable(CompoundTag var1) {
       this.lootTable = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
-      this.lootTableSeed = var1.getLongOrDefault("LootTableSeed", 0L);
+      this.lootTableSeed = var1.getLongOr("LootTableSeed", 0L);
       return this.lootTable != null;
    }
 

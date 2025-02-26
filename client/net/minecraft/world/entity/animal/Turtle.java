@@ -67,6 +67,7 @@ public class Turtle extends Animal {
    private static final EntityDataAccessor<Boolean> LAYING_EGG;
    private static final float BABY_SCALE = 0.3F;
    private static final EntityDimensions BABY_DIMENSIONS;
+   private static final boolean DEFAULT_HAS_EGG = false;
    int layEggCounter;
    public static final TargetingConditions.Selector BABY_ON_LAND_SELECTOR;
    BlockPos homePos;
@@ -120,7 +121,7 @@ public class Turtle extends Animal {
    public void readAdditionalSaveData(CompoundTag var1) {
       this.setHomePos((BlockPos)var1.read("home_pos", BlockPos.CODEC).orElse(this.blockPosition()));
       super.readAdditionalSaveData(var1);
-      this.setHasEgg(var1.getBoolean("has_egg"));
+      this.setHasEgg(var1.getBooleanOr("has_egg", false));
    }
 
    @Nullable

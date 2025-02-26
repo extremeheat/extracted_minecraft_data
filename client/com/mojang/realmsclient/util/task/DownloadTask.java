@@ -28,7 +28,7 @@ public class DownloadTask extends LongRunningTask {
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
       int var2 = 0;
 
       while(var2 < 25) {

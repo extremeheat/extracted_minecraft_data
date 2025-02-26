@@ -1067,12 +1067,9 @@ public class Options {
          }
 
          final CompoundTag var8 = this.dataFix(var1);
-         if (!var8.contains("graphicsMode") && var8.contains("fancyGraphics")) {
-            if (isTrue(var8.getString("fancyGraphics"))) {
-               this.graphicsMode.set(GraphicsStatus.FANCY);
-            } else {
-               this.graphicsMode.set(GraphicsStatus.FAST);
-            }
+         Optional var3 = var8.getString("fancyGraphics");
+         if (var3.isPresent() && !var8.contains("graphicsMode")) {
+            this.graphicsMode.set(isTrue((String)var3.get()) ? GraphicsStatus.FANCY : GraphicsStatus.FAST);
          }
 
          this.processOptions(new FieldAccess() {
@@ -1083,7 +1080,16 @@ public class Options {
                   return null;
                } else if (var2 instanceof StringTag) {
                   StringTag var3 = (StringTag)var2;
-                  return var3.getAsString();
+                  StringTag var10000 = var3;
+
+                  try {
+                     var7 = var10000.value();
+                  } catch (Throwable var6) {
+                     throw new MatchException(var6.toString(), var6);
+                  }
+
+                  String var5 = var7;
+                  return var5;
                } else {
                   throw new IllegalStateException("Cannot read field of wrong type, expected string: " + String.valueOf(var2));
                }
@@ -1149,10 +1155,7 @@ public class Options {
                return var5 == null ? var2 : var3.apply(var5);
             }
          });
-         if (var8.contains("fullscreenResolution")) {
-            this.fullscreenVideoModeString = var8.getString("fullscreenResolution");
-         }
-
+         var8.getString("fullscreenResolution").ifPresent((var1x) -> this.fullscreenVideoModeString = var1x);
          KeyMapping.resetMapping();
       } catch (Exception var7) {
          LOGGER.error("Failed to load options", var7);
@@ -1172,7 +1175,7 @@ public class Options {
       int var2 = 0;
 
       try {
-         var2 = Integer.parseInt(var1.getString("version"));
+         var2 = (Integer)var1.getString("version").map(Integer::parseInt).orElse(0);
       } catch (RuntimeException var4) {
       }
 

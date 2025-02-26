@@ -8,7 +8,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
+import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -26,6 +28,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 public class FeaturePoolElement extends StructurePoolElement {
    public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.feature), projectionCodec()).apply(var0, FeaturePoolElement::new));
+   private static final ResourceLocation DEFAULT_JIGSAW_NAME = ResourceLocation.withDefaultNamespace("bottom");
    private final Holder<PlacedFeature> feature;
    private final CompoundTag defaultJigsawNBT;
 
@@ -37,11 +40,11 @@ public class FeaturePoolElement extends StructurePoolElement {
 
    private CompoundTag fillDefaultJigsawNBT() {
       CompoundTag var1 = new CompoundTag();
-      var1.putString("name", "minecraft:bottom");
+      var1.store("name", ResourceLocation.CODEC, DEFAULT_JIGSAW_NAME);
       var1.putString("final_state", "minecraft:air");
-      var1.putString("pool", "minecraft:empty");
-      var1.putString("target", "minecraft:empty");
-      var1.putString("joint", JigsawBlockEntity.JointType.ROLLABLE.getSerializedName());
+      var1.store("pool", JigsawBlockEntity.POOL_CODEC, Pools.EMPTY);
+      var1.store("target", ResourceLocation.CODEC, JigsawBlockEntity.EMPTY_ID);
+      var1.store("joint", JigsawBlockEntity.JointType.CODEC, JigsawBlockEntity.JointType.ROLLABLE);
       return var1;
    }
 

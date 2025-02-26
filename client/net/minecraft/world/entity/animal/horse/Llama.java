@@ -107,9 +107,9 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.setStrength(var1.getInt("Strength"));
+      this.setStrength(var1.getIntOr("Strength", 0));
       super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("Variant", Llama.Variant.LEGACY_CODEC).orElse(Llama.Variant.CREAMY));
+      this.setVariant((Variant)var1.read("Variant", Llama.Variant.LEGACY_CODEC).orElse(Llama.Variant.DEFAULT));
    }
 
    protected void registerGoals() {
@@ -420,6 +420,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       BROWN(2, "brown"),
       GRAY(3, "gray");
 
+      public static final Variant DEFAULT = CREAMY;
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       /** @deprecated */

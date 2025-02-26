@@ -73,6 +73,12 @@ public class ArmorStand extends LivingEntity {
    public static final EntityDataAccessor<Rotations> DATA_LEFT_LEG_POSE;
    public static final EntityDataAccessor<Rotations> DATA_RIGHT_LEG_POSE;
    private static final Predicate<Entity> RIDABLE_MINECARTS;
+   private static final boolean DEFAULT_INVISIBLE = false;
+   private static final int DEFAULT_DISABLED_SLOTS = 0;
+   private static final boolean DEFAULT_SMALL = false;
+   private static final boolean DEFAULT_SHOW_ARMS = false;
+   private static final boolean DEFAULT_NO_BASE_PLATE = false;
+   private static final boolean DEFAULT_MARKER = false;
    private boolean invisible;
    public long lastHit;
    private int disabledSlots;
@@ -85,6 +91,8 @@ public class ArmorStand extends LivingEntity {
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
+      this.invisible = false;
+      this.disabledSlots = 0;
       this.headPose = DEFAULT_HEAD_POSE;
       this.bodyPose = DEFAULT_BODY_POSE;
       this.leftArmPose = DEFAULT_LEFT_ARM_POSE;
@@ -149,15 +157,14 @@ public class ArmorStand extends LivingEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setInvisible(var1.getBoolean("Invisible"));
-      this.setSmall(var1.getBoolean("Small"));
-      this.setShowArms(var1.getBoolean("ShowArms"));
-      this.disabledSlots = var1.getInt("DisabledSlots");
-      this.setNoBasePlate(var1.getBoolean("NoBasePlate"));
-      this.setMarker(var1.getBoolean("Marker"));
+      this.setInvisible(var1.getBooleanOr("Invisible", false));
+      this.setSmall(var1.getBooleanOr("Small", false));
+      this.setShowArms(var1.getBooleanOr("ShowArms", false));
+      this.disabledSlots = var1.getIntOr("DisabledSlots", 0);
+      this.setNoBasePlate(var1.getBooleanOr("NoBasePlate", false));
+      this.setMarker(var1.getBooleanOr("Marker", false));
       this.noPhysics = !this.hasPhysics();
-      CompoundTag var2 = var1.getCompound("Pose");
-      this.readPose(var2);
+      this.readPose(var1.getCompoundOrEmpty("Pose"));
    }
 
    private void readPose(CompoundTag var1) {

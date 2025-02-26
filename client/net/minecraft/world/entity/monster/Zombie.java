@@ -80,9 +80,13 @@ public class Zombie extends Monster {
    public static final int REINFORCEMENT_ATTEMPTS = 50;
    public static final int REINFORCEMENT_RANGE_MAX = 40;
    public static final int REINFORCEMENT_RANGE_MIN = 7;
+   private static final int NOT_CONVERTING = -1;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final float BREAK_DOOR_CHANCE = 0.1F;
    private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE;
+   private static final boolean DEFAULT_BABY = false;
+   private static final boolean DEFAULT_CAN_BREAK_DOORS = false;
+   private static final int DEFAULT_IN_WATER_TIME = 0;
    private final BreakDoorGoal breakDoorGoal;
    private boolean canBreakDoors;
    private int inWaterTime;
@@ -91,6 +95,8 @@ public class Zombie extends Monster {
    public Zombie(EntityType<? extends Zombie> var1, Level var2) {
       super(var1, var2);
       this.breakDoorGoal = new BreakDoorGoal(this, DOOR_BREAKING_PREDICATE);
+      this.canBreakDoors = false;
+      this.inWaterTime = 0;
    }
 
    public Zombie(Level var1) {
@@ -383,11 +389,14 @@ public class Zombie extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setBaby(var1.getBoolean("IsBaby"));
-      this.setCanBreakDoors(var1.getBoolean("CanBreakDoors"));
-      this.inWaterTime = var1.getInt("InWaterTime");
-      if (var1.contains("DrownedConversionTime", 99) && var1.getInt("DrownedConversionTime") > -1) {
-         this.startUnderWaterConversion(var1.getInt("DrownedConversionTime"));
+      this.setBaby(var1.getBooleanOr("IsBaby", false));
+      this.setCanBreakDoors(var1.getBooleanOr("CanBreakDoors", false));
+      this.inWaterTime = var1.getIntOr("InWaterTime", 0);
+      int var2 = var1.getIntOr("DrownedConversionTime", -1);
+      if (var2 != -1) {
+         this.startUnderWaterConversion(var2);
+      } else {
+         this.getEntityData().set(DATA_DROWNED_CONVERSION_ID, false);
       }
 
    }

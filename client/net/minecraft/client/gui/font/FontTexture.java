@@ -2,8 +2,8 @@ package net.minecraft.client.gui.font;
 
 import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.file.Path;
 import java.util.function.Supplier;
@@ -23,7 +23,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       super();
       this.colored = var3;
       this.root = new Node(0, 0, 256, 256);
-      this.texture = new GpuTexture(var1, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1);
+      this.texture = RenderSystem.getDevice().createTexture(var1, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1);
       this.texture.setTextureFilter(FilterMode.NEAREST, false);
       this.renderTypes = var2;
    }
@@ -35,7 +35,6 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       } else {
          Node var2 = this.root.insert(var1);
          if (var2 != null && this.texture != null) {
-            this.texture.bind();
             var1.upload(var2.x, var2.y, this.texture);
             float var3 = 256.0F;
             float var4 = 256.0F;

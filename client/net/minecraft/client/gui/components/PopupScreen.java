@@ -86,7 +86,7 @@ public class PopupScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
-      RenderSystem.clear(256);
+      RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
       this.renderTransparentBackground(var1);
       var1.blitSprite(RenderType::guiTextured, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
    }

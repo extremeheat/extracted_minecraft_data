@@ -94,6 +94,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    public static final float MAX_ENCHANTED_WEAPON_CHANCE = 0.25F;
    public static final int UPDATE_GOAL_SELECTOR_EVERY_N_TICKS = 2;
    private static final double DEFAULT_ATTACK_REACH;
+   private static final boolean DEFAULT_CAN_PICK_UP_LOOT = false;
+   private static final boolean DEFAULT_PERSISTENCE_REQUIRED = false;
+   private static final boolean DEFAULT_LEFT_HANDED = false;
+   private static final boolean DEFAULT_NO_AI = false;
    protected static final ResourceLocation RANDOM_SPAWN_BONUS_ID;
    public int ambientSoundTime;
    protected int xpReward;
@@ -121,6 +125,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    protected Mob(EntityType<? extends Mob> var1, Level var2) {
       super(var1, var2);
       this.dropChances = DropChances.DEFAULT;
+      this.canPickUpLoot = false;
+      this.persistenceRequired = false;
       this.pathfindingMalus = Maps.newEnumMap(PathType.class);
       this.lootTable = Optional.empty();
       this.restrictCenter = BlockPos.ZERO;
@@ -377,15 +383,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
-      this.persistenceRequired = var1.getBoolean("PersistenceRequired");
+      this.setCanPickUpLoot(var1.getBooleanOr("CanPickUpLoot", false));
+      this.persistenceRequired = var1.getBooleanOr("PersistenceRequired", false);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC, var2).orElse(DropChances.DEFAULT);
       this.readLeashData(var1);
-      this.setLeftHanded(var1.getBoolean("LeftHanded"));
+      this.setLeftHanded(var1.getBooleanOr("LeftHanded", false));
       this.lootTable = var1.read("DeathLootTable", LootTable.KEY_CODEC);
-      this.lootTableSeed = var1.getLongOrDefault("DeathLootTableSeed", 0L);
-      this.setNoAi(var1.getBoolean("NoAI"));
+      this.lootTableSeed = var1.getLongOr("DeathLootTableSeed", 0L);
+      this.setNoAi(var1.getBooleanOr("NoAI", false));
    }
 
    protected void dropFromLootTable(ServerLevel var1, DamageSource var2, boolean var3) {

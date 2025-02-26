@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -72,18 +74,18 @@ public class LegacyStructureDataHandler {
    }
 
    public CompoundTag updateFromLegacy(CompoundTag var1) {
-      CompoundTag var2 = var1.getCompound("Level");
-      ChunkPos var3 = new ChunkPos(var2.getInt("xPos"), var2.getInt("zPos"));
+      CompoundTag var2 = var1.getCompoundOrEmpty("Level");
+      ChunkPos var3 = new ChunkPos(var2.getIntOr("xPos", 0), var2.getIntOr("zPos", 0));
       if (this.isUnhandledStructureStart(var3.x, var3.z)) {
          var1 = this.updateStructureStart(var1, var3);
       }
 
-      CompoundTag var4 = var2.getCompound("Structures");
-      CompoundTag var5 = var4.getCompound("References");
+      CompoundTag var4 = var2.getCompoundOrEmpty("Structures");
+      CompoundTag var5 = var4.getCompoundOrEmpty("References");
 
       for(String var7 : this.currentKeys) {
          boolean var8 = OLD_STRUCTURE_REGISTRY_KEYS.contains(var7.toLowerCase(Locale.ROOT));
-         if (!var5.contains(var7, 12) && var8) {
+         if (!var5.getLongArray(var7).isPresent() && var8) {
             boolean var9 = true;
             LongArrayList var10 = new LongArrayList();
 
@@ -95,7 +97,7 @@ public class LegacyStructureDataHandler {
                }
             }
 
-            var5.putLongArray(var7, (List)var10);
+            var5.putLongArray(var7, var10.toLongArray());
          }
       }
 
@@ -128,9 +130,9 @@ public class LegacyStructureDataHandler {
    }
 
    private CompoundTag updateStructureStart(CompoundTag var1, ChunkPos var2) {
-      CompoundTag var3 = var1.getCompound("Level");
-      CompoundTag var4 = var3.getCompound("Structures");
-      CompoundTag var5 = var4.getCompound("Starts");
+      CompoundTag var3 = var1.getCompoundOrEmpty("Level");
+      CompoundTag var4 = var3.getCompoundOrEmpty("Structures");
+      CompoundTag var5 = var4.getCompoundOrEmpty("Starts");
 
       for(String var7 : this.currentKeys) {
          Long2ObjectMap var8 = (Long2ObjectMap)this.dataMap.get(var7);
@@ -157,41 +159,40 @@ public class LegacyStructureDataHandler {
             CompoundTag var4 = new CompoundTag();
 
             try {
-               var4 = var1.readTagFromDisk(var3, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES, 1493).getCompound("data").getCompound("Features");
+               var4 = var1.readTagFromDisk(var3, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES, 1493).getCompoundOrEmpty("data").getCompoundOrEmpty("Features");
                if (var4.isEmpty()) {
                   continue;
                }
-            } catch (IOException var13) {
+            } catch (IOException var8) {
             }
 
-            for(String var6 : var4.getAllKeys()) {
-               CompoundTag var7 = var4.getCompound(var6);
-               long var8 = ChunkPos.asLong(var7.getInt("ChunkX"), var7.getInt("ChunkZ"));
-               ListTag var10 = var7.getList("Children", 10);
-               if (!var10.isEmpty()) {
-                  String var11 = var10.getCompound(0).getString("id");
-                  String var12 = (String)LEGACY_TO_CURRENT_MAP.get(var11);
-                  if (var12 != null) {
-                     var7.putString("id", var12);
+            var4.forEach((var1x, var2) -> {
+               if (var2 instanceof CompoundTag var3) {
+                  long var4 = ChunkPos.asLong(var3.getIntOr("ChunkX", 0), var3.getIntOr("ChunkZ", 0));
+                  ListTag var6 = var3.getListOrEmpty("Children");
+                  if (!var6.isEmpty()) {
+                     Optional var7 = var6.getCompound(0).flatMap((var0) -> var0.getString("id"));
+                     Map var10001 = LEGACY_TO_CURRENT_MAP;
+                     Objects.requireNonNull(var10001);
+                     var7.map(var10001::get).ifPresent((var1) -> var3.putString("id", var1));
                   }
+
+                  var3.getString("id").ifPresent((var4x) -> ((Long2ObjectMap)this.dataMap.computeIfAbsent(var4x, (var0) -> new Long2ObjectOpenHashMap())).put(var4, var3));
                }
+            });
+            String var5 = var3 + "_index";
+            StructureFeatureIndexSavedData var6 = (StructureFeatureIndexSavedData)var1.computeIfAbsent(StructureFeatureIndexSavedData.type(var5));
+            if (var6.getAll().isEmpty()) {
+               StructureFeatureIndexSavedData var7 = new StructureFeatureIndexSavedData();
+               this.indexMap.put(var3, var7);
+               var4.forEach((var1x, var2) -> {
+                  if (var2 instanceof CompoundTag var3) {
+                     var7.addIndex(ChunkPos.asLong(var3.getIntOr("ChunkX", 0), var3.getIntOr("ChunkZ", 0)));
+                  }
 
-               String var19 = var7.getString("id");
-               ((Long2ObjectMap)this.dataMap.computeIfAbsent(var19, (var0) -> new Long2ObjectOpenHashMap())).put(var8, var7);
-            }
-
-            String var14 = var3 + "_index";
-            StructureFeatureIndexSavedData var15 = (StructureFeatureIndexSavedData)var1.computeIfAbsent(StructureFeatureIndexSavedData.type(var14));
-            if (var15.getAll().isEmpty()) {
-               StructureFeatureIndexSavedData var16 = new StructureFeatureIndexSavedData();
-               this.indexMap.put(var3, var16);
-
-               for(String var9 : var4.getAllKeys()) {
-                  CompoundTag var18 = var4.getCompound(var9);
-                  var16.addIndex(ChunkPos.asLong(var18.getInt("ChunkX"), var18.getInt("ChunkZ")));
-               }
+               });
             } else {
-               this.indexMap.put(var3, var15);
+               this.indexMap.put(var3, var6);
             }
          }
 

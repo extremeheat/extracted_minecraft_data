@@ -1,30 +1,30 @@
 package net.minecraft.commands.arguments;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.serialization.JavaOps;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.ParserUtils;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.SnbtGrammar;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.util.parsing.packrat.commands.CommandArgumentParser;
+import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.entity.Entity;
 
-public class ComponentArgument implements ArgumentType<Component> {
+public class ComponentArgument extends ParserBasedArgument<Component> {
    private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "'hello world'", "\"\"", "{text:\"hello world\"}", "[\"\"]");
    public static final DynamicCommandExceptionType ERROR_INVALID_COMPONENT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.component.invalid", var0));
-   private final HolderLookup.Provider registries;
+   private static final CommandArgumentParser<Object> TAG_PARSER;
 
    private ComponentArgument(HolderLookup.Provider var1) {
-      super();
-      this.registries = var1;
+      super(TAG_PARSER.withCodec(var1.createSerializationContext(JavaOps.INSTANCE), TAG_PARSER, ComponentSerialization.CODEC, ERROR_INVALID_COMPONENT));
    }
 
    public static Component getRawComponent(CommandContext<CommandSourceStack> var0, String var1) {
@@ -43,16 +43,11 @@ public class ComponentArgument implements ArgumentType<Component> {
       return new ComponentArgument(var0);
    }
 
-   public Component parse(StringReader var1) throws CommandSyntaxException {
-      return (Component)ParserUtils.parseSnbtWithCodec(ComponentSerialization.CODEC, this.registries, ERROR_INVALID_COMPONENT, var1);
-   }
-
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
+   static {
+      TAG_PARSER = SnbtGrammar.<Object>createParser(JavaOps.INSTANCE);
    }
 }

@@ -67,6 +67,7 @@ public class Camel extends AbstractHorse {
    private static final int STANDUP_DURATION_TICKS = 52;
    private static final int IDLE_MINIMAL_DURATION_TICKS = 80;
    private static final float SITTING_HEIGHT_DIFFERENCE = 1.43F;
+   private static final long DEFAULT_LAST_POSE_CHANGE_TICK = 0L;
    public static final EntityDataAccessor<Boolean> DASH;
    public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK;
    public final AnimationState sitAnimationState = new AnimationState();
@@ -94,7 +95,7 @@ public class Camel extends AbstractHorse {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      long var2 = var1.getLong("LastPoseTick");
+      long var2 = var1.getLongOr("LastPoseTick", 0L);
       if (var2 < 0L) {
          this.setPose(Pose.SITTING);
       }

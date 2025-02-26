@@ -1,10 +1,13 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
@@ -20,7 +23,7 @@ public class LightTexture implements AutoCloseable {
    public static final int FULL_SKY = 15728640;
    public static final int FULL_BLOCK = 240;
    private static final int TEXTURE_SIZE = 16;
-   private final TextureTarget target;
+   private final GpuTexture texture;
    private boolean updateLightTexture;
    private float blockLightRedFlicker;
    private final GameRenderer renderer;
@@ -30,18 +33,18 @@ public class LightTexture implements AutoCloseable {
       super();
       this.renderer = var1;
       this.minecraft = var2;
-      this.target = new TextureTarget("Light Texture", 16, 16, false);
-      this.target.setFilterMode(FilterMode.LINEAR);
-      this.target.setClearColor(1.0F, 1.0F, 1.0F, 1.0F);
-      this.target.clear();
+      GpuDevice var3 = RenderSystem.getDevice();
+      this.texture = var3.createTexture("Light Texture", TextureFormat.RGBA8, 16, 16, 1);
+      this.texture.setTextureFilter(FilterMode.LINEAR, false);
+      var3.createCommandEncoder().clearColorTexture(this.texture, -1);
    }
 
-   public TextureTarget getTarget() {
-      return this.target;
+   public GpuTexture getTarget() {
+      return this.texture;
    }
 
    public void close() {
-      this.target.destroyBuffers();
+      this.texture.close();
    }
 
    public void tick() {
@@ -51,11 +54,11 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void turnOffLightLayer() {
-      RenderSystem.setShaderTexture(2, (GpuTexture)((GpuTexture)null));
+      RenderSystem.setShaderTexture(2, (GpuTexture)null);
    }
 
    public void turnOnLightLayer() {
-      RenderSystem.setShaderTexture(2, (GpuTexture)this.target.getColorTexture());
+      RenderSystem.setShaderTexture(2, this.texture);
    }
 
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {
@@ -96,18 +99,24 @@ public class LightTexture implements AutoCloseable {
             float var13 = var3.dimensionType().ambientLight();
             boolean var14 = var3.effects().forceBrightLightmap();
             float var15 = ((Double)this.minecraft.options.gamma().get()).floatValue();
-            VertexBuffer var16 = RenderSystem.getQuadVertices();
-            var16.drawWithRenderType(RenderType.createLightmap(), (var11x) -> {
-               var11x.getUniform("AmbientLightFactor").set(var13);
-               var11x.getUniform("SkyFactor").set(var5);
-               var11x.getUniform("BlockFactor").set(var12);
-               var11x.getUniform("UseBrightLightmap").set(var14 ? 1 : 0);
-               var11x.getUniform("SkyLightColor").set(var11);
-               var11x.getUniform("NightVisionFactor").set(var9);
-               var11x.getUniform("DarknessScale").set(var8);
-               var11x.getUniform("DarkenWorldFactor").set(this.renderer.getDarkenWorldAmount(var1));
-               var11x.getUniform("BrightnessFactor").set(Math.max(0.0F, var15 - var7));
-            });
+
+            try (RenderPass var16 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(this.texture, OptionalInt.empty())) {
+               var16.setPipeline(RenderPipelines.LIGHTMAP);
+               var16.setUniform("AmbientLightFactor", var13);
+               var16.setUniform("SkyFactor", var5);
+               var16.setUniform("BlockFactor", var12);
+               var16.setUniform("UseBrightLightmap", var14 ? 1 : 0);
+               var16.setUniform("SkyLightColor", var11.x, var11.y, var11.z);
+               var16.setUniform("NightVisionFactor", var9);
+               var16.setUniform("DarknessScale", var8);
+               var16.setUniform("DarkenWorldFactor", this.renderer.getDarkenWorldAmount(var1));
+               var16.setUniform("BrightnessFactor", Math.max(0.0F, var15 - var7));
+               var16.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer(() -> "Light texture vertex buffer"));
+               RenderSystem.AutoStorageIndexBuffer var17 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+               var16.setIndexBuffer(var17.getBuffer(6), var17.type());
+               var16.drawIndexed(0, 6);
+            }
+
             var2.pop();
          }
       }

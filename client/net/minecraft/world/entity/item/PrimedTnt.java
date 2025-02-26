@@ -30,8 +30,9 @@ import net.minecraft.world.level.portal.TeleportTransition;
 public class PrimedTnt extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<Integer> DATA_FUSE_ID;
    private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
-   private static final int DEFAULT_FUSE_TIME = 80;
+   private static final short DEFAULT_FUSE_TIME = 80;
    private static final float DEFAULT_EXPLOSION_POWER = 4.0F;
+   private static final BlockState DEFAULT_BLOCK_STATE;
    private static final String TAG_BLOCK_STATE = "block_state";
    public static final String TAG_FUSE = "fuse";
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
@@ -61,7 +62,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_FUSE_ID, 80);
-      var1.define(DATA_BLOCK_STATE_ID, Blocks.TNT.defaultBlockState());
+      var1.define(DATA_BLOCK_STATE_ID, DEFAULT_BLOCK_STATE);
    }
 
    protected Entity.MovementEmission getMovementEmission() {
@@ -118,12 +119,9 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setFuse(var1.getShort("fuse"));
-      this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(Blocks.TNT.defaultBlockState()));
-      if (var1.contains("explosion_power", 99)) {
-         this.explosionPower = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
-      }
-
+      this.setFuse(var1.getShortOr("fuse", (short)80));
+      this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(DEFAULT_BLOCK_STATE));
+      this.explosionPower = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
    }
 
    @Nullable
@@ -182,6 +180,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    static {
       DATA_FUSE_ID = SynchedEntityData.<Integer>defineId(PrimedTnt.class, EntityDataSerializers.INT);
       DATA_BLOCK_STATE_ID = SynchedEntityData.<BlockState>defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
+      DEFAULT_BLOCK_STATE = Blocks.TNT.defaultBlockState();
       USED_PORTAL_DAMAGE_CALCULATOR = new ExplosionDamageCalculator() {
          public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
             return var4.is(Blocks.NETHER_PORTAL) ? false : super.shouldBlockExplode(var1, var2, var3, var4, var5);

@@ -118,7 +118,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
    private void fetchServerData(long var1) {
       (new Thread(() -> {
-         RealmsClient var3 = RealmsClient.create();
+         RealmsClient var3 = RealmsClient.getOrCreate();
 
          try {
             this.serverData = var3.getOwnRealm(var1);
@@ -133,7 +133,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
    public void doSwitchOrReset() {
       (new Thread(() -> {
-         RealmsClient var1 = RealmsClient.create();
+         RealmsClient var1 = RealmsClient.getOrCreate();
          if (this.serverData.state == RealmsServer.State.CLOSED) {
             this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this, new LongRunningTask[]{new OpenServerTask(this.serverData, this, true, this.minecraft)})));
          } else {
@@ -150,7 +150,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    }
 
    private void downloadWorld(int var1) {
-      RealmsClient var2 = RealmsClient.create();
+      RealmsClient var2 = RealmsClient.getOrCreate();
 
       try {
          WorldDownload var3 = var2.requestDownloadInfo(this.serverData.id, var1);

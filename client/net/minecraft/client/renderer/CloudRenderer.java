@@ -1,18 +1,28 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.client.CloudStatus;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -42,13 +52,17 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    private CloudStatus prevType;
    @Nullable
    private TextureData texture;
-   private final VertexBuffer vertexBuffer;
-   private boolean vertexBufferEmpty;
+   @Nullable
+   private GpuBuffer vertexBuffer;
+   private int indexCount;
+   private final RenderSystem.AutoStorageIndexBuffer indices;
 
    public CloudRenderer() {
       super();
       this.prevRelativeCameraPos = CloudRenderer.RelativeCameraPos.INSIDE_CLOUDS;
-      this.vertexBuffer = new VertexBuffer(BufferUsage.STATIC_WRITE);
+      this.vertexBuffer = null;
+      this.indexCount = 0;
+      this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
    }
 
    protected Optional<TextureData> prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -156,51 +170,79 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          int var18 = Mth.floor(var11 / 12.0);
          float var19 = (float)(var9 - (double)((float)var17 * 12.0F));
          float var20 = (float)(var11 - (double)((float)var18 * 12.0F));
-         RenderType var21 = var2 == CloudStatus.FANCY ? RenderType.clouds() : RenderType.flatClouds();
+         boolean var21 = var2 == CloudStatus.FANCY;
+         RenderPipeline var22 = var21 ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
          if (this.needsRebuild || var17 != this.prevCellX || var18 != this.prevCellZ || var8 != this.prevRelativeCameraPos || var2 != this.prevType) {
             this.needsRebuild = false;
             this.prevCellX = var17;
             this.prevCellZ = var18;
             this.prevRelativeCameraPos = var8;
             this.prevType = var2;
-            MeshData var22 = this.buildMesh(Tesselator.getInstance(), var17, var18, var2, var8, var21);
-            if (var22 != null) {
-               this.vertexBuffer.bind();
-               this.vertexBuffer.upload(var22);
-               VertexBuffer.unbind();
-               this.vertexBufferEmpty = false;
-            } else {
-               this.vertexBufferEmpty = true;
+
+            try (MeshData var23 = this.buildMesh(Tesselator.getInstance(), var17, var18, var2, var8, var22)) {
+               if (var23 == null) {
+                  this.indexCount = 0;
+               } else {
+                  if (this.vertexBuffer != null && this.vertexBuffer.size >= var23.vertexBuffer().remaining()) {
+                     CommandEncoder var24 = RenderSystem.getDevice().createCommandEncoder();
+                     var24.writeToBuffer(this.vertexBuffer, var23.vertexBuffer(), 0);
+                  } else {
+                     if (this.vertexBuffer != null) {
+                        this.vertexBuffer.close();
+                     }
+
+                     this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "Cloud vertex buffer", BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, var23.vertexBuffer());
+                  }
+
+                  this.indexCount = var23.drawState().indexCount();
+               }
             }
          }
 
-         if (!this.vertexBufferEmpty) {
+         if (this.indexCount != 0) {
             RenderSystem.setShaderColor(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F);
-            if (var2 == CloudStatus.FANCY) {
-               this.drawWithRenderType(RenderType.cloudsDepthOnly(), var19, var6, var20);
+            if (var21) {
+               this.draw(RenderPipelines.CLOUDS_DEPTH_ONLY, var19, var6, var20);
             }
 
-            this.drawWithRenderType(var21, var19, var6, var20);
-            VertexBuffer.unbind();
+            this.draw(var22, var19, var6, var20);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          }
       }
    }
 
-   private void drawWithRenderType(RenderType var1, float var2, float var3, float var4) {
+   private void draw(RenderPipeline var1, float var2, float var3, float var4) {
       RenderSystem.setModelOffset(-var2, var3, -var4);
-      this.vertexBuffer.drawWithRenderType(var1);
+      RenderTarget var5 = Minecraft.getInstance().getMainRenderTarget();
+      RenderTarget var6 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+      GpuTexture var7;
+      GpuTexture var8;
+      if (var6 != null) {
+         var7 = var6.getColorTexture();
+         var8 = var6.getDepthTexture();
+      } else {
+         var7 = var5.getColorTexture();
+         var8 = var5.getDepthTexture();
+      }
+
+      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var7, OptionalInt.empty(), var8, OptionalDouble.empty())) {
+         var9.setPipeline(var1);
+         var9.setIndexBuffer(this.indices.getBuffer(this.indexCount), this.indices.type());
+         var9.setVertexBuffer(0, this.vertexBuffer);
+         var9.drawIndexed(0, this.indexCount);
+      }
+
       RenderSystem.resetModelOffset();
    }
 
    @Nullable
-   private MeshData buildMesh(Tesselator var1, int var2, int var3, CloudStatus var4, RelativeCameraPos var5, RenderType var6) {
+   private MeshData buildMesh(Tesselator var1, int var2, int var3, CloudStatus var4, RelativeCameraPos var5, RenderPipeline var6) {
       float var7 = 0.8F;
       int var8 = ARGB.colorFromFloat(0.8F, 1.0F, 1.0F, 1.0F);
       int var9 = ARGB.colorFromFloat(0.8F, 0.9F, 0.9F, 0.9F);
       int var10 = ARGB.colorFromFloat(0.8F, 0.7F, 0.7F, 0.7F);
       int var11 = ARGB.colorFromFloat(0.8F, 0.8F, 0.8F, 0.8F);
-      BufferBuilder var12 = var1.begin(var6.mode(), var6.format());
+      BufferBuilder var12 = var1.begin(var6.getVertexFormatMode(), var6.getVertexFormat());
       this.buildMesh(var5, var12, var2, var3, var10, var8, var9, var11, var4 == CloudStatus.FANCY);
       return var12.build();
    }
@@ -326,7 +368,10 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    }
 
    public void close() {
-      this.vertexBuffer.close();
+      if (this.vertexBuffer != null) {
+         this.vertexBuffer.close();
+      }
+
    }
 
    // $FF: synthetic method

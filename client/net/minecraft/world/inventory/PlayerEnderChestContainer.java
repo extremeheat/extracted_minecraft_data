@@ -31,8 +31,8 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       }
 
       for(int var6 = 0; var6 < var1.size(); ++var6) {
-         CompoundTag var4 = var1.getCompound(var6);
-         int var5 = var4.getByte("Slot") & 255;
+         CompoundTag var4 = var1.getCompoundOrEmpty(var6);
+         int var5 = var4.getByteOr("Slot", (byte)0) & 255;
          if (var5 >= 0 && var5 < this.getContainerSize()) {
             this.setItem(var5, (ItemStack)ItemStack.parse(var2, var4).orElse(ItemStack.EMPTY));
          }

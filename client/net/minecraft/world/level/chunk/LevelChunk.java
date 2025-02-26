@@ -584,7 +584,7 @@ public class LevelChunk extends ChunkAccess {
    private BlockEntity promotePendingBlockEntity(BlockPos var1, CompoundTag var2) {
       BlockState var4 = this.getBlockState(var1);
       BlockEntity var3;
-      if ("DUMMY".equals(var2.getString("id"))) {
+      if ("DUMMY".equals(var2.getStringOr("id", ""))) {
          if (var4.hasBlockEntity()) {
             var3 = ((EntityBlock)var4.getBlock()).newBlockEntity(var1, var4);
          } else {

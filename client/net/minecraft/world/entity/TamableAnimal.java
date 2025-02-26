@@ -31,9 +31,10 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    private static final int MIN_HORIZONTAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 2;
    private static final int MAX_HORIZONTAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 3;
    private static final int MAX_VERTICAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 1;
+   private static final boolean DEFAULT_ORDERED_TO_SIT = false;
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    protected static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> DATA_OWNERUUID_ID;
-   private boolean orderedToSit;
+   private boolean orderedToSit = false;
 
    protected TamableAnimal(EntityType<? extends TamableAnimal> var1, Level var2) {
       super(var1, var2);
@@ -70,7 +71,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          this.setTame(false, true);
       }
 
-      this.orderedToSit = var1.getBoolean("Sitting");
+      this.orderedToSit = var1.getBooleanOr("Sitting", false);
       this.setInSittingPose(this.orderedToSit);
    }
 

@@ -82,7 +82,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE, MushroomCow.Variant.RED.id);
+      var1.define(DATA_TYPE, MushroomCow.Variant.DEFAULT.id);
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
@@ -172,7 +172,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("Type", MushroomCow.Variant.CODEC).orElse(MushroomCow.Variant.RED));
+      this.setVariant((Variant)var1.read("Type", MushroomCow.Variant.CODEC).orElse(MushroomCow.Variant.DEFAULT));
       this.stewEffects = (SuspiciousStewEffects)var1.read("stew_effects", SuspiciousStewEffects.CODEC).orElse(SuspiciousStewEffects.EMPTY);
    }
 
@@ -245,6 +245,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
       RED("red", 0, Blocks.RED_MUSHROOM.defaultBlockState()),
       BROWN("brown", 1, Blocks.BROWN_MUSHROOM.defaultBlockState());
 
+      public static final Variant DEFAULT = RED;
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);

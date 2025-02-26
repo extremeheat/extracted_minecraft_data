@@ -54,6 +54,11 @@ public abstract class AbstractArrow extends Projectile {
    private static final int SHAKE_TIME = 7;
    private static final float WATER_INERTIA = 0.6F;
    private static final float INERTIA = 0.99F;
+   private static final short DEFAULT_LIFE = 0;
+   private static final byte DEFAULT_SHAKE = 0;
+   private static final boolean DEFAULT_IN_GROUND = false;
+   private static final boolean DEFAULT_CRIT = false;
+   private static final byte DEFAULT_PIERCE_LEVEL = 0;
    private static final EntityDataAccessor<Byte> ID_FLAGS;
    private static final EntityDataAccessor<Byte> PIERCE_LEVEL;
    private static final EntityDataAccessor<Boolean> IN_GROUND;
@@ -78,6 +83,8 @@ public abstract class AbstractArrow extends Projectile {
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2) {
       super(var1, var2);
       this.pickup = AbstractArrow.Pickup.DISALLOWED;
+      this.shakeTime = 0;
+      this.life = 0;
       this.baseDamage = 2.0;
       this.soundEvent = this.getDefaultHitGroundSoundEvent();
       this.pickupItemStack = this.getDefaultPickupItem();
@@ -598,17 +605,14 @@ public abstract class AbstractArrow extends Projectile {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.life = var1.getShort("life");
+      this.life = var1.getShortOr("life", (short)0);
       this.lastState = (BlockState)var1.read("inBlockState", BlockState.CODEC, var2).orElse((Object)null);
-      this.shakeTime = var1.getByte("shake") & 255;
-      this.setInGround(var1.getBoolean("inGround"));
-      if (var1.contains("damage", 99)) {
-         this.baseDamage = var1.getDouble("damage");
-      }
-
+      this.shakeTime = var1.getByteOr("shake", (byte)0) & 255;
+      this.setInGround(var1.getBooleanOr("inGround", false));
+      this.baseDamage = var1.getDoubleOr("damage", 2.0);
       this.pickup = (Pickup)var1.read("pickup", AbstractArrow.Pickup.LEGACY_CODEC).orElse(AbstractArrow.Pickup.DISALLOWED);
-      this.setCritArrow(var1.getBoolean("crit"));
-      this.setPierceLevel(var1.getByte("PierceLevel"));
+      this.setCritArrow(var1.getBooleanOr("crit", false));
+      this.setPierceLevel(var1.getByteOr("PierceLevel", (byte)0));
       this.soundEvent = (SoundEvent)var1.read("SoundEvent", BuiltInRegistries.SOUND_EVENT.byNameCodec()).orElse(this.getDefaultHitGroundSoundEvent());
       this.setPickupItemStack((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(this.getDefaultPickupItem()));
       this.firedFromWeapon = (ItemStack)var1.read("weapon", ItemStack.CODEC, var2).orElse((Object)null);

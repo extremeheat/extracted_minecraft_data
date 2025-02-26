@@ -58,6 +58,8 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private static final int VILLAGER_CONVERSION_WAIT_MAX = 6000;
    private static final int MAX_SPECIAL_BLOCKS_COUNT = 14;
    private static final int SPECIAL_BLOCK_RADIUS = 4;
+   private static final int NOT_CONVERTING = -1;
+   private static final int DEFAULT_XP = 0;
    private int villagerConversionTime;
    @Nullable
    private UUID conversionStarter;
@@ -65,7 +67,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private GossipContainer gossips;
    @Nullable
    private MerchantOffers tradeOffers;
-   private int villagerXp;
+   private int villagerXp = 0;
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
       super(var1, var2);
@@ -93,15 +95,16 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
       this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse((Object)null);
       this.gossips = (GossipContainer)var1.read("Gossips", GossipContainer.CODEC).orElse((Object)null);
-      if (var1.contains("ConversionTime", 99) && var1.getInt("ConversionTime") > -1) {
-         UUID var2 = (UUID)var1.read("ConversionPlayer", UUIDUtil.CODEC).orElse((Object)null);
-         this.startConverting(var2, var1.getInt("ConversionTime"));
+      int var2 = var1.getIntOr("ConversionTime", -1);
+      if (var2 != -1) {
+         UUID var3 = (UUID)var1.read("ConversionPlayer", UUIDUtil.CODEC).orElse((Object)null);
+         this.startConverting(var3, var2);
+      } else {
+         this.getEntityData().set(DATA_CONVERTING_ID, false);
+         this.villagerConversionTime = -1;
       }
 
-      if (var1.contains("Xp", 3)) {
-         this.villagerXp = var1.getInt("Xp");
-      }
-
+      this.villagerXp = var1.getIntOr("Xp", 0);
    }
 
    public void tick() {

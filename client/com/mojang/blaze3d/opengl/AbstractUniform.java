@@ -1,4 +1,4 @@
-package com.mojang.blaze3d.shaders;
+package com.mojang.blaze3d.opengl;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -34,6 +34,9 @@ public class AbstractUniform {
    }
 
    public void set(float[] var1) {
+   }
+
+   public void set(int[] var1) {
    }
 
    public void set(Vector3f var1) {

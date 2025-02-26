@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Arrays;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -123,16 +124,8 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      if (var1.contains("CookingTimes", 11)) {
-         int[] var3 = var1.getIntArray("CookingTimes");
-         System.arraycopy(var3, 0, this.cookingProgress, 0, Math.min(this.cookingTime.length, var3.length));
-      }
-
-      if (var1.contains("CookingTotalTimes", 11)) {
-         int[] var4 = var1.getIntArray("CookingTotalTimes");
-         System.arraycopy(var4, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var4.length));
-      }
-
+      var1.getIntArray("CookingTimes").ifPresentOrElse((var1x) -> System.arraycopy(var1x, 0, this.cookingProgress, 0, Math.min(this.cookingTime.length, var1x.length)), () -> Arrays.fill(this.cookingProgress, 0));
+      var1.getIntArray("CookingTotalTimes").ifPresentOrElse((var1x) -> System.arraycopy(var1x, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var1x.length)), () -> Arrays.fill(this.cookingTime, 0));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

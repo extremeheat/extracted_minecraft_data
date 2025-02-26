@@ -1,9 +1,9 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
 
-public record BlendFunction(GlStateManager.SourceFactor sourceColor, GlStateManager.DestFactor destColor, GlStateManager.SourceFactor sourceAlpha, GlStateManager.DestFactor destAlpha) {
+public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, SourceFactor sourceAlpha, DestFactor destAlpha) {
    public static final BlendFunction LIGHTNING;
    public static final BlendFunction GLINT;
    public static final BlendFunction OVERLAY;
@@ -12,11 +12,11 @@ public record BlendFunction(GlStateManager.SourceFactor sourceColor, GlStateMana
    public static final BlendFunction PANORAMA;
    public static final BlendFunction ENTITY_OUTLINE_BLIT;
 
-   public BlendFunction(GlStateManager.SourceFactor var1, GlStateManager.DestFactor var2) {
+   public BlendFunction(SourceFactor var1, DestFactor var2) {
       this(var1, var2, var1, var2);
    }
 
-   public BlendFunction(GlStateManager.SourceFactor var1, GlStateManager.DestFactor var2, GlStateManager.SourceFactor var3, GlStateManager.DestFactor var4) {
+   public BlendFunction(SourceFactor var1, DestFactor var2, SourceFactor var3, DestFactor var4) {
       super();
       this.sourceColor = var1;
       this.destColor = var2;
@@ -24,17 +24,13 @@ public record BlendFunction(GlStateManager.SourceFactor sourceColor, GlStateMana
       this.destAlpha = var4;
    }
 
-   public void apply() {
-      RenderSystem.blendFuncSeparate(this.sourceColor, this.destColor, this.sourceAlpha, this.destAlpha);
-   }
-
    static {
-      LIGHTNING = new BlendFunction(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-      GLINT = new BlendFunction(GlStateManager.SourceFactor.SRC_COLOR, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-      OVERLAY = new BlendFunction(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-      TRANSLUCENT = new BlendFunction(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-      ADDITIVE = new BlendFunction(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
-      PANORAMA = new BlendFunction(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-      ENTITY_OUTLINE_BLIT = new BlendFunction(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
+      LIGHTNING = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
+      GLINT = new BlendFunction(SourceFactor.SRC_COLOR, DestFactor.ONE, SourceFactor.ZERO, DestFactor.ONE);
+      OVERLAY = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE, SourceFactor.ONE, DestFactor.ZERO);
+      TRANSLUCENT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
+      ADDITIVE = new BlendFunction(SourceFactor.ONE, DestFactor.ONE);
+      PANORAMA = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
+      ENTITY_OUTLINE_BLIT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ZERO, DestFactor.ONE);
    }
 }

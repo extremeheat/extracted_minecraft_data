@@ -1,15 +1,25 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.stream.IntStream;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -18,8 +28,9 @@ import org.joml.Matrix4fStack;
 
 public class CubeMap {
    private static final int SIDES = 6;
+   @Nullable
+   private GpuBuffer cubeMapBuffer = null;
    private final List<ResourceLocation> sides;
-   private final VertexBuffer[] vertices = new VertexBuffer[6];
 
    public CubeMap(ResourceLocation var1) {
       super();
@@ -30,7 +41,7 @@ public class CubeMap {
    }
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
-      if (this.vertices[0] == null) {
+      if (this.cubeMapBuffer == null) {
          this.initializeVertices();
       }
 
@@ -41,83 +52,74 @@ public class CubeMap {
       var6.pushMatrix();
       var6.rotationX(3.1415927F);
       boolean var7 = true;
+      RenderPipeline var8 = RenderPipelines.PANORAMA;
+      RenderTarget var9 = Minecraft.getInstance().getMainRenderTarget();
+      GpuTexture var10 = var9.getColorTexture();
+      GpuTexture var11 = var9.getDepthTexture();
 
-      for(int var8 = 0; var8 < 4; ++var8) {
-         var6.pushMatrix();
-         float var9 = ((float)(var8 % 2) / 2.0F - 0.5F) / 256.0F;
-         float var10 = ((float)(var8 / 2) / 2.0F - 0.5F) / 256.0F;
-         float var11 = 0.0F;
-         var6.translate(var9, var10, 0.0F);
-         var6.rotateX(var2 * 0.017453292F);
-         var6.rotateY(var3 * 0.017453292F);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var4 / (float)(var8 + 1));
+      try (RenderPass var12 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var10, OptionalInt.empty(), var11, OptionalDouble.empty())) {
+         RenderSystem.AutoStorageIndexBuffer var13 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+         var12.setPipeline(var8);
+         var12.setVertexBuffer(0, this.cubeMapBuffer);
+         var12.setIndexBuffer(var13.getBuffer(6), var13.type());
 
-         for(int var12 = 0; var12 < 6; ++var12) {
-            this.vertices[var12].bind();
-            this.vertices[var12].drawWithRenderType(RenderType.panorama((ResourceLocation)this.sides.get(var12)));
+         for(int var14 = 0; var14 < 4; ++var14) {
+            var6.pushMatrix();
+            float var15 = ((float)(var14 % 2) / 2.0F - 0.5F) / 256.0F;
+            float var16 = ((float)(var14 / 2) / 2.0F - 0.5F) / 256.0F;
+            float var17 = 0.0F;
+            var6.translate(var15, var16, 0.0F);
+            var6.rotateX(var2 * 0.017453292F);
+            var6.rotateY(var3 * 0.017453292F);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var4 / (float)(var14 + 1));
+
+            for(int var18 = 0; var18 < 6; ++var18) {
+               var12.bindSampler("Sampler0", var1.getTextureManager().getTexture((ResourceLocation)this.sides.get(var18)).getTexture());
+               var12.drawIndexed(6 * var18, 6);
+            }
+
+            var6.popMatrix();
          }
-
-         VertexBuffer.unbind();
-         var6.popMatrix();
-         RenderSystem.colorMask(true, true, true, false);
       }
 
-      RenderSystem.colorMask(true, true, true, true);
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.restoreProjectionMatrix();
       var6.popMatrix();
    }
 
    private void initializeVertices() {
+      this.cubeMapBuffer = RenderSystem.getDevice().createBuffer(() -> "Cube map vertex buffer", BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, 24 * DefaultVertexFormat.POSITION_TEX.getVertexSize());
+
       try (ByteBufferBuilder var1 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4)) {
-         for(int var2 = 0; var2 < 6; ++var2) {
-            BufferBuilder var3 = new BufferBuilder(var1, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            if (var2 == 0) {
-               var3.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
-               var3.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F);
-               var3.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F);
-               var3.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F);
-            }
+         BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+         var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(-1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(-1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(-1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 0.0F);
 
-            if (var2 == 1) {
-               var3.addVertex(1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
-               var3.addVertex(1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F);
-               var3.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
-               var3.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
-            }
-
-            if (var2 == 2) {
-               var3.addVertex(1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
-               var3.addVertex(1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
-               var3.addVertex(-1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
-               var3.addVertex(-1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
-            }
-
-            if (var2 == 3) {
-               var3.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
-               var3.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
-               var3.addVertex(-1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F);
-               var3.addVertex(-1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F);
-            }
-
-            if (var2 == 4) {
-               var3.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
-               var3.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 1.0F);
-               var3.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 1.0F);
-               var3.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
-            }
-
-            if (var2 == 5) {
-               var3.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 0.0F);
-               var3.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
-               var3.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
-               var3.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 0.0F);
-            }
-
-            this.vertices[var2] = new VertexBuffer(BufferUsage.STATIC_WRITE);
-            this.vertices[var2].bind();
-            this.vertices[var2].upload(var3.buildOrThrow());
-            VertexBuffer.unbind();
+         try (MeshData var3 = var2.buildOrThrow()) {
+            CommandEncoder var4 = RenderSystem.getDevice().createCommandEncoder();
+            var4.writeToBuffer(this.cubeMapBuffer, var3.vertexBuffer(), 0);
          }
       }
 

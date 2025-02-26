@@ -10,11 +10,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.LongStream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -39,12 +37,6 @@ public final class BelowZeroRetrogen {
       super();
       this.targetStatus = var1;
       this.missingBedrock = (BitSet)var2.orElse(EMPTY);
-   }
-
-   @Nullable
-   public static BelowZeroRetrogen read(CompoundTag var0) {
-      ChunkStatus var1 = ChunkStatus.byName(var0.getString("target_status"));
-      return var1 == ChunkStatus.EMPTY ? null : new BelowZeroRetrogen(var1, Optional.of(BitSet.valueOf(var0.getLongArray("missing_bedrock"))));
    }
 
    public static void replaceOldBedrock(ProtoChunk var0) {

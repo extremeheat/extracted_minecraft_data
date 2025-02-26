@@ -1,8 +1,9 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.LogicOp;
+import com.mojang.blaze3d.platform.PolygonMode;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,10 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CompiledShaderProgram;
-import net.minecraft.client.renderer.DepthTestFunction;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.ResourceLocation;
 
@@ -25,16 +22,19 @@ public class RenderPipeline {
    private final List<String> samplers;
    private final List<UniformDescription> uniforms;
    private final DepthTestFunction depthTestFunction;
+   private final PolygonMode polygonMode;
    private final boolean cull;
-   private final GlStateManager.LogicOp colorLogic;
+   private final LogicOp colorLogic;
    private final Optional<BlendFunction> blendFunction;
    private final boolean writeColor;
    private final boolean writeAlpha;
    private final boolean writeDepth;
    private final VertexFormat vertexFormat;
    private final VertexFormat.Mode vertexFormatMode;
+   private final float depthBiasScaleFactor;
+   private final float depthBiasConstant;
 
-   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, boolean var9, boolean var10, boolean var11, boolean var12, GlStateManager.LogicOp var13, VertexFormat var14, VertexFormat.Mode var15) {
+   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18) {
       super();
       this.location = var1;
       this.vertexShader = var2;
@@ -43,107 +43,65 @@ public class RenderPipeline {
       this.samplers = var5;
       this.uniforms = var6;
       this.depthTestFunction = var8;
-      this.cull = var9;
+      this.polygonMode = var9;
+      this.cull = var10;
       this.blendFunction = var7;
-      this.writeColor = var10;
-      this.writeAlpha = var11;
-      this.writeDepth = var12;
-      this.colorLogic = var13;
-      this.vertexFormat = var14;
-      this.vertexFormatMode = var15;
+      this.writeColor = var11;
+      this.writeAlpha = var12;
+      this.writeDepth = var13;
+      this.colorLogic = var14;
+      this.vertexFormat = var15;
+      this.vertexFormatMode = var16;
+      this.depthBiasScaleFactor = var17;
+      this.depthBiasConstant = var18;
    }
 
    public String toString() {
       return this.location.toString();
    }
 
-   public void apply() {
-      if (this.depthTestFunction != DepthTestFunction.NO_DEPTH_TEST) {
-         RenderSystem.enableDepthTest();
-         RenderSystem.depthFunc(this.toGl(this.depthTestFunction));
-      } else {
-         RenderSystem.disableDepthTest();
-      }
-
-      if (!this.cull) {
-         RenderSystem.disableCull();
-      }
-
-      if (this.blendFunction.isPresent()) {
-         RenderSystem.enableBlend();
-         ((BlendFunction)this.blendFunction.get()).apply();
-      } else {
-         RenderSystem.disableBlend();
-      }
-
-      if (!this.writeDepth) {
-         RenderSystem.depthMask(this.writeDepth);
-      }
-
-      RenderSystem.colorMask(this.writeColor, this.writeColor, this.writeColor, this.writeAlpha);
-      switch (this.colorLogic) {
-         case NONE:
-            RenderSystem.disableColorLogicOp();
-            break;
-         case OR_REVERSE:
-            RenderSystem.enableColorLogicOp();
-            RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      }
-
+   public DepthTestFunction getDepthTestFunction() {
+      return this.depthTestFunction;
    }
 
-   @Nullable
-   public CompiledShaderProgram getCompiledShaderProgram() {
-      return Minecraft.getInstance().getShaderManager().getProgram(this);
+   public PolygonMode getPolygonMode() {
+      return this.polygonMode;
    }
 
-   public void clear() {
-      if (this.depthTestFunction != DepthTestFunction.NO_DEPTH_TEST) {
-         RenderSystem.disableDepthTest();
-         RenderSystem.depthFunc(515);
-      }
-
-      if (!this.cull) {
-         RenderSystem.enableCull();
-      }
-
-      if (this.blendFunction.isPresent()) {
-         RenderSystem.disableBlend();
-         RenderSystem.defaultBlendFunc();
-      }
-
-      if (!this.writeDepth) {
-         RenderSystem.depthMask(true);
-      }
-
-      if (!this.writeColor) {
-         RenderSystem.colorMask(true, true, true, true);
-      }
-
-      if (this.colorLogic == GlStateManager.LogicOp.OR_REVERSE) {
-         RenderSystem.disableColorLogicOp();
-      }
-
+   public boolean isCull() {
+      return this.cull;
    }
 
-   private int toGl(DepthTestFunction var1) {
-      short var10000;
-      switch (var1) {
-         case NO_DEPTH_TEST -> var10000 = 519;
-         case EQUAL_DEPTH_TEST -> var10000 = 514;
-         case GREATER_DEPTH_TEST -> var10000 = 516;
-         default -> var10000 = 515;
-      }
+   public LogicOp getColorLogic() {
+      return this.colorLogic;
+   }
 
-      return var10000;
+   public Optional<BlendFunction> getBlendFunction() {
+      return this.blendFunction;
+   }
+
+   public boolean isWriteColor() {
+      return this.writeColor;
+   }
+
+   public boolean isWriteAlpha() {
+      return this.writeAlpha;
+   }
+
+   public boolean isWriteDepth() {
+      return this.writeDepth;
+   }
+
+   public float getDepthBiasScaleFactor() {
+      return this.depthBiasScaleFactor;
+   }
+
+   public float getDepthBiasConstant() {
+      return this.depthBiasConstant;
    }
 
    public ResourceLocation getLocation() {
       return this.location;
-   }
-
-   public Boolean cull() {
-      return this.cull;
    }
 
    public VertexFormat getVertexFormat() {
@@ -174,6 +132,10 @@ public class RenderPipeline {
       return this.uniforms;
    }
 
+   public boolean wantsDepthTexture() {
+      return this.depthTestFunction != DepthTestFunction.NO_DEPTH_TEST || this.depthBiasConstant != 0.0F || this.depthBiasScaleFactor != 0.0F || this.writeDepth;
+   }
+
    public static Builder builder(Snippet... var0) {
       Builder var1 = new Builder();
 
@@ -192,14 +154,17 @@ public class RenderPipeline {
       private Optional<List<String>> samplers = Optional.empty();
       private Optional<List<UniformDescription>> uniforms = Optional.empty();
       private Optional<DepthTestFunction> depthTestFunction = Optional.empty();
+      private Optional<PolygonMode> polygonMode = Optional.empty();
       private Optional<Boolean> cull = Optional.empty();
       private Optional<Boolean> writeColor = Optional.empty();
       private Optional<Boolean> writeAlpha = Optional.empty();
       private Optional<Boolean> writeDepth = Optional.empty();
-      private Optional<GlStateManager.LogicOp> colorLogic = Optional.empty();
+      private Optional<LogicOp> colorLogic = Optional.empty();
       private Optional<BlendFunction> blendFunction = Optional.empty();
       private Optional<VertexFormat> vertexFormat = Optional.empty();
       private Optional<VertexFormat.Mode> vertexFormatMode = Optional.empty();
+      private float depthBiasScaleFactor;
+      private float depthBiasConstant;
 
       Builder() {
          super();
@@ -271,7 +236,7 @@ public class RenderPipeline {
          return this;
       }
 
-      public Builder withUniform(String var1, Uniform.Type var2) {
+      public Builder withUniform(String var1, UniformType var2) {
          if (this.uniforms.isEmpty()) {
             this.uniforms = Optional.of(new ArrayList());
          }
@@ -282,6 +247,11 @@ public class RenderPipeline {
 
       public Builder withDepthTestFunction(DepthTestFunction var1) {
          this.depthTestFunction = Optional.of(var1);
+         return this;
+      }
+
+      public Builder withPolygonMode(PolygonMode var1) {
+         this.polygonMode = Optional.of(var1);
          return this;
       }
 
@@ -317,7 +287,7 @@ public class RenderPipeline {
          return this;
       }
 
-      public Builder withColorLogic(GlStateManager.LogicOp var1) {
+      public Builder withColorLogic(LogicOp var1) {
          this.colorLogic = Optional.of(var1);
          return this;
       }
@@ -325,6 +295,12 @@ public class RenderPipeline {
       public Builder withVertexFormat(VertexFormat var1, VertexFormat.Mode var2) {
          this.vertexFormat = Optional.of(var1);
          this.vertexFormatMode = Optional.of(var2);
+         return this;
+      }
+
+      public Builder withDepthBias(float var1, float var2) {
+         this.depthBiasScaleFactor = var1;
+         this.depthBiasConstant = var2;
          return this;
       }
 
@@ -408,7 +384,7 @@ public class RenderPipeline {
       }
 
       public Snippet buildSnippet() {
-         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.samplers.map(Collections::unmodifiableList), this.uniforms.map(Collections::unmodifiableList), this.blendFunction, this.depthTestFunction, this.cull, this.writeColor, this.writeAlpha, this.writeDepth, this.colorLogic, this.vertexFormat, this.vertexFormatMode);
+         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.samplers.map(Collections::unmodifiableList), this.uniforms.map(Collections::unmodifiableList), this.blendFunction, this.depthTestFunction, this.polygonMode, this.cull, this.writeColor, this.writeAlpha, this.writeDepth, this.colorLogic, this.vertexFormat, this.vertexFormatMode);
       }
 
       public RenderPipeline build() {
@@ -423,20 +399,20 @@ public class RenderPipeline {
          } else if (this.vertexFormatMode.isEmpty()) {
             throw new IllegalStateException("Missing vertex mode");
          } else {
-            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (GlStateManager.LogicOp)this.colorLogic.orElse(GlStateManager.LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get());
+            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant);
          }
       }
    }
 
-   public static record UniformDescription(String name, Uniform.Type type) {
-      public UniformDescription(String var1, Uniform.Type var2) {
+   public static record UniformDescription(String name, UniformType type) {
+      public UniformDescription(String var1, UniformType var2) {
          super();
          this.name = var1;
          this.type = var2;
       }
    }
 
-   public static record Snippet(Optional<ResourceLocation> vertexShader, Optional<ResourceLocation> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<BlendFunction> blendFunction, Optional<DepthTestFunction> depthTestFunction, Optional<Boolean> cull, Optional<Boolean> writeColor, Optional<Boolean> writeAlpha, Optional<Boolean> writeDepth, Optional<GlStateManager.LogicOp> colorLogic, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
+   public static record Snippet(Optional<ResourceLocation> vertexShader, Optional<ResourceLocation> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<BlendFunction> blendFunction, Optional<DepthTestFunction> depthTestFunction, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<Boolean> writeColor, Optional<Boolean> writeAlpha, Optional<Boolean> writeDepth, Optional<LogicOp> colorLogic, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
       final Optional<ResourceLocation> vertexShader;
       final Optional<ResourceLocation> fragmentShader;
       final Optional<ShaderDefines> shaderDefines;
@@ -448,11 +424,11 @@ public class RenderPipeline {
       final Optional<Boolean> writeColor;
       final Optional<Boolean> writeAlpha;
       final Optional<Boolean> writeDepth;
-      final Optional<GlStateManager.LogicOp> colorLogic;
+      final Optional<LogicOp> colorLogic;
       final Optional<VertexFormat> vertexFormat;
       final Optional<VertexFormat.Mode> vertexFormatMode;
 
-      public Snippet(Optional<ResourceLocation> var1, Optional<ResourceLocation> var2, Optional<ShaderDefines> var3, Optional<List<String>> var4, Optional<List<UniformDescription>> var5, Optional<BlendFunction> var6, Optional<DepthTestFunction> var7, Optional<Boolean> var8, Optional<Boolean> var9, Optional<Boolean> var10, Optional<Boolean> var11, Optional<GlStateManager.LogicOp> var12, Optional<VertexFormat> var13, Optional<VertexFormat.Mode> var14) {
+      public Snippet(Optional<ResourceLocation> var1, Optional<ResourceLocation> var2, Optional<ShaderDefines> var3, Optional<List<String>> var4, Optional<List<UniformDescription>> var5, Optional<BlendFunction> var6, Optional<DepthTestFunction> var7, Optional<PolygonMode> var8, Optional<Boolean> var9, Optional<Boolean> var10, Optional<Boolean> var11, Optional<Boolean> var12, Optional<LogicOp> var13, Optional<VertexFormat> var14, Optional<VertexFormat.Mode> var15) {
          super();
          this.vertexShader = var1;
          this.fragmentShader = var2;
@@ -461,13 +437,14 @@ public class RenderPipeline {
          this.uniforms = var5;
          this.blendFunction = var6;
          this.depthTestFunction = var7;
-         this.cull = var8;
-         this.writeColor = var9;
-         this.writeAlpha = var10;
-         this.writeDepth = var11;
-         this.colorLogic = var12;
-         this.vertexFormat = var13;
-         this.vertexFormatMode = var14;
+         this.polygonMode = var8;
+         this.cull = var9;
+         this.writeColor = var10;
+         this.writeAlpha = var11;
+         this.writeDepth = var12;
+         this.colorLogic = var13;
+         this.vertexFormat = var14;
+         this.vertexFormatMode = var15;
       }
    }
 }

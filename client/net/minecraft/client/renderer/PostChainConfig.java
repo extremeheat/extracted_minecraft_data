@@ -1,10 +1,13 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -171,6 +174,28 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
          this.name = var1;
          this.type = var2;
          this.values = var3;
+      }
+
+      public void setOnRenderPass(RenderPass var1) {
+         UniformType var2 = UniformType.CODEC.byName(this.type);
+         if (!this.values.isEmpty() && var2 != null && !((List)this.values.get()).isEmpty()) {
+            List var3 = (List)this.values.get();
+            if (var2.isIntStorage()) {
+               var1.setUniform(this.name, (int)(Float)var3.getFirst());
+            } else {
+               float[] var4 = new float[var2.getCount()];
+               if (var3.size() == 1) {
+                  Arrays.fill(var4, (Float)var3.getFirst());
+               } else {
+                  for(int var5 = 0; var5 < Math.min(var3.size(), var2.getCount()); ++var5) {
+                     var4[var5] = (Float)var3.get(var5);
+                  }
+               }
+
+               var1.setUniform(this.name, var4);
+            }
+
+         }
       }
    }
 }

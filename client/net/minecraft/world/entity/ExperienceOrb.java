@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +31,10 @@ public class ExperienceOrb extends Entity {
    private static final int MAX_FOLLOW_DIST = 8;
    private static final int ORB_GROUPS_PER_AREA = 40;
    private static final double ORB_MERGE_DISTANCE = 0.5;
+   private static final short DEFAULT_HEALTH = 5;
+   private static final short DEFAULT_AGE = 0;
+   private static final short DEFAULT_VALUE = 0;
+   private static final int DEFAULT_COUNT = 1;
    private int age;
    private int health;
    private int count;
@@ -50,6 +55,7 @@ public class ExperienceOrb extends Entity {
 
    public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
       super(var1, var2);
+      this.age = 0;
       this.health = 5;
       this.count = 1;
       this.interpolation = new InterpolationHandler(this);
@@ -220,10 +226,10 @@ public class ExperienceOrb extends Entity {
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.health = var1.getShort("Health");
-      this.age = var1.getShort("Age");
-      this.setValue(var1.getShort("Value"));
-      this.count = Math.max(var1.getInt("Count"), 1);
+      this.health = var1.getShortOr("Health", (short)5);
+      this.age = var1.getShortOr("Age", (short)0);
+      this.setValue(var1.getShortOr("Value", (short)0));
+      this.count = (Integer)var1.read("Count", ExtraCodecs.POSITIVE_INT).orElse(1);
    }
 
    public void playerTouch(Player var1) {

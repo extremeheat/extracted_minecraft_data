@@ -208,13 +208,11 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var1.fallFlyingTimeInTicks = (float)var0.getFallFlyingTicks() + var2;
       Vec3 var3 = var0.getViewVector(var2);
       Vec3 var4 = var0.getDeltaMovementLerped(var2);
-      double var5 = var4.horizontalDistanceSqr();
-      double var7 = var3.horizontalDistanceSqr();
-      if (var5 > 0.0 && var7 > 0.0) {
+      if (var4.horizontalDistanceSqr() > 9.999999747378752E-6 && var3.horizontalDistanceSqr() > 9.999999747378752E-6) {
          var1.shouldApplyFlyingYRot = true;
-         double var9 = Math.min(1.0, (var4.x * var3.x + var4.z * var3.z) / Math.sqrt(var5 * var7));
-         double var11 = var4.x * var3.z - var4.z * var3.x;
-         var1.flyingYRot = (float)(Math.signum(var11) * Math.acos(var9));
+         double var5 = var4.horizontal().normalize().dot(var3.horizontal().normalize());
+         double var7 = var4.x * var3.z - var4.z * var3.x;
+         var1.flyingYRot = (float)(Math.signum(var7) * Math.acos(Math.min(1.0, Math.abs(var5))));
       } else {
          var1.shouldApplyFlyingYRot = false;
          var1.flyingYRot = 0.0F;
@@ -244,7 +242,12 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    @Nullable
    private static Parrot.Variant getParrotOnShoulder(AbstractClientPlayer var0, boolean var1) {
       CompoundTag var2 = var1 ? var0.getShoulderEntityLeft() : var0.getShoulderEntityRight();
-      return EntityType.byString(var2.getString("id")).filter((var0x) -> var0x == EntityType.PARROT).isPresent() ? (Parrot.Variant)var2.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE) : null;
+      if (var2.isEmpty()) {
+         return null;
+      } else {
+         EntityType var3 = (EntityType)var2.read("id", EntityType.CODEC).orElse((Object)null);
+         return var3 == EntityType.PARROT ? (Parrot.Variant)var2.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE) : null;
+      }
    }
 
    public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {

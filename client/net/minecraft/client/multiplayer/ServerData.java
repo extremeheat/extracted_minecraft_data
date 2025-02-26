@@ -62,7 +62,7 @@ public class ServerData {
    }
 
    public static ServerData read(CompoundTag var0) {
-      ServerData var1 = new ServerData(var0.getString("name"), var0.getString("ip"), ServerData.Type.OTHER);
+      ServerData var1 = new ServerData(var0.getStringOr("name", ""), var0.getStringOr("ip", ""), ServerData.Type.OTHER);
       var1.setIconBytes((byte[])var0.read("icon", ExtraCodecs.BASE64_STRING).orElse((Object)null));
       var1.setResourcePackStatus((ServerPackStatus)var0.read(ServerData.ServerPackStatus.FIELD_CODEC).orElse(ServerData.ServerPackStatus.PROMPT));
       return var1;

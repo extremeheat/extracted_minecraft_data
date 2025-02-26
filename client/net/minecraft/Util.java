@@ -474,6 +474,10 @@ public class Util {
       }
    }
 
+   public static int growByHalf(int var0, int var1) {
+      return (int)Math.max(Math.min((long)var0 + (long)(var0 >> 1), 2147483639L), (long)var1);
+   }
+
    public static OS getPlatform() {
       String var0 = System.getProperty("os.name").toLowerCase(Locale.ROOT);
       if (var0.contains("win")) {

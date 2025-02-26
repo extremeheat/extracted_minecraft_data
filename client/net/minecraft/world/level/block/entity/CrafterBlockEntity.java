@@ -30,6 +30,8 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    public static final int SLOT_ENABLED = 0;
    public static final int DATA_TRIGGERED = 9;
    public static final int NUM_DATA = 10;
+   private static final int DEFAULT_CRAFTING_TICKS_REMAINING = 0;
+   private static final int DEFAULT_TRIGGERED = 0;
    private NonNullList<ItemStack> items;
    private int craftingTicksRemaining;
    protected final ContainerData containerData;
@@ -115,25 +117,25 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.craftingTicksRemaining = var1.getInt("crafting_ticks_remaining");
+      this.craftingTicksRemaining = var1.getIntOr("crafting_ticks_remaining", 0);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);
       }
 
-      int[] var3 = var1.getIntArray("disabled_slots");
-
-      for(int var4 = 0; var4 < 9; ++var4) {
-         this.containerData.set(var4, 0);
+      for(int var3 = 0; var3 < 9; ++var3) {
+         this.containerData.set(var3, 0);
       }
 
-      for(int var7 : var3) {
-         if (this.slotCanBeDisabled(var7)) {
-            this.containerData.set(var7, 1);
+      var1.getIntArray("disabled_slots").ifPresent((var1x) -> {
+         for(int var5 : var1x) {
+            if (this.slotCanBeDisabled(var5)) {
+               this.containerData.set(var5, 1);
+            }
          }
-      }
 
-      this.containerData.set(9, var1.getInt("triggered"));
+      });
+      this.containerData.set(9, var1.getIntOr("triggered", 0));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -209,7 +211,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
          }
       }
 
-      var1.putIntArray("disabled_slots", (List)var2);
+      var1.putIntArray("disabled_slots", var2.toIntArray());
    }
 
    private void addTriggered(CompoundTag var1) {

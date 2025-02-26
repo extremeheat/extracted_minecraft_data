@@ -349,7 +349,7 @@ public class NetherFortressPieces {
 
       public BridgeEndFiller(CompoundTag var1) {
          super(StructurePieceType.NETHER_FORTRESS_BRIDGE_END_FILLER, var1);
-         this.selfSeed = var1.getInt("Seed");
+         this.selfSeed = var1.getIntOr("Seed", 0);
       }
 
       public static BridgeEndFiller createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
@@ -590,7 +590,7 @@ public class NetherFortressPieces {
 
       public MonsterThrone(CompoundTag var1) {
          super(StructurePieceType.NETHER_FORTRESS_MONSTER_THRONE, var1);
-         this.hasPlacedSpawner = var1.getBoolean("Mob");
+         this.hasPlacedSpawner = var1.getBooleanOr("Mob", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -994,7 +994,7 @@ public class NetherFortressPieces {
 
       public CastleSmallCorridorRightTurnPiece(CompoundTag var1) {
          super(StructurePieceType.NETHER_FORTRESS_CASTLE_SMALL_CORRIDOR_RIGHT_TURN, var1);
-         this.isNeedingChest = var1.getBoolean("Chest");
+         this.isNeedingChest = var1.getBooleanOr("Chest", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -1053,7 +1053,7 @@ public class NetherFortressPieces {
 
       public CastleSmallCorridorLeftTurnPiece(CompoundTag var1) {
          super(StructurePieceType.NETHER_FORTRESS_CASTLE_SMALL_CORRIDOR_LEFT_TURN, var1);
-         this.isNeedingChest = var1.getBoolean("Chest");
+         this.isNeedingChest = var1.getBooleanOr("Chest", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

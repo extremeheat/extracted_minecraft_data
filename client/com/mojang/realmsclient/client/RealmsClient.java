@@ -2,6 +2,7 @@ package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
@@ -38,14 +39,20 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 
 public class RealmsClient {
    public static final Environment ENVIRONMENT;
    private static final Logger LOGGER;
+   @Nullable
+   private static volatile RealmsClient realmsClientInstance;
+   private final CompletableFuture<Set<String>> featureFlags;
    private final String sessionId;
    private final String username;
    private final Minecraft minecraft;
@@ -58,6 +65,7 @@ public class RealmsClient {
    private static final String REGIONS_RESOURCE = "regions/ping/stat";
    private static final String TRIALS_RESOURCE = "trial";
    private static final String NOTIFICATIONS_RESOURCE = "notifications";
+   private static final String FEATURE_FLAGS_RESOURCE = "feature/v1";
    private static final String PATH_LIST_ALL_REALMS = "/listUserWorldsOfType/any";
    private static final String PATH_CREATE_SNAPSHOT_REALM = "/$PARENT_WORLD_ID/createPrereleaseRealm";
    private static final String PATH_SNAPSHOT_ELIGIBLE_REALMS = "/listPrereleaseEligibleWorlds";
@@ -94,23 +102,60 @@ public class RealmsClient {
    private static final String PATH_DISMISS_NOTIFICATIONS = "/dismiss";
    private static final GuardedSerializer GSON;
 
-   public static RealmsClient create() {
+   public static RealmsClient getOrCreate() {
       Minecraft var0 = Minecraft.getInstance();
-      return create(var0);
+      return getOrCreate(var0);
    }
 
-   public static RealmsClient create(Minecraft var0) {
+   public static RealmsClient getOrCreate(Minecraft var0) {
       String var1 = var0.getUser().getName();
       String var2 = var0.getUser().getSessionId();
-      return new RealmsClient(var2, var1, var0);
+      RealmsClient var3 = realmsClientInstance;
+      if (var3 != null) {
+         return var3;
+      } else {
+         synchronized(RealmsClient.class) {
+            RealmsClient var5 = realmsClientInstance;
+            if (var5 != null) {
+               return var5;
+            } else {
+               var5 = new RealmsClient(var2, var1, var0);
+               realmsClientInstance = var5;
+               return var5;
+            }
+         }
+      }
    }
 
-   public RealmsClient(String var1, String var2, Minecraft var3) {
+   private RealmsClient(String var1, String var2, Minecraft var3) {
       super();
       this.sessionId = var1;
       this.username = var2;
       this.minecraft = var3;
       RealmsClientConfig.setProxy(var3.getProxy());
+      this.featureFlags = CompletableFuture.supplyAsync(this::fetchFeatureFlags, Util.nonCriticalIoPool());
+   }
+
+   public Set<String> getFeatureFlags() {
+      return (Set)this.featureFlags.join();
+   }
+
+   private Set<String> fetchFeatureFlags() {
+      String var1 = url("feature/v1", (String)null, false);
+
+      try {
+         String var2 = this.execute(Request.get(var1, 5000, 10000));
+         JsonArray var3 = JsonParser.parseString(var2).getAsJsonArray();
+         Set var4 = (Set)var3.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet());
+         LOGGER.debug("Fetched Realms feature flags: {}", var4);
+         return var4;
+      } catch (RealmsServiceException var5) {
+         LOGGER.error("Failed to fetch Realms feature flags", var5);
+      } catch (Exception var6) {
+         LOGGER.error("Could not parse Realms feature flags", var6);
+      }
+
+      return Set.of();
    }
 
    public RealmsServerList listRealms() throws RealmsServiceException {
@@ -379,15 +424,19 @@ public class RealmsClient {
       this.execute(Request.delete(var3));
    }
 
-   private String url(String var1) {
+   private String url(String var1) throws RealmsServiceException {
       return this.url(var1, (String)null);
    }
 
-   private String url(String var1, @Nullable String var2) {
+   private String url(String var1, @Nullable String var2) throws RealmsServiceException {
+      return url(var1, var2, this.getFeatureFlags().contains("realms_in_aks"));
+   }
+
+   private static String url(String var0, @Nullable String var1, boolean var2) {
       try {
-         return (new URI(ENVIRONMENT.protocol, ENVIRONMENT.baseUrl, "/" + var1, var2, (String)null)).toASCIIString();
+         return (new URI(ENVIRONMENT.protocol, var2 ? ENVIRONMENT.alternativeUrl : ENVIRONMENT.baseUrl, "/" + var0, var1, (String)null)).toASCIIString();
       } catch (URISyntaxException var4) {
-         throw new IllegalArgumentException(var1, var4);
+         throw new IllegalArgumentException(var0, var4);
       }
    }
 
@@ -423,20 +472,23 @@ public class RealmsClient {
    static {
       ENVIRONMENT = (Environment)Optional.ofNullable(System.getenv("realms.environment")).or(() -> Optional.ofNullable(System.getProperty("realms.environment"))).flatMap(Environment::byName).orElse(RealmsClient.Environment.PRODUCTION);
       LOGGER = LogUtils.getLogger();
+      realmsClientInstance = null;
       GSON = new GuardedSerializer();
    }
 
    public static enum Environment {
-      PRODUCTION("pc.realms.minecraft.net", "https"),
-      STAGE("pc-stage.realms.minecraft.net", "https"),
-      LOCAL("localhost:8080", "http");
+      PRODUCTION("pc.realms.minecraft.net", "java.frontendlegacy.realms.minecraft-services.net", "https"),
+      STAGE("pc-stage.realms.minecraft.net", "java.frontendlegacy.stage-c2a40e62.realms.minecraft-services.net", "https"),
+      LOCAL("localhost:8080", "localhost:8080", "http");
 
       public final String baseUrl;
+      public final String alternativeUrl;
       public final String protocol;
 
-      private Environment(final String var3, final String var4) {
+      private Environment(final String var3, final String var4, final String var5) {
          this.baseUrl = var3;
-         this.protocol = var4;
+         this.alternativeUrl = var4;
+         this.protocol = var5;
       }
 
       public static Optional<Environment> byName(String var0) {

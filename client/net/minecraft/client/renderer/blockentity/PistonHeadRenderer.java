@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.List;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -62,7 +63,8 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
    private void renderBlock(BlockPos var1, BlockState var2, PoseStack var3, MultiBufferSource var4, Level var5, boolean var6, int var7) {
       RenderType var8 = ItemBlockRenderTypes.getMovingBlockRenderType(var2);
       VertexConsumer var9 = var4.getBuffer(var8);
-      this.blockRenderer.getModelRenderer().tesselateBlock(var5, this.blockRenderer.getBlockModel(var2), var2, var1, var3, var9, var6, RandomSource.create(), var2.getSeed(var1), var7);
+      List var10 = this.blockRenderer.getBlockModel(var2).collectParts(RandomSource.create(var2.getSeed(var1)));
+      this.blockRenderer.getModelRenderer().tesselateBlock(var5, var10, var2, var1, var3, var9, var6, var7);
    }
 
    public int getViewDistance() {

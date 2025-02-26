@@ -1,11 +1,14 @@
-package com.mojang.blaze3d.platform;
+package com.mojang.blaze3d.opengl;
 
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.DebugMemoryUntracker;
+import com.mojang.blaze3d.platform.GLX;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import javax.annotation.Nullable;
 import org.lwjgl.opengl.ARBDebugOutput;
@@ -22,12 +25,11 @@ import org.slf4j.Logger;
 public class GlDebug {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int CIRCULAR_LOG_SIZE = 10;
-   private static final Queue<LogEntry> MESSAGE_BUFFER = EvictingQueue.create(10);
+   private final Queue<LogEntry> MESSAGE_BUFFER = EvictingQueue.create(10);
    @Nullable
-   private static volatile LogEntry lastEntry;
+   private volatile LogEntry lastEntry;
    private static final List<Integer> DEBUG_LEVELS = ImmutableList.of(37190, 37191, 37192, 33387);
    private static final List<Integer> DEBUG_LEVELS_ARB = ImmutableList.of(37190, 37191, 37192);
-   private static boolean debugEnabled;
 
    public GlDebug() {
       super();
@@ -112,70 +114,74 @@ public class GlDebug {
       }
    }
 
-   private static void printDebugLog(int var0, int var1, int var2, int var3, int var4, long var5, long var7) {
-      String var9 = GLDebugMessageCallback.getMessage(var4, var5);
-      LogEntry var10;
-      synchronized(MESSAGE_BUFFER) {
-         var10 = lastEntry;
-         if (var10 != null && var10.isSame(var0, var1, var2, var3, var9)) {
-            ++var10.count;
+   private void printDebugLog(int var1, int var2, int var3, int var4, int var5, long var6, long var8) {
+      String var10 = GLDebugMessageCallback.getMessage(var5, var6);
+      LogEntry var11;
+      synchronized(this.MESSAGE_BUFFER) {
+         var11 = this.lastEntry;
+         if (var11 != null && var11.isSame(var1, var2, var3, var4, var10)) {
+            ++var11.count;
          } else {
-            var10 = new LogEntry(var0, var1, var2, var3, var9);
-            MESSAGE_BUFFER.add(var10);
-            lastEntry = var10;
+            var11 = new LogEntry(var1, var2, var3, var4, var10);
+            this.MESSAGE_BUFFER.add(var11);
+            this.lastEntry = var11;
          }
       }
 
-      LOGGER.info("OpenGL debug message: {}", var10);
+      LOGGER.info("OpenGL debug message: {}", var11);
    }
 
-   public static List<String> getLastOpenGlDebugMessages() {
-      synchronized(MESSAGE_BUFFER) {
-         ArrayList var1 = Lists.newArrayListWithCapacity(MESSAGE_BUFFER.size());
+   public List<String> getLastOpenGlDebugMessages() {
+      synchronized(this.MESSAGE_BUFFER) {
+         ArrayList var2 = Lists.newArrayListWithCapacity(this.MESSAGE_BUFFER.size());
 
-         for(LogEntry var3 : MESSAGE_BUFFER) {
-            String var10001 = String.valueOf(var3);
-            var1.add(var10001 + " x " + var3.count);
+         for(LogEntry var4 : this.MESSAGE_BUFFER) {
+            String var10001 = String.valueOf(var4);
+            var2.add(var10001 + " x " + var4.count);
          }
 
-         return var1;
+         return var2;
       }
    }
 
-   public static boolean isDebugEnabled() {
-      return debugEnabled;
-   }
-
-   public static void enableDebugCallback(int var0, boolean var1) {
-      if (var0 > 0) {
+   @Nullable
+   public static GlDebug enableDebugCallback(int var0, boolean var1) {
+      if (var0 <= 0) {
+         return null;
+      } else {
          GLCapabilities var2 = GL.getCapabilities();
          if (var2.GL_KHR_debug) {
-            debugEnabled = true;
+            GlDebug var6 = new GlDebug();
             GL11.glEnable(37600);
             if (var1) {
                GL11.glEnable(33346);
             }
 
-            for(int var3 = 0; var3 < DEBUG_LEVELS.size(); ++var3) {
-               boolean var4 = var3 < var0;
-               KHRDebug.glDebugMessageControl(4352, 4352, (Integer)DEBUG_LEVELS.get(var3), (int[])null, var4);
+            for(int var7 = 0; var7 < DEBUG_LEVELS.size(); ++var7) {
+               boolean var8 = var7 < var0;
+               KHRDebug.glDebugMessageControl(4352, 4352, (Integer)DEBUG_LEVELS.get(var7), (int[])null, var8);
             }
 
-            KHRDebug.glDebugMessageCallback((GLDebugMessageCallbackI)GLX.make(GLDebugMessageCallback.create(GlDebug::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            Objects.requireNonNull(var6);
+            KHRDebug.glDebugMessageCallback((GLDebugMessageCallbackI)GLX.make(GLDebugMessageCallback.create(var6::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            return var6;
          } else if (var2.GL_ARB_debug_output) {
-            debugEnabled = true;
+            GlDebug var3 = new GlDebug();
             if (var1) {
                GL11.glEnable(33346);
             }
 
-            for(int var5 = 0; var5 < DEBUG_LEVELS_ARB.size(); ++var5) {
-               boolean var6 = var5 < var0;
-               ARBDebugOutput.glDebugMessageControlARB(4352, 4352, (Integer)DEBUG_LEVELS_ARB.get(var5), (int[])null, var6);
+            for(int var4 = 0; var4 < DEBUG_LEVELS_ARB.size(); ++var4) {
+               boolean var5 = var4 < var0;
+               ARBDebugOutput.glDebugMessageControlARB(4352, 4352, (Integer)DEBUG_LEVELS_ARB.get(var4), (int[])null, var5);
             }
 
-            ARBDebugOutput.glDebugMessageCallbackARB((GLDebugMessageARBCallbackI)GLX.make(GLDebugMessageARBCallback.create(GlDebug::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            Objects.requireNonNull(var3);
+            ARBDebugOutput.glDebugMessageCallbackARB((GLDebugMessageARBCallbackI)GLX.make(GLDebugMessageARBCallback.create(var3::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            return var3;
+         } else {
+            return null;
          }
-
       }
    }
 

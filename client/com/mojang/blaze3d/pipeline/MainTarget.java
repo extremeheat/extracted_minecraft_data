@@ -2,7 +2,6 @@ package com.mojang.blaze3d.pipeline;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.GpuOutOfMemoryException;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -10,6 +9,7 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 public class MainTarget extends RenderTarget {
@@ -25,21 +25,14 @@ public class MainTarget extends RenderTarget {
    private void createFrameBuffer(int var1, int var2) {
       Dimension var3 = this.allocateAttachments(var1, var2);
       if (this.colorTexture != null && this.depthTexture != null) {
-         this.frameBufferId = GlStateManager.glGenFramebuffers();
-         GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
          this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
          this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-         GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorTexture.glId(), 0);
          this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
          this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-         GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthTexture.glId(), 0);
-         GlStateManager._bindTexture(0);
          this.viewWidth = var3.width;
          this.viewHeight = var3.height;
          this.width = var3.width;
          this.height = var3.height;
-         this.checkStatus();
-         GlStateManager._glBindFramebuffer(36160, 0);
       } else {
          throw new IllegalStateException("Missing color and/or depth textures");
       }
@@ -72,11 +65,8 @@ public class MainTarget extends RenderTarget {
 
    @Nullable
    private GpuTexture allocateColorAttachment(Dimension var1) {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager._getError();
-
       try {
-         return new GpuTexture(() -> this.label + " / Color", TextureFormat.RGBA8, var1.width, var1.height, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), TextureFormat.RGBA8, var1.width, var1.height, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
@@ -84,11 +74,8 @@ public class MainTarget extends RenderTarget {
 
    @Nullable
    private GpuTexture allocateDepthAttachment(Dimension var1) {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager._getError();
-
       try {
-         return new GpuTexture(() -> this.label + " / Depth", TextureFormat.DEPTH32, var1.width, var1.height, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), TextureFormat.DEPTH32, var1.width, var1.height, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
@@ -106,7 +93,7 @@ public class MainTarget extends RenderTarget {
 
       static List<Dimension> listWithFallback(int var0, int var1) {
          RenderSystem.assertOnRenderThread();
-         int var2 = RenderSystem.maxSupportedTextureSize();
+         int var2 = RenderSystem.getDevice().getMaxTextureSize();
          return var0 > 0 && var0 <= var2 && var1 > 0 && var1 <= var2 ? ImmutableList.of(new Dimension(var0, var1), MainTarget.DEFAULT_DIMENSIONS) : ImmutableList.of(MainTarget.DEFAULT_DIMENSIONS);
       }
 

@@ -111,7 +111,7 @@ public class OminousItemSpawner extends Entity {
    protected void readAdditionalSaveData(CompoundTag var1) {
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.setItem((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
-      this.spawnItemAfterTicks = var1.getLong("spawn_item_after_ticks");
+      this.spawnItemAfterTicks = var1.getLongOr("spawn_item_after_ticks", 0L);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

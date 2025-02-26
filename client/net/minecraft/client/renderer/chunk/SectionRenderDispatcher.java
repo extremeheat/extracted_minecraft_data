@@ -3,14 +3,19 @@ package net.minecraft.client.renderer.chunk;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +27,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.TracingExecutor;
@@ -52,11 +56,11 @@ import net.minecraft.world.phys.Vec3;
 
 public class SectionRenderDispatcher {
    private final CompileTaskDynamicQueue compileQueue = new CompileTaskDynamicQueue();
-   private final Queue<Runnable> toUpload = Queues.newConcurrentLinkedQueue();
+   final Queue<Runnable> toUpload = Queues.newConcurrentLinkedQueue();
    final SectionBufferBuilderPack fixedBuffers;
    private final SectionBufferBuilderPool bufferPool;
    private volatile int toBatchCount;
-   private volatile boolean closed;
+   volatile boolean closed;
    private final ConsecutiveExecutor consecutiveExecutor;
    private final TracingExecutor executor;
    ClientLevel level;
@@ -160,50 +164,6 @@ public class SectionRenderDispatcher {
       }
    }
 
-   public CompletableFuture<Void> uploadSectionLayer(MeshData var1, VertexBuffer var2) {
-      if (this.closed) {
-         return CompletableFuture.completedFuture((Object)null);
-      } else {
-         Runnable var10000 = () -> {
-            if (var2.isInvalid()) {
-               var1.close();
-            } else {
-               try (Zone var2x = Profiler.get().zone("Upload Section Layer")) {
-                  var2.bind();
-                  var2.upload(var1);
-                  VertexBuffer.unbind();
-               }
-
-            }
-         };
-         Queue var10001 = this.toUpload;
-         Objects.requireNonNull(var10001);
-         return CompletableFuture.runAsync(var10000, var10001::add);
-      }
-   }
-
-   public CompletableFuture<Void> uploadSectionIndexBuffer(ByteBufferBuilder.Result var1, VertexBuffer var2) {
-      if (this.closed) {
-         return CompletableFuture.completedFuture((Object)null);
-      } else {
-         Runnable var10000 = () -> {
-            if (var2.isInvalid()) {
-               var1.close();
-            } else {
-               try (Zone var2x = Profiler.get().zone("Upload Section Indices")) {
-                  var2.bind();
-                  var2.uploadIndexBuffer(var1);
-                  VertexBuffer.unbind();
-               }
-
-            }
-         };
-         Queue var10001 = this.toUpload;
-         Objects.requireNonNull(var10001);
-         return CompletableFuture.runAsync(var10000, var10001::add);
-      }
-   }
-
    private void clearBatchQueue() {
       this.compileQueue.clear();
       this.toBatchCount = 0;
@@ -229,7 +189,7 @@ public class SectionRenderDispatcher {
       @Nullable
       private ResortTransparencyTask lastResortTransparencyTask;
       private final Set<BlockEntity> globalBlockEntities;
-      private final Map<RenderType, VertexBuffer> buffers;
+      private final Map<RenderType, SectionBuffers> buffers;
       private AABB bb;
       private boolean dirty;
       volatile long sectionNode;
@@ -241,7 +201,7 @@ public class SectionRenderDispatcher {
          this.compiled = new AtomicReference(SectionRenderDispatcher.CompiledSection.UNCOMPILED);
          this.pointOfView = new AtomicReference((Object)null);
          this.globalBlockEntities = Sets.newHashSet();
-         this.buffers = (Map)RenderType.chunkBufferLayers().stream().collect(Collectors.toMap((var0) -> var0, (var0) -> new VertexBuffer(BufferUsage.STATIC_WRITE)));
+         this.buffers = new HashMap();
          this.dirty = true;
          this.sectionNode = SectionPos.asLong(-1, -1, -1);
          this.renderOrigin = new BlockPos.MutableBlockPos(-1, -1, -1);
@@ -267,8 +227,100 @@ public class SectionRenderDispatcher {
          return this.bb;
       }
 
-      public VertexBuffer getBuffer(RenderType var1) {
-         return (VertexBuffer)this.buffers.get(var1);
+      @Nullable
+      public SectionBuffers getBuffers(RenderType var1) {
+         return (SectionBuffers)this.buffers.get(var1);
+      }
+
+      public CompletableFuture<Void> uploadSectionLayer(RenderType var1, MeshData var2) {
+         if (SectionRenderDispatcher.this.closed) {
+            var2.close();
+            return CompletableFuture.completedFuture((Object)null);
+         } else {
+            Runnable var10000 = () -> {
+               try (Zone var3 = Profiler.get().zone("Upload Section Layer")) {
+                  CommandEncoder var4 = RenderSystem.getDevice().createCommandEncoder();
+                  if (this.buffers.containsKey(var1)) {
+                     SectionBuffers var10 = (SectionBuffers)this.buffers.get(var1);
+                     if (var10.vertexBuffer.size() < var2.vertexBuffer().remaining()) {
+                        var10.vertexBuffer.close();
+                        var10.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+                           String var10000 = var1.getName();
+                           return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
+                        }, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer()));
+                     } else {
+                        var4.writeToBuffer(var10.vertexBuffer, var2.vertexBuffer(), 0);
+                     }
+
+                     if (var2.indexBuffer() != null) {
+                        if (var10.indexBuffer != null && var10.indexBuffer.size() >= var2.indexBuffer().remaining()) {
+                           var4.writeToBuffer(var10.indexBuffer, var2.indexBuffer(), 0);
+                        } else {
+                           if (var10.indexBuffer != null) {
+                              var10.indexBuffer.close();
+                           }
+
+                           var10.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+                              String var10000 = var1.getName();
+                              return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
+                           }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var2.indexBuffer()));
+                        }
+                     } else if (var10.indexBuffer != null) {
+                        var10.indexBuffer.close();
+                        var10.setIndexBuffer((GpuBuffer)null);
+                     }
+
+                     var10.setIndexCount(var2.drawState().indexCount());
+                     var10.setIndexType(var2.drawState().indexType());
+                  } else {
+                     GpuBuffer var5 = RenderSystem.getDevice().createBuffer(() -> {
+                        String var10000 = var1.getName();
+                        return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
+                     }, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer());
+                     GpuBuffer var6 = var2.indexBuffer() != null ? RenderSystem.getDevice().createBuffer(() -> {
+                        String var10000 = var1.getName();
+                        return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
+                     }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var2.indexBuffer()) : null;
+                     SectionBuffers var7 = new SectionBuffers(var5, var6, var2.drawState().indexCount(), var2.drawState().indexType());
+                     this.buffers.put(var1, var7);
+                  }
+
+                  var2.close();
+               }
+
+            };
+            Queue var10001 = SectionRenderDispatcher.this.toUpload;
+            Objects.requireNonNull(var10001);
+            return CompletableFuture.runAsync(var10000, var10001::add);
+         }
+      }
+
+      public CompletableFuture<Void> uploadSectionIndexBuffer(ByteBufferBuilder.Result var1, RenderType var2) {
+         if (SectionRenderDispatcher.this.closed) {
+            var1.close();
+            return CompletableFuture.completedFuture((Object)null);
+         } else {
+            Runnable var10000 = () -> {
+               try (Zone var3 = Profiler.get().zone("Upload Section Indices")) {
+                  SectionBuffers var4 = this.getBuffers(var2);
+                  if (var4.indexBuffer == null) {
+                     var4.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+                        String var10000 = var2.getName();
+                        return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
+                     }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var1.byteBuffer()));
+                  } else {
+                     CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
+                     var5.writeToBuffer(var4.indexBuffer, var1.byteBuffer(), 0);
+                  }
+
+                  var1.close();
+               }
+
+            };
+            Queue var10001 = SectionRenderDispatcher.this.toUpload;
+            Objects.requireNonNull(var10001);
+            return CompletableFuture.runAsync(var10000, var10001::add);
+         }
       }
 
       public void setSectionNode(long var1) {
@@ -302,7 +354,7 @@ public class SectionRenderDispatcher {
 
       public void releaseBuffers() {
          this.reset();
-         this.buffers.values().forEach(VertexBuffer::close);
+         this.buffers.values().forEach(SectionBuffers::close);
       }
 
       public BlockPos getRenderOrigin() {
@@ -449,7 +501,7 @@ public class SectionRenderDispatcher {
                         var8.transparencyState = var6.transparencyState;
                         ArrayList var9 = new ArrayList(var6.renderedLayers.size());
                         var6.renderedLayers.forEach((var3x, var4) -> {
-                           var9.add(SectionRenderDispatcher.this.uploadSectionLayer(var4, RenderSection.this.getBuffer(var3x)));
+                           var9.add(RenderSection.this.uploadSectionLayer(var3x, var4));
                            var8.hasBlocks.add(var3x);
                         });
                         return Util.sequenceFailFast(var9).handle((var3x, var4) -> {
@@ -511,7 +563,7 @@ public class SectionRenderDispatcher {
                         var7.close();
                         return CompletableFuture.completedFuture(SectionRenderDispatcher.SectionTaskResult.CANCELLED);
                      } else {
-                        CompletableFuture var8 = SectionRenderDispatcher.this.uploadSectionIndexBuffer(var7, RenderSection.this.getBuffer(RenderType.translucent())).thenApply((var0) -> SectionRenderDispatcher.SectionTaskResult.CANCELLED);
+                        CompletableFuture var8 = RenderSection.this.uploadSectionIndexBuffer(var7, RenderType.translucent()).thenApply((var0) -> SectionRenderDispatcher.SectionTaskResult.CANCELLED);
                         return var8.handle((var2x, var3x) -> {
                            if (var3x != null && !(var3x instanceof CancellationException) && !(var3x instanceof InterruptedException)) {
                               Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var3x, "Rendering section"));
@@ -560,6 +612,63 @@ public class SectionRenderDispatcher {
          public BlockPos getRenderOrigin() {
             return RenderSection.this.renderOrigin;
          }
+      }
+   }
+
+   public static final class SectionBuffers implements AutoCloseable {
+      GpuBuffer vertexBuffer;
+      @Nullable
+      GpuBuffer indexBuffer;
+      private int indexCount;
+      private VertexFormat.IndexType indexType;
+
+      public SectionBuffers(GpuBuffer var1, @Nullable GpuBuffer var2, int var3, VertexFormat.IndexType var4) {
+         super();
+         this.vertexBuffer = var1;
+         this.indexBuffer = var2;
+         this.indexCount = var3;
+         this.indexType = var4;
+      }
+
+      public GpuBuffer getVertexBuffer() {
+         return this.vertexBuffer;
+      }
+
+      @Nullable
+      public GpuBuffer getIndexBuffer() {
+         return this.indexBuffer;
+      }
+
+      public void setIndexBuffer(@Nullable GpuBuffer var1) {
+         this.indexBuffer = var1;
+      }
+
+      public int getIndexCount() {
+         return this.indexCount;
+      }
+
+      public VertexFormat.IndexType getIndexType() {
+         return this.indexType;
+      }
+
+      public void setIndexType(VertexFormat.IndexType var1) {
+         this.indexType = var1;
+      }
+
+      public void setIndexCount(int var1) {
+         this.indexCount = var1;
+      }
+
+      public void setVertexBuffer(GpuBuffer var1) {
+         this.vertexBuffer = var1;
+      }
+
+      public void close() {
+         this.vertexBuffer.close();
+         if (this.indexBuffer != null) {
+            this.indexBuffer.close();
+         }
+
       }
    }
 

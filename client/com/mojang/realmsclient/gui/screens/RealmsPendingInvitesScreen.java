@@ -38,7 +38,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    private final Screen lastScreen;
    private final CompletableFuture<List<PendingInvite>> pendingInvites = CompletableFuture.supplyAsync(() -> {
       try {
-         return RealmsClient.create().pendingInvites().pendingInvites;
+         return RealmsClient.getOrCreate().pendingInvites().pendingInvites;
       } catch (RealmsServiceException var1) {
          LOGGER.error("Couldn't list invites", var1);
          return List.of();
@@ -83,7 +83,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          String var4 = var2.pendingInvite.invitationId;
          CompletableFuture.supplyAsync(() -> {
             try {
-               RealmsClient var2 = RealmsClient.create();
+               RealmsClient var2 = RealmsClient.getOrCreate();
                if (var1) {
                   var2.acceptInvitation(var4);
                } else {

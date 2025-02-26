@@ -62,6 +62,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
    private static final List<EntityDataAccessor<Integer>> DATA_TARGETS;
    private static final EntityDataAccessor<Integer> DATA_ID_INV;
    private static final int INVULNERABLE_TICKS = 220;
+   private static final int DEFAULT_INVULNERABLE_TICKS = 0;
    private final float[] xRotHeads = new float[2];
    private final float[] yRotHeads = new float[2];
    private final float[] xRotOHeads = new float[2];
@@ -113,7 +114,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setInvulnerableTicks(var1.getInt("Invul"));
+      this.setInvulnerableTicks(var1.getIntOr("Invul", 0));
       if (this.hasCustomName()) {
          this.bossEvent.setName(this.getDisplayName());
       }

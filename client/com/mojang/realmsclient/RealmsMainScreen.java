@@ -443,7 +443,7 @@ public class RealmsMainScreen extends RealmsScreen {
       Minecraft var2 = Minecraft.getInstance();
       CompletableFuture.supplyAsync(() -> {
          try {
-            return var0.request(RealmsClient.create(var2));
+            return var0.request(RealmsClient.getOrCreate(var2));
          } catch (RealmsServiceException var3) {
             throw new RuntimeException(var3);
          }
@@ -462,7 +462,7 @@ public class RealmsMainScreen extends RealmsScreen {
    private void pingRegions() {
       (new Thread(() -> {
          List var1 = Ping.pingAllRegions();
-         RealmsClient var2 = RealmsClient.create();
+         RealmsClient var2 = RealmsClient.getOrCreate();
          PingResult var3 = new PingResult();
          var3.pingResults = var1;
          var3.realmIds = this.getOwnedNonExpiredRealmIds();
@@ -526,7 +526,7 @@ public class RealmsMainScreen extends RealmsScreen {
       (new Thread("Realms-leave-server") {
          public void run() {
             try {
-               RealmsClient var1x = RealmsClient.create();
+               RealmsClient var1x = RealmsClient.getOrCreate();
                var1x.uninviteMyselfFrom(var1.id);
                RealmsMainScreen.this.minecraft.execute(RealmsMainScreen::refreshServerList);
             } catch (RealmsServiceException var2) {

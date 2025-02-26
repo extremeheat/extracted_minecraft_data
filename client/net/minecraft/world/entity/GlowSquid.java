@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 
 public class GlowSquid extends Squid {
    private static final EntityDataAccessor<Integer> DATA_DARK_TICKS_REMAINING;
+   private static final int DEFAULT_DARK_TICKS_REMAINING = 0;
 
    public GlowSquid(EntityType<? extends GlowSquid> var1, Level var2) {
       super(var1, var2);
@@ -62,7 +63,7 @@ public class GlowSquid extends Squid {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setDarkTicks(var1.getInt("DarkTicksRemaining"));
+      this.setDarkTicks(var1.getIntOr("DarkTicksRemaining", 0));
    }
 
    public void aiStep() {

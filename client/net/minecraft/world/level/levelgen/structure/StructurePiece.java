@@ -54,8 +54,8 @@ public abstract class StructurePiece {
    }
 
    public StructurePiece(StructurePieceType var1, CompoundTag var2) {
-      this(var1, var2.getInt("GD"), (BoundingBox)var2.read("BB", BoundingBox.CODEC).orElseThrow());
-      int var3 = var2.getInt("O");
+      this(var1, var2.getIntOr("GD", 0), (BoundingBox)var2.read("BB", BoundingBox.CODEC).orElseThrow());
+      int var3 = var2.getIntOr("O", 0);
       this.setOrientation(var3 == -1 ? null : Direction.from2DDataValue(var3));
    }
 

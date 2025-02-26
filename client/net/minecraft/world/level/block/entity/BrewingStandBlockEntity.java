@@ -34,6 +34,8 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    public static final int DATA_BREW_TIME = 0;
    public static final int DATA_FUEL_USES = 1;
    public static final int NUM_DATA_VALUES = 2;
+   private static final short DEFAULT_BREW_TIME = 0;
+   private static final byte DEFAULT_FUEL = 0;
    private NonNullList<ItemStack> items;
    int brewTime;
    private boolean[] lastPotionCount;
@@ -187,12 +189,12 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       super.loadAdditional(var1, var2);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      this.brewTime = var1.getShort("BrewTime");
+      this.brewTime = var1.getShortOr("BrewTime", (short)0);
       if (this.brewTime > 0) {
          this.ingredient = ((ItemStack)this.items.get(3)).getItem();
       }
 
-      this.fuel = var1.getByte("Fuel");
+      this.fuel = var1.getByteOr("Fuel", (byte)0);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

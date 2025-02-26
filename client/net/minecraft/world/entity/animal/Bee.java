@@ -119,15 +119,20 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    public static final String TAG_HAS_NECTAR = "HasNectar";
    public static final String TAG_FLOWER_POS = "flower_pos";
    public static final String TAG_HIVE_POS = "hive_pos";
+   public static final boolean DEFAULT_HAS_NECTAR = false;
+   private static final boolean DEFAULT_HAS_STUNG = false;
+   private static final int DEFAULT_TICKS_SINCE_POLLINATION = 0;
+   private static final int DEFAULT_CANNOT_ENTER_HIVE_TICKS = 0;
+   private static final int DEFAULT_CROPS_GROWN_SINCE_POLLINATION = 0;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    @Nullable
    private UUID persistentAngerTarget;
    private float rollAmount;
    private float rollAmountO;
    private int timeSinceSting;
-   int ticksWithoutNectarSinceExitingHive;
-   private int stayOutOfHiveCountdown;
-   private int numCropsGrownSincePollination;
+   int ticksWithoutNectarSinceExitingHive = 0;
+   private int stayOutOfHiveCountdown = 0;
+   private int numCropsGrownSincePollination = 0;
    private static final int COOLDOWN_BEFORE_LOCATING_NEW_HIVE = 200;
    int remainingCooldownBeforeLocatingNewHive;
    private static final int COOLDOWN_BEFORE_LOCATING_NEW_FLOWER = 200;
@@ -202,11 +207,11 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setHasNectar(var1.getBoolean("HasNectar"));
-      this.setHasStung(var1.getBoolean("HasStung"));
-      this.ticksWithoutNectarSinceExitingHive = var1.getInt("TicksSincePollination");
-      this.stayOutOfHiveCountdown = var1.getInt("CannotEnterHiveTicks");
-      this.numCropsGrownSincePollination = var1.getInt("CropsGrownSincePollination");
+      this.setHasNectar(var1.getBooleanOr("HasNectar", false));
+      this.setHasStung(var1.getBooleanOr("HasStung", false));
+      this.ticksWithoutNectarSinceExitingHive = var1.getIntOr("TicksSincePollination", 0);
+      this.stayOutOfHiveCountdown = var1.getIntOr("CannotEnterHiveTicks", 0);
+      this.numCropsGrownSincePollination = var1.getIntOr("CropsGrownSincePollination", 0);
       this.hivePos = (BlockPos)var1.read("hive_pos", BlockPos.CODEC).orElse((Object)null);
       this.savedFlowerPos = (BlockPos)var1.read("flower_pos", BlockPos.CODEC).orElse((Object)null);
       this.readPersistentAngerSaveData(this.level(), var1);

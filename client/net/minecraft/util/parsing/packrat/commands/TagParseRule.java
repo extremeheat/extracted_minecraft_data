@@ -3,28 +3,37 @@ package net.minecraft.util.parsing.packrat.commands;
 import com.mojang.brigadier.StringReader;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
 
 public class TagParseRule<T> implements Rule<StringReader, Dynamic<? extends T>> {
    private final DynamicOps<T> ops;
+   private final TagParser<T> parser;
 
    public TagParseRule(DynamicOps<T> var1) {
       super();
       this.ops = var1;
+      this.parser = TagParser.<T>create(var1);
    }
 
-   public Optional<Dynamic<? extends T>> parse(ParseState<StringReader> var1) {
+   @Nullable
+   public Dynamic<? extends T> parse(ParseState<StringReader> var1) {
       ((StringReader)var1.input()).skipWhitespace();
       int var2 = var1.mark();
 
       try {
-         return Optional.of(new Dynamic(this.ops, TagParser.parseAsArgument(this.ops, (StringReader)var1.input())));
+         return new Dynamic(this.ops, this.parser.parseAsArgument((StringReader)var1.input()));
       } catch (Exception var4) {
          var1.errorCollector().store(var2, var4);
-         return Optional.empty();
+         return null;
       }
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public Object parse(final ParseState var1) {
+      return this.parse(var1);
    }
 }

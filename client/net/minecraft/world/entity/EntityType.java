@@ -2,6 +2,7 @@ package net.minecraft.world.entity;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -179,6 +180,7 @@ import org.slf4j.Logger;
 public class EntityType<T extends Entity> implements FeatureElement, EntityTypeTest<Entity, T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<EntityType<?>> builtInRegistryHolder;
+   public static final Codec<EntityType<?>> CODEC;
    private static final float MAGIC_HORSE_WIDTH = 1.3964844F;
    private static final int DISPLAY_TRACKING_RANGE = 10;
    public static final EntityType<Boat> ACACIA_BOAT;
@@ -562,7 +564,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Optional<Entity> create(CompoundTag var0, Level var1, EntitySpawnReason var2) {
-      return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getString("id")));
+      return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getStringOr("id", "[invalid]")));
    }
 
    public AABB getSpawnAABB(double var1, double var3, double var5) {
@@ -586,20 +588,18 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.parse(var0.getString("id")));
+      return var0.read("id", CODEC);
    }
 
    @Nullable
    public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
       return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> {
-         if (var0.contains("Passengers", 9)) {
-            ListTag var5 = var0.getList("Passengers", 10);
+         ListTag var5 = var0.getListOrEmpty("Passengers");
 
-            for(int var6 = 0; var6 < var5.size(); ++var6) {
-               Entity var7 = loadEntityRecursive(var5.getCompound(var6), var1, var2, var3);
-               if (var7 != null) {
-                  var7.startRiding(var4, true);
-               }
+         for(int var6 = 0; var6 < var5.size(); ++var6) {
+            Entity var7 = loadEntityRecursive(var5.getCompoundOrEmpty(var6), var1, var2, var3);
+            if (var7 != null) {
+               var7.startRiding(var4, true);
             }
          }
 
@@ -608,7 +608,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Stream<Entity> loadEntitiesRecursive(List<? extends Tag> var0, Level var1, EntitySpawnReason var2) {
-      return var0.stream().mapMulti((var2x, var3) -> loadEntityRecursive((CompoundTag)var2x, var1, var2, (var1x) -> {
+      return var0.stream().flatMap((var0x) -> var0x.asCompound().stream()).mapMulti((var2x, var3) -> loadEntityRecursive(var2x, var1, var2, (var1x) -> {
             var3.accept(var1x);
             return var1x;
          }));
@@ -679,6 +679,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    static {
+      CODEC = BuiltInRegistries.ENTITY_TYPE.byNameCodec();
       ACACIA_BOAT = register("acacia_boat", EntityType.Builder.of(boatFactory(() -> Items.ACACIA_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       ACACIA_CHEST_BOAT = register("acacia_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.ACACIA_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       ALLAY = register("allay", EntityType.Builder.of(Allay::new, MobCategory.CREATURE).sized(0.35F, 0.6F).eyeHeight(0.36F).ridingOffset(0.04F).clientTrackingRange(8).updateInterval(2));

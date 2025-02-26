@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -29,14 +31,15 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
    public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
       long var8 = var1.getLevel().getGameTime();
       float var10 = (float)var7.subtract(var1.getBlockPos().getCenter()).horizontalDistance();
-      float var11 = Math.max(1.0F, var10 / 96.0F);
-      List var12 = ((BeaconBeamOwner)var1).getBeamSections();
-      int var13 = 0;
+      LocalPlayer var11 = Minecraft.getInstance().player;
+      float var12 = var11 != null && var11.isScoping() ? 1.0F : Math.max(1.0F, var10 / 96.0F);
+      List var13 = ((BeaconBeamOwner)var1).getBeamSections();
+      int var14 = 0;
 
-      for(int var14 = 0; var14 < var12.size(); ++var14) {
-         BeaconBeamOwner.Section var15 = (BeaconBeamOwner.Section)var12.get(var14);
-         renderBeaconBeam(var3, var4, var2, var11, var8, var13, var14 == var12.size() - 1 ? 2048 : var15.getHeight(), var15.getColor());
-         var13 += var15.getHeight();
+      for(int var15 = 0; var15 < var13.size(); ++var15) {
+         BeaconBeamOwner.Section var16 = (BeaconBeamOwner.Section)var13.get(var15);
+         renderBeaconBeam(var3, var4, var2, var12, var8, var14, var15 == var13.size() - 1 ? 2048 : var16.getHeight(), var16.getColor());
+         var14 += var16.getHeight();
       }
 
    }
@@ -102,7 +105,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
    }
 
    public int getViewDistance() {
-      return 2147483647;
+      return Minecraft.getInstance().options.getEffectiveRenderDistance() * 16;
    }
 
    public boolean shouldRender(T var1, Vec3 var2) {

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
@@ -549,7 +550,7 @@ public class UnihexProvider implements GlyphProvider {
                IntBuffer var4 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
                UnihexProvider.unpackBitsToBytes(var4, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
                var4.rewind();
-               var3.write(var4, NativeImage.Format.RGBA, 0, var1, var2, Glyph.this.width(), 16);
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var4, NativeImage.Format.RGBA, 0, var1, var2, Glyph.this.width(), 16);
                MemoryUtil.memFree(var4);
             }
 

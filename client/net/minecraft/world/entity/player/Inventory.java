@@ -389,8 +389,8 @@ public class Inventory implements Container, Nameable {
       this.items.clear();
 
       for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompound(var2);
-         int var4 = var3.getByte("Slot") & 255;
+         CompoundTag var3 = var1.getCompoundOrEmpty(var2);
+         int var4 = var3.getByteOr("Slot", (byte)0) & 255;
          ItemStack var5 = (ItemStack)ItemStack.parse(this.player.registryAccess(), var3).orElse(ItemStack.EMPTY);
          if (var4 < this.items.size()) {
             this.setItem(var4, var5);

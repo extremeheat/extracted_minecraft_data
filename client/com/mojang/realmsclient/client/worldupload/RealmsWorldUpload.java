@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 public class RealmsWorldUpload {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int UPLOAD_RETRIES = 20;
-   private final RealmsClient client = RealmsClient.create();
+   private final RealmsClient client = RealmsClient.getOrCreate();
    private final Path worldFolder;
    private final RealmsWorldOptions worldOptions;
    private final User user;

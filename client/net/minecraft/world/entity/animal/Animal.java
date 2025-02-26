@@ -38,7 +38,8 @@ import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class Animal extends AgeableMob {
    protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
-   private int inLove;
+   private static final int DEFAULT_IN_LOVE_TIME = 0;
+   private int inLove = 0;
    @Nullable
    private UUID loveCause;
 
@@ -95,7 +96,7 @@ public abstract class Animal extends AgeableMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.inLove = var1.getInt("InLove");
+      this.inLove = var1.getIntOr("InLove", 0);
       this.loveCause = (UUID)var1.read("LoveCause", UUIDUtil.CODEC).orElse((Object)null);
    }
 

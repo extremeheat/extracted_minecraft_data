@@ -4,6 +4,7 @@ import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
@@ -63,47 +64,48 @@ public class TextureUtil {
          var5 += var2.getFormat().pixelSize() * var2.getWidth(var6) * var2.getHeight(var6);
       }
 
-      GpuBuffer var11 = new GpuBuffer(BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var5);
-      Runnable var7 = () -> {
-         try (GpuBuffer.ReadView var6 = var11.read()) {
-            int var7 = 0;
+      GpuBuffer var12 = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var5);
+      CommandEncoder var7 = RenderSystem.getDevice().createCommandEncoder();
+      Runnable var8 = () -> {
+         try (GpuBuffer.ReadView var7x = var7.readBuffer(var12)) {
+            int var8 = 0;
 
-            for(int var8 = 0; var8 <= var3; ++var8) {
-               int var9 = var2.getWidth(var8);
-               int var10 = var2.getHeight(var8);
+            for(int var9 = 0; var9 <= var3; ++var9) {
+               int var10 = var2.getWidth(var9);
+               int var11 = var2.getHeight(var9);
 
-               try (NativeImage var11x = new NativeImage(var9, var10, false)) {
-                  for(int var12 = 0; var12 < var10; ++var12) {
-                     for(int var13 = 0; var13 < var9; ++var13) {
-                        int var14 = var6.data().getInt(var7 + (var13 + var12 * var9) * var2.getFormat().pixelSize());
-                        var11x.setPixelABGR(var13, var12, var4.applyAsInt(var14));
+               try (NativeImage var12x = new NativeImage(var10, var11, false)) {
+                  for(int var13 = 0; var13 < var11; ++var13) {
+                     for(int var14 = 0; var14 < var10; ++var14) {
+                        int var15 = var7x.data().getInt(var8 + (var14 + var13 * var10) * var2.getFormat().pixelSize());
+                        var12x.setPixelABGR(var14, var13, var4.applyAsInt(var15));
                      }
                   }
 
-                  Path var20 = var0.resolve(var1 + "_" + var8 + ".png");
-                  var11x.writeToFile(var20);
-                  LOGGER.debug("Exported png to: {}", var20.toAbsolutePath());
-               } catch (IOException var18) {
-                  LOGGER.debug("Unable to write: ", var18);
+                  Path var21 = var0.resolve(var1 + "_" + var9 + ".png");
+                  var12x.writeToFile(var21);
+                  LOGGER.debug("Exported png to: {}", var21.toAbsolutePath());
+               } catch (IOException var19) {
+                  LOGGER.debug("Unable to write: ", var19);
                }
 
-               var7 += var2.getFormat().pixelSize() * var9 * var10;
+               var8 += var2.getFormat().pixelSize() * var10 * var11;
             }
          }
 
-         var11.close();
+         var12.close();
       };
-      AtomicInteger var8 = new AtomicInteger();
-      int var9 = 0;
+      AtomicInteger var9 = new AtomicInteger();
+      int var10 = 0;
 
-      for(int var10 = 0; var10 <= var3; ++var10) {
-         var2.copyToBuffer(var11, var9, () -> {
-            if (var8.getAndIncrement() == var3) {
-               var7.run();
+      for(int var11 = 0; var11 <= var3; ++var11) {
+         var7.copyTextureToBuffer(var2, var12, var10, () -> {
+            if (var9.getAndIncrement() == var3) {
+               var8.run();
             }
 
-         }, var10);
-         var9 += var2.getFormat().pixelSize() * var2.getWidth(var10) * var2.getHeight(var10);
+         }, var11);
+         var10 += var2.getFormat().pixelSize() * var2.getWidth(var11) * var2.getHeight(var11);
       }
 
    }

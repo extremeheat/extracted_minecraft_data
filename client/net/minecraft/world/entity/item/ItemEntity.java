@@ -42,6 +42,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private static final int LIFETIME = 6000;
    private static final int INFINITE_PICKUP_DELAY = 32767;
    private static final int INFINITE_LIFETIME = -32768;
+   private static final int DEFAULT_HEALTH = 5;
+   private static final short DEFAULT_AGE = 0;
+   private static final short DEFAULT_PICKUP_DELAY = 0;
    private int age;
    private int pickupDelay;
    private int health;
@@ -55,6 +58,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    public ItemEntity(EntityType<? extends ItemEntity> var1, Level var2) {
       super(var1, var2);
+      this.age = 0;
+      this.pickupDelay = 0;
       this.health = 5;
       this.bobOffs = this.random.nextFloat() * 3.1415927F * 2.0F;
       this.setYRot(this.random.nextFloat() * 360.0F);
@@ -73,6 +78,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    private ItemEntity(ItemEntity var1) {
       super(var1.getType(), var1.level());
+      this.age = 0;
+      this.pickupDelay = 0;
       this.health = 5;
       this.setItem(var1.getItem().copy());
       this.copyPosition(var1);
@@ -323,12 +330,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.health = var1.getShort("Health");
-      this.age = var1.getShort("Age");
-      if (var1.contains("PickupDelay")) {
-         this.pickupDelay = var1.getShort("PickupDelay");
-      }
-
+      this.health = var1.getShortOr("Health", (short)5);
+      this.age = var1.getShortOr("Age", (short)0);
+      this.pickupDelay = var1.getShortOr("PickupDelay", (short)0);
       this.target = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
       this.thrower = (UUID)var1.read("Thrower", UUIDUtil.CODEC).orElse((Object)null);
       this.cachedThrower = null;

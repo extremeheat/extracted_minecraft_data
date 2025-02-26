@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -19,25 +19,25 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
    public DynamicTexture(Supplier<String> var1, NativeImage var2) {
       super();
       this.pixels = var2;
-      this.texture = new GpuTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
       this.upload();
    }
 
    public DynamicTexture(String var1, int var2, int var3, boolean var4) {
       super();
       this.pixels = new NativeImage(var2, var3, var4);
-      this.texture = new GpuTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
    }
 
    public DynamicTexture(Supplier<String> var1, int var2, int var3, boolean var4) {
       super();
       this.pixels = new NativeImage(var2, var3, var4);
-      this.texture = new GpuTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
    }
 
    public void upload() {
       if (this.pixels != null && this.texture != null) {
-         this.texture.write(this.pixels);
+         RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels);
       } else {
          LOGGER.warn("Trying to upload disposed texture {}", this.getTexture().getLabel());
       }

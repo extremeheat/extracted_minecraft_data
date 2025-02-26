@@ -1,14 +1,10 @@
 package net.minecraft.commands.arguments.item;
 
 import com.mojang.brigadier.ImmutableStringReader;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
@@ -18,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,11 +32,11 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.parsing.packrat.commands.Grammar;
+import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public class ItemPredicateArgument implements ArgumentType<Result> {
+public class ItemPredicateArgument extends ParserBasedArgument<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "#stick", "#stick{foo:'bar'}");
    static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.item.id.invalid", var0));
    static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.item.tag.unknown", var0));
@@ -52,39 +47,25 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
    private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
    static final Map<ResourceLocation, ComponentWrapper> PSEUDO_COMPONENTS;
    static final Map<ResourceLocation, PredicateWrapper> PSEUDO_PREDICATES;
-   private final Grammar<List<Predicate<ItemStack>>> grammarWithContext;
 
    public ItemPredicateArgument(CommandBuildContext var1) {
-      super();
-      Context var2 = new Context(var1);
-      this.grammarWithContext = ComponentPredicateParser.createGrammar(var2);
+      super(ComponentPredicateParser.createGrammar(new Context(var1)).mapResult((var0) -> {
+         Predicate var10000 = Util.allOf(var0);
+         Objects.requireNonNull(var10000);
+         return var10000::test;
+      }));
    }
 
    public static ItemPredicateArgument itemPredicate(CommandBuildContext var0) {
       return new ItemPredicateArgument(var0);
    }
 
-   public Result parse(StringReader var1) throws CommandSyntaxException {
-      Predicate var10000 = Util.allOf(this.grammarWithContext.parseForCommands(var1));
-      Objects.requireNonNull(var10000);
-      return var10000::test;
-   }
-
    public static Result getItemPredicate(CommandContext<CommandSourceStack> var0, String var1) {
       return (Result)var0.getArgument(var1, Result.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return this.grammarWithContext.parseForSuggestions(var2);
-   }
-
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 
    static {

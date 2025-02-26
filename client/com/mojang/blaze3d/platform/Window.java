@@ -24,7 +24,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
@@ -99,10 +98,6 @@ public final class Window implements AutoCloseable {
          this.windowedY = this.y = var9[0];
       }
 
-      GLFW.glfwMakeContextCurrent(this.window);
-      GL.createCapabilities();
-      int var11 = RenderSystem.maxSupportedTextureSize();
-      GLFW.glfwSetWindowSizeLimits(this.window, -1, -1, var11, var11);
       this.setMode();
       this.refreshFramebufferSize();
       GLFW.glfwSetFramebufferSizeCallback(this.window, this::onFramebufferResize);

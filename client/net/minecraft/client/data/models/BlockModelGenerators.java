@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Quadrant;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +34,6 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
-import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.VariantMutator;
 import net.minecraft.client.renderer.block.model.multipart.CombinedCondition;
@@ -52,6 +52,8 @@ import net.minecraft.core.FrontAndTop;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -108,7 +110,6 @@ public class BlockModelGenerators {
    public static final VariantMutator Y_ROT_90;
    public static final VariantMutator Y_ROT_180;
    public static final VariantMutator Y_ROT_270;
-   public static final VariantMutator WEIGHT_2;
    static final Map<Block, BlockStateGeneratorSupplier> FULL_BLOCK_MODEL_CUSTOM_GENERATORS;
    private static final PropertyDispatch<VariantMutator> ROTATION_FACING;
    private static final PropertyDispatch<VariantMutator> ROTATIONS_COLUMN_WITH_FACING;
@@ -125,11 +126,11 @@ public class BlockModelGenerators {
    }
 
    static MultiVariant variant(Variant var0) {
-      return new MultiVariant(List.of(var0));
+      return new MultiVariant(WeightedList.of(var0));
    }
 
    private static MultiVariant variants(Variant... var0) {
-      return new MultiVariant(List.of(var0));
+      return new MultiVariant(WeightedList.of(Arrays.stream(var0).map((var0x) -> new Weighted(var0x, 1)).toList()));
    }
 
    static MultiVariant plainVariant(ResourceLocation var0) {
@@ -736,7 +737,7 @@ public class BlockModelGenerators {
 
    private static MultiVariant createBambooModels(int var0) {
       String var1 = "_age" + var0;
-      return new MultiVariant((List)IntStream.range(1, 5).mapToObj((var1x) -> plainModel(ModelLocationUtils.getModelLocation(Blocks.BAMBOO, var1x + var1))).collect(Collectors.toList()));
+      return new MultiVariant(WeightedList.of((List)IntStream.range(1, 5).mapToObj((var1x) -> new Weighted(plainModel(ModelLocationUtils.getModelLocation(Blocks.BAMBOO, var1x + var1)), 1)).collect(Collectors.toList())));
    }
 
    private void createBamboo() {
@@ -944,7 +945,11 @@ public class BlockModelGenerators {
       Variant var3 = plainModel(ModelLocationUtils.getModelLocation(Blocks.CHORUS_PLANT, "_noside1"));
       Variant var4 = plainModel(ModelLocationUtils.getModelLocation(Blocks.CHORUS_PLANT, "_noside2"));
       Variant var5 = plainModel(ModelLocationUtils.getModelLocation(Blocks.CHORUS_PLANT, "_noside3"));
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.CHORUS_PLANT).with(condition().term(BlockStateProperties.NORTH, true), var1).with(condition().term(BlockStateProperties.EAST, true), var1.with(Y_ROT_90).with(UV_LOCK)).with(condition().term(BlockStateProperties.SOUTH, true), var1.with(Y_ROT_180).with(UV_LOCK)).with(condition().term(BlockStateProperties.WEST, true), var1.with(Y_ROT_270).with(UV_LOCK)).with(condition().term(BlockStateProperties.UP, true), var1.with(X_ROT_270).with(UV_LOCK)).with(condition().term(BlockStateProperties.DOWN, true), var1.with(X_ROT_90).with(UV_LOCK)).with(condition().term(BlockStateProperties.NORTH, false), variants(var2.with(WEIGHT_2), var3, var4, var5)).with(condition().term(BlockStateProperties.EAST, false), variants(var3.with(Y_ROT_90).with(UV_LOCK), var4.with(Y_ROT_90).with(UV_LOCK), var5.with(Y_ROT_90).with(UV_LOCK), var2.with(WEIGHT_2).with(Y_ROT_90).with(UV_LOCK))).with(condition().term(BlockStateProperties.SOUTH, false), variants(var4.with(Y_ROT_180).with(UV_LOCK), var5.with(Y_ROT_180).with(UV_LOCK), var2.with(WEIGHT_2).with(Y_ROT_180).with(UV_LOCK), var3.with(Y_ROT_180).with(UV_LOCK))).with(condition().term(BlockStateProperties.WEST, false), variants(var5.with(Y_ROT_270).with(UV_LOCK), var2.with(WEIGHT_2).with(Y_ROT_270).with(UV_LOCK), var3.with(Y_ROT_270).with(UV_LOCK), var4.with(Y_ROT_270).with(UV_LOCK))).with(condition().term(BlockStateProperties.UP, false), variants(var2.with(WEIGHT_2).with(X_ROT_270).with(UV_LOCK), var5.with(X_ROT_270).with(UV_LOCK), var3.with(X_ROT_270).with(UV_LOCK), var4.with(X_ROT_270).with(UV_LOCK))).with(condition().term(BlockStateProperties.DOWN, false), variants(var5.with(X_ROT_90).with(UV_LOCK), var4.with(X_ROT_90).with(UV_LOCK), var3.with(X_ROT_90).with(UV_LOCK), var2.with(WEIGHT_2).with(X_ROT_90).with(UV_LOCK))));
+      Variant var6 = var2.with(UV_LOCK);
+      Variant var7 = var3.with(UV_LOCK);
+      Variant var8 = var4.with(UV_LOCK);
+      Variant var9 = var5.with(UV_LOCK);
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.CHORUS_PLANT).with(condition().term(BlockStateProperties.NORTH, true), var1).with(condition().term(BlockStateProperties.EAST, true), var1.with(Y_ROT_90).with(UV_LOCK)).with(condition().term(BlockStateProperties.SOUTH, true), var1.with(Y_ROT_180).with(UV_LOCK)).with(condition().term(BlockStateProperties.WEST, true), var1.with(Y_ROT_270).with(UV_LOCK)).with(condition().term(BlockStateProperties.UP, true), var1.with(X_ROT_270).with(UV_LOCK)).with(condition().term(BlockStateProperties.DOWN, true), var1.with(X_ROT_90).with(UV_LOCK)).with(condition().term(BlockStateProperties.NORTH, false), new MultiVariant(WeightedList.of(new Weighted(var2, 2), new Weighted(var3, 1), new Weighted(var4, 1), new Weighted(var5, 1)))).with(condition().term(BlockStateProperties.EAST, false), new MultiVariant(WeightedList.of(new Weighted(var7.with(Y_ROT_90), 1), new Weighted(var8.with(Y_ROT_90), 1), new Weighted(var9.with(Y_ROT_90), 1), new Weighted(var6.with(Y_ROT_90), 2)))).with(condition().term(BlockStateProperties.SOUTH, false), new MultiVariant(WeightedList.of(new Weighted(var8.with(Y_ROT_180), 1), new Weighted(var9.with(Y_ROT_180), 1), new Weighted(var6.with(Y_ROT_180), 2), new Weighted(var7.with(Y_ROT_180), 1)))).with(condition().term(BlockStateProperties.WEST, false), new MultiVariant(WeightedList.of(new Weighted(var9.with(Y_ROT_270), 1), new Weighted(var6.with(Y_ROT_270), 2), new Weighted(var7.with(Y_ROT_270), 1), new Weighted(var8.with(Y_ROT_270), 1)))).with(condition().term(BlockStateProperties.UP, false), new MultiVariant(WeightedList.of(new Weighted(var6.with(X_ROT_270), 2), new Weighted(var9.with(X_ROT_270), 1), new Weighted(var7.with(X_ROT_270), 1), new Weighted(var8.with(X_ROT_270), 1)))).with(condition().term(BlockStateProperties.DOWN, false), new MultiVariant(WeightedList.of(new Weighted(var9.with(X_ROT_90), 1), new Weighted(var8.with(X_ROT_90), 1), new Weighted(var7.with(X_ROT_90), 1), new Weighted(var6.with(X_ROT_90), 2)))));
    }
 
    private void createComposter() {
@@ -2361,7 +2366,6 @@ public class BlockModelGenerators {
       Y_ROT_90 = VariantMutator.Y_ROT.withValue(Quadrant.R90);
       Y_ROT_180 = VariantMutator.Y_ROT.withValue(Quadrant.R180);
       Y_ROT_270 = VariantMutator.Y_ROT.withValue(Quadrant.R270);
-      WEIGHT_2 = VariantMutator.WEIGHT.withValue(2);
       FULL_BLOCK_MODEL_CUSTOM_GENERATORS = Map.of(Blocks.STONE, BlockModelGenerators::createMirroredCubeGenerator, Blocks.DEEPSLATE, BlockModelGenerators::createMirroredColumnGenerator, Blocks.MUD_BRICKS, BlockModelGenerators::createNorthWestMirroredCubeGenerator);
       ROTATION_FACING = PropertyDispatch.modify(BlockStateProperties.FACING).select(Direction.DOWN, X_ROT_90).select(Direction.UP, X_ROT_270).select(Direction.NORTH, NOP).select(Direction.SOUTH, Y_ROT_180).select(Direction.WEST, Y_ROT_270).select(Direction.EAST, Y_ROT_90);
       ROTATIONS_COLUMN_WITH_FACING = PropertyDispatch.modify(BlockStateProperties.FACING).select(Direction.DOWN, X_ROT_180).select(Direction.UP, NOP).select(Direction.NORTH, X_ROT_90).select(Direction.SOUTH, X_ROT_90.then(Y_ROT_180)).select(Direction.WEST, X_ROT_90.then(Y_ROT_270)).select(Direction.EAST, X_ROT_90.then(Y_ROT_90));

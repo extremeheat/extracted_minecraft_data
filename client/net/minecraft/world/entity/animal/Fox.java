@@ -113,6 +113,9 @@ public class Fox extends Animal {
    private static final int MIN_TICKS_BEFORE_EAT = 600;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final Codec<List<EntityReference<LivingEntity>>> TRUSTED_LIST_CODEC;
+   private static final boolean DEFAULT_SLEEPING = false;
+   private static final boolean DEFAULT_SITTING = false;
+   private static final boolean DEFAULT_CROUCHING = false;
    private Goal landTargetGoal;
    private Goal turtleEggTargetGoal;
    private Goal fishTargetGoal;
@@ -136,7 +139,7 @@ public class Fox extends Animal {
       super.defineSynchedData(var1);
       var1.define(DATA_TRUSTED_ID_0, Optional.empty());
       var1.define(DATA_TRUSTED_ID_1, Optional.empty());
-      var1.define(DATA_TYPE_ID, 0);
+      var1.define(DATA_TYPE_ID, Fox.Variant.DEFAULT.getId());
       var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
@@ -375,10 +378,10 @@ public class Fox extends Animal {
       super.readAdditionalSaveData(var1);
       this.clearTrusted();
       ((List)var1.read("Trusted", TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity);
-      this.setSleeping(var1.getBoolean("Sleeping"));
-      this.setVariant((Variant)var1.read("Type", Fox.Variant.CODEC).orElse(Fox.Variant.RED));
-      this.setSitting(var1.getBoolean("Sitting"));
-      this.setIsCrouching(var1.getBoolean("Crouching"));
+      this.setSleeping(var1.getBooleanOr("Sleeping", false));
+      this.setVariant((Variant)var1.read("Type", Fox.Variant.CODEC).orElse(Fox.Variant.DEFAULT));
+      this.setSitting(var1.getBooleanOr("Sitting", false));
+      this.setIsCrouching(var1.getBooleanOr("Crouching", false));
       if (this.level() instanceof ServerLevel) {
          this.setTargetGoals();
       }
@@ -692,6 +695,7 @@ public class Fox extends Animal {
       RED(0, "red"),
       SNOW(1, "snow");
 
+      public static final Variant DEFAULT = RED;
       public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);

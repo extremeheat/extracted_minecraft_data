@@ -24,6 +24,7 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.HugeFungusConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.FallenTreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.featuresize.ThreeLayersFeatureSize;
@@ -47,6 +48,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.RandomizedIntSt
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.AlterGroundDecorator;
 import net.minecraft.world.level.levelgen.feature.treedecorators.AttachedToLeavesDecorator;
+import net.minecraft.world.level.levelgen.feature.treedecorators.AttachedToLogsDecorator;
 import net.minecraft.world.level.levelgen.feature.treedecorators.BeehiveDecorator;
 import net.minecraft.world.level.levelgen.feature.treedecorators.CocoaDecorator;
 import net.minecraft.world.level.levelgen.feature.treedecorators.CreakingHeartDecorator;
@@ -110,6 +112,11 @@ public class TreeFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> DARK_OAK_LEAF_LITTER = FeatureUtils.createKey("dark_oak_leaf_litter");
    public static final ResourceKey<ConfiguredFeature<?, ?>> BIRCH_LEAF_LITTER = FeatureUtils.createKey("birch_leaf_litter");
    public static final ResourceKey<ConfiguredFeature<?, ?>> FANCY_OAK_LEAF_LITTER = FeatureUtils.createKey("fancy_oak_leaf_litter");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> FALLEN_OAK_TREE = FeatureUtils.createKey("fallen_oak_tree");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> FALLEN_JUNGLE_TREE = FeatureUtils.createKey("fallen_jungle_tree");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> FALLEN_SPRUCE_TREE = FeatureUtils.createKey("fallen_spruce_tree");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> FALLEN_BIRCH_TREE = FeatureUtils.createKey("fallen_birch_tree");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> FALLEN_SUPER_BIRCH_TREE = FeatureUtils.createKey("fallen_super_birch_tree");
 
    public TreeFeatures() {
       super();
@@ -125,6 +132,26 @@ public class TreeFeatures {
 
    private static TreeConfiguration.TreeConfigurationBuilder createDarkOak() {
       return new TreeConfiguration.TreeConfigurationBuilder(BlockStateProvider.simple(Blocks.DARK_OAK_LOG), new DarkOakTrunkPlacer(6, 2, 1), BlockStateProvider.simple(Blocks.DARK_OAK_LEAVES), new DarkOakFoliagePlacer(ConstantInt.of(0), ConstantInt.of(0)), new ThreeLayersFeatureSize(1, 1, 0, 1, 2, OptionalInt.empty()));
+   }
+
+   private static FallenTreeConfiguration.FallenTreeConfigurationBuilder createFallenOak() {
+      return createFallenTrees(Blocks.OAK_LOG, 4, 7).stumpDecorators(ImmutableList.of(TrunkVineDecorator.INSTANCE));
+   }
+
+   private static FallenTreeConfiguration.FallenTreeConfigurationBuilder createFallenBirch(int var0) {
+      return createFallenTrees(Blocks.BIRCH_LOG, 5, var0);
+   }
+
+   private static FallenTreeConfiguration.FallenTreeConfigurationBuilder createFallenJungle() {
+      return createFallenTrees(Blocks.JUNGLE_LOG, 4, 11).stumpDecorators(ImmutableList.of(TrunkVineDecorator.INSTANCE));
+   }
+
+   private static FallenTreeConfiguration.FallenTreeConfigurationBuilder createFallenSpruce() {
+      return createFallenTrees(Blocks.SPRUCE_LOG, 6, 10);
+   }
+
+   private static FallenTreeConfiguration.FallenTreeConfigurationBuilder createFallenTrees(Block var0, int var1, int var2) {
+      return (new FallenTreeConfiguration.FallenTreeConfigurationBuilder(BlockStateProvider.simple(var0), UniformInt.of(var1, var2))).logDecorators(ImmutableList.of(new AttachedToLogsDecorator(0.1F, new WeightedStateProvider(WeightedList.builder().add(Blocks.RED_MUSHROOM.defaultBlockState(), 2).add(Blocks.BROWN_MUSHROOM.defaultBlockState(), 1)), List.of(Direction.UP))));
    }
 
    private static TreeConfiguration.TreeConfigurationBuilder createBirch() {
@@ -202,5 +229,10 @@ public class TreeFeatures {
       FeatureUtils.register(var0, DARK_OAK_LEAF_LITTER, Feature.TREE, createDarkOak().ignoreVines().decorators(ImmutableList.of(var8, var9)).build());
       FeatureUtils.register(var0, BIRCH_LEAF_LITTER, Feature.TREE, createBirch().decorators(ImmutableList.of(var8, var9)).build());
       FeatureUtils.register(var0, FANCY_OAK_LEAF_LITTER, Feature.TREE, createFancyOak().decorators(List.of(var8, var9)).build());
+      FeatureUtils.register(var0, FALLEN_OAK_TREE, Feature.FALLEN_TREE, createFallenOak().build());
+      FeatureUtils.register(var0, FALLEN_BIRCH_TREE, Feature.FALLEN_TREE, createFallenBirch(8).build());
+      FeatureUtils.register(var0, FALLEN_SUPER_BIRCH_TREE, Feature.FALLEN_TREE, createFallenBirch(15).build());
+      FeatureUtils.register(var0, FALLEN_JUNGLE_TREE, Feature.FALLEN_TREE, createFallenJungle().build());
+      FeatureUtils.register(var0, FALLEN_SPRUCE_TREE, Feature.FALLEN_TREE, createFallenSpruce().build());
    }
 }

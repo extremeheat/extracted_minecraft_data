@@ -195,7 +195,7 @@ public final class TrialSpawner {
                         return Optional.empty();
                      }
 
-                     boolean var11 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().contains("id", 8);
+                     boolean var11 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().getString("id").isPresent();
                      if (var11) {
                         var10.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var10.blockPosition()), EntitySpawnReason.TRIAL_SPAWNER, (SpawnGroupData)null);
                      }

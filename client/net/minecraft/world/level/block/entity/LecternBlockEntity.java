@@ -194,7 +194,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       this.book = (ItemStack)var1.read("Book", ItemStack.CODEC, var3).map((var1x) -> this.resolveBook(var1x, (Player)null)).orElse(ItemStack.EMPTY);
       this.pageCount = getPageCount(this.book);
-      this.page = Mth.clamp(var1.getInt("Page"), 0, this.pageCount - 1);
+      this.page = Mth.clamp(var1.getIntOr("Page", 0), 0, this.pageCount - 1);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.font;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -209,7 +210,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
                try (NativeImage var5 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false)) {
                   if (var5.copyFromFont(var4, Glyph.this.index)) {
-                     var3.write(var5, 0, var1, var2, Glyph.this.width, Glyph.this.height, 0, 0);
+                     RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var5, 0, var1, var2, Glyph.this.width, Glyph.this.height, 0, 0);
                   }
                }
 

@@ -43,10 +43,12 @@ import net.minecraft.world.phys.Vec3;
 public abstract class Raider extends PatrollingMonster {
    protected static final EntityDataAccessor<Boolean> IS_CELEBRATING;
    static final Predicate<ItemEntity> ALLOWED_ITEMS;
+   private static final int DEFAULT_WAVE = 0;
+   private static final boolean DEFAULT_CAN_JOIN_RAID = false;
    @Nullable
    protected Raid raid;
-   private int wave;
-   private boolean canJoinRaid;
+   private int wave = 0;
+   private boolean canJoinRaid = false;
    private int ticksOutsideRaid;
 
    protected Raider(EntityType<? extends Raider> var1, Level var2) {
@@ -192,20 +194,20 @@ public abstract class Raider extends PatrollingMonster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.wave = var1.getInt("Wave");
-      this.canJoinRaid = var1.getBoolean("CanJoinRaid");
-      if (var1.contains("RaidId", 3)) {
-         Level var3 = this.level();
-         if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            this.raid = var2.getRaids().get(var1.getInt("RaidId"));
+      this.wave = var1.getIntOr("Wave", 0);
+      this.canJoinRaid = var1.getBooleanOr("CanJoinRaid", false);
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         var1.getInt("RaidId").ifPresent((var2x) -> {
+            this.raid = var2.getRaids().get(var2x);
             if (this.raid != null) {
                this.raid.addWaveMob(var2, this.wave, this, false);
                if (this.isPatrolLeader()) {
                   this.raid.setLeader(this.wave, this);
                }
             }
-         }
+
+         });
       }
 
    }

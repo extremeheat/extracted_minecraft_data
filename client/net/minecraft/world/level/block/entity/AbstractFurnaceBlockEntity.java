@@ -57,6 +57,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    public static final int BURN_TIME_STANDARD = 200;
    public static final int BURN_COOL_SPEED = 2;
    private static final Codec<Map<ResourceKey<Recipe<?>>, Integer>> RECIPES_USED_CODEC;
+   private static final short DEFAULT_COOKING_TIMER = 0;
+   private static final short DEFAULT_COOKING_TOTAL_TIME = 0;
+   private static final short DEFAULT_LIT_TIME_REMAINING = 0;
+   private static final short DEFAULT_LIT_TOTAL_TIME = 0;
    protected NonNullList<ItemStack> items;
    int litTimeRemaining;
    int litTotalTime;
@@ -116,10 +120,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       super.loadAdditional(var1, var2);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      this.cookingTimer = var1.getShort("cooking_time_spent");
-      this.cookingTotalTime = var1.getShort("cooking_total_time");
-      this.litTimeRemaining = var1.getShort("lit_time_remaining");
-      this.litTotalTime = var1.getShort("lit_total_time");
+      this.cookingTimer = var1.getShortOr("cooking_time_spent", (short)0);
+      this.cookingTotalTime = var1.getShortOr("cooking_total_time", (short)0);
+      this.litTimeRemaining = var1.getShortOr("lit_time_remaining", (short)0);
+      this.litTotalTime = var1.getShortOr("lit_total_time", (short)0);
       this.recipesUsed.clear();
       this.recipesUsed.putAll((Map)var1.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
    }

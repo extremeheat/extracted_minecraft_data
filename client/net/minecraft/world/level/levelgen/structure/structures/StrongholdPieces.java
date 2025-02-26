@@ -383,7 +383,7 @@ public class StrongholdPieces {
 
       public FillerCorridor(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_FILLER_CORRIDOR, var1);
-         this.steps = var1.getInt("Steps");
+         this.steps = var1.getIntOr("Steps", 0);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -459,7 +459,7 @@ public class StrongholdPieces {
 
       public StairsDown(StructurePieceType var1, CompoundTag var2) {
          super(var1, var2);
-         this.isSource = var2.getBoolean("Source");
+         this.isSource = var2.getBooleanOr("Source", false);
       }
 
       public StairsDown(CompoundTag var1) {
@@ -544,8 +544,8 @@ public class StrongholdPieces {
 
       public Straight(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_STRAIGHT, var1);
-         this.leftChild = var1.getBoolean("Left");
-         this.rightChild = var1.getBoolean("Right");
+         this.leftChild = var1.getBooleanOr("Left", false);
+         this.rightChild = var1.getBooleanOr("Right", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -606,7 +606,7 @@ public class StrongholdPieces {
 
       public ChestCorridor(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_CHEST_CORRIDOR, var1);
-         this.hasPlacedChest = var1.getBoolean("Chest");
+         this.hasPlacedChest = var1.getBooleanOr("Chest", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -796,7 +796,7 @@ public class StrongholdPieces {
 
       public RoomCrossing(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_ROOM_CROSSING, var1);
-         this.type = var1.getInt("Type");
+         this.type = var1.getIntOr("Type", 0);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -973,7 +973,7 @@ public class StrongholdPieces {
 
       public Library(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_LIBRARY, var1);
-         this.isTall = var1.getBoolean("Tall");
+         this.isTall = var1.getBooleanOr("Tall", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -1120,10 +1120,10 @@ public class StrongholdPieces {
 
       public FiveCrossing(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_FIVE_CROSSING, var1);
-         this.leftLow = var1.getBoolean("leftLow");
-         this.leftHigh = var1.getBoolean("leftHigh");
-         this.rightLow = var1.getBoolean("rightLow");
-         this.rightHigh = var1.getBoolean("rightHigh");
+         this.leftLow = var1.getBooleanOr("leftLow", false);
+         this.leftHigh = var1.getBooleanOr("leftHigh", false);
+         this.rightLow = var1.getBooleanOr("rightLow", false);
+         this.rightHigh = var1.getBooleanOr("rightHigh", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -1217,7 +1217,7 @@ public class StrongholdPieces {
 
       public PortalRoom(CompoundTag var1) {
          super(StructurePieceType.STRONGHOLD_PORTAL_ROOM, var1);
-         this.hasPlacedSpawner = var1.getBoolean("Mob");
+         this.hasPlacedSpawner = var1.getBooleanOr("Mob", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

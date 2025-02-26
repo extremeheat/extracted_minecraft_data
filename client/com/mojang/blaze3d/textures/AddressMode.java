@@ -1,13 +1,10 @@
 package com.mojang.blaze3d.textures;
 
 public enum AddressMode {
-   REPEAT(10497),
-   CLAMP_TO_EDGE(33071);
+   REPEAT,
+   CLAMP_TO_EDGE;
 
-   final int id;
-
-   private AddressMode(final int var3) {
-      this.id = var3;
+   private AddressMode() {
    }
 
    // $FF: synthetic method

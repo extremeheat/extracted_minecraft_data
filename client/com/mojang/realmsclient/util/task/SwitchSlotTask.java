@@ -21,7 +21,7 @@ public class SwitchSlotTask extends LongRunningTask {
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
 
       for(int var2 = 0; var2 < 25; ++var2) {
          try {

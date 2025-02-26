@@ -109,7 +109,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       var1.addChild((new StringWidget(this.subtitle, this.font)).setColor(this.subtitleColor), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       (new Thread("Realms-reset-world-fetcher") {
          public void run() {
-            RealmsClient var1 = RealmsClient.create();
+            RealmsClient var1 = RealmsClient.getOrCreate();
 
             try {
                WorldTemplatePaginatedList var2 = var1.fetchWorldTemplates(1, 10, RealmsServer.WorldType.NORMAL);

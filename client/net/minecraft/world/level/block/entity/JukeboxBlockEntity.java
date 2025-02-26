@@ -81,10 +81,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       }
 
       this.item = var4;
-      if (var1.contains("ticks_since_song_started", 4)) {
-         JukeboxSong.fromStack(var2, this.item).ifPresent((var2x) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2x, var1.getLong("ticks_since_song_started")));
-      }
-
+      var1.getLong("ticks_since_song_started").ifPresent((var2x) -> JukeboxSong.fromStack(var2, this.item).ifPresent((var2xx) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2xx, var2x)));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {

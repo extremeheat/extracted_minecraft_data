@@ -1,6 +1,13 @@
 package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 @DontObfuscate
 public class GlConst {
@@ -19,6 +26,7 @@ public class GlConst {
    public static final int GL_MAP_READ_BIT = 1;
    public static final int GL_EQUAL = 514;
    public static final int GL_LEQUAL = 515;
+   public static final int GL_LESS = 513;
    public static final int GL_GREATER = 516;
    public static final int GL_GEQUAL = 518;
    public static final int GL_ALWAYS = 519;
@@ -126,5 +134,224 @@ public class GlConst {
 
    public GlConst() {
       super();
+   }
+
+   public static int toGl(DepthTestFunction var0) {
+      short var10000;
+      switch (var0) {
+         case NO_DEPTH_TEST -> var10000 = 519;
+         case EQUAL_DEPTH_TEST -> var10000 = 514;
+         case LESS_DEPTH_TEST -> var10000 = 513;
+         case GREATER_DEPTH_TEST -> var10000 = 516;
+         default -> var10000 = 515;
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(PolygonMode var0) {
+      short var10000;
+      switch (var0) {
+         case WIREFRAME -> var10000 = 6913;
+         default -> var10000 = 6914;
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(DestFactor var0) {
+      char var10000;
+      switch (var0) {
+         case CONSTANT_ALPHA -> var10000 = '\u8003';
+         case CONSTANT_COLOR -> var10000 = '\u8001';
+         case DST_ALPHA -> var10000 = 772;
+         case DST_COLOR -> var10000 = 774;
+         case ONE -> var10000 = 1;
+         case ONE_MINUS_CONSTANT_ALPHA -> var10000 = '\u8004';
+         case ONE_MINUS_CONSTANT_COLOR -> var10000 = '\u8002';
+         case ONE_MINUS_DST_ALPHA -> var10000 = 773;
+         case ONE_MINUS_DST_COLOR -> var10000 = 775;
+         case ONE_MINUS_SRC_ALPHA -> var10000 = 771;
+         case ONE_MINUS_SRC_COLOR -> var10000 = 769;
+         case SRC_ALPHA -> var10000 = 770;
+         case SRC_COLOR -> var10000 = 768;
+         case ZERO -> var10000 = 0;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(SourceFactor var0) {
+      char var10000;
+      switch (var0) {
+         case CONSTANT_ALPHA -> var10000 = '\u8003';
+         case CONSTANT_COLOR -> var10000 = '\u8001';
+         case DST_ALPHA -> var10000 = 772;
+         case DST_COLOR -> var10000 = 774;
+         case ONE -> var10000 = 1;
+         case ONE_MINUS_CONSTANT_ALPHA -> var10000 = '\u8004';
+         case ONE_MINUS_CONSTANT_COLOR -> var10000 = '\u8002';
+         case ONE_MINUS_DST_ALPHA -> var10000 = 773;
+         case ONE_MINUS_DST_COLOR -> var10000 = 775;
+         case ONE_MINUS_SRC_ALPHA -> var10000 = 771;
+         case ONE_MINUS_SRC_COLOR -> var10000 = 769;
+         case SRC_ALPHA -> var10000 = 770;
+         case SRC_ALPHA_SATURATE -> var10000 = 776;
+         case SRC_COLOR -> var10000 = 768;
+         case ZERO -> var10000 = 0;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(BufferType var0) {
+      char var10000;
+      switch (var0) {
+         case VERTICES -> var10000 = '\u8892';
+         case INDICES -> var10000 = '\u8893';
+         case PIXEL_PACK -> var10000 = '\u88eb';
+         case COPY_READ -> var10000 = '\u8f36';
+         case COPY_WRITE -> var10000 = '\u8f37';
+         case PIXEL_UNPACK -> var10000 = '\u88ec';
+         case UNIFORM -> var10000 = '\u8a11';
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(VertexFormat.Mode var0) {
+      byte var10000;
+      switch (var0) {
+         case LINES -> var10000 = 4;
+         case LINE_STRIP -> var10000 = 5;
+         case DEBUG_LINES -> var10000 = 1;
+         case DEBUG_LINE_STRIP -> var10000 = 3;
+         case TRIANGLES -> var10000 = 4;
+         case TRIANGLE_STRIP -> var10000 = 5;
+         case TRIANGLE_FAN -> var10000 = 6;
+         case QUADS -> var10000 = 4;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(VertexFormat.IndexType var0) {
+      short var10000;
+      switch (var0) {
+         case SHORT -> var10000 = 5123;
+         case INT -> var10000 = 5125;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(NativeImage.Format var0) {
+      char var10000;
+      switch (var0) {
+         case RGBA -> var10000 = 6408;
+         case RGB -> var10000 = 6407;
+         case LUMINANCE_ALPHA -> var10000 = '\u8227';
+         case LUMINANCE -> var10000 = 6403;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(BufferUsage var0) {
+      char var10000;
+      switch (var0) {
+         case DYNAMIC_WRITE -> var10000 = '\u88e8';
+         case STATIC_WRITE -> var10000 = '\u88e4';
+         case STREAM_WRITE -> var10000 = '\u88e0';
+         case STATIC_READ -> var10000 = '\u88e5';
+         case DYNAMIC_READ -> var10000 = '\u88e9';
+         case STREAM_READ -> var10000 = '\u88e1';
+         case DYNAMIC_COPY -> var10000 = '\u88ea';
+         case STATIC_COPY -> var10000 = '\u88e6';
+         case STREAM_COPY -> var10000 = '\u88e2';
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(AddressMode var0) {
+      char var10000;
+      switch (var0) {
+         case REPEAT -> var10000 = 10497;
+         case CLAMP_TO_EDGE -> var10000 = '\u812f';
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(VertexFormatElement.Type var0) {
+      short var10000;
+      switch (var0) {
+         case FLOAT -> var10000 = 5126;
+         case UBYTE -> var10000 = 5121;
+         case BYTE -> var10000 = 5120;
+         case USHORT -> var10000 = 5123;
+         case SHORT -> var10000 = 5122;
+         case UINT -> var10000 = 5125;
+         case INT -> var10000 = 5124;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGlInternalId(TextureFormat var0) {
+      char var10000;
+      switch (var0) {
+         case RGBA8 -> var10000 = '\u8058';
+         case RED8 -> var10000 = '\u8229';
+         case DEPTH32 -> var10000 = '\u81a7';
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGlExternalId(TextureFormat var0) {
+      short var10000;
+      switch (var0) {
+         case RGBA8 -> var10000 = 6408;
+         case RED8 -> var10000 = 6403;
+         case DEPTH32 -> var10000 = 6402;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGlType(TextureFormat var0) {
+      short var10000;
+      switch (var0) {
+         case RGBA8 -> var10000 = 5121;
+         case RED8 -> var10000 = 5121;
+         case DEPTH32 -> var10000 = 5126;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toGl(ShaderType var0) {
+      char var10000;
+      switch (var0) {
+         case VERTEX -> var10000 = '\u8b31';
+         case FRAGMENT -> var10000 = '\u8b30';
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 }

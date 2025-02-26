@@ -5,9 +5,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
-import com.mojang.blaze3d.shaders.CompiledShader;
+import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
@@ -15,9 +17,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -32,7 +36,6 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.io.IOUtils;
@@ -61,7 +64,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
       for(Map.Entry var6 : var4.entrySet()) {
          ResourceLocation var7 = (ResourceLocation)var6.getKey();
-         CompiledShader.Type var8 = CompiledShader.Type.byLocation(var7);
+         ShaderType var8 = ShaderType.byLocation(var7);
          if (var8 != null) {
             loadShader(var7, (Resource)var6.getValue(), var8, var4, var3);
          }
@@ -76,7 +79,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       return new Configs(var3.build(), var9.build());
    }
 
-   private static void loadShader(ResourceLocation var0, Resource var1, CompiledShader.Type var2, Map<ResourceLocation, Resource> var3, ImmutableMap.Builder<ShaderSourceKey, String> var4) {
+   private static void loadShader(ResourceLocation var0, Resource var1, ShaderType var2, Map<ResourceLocation, Resource> var3, ImmutableMap.Builder<ShaderSourceKey, String> var4) {
       ResourceLocation var5 = var2.idConverter().fileToId(var0);
       GlslPreprocessor var6 = createPreprocessor(var3, var0);
 
@@ -191,28 +194,27 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    }
 
    private static boolean isShader(ResourceLocation var0) {
-      return CompiledShader.Type.byLocation(var0) != null || var0.getPath().endsWith(".glsl");
+      return ShaderType.byLocation(var0) != null || var0.getPath().endsWith(".glsl");
    }
 
    protected void apply(Configs var1, ResourceManager var2, ProfilerFiller var3) {
       CompilationCache var4 = new CompilationCache(var1);
       HashSet var5 = new HashSet(RenderPipelines.getStaticPipelines());
-      HashMap var6 = new HashMap();
+      ArrayList var6 = new ArrayList();
+      GpuDevice var7 = RenderSystem.getDevice();
+      var7.clearPipelineCache();
 
-      for(RenderPipeline var8 : var5) {
-         try {
-            var4.programs.put(var8.getLocation(), Optional.of(var4.compileProgram(var8)));
-         } catch (CompilationException var10) {
-            var6.put(var8, var10);
+      for(RenderPipeline var9 : var5) {
+         Objects.requireNonNull(var4);
+         CompiledRenderPipeline var10 = var7.precompilePipeline(var9, var4::getShaderSource);
+         if (!var10.isValid()) {
+            var6.add(var9.getLocation());
          }
       }
 
       if (!var6.isEmpty()) {
-         var4.close();
-         Stream var10002 = var6.entrySet().stream().map((var0) -> {
-            String var10000 = String.valueOf(var0.getKey());
-            return " - " + var10000 + ": " + ((CompilationException)var0.getValue()).getMessage();
-         });
+         var7.clearPipelineCache();
+         Stream var10002 = var6.stream().map((var0) -> " - " + String.valueOf(var0));
          throw new RuntimeException("Failed to load required shader programs:\n" + (String)var10002.collect(Collectors.joining("\n")));
       } else {
          this.compilationCache.close();
@@ -231,74 +233,6 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       }
    }
 
-   public void preloadForStartup(ResourceProvider var1, RenderPipeline... var2) throws IOException, CompilationException {
-      for(RenderPipeline var6 : var2) {
-         ShaderDefines var7 = var6.getShaderDefines();
-         CompiledShader var8 = this.preloadShader(var1, var6.getVertexShader(), CompiledShader.Type.VERTEX, var7);
-         CompiledShader var9 = this.preloadShader(var1, var6.getFragmentShader(), CompiledShader.Type.FRAGMENT, var7);
-         CompiledShaderProgram var10 = linkProgram(var6, var8, var9);
-         this.compilationCache.programs.put(var6.getLocation(), Optional.of(var10));
-      }
-
-   }
-
-   private CompiledShader preloadShader(ResourceProvider var1, ResourceLocation var2, CompiledShader.Type var3, ShaderDefines var4) throws IOException, CompilationException {
-      ResourceLocation var5 = var3.idConverter().idToFile(var2);
-      BufferedReader var6 = var1.getResourceOrThrow(var5).openAsReader();
-
-      CompiledShader var10;
-      try {
-         String var7 = IOUtils.toString(var6);
-         String var8 = GlslPreprocessor.injectDefines(var7, var4);
-         CompiledShader var9 = CompiledShader.compile(var2, var3, var8);
-         this.compilationCache.shaders.put(new ShaderCompilationKey(var2, var3, var4), var9);
-         var10 = var9;
-      } catch (Throwable var12) {
-         if (var6 != null) {
-            try {
-               ((Reader)var6).close();
-            } catch (Throwable var11) {
-               var12.addSuppressed(var11);
-            }
-         }
-
-         throw var12;
-      }
-
-      if (var6 != null) {
-         ((Reader)var6).close();
-      }
-
-      return var10;
-   }
-
-   @Nullable
-   public CompiledShaderProgram getProgram(RenderPipeline var1) {
-      try {
-         return this.compilationCache.getOrCompileProgram(var1);
-      } catch (CompilationException var3) {
-         LOGGER.error("Failed to load shader program: {}", var1, var3);
-         this.compilationCache.programs.put(var1.getLocation(), Optional.empty());
-         this.tryTriggerRecovery(var3);
-         return null;
-      }
-   }
-
-   public CompiledShaderProgram getProgramForLoading(RenderPipeline var1) throws CompilationException {
-      CompiledShaderProgram var2 = this.compilationCache.getOrCompileProgram(var1);
-      if (var2 == null) {
-         throw new CompilationException("Shader for pipeline '" + String.valueOf(var1) + "' could not be found");
-      } else {
-         return var2;
-      }
-   }
-
-   static CompiledShaderProgram linkProgram(RenderPipeline var0, CompiledShader var1, CompiledShader var2) throws CompilationException {
-      CompiledShaderProgram var3 = CompiledShaderProgram.link(var1, var2, var0.getVertexFormat(), var0.toString());
-      var3.setupUniforms(var0.getUniforms(), var0.getSamplers());
-      return var3;
-   }
-
    @Nullable
    public PostChain getPostChain(ResourceLocation var1, Set<ResourceLocation> var2) {
       try {
@@ -313,6 +247,10 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    public void close() {
       this.compilationCache.close();
+   }
+
+   public String getShader(ResourceLocation var1, ShaderType var2) {
+      return this.compilationCache.getShaderSource(var1, var2);
    }
 
    // $FF: synthetic method
@@ -334,54 +272,12 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    class CompilationCache implements AutoCloseable {
       private final Configs configs;
-      final Map<ResourceLocation, Optional<CompiledShaderProgram>> programs = new HashMap();
-      final Map<ShaderCompilationKey, CompiledShader> shaders = new HashMap();
       final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap();
       boolean triggeredRecovery;
 
       CompilationCache(final Configs var2) {
          super();
          this.configs = var2;
-      }
-
-      @Nullable
-      public CompiledShaderProgram getOrCompileProgram(RenderPipeline var1) throws CompilationException {
-         Optional var2 = (Optional)this.programs.get(var1.getLocation());
-         if (var2 != null) {
-            return (CompiledShaderProgram)var2.orElse((Object)null);
-         } else {
-            CompiledShaderProgram var3 = this.compileProgram(var1);
-            this.programs.put(var1.getLocation(), Optional.of(var3));
-            return var3;
-         }
-      }
-
-      CompiledShaderProgram compileProgram(RenderPipeline var1) throws CompilationException {
-         ShaderDefines var2 = var1.getShaderDefines();
-         CompiledShader var3 = this.getOrCompileShader(var1.getVertexShader(), CompiledShader.Type.VERTEX, var2);
-         CompiledShader var4 = this.getOrCompileShader(var1.getFragmentShader(), CompiledShader.Type.FRAGMENT, var2);
-         return ShaderManager.linkProgram(var1, var3, var4);
-      }
-
-      public CompiledShader getOrCompileShader(ResourceLocation var1, CompiledShader.Type var2, ShaderDefines var3) throws CompilationException {
-         ShaderCompilationKey var4 = new ShaderCompilationKey(var1, var2, var3);
-         CompiledShader var5 = (CompiledShader)this.shaders.get(var4);
-         if (var5 == null) {
-            var5 = this.compileShader(var4);
-            this.shaders.put(var4, var5);
-         }
-
-         return var5;
-      }
-
-      private CompiledShader compileShader(ShaderCompilationKey var1) throws CompilationException {
-         String var2 = (String)this.configs.shaderSources.get(new ShaderSourceKey(var1.id, var1.type));
-         if (var2 == null) {
-            throw new CompilationException("Could not find shader: " + String.valueOf(var1));
-         } else {
-            String var3 = GlslPreprocessor.injectDefines(var2, var1.defines);
-            return CompiledShader.compile(var1.id, var1.type, var3);
-         }
       }
 
       @Nullable
@@ -401,22 +297,21 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          if (var3 == null) {
             throw new CompilationException("Could not find post chain with id: " + String.valueOf(var1));
          } else {
-            return PostChain.load(var3, ShaderManager.this.textureManager, ShaderManager.this, var2, var1);
+            return PostChain.load(var3, ShaderManager.this.textureManager, var2, var1);
          }
       }
 
       public void close() {
-         RenderSystem.assertOnRenderThread();
-         this.programs.values().forEach((var0) -> var0.ifPresent(CompiledShaderProgram::close));
-         this.shaders.values().forEach(CompiledShader::close);
-         this.programs.clear();
-         this.shaders.clear();
          this.postChains.clear();
+      }
+
+      public String getShaderSource(ResourceLocation var1, ShaderType var2) {
+         return (String)this.configs.shaderSources.get(new ShaderSourceKey(var1, var2));
       }
    }
 
-   static record ShaderSourceKey(ResourceLocation id, CompiledShader.Type type) {
-      ShaderSourceKey(ResourceLocation var1, CompiledShader.Type var2) {
+   static record ShaderSourceKey(ResourceLocation id, ShaderType type) {
+      ShaderSourceKey(ResourceLocation var1, ShaderType var2) {
          super();
          this.id = var1;
          this.type = var2;
@@ -425,25 +320,6 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       public String toString() {
          String var10000 = String.valueOf(this.id);
          return var10000 + " (" + String.valueOf(this.type) + ")";
-      }
-   }
-
-   static record ShaderCompilationKey(ResourceLocation id, CompiledShader.Type type, ShaderDefines defines) {
-      final ResourceLocation id;
-      final CompiledShader.Type type;
-      final ShaderDefines defines;
-
-      ShaderCompilationKey(ResourceLocation var1, CompiledShader.Type var2, ShaderDefines var3) {
-         super();
-         this.id = var1;
-         this.type = var2;
-         this.defines = var3;
-      }
-
-      public String toString() {
-         String var10000 = String.valueOf(this.id);
-         String var1 = var10000 + " (" + String.valueOf(this.type) + ")";
-         return !this.defines.isEmpty() ? var1 + " with " + String.valueOf(this.defines) : var1;
       }
    }
 

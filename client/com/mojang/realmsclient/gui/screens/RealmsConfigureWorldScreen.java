@@ -188,7 +188,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    public void fetchServerData(long var1) {
       (new Thread(() -> {
-         RealmsClient var3 = RealmsClient.create();
+         RealmsClient var3 = RealmsClient.getOrCreate();
 
          try {
             RealmsServer var4 = var3.getOwnRealm(var1);
@@ -310,7 +310,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       RealmsWorldOptions var2 = (RealmsWorldOptions)this.serverData.slots.get(this.serverData.activeSlot);
       var1.templateId = var2.templateId;
       var1.templateImage = var2.templateImage;
-      RealmsClient var3 = RealmsClient.create();
+      RealmsClient var3 = RealmsClient.getOrCreate();
 
       try {
          var3.updateSlot(this.serverData.id, this.serverData.activeSlot, var1);
@@ -329,7 +329,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    public void saveSettings(String var1, String var2) {
       String var3 = StringUtil.isBlank(var2) ? "" : var2;
-      RealmsClient var4 = RealmsClient.create();
+      RealmsClient var4 = RealmsClient.getOrCreate();
 
       try {
          var4.update(this.serverData.id, var1, var3);

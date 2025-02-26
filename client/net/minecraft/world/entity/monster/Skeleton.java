@@ -19,6 +19,7 @@ public class Skeleton extends AbstractSkeleton {
    private static final int TOTAL_CONVERSION_TIME = 300;
    private static final EntityDataAccessor<Boolean> DATA_STRAY_CONVERSION_ID;
    public static final String CONVERSION_TAG = "StrayConversionTime";
+   private static final int NOT_CONVERTING = -1;
    private int inPowderSnowTime;
    private int conversionTime;
 
@@ -73,8 +74,11 @@ public class Skeleton extends AbstractSkeleton {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("StrayConversionTime", 99) && var1.getInt("StrayConversionTime") > -1) {
-         this.startFreezeConversion(var1.getInt("StrayConversionTime"));
+      int var2 = var1.getIntOr("StrayConversionTime", -1);
+      if (var2 != -1) {
+         this.startFreezeConversion(var2);
+      } else {
+         this.setFreezeConverting(false);
       }
 
    }

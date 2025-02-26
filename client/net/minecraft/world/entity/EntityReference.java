@@ -91,13 +91,7 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    @Nullable
    public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> readWithOldOwnerConversion(CompoundTag var0, String var1, Level var2) {
       Optional var3 = var0.read(var1, UUIDUtil.CODEC);
-      if (var3.isPresent()) {
-         return new EntityReference<StoredEntityType>((UUID)var3.get());
-      } else {
-         String var4 = var0.getString(var1);
-         UUID var5 = OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var4);
-         return var5 != null ? new EntityReference(var5) : null;
-      }
+      return var3.isPresent() ? new EntityReference((UUID)var3.get()) : (EntityReference)var0.getString(var1).map((var1x) -> OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var1x)).map(EntityReference::new).orElse((Object)null);
    }
 
    static {

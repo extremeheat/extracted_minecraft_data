@@ -104,7 +104,6 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       }
 
       this.nameEdit = (EditBox)this.addWidget(new EditBox(this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, (EditBox)null, Component.translatable("mco.configure.world.edit.slot.name")));
-      this.nameEdit.setMaxLength(10);
       this.nameEdit.setValue(this.worldName);
       this.nameEdit.setResponder(this::setWorldName);
       CycleButton var7 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.pvp).create(var1, row(1), this.columnWidth, 20, Component.translatable("mco.configure.world.pvp"), (var1x, var2x) -> this.pvp = var2x));

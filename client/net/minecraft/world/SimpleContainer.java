@@ -211,11 +211,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    public void fromTag(ListTag var1, HolderLookup.Provider var2) {
       this.clearContent();
-
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
-         ItemStack.parse(var2, var1.getCompound(var3)).ifPresent(this::addItem);
-      }
-
+      var1.compoundStream().flatMap((var1x) -> ItemStack.parse(var2, var1x).stream()).forEach(this::addItem);
    }
 
    public ListTag createTag(HolderLookup.Provider var1) {

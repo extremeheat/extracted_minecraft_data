@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.Blocks;
 
 public abstract class AbstractChestedHorse extends AbstractHorse {
    private static final EntityDataAccessor<Boolean> DATA_ID_CHEST;
+   private static final boolean DEFAULT_HAS_CHEST = false;
    private final EntityDimensions babyDimensions;
 
    protected AbstractChestedHorse(EntityType<? extends AbstractChestedHorse> var1, Level var2) {
@@ -94,14 +95,14 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setChest(var1.getBoolean("ChestedHorse"));
+      this.setChest(var1.getBooleanOr("ChestedHorse", false));
       this.createInventory();
       if (this.hasChest()) {
-         ListTag var2 = var1.getList("Items", 10);
+         ListTag var2 = var1.getListOrEmpty("Items");
 
          for(int var3 = 0; var3 < var2.size(); ++var3) {
-            CompoundTag var4 = var2.getCompound(var3);
-            int var5 = var4.getByte("Slot") & 255;
+            CompoundTag var4 = var2.getCompoundOrEmpty(var3);
+            int var5 = var4.getByteOr("Slot", (byte)0) & 255;
             if (var5 < this.inventory.getContainerSize()) {
                this.inventory.setItem(var5, (ItemStack)ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
             }

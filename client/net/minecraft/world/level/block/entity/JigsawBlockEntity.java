@@ -1,11 +1,13 @@
 package net.minecraft.world.level.block.entity;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -21,6 +23,10 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class JigsawBlockEntity extends BlockEntity {
+   public static final Codec<ResourceKey<StructureTemplatePool>> POOL_CODEC;
+   public static final ResourceLocation EMPTY_ID;
+   private static final int DEFAULT_PLACEMENT_PRIORITY = 0;
+   private static final int DEFAULT_SELECTION_PRIORITY = 0;
    public static final String TARGET = "target";
    public static final String POOL = "pool";
    public static final String JOINT = "joint";
@@ -28,8 +34,9 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String SELECTION_PRIORITY = "selection_priority";
    public static final String NAME = "name";
    public static final String FINAL_STATE = "final_state";
-   private ResourceLocation name = ResourceLocation.withDefaultNamespace("empty");
-   private ResourceLocation target = ResourceLocation.withDefaultNamespace("empty");
+   public static final String DEFAULT_FINAL_STATE = "minecraft:air";
+   private ResourceLocation name;
+   private ResourceLocation target;
    private ResourceKey<StructureTemplatePool> pool;
    private JointType joint;
    private String finalState;
@@ -38,9 +45,13 @@ public class JigsawBlockEntity extends BlockEntity {
 
    public JigsawBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.JIGSAW, var1, var2);
-      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.withDefaultNamespace("empty"));
+      this.name = EMPTY_ID;
+      this.target = EMPTY_ID;
+      this.pool = Pools.EMPTY;
       this.joint = JigsawBlockEntity.JointType.ROLLABLE;
       this.finalState = "minecraft:air";
+      this.placementPriority = 0;
+      this.selectionPriority = 0;
    }
 
    public ResourceLocation getName() {
@@ -101,9 +112,9 @@ public class JigsawBlockEntity extends BlockEntity {
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      var1.putString("name", this.name.toString());
-      var1.putString("target", this.target.toString());
-      var1.putString("pool", this.pool.location().toString());
+      var1.store("name", ResourceLocation.CODEC, this.name);
+      var1.store("target", ResourceLocation.CODEC, this.target);
+      var1.store("pool", POOL_CODEC, this.pool);
       var1.putString("final_state", this.finalState);
       var1.store("joint", JigsawBlockEntity.JointType.CODEC, this.joint);
       var1.putInt("placement_priority", this.placementPriority);
@@ -112,13 +123,13 @@ public class JigsawBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.name = ResourceLocation.parse(var1.getString("name"));
-      this.target = ResourceLocation.parse(var1.getString("target"));
-      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var1.getString("pool")));
-      this.finalState = var1.getString("final_state");
+      this.name = (ResourceLocation)var1.read("name", ResourceLocation.CODEC).orElse(EMPTY_ID);
+      this.target = (ResourceLocation)var1.read("target", ResourceLocation.CODEC).orElse(EMPTY_ID);
+      this.pool = (ResourceKey)var1.read("pool", POOL_CODEC).orElse(Pools.EMPTY);
+      this.finalState = var1.getStringOr("final_state", "minecraft:air");
       this.joint = (JointType)var1.read("joint", JigsawBlockEntity.JointType.CODEC).orElseGet(() -> StructureTemplate.getDefaultJointType(this.getBlockState()));
-      this.placementPriority = var1.getInt("placement_priority");
-      this.selectionPriority = var1.getInt("selection_priority");
+      this.placementPriority = var1.getIntOr("placement_priority", 0);
+      this.selectionPriority = var1.getIntOr("selection_priority", 0);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -139,6 +150,11 @@ public class JigsawBlockEntity extends BlockEntity {
    // $FF: synthetic method
    public Packet getUpdatePacket() {
       return this.getUpdatePacket();
+   }
+
+   static {
+      POOL_CODEC = ResourceKey.codec(Registries.TEMPLATE_POOL);
+      EMPTY_ID = ResourceLocation.withDefaultNamespace("empty");
    }
 
    public static enum JointType implements StringRepresentable {

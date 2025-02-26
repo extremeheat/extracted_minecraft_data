@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 
 public class SortedArraySet<T> extends AbstractSet<T> {
    private static final int DEFAULT_INITIAL_CAPACITY = 10;
@@ -66,7 +67,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    private void grow(int var1) {
       if (var1 > this.contents.length) {
          if (this.contents != ObjectArrays.DEFAULT_EMPTY_ARRAY) {
-            var1 = (int)Math.max(Math.min((long)this.contents.length + (long)(this.contents.length >> 1), 2147483639L), (long)var1);
+            var1 = Util.growByHalf(this.contents.length, var1);
          } else if (var1 < 10) {
             var1 = 10;
          }

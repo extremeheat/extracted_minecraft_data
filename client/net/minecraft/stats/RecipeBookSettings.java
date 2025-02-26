@@ -85,8 +85,8 @@ public final class RecipeBookSettings {
    public static RecipeBookSettings read(CompoundTag var0) {
       EnumMap var1 = new EnumMap(RecipeBookType.class);
       TAG_FIELDS.forEach((var2, var3) -> {
-         boolean var4 = var0.getBoolean((String)var3.getFirst());
-         boolean var5 = var0.getBoolean((String)var3.getSecond());
+         boolean var4 = var0.getBooleanOr((String)var3.getFirst(), RecipeBookSettings.TypeSettings.DEFAULT.open());
+         boolean var5 = var0.getBooleanOr((String)var3.getSecond(), RecipeBookSettings.TypeSettings.DEFAULT.filtering());
          if (var4 || var5) {
             var1.put(var2, new TypeSettings(var4, var5));
          }

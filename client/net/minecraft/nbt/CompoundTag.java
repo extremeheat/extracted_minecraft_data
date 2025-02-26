@@ -11,21 +11,20 @@ import com.mojang.serialization.MapLike;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.CrashReportDetail;
-import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import org.slf4j.Logger;
 
-public class CompoundTag implements Tag {
+public final class CompoundTag implements Tag {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<CompoundTag> CODEC;
    private static final int SELF_SIZE_IN_BYTES = 48;
@@ -33,13 +32,13 @@ public class CompoundTag implements Tag {
    public static final TagType<CompoundTag> TYPE;
    private final Map<String, Tag> tags;
 
-   protected CompoundTag(Map<String, Tag> var1) {
+   CompoundTag(Map<String, Tag> var1) {
       super();
       this.tags = var1;
    }
 
    public CompoundTag() {
-      this(Maps.newHashMap());
+      this(new HashMap());
    }
 
    public void write(DataOutput var1) throws IOException {
@@ -63,8 +62,20 @@ public class CompoundTag implements Tag {
       return var1;
    }
 
-   public Set<String> getAllKeys() {
+   public Set<String> keySet() {
       return this.tags.keySet();
+   }
+
+   public Set<Map.Entry<String, Tag>> entrySet() {
+      return this.tags.entrySet();
+   }
+
+   public Collection<Tag> values() {
+      return this.tags.values();
+   }
+
+   public void forEach(BiConsumer<String, Tag> var1) {
+      this.tags.forEach(var1);
    }
 
    public byte getId() {
@@ -116,23 +127,11 @@ public class CompoundTag implements Tag {
       this.tags.put(var1, new ByteArrayTag(var2));
    }
 
-   public void putByteArray(String var1, List<Byte> var2) {
-      this.tags.put(var1, new ByteArrayTag(var2));
-   }
-
    public void putIntArray(String var1, int[] var2) {
       this.tags.put(var1, new IntArrayTag(var2));
    }
 
-   public void putIntArray(String var1, List<Integer> var2) {
-      this.tags.put(var1, new IntArrayTag(var2));
-   }
-
    public void putLongArray(String var1, long[] var2) {
-      this.tags.put(var1, new LongArrayTag(var2));
-   }
-
-   public void putLongArray(String var1, List<Long> var2) {
       this.tags.put(var1, new LongArrayTag(var2));
    }
 
@@ -145,182 +144,173 @@ public class CompoundTag implements Tag {
       return (Tag)this.tags.get(var1);
    }
 
-   public byte getTagType(String var1) {
-      Tag var2 = (Tag)this.tags.get(var1);
-      return var2 == null ? 0 : var2.getId();
-   }
-
    public boolean contains(String var1) {
       return this.tags.containsKey(var1);
    }
 
-   public boolean contains(String var1, int var2) {
-      byte var3 = this.getTagType(var1);
-      if (var3 == var2) {
-         return true;
-      } else if (var2 != 99) {
-         return false;
+   private Optional<Tag> getOptional(String var1) {
+      return Optional.ofNullable((Tag)this.tags.get(var1));
+   }
+
+   public Optional<Byte> getByte(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asByte);
+   }
+
+   public byte getByteOr(String var1, byte var2) {
+      Object var4 = this.tags.get(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.byteValue();
       } else {
-         return var3 == 1 || var3 == 2 || var3 == 3 || var3 == 4 || var3 == 5 || var3 == 6;
+         return var2;
       }
    }
 
-   public byte getByte(String var1) {
-      try {
-         if (this.contains(var1, 99)) {
-            return ((NumericTag)this.tags.get(var1)).getAsByte();
+   public Optional<Short> getShort(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asShort);
+   }
+
+   public short getShortOr(String var1, short var2) {
+      Object var4 = this.tags.get(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.shortValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<Integer> getInt(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asInt);
+   }
+
+   public int getIntOr(String var1, int var2) {
+      Object var4 = this.tags.get(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.intValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<Long> getLong(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asLong);
+   }
+
+   public long getLongOr(String var1, long var2) {
+      Object var5 = this.tags.get(var1);
+      if (var5 instanceof NumericTag var4) {
+         return var4.longValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<Float> getFloat(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asFloat);
+   }
+
+   public float getFloatOr(String var1, float var2) {
+      Object var4 = this.tags.get(var1);
+      if (var4 instanceof NumericTag var3) {
+         return var3.floatValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<Double> getDouble(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asDouble);
+   }
+
+   public double getDoubleOr(String var1, double var2) {
+      Object var5 = this.tags.get(var1);
+      if (var5 instanceof NumericTag var4) {
+         return var4.doubleValue();
+      } else {
+         return var2;
+      }
+   }
+
+   public Optional<String> getString(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asString);
+   }
+
+   public String getStringOr(String var1, String var2) {
+      Object var5 = this.tags.get(var1);
+      if (var5 instanceof StringTag var3) {
+         StringTag var10000 = var3;
+
+         try {
+            var8 = var10000.value();
+         } catch (Throwable var7) {
+            throw new MatchException(var7.toString(), var7);
          }
-      } catch (ClassCastException var3) {
+
+         String var6 = var8;
+         return var6;
+      } else {
+         return var2;
       }
-
-      return 0;
    }
 
-   public short getShort(String var1) {
-      try {
-         if (this.contains(var1, 99)) {
-            return ((NumericTag)this.tags.get(var1)).getAsShort();
-         }
-      } catch (ClassCastException var3) {
+   public Optional<byte[]> getByteArray(String var1) {
+      Object var3 = this.tags.get(var1);
+      if (var3 instanceof ByteArrayTag var2) {
+         return Optional.of(var2.getAsByteArray());
+      } else {
+         return Optional.empty();
       }
-
-      return 0;
    }
 
-   public int getInt(String var1) {
-      return this.getIntOrDefault(var1, 0);
-   }
-
-   public int getIntOrDefault(String var1, int var2) {
-      try {
-         if (this.contains(var1, 99)) {
-            return ((NumericTag)this.tags.get(var1)).getAsInt();
-         }
-      } catch (ClassCastException var4) {
+   public Optional<int[]> getIntArray(String var1) {
+      Object var3 = this.tags.get(var1);
+      if (var3 instanceof IntArrayTag var2) {
+         return Optional.of(var2.getAsIntArray());
+      } else {
+         return Optional.empty();
       }
-
-      return var2;
    }
 
-   public long getLong(String var1) {
-      return this.getLongOrDefault(var1, 0L);
-   }
-
-   public long getLongOrDefault(String var1, long var2) {
-      try {
-         if (this.contains(var1, 99)) {
-            return ((NumericTag)this.tags.get(var1)).getAsLong();
-         }
-      } catch (ClassCastException var5) {
+   public Optional<long[]> getLongArray(String var1) {
+      Object var3 = this.tags.get(var1);
+      if (var3 instanceof LongArrayTag var2) {
+         return Optional.of(var2.getAsLongArray());
+      } else {
+         return Optional.empty();
       }
-
-      return var2;
    }
 
-   public float getFloat(String var1) {
-      return this.getFloatOrDefault(var1, 0.0F);
-   }
-
-   public float getFloatOrDefault(String var1, float var2) {
-      try {
-         if (this.contains(var1, 99)) {
-            return ((NumericTag)this.tags.get(var1)).getAsFloat();
-         }
-      } catch (ClassCastException var4) {
+   public Optional<CompoundTag> getCompound(String var1) {
+      Object var3 = this.tags.get(var1);
+      if (var3 instanceof CompoundTag var2) {
+         return Optional.of(var2);
+      } else {
+         return Optional.empty();
       }
-
-      return var2;
    }
 
-   public double getDouble(String var1) {
-      try {
-         if (this.contains(var1, 99)) {
-            return ((NumericTag)this.tags.get(var1)).getAsDouble();
-         }
-      } catch (ClassCastException var3) {
+   public CompoundTag getCompoundOrEmpty(String var1) {
+      return (CompoundTag)this.getCompound(var1).orElseGet(CompoundTag::new);
+   }
+
+   public Optional<ListTag> getList(String var1) {
+      Object var3 = this.tags.get(var1);
+      if (var3 instanceof ListTag var2) {
+         return Optional.of(var2);
+      } else {
+         return Optional.empty();
       }
-
-      return 0.0;
    }
 
-   public String getString(String var1) {
-      try {
-         if (this.contains(var1, 8)) {
-            return ((Tag)this.tags.get(var1)).getAsString();
-         }
-      } catch (ClassCastException var3) {
-      }
-
-      return "";
+   public ListTag getListOrEmpty(String var1) {
+      return (ListTag)this.getList(var1).orElseGet(ListTag::new);
    }
 
-   public byte[] getByteArray(String var1) {
-      try {
-         if (this.contains(var1, 7)) {
-            return ((ByteArrayTag)this.tags.get(var1)).getAsByteArray();
-         }
-      } catch (ClassCastException var3) {
-         throw new ReportedException(this.createReport(var1, ByteArrayTag.TYPE, var3));
-      }
-
-      return new byte[0];
+   public Optional<Boolean> getBoolean(String var1) {
+      return this.getOptional(var1).flatMap(Tag::asBoolean);
    }
 
-   public int[] getIntArray(String var1) {
-      try {
-         if (this.contains(var1, 11)) {
-            return ((IntArrayTag)this.tags.get(var1)).getAsIntArray();
-         }
-      } catch (ClassCastException var3) {
-         throw new ReportedException(this.createReport(var1, IntArrayTag.TYPE, var3));
-      }
-
-      return new int[0];
-   }
-
-   public long[] getLongArray(String var1) {
-      try {
-         if (this.contains(var1, 12)) {
-            return ((LongArrayTag)this.tags.get(var1)).getAsLongArray();
-         }
-      } catch (ClassCastException var3) {
-         throw new ReportedException(this.createReport(var1, LongArrayTag.TYPE, var3));
-      }
-
-      return new long[0];
-   }
-
-   public CompoundTag getCompound(String var1) {
-      try {
-         if (this.contains(var1, 10)) {
-            return (CompoundTag)this.tags.get(var1);
-         }
-      } catch (ClassCastException var3) {
-         throw new ReportedException(this.createReport(var1, TYPE, var3));
-      }
-
-      return new CompoundTag();
-   }
-
-   public ListTag getList(String var1, int var2) {
-      try {
-         if (this.getTagType(var1) == 9) {
-            ListTag var3 = (ListTag)this.tags.get(var1);
-            if (!var3.isEmpty() && var3.getElementType() != var2) {
-               return new ListTag();
-            }
-
-            return var3;
-         }
-      } catch (ClassCastException var4) {
-         throw new ReportedException(this.createReport(var1, ListTag.TYPE, var4));
-      }
-
-      return new ListTag();
-   }
-
-   public boolean getBoolean(String var1) {
-      return this.getByte(var1) != 0;
+   public boolean getBooleanOr(String var1, boolean var2) {
+      return this.getByteOr(var1, (byte)(var2 ? 1 : 0)) != 0;
    }
 
    public void remove(String var1) {
@@ -328,21 +318,13 @@ public class CompoundTag implements Tag {
    }
 
    public String toString() {
-      return this.getAsString();
+      StringTagVisitor var1 = new StringTagVisitor();
+      var1.visitCompound(this);
+      return var1.build();
    }
 
    public boolean isEmpty() {
       return this.tags.isEmpty();
-   }
-
-   private CrashReport createReport(String var1, TagType<?> var2, ClassCastException var3) {
-      CrashReport var4 = CrashReport.forThrowable(var3, "Reading NBT data");
-      CrashReportCategory var5 = var4.addCategory("Corrupt NBT tag", 1);
-      var5.setDetail("Tag type found", (CrashReportDetail)(() -> ((Tag)this.tags.get(var1)).getType().getName()));
-      Objects.requireNonNull(var2);
-      var5.setDetail("Tag type expected", var2::getName);
-      var5.setDetail("Tag name", var1);
-      return var4;
    }
 
    protected CompoundTag shallowCopy() {
@@ -351,6 +333,10 @@ public class CompoundTag implements Tag {
 
    public CompoundTag copy() {
       return new CompoundTag(Util.mapValues(this.tags, Tag::copy));
+   }
+
+   public Optional<CompoundTag> asCompound() {
+      return Optional.of(this);
    }
 
    public boolean equals(Object var1) {
@@ -388,16 +374,15 @@ public class CompoundTag implements Tag {
    public CompoundTag merge(CompoundTag var1) {
       for(String var3 : var1.tags.keySet()) {
          Tag var4 = (Tag)var1.tags.get(var3);
-         if (var4.getId() == 10) {
-            if (this.contains(var3, 10)) {
-               CompoundTag var5 = this.getCompound(var3);
-               var5.merge((CompoundTag)var4);
-            } else {
-               this.put(var3, var4.copy());
+         if (var4 instanceof CompoundTag var5) {
+            Object var7 = this.tags.get(var3);
+            if (var7 instanceof CompoundTag var6) {
+               var6.merge(var5);
+               continue;
             }
-         } else {
-            this.put(var3, var4.copy());
          }
+
+         this.put(var3, var4.copy());
       }
 
       return this;
@@ -405,10 +390,6 @@ public class CompoundTag implements Tag {
 
    public void accept(TagVisitor var1) {
       var1.visitCompound(this);
-   }
-
-   protected Set<Map.Entry<String, Tag>> entrySet() {
-      return this.tags.entrySet();
    }
 
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {

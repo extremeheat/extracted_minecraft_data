@@ -27,12 +27,9 @@ public class OverlayTexture implements AutoCloseable {
          }
       }
 
-      RenderSystem.activeTexture(33985);
-      this.texture.bind();
       this.texture.setFilter(false, false);
       this.texture.setClamp(true);
       this.texture.upload();
-      RenderSystem.activeTexture(33984);
    }
 
    public void close() {

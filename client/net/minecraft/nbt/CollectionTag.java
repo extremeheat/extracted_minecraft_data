@@ -1,36 +1,51 @@
 package net.minecraft.nbt;
 
-import java.util.AbstractList;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-public abstract class CollectionTag<T extends Tag> extends AbstractList<T> implements Tag {
-   public CollectionTag() {
-      super();
+public sealed interface CollectionTag extends Iterable<Tag>, Tag permits ListTag, ByteArrayTag, IntArrayTag, LongArrayTag {
+   void clear();
+
+   boolean setTag(int var1, Tag var2);
+
+   boolean addTag(int var1, Tag var2);
+
+   Tag remove(int var1);
+
+   Tag get(int var1);
+
+   int size();
+
+   default boolean isEmpty() {
+      return this.size() == 0;
    }
 
-   public abstract T set(int var1, T var2);
+   default Iterator<Tag> iterator() {
+      return new Iterator<Tag>() {
+         private int index;
 
-   public abstract void add(int var1, T var2);
+         public boolean hasNext() {
+            return this.index < CollectionTag.this.size();
+         }
 
-   public abstract T remove(int var1);
+         public Tag next() {
+            if (!this.hasNext()) {
+               throw new NoSuchElementException();
+            } else {
+               return CollectionTag.this.get(this.index++);
+            }
+         }
 
-   public abstract boolean setTag(int var1, Tag var2);
-
-   public abstract boolean addTag(int var1, Tag var2);
-
-   public abstract byte getElementType();
-
-   // $FF: synthetic method
-   public Object remove(final int var1) {
-      return this.remove(var1);
+         // $FF: synthetic method
+         public Object next() {
+            return this.next();
+         }
+      };
    }
 
-   // $FF: synthetic method
-   public void add(final int var1, final Object var2) {
-      this.add(var1, (Tag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object set(final int var1, final Object var2) {
-      return this.set(var1, (Tag)var2);
+   default Stream<Tag> stream() {
+      return StreamSupport.stream(this.spliterator(), false);
    }
 }

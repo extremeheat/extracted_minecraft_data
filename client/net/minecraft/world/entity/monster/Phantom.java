@@ -143,7 +143,7 @@ public class Phantom extends FlyingMob implements Enemy {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.anchorPoint = (BlockPos)var1.read("anchor_pos", BlockPos.CODEC).orElse((Object)null);
-      this.setPhantomSize(var1.getInt("size"));
+      this.setPhantomSize(var1.getIntOr("size", 0));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

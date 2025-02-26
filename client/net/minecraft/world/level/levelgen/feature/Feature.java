@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.DeltaFeatureCon
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.DripstoneClusterConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.FallenTreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
@@ -58,6 +59,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatch
 public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<NoneFeatureConfiguration> NO_OP;
    public static final Feature<TreeConfiguration> TREE;
+   public static final Feature<FallenTreeConfiguration> FALLEN_TREE;
    public static final Feature<RandomPatchConfiguration> FLOWER;
    public static final Feature<RandomPatchConfiguration> NO_BONEMEAL_FLOWER;
    public static final Feature<RandomPatchConfiguration> RANDOM_PATCH;
@@ -200,6 +202,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    static {
       NO_OP = register("no_op", new NoOpFeature(NoneFeatureConfiguration.CODEC));
       TREE = register("tree", new TreeFeature(TreeConfiguration.CODEC));
+      FALLEN_TREE = register("fallen_tree", new FallenTreeFeature(FallenTreeConfiguration.CODEC));
       FLOWER = register("flower", new RandomPatchFeature(RandomPatchConfiguration.CODEC));
       NO_BONEMEAL_FLOWER = register("no_bonemeal_flower", new RandomPatchFeature(RandomPatchConfiguration.CODEC));
       RANDOM_PATCH = register("random_patch", new RandomPatchFeature(RandomPatchConfiguration.CODEC));

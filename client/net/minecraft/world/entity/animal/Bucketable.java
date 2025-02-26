@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -63,30 +64,24 @@ public interface Bucketable {
    /** @deprecated */
    @Deprecated
    static void loadDefaultDataFromBucketTag(Mob var0, CompoundTag var1) {
-      if (var1.contains("NoAI")) {
-         var0.setNoAi(var1.getBoolean("NoAI"));
-      }
-
-      if (var1.contains("Silent")) {
-         var0.setSilent(var1.getBoolean("Silent"));
-      }
-
-      if (var1.contains("NoGravity")) {
-         var0.setNoGravity(var1.getBoolean("NoGravity"));
-      }
-
-      if (var1.contains("Glowing")) {
-         var0.setGlowingTag(var1.getBoolean("Glowing"));
-      }
-
-      if (var1.contains("Invulnerable")) {
-         var0.setInvulnerable(var1.getBoolean("Invulnerable"));
-      }
-
-      if (var1.contains("Health", 99)) {
-         var0.setHealth(var1.getFloat("Health"));
-      }
-
+      Optional var10000 = var1.getBoolean("NoAI");
+      Objects.requireNonNull(var0);
+      var10000.ifPresent(var0::setNoAi);
+      var10000 = var1.getBoolean("Silent");
+      Objects.requireNonNull(var0);
+      var10000.ifPresent(var0::setSilent);
+      var10000 = var1.getBoolean("NoGravity");
+      Objects.requireNonNull(var0);
+      var10000.ifPresent(var0::setNoGravity);
+      var10000 = var1.getBoolean("Glowing");
+      Objects.requireNonNull(var0);
+      var10000.ifPresent(var0::setGlowingTag);
+      var10000 = var1.getBoolean("Invulnerable");
+      Objects.requireNonNull(var0);
+      var10000.ifPresent(var0::setInvulnerable);
+      var10000 = var1.getFloat("Health");
+      Objects.requireNonNull(var0);
+      var10000.ifPresent(var0::setHealth);
    }
 
    static <T extends LivingEntity & Bucketable> Optional<InteractionResult> bucketMobPickup(Player var0, InteractionHand var1, T var2) {

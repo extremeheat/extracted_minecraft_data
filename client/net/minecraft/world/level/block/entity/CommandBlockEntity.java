@@ -20,9 +20,12 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class CommandBlockEntity extends BlockEntity {
-   private boolean powered;
-   private boolean auto;
-   private boolean conditionMet;
+   private static final boolean DEFAULT_POWERED = false;
+   private static final boolean DEFAULT_CONDITION_MET = false;
+   private static final boolean DEFAULT_AUTOMATIC = false;
+   private boolean powered = false;
+   private boolean auto = false;
+   private boolean conditionMet = false;
    private final BaseCommandBlock commandBlock = new BaseCommandBlock() {
       public void setCommand(String var1) {
          super.setCommand(var1);
@@ -67,9 +70,9 @@ public class CommandBlockEntity extends BlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.commandBlock.load(var1, var2);
-      this.powered = var1.getBoolean("powered");
-      this.conditionMet = var1.getBoolean("conditionMet");
-      this.setAutomatic(var1.getBoolean("auto"));
+      this.powered = var1.getBooleanOr("powered", false);
+      this.conditionMet = var1.getBooleanOr("conditionMet", false);
+      this.setAutomatic(var1.getBooleanOr("auto", false));
    }
 
    public BaseCommandBlock getCommandBlock() {

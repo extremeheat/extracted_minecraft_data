@@ -43,11 +43,12 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
 public class Tadpole extends AbstractFish {
+   private static final int DEFAULT_AGE = 0;
    @VisibleForTesting
    public static int ticksToBeFrog = Math.abs(-24000);
    public static final float HITBOX_WIDTH = 0.4F;
    public static final float HITBOX_HEIGHT = 0.3F;
-   private int age;
+   private int age = 0;
    protected static final ImmutableList<SensorType<? extends Sensor<? super Tadpole>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -107,7 +108,7 @@ public class Tadpole extends AbstractFish {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setAge(var1.getInt("Age"));
+      this.setAge(var1.getIntOr("Age", 0));
    }
 
    @Nullable
@@ -154,10 +155,7 @@ public class Tadpole extends AbstractFish {
 
    public void loadFromBucketTag(CompoundTag var1) {
       Bucketable.loadDefaultDataFromBucketTag(this, var1);
-      if (var1.contains("Age")) {
-         this.setAge(var1.getInt("Age"));
-      }
-
+      var1.getInt("Age").ifPresent(this::setAge);
    }
 
    public ItemStack getBucketItemStack() {

@@ -348,7 +348,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, 0);
+      var1.define(DATA_VARIANT_ID, Parrot.Variant.DEFAULT.id);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -358,7 +358,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant((Variant)var1.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE));
+      this.setVariant((Variant)var1.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.DEFAULT));
    }
 
    public boolean isFlying() {
@@ -433,6 +433,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       YELLOW_BLUE(3, "yellow_blue"),
       GRAY(4, "gray");
 
+      public static final Variant DEFAULT = RED_BLUE;
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       /** @deprecated */

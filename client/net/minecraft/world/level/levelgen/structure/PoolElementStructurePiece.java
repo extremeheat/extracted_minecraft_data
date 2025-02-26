@@ -46,13 +46,13 @@ public class PoolElementStructurePiece extends StructurePiece {
    public PoolElementStructurePiece(StructurePieceSerializationContext var1, CompoundTag var2) {
       super(StructurePieceType.JIGSAW, var2);
       this.structureTemplateManager = var1.structureTemplateManager();
-      this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
-      this.groundLevelDelta = var2.getInt("ground_level_delta");
+      this.position = new BlockPos(var2.getIntOr("PosX", 0), var2.getIntOr("PosY", 0), var2.getIntOr("PosZ", 0));
+      this.groundLevelDelta = var2.getIntOr("ground_level_delta", 0);
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.element = (StructurePoolElement)var2.read("pool_element", StructurePoolElement.CODEC, var3).orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
       this.rotation = (Rotation)var2.read("rotation", Rotation.LEGACY_CODEC).orElseThrow();
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
-      ListTag var4 = var2.getList("junctions", 10);
+      ListTag var4 = var2.getListOrEmpty("junctions");
       this.junctions.clear();
       var4.forEach((var2x) -> this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x))));
       this.liquidSettings = (LiquidSettings)var2.read("liquid_settings", LiquidSettings.CODEC).orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);

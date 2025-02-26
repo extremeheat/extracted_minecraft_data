@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,71 +38,70 @@ public class ModelBlockRenderer {
       this.blockColors = var1;
    }
 
-   public void tesselateBlock(BlockAndTintGetter var1, BlockStateModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
-      boolean var12 = Minecraft.useAmbientOcclusion() && var3.getLightEmission() == 0 && var2.useAmbientOcclusion();
-      var5.translate(var3.getOffset(var4));
+   public void tesselateBlock(BlockAndTintGetter var1, List<BlockModelPart> var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, int var8) {
+      if (!var2.isEmpty()) {
+         boolean var9 = Minecraft.useAmbientOcclusion() && var3.getLightEmission() == 0 && ((BlockModelPart)var2.getFirst()).useAmbientOcclusion();
+         var5.translate(var3.getOffset(var4));
 
-      try {
-         if (var12) {
-            this.tesselateWithAO(var1, var2, var3, var4, var5, var6, var7, var8, var9, var11);
-         } else {
-            this.tesselateWithoutAO(var1, var2, var3, var4, var5, var6, var7, var8, var9, var11);
+         try {
+            if (var9) {
+               this.tesselateWithAO(var1, var2, var3, var4, var5, var6, var7, var8);
+            } else {
+               this.tesselateWithoutAO(var1, var2, var3, var4, var5, var6, var7, var8);
+            }
+
+         } catch (Throwable var13) {
+            CrashReport var11 = CrashReport.forThrowable(var13, "Tesselating block model");
+            CrashReportCategory var12 = var11.addCategory("Block model being tesselated");
+            CrashReportCategory.populateBlockDetails(var12, var1, var4, var3);
+            var12.setDetail("Using AO", var9);
+            throw new ReportedException(var11);
          }
-
-      } catch (Throwable var16) {
-         CrashReport var14 = CrashReport.forThrowable(var16, "Tesselating block model");
-         CrashReportCategory var15 = var14.addCategory("Block model being tesselated");
-         CrashReportCategory.populateBlockDetails(var15, var1, var4, var3);
-         var15.setDetail("Using AO", var12);
-         throw new ReportedException(var14);
       }
    }
 
-   public void tesselateWithAO(BlockAndTintGetter var1, BlockStateModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
-      float[] var12 = new float[DIRECTIONS.length * 2];
-      BitSet var13 = new BitSet(3);
-      AmbientOcclusionFace var14 = new AmbientOcclusionFace();
-      BlockPos.MutableBlockPos var15 = var4.mutable();
+   public void tesselateWithAO(BlockAndTintGetter var1, List<BlockModelPart> var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, int var8) {
+      float[] var9 = new float[DIRECTIONS.length * 2];
+      BitSet var10 = new BitSet(3);
+      AmbientOcclusionFace var11 = new AmbientOcclusionFace();
+      BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
 
-      for(Direction var19 : DIRECTIONS) {
-         var8.setSeed(var9);
-         List var20 = var2.getQuads(var3, var19, var8);
+      for(BlockModelPart var14 : var2) {
+         for(Direction var18 : DIRECTIONS) {
+            List var19 = var14.getQuads(var18);
+            if (!var19.isEmpty() && (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var12.setWithOffset(var4, (Direction)var18)), var18))) {
+               this.renderModelFaceAO(var1, var3, var4, var5, var6, var19, var9, var10, var11, var8);
+            }
+         }
+
+         List var20 = var14.getQuads((Direction)null);
          if (!var20.isEmpty()) {
-            var15.setWithOffset(var4, (Direction)var19);
-            if (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var15), var19)) {
-               this.renderModelFaceAO(var1, var3, var4, var5, var6, var20, var12, var13, var14, var11);
-            }
+            this.renderModelFaceAO(var1, var3, var4, var5, var6, var20, var9, var10, var11, var8);
          }
-      }
-
-      var8.setSeed(var9);
-      List var21 = var2.getQuads(var3, (Direction)null, var8);
-      if (!var21.isEmpty()) {
-         this.renderModelFaceAO(var1, var3, var4, var5, var6, var21, var12, var13, var14, var11);
       }
 
    }
 
-   public void tesselateWithoutAO(BlockAndTintGetter var1, BlockStateModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
-      BitSet var12 = new BitSet(3);
-      BlockPos.MutableBlockPos var13 = var4.mutable();
+   public void tesselateWithoutAO(BlockAndTintGetter var1, List<BlockModelPart> var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, int var8) {
+      BitSet var9 = new BitSet(3);
+      BlockPos.MutableBlockPos var10 = var4.mutable();
 
-      for(Direction var17 : DIRECTIONS) {
-         var8.setSeed(var9);
-         List var18 = var2.getQuads(var3, var17, var8);
-         if (!var18.isEmpty()) {
-            var13.setWithOffset(var4, (Direction)var17);
-            if (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var13), var17)) {
-               int var19 = LevelRenderer.getLightColor(var1, var3, var13);
-               this.renderModelFaceFlat(var1, var3, var4, var19, var11, false, var5, var6, var18, var12);
+      for(BlockModelPart var12 : var2) {
+         for(Direction var16 : DIRECTIONS) {
+            List var17 = var12.getQuads(var16);
+            if (!var17.isEmpty()) {
+               var10.setWithOffset(var4, (Direction)var16);
+               if (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var10), var16)) {
+                  int var18 = LevelRenderer.getLightColor(var1, var3, var10);
+                  this.renderModelFaceFlat(var1, var3, var4, var18, var8, false, var5, var6, var17, var9);
+               }
             }
          }
-      }
 
-      var8.setSeed(var9);
-      List var20 = var2.getQuads(var3, (Direction)null, var8);
-      if (!var20.isEmpty()) {
-         this.renderModelFaceFlat(var1, var3, var4, -1, var11, true, var5, var6, var20, var12);
+         List var19 = var12.getQuads((Direction)null);
+         if (!var19.isEmpty()) {
+            this.renderModelFaceFlat(var1, var3, var4, -1, var8, true, var5, var6, var19, var9);
+         }
       }
 
    }
@@ -213,17 +213,15 @@ public class ModelBlockRenderer {
 
    }
 
-   public void renderModel(PoseStack.Pose var1, VertexConsumer var2, BlockState var3, BlockStateModel var4, float var5, float var6, float var7, int var8, int var9) {
-      RandomSource var10 = RandomSource.create();
-      long var11 = 42L;
+   public void renderModel(PoseStack.Pose var1, VertexConsumer var2, BlockStateModel var3, float var4, float var5, float var6, int var7, int var8) {
+      for(BlockModelPart var10 : var3.collectParts(RandomSource.create(42L))) {
+         for(Direction var14 : DIRECTIONS) {
+            renderQuadList(var1, var2, var4, var5, var6, var10.getQuads(var14), var7, var8);
+         }
 
-      for(Direction var16 : DIRECTIONS) {
-         var10.setSeed(42L);
-         renderQuadList(var1, var2, var5, var6, var7, var4.getQuads(var3, var16, var10), var8, var9);
+         renderQuadList(var1, var2, var4, var5, var6, var10.getQuads((Direction)null), var7, var8);
       }
 
-      var10.setSeed(42L);
-      renderQuadList(var1, var2, var5, var6, var7, var4.getQuads(var3, (Direction)null, var10), var8, var9);
    }
 
    private static void renderQuadList(PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, List<BakedQuad> var5, int var6, int var7) {

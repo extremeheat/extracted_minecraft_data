@@ -56,6 +56,8 @@ public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
    private static final EntityDataAccessor<Byte> DATA_WOOL_ID;
    private static final Map<DyeColor, Integer> COLOR_BY_DYE;
+   private static final DyeColor DEFAULT_COLOR;
+   private static final boolean DEFAULT_SHEARED = false;
    private int eatAnimationTick;
    private EatBlockGoal eatBlockGoal;
 
@@ -190,8 +192,8 @@ public class Sheep extends Animal implements Shearable {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setSheared(var1.getBoolean("Sheared"));
-      this.setColor((DyeColor)var1.read("Color", DyeColor.LEGACY_ID_CODEC).orElse(DyeColor.WHITE));
+      this.setSheared(var1.getBooleanOr("Sheared", false));
+      this.setColor((DyeColor)var1.read("Color", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLOR));
    }
 
    protected SoundEvent getAmbientSound() {
@@ -293,5 +295,6 @@ public class Sheep extends Animal implements Shearable {
    static {
       DATA_WOOL_ID = SynchedEntityData.<Byte>defineId(Sheep.class, EntityDataSerializers.BYTE);
       COLOR_BY_DYE = Util.<DyeColor, Integer>makeEnumMap(DyeColor.class, Sheep::createSheepColor);
+      DEFAULT_COLOR = DyeColor.WHITE;
    }
 }

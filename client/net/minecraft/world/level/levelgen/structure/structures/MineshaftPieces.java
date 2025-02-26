@@ -100,7 +100,7 @@ public class MineshaftPieces {
 
       public MineShaftPiece(StructurePieceType var1, CompoundTag var2) {
          super(var1, var2);
-         this.type = MineshaftStructure.Type.byId(var2.getInt("MST"));
+         this.type = MineshaftStructure.Type.byId(var2.getIntOr("MST", 0));
       }
 
       protected boolean canBeReplaced(LevelReader var1, int var2, int var3, int var4, BoundingBox var5) {
@@ -295,10 +295,10 @@ public class MineshaftPieces {
 
       public MineShaftCorridor(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_CORRIDOR, var1);
-         this.hasRails = var1.getBoolean("hr");
-         this.spiderCorridor = var1.getBoolean("sc");
-         this.hasPlacedSpider = var1.getBoolean("hps");
-         this.numSections = var1.getInt("Num");
+         this.hasRails = var1.getBooleanOr("hr", false);
+         this.spiderCorridor = var1.getBooleanOr("sc", false);
+         this.hasPlacedSpider = var1.getBooleanOr("hps", false);
+         this.numSections = var1.getIntOr("Num", 0);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -650,7 +650,7 @@ public class MineshaftPieces {
 
       public MineShaftCrossing(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_CROSSING, var1);
-         this.isTwoFloored = var1.getBoolean("tf");
+         this.isTwoFloored = var1.getBooleanOr("tf", false);
          this.direction = (Direction)var1.read("D", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       }
 

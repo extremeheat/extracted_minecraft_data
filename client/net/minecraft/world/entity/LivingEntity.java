@@ -723,9 +723,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.internalSetAbsorptionAmount(var1.getFloat("AbsorptionAmount"));
-      if (var1.contains("attributes", 9) && this.level() != null && !this.level().isClientSide) {
-         this.getAttributes().load(var1.getList("attributes", 10));
+      this.internalSetAbsorptionAmount(var1.getFloatOr("AbsorptionAmount", 0.0F));
+      if (this.level() != null && !this.level().isClientSide) {
+         Optional var10000 = var1.getList("attributes");
+         AttributeMap var10001 = this.getAttributes();
+         java.util.Objects.requireNonNull(var10001);
+         var10000.ifPresent(var10001::load);
       }
 
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
@@ -736,27 +739,20 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.activeEffects.put(var5.getEffect(), var5);
       }
 
-      if (var1.contains("Health", 99)) {
-         this.setHealth(var1.getFloat("Health"));
-      }
-
-      this.hurtTime = var1.getShort("HurtTime");
-      this.deathTime = var1.getShort("DeathTime");
-      this.lastHurtByMobTimestamp = var1.getInt("HurtByTimestamp");
-      if (var1.contains("Team", 8)) {
-         String var8 = var1.getString("Team");
-         Scoreboard var9 = this.level().getScoreboard();
-         PlayerTeam var6 = var9.getPlayerTeam(var8);
-         boolean var7 = var6 != null && var9.addPlayerToTeam(this.getStringUUID(), var6);
-         if (!var7) {
-            LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", var8);
+      this.setHealth(var1.getFloatOr("Health", this.getMaxHealth()));
+      this.hurtTime = var1.getShortOr("HurtTime", (short)0);
+      this.deathTime = var1.getShortOr("DeathTime", (short)0);
+      this.lastHurtByMobTimestamp = var1.getIntOr("HurtByTimestamp", 0);
+      var1.getString("Team").ifPresent((var1x) -> {
+         Scoreboard var2 = this.level().getScoreboard();
+         PlayerTeam var3 = var2.getPlayerTeam(var1x);
+         boolean var4 = var3 != null && var2.addPlayerToTeam(this.getStringUUID(), var3);
+         if (!var4) {
+            LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", var1x);
          }
-      }
 
-      if (var1.getBoolean("FallFlying")) {
-         this.setSharedFlag(7, true);
-      }
-
+      });
+      this.setSharedFlag(7, var1.getBooleanOr("FallFlying", false));
       var1.read("sleeping_pos", BlockPos.CODEC).ifPresentOrElse((var1x) -> {
          this.setSleepingPos(var1x);
          this.entityData.set(DATA_POSE, Pose.SLEEPING);
@@ -765,14 +761,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
          }
 
       }, this::clearSleepingPos);
-      if (var1.contains("Brain", 10)) {
-         this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1.get("Brain")));
-      }
-
+      var1.getCompound("Brain").ifPresent((var1x) -> this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1x)));
       this.lastHurtByPlayer = EntityReference.<Player>read(var1, "last_hurt_by_player");
-      this.lastHurtByPlayerMemoryTime = var1.getInt("last_hurt_by_player_memory_time");
+      this.lastHurtByPlayerMemoryTime = var1.getIntOr("last_hurt_by_player_memory_time", 0);
       this.lastHurtByMob = EntityReference.<LivingEntity>read(var1, "last_hurt_by_mob");
-      this.lastHurtByMobTimestamp = var1.getInt("ticks_since_last_hurt_by_mob") + this.tickCount;
+      this.lastHurtByMobTimestamp = var1.getIntOr("ticks_since_last_hurt_by_mob", 0) + this.tickCount;
       this.equipment.setAll((EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new));
    }
 

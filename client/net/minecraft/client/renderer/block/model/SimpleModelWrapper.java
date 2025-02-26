@@ -9,10 +9,8 @@ import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 
-public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockStateModel {
+public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockModelPart {
    public SimpleModelWrapper(QuadCollection var1, boolean var2, TextureAtlasSprite var3) {
       super();
       this.quads = var1;
@@ -29,7 +27,7 @@ public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusi
       return new SimpleModelWrapper(var7, var5, var6);
    }
 
-   public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, RandomSource var3) {
-      return this.quads.getQuads(var2);
+   public List<BakedQuad> getQuads(@Nullable Direction var1) {
+      return this.quads.getQuads(var1);
    }
 }
