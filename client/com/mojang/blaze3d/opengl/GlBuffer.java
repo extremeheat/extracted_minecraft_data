@@ -41,6 +41,10 @@ public class GlBuffer extends GpuBuffer {
 
    }
 
+   public boolean isClosed() {
+      return this.closed;
+   }
+
    public void close() {
       if (!this.closed) {
          this.closed = true;

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.lwjgl.opengl.ARBDebugOutput;
 import org.lwjgl.opengl.GL;
@@ -145,40 +146,42 @@ public class GlDebug {
    }
 
    @Nullable
-   public static GlDebug enableDebugCallback(int var0, boolean var1) {
+   public static GlDebug enableDebugCallback(int var0, boolean var1, Set<String> var2) {
       if (var0 <= 0) {
          return null;
       } else {
-         GLCapabilities var2 = GL.getCapabilities();
-         if (var2.GL_KHR_debug) {
-            GlDebug var6 = new GlDebug();
+         GLCapabilities var3 = GL.getCapabilities();
+         if (var3.GL_KHR_debug && GlDevice.USE_GL_KHR_debug) {
+            GlDebug var7 = new GlDebug();
+            var2.add("GL_KHR_debug");
             GL11.glEnable(37600);
             if (var1) {
                GL11.glEnable(33346);
             }
 
-            for(int var7 = 0; var7 < DEBUG_LEVELS.size(); ++var7) {
-               boolean var8 = var7 < var0;
-               KHRDebug.glDebugMessageControl(4352, 4352, (Integer)DEBUG_LEVELS.get(var7), (int[])null, var8);
+            for(int var8 = 0; var8 < DEBUG_LEVELS.size(); ++var8) {
+               boolean var9 = var8 < var0;
+               KHRDebug.glDebugMessageControl(4352, 4352, (Integer)DEBUG_LEVELS.get(var8), (int[])null, var9);
             }
 
-            Objects.requireNonNull(var6);
-            KHRDebug.glDebugMessageCallback((GLDebugMessageCallbackI)GLX.make(GLDebugMessageCallback.create(var6::printDebugLog), DebugMemoryUntracker::untrack), 0L);
-            return var6;
-         } else if (var2.GL_ARB_debug_output) {
-            GlDebug var3 = new GlDebug();
+            Objects.requireNonNull(var7);
+            KHRDebug.glDebugMessageCallback((GLDebugMessageCallbackI)GLX.make(GLDebugMessageCallback.create(var7::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            return var7;
+         } else if (var3.GL_ARB_debug_output && GlDevice.USE_GL_ARB_debug_output) {
+            GlDebug var4 = new GlDebug();
+            var2.add("GL_ARB_debug_output");
             if (var1) {
                GL11.glEnable(33346);
             }
 
-            for(int var4 = 0; var4 < DEBUG_LEVELS_ARB.size(); ++var4) {
-               boolean var5 = var4 < var0;
-               ARBDebugOutput.glDebugMessageControlARB(4352, 4352, (Integer)DEBUG_LEVELS_ARB.get(var4), (int[])null, var5);
+            for(int var5 = 0; var5 < DEBUG_LEVELS_ARB.size(); ++var5) {
+               boolean var6 = var5 < var0;
+               ARBDebugOutput.glDebugMessageControlARB(4352, 4352, (Integer)DEBUG_LEVELS_ARB.get(var5), (int[])null, var6);
             }
 
-            Objects.requireNonNull(var3);
-            ARBDebugOutput.glDebugMessageCallbackARB((GLDebugMessageARBCallbackI)GLX.make(GLDebugMessageARBCallback.create(var3::printDebugLog), DebugMemoryUntracker::untrack), 0L);
-            return var3;
+            Objects.requireNonNull(var4);
+            ARBDebugOutput.glDebugMessageCallbackARB((GLDebugMessageARBCallbackI)GLX.make(GLDebugMessageARBCallback.create(var4::printDebugLog), DebugMemoryUntracker::untrack), 0L);
+            return var4;
          } else {
             return null;
          }

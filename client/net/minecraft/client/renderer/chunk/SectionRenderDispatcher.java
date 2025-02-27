@@ -248,13 +248,15 @@ public class SectionRenderDispatcher {
                            String var10000 = var1.getName();
                            return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
                         }, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer()));
-                     } else {
+                     } else if (!var10.vertexBuffer.isClosed()) {
                         var4.writeToBuffer(var10.vertexBuffer, var2.vertexBuffer(), 0);
                      }
 
                      if (var2.indexBuffer() != null) {
                         if (var10.indexBuffer != null && var10.indexBuffer.size() >= var2.indexBuffer().remaining()) {
-                           var4.writeToBuffer(var10.indexBuffer, var2.indexBuffer(), 0);
+                           if (!var10.indexBuffer.isClosed()) {
+                              var4.writeToBuffer(var10.indexBuffer, var2.indexBuffer(), 0);
+                           }
                         } else {
                            if (var10.indexBuffer != null) {
                               var10.indexBuffer.close();
@@ -310,7 +312,9 @@ public class SectionRenderDispatcher {
                      }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var1.byteBuffer()));
                   } else {
                      CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
-                     var5.writeToBuffer(var4.indexBuffer, var1.byteBuffer(), 0);
+                     if (!var4.indexBuffer.isClosed()) {
+                        var5.writeToBuffer(var4.indexBuffer, var1.byteBuffer(), 0);
+                     }
                   }
 
                   var1.close();

@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.logging.LogUtils;
+import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.util.StringUtil;
 import org.lwjgl.opengl.EXTDebugLabel;
@@ -31,13 +32,15 @@ public abstract class GlDebugLabel {
    public void applyLabel(VertexArrayCache.VertexArray var1) {
    }
 
-   public static GlDebugLabel create(GLCapabilities var0, boolean var1) {
+   public static GlDebugLabel create(GLCapabilities var0, boolean var1, Set<String> var2) {
       if (var1) {
-         if (var0.GL_KHR_debug) {
+         if (var0.GL_KHR_debug && GlDevice.USE_GL_KHR_debug) {
+            var2.add("GL_KHR_debug");
             return new Core();
          }
 
-         if (var0.GL_EXT_debug_label) {
+         if (var0.GL_EXT_debug_label && GlDevice.USE_GL_EXT_debug_label) {
+            var2.add("GL_EXT_debug_label");
             return new Ext();
          }
 

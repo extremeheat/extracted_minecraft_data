@@ -20,11 +20,14 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -39,6 +42,11 @@ import org.slf4j.Logger;
 
 public class GlDevice implements GpuDevice {
    private static final Logger LOGGER = LogUtils.getLogger();
+   protected static boolean USE_GL_ARB_vertex_attrib_binding = true;
+   protected static boolean USE_GL_KHR_debug = true;
+   protected static boolean USE_GL_EXT_debug_label = true;
+   protected static boolean USE_GL_ARB_debug_output = true;
+   protected static boolean USE_GL_ARB_direct_state_access = true;
    private final CommandEncoder encoder;
    @Nullable
    private final GlDebug debugLog;
@@ -49,6 +57,7 @@ public class GlDevice implements GpuDevice {
    private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
    private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
    private final VertexArrayCache vertexArrayCache;
+   private final Set<String> enabledExtensions = new HashSet();
 
    public GlDevice(long var1, int var3, boolean var4, BiFunction<ResourceLocation, ShaderType, String> var5, boolean var6) {
       super();
@@ -56,11 +65,12 @@ public class GlDevice implements GpuDevice {
       GLCapabilities var7 = GL.createCapabilities();
       int var8 = getMaxSupportedTextureSize();
       GLFW.glfwSetWindowSizeLimits(var1, -1, -1, var8, var8);
-      this.debugLog = GlDebug.enableDebugCallback(var3, var4);
-      this.debugLabels = GlDebugLabel.create(var7, var6);
-      this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels);
+      this.debugLog = GlDebug.enableDebugCallback(var3, var4, this.enabledExtensions);
+      this.debugLabels = GlDebugLabel.create(var7, var6, this.enabledExtensions);
+      this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels, this.enabledExtensions);
       this.maxSupportedTextureSize = var8;
-      if (var7.GL_ARB_direct_state_access) {
+      if (var7.GL_ARB_direct_state_access && USE_GL_ARB_direct_state_access) {
+         this.enabledExtensions.add("GL_ARB_direct_state_access");
          this.directStateAccess = new CoreDsa();
       } else {
          this.directStateAccess = new EmulatedDsa();
@@ -196,6 +206,10 @@ public class GlDevice implements GpuDevice {
       }
 
       this.shaderCache.clear();
+   }
+
+   public List<String> getEnabledExtensions() {
+      return new ArrayList(this.enabledExtensions);
    }
 
    public DirectStateAccess directStateAccess() {

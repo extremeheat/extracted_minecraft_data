@@ -173,7 +173,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setVariant((Variant)var1.read("Type", MushroomCow.Variant.CODEC).orElse(MushroomCow.Variant.DEFAULT));
-      this.stewEffects = (SuspiciousStewEffects)var1.read("stew_effects", SuspiciousStewEffects.CODEC).orElse(SuspiciousStewEffects.EMPTY);
+      this.stewEffects = (SuspiciousStewEffects)var1.read("stew_effects", SuspiciousStewEffects.CODEC).orElse((Object)null);
    }
 
    private Optional<SuspiciousStewEffects> getEffectsFromItemStack(ItemStack var1) {

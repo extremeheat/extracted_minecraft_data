@@ -41,7 +41,7 @@ public class GlTexture extends GpuTexture {
       int var3 = var2 == null ? 0 : ((GlTexture)var2).id;
       return this.fboCache.computeIfAbsent(var3, (var3x) -> {
          int var4 = var1.createFrameBufferObject();
-         var1.bindFrameBufferTextures(var4, this.id, var3, 0);
+         var1.bindFrameBufferTextures(var4, this.id, var3, 0, false);
          return var4;
       });
    }

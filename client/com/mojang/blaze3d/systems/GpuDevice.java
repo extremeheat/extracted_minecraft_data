@@ -49,4 +49,6 @@ public interface GpuDevice {
    CompiledRenderPipeline precompilePipeline(RenderPipeline var1, @Nullable BiFunction<ResourceLocation, ShaderType, String> var2);
 
    void clearPipelineCache();
+
+   List<String> getEnabledExtensions();
 }

@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.lwjgl.opengl.ARBVertexAttribBinding;
 import org.lwjgl.opengl.GLCapabilities;
@@ -16,8 +17,13 @@ public abstract class VertexArrayCache {
       super();
    }
 
-   public static VertexArrayCache create(GLCapabilities var0, GlDebugLabel var1) {
-      return (VertexArrayCache)(var0.GL_ARB_vertex_attrib_binding ? new Separate(var1) : new Emulated(var1));
+   public static VertexArrayCache create(GLCapabilities var0, GlDebugLabel var1, Set<String> var2) {
+      if (var0.GL_ARB_vertex_attrib_binding && GlDevice.USE_GL_ARB_vertex_attrib_binding) {
+         var2.add("GL_ARB_vertex_attrib_binding");
+         return new Separate(var1);
+      } else {
+         return new Emulated(var1);
+      }
    }
 
    public abstract void bindVertexArray(VertexFormat var1, GlBuffer var2);

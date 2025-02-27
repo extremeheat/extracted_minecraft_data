@@ -490,6 +490,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.keyboardHandler = new KeyboardHandler(this);
       this.keyboardHandler.setup(this.window.getWindow());
       RenderSystem.initRenderer(this.window.getWindow(), this.options.glDebugVerbosity, false, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
+      LOGGER.info("Using optional rendering extensions: {}", String.join(", ", RenderSystem.getDevice().getEnabledExtensions()));
       this.mainRenderTarget = new MainTarget(this.window.getWidth(), this.window.getHeight());
       this.resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
       this.resourcePackRepository.reload();
@@ -2273,7 +2274,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var0.setDetail("Backend API", RenderSystem::getApiDescription);
       var0.setDetail("Window size", (Supplier)(() -> var1 != null ? var1.window.getWidth() + "x" + var1.window.getHeight() : "<not initialized>"));
       var0.setDetail("GFLW Platform", Window::getPlatform);
-      var0.setDetail("GL Caps", RenderSystem::getCapsString);
+      var0.setDetail("Render Extensions", (Supplier)(() -> String.join(", ", RenderSystem.getDevice().getEnabledExtensions())));
       var0.setDetail("GL debug messages", (Supplier)(() -> {
          GpuDevice var0 = RenderSystem.tryGetDevice();
          if (var0 == null) {

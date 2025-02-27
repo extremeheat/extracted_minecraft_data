@@ -91,8 +91,7 @@ public class GlCommandEncoder implements CommandEncoder {
       } else if (var1.getFormat() == TextureFormat.DEPTH32) {
          throw new IllegalStateException("Trying to clear a depth texture as a color texture!");
       } else {
-         GlStateManager._glBindFramebuffer(36160, this.drawFbo);
-         this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)var1).id, 0, 0);
+         this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)var1).id, 0, 0, true);
          GL11.glClearColor(ARGB.redFloat(var2), ARGB.greenFloat(var2), ARGB.blueFloat(var2), ARGB.alphaFloat(var2));
          GlStateManager._colorMask(true, true, true, true);
          GlStateManager._clear(16384);
@@ -125,9 +124,8 @@ public class GlCommandEncoder implements CommandEncoder {
       } else if (var1.getFormat() != TextureFormat.DEPTH32) {
          throw new IllegalStateException("Trying to clear a color texture as a depth texture!");
       } else {
-         GlStateManager._glBindFramebuffer(36160, this.drawFbo);
+         this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, 0, ((GlTexture)var1).id, 0, true);
          GL11.glDrawBuffer(0);
-         this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, 0, ((GlTexture)var1).id, 0);
          GL11.glClearDepth(var2);
          GlStateManager._depthMask(true);
          GlStateManager._clear(256);
@@ -310,6 +308,7 @@ public class GlCommandEncoder implements CommandEncoder {
       } else if (var3 >= 0 && var3 < var1.getMipLevels() && var3 < var2.getMipLevels()) {
          if (var4 + var8 <= var2.getWidth(var3) && var5 + var9 <= var2.getHeight(var3)) {
             if (var6 + var8 <= var1.getWidth(var3) && var7 + var9 <= var1.getHeight(var3)) {
+               GlStateManager._disableScissorTest();
                GlStateManager._glBindFramebuffer(36008, this.readFbo);
                GlStateManager._glBindFramebuffer(36009, this.drawFbo);
                boolean var10 = var1.getFormat() == TextureFormat.DEPTH32;
@@ -338,6 +337,7 @@ public class GlCommandEncoder implements CommandEncoder {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
+         GlStateManager._disableScissorTest();
          GlStateManager._glBindFramebuffer(36008, this.drawFbo);
          GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, ((GlTexture)var1).glId(), 0);
          GlStateManager._glBlitFrameBuffer(0, 0, var1.getWidth(0), var1.getHeight(0), 0, 0, var1.getWidth(0), var1.getHeight(0), 16384, 9728);
@@ -423,7 +423,7 @@ public class GlCommandEncoder implements CommandEncoder {
             }
          }
 
-         for(String var12 : var1.pipeline.info().getSamplers()) {
+         for(String var12 : var1.pipeline.program().getSamplers()) {
             if (!var1.samplers.containsKey(var12)) {
                throw new IllegalStateException("Missing sampler " + var12);
             }
@@ -463,8 +463,8 @@ public class GlCommandEncoder implements CommandEncoder {
 
       IntList var16 = var13.getSamplerLocations();
 
-      for(int var17 = 0; var17 < var11.getSamplers().size(); ++var17) {
-         String var7 = (String)var11.getSamplers().get(var17);
+      for(int var17 = 0; var17 < var13.getSamplers().size(); ++var17) {
+         String var7 = (String)var13.getSamplers().get(var17);
          GlTexture var8 = (GlTexture)var1.samplers.get(var7);
          if (var8 != null) {
             if (var15 || var1.dirtySamplers.contains(var7)) {

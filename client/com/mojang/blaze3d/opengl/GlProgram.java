@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -21,8 +22,10 @@ import net.minecraft.client.renderer.ShaderManager;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.slf4j.Logger;
 
 public class GlProgram implements AutoCloseable {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static Set<String> BUILT_IN_UNIFORMS = Sets.newHashSet(new String[]{"ModelViewMat", "ProjMat", "TextureMat", "ScreenSize", "ColorModulator", "Light0_Direction", "Light1_Direction", "GlintAlpha", "FogStart", "FogEnd", "FogColor", "FogShape", "LineWidth", "GameTime", "ModelOffset"});
    public static GlProgram INVALID_PROGRAM = new GlProgram(-1, "invalid");
    private static final AbstractUniform DUMMY_UNIFORM = new AbstractUniform();
@@ -112,7 +115,9 @@ public class GlProgram implements AutoCloseable {
 
       for(String var9 : var2) {
          int var10 = Uniform.glGetUniformLocation(this.programId, var9);
-         if (var10 != -1) {
+         if (var10 == -1) {
+            LOGGER.warn("{} shader program does not use sampler {} defined in the pipeline. This might be a bug.", this.debugLabel, var9);
+         } else {
             this.samplers.add(var9);
             this.samplerLocations.add(var10);
          }
@@ -260,6 +265,10 @@ public class GlProgram implements AutoCloseable {
 
    public IntList getSamplerLocations() {
       return this.samplerLocations;
+   }
+
+   public List<String> getSamplers() {
+      return this.samplers;
    }
 
    public List<Uniform> getUniforms() {

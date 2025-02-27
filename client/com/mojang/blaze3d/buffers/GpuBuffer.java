@@ -26,6 +26,8 @@ public abstract class GpuBuffer implements AutoCloseable {
       return this.usage;
    }
 
+   public abstract boolean isClosed();
+
    public abstract void close();
 
    public interface ReadView extends AutoCloseable {

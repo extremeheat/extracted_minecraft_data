@@ -21,6 +21,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 
 public class NbtOps implements DynamicOps<Tag> {
    public static final NbtOps INSTANCE = new NbtOps();
@@ -499,7 +500,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public Tag createList(Stream<Tag> var1) {
-      return new ListTag(var1.toList());
+      return new ListTag((List)var1.collect(Util.toMutableList()));
    }
 
    public Tag remove(Tag var1, String var2) {
