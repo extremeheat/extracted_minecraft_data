@@ -122,7 +122,7 @@ public abstract class RenderTarget {
 
       try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, OptionalInt.empty())) {
          RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-         GpuBuffer var4 = RenderSystem.getQuadVertexBuffer(() -> "Entity outline blit vertex buffer");
+         GpuBuffer var4 = RenderSystem.getQuadVertexBuffer();
          var2.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
          var2.setVertexBuffer(0, var4);
          var2.setIndexBuffer(var3.getBuffer(6), var3.type());

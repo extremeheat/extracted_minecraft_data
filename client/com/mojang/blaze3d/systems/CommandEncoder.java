@@ -22,8 +22,6 @@ public interface CommandEncoder {
 
    void writeToBuffer(GpuBuffer var1, ByteBuffer var2, int var3);
 
-   void resizeBuffer(GpuBuffer var1, int var2);
-
    GpuBuffer.ReadView readBuffer(GpuBuffer var1);
 
    GpuBuffer.ReadView readBuffer(GpuBuffer var1, int var2, int var3);

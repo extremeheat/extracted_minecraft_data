@@ -116,10 +116,11 @@ public class VertexFormat {
       } else {
          CommandEncoder var3 = var2.createCommandEncoder();
          if (this.immediateDrawVertexBuffer.size() < var1.remaining()) {
-            var3.resizeBuffer(this.immediateDrawVertexBuffer, var1.remaining());
+            this.immediateDrawVertexBuffer.close();
+            this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, var1);
+         } else {
+            var3.writeToBuffer(this.immediateDrawVertexBuffer, var1, 0);
          }
-
-         var3.writeToBuffer(this.immediateDrawVertexBuffer, var1, 0);
       }
 
       return this.immediateDrawVertexBuffer;
@@ -132,10 +133,11 @@ public class VertexFormat {
       } else {
          CommandEncoder var3 = var2.createCommandEncoder();
          if (this.immediateDrawIndexBuffer.size() < var1.remaining()) {
-            var3.resizeBuffer(this.immediateDrawIndexBuffer, var1.remaining());
+            this.immediateDrawIndexBuffer.close();
+            this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, var1);
+         } else {
+            var3.writeToBuffer(this.immediateDrawIndexBuffer, var1, 0);
          }
-
-         var3.writeToBuffer(this.immediateDrawIndexBuffer, var1, 0);
       }
 
       return this.immediateDrawIndexBuffer;

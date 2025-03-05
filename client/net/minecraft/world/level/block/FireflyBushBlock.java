@@ -31,7 +31,7 @@ public class FireflyBushBlock extends VegetationBlock implements BonemealableBlo
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(30) == 0 && var2.isMoonVisible() && var2.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var3) <= var3.getY()) {
-         var2.playLocalSound(var3, SoundEvents.FIREFLY_BUSH_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+         var2.playLocalSound(var3, SoundEvents.FIREFLY_BUSH_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
       }
 
       if (var2.getMaxLocalRawBrightness(var3) <= 13 && var4.nextDouble() <= 0.7) {

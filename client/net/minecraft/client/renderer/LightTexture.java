@@ -111,7 +111,7 @@ public class LightTexture implements AutoCloseable {
                var16.setUniform("DarknessScale", var8);
                var16.setUniform("DarkenWorldFactor", this.renderer.getDarkenWorldAmount(var1));
                var16.setUniform("BrightnessFactor", Math.max(0.0F, var15 - var7));
-               var16.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer(() -> "Light texture vertex buffer"));
+               var16.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
                RenderSystem.AutoStorageIndexBuffer var17 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
                var16.setIndexBuffer(var17.getBuffer(6), var17.type());
                var16.drawIndexed(0, 6);

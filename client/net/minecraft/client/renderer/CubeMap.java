@@ -61,7 +61,7 @@ public class CubeMap {
          RenderSystem.AutoStorageIndexBuffer var13 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
          var12.setPipeline(var8);
          var12.setVertexBuffer(0, this.cubeMapBuffer);
-         var12.setIndexBuffer(var13.getBuffer(6), var13.type());
+         var12.setIndexBuffer(var13.getBuffer(36), var13.type());
 
          for(int var14 = 0; var14 < 4; ++var14) {
             var6.pushMatrix();

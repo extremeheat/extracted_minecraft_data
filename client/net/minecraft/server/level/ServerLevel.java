@@ -1595,8 +1595,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.entityManager.canPositionTick(var1) && this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(ChunkPos.asLong(var1));
    }
 
-   public boolean areEntitiesActuallyTicking(ChunkPos var1) {
-      return this.entityManager.isTicking(var1);
+   public boolean areEntitiesActuallyLoadedAndTicking(ChunkPos var1) {
+      return this.entityManager.isTicking(var1) && this.entityManager.areEntitiesLoaded(var1.toLong());
    }
 
    public boolean anyPlayerCloseEnoughForSpawning(BlockPos var1) {

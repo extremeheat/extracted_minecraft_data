@@ -61,6 +61,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.WOODEN_TRAPDOORS, ItemTags.WOODEN_TRAPDOORS);
       this.copy(BlockTags.TRAPDOORS, ItemTags.TRAPDOORS);
       this.copy(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS);
+      this.copy(BlockTags.FLOWERS, ItemTags.FLOWERS);
       this.copy(BlockTags.BEDS, ItemTags.BEDS);
       this.copy(BlockTags.FENCES, ItemTags.FENCES);
       this.copy(BlockTags.BEE_ATTRACTIVE, ItemTags.BEE_FOOD);

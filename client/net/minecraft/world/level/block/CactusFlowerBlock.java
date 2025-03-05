@@ -27,6 +27,6 @@ public class CactusFlowerBlock extends VegetationBlock {
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3);
-      return var4.is(Blocks.CACTUS) || var4.isFaceSturdy(var2, var3, Direction.UP, SupportType.CENTER);
+      return var4.is(Blocks.CACTUS) || var4.is(Blocks.FARMLAND) || var4.isFaceSturdy(var2, var3, Direction.UP, SupportType.CENTER);
    }
 }

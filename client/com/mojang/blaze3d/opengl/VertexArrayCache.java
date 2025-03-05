@@ -79,7 +79,7 @@ public abstract class VertexArrayCache {
                   break;
                case UV:
                   if (var5.type() == VertexFormatElement.Type.FLOAT) {
-                     GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), true, var2, (long)var0.getOffset(var5));
+                     GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), false, var2, (long)var0.getOffset(var5));
                   } else {
                      GlStateManager._vertexAttribIPointer(var4, var5.count(), GlConst.toGl(var5.type()), var2, (long)var0.getOffset(var5));
                   }

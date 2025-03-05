@@ -101,6 +101,7 @@ import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
@@ -146,6 +147,7 @@ import org.jetbrains.annotations.Contract;
 public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess, ScoreHolder, DataComponentGetter {
    public static final String ID_TAG = "id";
    public static final String PASSENGERS_TAG = "Passengers";
+   private static final String DATA_TAG = "data";
    private static final AtomicInteger ENTITY_COUNTER = new AtomicInteger();
    public static final int CONTENTS_SLOT_INDEX = 0;
    public static final int BOARDING_COOLDOWN = 60;
@@ -258,6 +260,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private final List<Movement> finalMovementsThisTick;
    private final LongSet visitedBlocks;
    private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
+   private CustomData customData;
 
    public Entity(EntityType<?> var1, Level var2) {
       super();
@@ -285,6 +288,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.finalMovementsThisTick = new ObjectArrayList();
       this.visitedBlocks = new LongOpenHashSet();
       this.insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
+      this.customData = CustomData.EMPTY;
       this.type = var1;
       this.level = var2;
       this.dimensions = var1.getDimensions();
@@ -1879,6 +1883,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             var1.store("Tags", TAG_LIST_CODEC, List.copyOf(this.tags));
          }
 
+         if (!this.customData.isEmpty()) {
+            var1.store("data", CustomData.CODEC, this.customData);
+         }
+
          this.addAdditionalSaveData(var1);
          if (this.isVehicle()) {
             ListTag var11 = new ListTag();
@@ -1940,6 +1948,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                this.setGlowingTag(var1.getBooleanOr("Glowing", false));
                this.setTicksFrozen(var1.getIntOr("TicksFrozen", 0));
                this.hasVisualFire = var1.getBooleanOr("HasVisualFire", false);
+               this.customData = (CustomData)var1.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                this.tags.clear();
                Optional var10000 = var1.read("Tags", TAG_LIST_CODEC);
                Set var10001 = this.tags;
@@ -3675,6 +3684,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    protected void applyImplicitComponents(DataComponentGetter var1) {
       this.applyImplicitComponentIfPresent(var1, DataComponents.CUSTOM_NAME);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.CUSTOM_DATA);
    }
 
    public final void applyComponentsFromItemStack(ItemStack var1) {
@@ -3683,7 +3693,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    @Nullable
    public <T> T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.CUSTOM_NAME ? castComponentValue(var1, this.getCustomName()) : null);
+      if (var1 == DataComponents.CUSTOM_NAME) {
+         return (T)castComponentValue(var1, this.getCustomName());
+      } else {
+         return (T)(var1 == DataComponents.CUSTOM_DATA ? castComponentValue(var1, this.customData) : null);
+      }
    }
 
    @Nullable
@@ -3699,6 +3713,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
       if (var1 == DataComponents.CUSTOM_NAME) {
          this.setCustomName((Component)castComponentValue(DataComponents.CUSTOM_NAME, var2));
+         return true;
+      } else if (var1 == DataComponents.CUSTOM_DATA) {
+         this.customData = (CustomData)castComponentValue(DataComponents.CUSTOM_DATA, var2);
          return true;
       } else {
          return false;

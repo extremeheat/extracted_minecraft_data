@@ -23,7 +23,7 @@ public class TracyFrameCapture implements AutoCloseable {
    private int width;
    private int height;
    private GpuTexture frameBuffer;
-   private final GpuBuffer pixelbuffer;
+   private GpuBuffer pixelbuffer;
    private int lastCaptureDelay;
    private boolean capturedThisFrame;
    private Status status;
@@ -54,7 +54,8 @@ public class TracyFrameCapture implements AutoCloseable {
          this.height = var2;
          this.frameBuffer.close();
          this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", TextureFormat.RGBA8, var1, var2, 1);
-         RenderSystem.getDevice().createCommandEncoder().resizeBuffer(this.pixelbuffer, var1 * var2 * 4);
+         this.pixelbuffer.close();
+         this.pixelbuffer = RenderSystem.getDevice().createBuffer(() -> "Tracy Frame Capture buffer", BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, var1 * var2 * 4);
       }
 
    }
@@ -74,7 +75,7 @@ public class TracyFrameCapture implements AutoCloseable {
          try (RenderPass var3 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(this.frameBuffer, OptionalInt.empty())) {
             RenderSystem.AutoStorageIndexBuffer var4 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
             var3.setPipeline(RenderPipelines.TRACY_BLIT);
-            var3.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer(() -> "Tracy vertex buffer"));
+            var3.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
             var3.setIndexBuffer(var4.getBuffer(6), var4.type());
             var3.bindSampler("InSampler", var1.getColorTexture());
             var3.drawIndexed(0, 6);

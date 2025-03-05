@@ -55,11 +55,11 @@ public abstract class LavaFluid extends FlowingFluid {
             double var8 = (double)var2.getY() + 1.0;
             double var10 = (double)var2.getZ() + var4.nextDouble();
             var1.addParticle(ParticleTypes.LAVA, var6, var8, var10, 0.0, 0.0, 0.0);
-            var1.playLocalSound(var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
+            var1.playLocalSound(var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.AMBIENT, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
 
          if (var4.nextInt(200) == 0) {
-            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.LAVA_AMBIENT, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
+            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.LAVA_AMBIENT, SoundSource.AMBIENT, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
       }
 

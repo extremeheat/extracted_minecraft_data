@@ -13,7 +13,6 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -75,12 +74,14 @@ public class GlCommandEncoder implements CommandEncoder {
          }
 
          if (var6 != 0) {
+            GlStateManager._disableScissorTest();
             GlStateManager._depthMask(true);
             GlStateManager._colorMask(true, true, true, true);
             GlStateManager._clear(var6);
          }
 
          GlStateManager._viewport(0, 0, var1.getWidth(0), var1.getHeight(0));
+         this.lastPipeline = null;
          return new GlRenderPass(this, var3 != null);
       }
    }
@@ -88,11 +89,12 @@ public class GlCommandEncoder implements CommandEncoder {
    public void clearColorTexture(GpuTexture var1, int var2) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
-      } else if (var1.getFormat() == TextureFormat.DEPTH32) {
-         throw new IllegalStateException("Trying to clear a depth texture as a color texture!");
+      } else if (!var1.getFormat().hasColorAspect()) {
+         throw new IllegalStateException("Trying to clear a non-color texture as color");
       } else {
          this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)var1).id, 0, 0, true);
          GL11.glClearColor(ARGB.redFloat(var2), ARGB.greenFloat(var2), ARGB.blueFloat(var2), ARGB.alphaFloat(var2));
+         GlStateManager._disableScissorTest();
          GlStateManager._colorMask(true, true, true, true);
          GlStateManager._clear(16384);
          GlStateManager._glBindFramebuffer(36160, 0);
@@ -102,13 +104,14 @@ public class GlCommandEncoder implements CommandEncoder {
    public void clearColorAndDepthTextures(GpuTexture var1, int var2, GpuTexture var3, double var4) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
-      } else if (var1.getFormat() == TextureFormat.DEPTH32) {
-         throw new IllegalStateException("Trying to clear a depth texture as a color texture!");
-      } else if (var3.getFormat() != TextureFormat.DEPTH32) {
-         throw new IllegalStateException("Trying to clear a color texture as a depth texture!");
+      } else if (!var1.getFormat().hasColorAspect()) {
+         throw new IllegalStateException("Trying to clear a non-color texture as color");
+      } else if (!var3.getFormat().hasDepthAspect()) {
+         throw new IllegalStateException("Trying to clear a non-depth texture as depth");
       } else {
          int var6 = ((GlTexture)var1).getFbo(this.device.directStateAccess(), var3);
          GlStateManager._glBindFramebuffer(36160, var6);
+         GlStateManager._disableScissorTest();
          GL11.glClearDepth(var4);
          GL11.glClearColor(ARGB.redFloat(var2), ARGB.greenFloat(var2), ARGB.blueFloat(var2), ARGB.alphaFloat(var2));
          GlStateManager._depthMask(true);
@@ -121,13 +124,14 @@ public class GlCommandEncoder implements CommandEncoder {
    public void clearDepthTexture(GpuTexture var1, double var2) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
-      } else if (var1.getFormat() != TextureFormat.DEPTH32) {
-         throw new IllegalStateException("Trying to clear a color texture as a depth texture!");
+      } else if (!var1.getFormat().hasDepthAspect()) {
+         throw new IllegalStateException("Trying to clear a non-depth texture as depth");
       } else {
          this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, 0, ((GlTexture)var1).id, 0, true);
          GL11.glDrawBuffer(0);
          GL11.glClearDepth(var2);
          GlStateManager._depthMask(true);
+         GlStateManager._disableScissorTest();
          GlStateManager._clear(256);
          GL11.glDrawBuffer(36064);
          GlStateManager._glBindFramebuffer(36160, 0);
@@ -162,29 +166,6 @@ public class GlCommandEncoder implements CommandEncoder {
             }
 
          }
-      }
-   }
-
-   public void resizeBuffer(GpuBuffer var1, int var2) {
-      GlBuffer var3 = (GlBuffer)var1;
-      if (var3.closed) {
-         throw new IllegalStateException("Buffer already closed");
-      } else {
-         if (var3.initialized) {
-            GlBuffer.MEMORY_POOl.free((long)var3.handle);
-         }
-
-         var3.size = var2;
-         if (var3.usage().isWritable()) {
-            var3.initialized = false;
-         } else {
-            GlStateManager._glBindBuffer(GlConst.toGl(var3.type()), var3.handle);
-            GlStateManager._glBufferData(GlConst.toGl(var3.type()), (long)var2, GlConst.toGl(var3.usage()));
-            GlBuffer.MEMORY_POOl.malloc((long)var3.handle, var2);
-            var3.initialized = true;
-            this.device.debugLabels().applyLabel(var3);
-         }
-
       }
    }
 
@@ -281,6 +262,7 @@ public class GlCommandEncoder implements CommandEncoder {
          } else if (var2.type() != BufferType.PIXEL_PACK) {
             throw new IllegalArgumentException("Buffer of type " + String.valueOf(var2.type()) + " cannot be used to retrieve a texture");
          } else if (var6 + var8 <= var1.getWidth(var5) && var7 + var9 <= var1.getHeight(var5)) {
+            GlStateManager.clearGlErrors();
             GlStateManager._glBindFramebuffer(36008, this.readFbo);
             GlStateManager._glBindBuffer(GlConst.toGl(var2.type()), ((GlBuffer)var2).handle);
             GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, ((GlTexture)var1).glId(), var5);
@@ -308,10 +290,11 @@ public class GlCommandEncoder implements CommandEncoder {
       } else if (var3 >= 0 && var3 < var1.getMipLevels() && var3 < var2.getMipLevels()) {
          if (var4 + var8 <= var2.getWidth(var3) && var5 + var9 <= var2.getHeight(var3)) {
             if (var6 + var8 <= var1.getWidth(var3) && var7 + var9 <= var1.getHeight(var3)) {
+               GlStateManager.clearGlErrors();
                GlStateManager._disableScissorTest();
                GlStateManager._glBindFramebuffer(36008, this.readFbo);
                GlStateManager._glBindFramebuffer(36009, this.drawFbo);
-               boolean var10 = var1.getFormat() == TextureFormat.DEPTH32;
+               boolean var10 = var1.getFormat().hasDepthAspect();
                GlStateManager._glFramebufferTexture2D(36008, var10 ? '\u8d00' : '\u8ce0', 3553, ((GlTexture)var1).glId(), var3);
                GlStateManager._glFramebufferTexture2D(36009, var10 ? '\u8d00' : '\u8ce0', 3553, ((GlTexture)var2).glId(), var3);
                GlStateManager._glBlitFrameBuffer(var6, var7, var8, var9, var4, var5, var8, var9, var10 ? 256 : 16384, 9728);
@@ -338,6 +321,9 @@ public class GlCommandEncoder implements CommandEncoder {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
          GlStateManager._disableScissorTest();
+         GlStateManager._viewport(0, 0, var1.getWidth(0), var1.getHeight(0));
+         GlStateManager._depthMask(true);
+         GlStateManager._colorMask(true, true, true, true);
          GlStateManager._glBindFramebuffer(36008, this.drawFbo);
          GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, ((GlTexture)var1).glId(), 0);
          GlStateManager._glBlitFrameBuffer(0, 0, var1.getWidth(0), var1.getHeight(0), 0, 0, var1.getWidth(0), var1.getHeight(0), 16384, 9728);
@@ -439,15 +425,15 @@ public class GlCommandEncoder implements CommandEncoder {
       RenderPipeline var11 = var1.pipeline.info();
       GlProgram var13 = var1.pipeline.program();
 
-      for(RenderPipeline.UniformDescription var5 : var11.getUniforms()) {
-         if (var1.dirtyUniforms.contains(var5.name())) {
-            Object var6 = var1.uniforms.get(var5.name());
+      for(Uniform var5 : var13.getUniforms()) {
+         if (var1.dirtyUniforms.contains(var5.getName())) {
+            Object var6 = var1.uniforms.get(var5.getName());
             if (var6 instanceof int[]) {
-               var13.safeGetUniform(var5.name()).set((int[])var6);
+               var13.safeGetUniform(var5.getName()).set((int[])var6);
             } else if (var6 instanceof float[]) {
-               var13.safeGetUniform(var5.name()).set((float[])var6);
+               var13.safeGetUniform(var5.getName()).set((float[])var6);
             } else if (var6 != null) {
-               String var21 = String.valueOf(var5.type());
+               String var21 = String.valueOf(var5.getType());
                throw new IllegalStateException("Unknown uniform type - expected " + var21 + ", found " + String.valueOf(var6));
             }
          }

@@ -102,7 +102,7 @@ public class GameTestInfo {
             Stream var10000 = this.testInstanceBlockEntity.getStructureBoundingBox().intersectingChunks();
             ServerLevel var10001 = this.level;
             Objects.requireNonNull(var10001);
-            if (!var10000.allMatch(var10001::areEntitiesActuallyTicking)) {
+            if (!var10000.allMatch(var10001::areEntitiesActuallyLoadedAndTicking)) {
                return;
             }
          }

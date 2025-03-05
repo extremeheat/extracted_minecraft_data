@@ -54,6 +54,6 @@ public class Ticket {
    }
 
    public boolean isTimedOut() {
-      return this.type.hasTimeout() && this.ticksLeft <= 0L;
+      return this.type.hasTimeout() && this.ticksLeft < 0L;
    }
 }

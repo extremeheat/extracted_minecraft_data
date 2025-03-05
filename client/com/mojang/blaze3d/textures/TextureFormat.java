@@ -15,6 +15,14 @@ public enum TextureFormat {
       return this.pixelSize;
    }
 
+   public boolean hasColorAspect() {
+      return this == RGBA8 || this == RED8;
+   }
+
+   public boolean hasDepthAspect() {
+      return this == DEPTH32;
+   }
+
    // $FF: synthetic method
    private static TextureFormat[] $values() {
       return new TextureFormat[]{RGBA8, RED8, DEPTH32};

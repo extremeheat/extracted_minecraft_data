@@ -73,6 +73,7 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -90,6 +91,7 @@ import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -826,12 +828,16 @@ public final class ItemStack implements DataComponentHolder {
       this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BLOCK_ENTITY_DATA, var1, var2, var5, var4);
-      AdventureModePredicate var6 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
-      if (var6 != null && var2.shows(DataComponents.CAN_BREAK)) {
+      if ((this.is(Items.SPAWNER) || this.is(Items.TRIAL_SPAWNER)) && var2.shows(DataComponents.BLOCK_ENTITY_DATA)) {
+         CustomData var6 = (CustomData)this.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         Spawner.appendHoverText(var6, var5, "SpawnData");
+      }
+
+      AdventureModePredicate var9 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
+      if (var9 != null && var2.shows(DataComponents.CAN_BREAK)) {
          var5.accept(CommonComponents.EMPTY);
          var5.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-         var6.addToTooltip(var5);
+         var9.addToTooltip(var5);
       }
 
       AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
@@ -857,8 +863,8 @@ public final class ItemStack implements DataComponentHolder {
          var5.accept(DISABLED_ITEM_TOOLTIP);
       }
 
-      boolean var9 = this.getItem().shouldPrintOpWarning(this, var3);
-      if (var9) {
+      boolean var10 = this.getItem().shouldPrintOpWarning(this, var3);
+      if (var10) {
          OP_NBT_WARNING.forEach(var5);
       }
 

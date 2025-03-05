@@ -106,7 +106,7 @@ public class GlDevice implements GpuDevice {
          GlStateManager._texParameter(3553, 33085, var5 - 1);
          GlStateManager._texParameter(3553, 33082, 0);
          GlStateManager._texParameter(3553, 33083, var5 - 1);
-         if (var2 == TextureFormat.DEPTH32) {
+         if (var2.hasDepthAspect()) {
             GlStateManager._texParameter(3553, 34892, 0);
          }
 

@@ -91,6 +91,7 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH;
    public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
    public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
+   public static final Key<BooleanValue> RULE_TNT_EXPLODES;
    private final Map<Key<?>, Value<?>> rules;
    private final FeatureFlagSet enabledFeatures;
 
@@ -263,6 +264,7 @@ public class GameRules {
          ServerLevel var2 = var0.overworld();
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
+      RULE_TNT_EXPLODES = register("tntExplodes", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
    }
 
    public static enum Category {

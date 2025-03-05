@@ -47,6 +47,7 @@ public final class ItemTags {
    public static final TagKey<Item> LEAVES = bind("leaves");
    public static final TagKey<Item> TRAPDOORS = bind("trapdoors");
    public static final TagKey<Item> SMALL_FLOWERS = bind("small_flowers");
+   public static final TagKey<Item> FLOWERS = bind("flowers");
    public static final TagKey<Item> BEDS = bind("beds");
    public static final TagKey<Item> FENCES = bind("fences");
    public static final TagKey<Item> PIGLIN_REPELLENTS = bind("piglin_repellents");

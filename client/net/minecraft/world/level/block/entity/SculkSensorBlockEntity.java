@@ -104,18 +104,23 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       }
 
       public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable GameEvent.Context var4) {
-         return !var2.equals(this.blockPos) || !var3.is((Holder)GameEvent.BLOCK_DESTROY) && !var3.is((Holder)GameEvent.BLOCK_PLACE) ? SculkSensorBlock.canActivate(SculkSensorBlockEntity.this.getBlockState()) : false;
+         if (!var2.equals(this.blockPos) || !var3.is((Holder)GameEvent.BLOCK_DESTROY) && !var3.is((Holder)GameEvent.BLOCK_PLACE)) {
+            return VibrationSystem.getGameEventFrequency(var3) == 0 ? false : SculkSensorBlock.canActivate(SculkSensorBlockEntity.this.getBlockState());
+         } else {
+            return false;
+         }
       }
 
       public void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
          BlockState var7 = SculkSensorBlockEntity.this.getBlockState();
          if (SculkSensorBlock.canActivate(var7)) {
-            SculkSensorBlockEntity.this.setLastVibrationFrequency(VibrationSystem.getGameEventFrequency(var3));
-            int var8 = VibrationSystem.getRedstoneStrengthForDistance(var6, this.getListenerRadius());
-            Block var10 = var7.getBlock();
-            if (var10 instanceof SculkSensorBlock) {
-               SculkSensorBlock var9 = (SculkSensorBlock)var10;
-               var9.activate(var4, var1, this.blockPos, var7, var8, SculkSensorBlockEntity.this.getLastVibrationFrequency());
+            int var8 = VibrationSystem.getGameEventFrequency(var3);
+            SculkSensorBlockEntity.this.setLastVibrationFrequency(var8);
+            int var9 = VibrationSystem.getRedstoneStrengthForDistance(var6, this.getListenerRadius());
+            Block var11 = var7.getBlock();
+            if (var11 instanceof SculkSensorBlock) {
+               SculkSensorBlock var10 = (SculkSensorBlock)var11;
+               var10.activate(var4, var1, this.blockPos, var7, var9, var8);
             }
          }
 

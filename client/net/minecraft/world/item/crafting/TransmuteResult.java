@@ -41,7 +41,7 @@ public record TransmuteResult(Holder<Item> item, int count, DataComponentPatch c
 
    public boolean isResultUnchanged(ItemStack var1) {
       ItemStack var2 = this.apply(var1);
-      return ItemStack.matches(var1, var2);
+      return var2.getCount() == 1 && ItemStack.isSameItemSameComponents(var1, var2);
    }
 
    public SlotDisplay display() {

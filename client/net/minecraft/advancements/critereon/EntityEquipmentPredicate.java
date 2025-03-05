@@ -30,7 +30,7 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
    }
 
    public static EntityEquipmentPredicate captainPredicate(HolderGetter<Item> var0, HolderGetter<BannerPattern> var1) {
-      return EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(var0, Items.WHITE_BANNER).hasComponents(DataComponentExactPredicate.someOf(Raid.getOminousBannerInstance(var1).getComponents(), DataComponents.BANNER_PATTERNS, DataComponents.ITEM_NAME))).build();
+      return EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(var0, Items.WHITE_BANNER).withComponents(DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.someOf(Raid.getOminousBannerInstance(var1).getComponents(), DataComponents.BANNER_PATTERNS, DataComponents.ITEM_NAME)).build())).build();
    }
 
    public boolean matches(@Nullable Entity var1) {

@@ -57,7 +57,7 @@ public class PostPass {
             RenderTarget var5 = (RenderTarget)var8.get();
             RenderSystem.backupProjectionMatrix();
             RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
-            GpuBuffer var6 = RenderSystem.getQuadVertexBuffer(() -> "Post pass vertex buffer");
+            GpuBuffer var6 = RenderSystem.getQuadVertexBuffer();
             RenderSystem.AutoStorageIndexBuffer var7 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
 
             try (RenderPass var8x = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5.getColorTexture(), OptionalInt.empty(), var5.useDepth ? var5.getDepthTexture() : null, OptionalDouble.empty())) {

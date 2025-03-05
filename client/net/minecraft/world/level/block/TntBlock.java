@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,39 +70,54 @@ public class TntBlock extends Block {
    }
 
    public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
-      PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
-      int var5 = var4.getFuse();
-      var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
-      var1.addFreshEntity(var4);
-   }
-
-   public static void prime(Level var0, BlockPos var1) {
-      prime(var0, var1, (LivingEntity)null);
-   }
-
-   private static void prime(Level var0, BlockPos var1, @Nullable LivingEntity var2) {
-      if (!var0.isClientSide) {
-         PrimedTnt var3 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
-         var0.addFreshEntity(var3);
-         var0.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var0.gameEvent(var2, GameEvent.PRIME_FUSE, var1);
+      if (var1.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+         PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
+         int var5 = var4.getFuse();
+         var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
+         var1.addFreshEntity(var4);
       }
+   }
+
+   public static boolean prime(Level var0, BlockPos var1) {
+      return prime(var0, var1, (LivingEntity)null);
+   }
+
+   private static boolean prime(Level var0, BlockPos var1, @Nullable LivingEntity var2) {
+      if (var0 instanceof ServerLevel var3) {
+         if (var3.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            PrimedTnt var4 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
+            var0.addFreshEntity(var4);
+            var0.playSound((Entity)null, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var0.gameEvent(var2, GameEvent.PRIME_FUSE, var1);
+            return true;
+         }
+      }
+
+      return false;
    }
 
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (!var1.is(Items.FLINT_AND_STEEL) && !var1.is(Items.FIRE_CHARGE)) {
          return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       } else {
-         prime(var3, var4, var5);
-         var3.setBlock(var4, Blocks.AIR.defaultBlockState(), 11);
-         Item var8 = var1.getItem();
-         if (var1.is(Items.FLINT_AND_STEEL)) {
-            var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
-         } else {
-            var1.consume(1, var5);
+         if (prime(var3, var4, var5)) {
+            var3.setBlock(var4, Blocks.AIR.defaultBlockState(), 11);
+            Item var9 = var1.getItem();
+            if (var1.is(Items.FLINT_AND_STEEL)) {
+               var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
+            } else {
+               var1.consume(1, var5);
+            }
+
+            var5.awardStat(Stats.ITEM_USED.get(var9));
+         } else if (var3 instanceof ServerLevel) {
+            ServerLevel var8 = (ServerLevel)var3;
+            if (!var8.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+               var5.displayClientMessage(Component.translatable("block.minecraft.tnt.disabled"), true);
+               return InteractionResult.PASS;
+            }
          }
 
-         var5.awardStat(Stats.ITEM_USED.get(var8));
          return InteractionResult.SUCCESS;
       }
    }

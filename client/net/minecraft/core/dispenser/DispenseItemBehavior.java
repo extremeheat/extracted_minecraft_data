@@ -209,8 +209,9 @@ public interface DispenseItemBehavior {
                var3.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, var5);
             } else if (!CampfireBlock.canLight(var6) && !CandleBlock.canLight(var6) && !CandleCakeBlock.canLight(var6)) {
                if (var6.getBlock() instanceof TntBlock) {
-                  TntBlock.prime(var3, var5);
-                  var3.removeBlock(var5, false);
+                  if (TntBlock.prime(var3, var5)) {
+                     var3.removeBlock(var5, false);
+                  }
                } else {
                   this.setSuccess(false);
                }

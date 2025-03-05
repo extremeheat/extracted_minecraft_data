@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.FogParameters;
@@ -364,17 +363,17 @@ public class RenderSystem {
       return projectionType;
    }
 
-   public static GpuBuffer getQuadVertexBuffer(@Nullable Supplier<String> var0) {
+   public static GpuBuffer getQuadVertexBuffer() {
       if (QUAD_VERTEX_BUFFER == null) {
-         try (ByteBufferBuilder var1 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
-            BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            var2.addVertex(0.0F, 0.0F, 0.0F);
-            var2.addVertex(1.0F, 0.0F, 0.0F);
-            var2.addVertex(1.0F, 1.0F, 0.0F);
-            var2.addVertex(0.0F, 1.0F, 0.0F);
+         try (ByteBufferBuilder var0 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
+            BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            var1.addVertex(0.0F, 0.0F, 0.0F);
+            var1.addVertex(1.0F, 0.0F, 0.0F);
+            var1.addVertex(1.0F, 1.0F, 0.0F);
+            var1.addVertex(0.0F, 1.0F, 0.0F);
 
-            try (MeshData var3 = var2.buildOrThrow()) {
-               QUAD_VERTEX_BUFFER = getDevice().createBuffer(var0, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var3.vertexBuffer());
+            try (MeshData var2 = var1.buildOrThrow()) {
+               QUAD_VERTEX_BUFFER = getDevice().createBuffer(() -> "Quad", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer());
             }
          }
       }
@@ -498,9 +497,11 @@ public class RenderSystem {
                }
 
                var6.flip();
-               CommandEncoder var13 = RenderSystem.getDevice().createCommandEncoder();
-               var13.resizeBuffer(this.buffer, var5);
-               var13.writeToBuffer(this.buffer, var6, 0);
+               if (this.buffer != null) {
+                  this.buffer.close();
+               }
+
+               this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, var6);
             } finally {
                MemoryUtil.memFree(var6);
             }

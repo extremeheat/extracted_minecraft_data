@@ -1551,8 +1551,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.BREWER_POTTERY_SHERD);
          var1.accept((ItemLike)Items.BURN_POTTERY_SHERD);
          var1.accept((ItemLike)Items.DANGER_POTTERY_SHERD);
-         var1.accept((ItemLike)Items.FLOW_POTTERY_SHERD);
          var1.accept((ItemLike)Items.EXPLORER_POTTERY_SHERD);
+         var1.accept((ItemLike)Items.FLOW_POTTERY_SHERD);
          var1.accept((ItemLike)Items.FRIEND_POTTERY_SHERD);
          var1.accept((ItemLike)Items.GUSTER_POTTERY_SHERD);
          var1.accept((ItemLike)Items.HEART_POTTERY_SHERD);

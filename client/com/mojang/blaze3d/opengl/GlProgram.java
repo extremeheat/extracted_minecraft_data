@@ -3,6 +3,7 @@ package com.mojang.blaze3d.opengl;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -11,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +24,8 @@ import net.minecraft.client.renderer.ShaderManager;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 
 public class GlProgram implements AutoCloseable {
@@ -113,14 +117,52 @@ public class GlProgram implements AutoCloseable {
          }
       }
 
-      for(String var9 : var2) {
-         int var10 = Uniform.glGetUniformLocation(this.programId, var9);
-         if (var10 == -1) {
-            LOGGER.warn("{} shader program does not use sampler {} defined in the pipeline. This might be a bug.", this.debugLabel, var9);
+      for(String var15 : var2) {
+         int var17 = Uniform.glGetUniformLocation(this.programId, var15);
+         if (var17 == -1) {
+            LOGGER.warn("{} shader program does not use sampler {} defined in the pipeline. This might be a bug.", this.debugLabel, var15);
          } else {
-            this.samplers.add(var9);
-            this.samplerLocations.add(var10);
+            this.samplers.add(var15);
+            this.samplerLocations.add(var17);
          }
+      }
+
+      int var14 = GlStateManager.glGetProgrami(this.programId, 35718);
+      MemoryStack var16 = MemoryStack.stackPush();
+
+      try {
+         IntBuffer var18 = var16.mallocInt(1);
+         IntBuffer var19 = var16.mallocInt(1);
+
+         for(int var20 = 0; var20 < var14; ++var20) {
+            String var8 = GL20.glGetActiveUniform(this.programId, var20, var18, var19);
+            UniformType var9 = getTypeFromGl(var19.get(0));
+            if (!this.uniformsByName.containsKey(var8) && !var2.contains(var8)) {
+               if (var9 != null) {
+                  LOGGER.info("Found unknown but potentially supported uniform {} in {}", var8, this.debugLabel);
+                  Uniform var10 = new Uniform(var8, var9);
+                  var10.setLocation(var20);
+                  this.uniforms.add(var10);
+                  this.uniformsByName.put(var8, var10);
+               } else {
+                  LOGGER.warn("Found unknown and unsupported uniform {} in {}", var8, this.debugLabel);
+               }
+            }
+         }
+      } catch (Throwable var12) {
+         if (var16 != null) {
+            try {
+               var16.close();
+            } catch (Throwable var11) {
+               var12.addSuppressed(var11);
+            }
+         }
+
+         throw var12;
+      }
+
+      if (var16 != null) {
+         var16.close();
       }
 
       this.MODEL_VIEW_MATRIX = this.getUniform("ModelViewMat");
@@ -273,5 +315,22 @@ public class GlProgram implements AutoCloseable {
 
    public List<Uniform> getUniforms() {
       return this.uniforms;
+   }
+
+   @Nullable
+   private static UniformType getTypeFromGl(int var0) {
+      UniformType var10000;
+      switch (var0) {
+         case 5124 -> var10000 = UniformType.INT;
+         case 5126 -> var10000 = UniformType.FLOAT;
+         case 35664 -> var10000 = UniformType.VEC2;
+         case 35665 -> var10000 = UniformType.VEC3;
+         case 35666 -> var10000 = UniformType.VEC4;
+         case 35668 -> var10000 = UniformType.IVEC3;
+         case 35676 -> var10000 = UniformType.MATRIX4X4;
+         default -> var10000 = null;
+      }
+
+      return var10000;
    }
 }

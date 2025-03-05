@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -24,15 +25,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
-public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt) {
-   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt)).apply(var0, BlockPredicate::new));
+public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt, DataComponentMatchers components) {
+   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt), DataComponentMatchers.CODEC.forGetter(BlockPredicate::components)).apply(var0, BlockPredicate::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, BlockPredicate> STREAM_CODEC;
 
-   public BlockPredicate(Optional<HolderSet<Block>> var1, Optional<StatePropertiesPredicate> var2, Optional<NbtPredicate> var3) {
+   public BlockPredicate(Optional<HolderSet<Block>> var1, Optional<StatePropertiesPredicate> var2, Optional<NbtPredicate> var3, DataComponentMatchers var4) {
       super();
       this.blocks = var1;
       this.properties = var2;
       this.nbt = var3;
+      this.components = var4;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {
@@ -41,7 +43,18 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       } else if (!this.matchesState(var1.getBlockState(var2))) {
          return false;
       } else {
-         return !this.nbt.isPresent() || matchesBlockEntity(var1, var1.getBlockEntity(var2), (NbtPredicate)this.nbt.get());
+         if (this.nbt.isPresent() || !this.components.isEmpty()) {
+            BlockEntity var3 = var1.getBlockEntity(var2);
+            if (this.nbt.isPresent() && !matchesBlockEntity(var1, var3, (NbtPredicate)this.nbt.get())) {
+               return false;
+            }
+
+            if (!this.components.isEmpty() && !matchesComponents(var3, this.components)) {
+               return false;
+            }
+         }
+
+         return true;
       }
    }
 
@@ -65,21 +78,27 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       return var1 != null && var2.matches((Tag)var1.saveWithFullMetadata(var0.registryAccess()));
    }
 
+   private static boolean matchesComponents(@Nullable BlockEntity var0, DataComponentMatchers var1) {
+      return var0 != null && var1.test((DataComponentGetter)var0.collectComponents());
+   }
+
    public boolean requiresNbt() {
       return this.nbt.isPresent();
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BLOCK)), BlockPredicate::blocks, ByteBufCodecs.optional(StatePropertiesPredicate.STREAM_CODEC), BlockPredicate::properties, ByteBufCodecs.optional(NbtPredicate.STREAM_CODEC), BlockPredicate::nbt, BlockPredicate::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BLOCK)), BlockPredicate::blocks, ByteBufCodecs.optional(StatePropertiesPredicate.STREAM_CODEC), BlockPredicate::properties, ByteBufCodecs.optional(NbtPredicate.STREAM_CODEC), BlockPredicate::nbt, DataComponentMatchers.STREAM_CODEC, BlockPredicate::components, BlockPredicate::new);
    }
 
    public static class Builder {
       private Optional<HolderSet<Block>> blocks = Optional.empty();
       private Optional<StatePropertiesPredicate> properties = Optional.empty();
       private Optional<NbtPredicate> nbt = Optional.empty();
+      private DataComponentMatchers components;
 
       private Builder() {
          super();
+         this.components = DataComponentMatchers.ANY;
       }
 
       public static Builder block() {
@@ -110,8 +129,13 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
          return this;
       }
 
+      public Builder components(DataComponentMatchers var1) {
+         this.components = var1;
+         return this;
+      }
+
       public BlockPredicate build() {
-         return new BlockPredicate(this.blocks, this.properties, this.nbt);
+         return new BlockPredicate(this.blocks, this.properties, this.nbt, this.components);
       }
    }
 }

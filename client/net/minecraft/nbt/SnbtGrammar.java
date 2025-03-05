@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.chars.CharList;
 import java.nio.ByteBuffer;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -37,6 +38,8 @@ import net.minecraft.util.parsing.packrat.commands.UnquotedStringParseRule;
 public class SnbtGrammar {
    private static final DynamicCommandExceptionType ERROR_NUMBER_PARSE_FAILURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("snbt.parser.number_parse_failure", var0));
    static final DynamicCommandExceptionType ERROR_EXPECTED_HEX_ESCAPE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("snbt.parser.expected_hex_escape", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID_CODEPOINT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("snbt.parser.invalid_codepoint", var0));
+   private static final DynamicCommandExceptionType ERROR_NO_SUCH_OPERATION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("snbt.parser.no_such_operation", var0));
    static final DelayedException<CommandSyntaxException> ERROR_EXPECTED_INTEGER_TYPE = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.expected_integer_type")));
    private static final DelayedException<CommandSyntaxException> ERROR_EXPECTED_FLOAT_TYPE = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.expected_float_type")));
    static final DelayedException<CommandSyntaxException> ERROR_EXPECTED_NON_NEGATIVE_NUMBER = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.expected_non_negative_number")));
@@ -51,6 +54,7 @@ public class SnbtGrammar {
    private static final DelayedException<CommandSyntaxException> ERROR_EXPECTED_HEX_NUMERAL = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.expected_hex_numeral")));
    private static final DelayedException<CommandSyntaxException> ERROR_EMPTY_KEY = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.empty_key")));
    private static final DelayedException<CommandSyntaxException> ERROR_LEADING_ZERO_NOT_ALLOWED = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.leading_zero_not_allowed")));
+   private static final DelayedException<CommandSyntaxException> ERROR_INFINITY_NOT_ALLOWED = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.infinity_not_allowed")));
    private static final HexFormat HEX_ESCAPE = HexFormat.of().withUpperCase();
    private static final NumberRunParseRule BINARY_NUMERAL;
    private static final NumberRunParseRule DECIMAL_NUMERAL;
@@ -183,13 +187,13 @@ public class SnbtGrammar {
          //1->DOUBLE
          switch (var5.enumSwitch<invokedynamic>(var5, var10)) {
             case -1:
-               var10000 = var0.createDouble(Double.parseDouble(var8));
+               var10000 = convertDouble(var0, var6, var8);
                break;
             case 0:
-               var10000 = var0.createFloat(Float.parseFloat(var8));
+               var10000 = convertFloat(var0, var6, var8);
                break;
             case 1:
-               var10000 = var0.createDouble(Double.parseDouble(var8));
+               var10000 = convertDouble(var0, var6, var8);
                break;
             default:
                var6.errorCollector().store(var6.mark(), ERROR_EXPECTED_FLOAT_TYPE);
@@ -200,6 +204,28 @@ public class SnbtGrammar {
       } catch (NumberFormatException var11) {
          var6.errorCollector().store(var6.mark(), createNumberParseError(var11));
          return null;
+      }
+   }
+
+   @Nullable
+   private static <T> T convertFloat(DynamicOps<T> var0, ParseState<?> var1, String var2) {
+      float var3 = Float.parseFloat(var2);
+      if (!Float.isFinite(var3)) {
+         var1.errorCollector().store(var1.mark(), ERROR_INFINITY_NOT_ALLOWED);
+         return null;
+      } else {
+         return (T)var0.createFloat(var3);
+      }
+   }
+
+   @Nullable
+   private static <T> T convertDouble(DynamicOps<T> var0, ParseState<?> var1, String var2) {
+      double var3 = Double.parseDouble(var2);
+      if (!Double.isFinite(var3)) {
+         var1.errorCollector().store(var1.mark(), ERROR_INFINITY_NOT_ALLOWED);
+         return null;
+      } else {
+         return (T)var0.createDouble(var3);
       }
    }
 
@@ -280,7 +306,13 @@ public class SnbtGrammar {
          } else {
             String var8 = (String)var6.getAny(var18, var19, var20);
             if (var8 != null) {
-               return Character.toString(HexFormat.fromHexDigits(var8));
+               int var13 = HexFormat.fromHexDigits(var8);
+               if (!Character.isValidCodePoint(var13)) {
+                  var5x.errorCollector().store(var5x.mark(), DelayedException.create(ERROR_INVALID_CODEPOINT, String.format(Locale.ROOT, "U+%08X", var13)));
+                  return null;
+               } else {
+                  return Character.toString(var13);
+               }
             } else {
                String var9 = (String)var6.getOrThrow(var21);
 
@@ -312,39 +344,53 @@ public class SnbtGrammar {
       var5.put(var32, Term.alternative(Term.sequence(StringReaderTerms.character('"'), Term.cut(), Term.optional(var5.namedWithAlias(var31, var25)), StringReaderTerms.character('"')), Term.sequence(StringReaderTerms.character('\''), Term.optional(var5.namedWithAlias(var28, var25)), StringReaderTerms.character('\''))), (var1x) -> (String)var1x.getOrThrow(var25));
       Atom var33 = Atom.of("unquoted_string");
       var5.put(var33, new UnquotedStringParseRule(1, ERROR_EXPECTED_UNQUOTED_STRING));
-      Atom var34 = Atom.of("unquoted_string_or_builtin");
-      var5.putComplex(var34, var5.named(var33), (var4x) -> {
-         Scope var5 = var4x.scope();
-         String var6 = (String)var5.getOrThrow(var33);
-         if (!var6.isEmpty() && !isAllowedToStartUnquotedString(var6.charAt(0))) {
-            var4x.errorCollector().store(var4x.mark(), ERROR_INVALID_UNQUOTED_START);
-            return null;
-         } else if (var6.equalsIgnoreCase("true")) {
-            return var1;
+      Atom var34 = Atom.of("literal");
+      Atom var35 = Atom.of("arguments");
+      var5.put(var35, Term.repeatedWithTrailingSeparator(var5.forward(var34), var35, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var35));
+      Atom var36 = Atom.of("unquoted_string_or_builtin");
+      var5.putComplex(var36, Term.sequence(var5.named(var33), Term.optional(Term.sequence(StringReaderTerms.character('('), var5.named(var35), StringReaderTerms.character(')')))), (var5x) -> {
+         Scope var6 = var5x.scope();
+         String var7 = (String)var6.getOrThrow(var33);
+         if (!var7.isEmpty() && isAllowedToStartUnquotedString(var7.charAt(0))) {
+            List var8 = (List)var6.get(var35);
+            if (var8 != null) {
+               SnbtOperations.BuiltinKey var9 = new SnbtOperations.BuiltinKey(var7, var8.size());
+               SnbtOperations.BuiltinOperation var10 = (SnbtOperations.BuiltinOperation)SnbtOperations.BUILTIN_OPERATIONS.get(var9);
+               if (var10 != null) {
+                  return var10.run(var0, var8, var5x);
+               } else {
+                  var5x.errorCollector().store(var5x.mark(), DelayedException.create(ERROR_NO_SUCH_OPERATION, var9.toString()));
+                  return null;
+               }
+            } else if (var7.equalsIgnoreCase("true")) {
+               return var1;
+            } else {
+               return var7.equalsIgnoreCase("false") ? var2 : var0.createString(var7);
+            }
          } else {
-            return var6.equalsIgnoreCase("false") ? var2 : var0.createString(var6);
+            var5x.errorCollector().store(var5x.mark(), SnbtOperations.BUILTIN_IDS, ERROR_INVALID_UNQUOTED_START);
+            return null;
          }
       });
-      Atom var35 = Atom.of("literal");
-      Atom var36 = Atom.of("map_key");
-      var5.put(var36, Term.alternative(var5.named(var32), var5.named(var33)), (var2x) -> (String)var2x.getAnyOrThrow(var32, var33));
-      Atom var37 = Atom.of("map_entry");
-      NamedRule var38 = var5.putComplex(var37, Term.sequence(var5.named(var36), StringReaderTerms.character(':'), var5.named(var35)), (var2x) -> {
+      Atom var37 = Atom.of("map_key");
+      var5.put(var37, Term.alternative(var5.named(var32), var5.named(var33)), (var2x) -> (String)var2x.getAnyOrThrow(var32, var33));
+      Atom var38 = Atom.of("map_entry");
+      NamedRule var39 = var5.putComplex(var38, Term.sequence(var5.named(var37), StringReaderTerms.character(':'), var5.named(var34)), (var2x) -> {
          Scope var3 = var2x.scope();
-         String var4 = (String)var3.getOrThrow(var36);
+         String var4 = (String)var3.getOrThrow(var37);
          if (var4.isEmpty()) {
             var2x.errorCollector().store(var2x.mark(), ERROR_EMPTY_KEY);
             return null;
          } else {
-            Object var5 = var3.getOrThrow(var35);
+            Object var5 = var3.getOrThrow(var34);
             return Map.entry(var4, var5);
          }
       });
-      Atom var39 = Atom.of("map_entries");
-      var5.put(var39, Term.repeatedWithTrailingSeparator(var38, var39, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var39));
-      Atom var40 = Atom.of("map_literal");
-      var5.put(var40, Term.sequence(StringReaderTerms.character('{'), var5.named(var39), StringReaderTerms.character('}')), (var3x) -> {
-         List var4 = (List)var3x.getOrThrow(var39);
+      Atom var40 = Atom.of("map_entries");
+      var5.put(var40, Term.repeatedWithTrailingSeparator(var39, var40, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var40));
+      Atom var41 = Atom.of("map_literal");
+      var5.put(var41, Term.sequence(StringReaderTerms.character('{'), var5.named(var40), StringReaderTerms.character('}')), (var3x) -> {
+         List var4 = (List)var3x.getOrThrow(var40);
          if (var4.isEmpty()) {
             return var3;
          } else {
@@ -357,35 +403,35 @@ public class SnbtGrammar {
             return var0.createMap(var5.buildKeepingLast());
          }
       });
-      Atom var41 = Atom.of("list_entries");
-      var5.put(var41, Term.repeatedWithTrailingSeparator(var5.forward(var35), var41, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var41));
-      Atom var42 = Atom.of("array_prefix");
-      var5.put(var42, Term.alternative(Term.sequence(StringReaderTerms.character('B'), Term.marker(var42, SnbtGrammar.ArrayPrefix.BYTE)), Term.sequence(StringReaderTerms.character('L'), Term.marker(var42, SnbtGrammar.ArrayPrefix.LONG)), Term.sequence(StringReaderTerms.character('I'), Term.marker(var42, SnbtGrammar.ArrayPrefix.INT))), (var1x) -> (ArrayPrefix)var1x.getOrThrow(var42));
-      Atom var43 = Atom.of("int_array_entries");
-      var5.put(var43, Term.repeatedWithTrailingSeparator(var12, var43, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var43));
-      Atom var44 = Atom.of("list_literal");
-      var5.putComplex(var44, Term.sequence(StringReaderTerms.character('['), Term.alternative(Term.sequence(var5.named(var42), StringReaderTerms.character(';'), var5.named(var43)), var5.named(var41)), StringReaderTerms.character(']')), (var5x) -> {
+      Atom var42 = Atom.of("list_entries");
+      var5.put(var42, Term.repeatedWithTrailingSeparator(var5.forward(var34), var42, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var42));
+      Atom var43 = Atom.of("array_prefix");
+      var5.put(var43, Term.alternative(Term.sequence(StringReaderTerms.character('B'), Term.marker(var43, SnbtGrammar.ArrayPrefix.BYTE)), Term.sequence(StringReaderTerms.character('L'), Term.marker(var43, SnbtGrammar.ArrayPrefix.LONG)), Term.sequence(StringReaderTerms.character('I'), Term.marker(var43, SnbtGrammar.ArrayPrefix.INT))), (var1x) -> (ArrayPrefix)var1x.getOrThrow(var43));
+      Atom var44 = Atom.of("int_array_entries");
+      var5.put(var44, Term.repeatedWithTrailingSeparator(var12, var44, StringReaderTerms.character(',')), (var1x) -> (List)var1x.getOrThrow(var44));
+      Atom var45 = Atom.of("list_literal");
+      var5.putComplex(var45, Term.sequence(StringReaderTerms.character('['), Term.alternative(Term.sequence(var5.named(var43), StringReaderTerms.character(';'), var5.named(var44)), var5.named(var42)), StringReaderTerms.character(']')), (var5x) -> {
          Scope var6 = var5x.scope();
-         ArrayPrefix var7 = (ArrayPrefix)var6.get(var42);
+         ArrayPrefix var7 = (ArrayPrefix)var6.get(var43);
          if (var7 != null) {
-            List var9 = (List)var6.getOrThrow(var43);
+            List var9 = (List)var6.getOrThrow(var44);
             return var9.isEmpty() ? var7.create(var0) : var7.create(var0, var9, var5x);
          } else {
-            List var8 = (List)var6.getOrThrow(var41);
+            List var8 = (List)var6.getOrThrow(var42);
             return var8.isEmpty() ? var4 : var0.createList(var8.stream());
          }
       });
-      NamedRule var45 = var5.putComplex(var35, Term.alternative(Term.sequence(Term.positiveLookahead(NUMBER_LOOKEAHEAD), Term.alternative(var5.namedWithAlias(var17, var35), var5.named(var11))), Term.sequence(Term.positiveLookahead(StringReaderTerms.characters('"', '\'')), Term.cut(), var5.named(var32)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('{')), Term.cut(), var5.namedWithAlias(var40, var35)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('[')), Term.cut(), var5.namedWithAlias(var44, var35)), var5.namedWithAlias(var34, var35)), (var4x) -> {
+      NamedRule var46 = var5.putComplex(var34, Term.alternative(Term.sequence(Term.positiveLookahead(NUMBER_LOOKEAHEAD), Term.alternative(var5.namedWithAlias(var17, var34), var5.named(var11))), Term.sequence(Term.positiveLookahead(StringReaderTerms.characters('"', '\'')), Term.cut(), var5.named(var32)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('{')), Term.cut(), var5.namedWithAlias(var41, var34)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('[')), Term.cut(), var5.namedWithAlias(var45, var34)), var5.namedWithAlias(var36, var34)), (var4x) -> {
          Scope var5 = var4x.scope();
          String var6 = (String)var5.get(var32);
          if (var6 != null) {
             return var0.createString(var6);
          } else {
             IntegerLiteral var7 = (IntegerLiteral)var5.get(var11);
-            return var7 != null ? var7.create(var0, var4x) : var5.getOrThrow(var35);
+            return var7 != null ? var7.create(var0, var4x) : var5.getOrThrow(var34);
          }
       });
-      return new Grammar<T>(var5, var45);
+      return new Grammar<T>(var5, var46);
    }
 
    static {
@@ -712,7 +758,7 @@ public class SnbtGrammar {
 
    static class SimpleHexLiteralParseRule extends GreedyPredicateParseRule {
       public SimpleHexLiteralParseRule(int var1) {
-         super(var1, DelayedException.create(SnbtGrammar.ERROR_EXPECTED_HEX_ESCAPE, String.valueOf(var1)));
+         super(var1, var1, DelayedException.create(SnbtGrammar.ERROR_EXPECTED_HEX_ESCAPE, String.valueOf(var1)));
       }
 
       protected boolean isAccepted(char var1) {

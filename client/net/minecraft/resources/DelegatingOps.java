@@ -9,6 +9,7 @@ import com.mojang.serialization.RecordBuilder;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -36,7 +37,7 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public <U> U convertTo(DynamicOps<U> var1, T var2) {
-      return (U)this.delegate.convertTo(var1, var2);
+      return Objects.equals(var1, this.delegate) ? var2 : this.delegate.convertTo(var1, var2);
    }
 
    public DataResult<Number> getNumberValue(T var1) {

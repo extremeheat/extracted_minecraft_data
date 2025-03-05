@@ -49,7 +49,7 @@ public abstract class WaterFluid extends FlowingFluid {
    public void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
       if (!var3.isSource() && !(Boolean)var3.getValue(FALLING)) {
          if (var4.nextInt(64) == 0) {
-            var1.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
+            var1.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.AMBIENT, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
          }
       } else if (var4.nextInt(10) == 0) {
          var1.addParticle(ParticleTypes.UNDERWATER, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + var4.nextDouble(), (double)var2.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);

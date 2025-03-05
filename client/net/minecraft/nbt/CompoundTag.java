@@ -21,7 +21,6 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.Util;
 import org.slf4j.Logger;
 
 public final class CompoundTag implements Tag {
@@ -332,7 +331,9 @@ public final class CompoundTag implements Tag {
    }
 
    public CompoundTag copy() {
-      return new CompoundTag(Util.mapValues(this.tags, Tag::copy));
+      HashMap var1 = new HashMap();
+      this.tags.forEach((var1x, var2) -> var1.put(var1x, var2.copy()));
+      return new CompoundTag(var1);
    }
 
    public Optional<CompoundTag> asCompound() {

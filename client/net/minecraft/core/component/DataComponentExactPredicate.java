@@ -48,6 +48,10 @@ public final class DataComponentExactPredicate implements Predicate<DataComponen
       return var2.build();
    }
 
+   public boolean isEmpty() {
+      return this.expectedComponents.isEmpty();
+   }
+
    public boolean equals(Object var1) {
       boolean var10000;
       if (var1 instanceof DataComponentExactPredicate var2) {

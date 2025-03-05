@@ -29,6 +29,7 @@ public abstract class RenderStateShard {
    protected static final TexturingStateShard DEFAULT_TEXTURING;
    protected static final TexturingStateShard GLINT_TEXTURING;
    protected static final TexturingStateShard ENTITY_GLINT_TEXTURING;
+   protected static final TexturingStateShard ARMOR_ENTITY_GLINT_TEXTURING;
    protected static final LightmapStateShard LIGHTMAP;
    protected static final LightmapStateShard NO_LIGHTMAP;
    protected static final OverlayStateShard OVERLAY;
@@ -83,8 +84,9 @@ public abstract class RenderStateShard {
       DEFAULT_TEXTURING = new TexturingStateShard("default_texturing", () -> {
       }, () -> {
       });
-      GLINT_TEXTURING = new TexturingStateShard("glint_texturing", () -> setupGlintTexturing(8.0F), () -> RenderSystem.resetTextureMatrix());
-      ENTITY_GLINT_TEXTURING = new TexturingStateShard("entity_glint_texturing", () -> setupGlintTexturing(0.16F), () -> RenderSystem.resetTextureMatrix());
+      GLINT_TEXTURING = new TexturingStateShard("glint_texturing", () -> setupGlintTexturing(8.0F), RenderSystem::resetTextureMatrix);
+      ENTITY_GLINT_TEXTURING = new TexturingStateShard("entity_glint_texturing", () -> setupGlintTexturing(0.5F), RenderSystem::resetTextureMatrix);
+      ARMOR_ENTITY_GLINT_TEXTURING = new TexturingStateShard("armor_entity_glint_texturing", () -> setupGlintTexturing(0.16F), RenderSystem::resetTextureMatrix);
       LIGHTMAP = new LightmapStateShard(true);
       NO_LIGHTMAP = new LightmapStateShard(false);
       OVERLAY = new OverlayStateShard(true);
