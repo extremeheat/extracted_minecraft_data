@@ -1,1036 +1,1064 @@
 {
   "latest": {
     "release": "1.21.4",
-    "snapshot": "25w10a"
+    "snapshot": "1.21.5-rc1"
   },
   "versions": [
     {
+      "id": "1.21.5-rc1",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/8db78dc03ffbf717d037bbe86774946b2b8a510f/1.21.5-rc1.json",
+      "time": "2025-03-20T13:55:33+00:00",
+      "releaseTime": "2025-03-20T13:45:48+00:00"
+    },
+    {
+      "id": "1.21.5-pre3",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/f66a7625dafa5d639f736a85d40791a845079abd/1.21.5-pre3.json",
+      "time": "2025-03-20T12:23:35+00:00",
+      "releaseTime": "2025-03-18T13:58:30+00:00"
+    },
+    {
+      "id": "1.21.5-pre2",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/d954347113797ca0f7feee4c5163f9684d693867/1.21.5-pre2.json",
+      "time": "2025-03-20T12:23:35+00:00",
+      "releaseTime": "2025-03-12T12:36:02+00:00"
+    },
+    {
+      "id": "1.21.5-pre1",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/89c9fc958b89fa8d538a71093e4ef55b76f38cdc/1.21.5-pre1.json",
+      "time": "2025-03-20T12:23:35+00:00",
+      "releaseTime": "2025-03-11T12:49:44+00:00"
+    },
+    {
       "id": "25w10a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2129cf8d425f8f4ac7210b908683723811c37040/25w10a.json",
-      "time": "2025-03-05T13:21:00+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/01863dc6529ccfd71d14d91d222119cf44b9456c/25w10a.json",
+      "time": "2025-03-20T12:23:35+00:00",
       "releaseTime": "2025-03-05T13:11:13+00:00"
     },
     {
       "id": "25w09b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/aa7449715ab24e0ab17f21929780c0bb0843ceb9/25w09b.json",
-      "time": "2025-03-05T12:59:22+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/8ccfdd6e7507e23765f8f081738e1d68566ef412/25w09b.json",
+      "time": "2025-03-20T12:23:35+00:00",
       "releaseTime": "2025-02-27T11:07:08+00:00"
     },
     {
       "id": "25w09a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/cf7c012c6cf093a35c9b26b325e1a7615453f9de/25w09a.json",
-      "time": "2025-03-05T12:59:22+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/213504547c4cb3f7f35dfed41ed47fbd21c4877b/25w09a.json",
+      "time": "2025-03-20T12:23:35+00:00",
       "releaseTime": "2025-02-26T15:16:02+00:00"
     },
     {
       "id": "25w08a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/29ca3f47e50d03a01ec31df58a8f94bb9445df45/25w08a.json",
-      "time": "2025-03-05T12:59:22+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/7532e2eb254882a6e4b52f6dbab2917bf368d045/25w08a.json",
+      "time": "2025-03-20T12:23:35+00:00",
       "releaseTime": "2025-02-19T13:41:43+00:00"
     },
     {
       "id": "25w07a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f56f535fda3ab9c0ccf70b7120b99327b17e36f8/25w07a.json",
-      "time": "2025-03-05T06:39:17+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/e700906cecbf9a626fda944982bf1d825f793f16/25w07a.json",
+      "time": "2025-03-20T06:37:44+00:00",
       "releaseTime": "2025-02-13T12:55:37+00:00"
     },
     {
       "id": "25w06a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/42abdd92854c062074232a8595335afe59fe46a3/25w06a.json",
-      "time": "2025-03-05T06:39:17+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/a1d021cb82d847bc7858cb7c30f6c7f35e9082ce/25w06a.json",
+      "time": "2025-03-20T06:37:44+00:00",
       "releaseTime": "2025-02-05T12:41:17+00:00"
     },
     {
       "id": "25w05a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/aed1cc6d9e77edcd483eb4e511424eb151c9dabd/25w05a.json",
-      "time": "2025-03-05T06:38:40+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/2584b14ee26e195335019c0c3787072b2f79aa05/25w05a.json",
+      "time": "2025-03-20T06:37:12+00:00",
       "releaseTime": "2025-01-29T14:03:54+00:00"
     },
     {
       "id": "25w04a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/0726ae56f14bbe0c36eef45c07b2e0b7ea40fccf/25w04a.json",
-      "time": "2025-03-05T06:38:03+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/8f8fbd62bcceb713abf201a4becb2ab0967a9d54/25w04a.json",
+      "time": "2025-03-20T06:36:39+00:00",
       "releaseTime": "2025-01-22T13:14:44+00:00"
     },
     {
       "id": "25w03a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9644e3e1025c04d5727adeb40078dbc456cb20b5/25w03a.json",
-      "time": "2025-03-05T06:38:03+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/0005bb4d4d155845188d882a8b9a35207aa03480/25w03a.json",
+      "time": "2025-03-20T06:36:39+00:00",
       "releaseTime": "2025-01-15T14:28:04+00:00"
     },
     {
       "id": "25w02a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/d6a769d47314894f7a0319a3aec94489b248d5c9/25w02a.json",
-      "time": "2025-03-05T06:37:27+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c0a9b7e2125bc10230d12a41b376ef5992b23a87/25w02a.json",
+      "time": "2025-03-20T06:36:07+00:00",
       "releaseTime": "2025-01-08T13:42:18+00:00"
     },
     {
       "id": "1.21.4",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/f0025b5b37c7efcf50807fc24b5fc7ef7ab18ea5/1.21.4.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/af3d3712e6471229be31d7c1f0ed44a9c90d6390/1.21.4.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-12-03T10:12:57+00:00"
     },
     {
       "id": "1.21.4-rc3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/b79221941e9ce27aa27eb13a211e291643e31a24/1.21.4-rc3.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/b56d40ecb49154ec4957cd7b07e752fb2ef4e33d/1.21.4-rc3.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-29T17:02:53+00:00"
     },
     {
       "id": "1.21.4-rc2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/aecadc25d7bb2b07827cf53e9a3dfb6a87b231bf/1.21.4-rc2.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/02bb5a11431300ecbb8a5b18a1b2b428fa2654b8/1.21.4-rc2.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-29T10:33:13+00:00"
     },
     {
       "id": "1.21.4-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2fb142cc7b48df9ad689dcbb708800af03912aa8/1.21.4-rc1.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/ee9c5dd84f158eb88bb86a30c4abe29f5664c054/1.21.4-rc1.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-28T10:19:01+00:00"
     },
     {
       "id": "1.21.4-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/ef5fdb5b5306891fe33bdfa8eee0d824830616a7/1.21.4-pre3.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/5ced741f575ac8d84fef394cbe28e661f40131f5/1.21.4-pre3.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-26T15:07:29+00:00"
     },
     {
       "id": "1.21.4-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/8b54af24073c99c41c97389fc99e265159851bb9/1.21.4-pre2.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/41508a308ad4d99680ef7c183e25bb88f93a9ea3/1.21.4-pre2.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-25T13:18:35+00:00"
     },
     {
       "id": "1.21.4-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/82f720fe9a903d6daec1b1543be2091ee04b1aaa/1.21.4-pre1.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d612fd375603e527236416faa6fb735c245bf792/1.21.4-pre1.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-20T13:45:00+00:00"
     },
     {
       "id": "24w46a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a805e54836ad6b5bd8c75cb4aa64831f537c5aed/24w46a.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/1ca2c22860ac0c81ec90efd0861fc330ead356a2/24w46a.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-13T13:12:38+00:00"
     },
     {
       "id": "24w45a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4218e37b3ec89e94482e5665f8a7e0d62771d86a/24w45a.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/deaeea1be2c60856e9ff640534759e64d1d84c43/24w45a.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-11-06T13:31:58+00:00"
     },
     {
       "id": "24w44a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/30ac02013c45317a517ab65aad186d22425aab0d/24w44a.json",
-      "time": "2025-03-05T06:36:20+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c418e241853c7785aac3f3509dc92e988fdf0724/24w44a.json",
+      "time": "2025-03-20T06:35:05+00:00",
       "releaseTime": "2024-10-30T12:53:55+00:00"
     },
     {
       "id": "1.21.3",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/f5f4b2f462213c9c4c586045f9edf921ad17f7fe/1.21.3.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/05c9d6a4ad3e85e48339a55517497d5cb2170f9c/1.21.3.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-23T12:28:15+00:00"
     },
     {
       "id": "1.21.2",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/f365719194c4ffd43a5933c80e031de9c3e7beac/1.21.2.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/b7740f23c0f44df831c1793626dd9b1bef4d1b2a/1.21.2.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-22T09:58:55+00:00"
     },
     {
       "id": "1.21.2-rc2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/ed127a594e863f577ce493010ece57a8914c1b7b/1.21.2-rc2.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/70d69ef434c55c0341204ea6432b58744ac680c4/1.21.2-rc2.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-21T15:53:05+00:00"
     },
     {
       "id": "1.21.2-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/477683056c602e81b14825cc06654b1e4e05b47f/1.21.2-rc1.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/25b5bec70276bb8cd1b4af25da01cef647bde128/1.21.2-rc1.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-17T12:43:18+00:00"
     },
     {
       "id": "1.21.2-pre5",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/3499c5ae0f8d430166d0e7b033e48357e0b37a82/1.21.2-pre5.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/17643ed82a16c3a4d59cfda80cf3f1d324c2a8d5/1.21.2-pre5.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-16T13:30:35+00:00"
     },
     {
       "id": "1.21.2-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2097fdb9b18c63b5d8254a261204dfe3a21c83dc/1.21.2-pre4.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/635836467b05d08eba44803b60cad4b3d26d3585/1.21.2-pre4.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-15T11:59:11+00:00"
     },
     {
       "id": "1.21.2-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/7b0080d71dd0a28711d158d6fd6be5c3d58beefd/1.21.2-pre3.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/2ea3881e4e5063ac6c69c6ced3032c32e8f252f3/1.21.2-pre3.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-11T12:32:27+00:00"
     },
     {
       "id": "1.21.2-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/1d7039f863b07f57bda23b1057706506d3c58a80/1.21.2-pre2.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/7f4a5879927f7499e4714c5a997327e900522586/1.21.2-pre2.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-10T12:59:14+00:00"
     },
     {
       "id": "1.21.2-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/6dadce738842611d857e3c2abf783e96ea732de1/1.21.2-pre1.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/9259074b6c306b227b3eaa4112bb77f16d38dbe0/1.21.2-pre1.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-08T13:22:12+00:00"
     },
     {
       "id": "24w40a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4dd372d0d0c3ff0cc8702f835f372692bc4cabf6/24w40a.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/b8e24260be418b64b961f9c21b22664b8608922d/24w40a.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-10-02T13:15:42+00:00"
     },
     {
       "id": "24w39a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4cdac933f2f7b06176474f95e53ff6f16ea1e02b/24w39a.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/27719c12386701193e9b9dc4d310fe5fe4233694/24w39a.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-09-25T13:08:41+00:00"
     },
     {
       "id": "24w38a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/e37513e5408343b34c8a8e5ab3f9900c1de9c272/24w38a.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/24095ecc53a2e80b0a20ddb10bd2184bbd6e2148/24w38a.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-09-18T12:32:07+00:00"
     },
     {
       "id": "24w37a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/5f8967862f9a941db92c0723c065b99f6c99892c/24w37a.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/2c5806d2454ac57232eecbbec9e1894e02263a8f/24w37a.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-09-11T13:01:31+00:00"
     },
     {
       "id": "24w36a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a3fad6fa86030690675aa533dcbd8b0d4e65a260/24w36a.json",
-      "time": "2025-03-05T06:35:44+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/6b9986d5c4d49ac15ad4e124531307b185d0392d/24w36a.json",
+      "time": "2025-03-20T06:34:32+00:00",
       "releaseTime": "2024-09-04T12:44:12+00:00"
     },
     {
       "id": "24w35a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/ddebe90a52d1a59b9391fe9dda3af16e1273edc7/24w35a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/7cada7282c2c506b76a2b1b5e4b9221018f938e6/24w35a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-08-28T12:25:10+00:00"
     },
     {
       "id": "24w34a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/dbfc725b8755f10e3bf06cd46096730154ccd8c2/24w34a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/843eeb7cccd1bb319d3875cc6fa3f8bbe433935f/24w34a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-08-21T14:14:13+00:00"
     },
     {
       "id": "24w33a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/54b08820b2802b1020b97686d55e0bee51fbd8e2/24w33a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/927e9250ba60e950157cd00809855ce64d1cd6b8/24w33a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-08-15T12:39:34+00:00"
     },
     {
       "id": "1.21.1",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/05a2a3d10db619ee6b2bf10fe85a90ddd092f58e/1.21.1.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/ee26863a0be9438819781b99d207c71bd90feaf7/1.21.1.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-08-08T12:24:45+00:00"
     },
     {
       "id": "1.21.1-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/bcf3036e345216cac75710511657ec2ff421fc53/1.21.1-rc1.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/1d08b7236df7dbb81436b000ad657691f409379a/1.21.1-rc1.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-08-07T14:29:18+00:00"
     },
     {
       "id": "1.21",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/14ce943433b0e4b75b80d15654259c21386e21c9/1.21.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/e7e431e1604d64551f9dacb8fccdd1c0fa773238/1.21.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-06-13T08:24:03+00:00"
     },
     {
       "id": "1.21-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f128d77d47fc68e2a798f3aa49ece65345c2408a/1.21-rc1.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/f332315847a0a5a14b3d5ff9a0e5ca6bafbd549d/1.21-rc1.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-06-10T12:24:08+00:00"
     },
     {
       "id": "1.21-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/177188c0c4ad00468ee0b34e894d8ef42de814a1/1.21-pre4.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/5d113d4426cfaeb2a082c70a0872e17b1abe4b43/1.21-pre4.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-06-07T12:00:15+00:00"
     },
     {
       "id": "1.21-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/c807f6b7e658fccea40edfee939f7266c7df877b/1.21-pre3.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/0d383db1d3b44c16d53b4e37785e3902cffddec6/1.21-pre3.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-06-05T08:51:44+00:00"
     },
     {
       "id": "1.21-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f1f91ee855ab56e0605672b794949e4612322baf/1.21-pre2.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/125506a06ca6ca91234500e0749b84d633bfc55f/1.21-pre2.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-31T12:44:56+00:00"
     },
     {
       "id": "1.21-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/761cd37f823c8504e1dc4b8f475e45dd9985642d/1.21-pre1.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/de84c02d13825ff9698653a4fbff34b129caab1c/1.21-pre1.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-29T12:04:43+00:00"
     },
     {
       "id": "24w21b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/d1960135cba41958e43d4918561ebf08a59f73f8/24w21b.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/58a6b663fab0a8c11f0860651d615ed26bf14bec/24w21b.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-22T16:25:41+00:00"
     },
     {
       "id": "24w21a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4c7a80f5c7b3a93c796bc6b6730d2ac141ebbbe5/24w21a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/798a3f22818e4c379a453f7a05c3fc165869d035/24w21a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-22T14:18:26+00:00"
     },
     {
       "id": "24w20a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a0e958867a1fb885fb375149545d5b6f2462aee9/24w20a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/677b6aea974350cf698405048229cf857c72f407/24w20a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-15T12:00:35+00:00"
     },
     {
       "id": "24w19b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/e3af8318d74714eb0255bbcd6b9e381313496d2e/24w19b.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/346620e8a7a2cfcf229e6f1a68b3ae77b85fc206/24w19b.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-10T14:32:42+00:00"
     },
     {
       "id": "24w19a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/96283b333d3a7ef0aacbe8c2f161b3e58ede8400/24w19a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d57f22b061e85b41a44ee051ee7394c1e239fed7/24w19a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-10T12:15:31+00:00"
     },
     {
       "id": "24w18a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2c845f95c57d6ef15221edda79f67843d848b10b/24w18a.json",
-      "time": "2025-03-05T06:35:08+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/9ac00d82ce1e857c68946e24f334661c60ebc5cf/24w18a.json",
+      "time": "2025-03-20T06:34:00+00:00",
       "releaseTime": "2024-05-03T12:08:27+00:00"
     },
     {
       "id": "1.20.6",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/2d7acbb12bc26060131922776d37aa8624f69195/1.20.6.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/6a53cfcaca6c277c10a2b4dcb7224785395f85d1/1.20.6.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-29T12:40:45+00:00"
     },
     {
       "id": "1.20.6-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/26aa591beb2895d7a1a2af3b513fcdbba7c0df07/1.20.6-rc1.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/96ddf66fd5a26ad0a730e0667e0d36d1edace685/1.20.6-rc1.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-26T10:12:17+00:00"
     },
     {
       "id": "1.20.5",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/6a22650655171b0735905a0185d7668b9c141f41/1.20.5.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/58af53062c50fd892b4cf9615c620a43fb6b965a/1.20.5.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-23T11:54:12+00:00"
     },
     {
       "id": "1.20.5-rc3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9643c8ad0c6c5ca463b7d8e14cd6726ae60ac4de/1.20.5-rc3.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/49da85ab43b2521259410c4257f76e057ef6857a/1.20.5-rc3.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-22T13:42:34+00:00"
     },
     {
       "id": "1.20.5-rc2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f23289270b6d7edcdbce8a728ab99384f434c721/1.20.5-rc2.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/2722a720a5c47355ad9456152960feeb671ff3d4/1.20.5-rc2.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-19T13:13:15+00:00"
     },
     {
       "id": "1.20.5-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/e09f723a99bc2775923569cda9a12bd1a3dfef8e/1.20.5-rc1.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/510f5ea145f568d84b6b3deb32d493fe9e85b5e3/1.20.5-rc1.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-18T11:45:40+00:00"
     },
     {
       "id": "1.20.5-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/531a3e1a48ba17b91aa54ac999c1cae440c256d1/1.20.5-pre4.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/84c88c9da070add92991093a7bed8ac8feeb645a/1.20.5-pre4.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-17T11:56:02+00:00"
     },
     {
       "id": "1.20.5-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/64a9061241b9b75e3b2425aa88e23d371b0181b0/1.20.5-pre3.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/1b8ccbbbb4bcb55274ca6946c78ee0f2289a89ee/1.20.5-pre3.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-16T11:57:30+00:00"
     },
     {
       "id": "1.20.5-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4d026c14ad4ddbf122b656b43e5c8453298fa527/1.20.5-pre2.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/410e7de0eb241d6c0b89a1881942771c44d234c5/1.20.5-pre2.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-15T12:36:05+00:00"
     },
     {
       "id": "1.20.5-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/ade8c82fb7fb53ca0ca13123094d705007b8b62e/1.20.5-pre1.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/9cc9972fb814a394e200a1c0571426dc103f91be/1.20.5-pre1.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-10T12:44:25+00:00"
     },
     {
       "id": "24w14a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/eadc7be7c5b7a38b7d2f2eb223d2c33b137f508f/24w14a.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/428a9400f535faf937b6fa1a7fa2353d88818772/24w14a.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-04-03T11:49:39+00:00"
     },
     {
       "id": "24w14potato",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9e21528df028c027f5455811197a2213a431bf1c/24w14potato.json",
-      "time": "2025-03-05T06:33:58+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/7f1977e06a01e669b63902503da45e395229b016/24w14potato.json",
+      "time": "2025-03-20T06:32:58+00:00",
       "releaseTime": "2024-04-01T11:07:19+00:00"
     },
     {
       "id": "24w13a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4da25b36457ae43a68efcf423d23d6b4529d2c5e/24w13a.json",
-      "time": "2025-03-05T06:34:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/43939e7e2a407729af72a34c0403f27ee911a6fd/24w13a.json",
+      "time": "2025-03-20T06:33:28+00:00",
       "releaseTime": "2024-03-27T14:30:20+00:00"
     },
     {
       "id": "24w12a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/1367547568b086978106b10100900cb361eb94a8/24w12a.json",
-      "time": "2025-03-05T06:33:58+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/238129a0dede6747c3facfe2a323ff6d4c371b4d/24w12a.json",
+      "time": "2025-03-20T06:32:58+00:00",
       "releaseTime": "2024-03-20T14:38:37+00:00"
     },
     {
       "id": "24w11a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/56c3b43b1b80f18c96b6abddd196f20d5bf59c7e/24w11a.json",
-      "time": "2025-03-05T06:33:58+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/a952d68df963834b1f92a172a6650be64e219d73/24w11a.json",
+      "time": "2025-03-20T06:32:58+00:00",
       "releaseTime": "2024-03-14T14:21:33+00:00"
     },
     {
       "id": "24w10a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/3ac51ca920e006d862457314fd4c781a98ab45e4/24w10a.json",
-      "time": "2025-03-05T06:33:22+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/44286acb186c61f412c8e4cba005f93903a4787e/24w10a.json",
+      "time": "2025-03-20T06:32:27+00:00",
       "releaseTime": "2024-03-06T10:37:35+00:00"
     },
     {
       "id": "24w09a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/fc9021d2d6cbfb97d61bffdf42d5ac1d943b0524/24w09a.json",
-      "time": "2025-03-05T06:33:22+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/aa7c689a66e68e81d4a61d1d858321d1dd927de0/24w09a.json",
+      "time": "2025-03-20T06:32:27+00:00",
       "releaseTime": "2024-02-28T12:38:12+00:00"
     },
     {
       "id": "24w07a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/8b6f962ee705aaf6115766b2468eab49de93a011/24w07a.json",
-      "time": "2025-03-05T06:32:48+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/cde89d5898d950f75ea7854125a7733c8c6a97c4/24w07a.json",
+      "time": "2025-03-20T06:31:57+00:00",
       "releaseTime": "2024-02-14T12:51:01+00:00"
     },
     {
       "id": "24w06a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/1673f57267d0f5a6bb7f1f1079f2da6d9f67a841/24w06a.json",
-      "time": "2025-03-05T06:32:48+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/a4e0608038a3bc0ca8739f1e4e5bcd74fb3ea89b/24w06a.json",
+      "time": "2025-03-20T06:31:57+00:00",
       "releaseTime": "2024-02-07T14:47:18+00:00"
     },
     {
       "id": "24w05b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/96138716ab1eb0e72216a297948e43f3a8b417d9/24w05b.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/1839493d154a1e456a0f653d2208fa0730dcc992/24w05b.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2024-02-01T12:55:14+00:00"
     },
     {
       "id": "24w05a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/822a11c9f3ee9637e77dca62c2388e0e5c772d63/24w05a.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d5437b5ca79b9bc382e22bf6466d295ea4a5788b/24w05a.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2024-01-31T13:05:26+00:00"
     },
     {
       "id": "24w04a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a1df8fe01ef8bf220afba972db6a56f27d083ff6/24w04a.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/90bbf37a92105d7d3cbbd0600ac30b978ca0c349/24w04a.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2024-01-24T13:42:45+00:00"
     },
     {
       "id": "24w03b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/c5707aa0b43eae8c9006c7c4d0ba91ba265572f6/24w03b.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/6d80edc359bf9bed68c26eb6f3578ebdf3b4e456/24w03b.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2024-01-18T12:42:37+00:00"
     },
     {
       "id": "24w03a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/e089330cf05fbc0171a5ef217b8a494201d26146/24w03a.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d5a0a4ee1fcfc4705ce933e8690bd74c057cbff8/24w03a.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2024-01-17T13:19:20+00:00"
     },
     {
       "id": "23w51b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a553b176174a762d6ae8bf283350432a666af043/23w51b.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c1c279f7b02bad5086bf2a6821bb320d156355cc/23w51b.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-12-18T15:39:14+00:00"
     },
     {
       "id": "23w51a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/dd55a118f55dacf1d311abbf9ccb329c7d7c6310/23w51a.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/181049e195593099ae9da07d37c2493c50edc912/23w51a.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-12-18T13:36:46+00:00"
     },
     {
       "id": "1.20.4",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/66caab1f82c69cf21567942424ca08ea46ae88d6/1.20.4.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/3e51043b00e705043d04ade51d419b70d7ec9fa4/1.20.4.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-12-07T12:56:20+00:00"
     },
     {
       "id": "1.20.4-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/817ea19e2abfcf1b99bec619cd15c4d580155345/1.20.4-rc1.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/b0efb94009d37b2dbc70d522062651b2e69fdebf/1.20.4-rc1.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-12-06T14:38:01+00:00"
     },
     {
       "id": "1.20.3",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/93f6c47b641a13bed1d9393dc04803bb5c5ea443/1.20.3.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/ddd82abdb67afe16dbead22ac80cd8a690b85a29/1.20.3.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-12-04T12:10:32+00:00"
     },
     {
       "id": "1.20.3-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/acd0aca07c74a0544f9226ad421fcc03eb278604/1.20.3-rc1.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/fa01e48fef10d175034e08c95967e35557032573/1.20.3-rc1.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-11-30T13:41:45+00:00"
     },
     {
       "id": "1.20.3-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/5b43d46c69c2782fa87484ec65760e7afb9496b6/1.20.3-pre4.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/80b2bdaea52a544610f0bd2c8032e496e62818c0/1.20.3-pre4.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-11-28T13:47:32+00:00"
     },
     {
       "id": "1.20.3-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a7c2de03028fb4664462d9595ea47781aca48b95/1.20.3-pre3.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/4b7612a41575846fd6350f45d387b423a8067b62/1.20.3-pre3.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-11-27T14:24:36+00:00"
     },
     {
       "id": "1.20.3-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/0782bd25f588bbacb4943bd138d8e9c5147dcafd/1.20.3-pre2.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d87a87ab8efd914072fa0475177ce97a7bee93c6/1.20.3-pre2.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-11-22T12:21:26+00:00"
     },
     {
       "id": "1.20.3-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9f751fc331ecfa6794d493b2bfe21d503e51cacf/1.20.3-pre1.json",
-      "time": "2025-03-05T06:32:13+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c47c54c89a06c8b517fafdb7d7756d08728872c7/1.20.3-pre1.json",
+      "time": "2025-03-20T06:31:26+00:00",
       "releaseTime": "2023-11-20T15:40:14+00:00"
     },
     {
       "id": "23w46a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/d173eb3545512e6b68adab21b49b10365eb7a83e/23w46a.json",
-      "time": "2025-03-05T06:31:39+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/505dba4b52bcafd1d8d64491fb273e5431dbb900/23w46a.json",
+      "time": "2025-03-20T06:30:55+00:00",
       "releaseTime": "2023-11-16T14:11:33+00:00"
     },
     {
       "id": "23w45a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/60e64e57d7b5b568f02b6f873464d0a81bfd0d64/23w45a.json",
-      "time": "2025-03-05T06:31:39+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/9c6205cab39c7c811fc50dc27e49424505f5fc2b/23w45a.json",
+      "time": "2025-03-20T06:30:55+00:00",
       "releaseTime": "2023-11-08T13:59:58+00:00"
     },
     {
       "id": "23w44a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/729506dc78342e6ff561cc15eee50726790332e3/23w44a.json",
-      "time": "2025-03-05T06:31:05+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/0083e5973dd6d145a56bfe1113ccbf7d0aed6fc7/23w44a.json",
+      "time": "2025-03-20T06:30:26+00:00",
       "releaseTime": "2023-11-01T12:30:52+00:00"
     },
     {
       "id": "23w43b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/740d6d6feb9ea0577d00af1295b51e626588b51f/23w43b.json",
-      "time": "2025-03-05T06:31:05+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/922a2a34bc9c5b12d880039c4a1ee69376f298fa/23w43b.json",
+      "time": "2025-03-20T06:30:26+00:00",
       "releaseTime": "2023-10-26T13:46:16+00:00"
     },
     {
       "id": "23w43a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/feebd7d546b8aa19032101e85796f698a1757d70/23w43a.json",
-      "time": "2025-03-05T06:31:05+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/96cb3eca993e365b5a923050cc972151d3dbffef/23w43a.json",
+      "time": "2025-03-20T06:30:26+00:00",
       "releaseTime": "2023-10-25T13:34:37+00:00"
     },
     {
       "id": "23w42a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/5a55fc29efd0ca2c7e1d7bdf9d5725531c681fbe/23w42a.json",
-      "time": "2025-03-05T06:43:07+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/594f32b6e8bbd33ba30c5a8892dd734165b29f80/23w42a.json",
+      "time": "2025-03-20T06:41:10+00:00",
       "releaseTime": "2023-10-18T11:37:28+00:00"
     },
     {
       "id": "23w41a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/27f7237ff8fdf0aa192e760e822ca26af6c34ee8/23w41a.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c22354d5e93304bdb7d64c03dba02dfd1140dcad/23w41a.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-10-11T12:32:46+00:00"
     },
     {
       "id": "23w40a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/03122bce4acbd2c65c3148c71a4f1073ad213761/23w40a.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/83c8b6d4e9cf6c7cdce18da7e958809eed0fedb8/23w40a.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-10-04T12:48:53+00:00"
     },
     {
       "id": "1.20.2",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/14fbb16dcac61870a0addcea825d906245f25f65/1.20.2.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/9082ea2c318f206f28ac63d8fca427376fd98c4d/1.20.2.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-09-20T09:02:57+00:00"
     },
     {
       "id": "1.20.2-rc2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/05b0a2f928ae015975114e6857848cc003c544a1/1.20.2-rc2.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/27752ad9e23825f38165427eeae6c56e23f0dcf2/1.20.2-rc2.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-09-18T12:34:57+00:00"
     },
     {
       "id": "1.20.2-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/8f9236e41be3cdd891de831dba30da0c8e05c1b8/1.20.2-rc1.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/3294b340e12858aea8a399ba18929ba5151394d7/1.20.2-rc1.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-09-15T13:10:30+00:00"
     },
     {
       "id": "1.20.2-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/26adf035059b6c281151c29b8c1262ffe3033719/1.20.2-pre4.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/671fa3c8f59267833258a9c5499936e56db6cdf6/1.20.2-pre4.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-09-13T15:06:51+00:00"
     },
     {
       "id": "1.20.2-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/a562ffe572174f51dd443ed46e5a3ae67add1615/1.20.2-pre3.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/150bba1e8a01193642de1819236b59ab1b14efc0/1.20.2-pre3.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-09-12T12:15:08+00:00"
     },
     {
       "id": "1.20.2-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/0ab36b84a838874e0e6da21f75d795ce1af08665/1.20.2-pre2.json",
-      "time": "2025-03-05T06:42:34+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/de84f242401c6b9d97476e846948bff67cba5933/1.20.2-pre2.json",
+      "time": "2025-03-20T06:40:40+00:00",
       "releaseTime": "2023-09-07T12:42:32+00:00"
     },
     {
       "id": "1.20.2-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/d12a6f430f3188c4f7acb044221226eb44f82694/1.20.2-pre1.json",
-      "time": "2025-03-05T06:42:01+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/83cbfca4993223a3ec477976ed10977e3b2fd581/1.20.2-pre1.json",
+      "time": "2025-03-20T06:40:10+00:00",
       "releaseTime": "2023-09-05T12:06:20+00:00"
     },
     {
       "id": "23w35a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/19d900b2cc8d2f64a6ca2ec45bf36fb11a240659/23w35a.json",
-      "time": "2025-03-05T06:42:01+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/75ece1e930a26a5d6b815de2f6a1f7587d254659/23w35a.json",
+      "time": "2025-03-20T06:40:10+00:00",
       "releaseTime": "2023-08-30T11:24:35+00:00"
     },
     {
       "id": "23w33a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f0931d3143ddef8235a50c5aa94c58378adfe95d/23w33a.json",
-      "time": "2025-03-05T06:42:01+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/6698782bb068401ec1b3eb5d484de5db6b37841e/23w33a.json",
+      "time": "2025-03-20T06:40:10+00:00",
       "releaseTime": "2023-08-17T11:39:08+00:00"
     },
     {
       "id": "23w32a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/278642ce1736d633de4f8c98ccc2a974ae88b886/23w32a.json",
-      "time": "2025-03-05T06:42:01+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/1be151efd86f81e1228e5b6b84768a6951541619/23w32a.json",
+      "time": "2025-03-20T06:40:10+00:00",
       "releaseTime": "2023-08-09T12:14:25+00:00"
     },
     {
       "id": "23w31a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/b498a08f7a3b6d5e633bb9588e52f281600c7e7d/23w31a.json",
-      "time": "2025-03-05T06:41:29+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/667aa2ffaa141897ccd1daa2bd55b99a2e51c6b6/23w31a.json",
+      "time": "2025-03-20T06:39:40+00:00",
       "releaseTime": "2023-08-01T10:03:13+00:00"
     },
     {
       "id": "1.20.1",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/d8f8a41e5d63fec111ecab875fe01cc4d2bd96cc/1.20.1.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d7991919efb12e81734cd4e24f8b40223c296f48/1.20.1.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-06-12T13:25:51+00:00"
     },
     {
       "id": "1.20.1-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/567e9e578db706d5ca886ca168c153fe3184f53b/1.20.1-rc1.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/eff63133b8a28db8c9df6743324982b6b7f1b0c9/1.20.1-rc1.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-06-09T14:15:49+00:00"
     },
     {
       "id": "1.20",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/1f3fe3cf4fd202d8958bf3e3fac71ae883dc11c1/1.20.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/3844b485e76681c24095033c750b0387614039a2/1.20.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-06-02T08:36:17+00:00"
     },
     {
       "id": "1.20-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/406a4ae7efab9e78b2b143fc616d4250d2992845/1.20-rc1.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/136fd71e8006ac8815415a22a64ee51cb47ebf5c/1.20-rc1.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-31T12:33:33+00:00"
     },
     {
       "id": "1.20-pre7",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/0b562d23b018f5c1a8b187fdcab8b94c2efadf94/1.20-pre7.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/af335dfcae500c5cf17bf2042ef77057bfa97944/1.20-pre7.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-29T13:44:34+00:00"
     },
     {
       "id": "1.20-pre6",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/019f780d9abf2f8cbd7aa34a649ff0e52b076505/1.20-pre6.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/3bf05c24a28fa0a0fbd1dc956d78fa1af8a7f754/1.20-pre6.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-25T12:22:00+00:00"
     },
     {
       "id": "1.20-pre5",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/8e769608ece82f87e81f12d390bcb592c751df99/1.20-pre5.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/5cde2f85b2e582399875b40b893bcf290c52caa0/1.20-pre5.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-23T12:22:52+00:00"
     },
     {
       "id": "1.20-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4afe8c0fccbd710cadfc5accbc63d24d815fe83d/1.20-pre4.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/8875de8e4fd0fb5d5a1b3d0115c8805efd27615b/1.20-pre4.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-19T13:13:45+00:00"
     },
     {
       "id": "1.20-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/429c4db38860c9e23b891b62d7c8b668f1a89626/1.20-pre3.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c9b094d4b7d1ec7013d411ec1cd44a7a1babb5ec/1.20-pre3.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-19T11:39:46+00:00"
     },
     {
       "id": "1.20-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9c7a19389c4197853e9d056687164075e3388f4d/1.20-pre2.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/9b9b8edefdf71ede044cb984d6903fdd33aa6a3d/1.20-pre2.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-16T11:34:54+00:00"
     },
     {
       "id": "1.20-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/86f1ebd33cc883ee39831557919ca084bffa7ccb/1.20-pre1.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/3882ea226b5de99ea24a441690bf493847ddf0a3/1.20-pre1.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-10T12:19:34+00:00"
     },
     {
       "id": "23w18a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/eab479b4fa3633d9d77fbce1d14ef15d4e98eb11/23w18a.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/b411c8ccfac704f29c119e98ab2ec29e48c25918/23w18a.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-05-03T11:29:26+00:00"
     },
     {
       "id": "23w17a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/e3bdd533994510ab45c6639cb0f3d6e751e42384/23w17a.json",
-      "time": "2025-03-05T06:40:56+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/79d7bdab6677bdc07a58720d2f62fca766b77159/23w17a.json",
+      "time": "2025-03-20T06:39:11+00:00",
       "releaseTime": "2023-04-26T12:09:48+00:00"
     },
     {
       "id": "23w16a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/1af74f294764a46fa03cf6b571781db67921ee22/23w16a.json",
-      "time": "2025-03-05T06:40:23+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/88ea369fe5ef91fa6b19594fff98e9e7a40d38d8/23w16a.json",
+      "time": "2025-03-20T06:38:42+00:00",
       "releaseTime": "2023-04-20T11:55:19+00:00"
     },
     {
       "id": "23w14a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f3c0e27b722cc87d7d0255b8cf291ce6b00592cb/23w14a.json",
-      "time": "2025-03-05T06:40:23+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/a7aa90c712b1703de0e9cba24f2afca7eb5b571c/23w14a.json",
+      "time": "2025-03-20T06:38:42+00:00",
       "releaseTime": "2023-04-05T12:05:17+00:00"
     },
     {
       "id": "23w13a_or_b",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/43f0a1a563be6c9c614e1c1eb7f9dc0709c9ae9f/23w13a_or_b.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/e4a66da8b0a2256ddfc2d5ef594b76601c3362ad/23w13a_or_b.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-04-01T12:52:18+00:00"
     },
     {
       "id": "23w13a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/5d23e647a7a0286d644927ebeab4496b56574a41/23w13a.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/37dc8085a29f6b9cc26b5f53ba9676d955e1ebef/23w13a.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-29T13:54:16+00:00"
     },
     {
       "id": "23w12a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/7ec454b3b9a7a519475593034e462d9cadbdd4d4/23w12a.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/a4b282c77f7fa5d1a853035d1a3b91e46c12eea8/23w12a.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-22T13:28:42+00:00"
     },
     {
       "id": "1.19.4",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/3b60d31a5430da80748afcd38afa99da4d34dd44/1.19.4.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/971726142c98ed77121a0fb876471518b2b7dfd7/1.19.4.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-14T12:56:18+00:00"
     },
     {
       "id": "1.19.4-rc3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/62df351608192a3072d954e5d11e83999d9a2b1f/1.19.4-rc3.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c33c82bcb3916923a1c455953e252f3895eb5284/1.19.4-rc3.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-13T10:03:11+00:00"
     },
     {
       "id": "1.19.4-rc2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/867a6bd03c9af0a2ea4327e07ef5e4c7b6b34f47/1.19.4-rc2.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/2d1feeec1408fd830bd31d628e7474d6674653d8/1.19.4-rc2.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-10T12:42:54+00:00"
     },
     {
       "id": "1.19.4-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/c8438a95bf07c379ce5f1c18db658c9be9a410fe/1.19.4-rc1.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/db59e249368320425d80f7416f4dbdc0cf804e73/1.19.4-rc1.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-09T14:35:50+00:00"
     },
     {
       "id": "1.19.4-pre4",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9582029053cdd0474eb3e3f5f2bae69647d067ec/1.19.4-pre4.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d2a3f94479de46e5b26485faf476125269935ebe/1.19.4-pre4.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-08T13:08:22+00:00"
     },
     {
       "id": "1.19.4-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9767df53b6c3c0cc5479b487d90621a12967d54c/1.19.4-pre3.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/638069ea5b66d441382fc0b3d97042c8381a1804/1.19.4-pre3.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-03-01T14:11:05+00:00"
     },
     {
       "id": "1.19.4-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/d3a51bbc3900c7c2fd7be5fdb435b4cdc07d1d30/1.19.4-pre2.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/7fb94a7f2dddb01365e145f67aaa43462e59e70f/1.19.4-pre2.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-02-27T13:38:53+00:00"
     },
     {
       "id": "1.19.4-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/9a94e4b8c0219c520090fbff492c5a873700054c/1.19.4-pre1.json",
-      "time": "2025-03-05T06:39:50+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d024b5e3e880187966fd098f9d798980a38f2961/1.19.4-pre1.json",
+      "time": "2025-03-20T06:38:12+00:00",
       "releaseTime": "2023-02-22T16:00:34+00:00"
     },
     {
       "id": "23w07a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2d5a2d195ca87aaaed6fbaf55fb8507418d04502/23w07a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/a7ca281a4c5230c554f36bb46e5c2e7bcb33e459/23w07a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2023-02-15T14:32:29+00:00"
     },
     {
       "id": "23w06a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4a12f7886c8de7fe5b780039ed867a61d003f4ea/23w06a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/5824a0f1f307439fbb61a5a85637537c3c7d27d4/23w06a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2023-02-08T15:00:04+00:00"
     },
     {
       "id": "23w05a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/523cc3bd7136ce8653a45de2343de77f623592fc/23w05a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/93108dfa0983ca225a99ae57cd4f8c12d1bd9c02/23w05a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2023-02-01T14:20:33+00:00"
     },
     {
       "id": "23w04a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/10b1630ab79ca468b375340f2bc3a7b54c1cc93b/23w04a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/48ac2663fa9054d638b89060bd752ceddbd5178e/23w04a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2023-01-24T15:19:06+00:00"
     },
     {
       "id": "23w03a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/b547c82e006b5ee470df3d8d4839d3bbb7a22a37/23w03a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/35e31505498f4f1b59855686b010cbbc4d02ffe0/23w03a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2023-01-18T13:10:31+00:00"
     },
     {
       "id": "1.19.3",
       "type": "release",
-      "url": "https://piston-meta.mojang.com/v1/packages/814a9f8a72b3d78f5f557469d0bf8808596405a7/1.19.3.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/d27d1472945c58266c10abdacb9432342695d883/1.19.3.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-12-07T08:17:18+00:00"
     },
     {
       "id": "1.19.3-rc3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2f6c88282a0c6952e0437e98227e2042271077d8/1.19.3-rc3.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/bf5ec4aaf455790a3bd36989a97f6bfae0d3c76c/1.19.3-rc3.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-12-06T10:24:01+00:00"
     },
     {
       "id": "1.19.3-rc2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/f4c3dc0057d85b5c80d6e793160d970f4fd83b34/1.19.3-rc2.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/121cee503582ad7d248a95da67f29d1bd0d930c5/1.19.3-rc2.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-12-05T13:21:34+00:00"
     },
     {
       "id": "1.19.3-rc1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4d57632abd05a2166457be668249741f19dd79f4/1.19.3-rc1.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/6bcb700e28d8c5ceaecde18ae3de8eb85b26d760/1.19.3-rc1.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-12-01T13:45:18+00:00"
     },
     {
       "id": "1.19.3-pre3",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/1dbd0a0743e4e37e82ccd9257e81ce408e84e0b4/1.19.3-pre3.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/4c939e8b2a5232c1e1685346bde3d28a1e19a49e/1.19.3-pre3.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-11-29T14:28:08+00:00"
     },
     {
       "id": "1.19.3-pre2",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/b6488cf9f89c2b91a303e9767d3665092ffb5ade/1.19.3-pre2.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/f59b39405bee2aab3cb6b86594f6d7b03cf65bfc/1.19.3-pre2.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-11-23T16:12:25+00:00"
     },
     {
       "id": "1.19.3-pre1",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/4ffdeff39b3c033e354bdece97acc189d14109e6/1.19.3-pre1.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/fde104452ae613f1ee7534ec43fa3163051ec715/1.19.3-pre1.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-11-22T13:59:37+00:00"
     },
     {
       "id": "22w46a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/ba1f217c8139c81c93b3520245ca1f9091e91f37/22w46a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/3f89aa0905f785097ecca53153d0eaa982aa6f40/22w46a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-11-16T13:32:50+00:00"
     },
     {
       "id": "22w45a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/83900283fb62086d4c15cdb243f3bbe781eb8501/22w45a.json",
-      "time": "2025-03-05T06:36:51+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/5ffa6f94e99c2e1c275d3d3fd67773e633ccb527/22w45a.json",
+      "time": "2025-03-20T06:35:34+00:00",
       "releaseTime": "2022-11-09T14:30:16+00:00"
     },
     {
       "id": "22w44a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/2626cb2b1c46e4303627755ffaea99d4a4bba51d/22w44a.json",
-      "time": "2025-03-05T06:30:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/8bd0dfdbe3a2ff644d1e1fffb8f9dd9f3f3ab818/22w44a.json",
+      "time": "2025-03-20T06:29:58+00:00",
       "releaseTime": "2022-11-02T13:15:43+00:00"
     },
     {
       "id": "22w43a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/dcac7f92f512a72009d331ccfd03bdbad40108e2/22w43a.json",
-      "time": "2025-03-05T06:30:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/c87640b55d27cc115de0bfbe327c82d4bf67b942/22w43a.json",
+      "time": "2025-03-20T06:29:58+00:00",
       "releaseTime": "2022-10-26T11:55:59+00:00"
     },
     {
       "id": "22w42a",
       "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/754314e07dcc9fb5ed84eb47748977737e301b45/22w42a.json",
-      "time": "2025-03-05T06:30:32+00:00",
+      "url": "https://piston-meta.mojang.com/v1/packages/2d23fe8fed6b9bbe6d344fb0bbdab209e0b675ee/22w42a.json",
+      "time": "2025-03-20T06:29:58+00:00",
       "releaseTime": "2022-10-19T09:34:22+00:00"
     },
     {
@@ -4856,17 +4884,17 @@
       "releaseTime": "2013-09-19T15:52:37+00:00"
     },
     {
-      "id": "1.6.3",
-      "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/903d6ba1bc87c301d88fa418f8b33446201c7d4e/1.6.3.json",
-      "time": "2019-06-28T07:07:47+00:00",
-      "releaseTime": "2013-09-13T10:54:41+00:00"
-    },
-    {
       "id": "13w37b",
       "type": "snapshot",
       "url": "https://piston-meta.mojang.com/v1/packages/b8d28154ee056af6af3c8c37815418fe0e9f34f8/13w37b.json",
       "time": "2019-06-28T07:08:08+00:00",
+      "releaseTime": "2013-09-13T10:54:41+00:00"
+    },
+    {
+      "id": "1.6.3",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/903d6ba1bc87c301d88fa418f8b33446201c7d4e/1.6.3.json",
+      "time": "2019-06-28T07:07:47+00:00",
       "releaseTime": "2013-09-13T10:54:41+00:00"
     },
     {
