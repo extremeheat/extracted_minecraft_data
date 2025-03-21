@@ -1,5 +1,8 @@
 package com.mojang.blaze3d.buffers;
 
+import com.mojang.blaze3d.DontObfuscate;
+
+@DontObfuscate
 public enum BufferUsage {
    DYNAMIC_WRITE(false, true),
    STATIC_WRITE(false, true),

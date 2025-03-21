@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JavaOps;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.Locale;
 import java.util.Objects;
@@ -22,6 +21,8 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
@@ -45,14 +46,14 @@ public class ItemParser {
    public static final char SYNTAX_REMOVED_COMPONENT = '!';
    static final Function<SuggestionsBuilder, CompletableFuture<Suggestions>> SUGGEST_NOTHING = SuggestionsBuilder::buildFuture;
    final HolderLookup.RegistryLookup<Item> items;
-   final RegistryOps<Object> registryOps;
-   final TagParser<Object> tagParser;
+   final RegistryOps<Tag> registryOps;
+   final TagParser<Tag> tagParser;
 
    public ItemParser(HolderLookup.Provider var1) {
       super();
       this.items = var1.lookupOrThrow(Registries.ITEM);
-      this.registryOps = var1.<Object>createSerializationContext(JavaOps.INSTANCE);
-      this.tagParser = TagParser.<Object>create(this.registryOps);
+      this.registryOps = var1.<Tag>createSerializationContext(NbtOps.INSTANCE);
+      this.tagParser = TagParser.<Tag>create(this.registryOps);
    }
 
    public ItemResult parse(StringReader var1) throws CommandSyntaxException {

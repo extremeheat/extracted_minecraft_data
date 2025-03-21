@@ -1,7 +1,5 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.platform.GlConst;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import java.util.HashMap;
@@ -120,7 +118,7 @@ public abstract class VertexArrayCache {
                      break;
                   case UV:
                      if (var7.type() == VertexFormatElement.Type.FLOAT) {
-                        ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), true, var1.getOffset(var7));
+                        ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), false, var1.getOffset(var7));
                      } else {
                         ARBVertexAttribBinding.glVertexAttribIFormat(var6, var7.count(), GlConst.toGl(var7.type()), var1.getOffset(var7));
                      }
@@ -135,6 +133,10 @@ public abstract class VertexArrayCache {
          } else {
             GlStateManager._glBindVertexArray(var3.id);
             if (var3.lastVertexBuffer != var2) {
+               if (var3.lastVertexBuffer != null && var3.lastVertexBuffer.handle == var2.handle) {
+                  ARBVertexAttribBinding.glBindVertexBuffer(0, 0, 0L, 0);
+               }
+
                ARBVertexAttribBinding.glBindVertexBuffer(0, var2.handle, 0L, var1.getVertexSize());
                var3.lastVertexBuffer = var2;
             }

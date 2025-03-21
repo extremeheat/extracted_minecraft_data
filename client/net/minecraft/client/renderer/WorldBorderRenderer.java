@@ -135,21 +135,23 @@ public class WorldBorderRenderer {
             var35 = var32.getDepthTexture();
          }
 
-         try (RenderPass var36 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var34, OptionalInt.empty(), var35, OptionalDouble.empty())) {
-            var36.setPipeline(var31);
-            var36.setIndexBuffer(this.indices.getBuffer(6), this.indices.type());
-            var36.bindSampler("Sampler0", var30.getTexture());
-            var36.setVertexBuffer(0, this.worldBorderBuffer);
-            ArrayList var37 = new ArrayList();
+         GpuBuffer var36 = this.indices.getBuffer(6);
 
-            for(WorldBorder.DistancePerDirection var39 : var1.closestBorder(var17, var19)) {
-               if (var39.distance() < var3) {
-                  int var40 = var39.direction().get2DDataValue();
-                  var37.add(new RenderPass.Draw(0, this.worldBorderBuffer, this.indices.getBuffer(0), this.indices.type(), 6 * var40, 6));
+         try (RenderPass var37 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var34, OptionalInt.empty(), var35, OptionalDouble.empty())) {
+            var37.setPipeline(var31);
+            var37.setIndexBuffer(var36, this.indices.type());
+            var37.bindSampler("Sampler0", var30.getTexture());
+            var37.setVertexBuffer(0, this.worldBorderBuffer);
+            ArrayList var38 = new ArrayList();
+
+            for(WorldBorder.DistancePerDirection var40 : var1.closestBorder(var17, var19)) {
+               if (var40.distance() < var3) {
+                  int var41 = var40.direction().get2DDataValue();
+                  var38.add(new RenderPass.Draw(0, this.worldBorderBuffer, var36, this.indices.type(), 6 * var41, 6));
                }
             }
 
-            var36.drawMultipleIndexed(var37);
+            var37.drawMultipleIndexed(var38, (GpuBuffer)null, (VertexFormat.IndexType)null);
          }
 
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

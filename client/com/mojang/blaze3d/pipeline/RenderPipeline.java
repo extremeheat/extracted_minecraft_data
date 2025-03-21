@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.pipeline;
 
+import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.LogicOp;
 import com.mojang.blaze3d.platform.PolygonMode;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.ResourceLocation;
 
+@DontObfuscate
 public class RenderPipeline {
    private final ResourceLocation location;
    private final ResourceLocation vertexShader;
@@ -146,6 +148,7 @@ public class RenderPipeline {
       return var1;
    }
 
+   @DontObfuscate
    public static class Builder {
       private Optional<ResourceLocation> location = Optional.empty();
       private Optional<ResourceLocation> fragmentShader = Optional.empty();
@@ -404,6 +407,7 @@ public class RenderPipeline {
       }
    }
 
+   @DontObfuscate
    public static record UniformDescription(String name, UniformType type) {
       public UniformDescription(String var1, UniformType var2) {
          super();
@@ -412,6 +416,7 @@ public class RenderPipeline {
       }
    }
 
+   @DontObfuscate
    public static record Snippet(Optional<ResourceLocation> vertexShader, Optional<ResourceLocation> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<BlendFunction> blendFunction, Optional<DepthTestFunction> depthTestFunction, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<Boolean> writeColor, Optional<Boolean> writeAlpha, Optional<Boolean> writeDepth, Optional<LogicOp> colorLogic, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
       final Optional<ResourceLocation> vertexShader;
       final Optional<ResourceLocation> fragmentShader;

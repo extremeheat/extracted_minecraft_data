@@ -4,9 +4,10 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.protocol.ProtocolInfoBuilder;
+import net.minecraft.network.protocol.SimpleUnboundProtocol;
 
 public class HandshakeProtocols {
-   public static final ProtocolInfo.Unbound<ServerHandshakePacketListener, FriendlyByteBuf> SERVERBOUND_TEMPLATE;
+   public static final SimpleUnboundProtocol<ServerHandshakePacketListener, FriendlyByteBuf> SERVERBOUND_TEMPLATE;
    public static final ProtocolInfo<ServerHandshakePacketListener> SERVERBOUND;
 
    public HandshakeProtocols() {

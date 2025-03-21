@@ -68,9 +68,17 @@ public record MessageSignature(byte[] bytes) {
       return Base64.getEncoder().encodeToString(this.bytes);
    }
 
+   public static String describe(@Nullable MessageSignature var0) {
+      return var0 == null ? "<no signature>" : var0.toString();
+   }
+
    public Packed pack(MessageSignatureCache var1) {
       int var2 = var1.pack(this);
       return var2 != -1 ? new Packed(var2) : new Packed(this);
+   }
+
+   public int checksum() {
+      return Arrays.hashCode(this.bytes);
    }
 
    static {

@@ -51,11 +51,13 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
+      super.addAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.store("Item", ItemStack.CODEC, var2, this.getItem());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
+      super.readAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(this.getDefaultItem()));
    }

@@ -1,9 +1,11 @@
 package com.mojang.blaze3d.shaders;
 
+import com.mojang.blaze3d.DontObfuscate;
 import javax.annotation.Nullable;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 
+@DontObfuscate
 public enum ShaderType {
    VERTEX("vertex", ".vsh"),
    FRAGMENT("fragment", ".fsh");

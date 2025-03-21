@@ -453,7 +453,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
+      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.lambda$fillCrashReport$0()));
       var2.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
       var2.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
       return var2;
@@ -542,13 +542,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public void overrideMapData(MapId var1, MapItemSavedData var2) {
       this.mapData.put(var1, var2);
-   }
-
-   public void setMapData(MapId var1, MapItemSavedData var2) {
-   }
-
-   public MapId getFreeMapId() {
-      return new MapId(0);
    }
 
    public Scoreboard getScoreboard() {

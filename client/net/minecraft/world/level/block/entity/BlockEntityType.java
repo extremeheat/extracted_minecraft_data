@@ -93,7 +93,6 @@ public class BlockEntityType<T extends BlockEntity> {
       this.validBlocks = var2;
    }
 
-   @Nullable
    public T create(BlockPos var1, BlockState var2) {
       return this.factory.create(var1, var2);
    }

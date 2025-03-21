@@ -144,7 +144,7 @@ public class TreePlacements {
       PlacementUtils.register(var0, FANCY_OAK_LEAF_LITTER, var35, PlacementUtils.filteredByBlockSurvival(Blocks.OAK_SAPLING));
       PlacementUtils.register(var0, FALLEN_OAK_TREE, var36, PlacementUtils.filteredByBlockSurvival(Blocks.OAK_SAPLING));
       PlacementUtils.register(var0, FALLEN_BIRCH_TREE, var37, PlacementUtils.filteredByBlockSurvival(Blocks.BIRCH_SAPLING));
-      PlacementUtils.register(var0, FALLEN_SUPER_BIRCH_TREE, var37, PlacementUtils.filteredByBlockSurvival(Blocks.BIRCH_SAPLING));
+      PlacementUtils.register(var0, FALLEN_SUPER_BIRCH_TREE, var38, PlacementUtils.filteredByBlockSurvival(Blocks.BIRCH_SAPLING));
       PlacementUtils.register(var0, FALLEN_SPRUCE_TREE, var39, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
       PlacementUtils.register(var0, FALLEN_JUNGLE_TREE, var40, PlacementUtils.filteredByBlockSurvival(Blocks.JUNGLE_SAPLING));
    }

@@ -1,7 +1,6 @@
 package net.minecraft.network;
 
 import io.netty.buffer.ByteBuf;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.BundlerInfo;
@@ -20,9 +19,7 @@ public interface ProtocolInfo<T extends PacketListener> {
    @Nullable
    BundlerInfo bundlerInfo();
 
-   public interface Unbound<T extends PacketListener, B extends ByteBuf> {
-      ProtocolInfo<T> bind(Function<ByteBuf, B> var1);
-
+   public interface Details {
       ConnectionProtocol id();
 
       PacketFlow flow();
@@ -34,5 +31,9 @@ public interface ProtocolInfo<T extends PacketListener> {
       public interface PacketVisitor {
          void accept(PacketType<?> var1, int var2);
       }
+   }
+
+   public interface DetailsProvider {
+      Details details();
    }
 }

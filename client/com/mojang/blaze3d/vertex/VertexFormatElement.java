@@ -1,10 +1,12 @@
 package com.mojang.blaze3d.vertex;
 
+import com.mojang.blaze3d.DontObfuscate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
+@DontObfuscate
 public record VertexFormatElement(int id, int index, Type type, Usage usage, int count) {
    public static final int MAX_COUNT = 32;
    private static final VertexFormatElement[] BY_ID = new VertexFormatElement[32];
@@ -81,6 +83,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
    }
 
+   @DontObfuscate
    public static enum Usage {
       POSITION("Position"),
       NORMAL("Normal"),
@@ -104,6 +107,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       }
    }
 
+   @DontObfuscate
    public static enum Type {
       FLOAT(4, "Float"),
       UBYTE(1, "Unsigned Byte"),

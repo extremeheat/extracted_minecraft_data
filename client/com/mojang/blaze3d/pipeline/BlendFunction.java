@@ -1,8 +1,10 @@
 package com.mojang.blaze3d.pipeline;
 
+import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
 
+@DontObfuscate
 public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, SourceFactor sourceAlpha, DestFactor destAlpha) {
    public static final BlendFunction LIGHTNING;
    public static final BlendFunction GLINT;

@@ -67,7 +67,7 @@ public class LastSeenMessagesTracker {
       }
 
       LastSeenMessages var7 = new LastSeenMessages(var3);
-      LastSeenMessages.Update var8 = new LastSeenMessages.Update(var1, var2);
+      LastSeenMessages.Update var8 = new LastSeenMessages.Update(var1, var2, var7.computeChecksum());
       return new Update(var7, var8);
    }
 

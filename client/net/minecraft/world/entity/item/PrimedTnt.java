@@ -21,6 +21,7 @@ import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -104,7 +105,13 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    private void explode() {
-      this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         if (var1.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
+         }
+      }
+
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

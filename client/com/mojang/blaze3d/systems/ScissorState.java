@@ -1,5 +1,8 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.DontObfuscate;
+
+@DontObfuscate
 public class ScissorState {
    private boolean enabled;
    private int x;

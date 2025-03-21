@@ -74,7 +74,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       } catch (Throwable var9) {
          CrashReport var7 = CrashReport.forThrowable(var9, "Tesselating liquid in world");
          CrashReportCategory var8 = var7.addCategory("Block being tesselated");
-         CrashReportCategory.populateBlockDetails(var8, var2, var1, (BlockState)null);
+         CrashReportCategory.populateBlockDetails(var8, var2, var1, var4);
          throw new ReportedException(var7);
       }
    }
@@ -95,7 +95,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
          float var9 = (float)(var8 >> 16 & 255) / 255.0F;
          float var10 = (float)(var8 >> 8 & 255) / 255.0F;
          float var11 = (float)(var8 & 255) / 255.0F;
-         this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var7, var9, var10, var11, var4, var5);
+         ModelBlockRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var7, var9, var10, var11, var4, var5);
          ((SpecialBlockModelRenderer)this.specialBlockModelRenderer.get()).renderByBlock(var1.getBlock(), ItemDisplayContext.NONE, var2, var3, var4, var5);
       }
    }

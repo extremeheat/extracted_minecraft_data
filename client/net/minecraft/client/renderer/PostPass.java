@@ -59,32 +59,33 @@ public class PostPass {
             RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
             GpuBuffer var6 = RenderSystem.getQuadVertexBuffer();
             RenderSystem.AutoStorageIndexBuffer var7 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            GpuBuffer var8x = var7.getBuffer(6);
 
-            try (RenderPass var8x = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5.getColorTexture(), OptionalInt.empty(), var5.useDepth ? var5.getDepthTexture() : null, OptionalDouble.empty())) {
-               var8x.setPipeline(this.pipeline);
-               var8x.setUniform("OutSize", (float)var5.width, (float)var5.height);
-               var8x.setVertexBuffer(0, var6);
-               var8x.setIndexBuffer(var7.getBuffer(6), var7.type());
+            try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5.getColorTexture(), OptionalInt.empty(), var5.useDepth ? var5.getDepthTexture() : null, OptionalDouble.empty())) {
+               var9.setPipeline(this.pipeline);
+               var9.setUniform("OutSize", (float)var5.width, (float)var5.height);
+               var9.setVertexBuffer(0, var6);
+               var9.setIndexBuffer(var8x, var7.type());
 
-               for(Input var10 : this.inputs) {
-                  var10.bindTo(var8x, var2);
+               for(Input var11 : this.inputs) {
+                  var11.bindTo(var9, var2);
                }
 
                if (var4 != null) {
-                  var4.accept(var8x);
+                  var4.accept(var9);
                }
 
-               for(PostChainConfig.Uniform var16 : this.uniforms) {
-                  var16.setOnRenderPass(var8x);
+               for(PostChainConfig.Uniform var17 : this.uniforms) {
+                  var17.setOnRenderPass(var9);
                }
 
-               var8x.drawIndexed(0, 6);
+               var9.drawIndexed(0, 6);
             }
 
             RenderSystem.restoreProjectionMatrix();
 
-            for(Input var15 : this.inputs) {
-               var15.cleanup(var2);
+            for(Input var16 : this.inputs) {
+               var16.cleanup(var2);
             }
 
          });

@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -47,6 +48,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -726,18 +728,15 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    @Nullable
    public abstract MapItemSavedData getMapData(MapId var1);
 
-   public abstract void setMapData(MapId var1, MapItemSavedData var2);
-
-   public abstract MapId getFreeMapId();
-
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
    }
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Affected level", 1);
       var2.setDetail("All players", (CrashReportDetail)(() -> {
-         int var10000 = this.players().size();
-         return var10000 + " total; " + String.valueOf(this.players());
+         List var1 = this.players();
+         int var10000 = var1.size();
+         return var10000 + " total; " + (String)var1.stream().map(Player::debugInfo).collect(Collectors.joining(", "));
       }));
       ChunkSource var10002 = this.getChunkSource();
       Objects.requireNonNull(var10002);

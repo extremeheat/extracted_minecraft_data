@@ -4,9 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
-import java.util.BitSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -19,6 +17,7 @@ import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -26,9 +25,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ModelBlockRenderer {
-   private static final int FACE_CUBIC = 0;
-   private static final int FACE_PARTIAL = 1;
-   static final Direction[] DIRECTIONS = Direction.values();
+   private static final Direction[] DIRECTIONS = Direction.values();
    private final BlockColors blockColors;
    private static final int CACHE_SIZE = 100;
    static final ThreadLocal<Cache> CACHE = ThreadLocal.withInitial(Cache::new);
@@ -60,166 +57,223 @@ public class ModelBlockRenderer {
       }
    }
 
-   public void tesselateWithAO(BlockAndTintGetter var1, List<BlockModelPart> var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, int var8) {
-      float[] var9 = new float[DIRECTIONS.length * 2];
-      BitSet var10 = new BitSet(3);
-      AmbientOcclusionFace var11 = new AmbientOcclusionFace();
-      BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
+   private static boolean shouldRenderFace(BlockAndTintGetter var0, BlockState var1, boolean var2, Direction var3, BlockPos var4) {
+      if (!var2) {
+         return true;
+      } else {
+         BlockState var5 = var0.getBlockState(var4);
+         return Block.shouldRenderFace(var1, var5, var3);
+      }
+   }
 
-      for(BlockModelPart var14 : var2) {
-         for(Direction var18 : DIRECTIONS) {
-            List var19 = var14.getQuads(var18);
-            if (!var19.isEmpty() && (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var12.setWithOffset(var4, (Direction)var18)), var18))) {
-               this.renderModelFaceAO(var1, var3, var4, var5, var6, var19, var9, var10, var11, var8);
+   public void tesselateWithAO(BlockAndTintGetter var1, List<BlockModelPart> var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, int var8) {
+      AmbientOcclusionRenderStorage var9 = new AmbientOcclusionRenderStorage();
+      int var10 = 0;
+      int var11 = 0;
+
+      for(BlockModelPart var13 : var2) {
+         for(Direction var17 : DIRECTIONS) {
+            int var18 = 1 << var17.ordinal();
+            boolean var19 = (var10 & var18) == 1;
+            boolean var20 = (var11 & var18) == 1;
+            if (!var19 || var20) {
+               List var21 = var13.getQuads(var17);
+               if (!var21.isEmpty()) {
+                  if (!var19) {
+                     var20 = shouldRenderFace(var1, var3, var7, var17, var9.scratchPos.setWithOffset(var4, (Direction)var17));
+                     var10 |= var18;
+                     if (var20) {
+                        var11 |= var18;
+                     }
+                  }
+
+                  if (var20) {
+                     this.renderModelFaceAO(var1, var3, var4, var5, var6, var21, var9, var8);
+                  }
+               }
             }
          }
 
-         List var20 = var14.getQuads((Direction)null);
-         if (!var20.isEmpty()) {
-            this.renderModelFaceAO(var1, var3, var4, var5, var6, var20, var9, var10, var11, var8);
+         List var22 = var13.getQuads((Direction)null);
+         if (!var22.isEmpty()) {
+            this.renderModelFaceAO(var1, var3, var4, var5, var6, var22, var9, var8);
          }
       }
 
    }
 
    public void tesselateWithoutAO(BlockAndTintGetter var1, List<BlockModelPart> var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, int var8) {
-      BitSet var9 = new BitSet(3);
-      BlockPos.MutableBlockPos var10 = var4.mutable();
+      CommonRenderStorage var9 = new CommonRenderStorage();
+      int var10 = 0;
+      int var11 = 0;
 
-      for(BlockModelPart var12 : var2) {
-         for(Direction var16 : DIRECTIONS) {
-            List var17 = var12.getQuads(var16);
-            if (!var17.isEmpty()) {
-               var10.setWithOffset(var4, (Direction)var16);
-               if (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var10), var16)) {
-                  int var18 = LevelRenderer.getLightColor(var1, var3, var10);
-                  this.renderModelFaceFlat(var1, var3, var4, var18, var8, false, var5, var6, var17, var9);
+      for(BlockModelPart var13 : var2) {
+         for(Direction var17 : DIRECTIONS) {
+            int var18 = 1 << var17.ordinal();
+            boolean var19 = (var10 & var18) == 1;
+            boolean var20 = (var11 & var18) == 1;
+            if (!var19 || var20) {
+               List var21 = var13.getQuads(var17);
+               if (!var21.isEmpty()) {
+                  BlockPos.MutableBlockPos var22 = var9.scratchPos.setWithOffset(var4, (Direction)var17);
+                  if (!var19) {
+                     var20 = shouldRenderFace(var1, var3, var7, var17, var22);
+                     var10 |= var18;
+                     if (var20) {
+                        var11 |= var18;
+                     }
+                  }
+
+                  if (var20) {
+                     int var23 = var9.cache.getLightColor(var3, var1, var22);
+                     this.renderModelFaceFlat(var1, var3, var4, var23, var8, false, var5, var6, var21, var9);
+                  }
                }
             }
          }
 
-         List var19 = var12.getQuads((Direction)null);
-         if (!var19.isEmpty()) {
-            this.renderModelFaceFlat(var1, var3, var4, -1, var8, true, var5, var6, var19, var9);
+         List var24 = var13.getQuads((Direction)null);
+         if (!var24.isEmpty()) {
+            this.renderModelFaceFlat(var1, var3, var4, -1, var8, true, var5, var6, var24, var9);
          }
       }
 
    }
 
-   private void renderModelFaceAO(BlockAndTintGetter var1, BlockState var2, BlockPos var3, PoseStack var4, VertexConsumer var5, List<BakedQuad> var6, float[] var7, BitSet var8, AmbientOcclusionFace var9, int var10) {
-      for(BakedQuad var12 : var6) {
-         this.calculateShape(var1, var2, var3, var12.vertices(), var12.direction(), var7, var8);
-         var9.calculate(var1, var2, var3, var12.direction(), var7, var8, var12.shade());
-         this.putQuadData(var1, var2, var3, var5, var4.last(), var12, var9.brightness, var9.lightmap, var10);
+   private void renderModelFaceAO(BlockAndTintGetter var1, BlockState var2, BlockPos var3, PoseStack var4, VertexConsumer var5, List<BakedQuad> var6, AmbientOcclusionRenderStorage var7, int var8) {
+      for(BakedQuad var10 : var6) {
+         calculateShape(var1, var2, var3, var10.vertices(), var10.direction(), var7);
+         var7.calculate(var1, var2, var3, var10.direction(), var10.shade());
+         this.putQuadData(var1, var2, var3, var5, var4.last(), var10, var7, var8);
       }
 
    }
 
-   private void putQuadData(BlockAndTintGetter var1, BlockState var2, BlockPos var3, VertexConsumer var4, PoseStack.Pose var5, BakedQuad var6, float[] var7, int[] var8, int var9) {
+   private void putQuadData(BlockAndTintGetter var1, BlockState var2, BlockPos var3, VertexConsumer var4, PoseStack.Pose var5, BakedQuad var6, CommonRenderStorage var7, int var8) {
+      int var12 = var6.tintIndex();
+      float var9;
       float var10;
       float var11;
-      float var12;
-      if (var6.isTinted()) {
-         int var13 = this.blockColors.getColor(var2, var1, var3, var6.tintIndex());
-         var10 = (float)(var13 >> 16 & 255) / 255.0F;
-         var11 = (float)(var13 >> 8 & 255) / 255.0F;
-         var12 = (float)(var13 & 255) / 255.0F;
+      if (var12 != -1) {
+         int var13;
+         if (var7.tintCacheIndex == var12) {
+            var13 = var7.tintCacheValue;
+         } else {
+            var13 = this.blockColors.getColor(var2, var1, var3, var12);
+            var7.tintCacheIndex = var12;
+            var7.tintCacheValue = var13;
+         }
+
+         var9 = ARGB.redFloat(var13);
+         var10 = ARGB.greenFloat(var13);
+         var11 = ARGB.blueFloat(var13);
       } else {
+         var9 = 1.0F;
          var10 = 1.0F;
          var11 = 1.0F;
-         var12 = 1.0F;
       }
 
-      var4.putBulkData(var5, var6, var7, var10, var11, var12, 1.0F, var8, var9, true);
+      var4.putBulkData(var5, var6, var7.brightness, var9, var10, var11, 1.0F, var7.lightmap, var8, true);
    }
 
-   private void calculateShape(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int[] var4, Direction var5, @Nullable float[] var6, BitSet var7) {
+   private static void calculateShape(BlockAndTintGetter var0, BlockState var1, BlockPos var2, int[] var3, Direction var4, CommonRenderStorage var5) {
+      float var6 = 32.0F;
+      float var7 = 32.0F;
       float var8 = 32.0F;
-      float var9 = 32.0F;
-      float var10 = 32.0F;
+      float var9 = -32.0F;
+      float var10 = -32.0F;
       float var11 = -32.0F;
-      float var12 = -32.0F;
-      float var13 = -32.0F;
 
-      for(int var14 = 0; var14 < 4; ++var14) {
-         float var15 = Float.intBitsToFloat(var4[var14 * 8]);
-         float var16 = Float.intBitsToFloat(var4[var14 * 8 + 1]);
-         float var17 = Float.intBitsToFloat(var4[var14 * 8 + 2]);
+      for(int var12 = 0; var12 < 4; ++var12) {
+         float var13 = Float.intBitsToFloat(var3[var12 * 8]);
+         float var14 = Float.intBitsToFloat(var3[var12 * 8 + 1]);
+         float var15 = Float.intBitsToFloat(var3[var12 * 8 + 2]);
+         var6 = Math.min(var6, var13);
+         var7 = Math.min(var7, var14);
          var8 = Math.min(var8, var15);
-         var9 = Math.min(var9, var16);
-         var10 = Math.min(var10, var17);
+         var9 = Math.max(var9, var13);
+         var10 = Math.max(var10, var14);
          var11 = Math.max(var11, var15);
-         var12 = Math.max(var12, var16);
-         var13 = Math.max(var13, var17);
       }
 
-      if (var6 != null) {
-         var6[Direction.WEST.get3DDataValue()] = var8;
-         var6[Direction.EAST.get3DDataValue()] = var11;
-         var6[Direction.DOWN.get3DDataValue()] = var9;
-         var6[Direction.UP.get3DDataValue()] = var12;
-         var6[Direction.NORTH.get3DDataValue()] = var10;
-         var6[Direction.SOUTH.get3DDataValue()] = var13;
-         int var18 = DIRECTIONS.length;
-         var6[Direction.WEST.get3DDataValue() + var18] = 1.0F - var8;
-         var6[Direction.EAST.get3DDataValue() + var18] = 1.0F - var11;
-         var6[Direction.DOWN.get3DDataValue() + var18] = 1.0F - var9;
-         var6[Direction.UP.get3DDataValue() + var18] = 1.0F - var12;
-         var6[Direction.NORTH.get3DDataValue() + var18] = 1.0F - var10;
-         var6[Direction.SOUTH.get3DDataValue() + var18] = 1.0F - var13;
+      if (var5 instanceof AmbientOcclusionRenderStorage var16) {
+         var16.faceShape[ModelBlockRenderer.SizeInfo.WEST.index] = var6;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.EAST.index] = var9;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.DOWN.index] = var7;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.UP.index] = var10;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.NORTH.index] = var8;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.SOUTH.index] = var11;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_WEST.index] = 1.0F - var6;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_EAST.index] = 1.0F - var9;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_DOWN.index] = 1.0F - var7;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_UP.index] = 1.0F - var10;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_NORTH.index] = 1.0F - var8;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_SOUTH.index] = 1.0F - var11;
       }
 
-      float var19 = 1.0E-4F;
-      float var20 = 0.9999F;
-      switch (var5) {
+      float var17 = 1.0E-4F;
+      float var18 = 0.9999F;
+      boolean var10001;
+      switch (var4) {
          case DOWN:
-            var7.set(1, var8 >= 1.0E-4F || var10 >= 1.0E-4F || var11 <= 0.9999F || var13 <= 0.9999F);
-            var7.set(0, var9 == var12 && (var9 < 1.0E-4F || var2.isCollisionShapeFullBlock(var1, var3)));
-            break;
          case UP:
-            var7.set(1, var8 >= 1.0E-4F || var10 >= 1.0E-4F || var11 <= 0.9999F || var13 <= 0.9999F);
-            var7.set(0, var9 == var12 && (var12 > 0.9999F || var2.isCollisionShapeFullBlock(var1, var3)));
+            var10001 = var6 >= 1.0E-4F || var8 >= 1.0E-4F || var9 <= 0.9999F || var11 <= 0.9999F;
             break;
          case NORTH:
-            var7.set(1, var8 >= 1.0E-4F || var9 >= 1.0E-4F || var11 <= 0.9999F || var12 <= 0.9999F);
-            var7.set(0, var10 == var13 && (var10 < 1.0E-4F || var2.isCollisionShapeFullBlock(var1, var3)));
-            break;
          case SOUTH:
-            var7.set(1, var8 >= 1.0E-4F || var9 >= 1.0E-4F || var11 <= 0.9999F || var12 <= 0.9999F);
-            var7.set(0, var10 == var13 && (var13 > 0.9999F || var2.isCollisionShapeFullBlock(var1, var3)));
+            var10001 = var6 >= 1.0E-4F || var7 >= 1.0E-4F || var9 <= 0.9999F || var10 <= 0.9999F;
             break;
          case WEST:
-            var7.set(1, var9 >= 1.0E-4F || var10 >= 1.0E-4F || var12 <= 0.9999F || var13 <= 0.9999F);
-            var7.set(0, var8 == var11 && (var8 < 1.0E-4F || var2.isCollisionShapeFullBlock(var1, var3)));
-            break;
          case EAST:
-            var7.set(1, var9 >= 1.0E-4F || var10 >= 1.0E-4F || var12 <= 0.9999F || var13 <= 0.9999F);
-            var7.set(0, var8 == var11 && (var11 > 0.9999F || var2.isCollisionShapeFullBlock(var1, var3)));
+            var10001 = var7 >= 1.0E-4F || var8 >= 1.0E-4F || var10 <= 0.9999F || var11 <= 0.9999F;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
 
+      var5.facePartial = var10001;
+      switch (var4) {
+         case DOWN -> var10001 = var7 == var10 && (var7 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
+         case UP -> var10001 = var7 == var10 && (var10 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
+         case NORTH -> var10001 = var8 == var11 && (var8 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
+         case SOUTH -> var10001 = var8 == var11 && (var11 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
+         case WEST -> var10001 = var6 == var9 && (var6 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
+         case EAST -> var10001 = var6 == var9 && (var9 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      var5.faceCubic = var10001;
    }
 
-   private void renderModelFaceFlat(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int var4, int var5, boolean var6, PoseStack var7, VertexConsumer var8, List<BakedQuad> var9, BitSet var10) {
+   private void renderModelFaceFlat(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int var4, int var5, boolean var6, PoseStack var7, VertexConsumer var8, List<BakedQuad> var9, CommonRenderStorage var10) {
       for(BakedQuad var12 : var9) {
          if (var6) {
-            this.calculateShape(var1, var2, var3, var12.vertices(), var12.direction(), (float[])null, var10);
-            BlockPos var13 = var10.get(0) ? var3.relative(var12.direction()) : var3;
-            var4 = LevelRenderer.getLightColor(var1, var2, var13);
+            calculateShape(var1, var2, var3, var12.vertices(), var12.direction(), var10);
+            Object var13 = var10.faceCubic ? var10.scratchPos.setWithOffset(var3, (Direction)var12.direction()) : var3;
+            var4 = var10.cache.getLightColor(var2, var1, (BlockPos)var13);
          }
 
          float var14 = var1.getShade(var12.direction(), var12.shade());
-         this.putQuadData(var1, var2, var3, var8, var7.last(), var12, new float[]{var14, var14, var14, var14}, new int[]{var4, var4, var4, var4}, var5);
+         var10.brightness[0] = var14;
+         var10.brightness[1] = var14;
+         var10.brightness[2] = var14;
+         var10.brightness[3] = var14;
+         var10.lightmap[0] = var4;
+         var10.lightmap[1] = var4;
+         var10.lightmap[2] = var4;
+         var10.lightmap[3] = var4;
+         this.putQuadData(var1, var2, var3, var8, var7.last(), var12, var10, var5);
       }
 
    }
 
-   public void renderModel(PoseStack.Pose var1, VertexConsumer var2, BlockStateModel var3, float var4, float var5, float var6, int var7, int var8) {
-      for(BlockModelPart var10 : var3.collectParts(RandomSource.create(42L))) {
-         for(Direction var14 : DIRECTIONS) {
-            renderQuadList(var1, var2, var4, var5, var6, var10.getQuads(var14), var7, var8);
+   public static void renderModel(PoseStack.Pose var0, VertexConsumer var1, BlockStateModel var2, float var3, float var4, float var5, int var6, int var7) {
+      for(BlockModelPart var9 : var2.collectParts(RandomSource.create(42L))) {
+         for(Direction var13 : DIRECTIONS) {
+            renderQuadList(var0, var1, var3, var4, var5, var9.getQuads(var13), var6, var7);
          }
 
-         renderQuadList(var1, var2, var4, var5, var6, var10.getQuads((Direction)null), var7, var8);
+         renderQuadList(var0, var1, var3, var4, var5, var9.getQuads((Direction)null), var6, var7);
       }
 
    }
@@ -308,6 +362,21 @@ public class ModelBlockRenderer {
          var1.defaultReturnValue(0.0F / 0.0F);
          return var1;
       });
+      private final LevelRenderer.BrightnessGetter cachedBrightnessGetter = (var1, var2) -> {
+         long var3 = var2.asLong();
+         int var5 = this.colorCache.get(var3);
+         if (var5 != 2147483647) {
+            return var5;
+         } else {
+            int var6 = LevelRenderer.BrightnessGetter.DEFAULT.packedBrightness(var1, var2);
+            if (this.colorCache.size() == 100) {
+               this.colorCache.removeFirstInt();
+            }
+
+            this.colorCache.put(var3, var6);
+            return var6;
+         }
+      };
 
       private Cache() {
          super();
@@ -324,24 +393,7 @@ public class ModelBlockRenderer {
       }
 
       public int getLightColor(BlockState var1, BlockAndTintGetter var2, BlockPos var3) {
-         long var4 = var3.asLong();
-         if (this.enabled) {
-            int var6 = this.colorCache.get(var4);
-            if (var6 != 2147483647) {
-               return var6;
-            }
-         }
-
-         int var7 = LevelRenderer.getLightColor(var2, var1, var3);
-         if (this.enabled) {
-            if (this.colorCache.size() == 100) {
-               this.colorCache.removeFirstInt();
-            }
-
-            this.colorCache.put(var4, var7);
-         }
-
-         return var7;
+         return LevelRenderer.getLightColor(this.enabled ? this.cachedBrightnessGetter : LevelRenderer.BrightnessGetter.DEFAULT, var2, var1, var3);
       }
 
       public float getShadeBrightness(BlockState var1, BlockAndTintGetter var2, BlockPos var3) {
@@ -366,198 +418,214 @@ public class ModelBlockRenderer {
       }
    }
 
-   static class AmbientOcclusionFace {
-      final float[] brightness = new float[4];
-      final int[] lightmap = new int[4];
+   static class CommonRenderStorage {
+      public final BlockPos.MutableBlockPos scratchPos = new BlockPos.MutableBlockPos();
+      public boolean faceCubic;
+      public boolean facePartial;
+      public final float[] brightness = new float[4];
+      public final int[] lightmap = new int[4];
+      public int tintCacheIndex = -1;
+      public int tintCacheValue;
+      public final Cache cache;
 
-      public AmbientOcclusionFace() {
+      CommonRenderStorage() {
          super();
+         this.cache = (Cache)ModelBlockRenderer.CACHE.get();
+      }
+   }
+
+   static class AmbientOcclusionRenderStorage extends CommonRenderStorage {
+      final float[] faceShape;
+
+      public AmbientOcclusionRenderStorage() {
+         super();
+         this.faceShape = new float[ModelBlockRenderer.SizeInfo.COUNT];
       }
 
-      public void calculate(BlockAndTintGetter var1, BlockState var2, BlockPos var3, Direction var4, float[] var5, BitSet var6, boolean var7) {
-         BlockPos var8 = var6.get(0) ? var3.relative(var4) : var3;
-         AdjacencyInfo var9 = ModelBlockRenderer.AdjacencyInfo.fromFacing(var4);
-         BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
-         Cache var11 = (Cache)ModelBlockRenderer.CACHE.get();
-         var10.setWithOffset(var8, (Direction)var9.corners[0]);
-         BlockState var12 = var1.getBlockState(var10);
-         int var13 = var11.getLightColor(var12, var1, var10);
-         float var14 = var11.getShadeBrightness(var12, var1, var10);
-         var10.setWithOffset(var8, (Direction)var9.corners[1]);
-         BlockState var15 = var1.getBlockState(var10);
-         int var16 = var11.getLightColor(var15, var1, var10);
-         float var17 = var11.getShadeBrightness(var15, var1, var10);
-         var10.setWithOffset(var8, (Direction)var9.corners[2]);
-         BlockState var18 = var1.getBlockState(var10);
-         int var19 = var11.getLightColor(var18, var1, var10);
-         float var20 = var11.getShadeBrightness(var18, var1, var10);
-         var10.setWithOffset(var8, (Direction)var9.corners[3]);
-         BlockState var21 = var1.getBlockState(var10);
-         int var22 = var11.getLightColor(var21, var1, var10);
-         float var23 = var11.getShadeBrightness(var21, var1, var10);
-         BlockState var24 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[0]).move(var4));
-         boolean var25 = !var24.isViewBlocking(var1, var10) || var24.getLightBlock() == 0;
-         BlockState var26 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[1]).move(var4));
-         boolean var27 = !var26.isViewBlocking(var1, var10) || var26.getLightBlock() == 0;
-         BlockState var28 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[2]).move(var4));
-         boolean var29 = !var28.isViewBlocking(var1, var10) || var28.getLightBlock() == 0;
-         BlockState var30 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[3]).move(var4));
-         boolean var31 = !var30.isViewBlocking(var1, var10) || var30.getLightBlock() == 0;
+      public void calculate(BlockAndTintGetter var1, BlockState var2, BlockPos var3, Direction var4, boolean var5) {
+         BlockPos var6 = this.faceCubic ? var3.relative(var4) : var3;
+         AdjacencyInfo var7 = ModelBlockRenderer.AdjacencyInfo.fromFacing(var4);
+         BlockPos.MutableBlockPos var8 = this.scratchPos;
+         var8.setWithOffset(var6, (Direction)var7.corners[0]);
+         BlockState var9 = var1.getBlockState(var8);
+         int var10 = this.cache.getLightColor(var9, var1, var8);
+         float var11 = this.cache.getShadeBrightness(var9, var1, var8);
+         var8.setWithOffset(var6, (Direction)var7.corners[1]);
+         BlockState var12 = var1.getBlockState(var8);
+         int var13 = this.cache.getLightColor(var12, var1, var8);
+         float var14 = this.cache.getShadeBrightness(var12, var1, var8);
+         var8.setWithOffset(var6, (Direction)var7.corners[2]);
+         BlockState var15 = var1.getBlockState(var8);
+         int var16 = this.cache.getLightColor(var15, var1, var8);
+         float var17 = this.cache.getShadeBrightness(var15, var1, var8);
+         var8.setWithOffset(var6, (Direction)var7.corners[3]);
+         BlockState var18 = var1.getBlockState(var8);
+         int var19 = this.cache.getLightColor(var18, var1, var8);
+         float var20 = this.cache.getShadeBrightness(var18, var1, var8);
+         BlockState var21 = var1.getBlockState(var8.setWithOffset(var6, (Direction)var7.corners[0]).move(var4));
+         boolean var22 = !var21.isViewBlocking(var1, var8) || var21.getLightBlock() == 0;
+         BlockState var23 = var1.getBlockState(var8.setWithOffset(var6, (Direction)var7.corners[1]).move(var4));
+         boolean var24 = !var23.isViewBlocking(var1, var8) || var23.getLightBlock() == 0;
+         BlockState var25 = var1.getBlockState(var8.setWithOffset(var6, (Direction)var7.corners[2]).move(var4));
+         boolean var26 = !var25.isViewBlocking(var1, var8) || var25.getLightBlock() == 0;
+         BlockState var27 = var1.getBlockState(var8.setWithOffset(var6, (Direction)var7.corners[3]).move(var4));
+         boolean var28 = !var27.isViewBlocking(var1, var8) || var27.getLightBlock() == 0;
+         float var29;
+         int var33;
+         if (!var26 && !var22) {
+            var29 = var11;
+            var33 = var10;
+         } else {
+            var8.setWithOffset(var6, (Direction)var7.corners[0]).move(var7.corners[2]);
+            BlockState var37 = var1.getBlockState(var8);
+            var29 = this.cache.getShadeBrightness(var37, var1, var8);
+            var33 = this.cache.getLightColor(var37, var1, var8);
+         }
+
+         float var30;
+         int var34;
+         if (!var28 && !var22) {
+            var30 = var11;
+            var34 = var10;
+         } else {
+            var8.setWithOffset(var6, (Direction)var7.corners[0]).move(var7.corners[3]);
+            BlockState var65 = var1.getBlockState(var8);
+            var30 = this.cache.getShadeBrightness(var65, var1, var8);
+            var34 = this.cache.getLightColor(var65, var1, var8);
+         }
+
+         float var31;
+         int var35;
+         if (!var26 && !var24) {
+            var31 = var11;
+            var35 = var10;
+         } else {
+            var8.setWithOffset(var6, (Direction)var7.corners[1]).move(var7.corners[2]);
+            BlockState var66 = var1.getBlockState(var8);
+            var31 = this.cache.getShadeBrightness(var66, var1, var8);
+            var35 = this.cache.getLightColor(var66, var1, var8);
+         }
+
          float var32;
          int var36;
-         if (!var29 && !var25) {
-            var32 = var14;
-            var36 = var13;
+         if (!var28 && !var24) {
+            var32 = var11;
+            var36 = var10;
          } else {
-            var10.setWithOffset(var8, (Direction)var9.corners[0]).move(var9.corners[2]);
-            BlockState var40 = var1.getBlockState(var10);
-            var32 = var11.getShadeBrightness(var40, var1, var10);
-            var36 = var11.getLightColor(var40, var1, var10);
+            var8.setWithOffset(var6, (Direction)var7.corners[1]).move(var7.corners[3]);
+            BlockState var67 = var1.getBlockState(var8);
+            var32 = this.cache.getShadeBrightness(var67, var1, var8);
+            var36 = this.cache.getLightColor(var67, var1, var8);
          }
 
-         float var33;
-         int var37;
-         if (!var31 && !var25) {
-            var33 = var14;
-            var37 = var13;
+         int var68 = this.cache.getLightColor(var2, var1, var3);
+         var8.setWithOffset(var3, (Direction)var4);
+         BlockState var38 = var1.getBlockState(var8);
+         if (this.faceCubic || !var38.isSolidRender()) {
+            var68 = this.cache.getLightColor(var38, var1, var8);
+         }
+
+         float var39 = this.faceCubic ? this.cache.getShadeBrightness(var1.getBlockState(var6), var1, var6) : this.cache.getShadeBrightness(var1.getBlockState(var3), var1, var3);
+         AmbientVertexRemap var40 = ModelBlockRenderer.AmbientVertexRemap.fromFacing(var4);
+         if (this.facePartial && var7.doNonCubicWeight) {
+            float var69 = (var20 + var11 + var30 + var39) * 0.25F;
+            float var71 = (var17 + var11 + var29 + var39) * 0.25F;
+            float var73 = (var17 + var14 + var31 + var39) * 0.25F;
+            float var74 = (var20 + var14 + var32 + var39) * 0.25F;
+            float var45 = this.faceShape[var7.vert0Weights[0].index] * this.faceShape[var7.vert0Weights[1].index];
+            float var46 = this.faceShape[var7.vert0Weights[2].index] * this.faceShape[var7.vert0Weights[3].index];
+            float var47 = this.faceShape[var7.vert0Weights[4].index] * this.faceShape[var7.vert0Weights[5].index];
+            float var48 = this.faceShape[var7.vert0Weights[6].index] * this.faceShape[var7.vert0Weights[7].index];
+            float var49 = this.faceShape[var7.vert1Weights[0].index] * this.faceShape[var7.vert1Weights[1].index];
+            float var50 = this.faceShape[var7.vert1Weights[2].index] * this.faceShape[var7.vert1Weights[3].index];
+            float var51 = this.faceShape[var7.vert1Weights[4].index] * this.faceShape[var7.vert1Weights[5].index];
+            float var52 = this.faceShape[var7.vert1Weights[6].index] * this.faceShape[var7.vert1Weights[7].index];
+            float var53 = this.faceShape[var7.vert2Weights[0].index] * this.faceShape[var7.vert2Weights[1].index];
+            float var54 = this.faceShape[var7.vert2Weights[2].index] * this.faceShape[var7.vert2Weights[3].index];
+            float var55 = this.faceShape[var7.vert2Weights[4].index] * this.faceShape[var7.vert2Weights[5].index];
+            float var56 = this.faceShape[var7.vert2Weights[6].index] * this.faceShape[var7.vert2Weights[7].index];
+            float var57 = this.faceShape[var7.vert3Weights[0].index] * this.faceShape[var7.vert3Weights[1].index];
+            float var58 = this.faceShape[var7.vert3Weights[2].index] * this.faceShape[var7.vert3Weights[3].index];
+            float var59 = this.faceShape[var7.vert3Weights[4].index] * this.faceShape[var7.vert3Weights[5].index];
+            float var60 = this.faceShape[var7.vert3Weights[6].index] * this.faceShape[var7.vert3Weights[7].index];
+            this.brightness[var40.vert0] = Math.clamp(var69 * var45 + var71 * var46 + var73 * var47 + var74 * var48, 0.0F, 1.0F);
+            this.brightness[var40.vert1] = Math.clamp(var69 * var49 + var71 * var50 + var73 * var51 + var74 * var52, 0.0F, 1.0F);
+            this.brightness[var40.vert2] = Math.clamp(var69 * var53 + var71 * var54 + var73 * var55 + var74 * var56, 0.0F, 1.0F);
+            this.brightness[var40.vert3] = Math.clamp(var69 * var57 + var71 * var58 + var73 * var59 + var74 * var60, 0.0F, 1.0F);
+            int var61 = blend(var19, var10, var34, var68);
+            int var62 = blend(var16, var10, var33, var68);
+            int var63 = blend(var16, var13, var35, var68);
+            int var64 = blend(var19, var13, var36, var68);
+            this.lightmap[var40.vert0] = blend(var61, var62, var63, var64, var45, var46, var47, var48);
+            this.lightmap[var40.vert1] = blend(var61, var62, var63, var64, var49, var50, var51, var52);
+            this.lightmap[var40.vert2] = blend(var61, var62, var63, var64, var53, var54, var55, var56);
+            this.lightmap[var40.vert3] = blend(var61, var62, var63, var64, var57, var58, var59, var60);
          } else {
-            var10.setWithOffset(var8, (Direction)var9.corners[0]).move(var9.corners[3]);
-            BlockState var68 = var1.getBlockState(var10);
-            var33 = var11.getShadeBrightness(var68, var1, var10);
-            var37 = var11.getLightColor(var68, var1, var10);
+            float var41 = (var20 + var11 + var30 + var39) * 0.25F;
+            float var42 = (var17 + var11 + var29 + var39) * 0.25F;
+            float var43 = (var17 + var14 + var31 + var39) * 0.25F;
+            float var44 = (var20 + var14 + var32 + var39) * 0.25F;
+            this.lightmap[var40.vert0] = blend(var19, var10, var34, var68);
+            this.lightmap[var40.vert1] = blend(var16, var10, var33, var68);
+            this.lightmap[var40.vert2] = blend(var16, var13, var35, var68);
+            this.lightmap[var40.vert3] = blend(var19, var13, var36, var68);
+            this.brightness[var40.vert0] = var41;
+            this.brightness[var40.vert1] = var42;
+            this.brightness[var40.vert2] = var43;
+            this.brightness[var40.vert3] = var44;
          }
 
-         float var34;
-         int var38;
-         if (!var29 && !var27) {
-            var34 = var14;
-            var38 = var13;
-         } else {
-            var10.setWithOffset(var8, (Direction)var9.corners[1]).move(var9.corners[2]);
-            BlockState var69 = var1.getBlockState(var10);
-            var34 = var11.getShadeBrightness(var69, var1, var10);
-            var38 = var11.getLightColor(var69, var1, var10);
-         }
+         float var70 = var1.getShade(var4, var5);
 
-         float var35;
-         int var39;
-         if (!var31 && !var27) {
-            var35 = var14;
-            var39 = var13;
-         } else {
-            var10.setWithOffset(var8, (Direction)var9.corners[1]).move(var9.corners[3]);
-            BlockState var70 = var1.getBlockState(var10);
-            var35 = var11.getShadeBrightness(var70, var1, var10);
-            var39 = var11.getLightColor(var70, var1, var10);
-         }
-
-         int var71 = var11.getLightColor(var2, var1, var3);
-         var10.setWithOffset(var3, (Direction)var4);
-         BlockState var41 = var1.getBlockState(var10);
-         if (var6.get(0) || !var41.isSolidRender()) {
-            var71 = var11.getLightColor(var41, var1, var10);
-         }
-
-         float var42 = var6.get(0) ? var11.getShadeBrightness(var1.getBlockState(var8), var1, var8) : var11.getShadeBrightness(var1.getBlockState(var3), var1, var3);
-         AmbientVertexRemap var43 = ModelBlockRenderer.AmbientVertexRemap.fromFacing(var4);
-         if (var6.get(1) && var9.doNonCubicWeight) {
-            float var72 = (var23 + var14 + var33 + var42) * 0.25F;
-            float var74 = (var20 + var14 + var32 + var42) * 0.25F;
-            float var76 = (var20 + var17 + var34 + var42) * 0.25F;
-            float var77 = (var23 + var17 + var35 + var42) * 0.25F;
-            float var48 = var5[var9.vert0Weights[0].shape] * var5[var9.vert0Weights[1].shape];
-            float var49 = var5[var9.vert0Weights[2].shape] * var5[var9.vert0Weights[3].shape];
-            float var50 = var5[var9.vert0Weights[4].shape] * var5[var9.vert0Weights[5].shape];
-            float var51 = var5[var9.vert0Weights[6].shape] * var5[var9.vert0Weights[7].shape];
-            float var52 = var5[var9.vert1Weights[0].shape] * var5[var9.vert1Weights[1].shape];
-            float var53 = var5[var9.vert1Weights[2].shape] * var5[var9.vert1Weights[3].shape];
-            float var54 = var5[var9.vert1Weights[4].shape] * var5[var9.vert1Weights[5].shape];
-            float var55 = var5[var9.vert1Weights[6].shape] * var5[var9.vert1Weights[7].shape];
-            float var56 = var5[var9.vert2Weights[0].shape] * var5[var9.vert2Weights[1].shape];
-            float var57 = var5[var9.vert2Weights[2].shape] * var5[var9.vert2Weights[3].shape];
-            float var58 = var5[var9.vert2Weights[4].shape] * var5[var9.vert2Weights[5].shape];
-            float var59 = var5[var9.vert2Weights[6].shape] * var5[var9.vert2Weights[7].shape];
-            float var60 = var5[var9.vert3Weights[0].shape] * var5[var9.vert3Weights[1].shape];
-            float var61 = var5[var9.vert3Weights[2].shape] * var5[var9.vert3Weights[3].shape];
-            float var62 = var5[var9.vert3Weights[4].shape] * var5[var9.vert3Weights[5].shape];
-            float var63 = var5[var9.vert3Weights[6].shape] * var5[var9.vert3Weights[7].shape];
-            this.brightness[var43.vert0] = Math.clamp(var72 * var48 + var74 * var49 + var76 * var50 + var77 * var51, 0.0F, 1.0F);
-            this.brightness[var43.vert1] = Math.clamp(var72 * var52 + var74 * var53 + var76 * var54 + var77 * var55, 0.0F, 1.0F);
-            this.brightness[var43.vert2] = Math.clamp(var72 * var56 + var74 * var57 + var76 * var58 + var77 * var59, 0.0F, 1.0F);
-            this.brightness[var43.vert3] = Math.clamp(var72 * var60 + var74 * var61 + var76 * var62 + var77 * var63, 0.0F, 1.0F);
-            int var64 = this.blend(var22, var13, var37, var71);
-            int var65 = this.blend(var19, var13, var36, var71);
-            int var66 = this.blend(var19, var16, var38, var71);
-            int var67 = this.blend(var22, var16, var39, var71);
-            this.lightmap[var43.vert0] = this.blend(var64, var65, var66, var67, var48, var49, var50, var51);
-            this.lightmap[var43.vert1] = this.blend(var64, var65, var66, var67, var52, var53, var54, var55);
-            this.lightmap[var43.vert2] = this.blend(var64, var65, var66, var67, var56, var57, var58, var59);
-            this.lightmap[var43.vert3] = this.blend(var64, var65, var66, var67, var60, var61, var62, var63);
-         } else {
-            float var44 = (var23 + var14 + var33 + var42) * 0.25F;
-            float var45 = (var20 + var14 + var32 + var42) * 0.25F;
-            float var46 = (var20 + var17 + var34 + var42) * 0.25F;
-            float var47 = (var23 + var17 + var35 + var42) * 0.25F;
-            this.lightmap[var43.vert0] = this.blend(var22, var13, var37, var71);
-            this.lightmap[var43.vert1] = this.blend(var19, var13, var36, var71);
-            this.lightmap[var43.vert2] = this.blend(var19, var16, var38, var71);
-            this.lightmap[var43.vert3] = this.blend(var22, var16, var39, var71);
-            this.brightness[var43.vert0] = var44;
-            this.brightness[var43.vert1] = var45;
-            this.brightness[var43.vert2] = var46;
-            this.brightness[var43.vert3] = var47;
-         }
-
-         float var73 = var1.getShade(var4, var7);
-
-         for(int var75 = 0; var75 < this.brightness.length; ++var75) {
+         for(int var72 = 0; var72 < this.brightness.length; ++var72) {
             float[] var10000 = this.brightness;
-            var10000[var75] *= var73;
+            var10000[var72] *= var70;
          }
 
       }
 
-      private int blend(int var1, int var2, int var3, int var4) {
+      private static int blend(int var0, int var1, int var2, int var3) {
+         if (var0 == 0) {
+            var0 = var3;
+         }
+
          if (var1 == 0) {
-            var1 = var4;
+            var1 = var3;
          }
 
          if (var2 == 0) {
-            var2 = var4;
+            var2 = var3;
          }
 
-         if (var3 == 0) {
-            var3 = var4;
-         }
-
-         return var1 + var2 + var3 + var4 >> 2 & 16711935;
+         return var0 + var1 + var2 + var3 >> 2 & 16711935;
       }
 
-      private int blend(int var1, int var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-         int var9 = (int)((float)(var1 >> 16 & 255) * var5 + (float)(var2 >> 16 & 255) * var6 + (float)(var3 >> 16 & 255) * var7 + (float)(var4 >> 16 & 255) * var8) & 255;
-         int var10 = (int)((float)(var1 & 255) * var5 + (float)(var2 & 255) * var6 + (float)(var3 & 255) * var7 + (float)(var4 & 255) * var8) & 255;
-         return var9 << 16 | var10;
+      private static int blend(int var0, int var1, int var2, int var3, float var4, float var5, float var6, float var7) {
+         int var8 = (int)((float)(var0 >> 16 & 255) * var4 + (float)(var1 >> 16 & 255) * var5 + (float)(var2 >> 16 & 255) * var6 + (float)(var3 >> 16 & 255) * var7) & 255;
+         int var9 = (int)((float)(var0 & 255) * var4 + (float)(var1 & 255) * var5 + (float)(var2 & 255) * var6 + (float)(var3 & 255) * var7) & 255;
+         return var8 << 16 | var9;
       }
    }
 
    protected static enum SizeInfo {
-      DOWN(Direction.DOWN, false),
-      UP(Direction.UP, false),
-      NORTH(Direction.NORTH, false),
-      SOUTH(Direction.SOUTH, false),
-      WEST(Direction.WEST, false),
-      EAST(Direction.EAST, false),
-      FLIP_DOWN(Direction.DOWN, true),
-      FLIP_UP(Direction.UP, true),
-      FLIP_NORTH(Direction.NORTH, true),
-      FLIP_SOUTH(Direction.SOUTH, true),
-      FLIP_WEST(Direction.WEST, true),
-      FLIP_EAST(Direction.EAST, true);
+      DOWN(0),
+      UP(1),
+      NORTH(2),
+      SOUTH(3),
+      WEST(4),
+      EAST(5),
+      FLIP_DOWN(6),
+      FLIP_UP(7),
+      FLIP_NORTH(8),
+      FLIP_SOUTH(9),
+      FLIP_WEST(10),
+      FLIP_EAST(11);
 
-      final int shape;
+      public static final int COUNT = values().length;
+      final int index;
 
-      private SizeInfo(final Direction var3, final boolean var4) {
-         this.shape = var3.get3DDataValue() + (var4 ? ModelBlockRenderer.DIRECTIONS.length : 0);
+      private SizeInfo(final int var3) {
+         this.index = var3;
       }
 
       // $FF: synthetic method

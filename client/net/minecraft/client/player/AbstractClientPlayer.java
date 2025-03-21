@@ -31,14 +31,10 @@ public abstract class AbstractClientPlayer extends Player {
       this.clientLevel = var1;
    }
 
-   public boolean isSpectator() {
+   @Nullable
+   public GameType gameMode() {
       PlayerInfo var1 = this.getPlayerInfo();
-      return var1 != null && var1.getGameMode() == GameType.SPECTATOR;
-   }
-
-   public boolean isCreative() {
-      PlayerInfo var1 = this.getPlayerInfo();
-      return var1 != null && var1.getGameMode() == GameType.CREATIVE;
+      return var1 != null ? var1.getGameMode() : null;
    }
 
    @Nullable

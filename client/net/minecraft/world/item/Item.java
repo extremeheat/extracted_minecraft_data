@@ -282,8 +282,8 @@ public class Item implements FeatureElement, ItemLike {
    public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
    }
 
-   public void onCraftedBy(ItemStack var1, Level var2, Player var3) {
-      this.onCraftedPostProcess(var1, var2);
+   public void onCraftedBy(ItemStack var1, Player var2) {
+      this.onCraftedPostProcess(var1, var2.level());
    }
 
    public void onCraftedPostProcess(ItemStack var1, Level var2) {

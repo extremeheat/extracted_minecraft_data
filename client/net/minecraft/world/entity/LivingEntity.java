@@ -408,10 +408,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
          }
       }
 
-      if (this.isAlive() && this.isInRain()) {
-         this.extinguishFire();
-      }
-
       if (this.hurtTime > 0) {
          --this.hurtTime;
       }
@@ -3211,7 +3207,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public void releaseUsingItem() {
-      if (!this.useItem.isEmpty()) {
+      ItemStack var1 = this.getItemInHand(this.getUsedItemHand());
+      if (!this.useItem.isEmpty() && ItemStack.isSameItem(var1, this.useItem)) {
+         this.useItem = var1;
          this.useItem.releaseUsing(this.level(), this, this.getUseItemRemainingTicks());
          if (this.useItem.useOnRelease()) {
             this.updatingUsingItem();

@@ -305,16 +305,21 @@ public class SectionRenderDispatcher {
             Runnable var10000 = () -> {
                try (Zone var3 = Profiler.get().zone("Upload Section Indices")) {
                   SectionBuffers var4 = this.getBuffers(var2);
-                  if (var4.indexBuffer == null) {
-                     var4.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-                        String var10000 = var2.getName();
-                        return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
-                     }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var1.byteBuffer()));
-                  } else {
-                     CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
-                     if (!var4.indexBuffer.isClosed()) {
-                        var5.writeToBuffer(var4.indexBuffer, var1.byteBuffer(), 0);
+                  if (var4 != null && !SectionRenderDispatcher.this.closed) {
+                     if (var4.indexBuffer == null) {
+                        var4.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
+                           String var10000 = var2.getName();
+                           return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
+                        }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var1.byteBuffer()));
+                     } else {
+                        CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
+                        if (!var4.indexBuffer.isClosed()) {
+                           var5.writeToBuffer(var4.indexBuffer, var1.byteBuffer(), 0);
+                        }
                      }
+
+                     var1.close();
+                     return;
                   }
 
                   var1.close();
@@ -349,16 +354,13 @@ public class SectionRenderDispatcher {
          return (CompiledSection)this.compiled.get();
       }
 
-      private void reset() {
+      public void reset() {
          this.cancelTasks();
          this.compiled.set(SectionRenderDispatcher.CompiledSection.UNCOMPILED);
          this.pointOfView.set((Object)null);
          this.dirty = true;
-      }
-
-      public void releaseBuffers() {
-         this.reset();
          this.buffers.values().forEach(SectionBuffers::close);
+         this.buffers.clear();
       }
 
       public BlockPos getRenderOrigin() {

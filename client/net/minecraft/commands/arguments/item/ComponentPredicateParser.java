@@ -5,12 +5,12 @@ import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JavaOps;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.Util;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.parsing.packrat.Atom;
@@ -92,7 +92,7 @@ public class ComponentPredicateParser {
       });
       var15.put(var11, new ComponentLookupRule(var16, var0));
       var15.put(var12, new PredicateLookupRule(var16, var0));
-      var15.put(var14, new TagParseRule(JavaOps.INSTANCE));
+      var15.put(var14, new TagParseRule(NbtOps.INSTANCE));
       return new Grammar<List<T>>(var15, var17);
    }
 

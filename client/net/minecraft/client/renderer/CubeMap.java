@@ -56,26 +56,27 @@ public class CubeMap {
       RenderTarget var9 = Minecraft.getInstance().getMainRenderTarget();
       GpuTexture var10 = var9.getColorTexture();
       GpuTexture var11 = var9.getDepthTexture();
+      RenderSystem.AutoStorageIndexBuffer var12 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      GpuBuffer var13 = var12.getBuffer(36);
 
-      try (RenderPass var12 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var10, OptionalInt.empty(), var11, OptionalDouble.empty())) {
-         RenderSystem.AutoStorageIndexBuffer var13 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-         var12.setPipeline(var8);
-         var12.setVertexBuffer(0, this.cubeMapBuffer);
-         var12.setIndexBuffer(var13.getBuffer(36), var13.type());
+      try (RenderPass var14 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var10, OptionalInt.empty(), var11, OptionalDouble.empty())) {
+         var14.setPipeline(var8);
+         var14.setVertexBuffer(0, this.cubeMapBuffer);
+         var14.setIndexBuffer(var13, var12.type());
 
-         for(int var14 = 0; var14 < 4; ++var14) {
+         for(int var15 = 0; var15 < 4; ++var15) {
             var6.pushMatrix();
-            float var15 = ((float)(var14 % 2) / 2.0F - 0.5F) / 256.0F;
-            float var16 = ((float)(var14 / 2) / 2.0F - 0.5F) / 256.0F;
-            float var17 = 0.0F;
-            var6.translate(var15, var16, 0.0F);
+            float var16 = ((float)(var15 % 2) / 2.0F - 0.5F) / 256.0F;
+            float var17 = ((float)(var15 / 2) / 2.0F - 0.5F) / 256.0F;
+            float var18 = 0.0F;
+            var6.translate(var16, var17, 0.0F);
             var6.rotateX(var2 * 0.017453292F);
             var6.rotateY(var3 * 0.017453292F);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var4 / (float)(var14 + 1));
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var4 / (float)(var15 + 1));
 
-            for(int var18 = 0; var18 < 6; ++var18) {
-               var12.bindSampler("Sampler0", var1.getTextureManager().getTexture((ResourceLocation)this.sides.get(var18)).getTexture());
-               var12.drawIndexed(6 * var18, 6);
+            for(int var19 = 0; var19 < 6; ++var19) {
+               var14.bindSampler("Sampler0", var1.getTextureManager().getTexture((ResourceLocation)this.sides.get(var19)).getTexture());
+               var14.drawIndexed(6 * var19, 6);
             }
 
             var6.popMatrix();

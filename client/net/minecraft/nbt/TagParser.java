@@ -19,15 +19,21 @@ public class TagParser<T> {
    private static final TagParser<Tag> NBT_OPS_PARSER;
    public static final Codec<CompoundTag> FLATTENED_CODEC;
    public static final Codec<CompoundTag> LENIENT_CODEC;
+   private final DynamicOps<T> ops;
    private final Grammar<T> grammar;
 
-   public TagParser(Grammar<T> var1) {
+   private TagParser(DynamicOps<T> var1, Grammar<T> var2) {
       super();
-      this.grammar = var1;
+      this.ops = var1;
+      this.grammar = var2;
+   }
+
+   public DynamicOps<T> getOps() {
+      return this.ops;
    }
 
    public static <T> TagParser<T> create(DynamicOps<T> var0) {
-      return new TagParser<T>(SnbtGrammar.createParser(var0));
+      return new TagParser<T>(var0, SnbtGrammar.createParser(var0));
    }
 
    private static CompoundTag castToCompoundOrThrow(StringReader var0, Tag var1) throws CommandSyntaxException {

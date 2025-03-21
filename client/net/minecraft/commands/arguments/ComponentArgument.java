@@ -3,14 +3,16 @@ package net.minecraft.commands.arguments;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.serialization.JavaOps;
+import com.mojang.serialization.DynamicOps;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.SnbtGrammar;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
@@ -21,10 +23,11 @@ import net.minecraft.world.entity.Entity;
 public class ComponentArgument extends ParserBasedArgument<Component> {
    private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "'hello world'", "\"\"", "{text:\"hello world\"}", "[\"\"]");
    public static final DynamicCommandExceptionType ERROR_INVALID_COMPONENT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.component.invalid", var0));
-   private static final CommandArgumentParser<Object> TAG_PARSER;
+   private static final DynamicOps<Tag> OPS;
+   private static final CommandArgumentParser<Tag> TAG_PARSER;
 
    private ComponentArgument(HolderLookup.Provider var1) {
-      super(TAG_PARSER.withCodec(var1.createSerializationContext(JavaOps.INSTANCE), TAG_PARSER, ComponentSerialization.CODEC, ERROR_INVALID_COMPONENT));
+      super(TAG_PARSER.withCodec(var1.createSerializationContext(OPS), TAG_PARSER, ComponentSerialization.CODEC, ERROR_INVALID_COMPONENT));
    }
 
    public static Component getRawComponent(CommandContext<CommandSourceStack> var0, String var1) {
@@ -48,6 +51,7 @@ public class ComponentArgument extends ParserBasedArgument<Component> {
    }
 
    static {
-      TAG_PARSER = SnbtGrammar.<Object>createParser(JavaOps.INSTANCE);
+      OPS = NbtOps.INSTANCE;
+      TAG_PARSER = SnbtGrammar.<Tag>createParser(OPS);
    }
 }

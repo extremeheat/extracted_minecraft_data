@@ -18,7 +18,6 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.Locale;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -491,8 +490,8 @@ public class GameRenderer implements AutoCloseable {
       if (!this.minecraft.noRender) {
          ProfilerFiller var3 = Profiler.get();
          boolean var4 = this.minecraft.isGameLoadFinished();
-         int var5 = (int)(this.minecraft.mouseHandler.xpos() * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth());
-         int var6 = (int)(this.minecraft.mouseHandler.ypos() * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight());
+         int var5 = (int)this.minecraft.mouseHandler.getScaledXPos(this.minecraft.getWindow());
+         int var6 = (int)this.minecraft.mouseHandler.getScaledYPos(this.minecraft.getWindow());
          if (var4 && var2 && this.minecraft.level != null) {
             var3.push("level");
             this.renderLevel(var1);
@@ -545,8 +544,7 @@ public class GameRenderer implements AutoCloseable {
                CrashReport var21 = CrashReport.forThrowable(var17, "Rendering screen");
                CrashReportCategory var23 = var21.addCategory("Screen render details");
                var23.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
-               var23.setDetail("Mouse location", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%f, %f)", var5, var6, this.minecraft.mouseHandler.xpos(), this.minecraft.mouseHandler.ypos())));
-               var23.setDetail("Screen size", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %f", this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight(), this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.minecraft.getWindow().getGuiScale())));
+               this.minecraft.mouseHandler.fillMousePositionDetails(var23, this.minecraft.getWindow());
                throw new ReportedException(var21);
             }
 

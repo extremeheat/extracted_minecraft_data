@@ -62,7 +62,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
          return false;
       } else if (!this.level.matches(var4.experienceLevel)) {
          return false;
-      } else if (!this.gameType.matches(var4.gameMode.getGameModeForPlayer())) {
+      } else if (!this.gameType.matches(var4.gameMode())) {
          return false;
       } else {
          ServerStatsCounter var5 = var4.getStats();

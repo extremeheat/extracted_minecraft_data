@@ -7,8 +7,10 @@ import java.util.HashSet;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
@@ -26,6 +28,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -61,8 +64,19 @@ public abstract class BlockEntity {
       return this.type.isValid(var1);
    }
 
-   public static BlockPos getPosFromTag(CompoundTag var0) {
-      return new BlockPos(var0.getIntOr("x", 0), var0.getIntOr("y", 0), var0.getIntOr("z", 0));
+   public static BlockPos getPosFromTag(ChunkPos var0, CompoundTag var1) {
+      int var2 = var1.getIntOr("x", 0);
+      int var3 = var1.getIntOr("y", 0);
+      int var4 = var1.getIntOr("z", 0);
+      int var5 = SectionPos.blockToSectionCoord(var2);
+      int var6 = SectionPos.blockToSectionCoord(var4);
+      if (var5 != var0.x || var6 != var0.z) {
+         LOGGER.warn("Block entity {} found in a wrong chunk, expected position from chunk {}", var1, var0);
+         var2 = var0.getBlockX(SectionPos.sectionRelative(var2));
+         var4 = var0.getBlockZ(SectionPos.sectionRelative(var4));
+      }
+
+      return new BlockPos(var2, var3, var4);
    }
 
    @Nullable
@@ -150,20 +164,16 @@ public abstract class BlockEntity {
          try {
             var5 = var4.create(var0, var1);
          } catch (Throwable var8) {
-            LOGGER.error("Failed to create block entity {}", var4, var8);
+            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{var4, var0, var1, var8});
             return null;
          }
 
-         if (var5 == null) {
+         try {
+            var5.loadWithComponents(var2, var3);
+            return var5;
+         } catch (Throwable var7) {
+            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{var4, var0, var1, var7});
             return null;
-         } else {
-            try {
-               var5.loadWithComponents(var2, var3);
-               return var5;
-            } catch (Throwable var7) {
-               LOGGER.error("Failed to load data for block entity {}", var4, var7);
-               return null;
-            }
          }
       }
    }
@@ -227,10 +237,18 @@ public abstract class BlockEntity {
 
    public void fillCrashReportCategory(CrashReportCategory var1) {
       var1.setDetail("Name", this::getNameForReporting);
-      if (this.level != null) {
-         CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.getBlockState());
-         CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.level.getBlockState(this.worldPosition));
+      BlockState var10002 = this.getBlockState();
+      Objects.requireNonNull(var10002);
+      var1.setDetail("Cached block", var10002::toString);
+      if (this.level == null) {
+         var1.setDetail("Block location", (CrashReportDetail)(() -> String.valueOf(this.worldPosition) + " (world missing)"));
+      } else {
+         var10002 = this.level.getBlockState(this.worldPosition);
+         Objects.requireNonNull(var10002);
+         var1.setDetail("Actual block", var10002::toString);
+         CrashReportCategory.populateBlockLocationDetails(var1, this.level, this.worldPosition);
       }
+
    }
 
    private String getNameForReporting() {

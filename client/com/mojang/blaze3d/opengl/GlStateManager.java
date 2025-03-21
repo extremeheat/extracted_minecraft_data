@@ -1,7 +1,8 @@
-package com.mojang.blaze3d.platform;
+package com.mojang.blaze3d.opengl;
 
 import com.google.common.base.Charsets;
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.Plot;
 import com.mojang.jtracy.TracyClient;
@@ -11,8 +12,6 @@ import java.nio.IntBuffer;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -33,7 +32,6 @@ public class GlStateManager {
    private static int numTextures;
    private static final Plot PLOT_BUFFERS;
    private static int numBuffers;
-   public static final int TEXTURE_COUNT = 12;
    private static final BlendState BLEND;
    private static final DepthState DEPTH;
    private static final CullState CULL;
@@ -43,6 +41,8 @@ public class GlStateManager {
    private static int activeTexture;
    private static final TextureState[] TEXTURES;
    private static final ColorMask COLOR_MASK;
+   private static int readFbo;
+   private static int writeFbo;
 
    public GlStateManager() {
       super();
@@ -311,7 +311,24 @@ public class GlStateManager {
    }
 
    public static void _glBindFramebuffer(int var0, int var1) {
-      GL30.glBindFramebuffer(var0, var1);
+      if ((var0 == 36008 || var0 == 36160) && readFbo != var1) {
+         GL30.glBindFramebuffer(36008, var1);
+         readFbo = var1;
+      }
+
+      if ((var0 == 36009 || var0 == 36160) && writeFbo != var1) {
+         GL30.glBindFramebuffer(36009, var1);
+         writeFbo = var1;
+      }
+
+   }
+
+   public static int getFrameBuffer(int var0) {
+      if (var0 == 36008) {
+         return readFbo;
+      } else {
+         return var0 == 36009 ? writeFbo : 0;
+      }
    }
 
    public static void _glBlitFrameBuffer(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
@@ -352,23 +369,6 @@ public class GlStateManager {
    public static String glGetProgramInfoLog(int var0, int var1) {
       RenderSystem.assertOnRenderThread();
       return GL20.glGetProgramInfoLog(var0, var1);
-   }
-
-   public static void setupLevelDiffuseLighting(Vector3f var0, Vector3f var1, Matrix4f var2) {
-      RenderSystem.assertOnRenderThread();
-      RenderSystem.setShaderLights(var2.transformDirection(var0, new Vector3f()), var2.transformDirection(var1, new Vector3f()));
-   }
-
-   public static void setupGuiFlatDiffuseLighting(Vector3f var0, Vector3f var1) {
-      RenderSystem.assertOnRenderThread();
-      Matrix4f var2 = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
-      setupLevelDiffuseLighting(var0, var1, var2);
-   }
-
-   public static void setupGui3DDiffuseLighting(Vector3f var0, Vector3f var1) {
-      RenderSystem.assertOnRenderThread();
-      Matrix4f var2 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
-      setupLevelDiffuseLighting(var0, var1, var2);
    }
 
    public static void _enableCull() {

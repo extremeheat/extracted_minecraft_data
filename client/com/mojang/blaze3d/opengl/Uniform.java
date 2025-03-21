@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.logging.LogUtils;
 import java.nio.FloatBuffer;

@@ -182,7 +182,7 @@ public abstract class PlayerList {
       LevelData var12 = var10.getLevelData();
       var2.loadGameTypes((CompoundTag)var21.orElse((Object)null));
       ServerGamePacketListenerImpl var13 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
-      var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
+      var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), var13), var13);
       GameRules var14 = var10.getGameRules();
       boolean var15 = var14.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
       boolean var16 = var14.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);

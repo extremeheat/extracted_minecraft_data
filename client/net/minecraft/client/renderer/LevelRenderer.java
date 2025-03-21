@@ -73,6 +73,7 @@ import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
@@ -890,48 +891,55 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       ObjectListIterator var12 = this.visibleSections.listIterator(var11 ? 0 : this.visibleSections.size());
       var1.setupRenderState();
       RenderPipeline var13 = var1.getRenderPipeline();
+      ArrayList var14 = new ArrayList();
+      RenderSystem.AutoStorageIndexBuffer var15 = RenderSystem.getSequentialBuffer(var1.mode());
+      int var16 = 0;
 
-      try (RenderPass var14 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1.getRenderTarget().getColorTexture(), OptionalInt.empty(), var1.getRenderTarget().getDepthTexture(), OptionalDouble.empty())) {
-         var14.setPipeline(var13);
-
-         for(int var15 = 0; var15 < 12; ++var15) {
-            GpuTexture var16 = RenderSystem.getShaderTexture(var15);
-            if (var16 != null) {
-               var14.bindSampler("Sampler" + var15, var16);
-            }
-         }
-
-         ArrayList var23 = new ArrayList();
-
-         while(true) {
-            if (var11) {
-               if (!var12.hasNext()) {
-                  break;
-               }
-            } else if (!var12.hasPrevious()) {
+      while(true) {
+         if (var11) {
+            if (!var12.hasNext()) {
                break;
             }
+         } else if (!var12.hasPrevious()) {
+            break;
+         }
 
-            SectionRenderDispatcher.RenderSection var24 = var11 ? (SectionRenderDispatcher.RenderSection)var12.next() : (SectionRenderDispatcher.RenderSection)var12.previous();
-            SectionRenderDispatcher.SectionBuffers var17 = var24.getBuffers(var1);
-            if (!var24.getCompiled().isEmpty(var1) && var17 != null) {
-               GpuBuffer var18;
-               VertexFormat.IndexType var19;
-               if (var17.getIndexBuffer() == null) {
-                  RenderSystem.AutoStorageIndexBuffer var20 = RenderSystem.getSequentialBuffer(var1.mode());
-                  var18 = var20.getBuffer(var17.getIndexCount());
-                  var19 = var20.type();
-               } else {
-                  var18 = var17.getIndexBuffer();
-                  var19 = var17.getIndexType();
+         SectionRenderDispatcher.RenderSection var17 = var11 ? (SectionRenderDispatcher.RenderSection)var12.next() : (SectionRenderDispatcher.RenderSection)var12.previous();
+         SectionRenderDispatcher.SectionBuffers var18 = var17.getBuffers(var1);
+         if (!var17.getCompiled().isEmpty(var1) && var18 != null) {
+            GpuBuffer var19;
+            VertexFormat.IndexType var20;
+            if (var18.getIndexBuffer() == null) {
+               if (var18.getIndexCount() > var16) {
+                  var16 = var18.getIndexCount();
                }
 
-               BlockPos var25 = var24.getRenderOrigin();
-               var23.add(new RenderPass.Draw(0, var17.getVertexBuffer(), var18, var19, 0, var17.getIndexCount(), (var7) -> var7.upload("ModelOffset", (float)((double)var25.getX() - var2), (float)((double)var25.getY() - var4), (float)((double)var25.getZ() - var6))));
+               var19 = null;
+               var20 = null;
+            } else {
+               var19 = var18.getIndexBuffer();
+               var20 = var18.getIndexType();
+            }
+
+            BlockPos var21 = var17.getRenderOrigin();
+            var14.add(new RenderPass.Draw(0, var18.getVertexBuffer(), var19, var20, 0, var18.getIndexCount(), (var7) -> var7.upload("ModelOffset", (float)((double)var21.getX() - var2), (float)((double)var21.getY() - var4), (float)((double)var21.getZ() - var6))));
+         }
+      }
+
+      GpuBuffer var24 = var16 == 0 ? null : var15.getBuffer(var16);
+      VertexFormat.IndexType var25 = var16 == 0 ? null : var15.type();
+
+      try (RenderPass var26 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1.getRenderTarget().getColorTexture(), OptionalInt.empty(), var1.getRenderTarget().getDepthTexture(), OptionalDouble.empty())) {
+         var26.setPipeline(var13);
+
+         for(int var27 = 0; var27 < 12; ++var27) {
+            GpuTexture var28 = RenderSystem.getShaderTexture(var27);
+            if (var28 != null) {
+               var26.bindSampler("Sampler" + var27, var28);
             }
          }
 
-         var14.drawMultipleIndexed(var23);
+         var26.drawMultipleIndexed(var14, var24, var25);
       }
 
       var10.close();
@@ -1239,21 +1247,22 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    public static int getLightColor(BlockAndTintGetter var0, BlockPos var1) {
-      return getLightColor(var0, var0.getBlockState(var1), var1);
+      return getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, var0, var0.getBlockState(var1), var1);
    }
 
-   public static int getLightColor(BlockAndTintGetter var0, BlockState var1, BlockPos var2) {
-      if (var1.emissiveRendering(var0, var2)) {
+   public static int getLightColor(BrightnessGetter var0, BlockAndTintGetter var1, BlockState var2, BlockPos var3) {
+      if (var2.emissiveRendering(var1, var3)) {
          return 15728880;
       } else {
-         int var3 = var0.getBrightness(LightLayer.SKY, var2);
-         int var4 = var0.getBrightness(LightLayer.BLOCK, var2);
-         int var5 = var1.getLightEmission();
-         if (var4 < var5) {
-            var4 = var5;
+         int var4 = var0.packedBrightness(var1, var3);
+         int var5 = LightTexture.block(var4);
+         int var6 = var2.getLightEmission();
+         if (var5 < var6) {
+            int var7 = LightTexture.sky(var4);
+            return LightTexture.pack(var6, var7);
+         } else {
+            return var4;
          }
-
-         return var3 << 20 | var4 << 4;
       }
    }
 
@@ -1309,5 +1318,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public CloudRenderer getCloudRenderer() {
       return this.cloudRenderer;
+   }
+
+   @FunctionalInterface
+   public interface BrightnessGetter {
+      BrightnessGetter DEFAULT = (var0, var1) -> {
+         int var2 = var0.getBrightness(LightLayer.SKY, var1);
+         int var3 = var0.getBrightness(LightLayer.BLOCK, var1);
+         return Brightness.pack(var3, var2);
+      };
+
+      int packedBrightness(BlockAndTintGetter var1, BlockPos var2);
    }
 }

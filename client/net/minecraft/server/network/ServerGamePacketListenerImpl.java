@@ -48,6 +48,7 @@ import net.minecraft.gametest.framework.GameTestInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.HashedStack;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -80,6 +81,7 @@ import net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
 import net.minecraft.network.protocol.game.ClientboundTestInstanceBlockStatus;
+import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundBlockEntityTagQueryPacket;
@@ -207,7 +209,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.slf4j.Logger;
 
-public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl implements ServerGamePacketListener, ServerPlayerConnection, TickablePacketListener {
+public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl implements GameProtocols.Context, ServerGamePacketListener, ServerPlayerConnection, TickablePacketListener {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final int NO_BLOCK_UPDATES_TO_ACK = -1;
    private static final int TRACKED_MESSAGE_DISCONNECT_THRESHOLD = 4096;
@@ -250,6 +252,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private RemoteChatSession chatSession;
    private SignedMessageChain.Decoder signedMessageDecoder;
    private final LastSeenMessagesValidator lastSeenMessages = new LastSeenMessagesValidator(20);
+   private int nextChatIndex;
    private final MessageSignatureCache messageSignatureCache = MessageSignatureCache.createDefault();
    private final FutureChain chatMessageChain;
    private boolean waitingForSwitchToConfig;
@@ -1047,7 +1050,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         var21 = var9 - this.player.getZ();
                         var25 = var17 * var17 + var19 * var19 + var21 * var21;
                         boolean var33 = false;
-                        if (!this.player.isChangingDimension() && var25 > 0.0625 && !this.player.isSleeping() && !this.player.gameMode.isCreative() && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
+                        if (!this.player.isChangingDimension() && var25 > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator()) {
                            var33 = true;
                            LOGGER.warn("{} moved wrongly!", this.player.getName().getString());
                         }
@@ -1055,7 +1058,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43, var5, var7, var9)) {
                            this.player.absSnapTo(var5, var7, var9, var3, var4);
                            boolean var34 = this.player.isAutoSpinAttack();
-                           this.clientIsFloating = var31 >= -0.03125 && !var30 && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
+                           this.clientIsFloating = var31 >= -0.03125 && !var30 && !this.player.isSpectator() && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
                            this.player.serverLevel().getChunkSource().move(this.player);
                            Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                            this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
@@ -1468,13 +1471,17 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private Optional<LastSeenMessages> unpackAndApplyLastSeen(LastSeenMessages.Update var1) {
       synchronized(this.lastSeenMessages) {
-         Optional var3 = this.lastSeenMessages.applyUpdate(var1);
-         if (var3.isEmpty()) {
-            LOGGER.warn("Failed to validate message acknowledgements from {}", this.player.getName().getString());
+         Optional var10000;
+         try {
+            LastSeenMessages var3 = this.lastSeenMessages.applyUpdate(var1);
+            var10000 = Optional.of(var3);
+         } catch (LastSeenMessagesValidator.ValidationException var5) {
+            LOGGER.error("Failed to validate message acknowledgements from {}: {}", this.player.getName().getString(), var5.getMessage());
             this.disconnect(CHAT_VALIDATION_FAILED);
+            return Optional.empty();
          }
 
-         return var3;
+         return var10000;
       }
    }
 
@@ -1508,8 +1515,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleChatAck(ServerboundChatAckPacket var1) {
       synchronized(this.lastSeenMessages) {
-         if (!this.lastSeenMessages.applyOffset(var1.offset())) {
-            LOGGER.warn("Failed to validate message acknowledgements from {}", this.player.getName().getString());
+         try {
+            this.lastSeenMessages.applyOffset(var1.offset());
+         } catch (LastSeenMessagesValidator.ValidationException var5) {
+            LOGGER.error("Failed to validate message acknowledgement offset from {}: {}", this.player.getName().getString(), var5.getMessage());
             this.disconnect(CHAT_VALIDATION_FAILED);
          }
 
@@ -1581,26 +1590,22 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
-   public void addPendingMessage(PlayerChatMessage var1) {
-      MessageSignature var2 = var1.signature();
-      if (var2 != null) {
+   public void sendPlayerChatMessage(PlayerChatMessage var1, ChatType.Bound var2) {
+      this.send(new ClientboundPlayerChatPacket(this.nextChatIndex++, var1.link().sender(), var1.link().index(), var1.signature(), var1.signedBody().pack(this.messageSignatureCache), var1.unsignedContent(), var1.filterMask(), var2));
+      MessageSignature var3 = var1.signature();
+      if (var3 != null) {
          this.messageSignatureCache.push(var1.signedBody(), var1.signature());
-         int var3;
+         int var4;
          synchronized(this.lastSeenMessages) {
-            this.lastSeenMessages.addPending(var2);
-            var3 = this.lastSeenMessages.trackedMessagesCount();
+            this.lastSeenMessages.addPending(var3);
+            var4 = this.lastSeenMessages.trackedMessagesCount();
          }
 
-         if (var3 > 4096) {
+         if (var4 > 4096) {
             this.disconnect(Component.translatable("multiplayer.disconnect.too_many_pending_chats"));
          }
 
       }
-   }
-
-   public void sendPlayerChatMessage(PlayerChatMessage var1, ChatType.Bound var2) {
-      this.send(new ClientboundPlayerChatPacket(var1.link().sender(), var1.link().index(), var1.signature(), var1.signedBody().pack(this.messageSignatureCache), var1.unsignedContent(), var1.filterMask(), var2));
-      this.addPendingMessage(var1);
    }
 
    public void sendDisguisedChatMessage(Component var1, ChatType.Bound var2) {
@@ -1730,27 +1735,27 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleContainerClick(ServerboundContainerClickPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
-      if (this.player.containerMenu.containerId == var1.getContainerId()) {
+      if (this.player.containerMenu.containerId == var1.containerId()) {
          if (this.player.isSpectator()) {
             this.player.containerMenu.sendAllDataToRemote();
          } else if (!this.player.containerMenu.stillValid(this.player)) {
             LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
          } else {
-            int var2 = var1.getSlotNum();
+            short var2 = var1.slotNum();
             if (!this.player.containerMenu.isValidSlotIndex(var2)) {
-               LOGGER.debug("Player {} clicked invalid slot index: {}, available slots: {}", new Object[]{this.player.getName(), var2, this.player.containerMenu.slots.size()});
+               LOGGER.debug("Player {} clicked invalid slot index: {}, available slots: {}", new Object[]{this.player.getName(), Integer.valueOf(var2), this.player.containerMenu.slots.size()});
             } else {
-               boolean var3 = var1.getStateId() != this.player.containerMenu.getStateId();
+               boolean var3 = var1.stateId() != this.player.containerMenu.getStateId();
                this.player.containerMenu.suppressRemoteUpdates();
-               this.player.containerMenu.clicked(var2, var1.getButtonNum(), var1.getClickType(), this.player);
-               ObjectIterator var4 = Int2ObjectMaps.fastIterable(var1.getChangedSlots()).iterator();
+               this.player.containerMenu.clicked(var2, var1.buttonNum(), var1.clickType(), this.player);
+               ObjectIterator var4 = Int2ObjectMaps.fastIterable(var1.changedSlots()).iterator();
 
                while(var4.hasNext()) {
                   Int2ObjectMap.Entry var5 = (Int2ObjectMap.Entry)var4.next();
-                  this.player.containerMenu.setRemoteSlotNoCopy(var5.getIntKey(), (ItemStack)var5.getValue());
+                  this.player.containerMenu.setRemoteSlotUnsafe(var5.getIntKey(), (HashedStack)var5.getValue());
                }
 
-               this.player.containerMenu.setRemoteCarried(var1.getCarriedItem());
+               this.player.containerMenu.setRemoteCarried(var1.carriedItem());
                this.player.containerMenu.resumeRemoteUpdates();
                if (var3) {
                   this.player.containerMenu.broadcastFullState();
@@ -1959,6 +1964,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
       this.player.setKnownMovement(var1);
       this.receivedMovementThisTick = true;
+   }
+
+   public boolean hasInfiniteMaterials() {
+      return this.player.hasInfiniteMaterials();
    }
 
    public ServerPlayer getPlayer() {

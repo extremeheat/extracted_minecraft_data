@@ -85,7 +85,6 @@ import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.DripstoneThickness;
 import net.minecraft.world.level.block.state.properties.Half;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
@@ -110,6 +109,14 @@ public class BlockModelGenerators {
    public static final VariantMutator Y_ROT_90;
    public static final VariantMutator Y_ROT_180;
    public static final VariantMutator Y_ROT_270;
+   private static final Function<ConditionBuilder, ConditionBuilder> FLOWER_BED_MODEL_1_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> FLOWER_BED_MODEL_2_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> FLOWER_BED_MODEL_3_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> FLOWER_BED_MODEL_4_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> LEAF_LITTER_MODEL_1_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> LEAF_LITTER_MODEL_2_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> LEAF_LITTER_MODEL_3_SEGMENT_CONDITION;
+   private static final Function<ConditionBuilder, ConditionBuilder> LEAF_LITTER_MODEL_4_SEGMENT_CONDITION;
    static final Map<Block, BlockStateGeneratorSupplier> FULL_BLOCK_MODEL_CUSTOM_GENERATORS;
    private static final PropertyDispatch<VariantMutator> ROTATION_FACING;
    private static final PropertyDispatch<VariantMutator> ROTATIONS_COLUMN_WITH_FACING;
@@ -678,7 +685,7 @@ public class BlockModelGenerators {
       MultiVariant var4 = plainVariant(TexturedModel.LEAF_LITTER_3.create(var1, this.modelOutput));
       MultiVariant var5 = plainVariant(TexturedModel.LEAF_LITTER_4.create(var1, this.modelOutput));
       this.registerSimpleFlatItemModel(var1.asItem());
-      this.createSegmentedBlock(var1, BlockStateProperties.SEGMENT_AMOUNT, var2, var3, var4, var5);
+      this.createSegmentedBlock(var1, var2, LEAF_LITTER_MODEL_1_SEGMENT_CONDITION, var3, LEAF_LITTER_MODEL_2_SEGMENT_CONDITION, var4, LEAF_LITTER_MODEL_3_SEGMENT_CONDITION, var5, LEAF_LITTER_MODEL_4_SEGMENT_CONDITION);
    }
 
    private void createFlowerBed(Block var1) {
@@ -687,11 +694,11 @@ public class BlockModelGenerators {
       MultiVariant var4 = plainVariant(TexturedModel.FLOWERBED_3.create(var1, this.modelOutput));
       MultiVariant var5 = plainVariant(TexturedModel.FLOWERBED_4.create(var1, this.modelOutput));
       this.registerSimpleFlatItemModel(var1.asItem());
-      this.createSegmentedBlock(var1, BlockStateProperties.FLOWER_AMOUNT, var2, var3, var4, var5);
+      this.createSegmentedBlock(var1, var2, FLOWER_BED_MODEL_1_SEGMENT_CONDITION, var3, FLOWER_BED_MODEL_2_SEGMENT_CONDITION, var4, FLOWER_BED_MODEL_3_SEGMENT_CONDITION, var5, FLOWER_BED_MODEL_4_SEGMENT_CONDITION);
    }
 
-   private void createSegmentedBlock(Block var1, IntegerProperty var2, MultiVariant var3, MultiVariant var4, MultiVariant var5, MultiVariant var6) {
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(var1).with(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), var3).with(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), var3.with(Y_ROT_90)).with(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), var3.with(Y_ROT_180)).with(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), var3.with(Y_ROT_270)).with(condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), var4).with(condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), var4.with(Y_ROT_90)).with(condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), var4.with(Y_ROT_180)).with(condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), var4.with(Y_ROT_270)).with(condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), var5).with(condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), var5.with(Y_ROT_90)).with(condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), var5.with(Y_ROT_180)).with(condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), var5.with(Y_ROT_270)).with(condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), var6).with(condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), var6.with(Y_ROT_90)).with(condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), var6.with(Y_ROT_180)).with(condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), var6.with(Y_ROT_270)));
+   private void createSegmentedBlock(Block var1, MultiVariant var2, Function<ConditionBuilder, ConditionBuilder> var3, MultiVariant var4, Function<ConditionBuilder, ConditionBuilder> var5, MultiVariant var6, Function<ConditionBuilder, ConditionBuilder> var7, MultiVariant var8, Function<ConditionBuilder, ConditionBuilder> var9) {
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(var1).with((ConditionBuilder)var3.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), var2).with((ConditionBuilder)var3.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), var2.with(Y_ROT_90)).with((ConditionBuilder)var3.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), var2.with(Y_ROT_180)).with((ConditionBuilder)var3.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), var2.with(Y_ROT_270)).with((ConditionBuilder)var5.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), var4).with((ConditionBuilder)var5.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), var4.with(Y_ROT_90)).with((ConditionBuilder)var5.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), var4.with(Y_ROT_180)).with((ConditionBuilder)var5.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), var4.with(Y_ROT_270)).with((ConditionBuilder)var7.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), var6).with((ConditionBuilder)var7.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), var6.with(Y_ROT_90)).with((ConditionBuilder)var7.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), var6.with(Y_ROT_180)).with((ConditionBuilder)var7.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), var6.with(Y_ROT_270)).with((ConditionBuilder)var9.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)), var8).with((ConditionBuilder)var9.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST)), var8.with(Y_ROT_90)).with((ConditionBuilder)var9.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH)), var8.with(Y_ROT_180)).with((ConditionBuilder)var9.apply(condition().term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST)), var8.with(Y_ROT_270)));
    }
 
    private void createColoredBlockWithRandomRotations(TexturedModel.Provider var1, Block... var2) {
@@ -2366,6 +2373,14 @@ public class BlockModelGenerators {
       Y_ROT_90 = VariantMutator.Y_ROT.withValue(Quadrant.R90);
       Y_ROT_180 = VariantMutator.Y_ROT.withValue(Quadrant.R180);
       Y_ROT_270 = VariantMutator.Y_ROT.withValue(Quadrant.R270);
+      FLOWER_BED_MODEL_1_SEGMENT_CONDITION = (var0) -> var0;
+      FLOWER_BED_MODEL_2_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.FLOWER_AMOUNT, 2, 3, 4);
+      FLOWER_BED_MODEL_3_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.FLOWER_AMOUNT, 3, 4);
+      FLOWER_BED_MODEL_4_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.FLOWER_AMOUNT, 4);
+      LEAF_LITTER_MODEL_1_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.SEGMENT_AMOUNT, 1);
+      LEAF_LITTER_MODEL_2_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.SEGMENT_AMOUNT, 2, 3);
+      LEAF_LITTER_MODEL_3_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.SEGMENT_AMOUNT, 3);
+      LEAF_LITTER_MODEL_4_SEGMENT_CONDITION = (var0) -> var0.term(BlockStateProperties.SEGMENT_AMOUNT, 4);
       FULL_BLOCK_MODEL_CUSTOM_GENERATORS = Map.of(Blocks.STONE, BlockModelGenerators::createMirroredCubeGenerator, Blocks.DEEPSLATE, BlockModelGenerators::createMirroredColumnGenerator, Blocks.MUD_BRICKS, BlockModelGenerators::createNorthWestMirroredCubeGenerator);
       ROTATION_FACING = PropertyDispatch.modify(BlockStateProperties.FACING).select(Direction.DOWN, X_ROT_90).select(Direction.UP, X_ROT_270).select(Direction.NORTH, NOP).select(Direction.SOUTH, Y_ROT_180).select(Direction.WEST, Y_ROT_270).select(Direction.EAST, Y_ROT_90);
       ROTATIONS_COLUMN_WITH_FACING = PropertyDispatch.modify(BlockStateProperties.FACING).select(Direction.DOWN, X_ROT_180).select(Direction.UP, NOP).select(Direction.NORTH, X_ROT_90).select(Direction.SOUTH, X_ROT_90.then(Y_ROT_180)).select(Direction.WEST, X_ROT_90.then(Y_ROT_270)).select(Direction.EAST, X_ROT_90.then(Y_ROT_90));

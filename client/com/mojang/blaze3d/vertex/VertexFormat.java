@@ -2,6 +2,7 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
 
+@DontObfuscate
 public class VertexFormat {
    public static final int UNKNOWN_ELEMENT = -1;
    private final List<VertexFormatElement> elements;
@@ -143,6 +145,7 @@ public class VertexFormat {
       return this.immediateDrawIndexBuffer;
    }
 
+   @DontObfuscate
    public static class Builder {
       private final ImmutableMap.Builder<String, VertexFormatElement> elements = ImmutableMap.builder();
       private final IntList offsets = new IntArrayList();

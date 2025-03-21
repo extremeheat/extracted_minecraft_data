@@ -122,7 +122,7 @@ public class ExperienceOrb extends Entity {
    }
 
    private void followNearbyPlayer() {
-      if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0) {
+      if (this.followingPlayer == null || this.followingPlayer.isSpectator() || this.followingPlayer.distanceToSqr(this) > 64.0) {
          Player var1 = this.level().getNearestPlayer(this, 8.0);
          if (var1 != null && !var1.isSpectator() && !var1.isDeadOrDying()) {
             this.followingPlayer = var1;

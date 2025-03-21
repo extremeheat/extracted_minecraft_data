@@ -35,6 +35,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.BeehiveBlock;
@@ -211,6 +212,8 @@ public interface DispenseItemBehavior {
                if (var6.getBlock() instanceof TntBlock) {
                   if (TntBlock.prime(var3, var5)) {
                      var3.removeBlock(var5, false);
+                  } else {
+                     this.setSuccess(false);
                   }
                } else {
                   this.setSuccess(false);
@@ -242,16 +245,22 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      DispenserBlock.registerBehavior(Blocks.TNT, new DefaultDispenseItemBehavior() {
+      DispenserBlock.registerBehavior(Blocks.TNT, new OptionalDispenseItemBehavior() {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
-            BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-            PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, (LivingEntity)null);
-            ((Level)var3).addFreshEntity(var5);
-            ((Level)var3).playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
-            ((Level)var3).gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var4);
-            var2.shrink(1);
-            return var2;
+            if (!var3.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+               this.setSuccess(false);
+               return var2;
+            } else {
+               BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
+               PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, (LivingEntity)null);
+               var3.addFreshEntity(var5);
+               var3.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var3.gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var4);
+               var2.shrink(1);
+               this.setSuccess(true);
+               return var2;
+            }
          }
       });
       DispenserBlock.registerBehavior(Items.WITHER_SKELETON_SKULL, new OptionalDispenseItemBehavior() {

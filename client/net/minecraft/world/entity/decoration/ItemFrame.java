@@ -318,13 +318,14 @@ public class ItemFrame extends HangingEntity {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (!this.getItem().isEmpty()) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("Item", ItemStack.CODEC, var2, this.getItem());
-         var1.putByte("ItemRotation", (byte)this.getRotation());
-         var1.putFloat("ItemDropChance", this.dropChance);
+      ItemStack var2 = this.getItem();
+      if (!var2.isEmpty()) {
+         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("Item", ItemStack.CODEC, var3, var2);
       }
 
+      var1.putByte("ItemRotation", (byte)this.getRotation());
+      var1.putFloat("ItemDropChance", this.dropChance);
       var1.store("Facing", Direction.LEGACY_ID_CODEC, this.direction);
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Fixed", this.fixed);
@@ -340,11 +341,8 @@ public class ItemFrame extends HangingEntity {
       }
 
       this.setItem(var3, false);
-      if (!var3.isEmpty()) {
-         this.setRotation(var1.getByteOr("ItemRotation", (byte)0), false);
-         this.dropChance = var1.getFloatOr("ItemDropChance", 1.0F);
-      }
-
+      this.setRotation(var1.getByteOr("ItemRotation", (byte)0), false);
+      this.dropChance = var1.getFloatOr("ItemDropChance", 1.0F);
       this.setDirection((Direction)var1.read("Facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));
       this.setInvisible(var1.getBooleanOr("Invisible", false));
       this.fixed = var1.getBooleanOr("Fixed", false);

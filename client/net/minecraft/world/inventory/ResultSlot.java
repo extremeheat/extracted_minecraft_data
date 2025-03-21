@@ -44,7 +44,7 @@ public class ResultSlot extends Slot {
 
    protected void checkTakeAchievements(ItemStack var1) {
       if (this.removeCount > 0) {
-         var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
+         var1.onCraftedBy(this.player, this.removeCount);
       }
 
       Container var3 = this.container;

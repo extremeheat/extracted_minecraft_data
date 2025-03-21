@@ -1,10 +1,15 @@
 package net.minecraft.server.level;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.hash.HashCode;
 import com.google.common.net.InetAddresses;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -18,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
@@ -32,10 +38,10 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -99,6 +105,7 @@ import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
@@ -145,6 +152,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.inventory.HorseInventoryMenu;
+import net.minecraft.world.inventory.RemoteSlot;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -276,7 +284,27 @@ public class ServerPlayer extends Player {
       this.lastClientInput = Input.EMPTY;
       this.enderPearls = new HashSet();
       this.containerSynchronizer = new ContainerSynchronizer() {
-         public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
+         private final LoadingCache<TypedDataComponent<?>, Integer> cache = CacheBuilder.newBuilder().maximumSize(256L).build(new CacheLoader<TypedDataComponent<?>, Integer>() {
+            private final DynamicOps<HashCode> registryHashOps;
+
+            {
+               this.registryHashOps = ServerPlayer.this.registryAccess().createSerializationContext(HashOps.CRC32C_INSTANCE);
+            }
+
+            public Integer load(TypedDataComponent<?> var1) {
+               return ((HashCode)var1.encodeValue(this.registryHashOps).getOrThrow((var1x) -> {
+                  String var10002 = String.valueOf(var1);
+                  return new IllegalArgumentException("Failed to hash " + var10002 + ": " + var1x);
+               })).asInt();
+            }
+
+            // $FF: synthetic method
+            public Object load(final Object var1) throws Exception {
+               return this.load((TypedDataComponent)var1);
+            }
+         });
+
+         public void sendInitialData(AbstractContainerMenu var1, List<ItemStack> var2, ItemStack var3, int[] var4) {
             ServerPlayer.this.connection.send(new ClientboundContainerSetContentPacket(var1.containerId, var1.incrementStateId(), var2, var3));
 
             for(int var5 = 0; var5 < var4.length; ++var5) {
@@ -290,7 +318,7 @@ public class ServerPlayer extends Player {
          }
 
          public void sendCarriedChange(AbstractContainerMenu var1, ItemStack var2) {
-            ServerPlayer.this.connection.send(new ClientboundSetCursorItemPacket(var2.copy()));
+            ServerPlayer.this.connection.send(new ClientboundSetCursorItemPacket(var2));
          }
 
          public void sendDataChange(AbstractContainerMenu var1, int var2, int var3) {
@@ -299,6 +327,12 @@ public class ServerPlayer extends Player {
 
          private void broadcastDataValue(AbstractContainerMenu var1, int var2, int var3) {
             ServerPlayer.this.connection.send(new ClientboundContainerSetDataPacket(var1.containerId, var2, var3));
+         }
+
+         public RemoteSlot createSlot() {
+            LoadingCache var10002 = this.cache;
+            Objects.requireNonNull(var10002);
+            return new RemoteSlot.Synchronized(var10002::getUnchecked);
          }
       };
       this.containerListener = new ContainerListener() {
@@ -1534,12 +1568,9 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public boolean isSpectator() {
-      return this.gameMode.getGameModeForPlayer() == GameType.SPECTATOR;
-   }
-
-   public boolean isCreative() {
-      return this.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
+   @Nonnull
+   public GameType gameMode() {
+      return this.gameMode.getGameModeForPlayer();
    }
 
    public CommandSource commandSource() {
@@ -1685,7 +1716,7 @@ public class ServerPlayer extends Player {
    }
 
    public void attack(Entity var1) {
-      if (this.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) {
+      if (this.isSpectator()) {
          this.setCamera(var1);
       } else {
          super.attack(var1);

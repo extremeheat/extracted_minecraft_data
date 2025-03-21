@@ -21,6 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -106,9 +107,13 @@ public class MinecartTNT extends AbstractMinecart {
    protected void explode(@Nullable DamageSource var1, double var2) {
       Level var5 = this.level();
       if (var5 instanceof ServerLevel var4) {
-         double var7 = Math.min(Math.sqrt(var2), 5.0);
-         var4.explode(this, var1, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + (double)this.explosionSpeedFactor * this.random.nextDouble() * 1.5 * var7), false, Level.ExplosionInteraction.TNT);
-         this.discard();
+         if (var4.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            double var7 = Math.min(Math.sqrt(var2), 5.0);
+            var4.explode(this, var1, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + (double)this.explosionSpeedFactor * this.random.nextDouble() * 1.5 * var7), false, Level.ExplosionInteraction.TNT);
+            this.discard();
+         } else if (this.isPrimed()) {
+            this.discard();
+         }
       }
 
    }
@@ -139,6 +144,13 @@ public class MinecartTNT extends AbstractMinecart {
    }
 
    public void primeFuse(@Nullable DamageSource var1) {
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         if (!var2.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            return;
+         }
+      }
+
       this.fuse = 80;
       if (!this.level().isClientSide) {
          if (var1 != null && this.ignitionSource == null) {

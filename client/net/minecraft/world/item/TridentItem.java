@@ -72,14 +72,13 @@ public class TridentItem extends Item implements ProjectileItem {
                   ServerLevel var9 = (ServerLevel)var2;
                   var1.hurtWithoutBreaking(1, var5);
                   if (var7 == 0.0F) {
-                     ThrownTrident var17 = (ThrownTrident)Projectile.spawnProjectileFromRotation(ThrownTrident::new, var9, var1, var5, 0.0F, 2.5F, 1.0F);
+                     ItemStack var17 = var1.consumeAndReturn(1, var5);
+                     ThrownTrident var19 = (ThrownTrident)Projectile.spawnProjectileFromRotation(ThrownTrident::new, var9, var17, var5, 0.0F, 2.5F, 1.0F);
                      if (var5.hasInfiniteMaterials()) {
-                        var17.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                     } else {
-                        var5.getInventory().removeItem(var1);
+                        var19.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
                      }
 
-                     var2.playSound((Entity)null, (Entity)var17, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                     var2.playSound((Entity)null, (Entity)var19, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
                      return true;
                   }
                }

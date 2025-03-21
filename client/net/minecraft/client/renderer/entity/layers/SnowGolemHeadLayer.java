@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -39,7 +40,7 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGo
             int var10 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
             var1.translate(-0.5F, -0.5F, -0.5F);
             VertexConsumer var11 = var4.appearsGlowing && var4.isInvisible ? var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)) : var2.getBuffer(ItemBlockRenderTypes.getRenderType(var8));
-            this.blockRenderer.getModelRenderer().renderModel(var1.last(), var11, var9, 0.0F, 0.0F, 0.0F, var3, var10);
+            ModelBlockRenderer.renderModel(var1.last(), var11, var9, 0.0F, 0.0F, 0.0F, var3, var10);
             var1.popPose();
          }
       }

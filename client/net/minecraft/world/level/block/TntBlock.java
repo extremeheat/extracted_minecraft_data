@@ -45,8 +45,7 @@ public class TntBlock extends Block {
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
-         if (var2.hasNeighborSignal(var3)) {
-            prime(var2, var3);
+         if (var2.hasNeighborSignal(var3) && prime(var2, var3)) {
             var2.removeBlock(var3, false);
          }
 
@@ -54,8 +53,7 @@ public class TntBlock extends Block {
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var2.hasNeighborSignal(var3)) {
-         prime(var2, var3);
+      if (var2.hasNeighborSignal(var3) && prime(var2, var3)) {
          var2.removeBlock(var3, false);
       }
 
@@ -126,8 +124,7 @@ public class TntBlock extends Block {
       if (var1 instanceof ServerLevel var5) {
          BlockPos var6 = var3.getBlockPos();
          Entity var7 = var4.getOwner();
-         if (var4.isOnFire() && var4.mayInteract(var5, var6)) {
-            prime(var1, var6, var7 instanceof LivingEntity ? (LivingEntity)var7 : null);
+         if (var4.isOnFire() && var4.mayInteract(var5, var6) && prime(var1, var6, var7 instanceof LivingEntity ? (LivingEntity)var7 : null)) {
             var1.removeBlock(var6, false);
          }
       }

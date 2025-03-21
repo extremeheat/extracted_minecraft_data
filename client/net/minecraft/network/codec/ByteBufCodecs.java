@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -721,6 +722,54 @@ public interface ByteBufCodecs {
             return this.decode((ByteBuf)var1x);
          }
       };
+   }
+
+   static <B extends ByteBuf, V> StreamCodec.CodecOperation<B, V, V> lengthPrefixed(int var0, BiFunction<B, ByteBuf, B> var1) {
+      return (var2) -> new StreamCodec<B, V>() {
+            public V decode(B var1x) {
+               int var2x = VarInt.read(var1x);
+               if (var2x > var0) {
+                  throw new DecoderException("Buffer size " + var2x + " is larger than allowed limit of " + var0);
+               } else {
+                  int var3 = var1x.readerIndex();
+                  ByteBuf var4 = (ByteBuf)var1.apply(var1x, var1x.slice(var3, var2x));
+                  var1x.readerIndex(var3 + var2x);
+                  return (V)var2.decode(var4);
+               }
+            }
+
+            public void encode(B var1x, V var2x) {
+               ByteBuf var3 = (ByteBuf)var1.apply(var1x, var1x.alloc().buffer());
+
+               try {
+                  var2.encode(var3, var2x);
+                  int var4 = var3.readableBytes();
+                  if (var4 > var0) {
+                     throw new EncoderException("Buffer size " + var4 + " is  larger than allowed limit of " + var0);
+                  }
+
+                  VarInt.write(var1x, var4);
+                  var1x.writeBytes(var3);
+               } finally {
+                  var3.release();
+               }
+
+            }
+
+            // $FF: synthetic method
+            public void encode(final Object var1x, final Object var2x) {
+               this.encode((ByteBuf)var1x, var2x);
+            }
+
+            // $FF: synthetic method
+            public Object decode(final Object var1x) {
+               return this.decode((ByteBuf)var1x);
+            }
+         };
+   }
+
+   static <V> StreamCodec.CodecOperation<RegistryFriendlyByteBuf, V, V> lengthPrefixed(int var0) {
+      return lengthPrefixed(var0, (var0x, var1) -> new RegistryFriendlyByteBuf(var1, var0x.registryAccess()));
    }
 
    static <T> StreamCodec<ByteBuf, T> idMapper(final IntFunction<T> var0, final ToIntFunction<T> var1) {

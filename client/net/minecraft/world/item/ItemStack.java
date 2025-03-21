@@ -108,6 +108,7 @@ public final class ItemStack implements DataComponentHolder {
    public static final Codec<ItemStack> OPTIONAL_CODEC;
    public static final Codec<ItemStack> SIMPLE_ITEM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_STREAM_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_UNTRUSTED_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, List<ItemStack>> OPTIONAL_LIST_STREAM_CODEC;
    private static final Logger LOGGER;
@@ -133,6 +134,41 @@ public final class ItemStack implements DataComponentHolder {
             return "Item stack with stack size of " + var10000 + " was larger than maximum: " + var0.getMaxStackSize();
          }) : DataResult.success(var0);
       }
+   }
+
+   private static StreamCodec<RegistryFriendlyByteBuf, ItemStack> createOptionalStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> var0) {
+      return new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
+         public ItemStack decode(RegistryFriendlyByteBuf var1) {
+            int var2 = var1.readVarInt();
+            if (var2 <= 0) {
+               return ItemStack.EMPTY;
+            } else {
+               Holder var3 = (Holder)Item.STREAM_CODEC.decode(var1);
+               DataComponentPatch var4 = (DataComponentPatch)var0.decode(var1);
+               return new ItemStack(var3, var2, var4);
+            }
+         }
+
+         public void encode(RegistryFriendlyByteBuf var1, ItemStack var2) {
+            if (var2.isEmpty()) {
+               var1.writeVarInt(0);
+            } else {
+               var1.writeVarInt(var2.getCount());
+               Item.STREAM_CODEC.encode(var1, var2.getItemHolder());
+               var0.encode(var1, var2.components.asPatch());
+            }
+         }
+
+         // $FF: synthetic method
+         public void encode(final Object var1, final Object var2) {
+            this.encode((RegistryFriendlyByteBuf)var1, (ItemStack)var2);
+         }
+
+         // $FF: synthetic method
+         public Object decode(final Object var1) {
+            return this.decode((RegistryFriendlyByteBuf)var1);
+         }
+      };
    }
 
    public static StreamCodec<RegistryFriendlyByteBuf, ItemStack> validatedStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, ItemStack> var0) {
@@ -662,9 +698,9 @@ public final class ItemStack implements DataComponentHolder {
 
    }
 
-   public void onCraftedBy(Level var1, Player var2, int var3) {
-      var2.awardStat(Stats.ITEM_CRAFTED.get(this.getItem()), var3);
-      this.getItem().onCraftedBy(this, var1, var2);
+   public void onCraftedBy(Player var1, int var2) {
+      var1.awardStat(Stats.ITEM_CRAFTED.get(this.getItem()), var2);
+      this.getItem().onCraftedBy(this, var1);
    }
 
    public void onCraftedBySystem(Level var1) {
@@ -1110,38 +1146,8 @@ public final class ItemStack implements DataComponentHolder {
       STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
       OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC).xmap((var0) -> (ItemStack)var0.orElse(EMPTY), (var0) -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
       SIMPLE_ITEM_CODEC = Item.CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
-      OPTIONAL_STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
-         public ItemStack decode(RegistryFriendlyByteBuf var1) {
-            int var2 = var1.readVarInt();
-            if (var2 <= 0) {
-               return ItemStack.EMPTY;
-            } else {
-               Holder var3 = (Holder)Item.STREAM_CODEC.decode(var1);
-               DataComponentPatch var4 = (DataComponentPatch)DataComponentPatch.STREAM_CODEC.decode(var1);
-               return new ItemStack(var3, var2, var4);
-            }
-         }
-
-         public void encode(RegistryFriendlyByteBuf var1, ItemStack var2) {
-            if (var2.isEmpty()) {
-               var1.writeVarInt(0);
-            } else {
-               var1.writeVarInt(var2.getCount());
-               Item.STREAM_CODEC.encode(var1, var2.getItemHolder());
-               DataComponentPatch.STREAM_CODEC.encode(var1, var2.components.asPatch());
-            }
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((RegistryFriendlyByteBuf)var1, (ItemStack)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((RegistryFriendlyByteBuf)var1);
-         }
-      };
+      OPTIONAL_STREAM_CODEC = createOptionalStreamCodec(DataComponentPatch.STREAM_CODEC);
+      OPTIONAL_UNTRUSTED_STREAM_CODEC = createOptionalStreamCodec(DataComponentPatch.DELIMITED_STREAM_CODEC);
       STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
          public ItemStack decode(RegistryFriendlyByteBuf var1) {
             ItemStack var2 = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);

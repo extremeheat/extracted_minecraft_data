@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
@@ -42,7 +41,6 @@ public abstract class RenderTarget {
 
    public void destroyBuffers() {
       RenderSystem.assertOnRenderThread();
-      this.unbindRead();
       if (this.depthTexture != null) {
          this.depthTexture.close();
          this.depthTexture = null;
@@ -104,11 +102,6 @@ public abstract class RenderTarget {
       }
    }
 
-   public void unbindRead() {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager._bindTexture(0);
-   }
-
    public void blitToScreen() {
       if (this.colorTexture == null) {
          throw new IllegalStateException("Can't blit to screen, color texture doesn't exist yet");
@@ -119,15 +112,16 @@ public abstract class RenderTarget {
 
    public void blitAndBlendToTexture(GpuTexture var1) {
       RenderSystem.assertOnRenderThread();
+      RenderSystem.AutoStorageIndexBuffer var2 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      GpuBuffer var3 = var2.getBuffer(6);
+      GpuBuffer var4 = RenderSystem.getQuadVertexBuffer();
 
-      try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, OptionalInt.empty())) {
-         RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-         GpuBuffer var4 = RenderSystem.getQuadVertexBuffer();
-         var2.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
-         var2.setVertexBuffer(0, var4);
-         var2.setIndexBuffer(var3.getBuffer(6), var3.type());
-         var2.bindSampler("InSampler", this.colorTexture);
-         var2.drawIndexed(0, 6);
+      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, OptionalInt.empty())) {
+         var5.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
+         var5.setVertexBuffer(0, var4);
+         var5.setIndexBuffer(var3, var2.type());
+         var5.bindSampler("InSampler", this.colorTexture);
+         var5.drawIndexed(0, 6);
       }
 
    }

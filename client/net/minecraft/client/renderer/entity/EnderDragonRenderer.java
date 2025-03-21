@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -16,12 +18,14 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
@@ -178,6 +182,20 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var2.distanceToEgg = var6.distToCenterSqr(var1.position());
       var2.partialTicks = var1.isDeadOrDying() ? 0.0F : var3;
       var2.flightHistory.copyFrom(var1.flightHistory);
+   }
+
+   protected void extractAdditionalHitboxes(EnderDragon var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
+      super.extractAdditionalHitboxes(var1, var2, var3);
+      double var4 = -Mth.lerp((double)var3, var1.xOld, var1.getX());
+      double var6 = -Mth.lerp((double)var3, var1.yOld, var1.getY());
+      double var8 = -Mth.lerp((double)var3, var1.zOld, var1.getZ());
+
+      for(EnderDragonPart var13 : var1.getSubEntities()) {
+         AABB var14 = var13.getBoundingBox();
+         HitboxRenderState var15 = new HitboxRenderState(var14.minX - var13.getX(), var14.minY - var13.getY(), var14.minZ - var13.getZ(), var14.maxX - var13.getX(), var14.maxY - var13.getY(), var14.maxZ - var13.getZ(), (float)(var4 + Mth.lerp((double)var3, var13.xOld, var13.getX())), (float)(var6 + Mth.lerp((double)var3, var13.yOld, var13.getY())), (float)(var8 + Mth.lerp((double)var3, var13.zOld, var13.getZ())), 0.25F, 1.0F, 0.0F);
+         var2.add(var15);
+      }
+
    }
 
    protected boolean affectedByCulling(EnderDragon var1) {

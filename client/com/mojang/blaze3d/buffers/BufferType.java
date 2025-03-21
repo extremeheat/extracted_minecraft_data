@@ -1,5 +1,8 @@
 package com.mojang.blaze3d.buffers;
 
+import com.mojang.blaze3d.DontObfuscate;
+
+@DontObfuscate
 public enum BufferType {
    VERTICES,
    INDICES,

@@ -59,7 +59,7 @@ public class FallenTreeFeature extends Feature<FallenTreeConfiguration> {
    }
 
    private void placeStump(FallenTreeConfiguration var1, WorldGenLevel var2, RandomSource var3, BlockPos.MutableBlockPos var4) {
-      BlockPos var5 = placeLogBlock(var1, var2, var3, var4, Function.identity());
+      BlockPos var5 = this.placeLogBlock(var1, var2, var3, var4, Function.identity());
       this.decorateLogs(var2, var3, Set.of(var5), var1.stumpDecorators);
    }
 
@@ -91,7 +91,7 @@ public class FallenTreeFeature extends Feature<FallenTreeConfiguration> {
       HashSet var7 = new HashSet();
 
       for(int var8 = 0; var8 < var4; ++var8) {
-         var7.add(placeLogBlock(var1, var2, var3, var5, getSidewaysStateModifier(var6)));
+         var7.add(this.placeLogBlock(var1, var2, var3, var5, getSidewaysStateModifier(var6)));
          var5.move(var6);
       }
 
@@ -106,9 +106,10 @@ public class FallenTreeFeature extends Feature<FallenTreeConfiguration> {
       return var1.getBlockState(var2.below()).isFaceSturdy(var1, var2, Direction.UP);
    }
 
-   private static BlockPos placeLogBlock(FallenTreeConfiguration var0, WorldGenLevel var1, RandomSource var2, BlockPos.MutableBlockPos var3, Function<BlockState, BlockState> var4) {
-      var1.setBlock(var3, (BlockState)var4.apply(var0.trunkProvider.getState(var2, var3)), 19);
-      return var3.immutable();
+   private BlockPos placeLogBlock(FallenTreeConfiguration var1, WorldGenLevel var2, RandomSource var3, BlockPos.MutableBlockPos var4, Function<BlockState, BlockState> var5) {
+      var2.setBlock(var4, (BlockState)var5.apply(var1.trunkProvider.getState(var3, var4)), 3);
+      this.markAboveForPostProcessing(var2, var4);
+      return var4.immutable();
    }
 
    private void decorateLogs(WorldGenLevel var1, RandomSource var2, Set<BlockPos> var3, List<TreeDecorator> var4) {

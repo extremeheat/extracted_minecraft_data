@@ -764,42 +764,46 @@ public abstract class RenderType extends RenderStateShard {
 
          try {
             GpuBuffer var4 = var2.getVertexFormat().uploadImmediateVertexBuffer(var1.vertexBuffer());
-            GpuBuffer var5 = var1.indexBuffer() == null ? null : var2.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
-            RenderTarget var6 = this.state.outputState.getRenderTarget();
+            GpuBuffer var5;
+            VertexFormat.IndexType var6;
+            if (var1.indexBuffer() == null) {
+               RenderSystem.AutoStorageIndexBuffer var7 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
+               var5 = var7.getBuffer(var1.drawState().indexCount());
+               var6 = var7.type();
+            } else {
+               var5 = var2.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
+               var6 = var1.drawState().indexType();
+            }
 
-            try (RenderPass var7 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var6.getColorTexture(), OptionalInt.empty(), var6.useDepth ? var6.getDepthTexture() : null, OptionalDouble.empty())) {
-               var7.setPipeline(var2);
-               var7.setVertexBuffer(0, var4);
+            RenderTarget var15 = this.state.outputState.getRenderTarget();
+
+            try (RenderPass var8 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var15.getColorTexture(), OptionalInt.empty(), var15.useDepth ? var15.getDepthTexture() : null, OptionalDouble.empty())) {
+               var8.setPipeline(var2);
+               var8.setVertexBuffer(0, var4);
                if (RenderSystem.SCISSOR_STATE.isEnabled()) {
-                  var7.enableScissor(RenderSystem.SCISSOR_STATE);
+                  var8.enableScissor(RenderSystem.SCISSOR_STATE);
                }
 
-               for(int var8 = 0; var8 < 12; ++var8) {
-                  GpuTexture var9 = RenderSystem.getShaderTexture(var8);
-                  if (var9 != null) {
-                     var7.bindSampler("Sampler" + var8, var9);
+               for(int var9 = 0; var9 < 12; ++var9) {
+                  GpuTexture var10 = RenderSystem.getShaderTexture(var9);
+                  if (var10 != null) {
+                     var8.bindSampler("Sampler" + var9, var10);
                   }
                }
 
-               if (var5 != null) {
-                  var7.setIndexBuffer(var5, var1.drawState().indexType());
-               } else {
-                  RenderSystem.AutoStorageIndexBuffer var14 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
-                  var7.setIndexBuffer(var14.getBuffer(var1.drawState().indexCount()), var14.type());
-               }
-
-               var7.drawIndexed(0, var1.drawState().indexCount());
+               var8.setIndexBuffer(var5, var6);
+               var8.drawIndexed(0, var1.drawState().indexCount());
             }
-         } catch (Throwable var13) {
+         } catch (Throwable var14) {
             if (var1 != null) {
                try {
                   var3.close();
-               } catch (Throwable var10) {
-                  var13.addSuppressed(var10);
+               } catch (Throwable var11) {
+                  var14.addSuppressed(var11);
                }
             }
 
-            throw var13;
+            throw var14;
          }
 
          if (var1 != null) {

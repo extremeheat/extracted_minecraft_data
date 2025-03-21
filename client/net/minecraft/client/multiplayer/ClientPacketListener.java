@@ -3,6 +3,7 @@ package net.minecraft.client.multiplayer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.hash.HashCode;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
@@ -73,6 +74,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.Connection;
+import net.minecraft.network.HashedPatchMap;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.LastSeenMessagesTracker;
@@ -246,6 +248,7 @@ import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
@@ -257,6 +260,7 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.Crypt;
+import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
@@ -334,6 +338,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private static final Component UNSERURE_SERVER_TOAST = Component.translatable("multiplayer.unsecureserver.toast");
    private static final Component INVALID_PACKET = Component.translatable("multiplayer.disconnect.invalid_packet");
    private static final Component RECONFIGURE_SCREEN_MESSAGE = Component.translatable("connect.reconfiguring");
+   private static final Component BAD_CHAT_INDEX = Component.translatable("multiplayer.disconnect.bad_chat_index");
    private static final int PENDING_OFFSET_THRESHOLD = 64;
    public static final int TELEPORT_INTERPOLATION_THRESHOLD = 64;
    private final GameProfile localGameProfile;
@@ -355,10 +360,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final FeatureFlagSet enabledFeatures;
    private final PotionBrewing potionBrewing;
    private FuelValues fuelValues;
+   private final HashedPatchMap.HashGenerator decoratedHashOpsGenerator;
    private OptionalInt removedPlayerVehicleId = OptionalInt.empty();
    @Nullable
    private LocalChatSession chatSession;
    private SignedMessageChain.Encoder signedMessageEncoder;
+   private int nextChatIndex;
    private LastSeenMessagesTracker lastSeenMessages;
    private MessageSignatureCache messageSignatureCache;
    @Nullable
@@ -389,6 +396,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.cacheSlots = new ArrayList();
       this.localGameProfile = var3.localGameProfile();
       this.registryAccess = var3.receivedRegistries();
+      RegistryOps var4 = this.registryAccess.createSerializationContext(HashOps.CRC32C_INSTANCE);
+      this.decoratedHashOpsGenerator = (var1x) -> ((HashCode)var1x.encodeValue(var4).getOrThrow((var1) -> {
+            String var10002 = String.valueOf(var1x);
+            return new IllegalArgumentException("Failed to hash " + var10002 + ": " + var1);
+         })).asInt();
       this.enabledFeatures = var3.enabledFeatures();
       this.advancements = new ClientAdvancements(var1, this.telemetryManager);
       this.suggestionsProvider = new ClientSuggestionProvider(this, var1);
@@ -475,6 +487,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
       this.minecraft.options.setServerRenderDistance(var1.chunkRadius());
       this.chatSession = null;
+      this.nextChatIndex = 0;
       this.lastSeenMessages = new LastSeenMessagesTracker(20);
       this.messageSignatureCache = MessageSignatureCache.createDefault();
       if (this.connection.isEncrypted()) {
@@ -882,33 +895,40 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handlePlayerChat(ClientboundPlayerChatPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      Optional var2 = var1.body().unpack(this.messageSignatureCache);
-      if (var2.isEmpty()) {
-         this.connection.disconnect(INVALID_PACKET);
+      int var2 = this.nextChatIndex++;
+      if (var1.globalIndex() != var2) {
+         LOGGER.error("Missing or out-of-order chat message from server, expected index {} but got {}", var2, var1.globalIndex());
+         this.connection.disconnect(BAD_CHAT_INDEX);
       } else {
-         this.messageSignatureCache.push((SignedMessageBody)var2.get(), var1.signature());
-         UUID var3 = var1.sender();
-         PlayerInfo var4 = this.getPlayerInfo(var3);
-         if (var4 == null) {
-            LOGGER.error("Received player chat packet for unknown player with ID: {}", var3);
-            this.minecraft.getChatListener().handleChatMessageError(var3, var1.signature(), var1.chatType());
+         Optional var3 = var1.body().unpack(this.messageSignatureCache);
+         if (var3.isEmpty()) {
+            LOGGER.error("Message from player with ID {} referenced unrecognized signature id", var1.sender());
+            this.connection.disconnect(INVALID_PACKET);
          } else {
-            RemoteChatSession var5 = var4.getChatSession();
-            SignedMessageLink var6;
-            if (var5 != null) {
-               var6 = new SignedMessageLink(var1.index(), var3, var5.sessionId());
+            this.messageSignatureCache.push((SignedMessageBody)var3.get(), var1.signature());
+            UUID var4 = var1.sender();
+            PlayerInfo var5 = this.getPlayerInfo(var4);
+            if (var5 == null) {
+               LOGGER.error("Received player chat packet for unknown player with ID: {}", var4);
+               this.minecraft.getChatListener().handleChatMessageError(var4, var1.signature(), var1.chatType());
             } else {
-               var6 = SignedMessageLink.unsigned(var3);
-            }
+               RemoteChatSession var6 = var5.getChatSession();
+               SignedMessageLink var7;
+               if (var6 != null) {
+                  var7 = new SignedMessageLink(var1.index(), var4, var6.sessionId());
+               } else {
+                  var7 = SignedMessageLink.unsigned(var4);
+               }
 
-            PlayerChatMessage var7 = new PlayerChatMessage(var6, var1.signature(), (SignedMessageBody)var2.get(), var1.unsignedContent(), var1.filterMask());
-            var7 = var4.getMessageValidator().updateAndValidate(var7);
-            if (var7 != null) {
-               this.minecraft.getChatListener().handlePlayerChatMessage(var7, var4.getProfile(), var1.chatType());
-            } else {
-               this.minecraft.getChatListener().handleChatMessageError(var3, var1.signature(), var1.chatType());
-            }
+               PlayerChatMessage var8 = new PlayerChatMessage(var7, var1.signature(), (SignedMessageBody)var3.get(), var1.unsignedContent(), var1.filterMask());
+               var8 = var5.getMessageValidator().updateAndValidate(var8);
+               if (var8 != null) {
+                  this.minecraft.getChatListener().handlePlayerChatMessage(var8, var5.getProfile(), var1.chatType());
+               } else {
+                  this.minecraft.getChatListener().handleChatMessageError(var4, var1.signature(), var1.chatType());
+               }
 
+            }
          }
       }
    }
@@ -1246,10 +1266,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleContainerContent(ClientboundContainerSetContentPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       LocalPlayer var2 = this.minecraft.player;
-      if (var1.getContainerId() == 0) {
-         var2.inventoryMenu.initializeContents(var1.getStateId(), var1.getItems(), var1.getCarriedItem());
-      } else if (var1.getContainerId() == var2.containerMenu.containerId) {
-         var2.containerMenu.initializeContents(var1.getStateId(), var1.getItems(), var1.getCarriedItem());
+      if (var1.containerId() == 0) {
+         var2.inventoryMenu.initializeContents(var1.stateId(), var1.items(), var1.carriedItem());
+      } else if (var1.containerId() == var2.containerMenu.containerId) {
+         var2.containerMenu.initializeContents(var1.stateId(), var1.items(), var1.carriedItem());
       }
 
    }
@@ -2419,5 +2439,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void registerForCleaning(CacheSlot<?, ?> var1) {
       this.cacheSlots.add(new WeakReference(var1));
+   }
+
+   public HashedPatchMap.HashGenerator decoratedHashOpsGenenerator() {
+      return this.decoratedHashOpsGenerator;
    }
 }

@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
+@DontObfuscate
 public interface GpuDevice {
    CommandEncoder createCommandEncoder();
 
@@ -51,4 +53,6 @@ public interface GpuDevice {
    void clearPipelineCache();
 
    List<String> getEnabledExtensions();
+
+   void close();
 }

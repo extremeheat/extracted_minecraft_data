@@ -51,7 +51,7 @@ public class ViewArea {
 
    public void releaseAllBuffers() {
       for(SectionRenderDispatcher.RenderSection var4 : this.sections) {
-         var4.releaseBuffers();
+         var4.reset();
       }
 
    }

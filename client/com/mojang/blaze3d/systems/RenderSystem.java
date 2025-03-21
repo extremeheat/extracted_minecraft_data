@@ -9,7 +9,6 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -75,6 +74,7 @@ public class RenderSystem {
    private static ProjectionType savedProjectionType;
    private static final Matrix4fStack modelViewStack;
    private static Matrix4f textureMatrix;
+   public static final int TEXTURE_COUNT = 12;
    private static final GpuTexture[] shaderTextures;
    private static final float[] shaderColor;
    private static float shaderGlintAlpha;
@@ -157,11 +157,6 @@ public class RenderSystem {
       SCISSOR_STATE.disable();
    }
 
-   public static void activeTexture(int var0) {
-      assertOnRenderThread();
-      GlStateManager._activeTexture(var0);
-   }
-
    public static void setShaderFog(FogParameters var0) {
       assertOnRenderThread();
       shaderFog = var0;
@@ -236,6 +231,19 @@ public class RenderSystem {
    public static void initRenderer(long var0, int var2, boolean var3, BiFunction<ResourceLocation, ShaderType, String> var4, boolean var5) {
       DEVICE = new GlDevice(var0, var2, var3, var4, var5);
       apiDescription = getDevice().getImplementationInformation();
+
+      try (ByteBufferBuilder var6 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
+         BufferBuilder var7 = new BufferBuilder(var6, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+         var7.addVertex(0.0F, 0.0F, 0.0F);
+         var7.addVertex(1.0F, 0.0F, 0.0F);
+         var7.addVertex(1.0F, 1.0F, 0.0F);
+         var7.addVertex(0.0F, 1.0F, 0.0F);
+
+         try (MeshData var8 = var7.buildOrThrow()) {
+            QUAD_VERTEX_BUFFER = getDevice().createBuffer(() -> "Quad", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var8.vertexBuffer());
+         }
+      }
+
    }
 
    public static void setErrorCallback(GLFWErrorCallbackI var0) {
@@ -266,12 +274,14 @@ public class RenderSystem {
 
    public static void setupGuiFlatDiffuseLighting(Vector3f var0, Vector3f var1) {
       assertOnRenderThread();
-      GlStateManager.setupGuiFlatDiffuseLighting(var0, var1);
+      Matrix4f var2 = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
+      setShaderLights(var2.transformDirection(var0, new Vector3f()), var2.transformDirection(var1, new Vector3f()));
    }
 
    public static void setupGui3DDiffuseLighting(Vector3f var0, Vector3f var1) {
       assertOnRenderThread();
-      GlStateManager.setupGui3DDiffuseLighting(var0, var1);
+      Matrix4f var2 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
+      setShaderLights(var2.transformDirection(var0, new Vector3f()), var2.transformDirection(var1, new Vector3f()));
    }
 
    public static void setShaderTexture(int var0, @Nullable GpuTexture var1) {
@@ -365,20 +375,10 @@ public class RenderSystem {
 
    public static GpuBuffer getQuadVertexBuffer() {
       if (QUAD_VERTEX_BUFFER == null) {
-         try (ByteBufferBuilder var0 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
-            BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            var1.addVertex(0.0F, 0.0F, 0.0F);
-            var1.addVertex(1.0F, 0.0F, 0.0F);
-            var1.addVertex(1.0F, 1.0F, 0.0F);
-            var1.addVertex(0.0F, 1.0F, 0.0F);
-
-            try (MeshData var2 = var1.buildOrThrow()) {
-               QUAD_VERTEX_BUFFER = getDevice().createBuffer(() -> "Quad", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer());
-            }
-         }
+         throw new IllegalStateException("Can't getQuadVertexBuffer() before renderer was initialized");
+      } else {
+         return QUAD_VERTEX_BUFFER;
       }
-
-      return QUAD_VERTEX_BUFFER;
    }
 
    public static void setModelOffset(float var0, float var1, float var2) {
@@ -470,10 +470,6 @@ public class RenderSystem {
       }
 
       public GpuBuffer getBuffer(int var1) {
-         if (this.buffer == null) {
-            this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, 0);
-         }
-
          this.ensureStorage(var1);
          return this.buffer;
       }

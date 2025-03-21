@@ -273,7 +273,7 @@ public class DebugScreenOverlay {
          String var11 = var10 ? "-" : String.format(Locale.ROOT, "%.1f", var8.millisecondsPerTick());
          var1 = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", var2.getCurrentSmoothedTickTime(), var11, var7, var5, var6);
       } else {
-         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.serverBrand(), var7, var5, var6);
+         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.lambda$fillCrashReport$0(), var7, var5, var6);
       }
 
       BlockPos var28 = this.minecraft.getCameraEntity().blockPosition();
@@ -622,16 +622,19 @@ public class DebugScreenOverlay {
       RenderTarget var2 = Minecraft.getInstance().getMainRenderTarget();
       GpuTexture var3 = var2.getColorTexture();
       GpuTexture var4 = var2.getDepthTexture();
+      GpuBuffer var5 = this.crosshairIndicies.getBuffer(18);
 
-      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
-         var5.setPipeline(var1);
-         var5.setUniform("LineWidth", 4.0F);
-         var5.setVertexBuffer(0, this.crosshairBuffer);
-         var5.setIndexBuffer(this.crosshairIndicies.getBuffer(18), this.crosshairIndicies.type());
-         var5.drawIndexed(0, 18);
+      try (RenderPass var6 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
+         var6.setPipeline(var1);
+         RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+         RenderSystem.lineWidth(4.0F);
+         var6.setVertexBuffer(0, this.crosshairBuffer);
+         var6.setIndexBuffer(var5, this.crosshairIndicies.type());
+         var6.drawIndexed(0, 18);
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         var5.setUniform("LineWidth", 2.0F);
-         var5.drawIndexed(0, 18);
+         RenderSystem.lineWidth(2.0F);
+         var6.drawIndexed(0, 18);
+         RenderSystem.lineWidth(1.0F);
       }
 
    }

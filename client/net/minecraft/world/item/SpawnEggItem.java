@@ -159,8 +159,8 @@ public class SpawnEggItem extends Item {
                return Optional.empty();
             } else {
                ((Mob)var7).snapTo(var5.x(), var5.y(), var5.z(), 0.0F, 0.0F);
-               var4.addFreshEntityWithPassengers((Entity)var7);
                ((Mob)var7).applyComponentsFromItemStack(var6);
+               var4.addFreshEntityWithPassengers((Entity)var7);
                var6.consume(1, var1);
                return Optional.of(var7);
             }

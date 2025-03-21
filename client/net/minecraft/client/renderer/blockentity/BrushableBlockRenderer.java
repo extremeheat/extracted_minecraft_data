@@ -38,7 +38,7 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
                   boolean var12 = var9 == Direction.EAST || var9 == Direction.WEST;
                   var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((var12 ? 90 : 0) + 11)));
                   var3.scale(0.5F, 0.5F, 0.5F);
-                  int var13 = LevelRenderer.getLightColor(var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var9));
+                  int var13 = LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var9));
                   this.itemRenderer.renderStatic(var10, ItemDisplayContext.FIXED, var13, OverlayTexture.NO_OVERLAY, var3, var4, var1.getLevel(), 0);
                   var3.popPose();
                }

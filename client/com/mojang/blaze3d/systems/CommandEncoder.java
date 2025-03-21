@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -9,6 +10,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
 
+@DontObfuscate
 public interface CommandEncoder {
    RenderPass createRenderPass(GpuTexture var1, OptionalInt var2);
 

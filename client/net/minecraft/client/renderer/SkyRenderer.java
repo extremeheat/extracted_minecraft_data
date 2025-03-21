@@ -44,11 +44,12 @@ public class SkyRenderer implements AutoCloseable {
    private final GpuBuffer topSkyBuffer;
    private final GpuBuffer bottomSkyBuffer;
    private final GpuBuffer endSkyBuffer;
+   private int starIndexCount;
 
    public SkyRenderer() {
       super();
       this.starIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      this.starBuffer = buildStars();
+      this.starBuffer = this.buildStars();
       this.endSkyBuffer = buildEndSky();
 
       try (ByteBufferBuilder var1 = new ByteBufferBuilder(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
@@ -69,37 +70,38 @@ public class SkyRenderer implements AutoCloseable {
 
    }
 
-   private static GpuBuffer buildStars() {
-      RandomSource var0 = RandomSource.create(10842L);
-      float var1 = 100.0F;
+   private GpuBuffer buildStars() {
+      RandomSource var1 = RandomSource.create(10842L);
+      float var2 = 100.0F;
 
-      GpuBuffer var18;
-      try (ByteBufferBuilder var2 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
-         BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+      GpuBuffer var19;
+      try (ByteBufferBuilder var3 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
+         BufferBuilder var4 = new BufferBuilder(var3, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
-         for(int var4 = 0; var4 < 1500; ++var4) {
-            float var5 = var0.nextFloat() * 2.0F - 1.0F;
-            float var6 = var0.nextFloat() * 2.0F - 1.0F;
-            float var7 = var0.nextFloat() * 2.0F - 1.0F;
-            float var8 = 0.15F + var0.nextFloat() * 0.1F;
-            float var9 = Mth.lengthSquared(var5, var6, var7);
-            if (!(var9 <= 0.010000001F) && !(var9 >= 1.0F)) {
-               Vector3f var10 = (new Vector3f(var5, var6, var7)).normalize(100.0F);
-               float var11 = (float)(var0.nextDouble() * 3.1415927410125732 * 2.0);
-               Matrix3f var12 = (new Matrix3f()).rotateTowards((new Vector3f(var10)).negate(), new Vector3f(0.0F, 1.0F, 0.0F)).rotateZ(-var11);
-               var3.addVertex((new Vector3f(var8, -var8, 0.0F)).mul(var12).add(var10));
-               var3.addVertex((new Vector3f(var8, var8, 0.0F)).mul(var12).add(var10));
-               var3.addVertex((new Vector3f(-var8, var8, 0.0F)).mul(var12).add(var10));
-               var3.addVertex((new Vector3f(-var8, -var8, 0.0F)).mul(var12).add(var10));
+         for(int var5 = 0; var5 < 1500; ++var5) {
+            float var6 = var1.nextFloat() * 2.0F - 1.0F;
+            float var7 = var1.nextFloat() * 2.0F - 1.0F;
+            float var8 = var1.nextFloat() * 2.0F - 1.0F;
+            float var9 = 0.15F + var1.nextFloat() * 0.1F;
+            float var10 = Mth.lengthSquared(var6, var7, var8);
+            if (!(var10 <= 0.010000001F) && !(var10 >= 1.0F)) {
+               Vector3f var11 = (new Vector3f(var6, var7, var8)).normalize(100.0F);
+               float var12 = (float)(var1.nextDouble() * 3.1415927410125732 * 2.0);
+               Matrix3f var13 = (new Matrix3f()).rotateTowards((new Vector3f(var11)).negate(), new Vector3f(0.0F, 1.0F, 0.0F)).rotateZ(-var12);
+               var4.addVertex((new Vector3f(var9, -var9, 0.0F)).mul(var13).add(var11));
+               var4.addVertex((new Vector3f(var9, var9, 0.0F)).mul(var13).add(var11));
+               var4.addVertex((new Vector3f(-var9, var9, 0.0F)).mul(var13).add(var11));
+               var4.addVertex((new Vector3f(-var9, -var9, 0.0F)).mul(var13).add(var11));
             }
          }
 
-         try (MeshData var17 = var3.buildOrThrow()) {
-            var18 = RenderSystem.getDevice().createBuffer(() -> "Stars vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var17.vertexBuffer());
+         try (MeshData var18 = var4.buildOrThrow()) {
+            this.starIndexCount = var18.drawState().indexCount();
+            var19 = RenderSystem.getDevice().createBuffer(() -> "Stars vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var18.vertexBuffer());
          }
       }
 
-      return var18;
+      return var19;
    }
 
    private void buildSkyDisc(VertexConsumer var1, float var2) {
@@ -197,12 +199,13 @@ public class SkyRenderer implements AutoCloseable {
       RenderPipeline var5 = RenderPipelines.STARS;
       GpuTexture var6 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
       GpuTexture var7 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
+      GpuBuffer var8 = this.starIndices.getBuffer(this.starIndexCount);
 
-      try (RenderPass var8 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
-         var8.setPipeline(var5);
-         var8.setVertexBuffer(0, this.starBuffer);
-         var8.setIndexBuffer(this.starIndices.getBuffer(9000), this.starIndices.type());
-         var8.drawIndexed(0, 9000);
+      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
+         var9.setPipeline(var5);
+         var9.setVertexBuffer(0, this.starBuffer);
+         var9.setIndexBuffer(var8, this.starIndices.type());
+         var9.drawIndexed(0, this.starIndexCount);
       }
 
       RenderSystem.setShaderFog(var1);
@@ -267,15 +270,16 @@ public class SkyRenderer implements AutoCloseable {
       AbstractTexture var2 = var1.getTexture(END_SKY_LOCATION);
       var2.setFilter(TriState.FALSE, false);
       RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      GpuTexture var4 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
-      GpuTexture var5 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
+      GpuBuffer var4 = var3.getBuffer(36);
+      GpuTexture var5 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
+      GpuTexture var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
 
-      try (RenderPass var6 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var4, OptionalInt.empty(), var5, OptionalDouble.empty())) {
-         var6.setPipeline(RenderPipelines.END_SKY);
-         var6.bindSampler("Sampler0", var2.getTexture());
-         var6.setVertexBuffer(0, this.endSkyBuffer);
-         var6.setIndexBuffer(var3.getBuffer(36), var3.type());
-         var6.drawIndexed(0, 36);
+      try (RenderPass var7 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+         var7.setPipeline(RenderPipelines.END_SKY);
+         var7.bindSampler("Sampler0", var2.getTexture());
+         var7.setVertexBuffer(0, this.endSkyBuffer);
+         var7.setIndexBuffer(var4, var3.type());
+         var7.drawIndexed(0, 36);
       }
 
    }

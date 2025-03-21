@@ -4,6 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.protocol.ProtocolInfoBuilder;
+import net.minecraft.network.protocol.SimpleUnboundProtocol;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
@@ -26,9 +27,9 @@ import net.minecraft.network.protocol.cookie.CookiePacketTypes;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 
 public class ConfigurationProtocols {
-   public static final ProtocolInfo.Unbound<ServerConfigurationPacketListener, FriendlyByteBuf> SERVERBOUND_TEMPLATE;
+   public static final SimpleUnboundProtocol<ServerConfigurationPacketListener, FriendlyByteBuf> SERVERBOUND_TEMPLATE;
    public static final ProtocolInfo<ServerConfigurationPacketListener> SERVERBOUND;
-   public static final ProtocolInfo.Unbound<ClientConfigurationPacketListener, FriendlyByteBuf> CLIENTBOUND_TEMPLATE;
+   public static final SimpleUnboundProtocol<ClientConfigurationPacketListener, FriendlyByteBuf> CLIENTBOUND_TEMPLATE;
    public static final ProtocolInfo<ClientConfigurationPacketListener> CLIENTBOUND;
 
    public ConfigurationProtocols() {

@@ -1,6 +1,8 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Shorts;
+import com.google.common.primitives.SignedBytes;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.HashedStack;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
@@ -415,11 +418,12 @@ public class MultiPlayerGameMode {
             ItemStack var12 = (ItemStack)var9.get(var15);
             ItemStack var13 = ((Slot)var7.get(var15)).getItem();
             if (!ItemStack.matches(var12, var13)) {
-               var14.put(var15, var13.copy());
+               var14.put(var15, HashedStack.create(var13, this.connection.decoratedHashOpsGenenerator()));
             }
          }
 
-         this.connection.send(new ServerboundContainerClickPacket(var1, var6.getStateId(), var2, var3, var4, var6.getCarried().copy(), var14));
+         HashedStack var16 = HashedStack.create(var6.getCarried(), this.connection.decoratedHashOpsGenenerator());
+         this.connection.send(new ServerboundContainerClickPacket(var1, var6.getStateId(), Shorts.checkedCast((long)var2), SignedBytes.checkedCast((long)var3), var4, var14, var16));
       }
    }
 

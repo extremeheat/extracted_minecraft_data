@@ -23,7 +23,17 @@ public class PacketDecoder<T extends PacketListener> extends ByteToMessageDecode
    protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
       int var4 = var2.readableBytes();
       if (var4 != 0) {
-         Packet var5 = (Packet)this.protocolInfo.codec().decode(var2);
+         Packet var5;
+         try {
+            var5 = (Packet)this.protocolInfo.codec().decode(var2);
+         } catch (Exception var7) {
+            if (var7 instanceof SkipPacketException) {
+               var2.skipBytes(var2.readableBytes());
+            }
+
+            throw var7;
+         }
+
          PacketType var6 = var5.type();
          JvmProfiler.INSTANCE.onPacketReceived(this.protocolInfo.id(), var6, var1.channel().remoteAddress(), var4);
          if (var2.readableBytes() > 0) {

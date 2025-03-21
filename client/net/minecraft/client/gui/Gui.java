@@ -333,8 +333,8 @@ public class Gui {
    private void renderChat(GuiGraphics var1, DeltaTracker var2) {
       if (!this.chat.isChatFocused()) {
          Window var3 = this.minecraft.getWindow();
-         int var4 = Mth.floor(this.minecraft.mouseHandler.xpos() * (double)var3.getGuiScaledWidth() / (double)var3.getScreenWidth());
-         int var5 = Mth.floor(this.minecraft.mouseHandler.ypos() * (double)var3.getGuiScaledHeight() / (double)var3.getScreenHeight());
+         int var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var3));
+         int var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var3));
          this.chat.render(var1, this.tickCount, var4, var5, false);
       }
 

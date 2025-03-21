@@ -6,6 +6,7 @@ import net.minecraft.client.model.CowModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -59,7 +60,7 @@ public class MushroomCowMushroomLayer extends RenderLayer<MushroomCowRenderState
 
    private void renderMushroomBlock(PoseStack var1, MultiBufferSource var2, int var3, boolean var4, BlockState var5, int var6, BlockStateModel var7) {
       if (var4) {
-         this.blockRenderer.getModelRenderer().renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var7, 0.0F, 0.0F, 0.0F, var3, var6);
+         ModelBlockRenderer.renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var7, 0.0F, 0.0F, 0.0F, var3, var6);
       } else {
          this.blockRenderer.renderSingleBlock(var5, var1, var2, var3, var6);
       }

@@ -1,8 +1,5 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.opengl.dsa.DirectStateAccess;
-import com.mojang.blaze3d.platform.GlConst;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -37,11 +34,15 @@ public class GlTexture extends GpuTexture {
       }
    }
 
+   public boolean isClosed() {
+      return this.closed;
+   }
+
    public int getFbo(DirectStateAccess var1, @Nullable GpuTexture var2) {
       int var3 = var2 == null ? 0 : ((GlTexture)var2).id;
       return this.fboCache.computeIfAbsent(var3, (var3x) -> {
          int var4 = var1.createFrameBufferObject();
-         var1.bindFrameBufferTextures(var4, this.id, var3, 0, false);
+         var1.bindFrameBufferTextures(var4, this.id, var3, 0, 0);
          return var4;
       });
    }

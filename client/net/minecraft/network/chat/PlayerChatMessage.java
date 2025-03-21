@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.SignatureUpdater;
@@ -114,6 +115,11 @@ public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignatu
 
    public boolean isFullyFiltered() {
       return this.filterMask.isFullyFiltered();
+   }
+
+   public static String describeSigned(PlayerChatMessage var0) {
+      String var10000 = var0.signedBody.content();
+      return "'" + var10000 + "' @ " + String.valueOf(var0.signedBody.timeStamp()) + "\n - From: " + String.valueOf(var0.link.sender()) + "/" + String.valueOf(var0.link.sessionId()) + ", message #" + var0.link.index() + "\n - Salt: " + var0.signedBody.salt() + "\n - Signature: " + MessageSignature.describe(var0.signature) + "\n - Last Seen: [\n" + (String)var0.signedBody.lastSeen().entries().stream().map((var0x) -> "     " + MessageSignature.describe(var0x) + "\n").collect(Collectors.joining()) + " ]\n";
    }
 
    static {

@@ -216,11 +216,11 @@ public class EntitySelectorOptions {
                } else {
                   var0.setIncludesEntities(false);
                   var0.addPredicate((var2x) -> {
-                     if (!(var2x instanceof ServerPlayer)) {
-                        return false;
+                     if (var2x instanceof ServerPlayer var3) {
+                        GameType var4x = var3.gameMode();
+                        return var4x == var4 ^ var2;
                      } else {
-                        GameType var3 = ((ServerPlayer)var2x).gameMode.getGameModeForPlayer();
-                        return var2 ? var3 != var4 : var3 == var4;
+                        return false;
                      }
                   });
                   if (var2) {

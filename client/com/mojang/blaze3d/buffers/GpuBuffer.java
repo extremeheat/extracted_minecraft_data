@@ -1,7 +1,9 @@
 package com.mojang.blaze3d.buffers;
 
+import com.mojang.blaze3d.DontObfuscate;
 import java.nio.ByteBuffer;
 
+@DontObfuscate
 public abstract class GpuBuffer implements AutoCloseable {
    private final BufferType type;
    private final BufferUsage usage;
@@ -30,6 +32,7 @@ public abstract class GpuBuffer implements AutoCloseable {
 
    public abstract void close();
 
+   @DontObfuscate
    public interface ReadView extends AutoCloseable {
       ByteBuffer data();
 

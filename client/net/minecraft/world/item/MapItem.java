@@ -38,7 +38,7 @@ public class MapItem extends Item {
       super(var1);
    }
 
-   public static ItemStack create(Level var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
+   public static ItemStack create(ServerLevel var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
       ItemStack var6 = new ItemStack(Items.FILLED_MAP);
       MapId var7 = createNewSavedData(var0, var1, var2, var3, var4, var5, var0.dimension());
       var6.set(DataComponents.MAP_ID, var7);
@@ -56,7 +56,7 @@ public class MapItem extends Item {
       return getSavedData(var2, var1);
    }
 
-   private static MapId createNewSavedData(Level var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
+   private static MapId createNewSavedData(ServerLevel var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
       MapItemSavedData var7 = MapItemSavedData.createFresh((double)var1, (double)var2, (byte)var3, var4, var5, var6);
       MapId var8 = var0.getFreeMapId();
       var0.setMapData(var8, var7);
@@ -283,16 +283,19 @@ public class MapItem extends Item {
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
       MapPostProcessing var3 = (MapPostProcessing)var1.remove(DataComponents.MAP_POST_PROCESSING);
       if (var3 != null) {
-         switch (var3) {
-            case LOCK -> lockMap(var2, var1);
-            case SCALE -> scaleMap(var1, var2);
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var4 = (ServerLevel)var2;
+            switch (var3) {
+               case LOCK -> lockMap(var1, var4);
+               case SCALE -> scaleMap(var1, var4);
+            }
          }
 
       }
    }
 
-   private static void scaleMap(ItemStack var0, Level var1) {
-      MapItemSavedData var2 = getSavedData(var0, var1);
+   private static void scaleMap(ItemStack var0, ServerLevel var1) {
+      MapItemSavedData var2 = getSavedData((ItemStack)var0, var1);
       if (var2 != null) {
          MapId var3 = var1.getFreeMapId();
          var1.setMapData(var3, var2.scaled());
@@ -301,13 +304,13 @@ public class MapItem extends Item {
 
    }
 
-   public static void lockMap(Level var0, ItemStack var1) {
-      MapItemSavedData var2 = getSavedData(var1, var0);
+   private static void lockMap(ItemStack var0, ServerLevel var1) {
+      MapItemSavedData var2 = getSavedData((ItemStack)var0, var1);
       if (var2 != null) {
-         MapId var3 = var0.getFreeMapId();
+         MapId var3 = var1.getFreeMapId();
          MapItemSavedData var4 = var2.locked();
-         var0.setMapData(var3, var4);
-         var1.set(DataComponents.MAP_ID, var3);
+         var1.setMapData(var3, var4);
+         var0.set(DataComponents.MAP_ID, var3);
       }
 
    }

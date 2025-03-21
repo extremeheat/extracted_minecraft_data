@@ -44,10 +44,10 @@ public interface SignedMessageValidator {
 
       private boolean validate(PlayerChatMessage var1) {
          if (this.expired.getAsBoolean()) {
-            LOGGER.error("Received message from player with expired profile public key: {}", var1);
+            LOGGER.error("Received message with expired profile public key from {} with session {}", var1.sender(), var1.link().sessionId());
             return false;
          } else if (!var1.verify(this.validator)) {
-            LOGGER.error("Received message with invalid signature from {}", var1.sender());
+            LOGGER.error("Received message with invalid signature (is the session wrong, or signature cache out of sync?): {}", PlayerChatMessage.describeSigned(var1));
             return false;
          } else {
             return this.validateChain(var1);

@@ -13,6 +13,7 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -286,12 +287,9 @@ public class GameTestHelper {
 
    public Player makeMockPlayer(final GameType var1) {
       return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
-         public boolean isSpectator() {
-            return var1 == GameType.SPECTATOR;
-         }
-
-         public boolean isCreative() {
-            return var1.isCreative();
+         @Nonnull
+         public GameType gameMode() {
+            return var1;
          }
 
          public boolean isClientAuthoritative() {
@@ -307,12 +305,8 @@ public class GameTestHelper {
    public ServerPlayer makeMockServerPlayerInLevel() {
       CommonListenerCookie var1 = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
       ServerPlayer var2 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), var1.gameProfile(), var1.clientInformation()) {
-         public boolean isSpectator() {
-            return false;
-         }
-
-         public boolean isCreative() {
-            return true;
+         public GameType gameMode() {
+            return GameType.CREATIVE;
          }
       };
       Connection var3 = new Connection(PacketFlow.SERVERBOUND);

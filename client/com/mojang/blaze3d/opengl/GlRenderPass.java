@@ -97,7 +97,7 @@ public class GlRenderPass implements RenderPass {
       }
    }
 
-   public void setIndexBuffer(GpuBuffer var1, VertexFormat.IndexType var2) {
+   public void setIndexBuffer(@Nullable GpuBuffer var1, VertexFormat.IndexType var2) {
       this.indexBuffer = var1;
       this.indexType = var2;
    }
@@ -110,11 +110,11 @@ public class GlRenderPass implements RenderPass {
       }
    }
 
-   public void drawMultipleIndexed(Collection<RenderPass.Draw> var1) {
+   public void drawMultipleIndexed(Collection<RenderPass.Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3) {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDrawMultiple(this, var1);
+         this.encoder.executeDrawMultiple(this, var1, var2, var3);
       }
    }
 

@@ -4,13 +4,8 @@ import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.opengl.dsa.CoreDsa;
-import com.mojang.blaze3d.opengl.dsa.DirectStateAccess;
-import com.mojang.blaze3d.opengl.dsa.EmulatedDsa;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.GlConst;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoder;
@@ -68,14 +63,8 @@ public class GlDevice implements GpuDevice {
       this.debugLog = GlDebug.enableDebugCallback(var3, var4, this.enabledExtensions);
       this.debugLabels = GlDebugLabel.create(var7, var6, this.enabledExtensions);
       this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels, this.enabledExtensions);
+      this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions);
       this.maxSupportedTextureSize = var8;
-      if (var7.GL_ARB_direct_state_access && USE_GL_ARB_direct_state_access) {
-         this.enabledExtensions.add("GL_ARB_direct_state_access");
-         this.directStateAccess = new CoreDsa();
-      } else {
-         this.directStateAccess = new EmulatedDsa();
-      }
-
       this.defaultShaderSource = var5;
       this.encoder = new GlCommandEncoder(this);
    }
@@ -128,13 +117,21 @@ public class GlDevice implements GpuDevice {
    }
 
    public GpuBuffer createBuffer(@Nullable Supplier<String> var1, BufferType var2, BufferUsage var3, int var4) {
-      return new GlBuffer(this.debugLabels, var1, var2, var3, var4, GlStateManager._glGenBuffers());
+      if (var4 <= 0) {
+         throw new IllegalArgumentException("Buffer size must be greater than zero");
+      } else {
+         return new GlBuffer(this.debugLabels, var1, var2, var3, var4, GlStateManager._glGenBuffers());
+      }
    }
 
    public GpuBuffer createBuffer(@Nullable Supplier<String> var1, BufferType var2, BufferUsage var3, ByteBuffer var4) {
-      GlBuffer var5 = new GlBuffer(this.debugLabels, var1, var2, var3, var4.remaining(), GlStateManager._glGenBuffers());
-      this.encoder.writeToBuffer(var5, var4, 0);
-      return var5;
+      if (!var4.hasRemaining()) {
+         throw new IllegalArgumentException("Buffer source must not be empty");
+      } else {
+         GlBuffer var5 = new GlBuffer(this.debugLabels, var1, var2, var3, var4.remaining(), GlStateManager._glGenBuffers());
+         this.encoder.writeToBuffer(var5, var4, 0);
+         return var5;
+      }
    }
 
    public String getImplementationInformation() {
@@ -210,6 +207,10 @@ public class GlDevice implements GpuDevice {
 
    public List<String> getEnabledExtensions() {
       return new ArrayList(this.enabledExtensions);
+   }
+
+   public void close() {
+      this.clearPipelineCache();
    }
 
    public DirectStateAccess directStateAccess() {

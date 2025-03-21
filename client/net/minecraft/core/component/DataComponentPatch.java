@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
@@ -22,8 +23,96 @@ public final class DataComponentPatch {
    public static final DataComponentPatch EMPTY = new DataComponentPatch(Reference2ObjectMaps.emptyMap());
    public static final Codec<DataComponentPatch> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> STREAM_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> DELIMITED_STREAM_CODEC;
    private static final String REMOVED_PREFIX = "!";
    final Reference2ObjectMap<DataComponentType<?>, Optional<?>> map;
+
+   private static StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> createStreamCodec(final CodecGetter var0) {
+      return new StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch>() {
+         public DataComponentPatch decode(RegistryFriendlyByteBuf var1) {
+            int var2 = var1.readVarInt();
+            int var3 = var1.readVarInt();
+            if (var2 == 0 && var3 == 0) {
+               return DataComponentPatch.EMPTY;
+            } else {
+               int var4 = var2 + var3;
+               Reference2ObjectArrayMap var5 = new Reference2ObjectArrayMap(Math.min(var4, 65536));
+
+               for(int var6 = 0; var6 < var2; ++var6) {
+                  DataComponentType var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
+                  Object var8 = var0.apply(var7).decode(var1);
+                  var5.put(var7, Optional.of(var8));
+               }
+
+               for(int var9 = 0; var9 < var3; ++var9) {
+                  DataComponentType var10 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
+                  var5.put(var10, Optional.empty());
+               }
+
+               return new DataComponentPatch(var5);
+            }
+         }
+
+         public void encode(RegistryFriendlyByteBuf var1, DataComponentPatch var2) {
+            if (var2.isEmpty()) {
+               var1.writeVarInt(0);
+               var1.writeVarInt(0);
+            } else {
+               int var3 = 0;
+               int var4 = 0;
+               ObjectIterator var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
+
+               while(var5.hasNext()) {
+                  Reference2ObjectMap.Entry var6 = (Reference2ObjectMap.Entry)var5.next();
+                  if (((Optional)var6.getValue()).isPresent()) {
+                     ++var3;
+                  } else {
+                     ++var4;
+                  }
+               }
+
+               var1.writeVarInt(var3);
+               var1.writeVarInt(var4);
+               var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
+
+               while(var5.hasNext()) {
+                  Reference2ObjectMap.Entry var11 = (Reference2ObjectMap.Entry)var5.next();
+                  Optional var7 = (Optional)var11.getValue();
+                  if (var7.isPresent()) {
+                     DataComponentType var8 = (DataComponentType)var11.getKey();
+                     DataComponentType.STREAM_CODEC.encode(var1, var8);
+                     this.encodeComponent(var1, var8, var7.get());
+                  }
+               }
+
+               var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
+
+               while(var5.hasNext()) {
+                  Reference2ObjectMap.Entry var12 = (Reference2ObjectMap.Entry)var5.next();
+                  if (((Optional)var12.getValue()).isEmpty()) {
+                     DataComponentType var13 = (DataComponentType)var12.getKey();
+                     DataComponentType.STREAM_CODEC.encode(var1, var13);
+                  }
+               }
+
+            }
+         }
+
+         private <T> void encodeComponent(RegistryFriendlyByteBuf var1, DataComponentType<T> var2, Object var3) {
+            var0.apply(var2).encode(var1, var3);
+         }
+
+         // $FF: synthetic method
+         public void encode(final Object var1, final Object var2) {
+            this.encode((RegistryFriendlyByteBuf)var1, (DataComponentPatch)var2);
+         }
+
+         // $FF: synthetic method
+         public Object decode(final Object var1) {
+            return this.decode((RegistryFriendlyByteBuf)var1);
+         }
+      };
+   }
 
    DataComponentPatch(Reference2ObjectMap<DataComponentType<?>, Optional<?>> var1) {
       super();
@@ -171,90 +260,17 @@ public final class DataComponentPatch {
 
          return var1;
       });
-      STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch>() {
-         public DataComponentPatch decode(RegistryFriendlyByteBuf var1) {
-            int var2 = var1.readVarInt();
-            int var3 = var1.readVarInt();
-            if (var2 == 0 && var3 == 0) {
-               return DataComponentPatch.EMPTY;
-            } else {
-               int var4 = var2 + var3;
-               Reference2ObjectArrayMap var5 = new Reference2ObjectArrayMap(Math.min(var4, 65536));
-
-               for(int var6 = 0; var6 < var2; ++var6) {
-                  DataComponentType var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
-                  Object var8 = var7.streamCodec().decode(var1);
-                  var5.put(var7, Optional.of(var8));
-               }
-
-               for(int var9 = 0; var9 < var3; ++var9) {
-                  DataComponentType var10 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
-                  var5.put(var10, Optional.empty());
-               }
-
-               return new DataComponentPatch(var5);
-            }
+      STREAM_CODEC = createStreamCodec(new CodecGetter() {
+         public <T> StreamCodec<RegistryFriendlyByteBuf, T> apply(DataComponentType<T> var1) {
+            return var1.streamCodec().cast();
          }
-
-         public void encode(RegistryFriendlyByteBuf var1, DataComponentPatch var2) {
-            if (var2.isEmpty()) {
-               var1.writeVarInt(0);
-               var1.writeVarInt(0);
-            } else {
-               int var3 = 0;
-               int var4 = 0;
-               ObjectIterator var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
-
-               while(var5.hasNext()) {
-                  Reference2ObjectMap.Entry var6 = (Reference2ObjectMap.Entry)var5.next();
-                  if (((Optional)var6.getValue()).isPresent()) {
-                     ++var3;
-                  } else {
-                     ++var4;
-                  }
-               }
-
-               var1.writeVarInt(var3);
-               var1.writeVarInt(var4);
-               var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
-
-               while(var5.hasNext()) {
-                  Reference2ObjectMap.Entry var11 = (Reference2ObjectMap.Entry)var5.next();
-                  Optional var7 = (Optional)var11.getValue();
-                  if (var7.isPresent()) {
-                     DataComponentType var8 = (DataComponentType)var11.getKey();
-                     DataComponentType.STREAM_CODEC.encode(var1, var8);
-                     encodeComponent(var1, var8, var7.get());
-                  }
-               }
-
-               var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
-
-               while(var5.hasNext()) {
-                  Reference2ObjectMap.Entry var12 = (Reference2ObjectMap.Entry)var5.next();
-                  if (((Optional)var12.getValue()).isEmpty()) {
-                     DataComponentType var13 = (DataComponentType)var12.getKey();
-                     DataComponentType.STREAM_CODEC.encode(var1, var13);
-                  }
-               }
-
-            }
+      });
+      DELIMITED_STREAM_CODEC = createStreamCodec(new CodecGetter() {
+         public <T> StreamCodec<RegistryFriendlyByteBuf, T> apply(DataComponentType<T> var1) {
+            StreamCodec var2 = var1.streamCodec().cast();
+            return var2.apply(ByteBufCodecs.lengthPrefixed(2147483647));
          }
-
-         private static <T> void encodeComponent(RegistryFriendlyByteBuf var0, DataComponentType<T> var1, Object var2) {
-            var1.streamCodec().encode(var0, var2);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((RegistryFriendlyByteBuf)var1, (DataComponentPatch)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((RegistryFriendlyByteBuf)var1);
-         }
-      };
+      });
    }
 
    public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
@@ -330,5 +346,10 @@ public final class DataComponentPatch {
       public DataComponentPatch build() {
          return this.map.isEmpty() ? DataComponentPatch.EMPTY : new DataComponentPatch(this.map);
       }
+   }
+
+   @FunctionalInterface
+   interface CodecGetter {
+      <T> StreamCodec<? super RegistryFriendlyByteBuf, T> apply(DataComponentType<T> var1);
    }
 }

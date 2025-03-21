@@ -1157,6 +1157,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          FreeTypeUtil.destroy();
          Util.shutdownExecutors();
+         RenderSystem.getDevice().close();
       } catch (Throwable var5) {
          LOGGER.error("Shutdown failure!", var5);
          throw var5;

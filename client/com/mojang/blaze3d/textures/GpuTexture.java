@@ -1,5 +1,8 @@
 package com.mojang.blaze3d.textures;
 
+import com.mojang.blaze3d.DontObfuscate;
+
+@DontObfuscate
 public abstract class GpuTexture implements AutoCloseable {
    private final TextureFormat format;
    private final int width;
@@ -66,4 +69,6 @@ public abstract class GpuTexture implements AutoCloseable {
    }
 
    public abstract void close();
+
+   public abstract boolean isClosed();
 }

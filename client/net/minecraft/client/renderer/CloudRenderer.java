@@ -225,11 +225,13 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          var8 = var5.getDepthTexture();
       }
 
-      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var7, OptionalInt.empty(), var8, OptionalDouble.empty())) {
-         var9.setPipeline(var1);
-         var9.setIndexBuffer(this.indices.getBuffer(this.indexCount), this.indices.type());
-         var9.setVertexBuffer(0, this.vertexBuffer);
-         var9.drawIndexed(0, this.indexCount);
+      GpuBuffer var9 = this.indices.getBuffer(this.indexCount);
+
+      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var7, OptionalInt.empty(), var8, OptionalDouble.empty())) {
+         var10.setPipeline(var1);
+         var10.setIndexBuffer(var9, this.indices.type());
+         var10.setVertexBuffer(0, this.vertexBuffer);
+         var10.drawIndexed(0, this.indexCount);
       }
 
       RenderSystem.resetModelOffset();

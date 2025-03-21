@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
@@ -71,7 +72,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          BlockStateModel var12 = this.blockRenderer.getBlockModel(var11);
          var2.pushPose();
          var2.translate(-0.5F, -0.5F, -0.5F);
-         this.blockRenderer.getModelRenderer().renderModel(var2.last(), var3.getBuffer(RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS)), var12, 1.0F, 1.0F, 1.0F, var4, OverlayTexture.NO_OVERLAY);
+         ModelBlockRenderer.renderModel(var2.last(), var3.getBuffer(RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS)), var12, 1.0F, 1.0F, 1.0F, var4, OverlayTexture.NO_OVERLAY);
          var2.popPose();
       }
 

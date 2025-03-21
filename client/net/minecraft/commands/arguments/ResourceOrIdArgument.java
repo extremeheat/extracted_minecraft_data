@@ -10,7 +10,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JavaOps;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -20,6 +19,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
@@ -34,7 +34,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
    public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", var0));
    private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.resource_or_id.invalid"));
-   private static final TagParser<Object> JAVA_OPS_PARSER;
+   private static final TagParser<?> VALUE_PARSER;
    private final HolderLookup.Provider registryLookup;
    private final boolean hasRegistry;
    private final Codec<Holder<T>> codec;
@@ -76,9 +76,14 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    @Nullable
    public Holder<T> parse(StringReader var1) throws CommandSyntaxException {
-      RegistryOps var2 = this.registryLookup.createSerializationContext(JavaOps.INSTANCE);
-      Dynamic var3 = parseInlineOrId(var2, JAVA_OPS_PARSER, var1);
-      return !this.hasRegistry ? null : (Holder)this.codec.parse(var3).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
+      return this.parse(var1, VALUE_PARSER);
+   }
+
+   @Nullable
+   private <O> Holder<T> parse(StringReader var1, TagParser<O> var2) throws CommandSyntaxException {
+      RegistryOps var3 = this.registryLookup.createSerializationContext(var2.getOps());
+      Dynamic var4 = parseInlineOrId(var3, var2, var1);
+      return !this.hasRegistry ? null : (Holder)this.codec.parse(var4).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
    }
 
    @VisibleForTesting
@@ -114,7 +119,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    }
 
    static {
-      JAVA_OPS_PARSER = TagParser.<Object>create(JavaOps.INSTANCE);
+      VALUE_PARSER = TagParser.create(NbtOps.INSTANCE);
    }
 
    public static class LootTableArgument extends ResourceOrIdArgument<LootTable> {

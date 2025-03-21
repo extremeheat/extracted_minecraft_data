@@ -824,7 +824,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void removeLatestMovementRecordingBatch() {
-      this.movementThisTick.removeLast();
+      if (!this.movementThisTick.isEmpty()) {
+         this.movementThisTick.removeLast();
+      }
+
    }
 
    protected void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
@@ -843,6 +846,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          boolean var5 = this.isFreezing();
          this.checkInsideBlocks(var1, this.insideEffectCollector);
          this.insideEffectCollector.applyAndClear(this);
+         if (this.isInRain()) {
+            this.clearFire();
+         }
+
          if (var4 && !this.isOnFire() || var5 && !this.isFreezing()) {
             this.playEntityOnFireExtinguishedSound();
          }

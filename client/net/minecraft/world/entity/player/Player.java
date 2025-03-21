@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.player;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -1656,7 +1657,12 @@ public abstract class Player extends LivingEntity {
 
    }
 
-   public abstract boolean isSpectator();
+   @Nullable
+   public abstract GameType gameMode();
+
+   public boolean isSpectator() {
+      return this.gameMode() == GameType.SPECTATOR;
+   }
 
    public boolean canBeHitByProjectile() {
       return !this.isSpectator() && super.canBeHitByProjectile();
@@ -1666,7 +1672,9 @@ public abstract class Player extends LivingEntity {
       return !this.abilities.flying && !this.isSpectator() && super.isSwimming();
    }
 
-   public abstract boolean isCreative();
+   public boolean isCreative() {
+      return this.gameMode() == GameType.CREATIVE;
+   }
 
    public boolean isPushedByFluid() {
       return !this.abilities.flying;
@@ -1986,6 +1994,10 @@ public abstract class Player extends LivingEntity {
 
    public boolean onClimbable() {
       return this.abilities.flying ? false : super.onClimbable();
+   }
+
+   public String debugInfo() {
+      return MoreObjects.toStringHelper(this).add("name", this.getName().getString()).add("id", this.getId()).add("pos", this.position()).add("mode", this.gameMode()).add("permission", this.getPermissionLevel()).toString();
    }
 
    static {

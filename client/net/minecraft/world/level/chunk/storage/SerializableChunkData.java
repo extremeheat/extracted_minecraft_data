@@ -436,7 +436,7 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
             if (var6) {
                var3.setBlockEntityNbt(var5);
             } else {
-               BlockPos var7 = BlockEntity.getPosFromTag(var5);
+               BlockPos var7 = BlockEntity.getPosFromTag(var3.getPos(), var5);
                BlockEntity var8 = BlockEntity.loadStatic(var7, var3.getBlockState(var7), var5, var0.registryAccess());
                if (var8 != null) {
                   var3.setBlockEntity(var8);
