@@ -830,7 +830,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    }
 
-   protected void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
+   public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
       this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
    }
 
