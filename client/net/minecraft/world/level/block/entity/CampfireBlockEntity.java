@@ -1,11 +1,13 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Arrays;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -122,16 +124,8 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      if (var1.contains("CookingTimes", 11)) {
-         int[] var3 = var1.getIntArray("CookingTimes");
-         System.arraycopy(var3, 0, this.cookingProgress, 0, Math.min(this.cookingTime.length, var3.length));
-      }
-
-      if (var1.contains("CookingTotalTimes", 11)) {
-         int[] var4 = var1.getIntArray("CookingTotalTimes");
-         System.arraycopy(var4, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var4.length));
-      }
-
+      var1.getIntArray("CookingTimes").ifPresentOrElse((var1x) -> System.arraycopy(var1x, 0, this.cookingProgress, 0, Math.min(this.cookingTime.length, var1x.length)), () -> Arrays.fill(this.cookingProgress, 0));
+      var1.getIntArray("CookingTotalTimes").ifPresentOrElse((var1x) -> System.arraycopy(var1x, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var1x.length)), () -> Arrays.fill(this.cookingTime, 0));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -181,14 +175,14 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       this.items.clear();
    }
 
-   public void dowse() {
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
       if (this.level != null) {
-         this.markUpdated();
+         Containers.dropContents(this.level, var1, this.getItems());
       }
 
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.getItems());
    }

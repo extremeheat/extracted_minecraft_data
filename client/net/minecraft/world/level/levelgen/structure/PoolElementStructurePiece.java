@@ -1,12 +1,9 @@
 package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -26,10 +23,8 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import org.slf4j.Logger;
 
 public class PoolElementStructurePiece extends StructurePiece {
-   private static final Logger LOGGER = LogUtils.getLogger();
    protected final StructurePoolElement element;
    protected BlockPos position;
    private final int groundLevelDelta;
@@ -51,16 +46,16 @@ public class PoolElementStructurePiece extends StructurePiece {
    public PoolElementStructurePiece(StructurePieceSerializationContext var1, CompoundTag var2) {
       super(StructurePieceType.JIGSAW, var2);
       this.structureTemplateManager = var1.structureTemplateManager();
-      this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
-      this.groundLevelDelta = var2.getInt("ground_level_delta");
+      this.position = new BlockPos(var2.getIntOr("PosX", 0), var2.getIntOr("PosY", 0), var2.getIntOr("PosZ", 0));
+      this.groundLevelDelta = var2.getIntOr("ground_level_delta", 0);
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.element = (StructurePoolElement)StructurePoolElement.CODEC.parse(var3, var2.getCompound("pool_element")).getPartialOrThrow((var0) -> new IllegalStateException("Invalid pool element found: " + var0));
-      this.rotation = Rotation.valueOf(var2.getString("rotation"));
+      this.element = (StructurePoolElement)var2.read("pool_element", StructurePoolElement.CODEC, var3).orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
+      this.rotation = (Rotation)var2.read("rotation", Rotation.LEGACY_CODEC).orElseThrow();
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
-      ListTag var4 = var2.getList("junctions", 10);
+      ListTag var4 = var2.getListOrEmpty("junctions");
       this.junctions.clear();
       var4.forEach((var2x) -> this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x))));
-      this.liquidSettings = (LiquidSettings)LiquidSettings.CODEC.parse(NbtOps.INSTANCE, var2.get("liquid_settings")).result().orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);
+      this.liquidSettings = (LiquidSettings)var2.read("liquid_settings", LiquidSettings.CODEC).orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -69,11 +64,8 @@ public class PoolElementStructurePiece extends StructurePiece {
       var2.putInt("PosZ", this.position.getZ());
       var2.putInt("ground_level_delta", this.groundLevelDelta);
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10000 = StructurePoolElement.CODEC.encodeStart(var3, this.element);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("pool_element", var1x));
-      var2.putString("rotation", this.rotation.name());
+      var2.store("pool_element", StructurePoolElement.CODEC, var3, this.element);
+      var2.store("rotation", Rotation.LEGACY_CODEC, this.rotation);
       ListTag var4 = new ListTag();
 
       for(JigsawJunction var6 : this.junctions) {
@@ -82,7 +74,7 @@ public class PoolElementStructurePiece extends StructurePiece {
 
       var2.put("junctions", var4);
       if (this.liquidSettings != JigsawStructure.DEFAULT_LIQUID_SETTINGS) {
-         var2.put("liquid_settings", (Tag)LiquidSettings.CODEC.encodeStart(NbtOps.INSTANCE, this.liquidSettings).getOrThrow());
+         var2.store("liquid_settings", LiquidSettings.CODEC, var3, this.liquidSettings);
       }
 
    }

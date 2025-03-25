@@ -39,7 +39,7 @@ public class SlotRanges {
       addSingleSlot(var0, "armor.feet", var4);
       addSingleSlot(var0, "armor.body", var5);
       addSlots(var0, "armor.*", var1, var2, var3, var4, var5);
-      addSingleSlot(var0, "horse.saddle", 400);
+      addSingleSlot(var0, "saddle", EquipmentSlot.SADDLE.getIndex(106));
       addSingleSlot(var0, "horse.chest", 499);
       addSingleSlot(var0, "player.cursor", 499);
       addSlotRange(var0, "player.crafting.", 500, 4);

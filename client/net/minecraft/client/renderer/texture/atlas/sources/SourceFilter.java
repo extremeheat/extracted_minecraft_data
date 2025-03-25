@@ -3,16 +3,13 @@ package net.minecraft.client.renderer.texture.atlas.sources;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
-import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ResourceLocationPattern;
 
-public class SourceFilter implements SpriteSource {
-   public static final MapCodec<SourceFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocationPattern.CODEC.fieldOf("pattern").forGetter((var0x) -> var0x.filter)).apply(var0, SourceFilter::new));
-   private final ResourceLocationPattern filter;
+public record SourceFilter(ResourceLocationPattern filter) implements SpriteSource {
+   public static final MapCodec<SourceFilter> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocationPattern.CODEC.fieldOf("pattern").forGetter(SourceFilter::filter)).apply(var0, SourceFilter::new));
 
-   public SourceFilter(ResourceLocationPattern var1) {
+   public SourceFilter(final ResourceLocationPattern var1) {
       super();
       this.filter = var1;
    }
@@ -21,7 +18,7 @@ public class SourceFilter implements SpriteSource {
       var2.removeAll(this.filter.locationPredicate());
    }
 
-   public SpriteSourceType type() {
-      return SpriteSources.FILTER;
+   public MapCodec<SourceFilter> codec() {
+      return MAP_CODEC;
    }
 }

@@ -30,6 +30,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -234,7 +235,7 @@ public class LevelChunk extends ChunkAccess {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
       int var4 = var1.getY();
       LevelChunkSection var5 = this.getSection(this.getSectionIndex(var4));
       boolean var6 = var5.hasOnlyAir();
@@ -268,36 +269,53 @@ public class LevelChunk extends ChunkAccess {
                var13.pop();
             }
 
-            boolean var15 = var10.hasBlockEntity();
-            if (!this.level.isClientSide) {
-               var10.onRemove(this.level, var1, var2, var3);
-            } else if (!var10.is(var11) && var15) {
+            boolean var18 = !var10.is(var11);
+            boolean var14 = (var3 & 64) != 0;
+            boolean var15 = (var3 & 256) == 0;
+            if (var18 && var10.hasBlockEntity()) {
+               if (!this.level.isClientSide && var15) {
+                  BlockEntity var16 = this.level.getBlockEntity(var1);
+                  if (var16 != null) {
+                     var16.preRemoveSideEffects(var1, var10);
+                  }
+               }
+
                this.removeBlockEntity(var1);
+            }
+
+            if (var18 || var11 instanceof BaseRailBlock) {
+               Level var17 = this.level;
+               if (var17 instanceof ServerLevel) {
+                  ServerLevel var19 = (ServerLevel)var17;
+                  if ((var3 & 1) != 0 || var14) {
+                     var10.affectNeighborsAfterRemoval(var19, var1, var14);
+                  }
+               }
             }
 
             if (!var5.getBlockState(var7, var8, var9).is(var11)) {
                return null;
             } else {
-               if (!this.level.isClientSide) {
-                  var2.onPlace(this.level, var1, var10, var3);
+               if (!this.level.isClientSide && (var3 & 512) == 0) {
+                  var2.onPlace(this.level, var1, var10, var14);
                }
 
                if (var2.hasBlockEntity()) {
-                  BlockEntity var14 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
-                  if (var14 != null && !var14.isValidBlockState(var2)) {
-                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var14.getType().builtInRegistryHolder().key().location(), var2});
+                  BlockEntity var20 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
+                  if (var20 != null && !var20.isValidBlockState(var2)) {
+                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var20.getType().builtInRegistryHolder().key().location(), var2});
                      this.removeBlockEntity(var1);
-                     var14 = null;
+                     var20 = null;
                   }
 
-                  if (var14 == null) {
-                     var14 = ((EntityBlock)var11).newBlockEntity(var1, var2);
-                     if (var14 != null) {
-                        this.addAndRegisterBlockEntity(var14);
+                  if (var20 == null) {
+                     var20 = ((EntityBlock)var11).newBlockEntity(var1, var2);
+                     if (var20 != null) {
+                        this.addAndRegisterBlockEntity(var20);
                      }
                   } else {
-                     var14.setBlockState(var2);
-                     this.updateBlockEntityTicker(var14);
+                     var20.setBlockState(var2);
+                     this.updateBlockEntityTicker(var20);
                   }
                }
 
@@ -486,20 +504,14 @@ public class LevelChunk extends ChunkAccess {
       return false;
    }
 
-   public void replaceWithPacketData(FriendlyByteBuf var1, CompoundTag var2, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var3) {
+   public void replaceWithPacketData(FriendlyByteBuf var1, Map<Heightmap.Types, long[]> var2, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var3) {
       this.clearAllBlockEntities();
 
       for(LevelChunkSection var7 : this.sections) {
          var7.read(var1);
       }
 
-      for(Heightmap.Types var12 : Heightmap.Types.values()) {
-         String var8 = var12.getSerializationKey();
-         if (var2.contains(var8, 12)) {
-            this.setHeightmap(var12, var2.getLongArray(var8));
-         }
-      }
-
+      var2.forEach(this::setHeightmap);
       this.initializeLightSources();
       var3.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(var1x, var2x, var3x) -> {
          BlockEntity var4 = this.getBlockEntity(var1x, LevelChunk.EntityCreationType.IMMEDIATE);
@@ -548,7 +560,7 @@ public class LevelChunk extends ChunkAccess {
                if (!(var7.getBlock() instanceof LiquidBlock)) {
                   BlockState var9 = Block.updateFromNeighbourShapes(var7, var1, var6);
                   if (var9 != var7) {
-                     var1.setBlock(var6, var9, 20);
+                     var1.setBlock(var6, var9, 276);
                   }
                }
             }
@@ -572,7 +584,7 @@ public class LevelChunk extends ChunkAccess {
    private BlockEntity promotePendingBlockEntity(BlockPos var1, CompoundTag var2) {
       BlockState var4 = this.getBlockState(var1);
       BlockEntity var3;
-      if ("DUMMY".equals(var2.getString("id"))) {
+      if ("DUMMY".equals(var2.getStringOr("id", ""))) {
          if (var4.hasBlockEntity()) {
             var3 = ((EntityBlock)var4.getBlock()).newBlockEntity(var1, var4);
          } else {

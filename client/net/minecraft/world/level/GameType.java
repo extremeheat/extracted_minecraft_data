@@ -1,5 +1,6 @@
 package net.minecraft.world.level;
 
+import com.mojang.serialization.Codec;
 import java.util.Arrays;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
@@ -18,6 +19,9 @@ public enum GameType implements StringRepresentable {
    public static final GameType DEFAULT_MODE = SURVIVAL;
    public static final StringRepresentable.EnumCodec<GameType> CODEC = StringRepresentable.<GameType>fromEnum(GameType::values);
    private static final IntFunction<GameType> BY_ID = ByIdMap.<GameType>continuous(GameType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<GameType> LEGACY_ID_CODEC = Codec.INT.xmap(GameType::byId, GameType::getId);
    private static final int NOT_SET = -1;
    private final int id;
    private final String name;

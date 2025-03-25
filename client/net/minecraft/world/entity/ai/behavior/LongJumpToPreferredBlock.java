@@ -43,7 +43,7 @@ public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos
             Optional var3 = super.getJumpCandidate(var1);
             if (var3.isPresent()) {
                LongJumpToRandomPos.PossibleJump var4 = (LongJumpToRandomPos.PossibleJump)var3.get();
-               if (var1.getBlockState(var2.setWithOffset(var4.getJumpTarget(), (Direction)Direction.DOWN)).is(this.preferredBlockTag)) {
+               if (var1.getBlockState(var2.setWithOffset(var4.targetPos(), (Direction)Direction.DOWN)).is(this.preferredBlockTag)) {
                   return var3;
                }
 

@@ -2,6 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -80,7 +81,7 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
       }
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       SeededContainerLoot var2 = (SeededContainerLoot)var1.get(DataComponents.CONTAINER_LOOT);
       if (var2 != null) {

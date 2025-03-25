@@ -33,6 +33,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -44,8 +45,10 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.WorldData;
 import org.slf4j.Logger;
 
 public class WorldUpgrader implements AutoCloseable {
@@ -77,15 +80,16 @@ public class WorldUpgrader implements AutoCloseable {
    static final Pattern REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca$");
    final DimensionDataStorage overworldDataStorage;
 
-   public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, RegistryAccess var3, boolean var4, boolean var5) {
+   public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, WorldData var3, RegistryAccess var4, boolean var5, boolean var6) {
       super();
-      this.dimensions = var3.lookupOrThrow(Registries.LEVEL_STEM);
+      this.dimensions = var4.lookupOrThrow(Registries.LEVEL_STEM);
       this.levels = (Set)this.dimensions.registryKeySet().stream().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
-      this.eraseCache = var4;
+      this.eraseCache = var5;
       this.dataFixer = var2;
       this.levelStorage = var1;
-      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var3);
-      this.recreateRegionFiles = var5;
+      SavedData.Context var7 = new SavedData.Context((ServerLevel)null, var3.worldGenOptions().seed());
+      this.overworldDataStorage = new DimensionDataStorage(var7, this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var4);
+      this.recreateRegionFiles = var6;
       this.thread = THREAD_FACTORY.newThread(this::work);
       this.thread.setUncaughtExceptionHandler((var1x, var2x) -> {
          LOGGER.error("Error upgrading world", var2x);
@@ -440,7 +444,7 @@ public class WorldUpgrader implements AutoCloseable {
             int var5 = ChunkStorage.getVersion(var4);
             ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(var3))).generator();
             CompoundTag var7 = var1.upgradeChunkTag(var3, () -> WorldUpgrader.this.overworldDataStorage, var4, var6.getTypeNameForDataFixer());
-            ChunkPos var8 = new ChunkPos(var7.getInt("xPos"), var7.getInt("zPos"));
+            ChunkPos var8 = new ChunkPos(var7.getIntOr("xPos", 0), var7.getIntOr("zPos", 0));
             if (!var8.equals(var2)) {
                WorldUpgrader.LOGGER.warn("Chunk {} has invalid position {}", var2, var8);
             }
@@ -451,14 +455,17 @@ public class WorldUpgrader implements AutoCloseable {
                var7.remove("Heightmaps");
                var9 = var9 || var7.contains("isLightOn");
                var7.remove("isLightOn");
-               ListTag var10 = var7.getList("sections", 10);
+               ListTag var10 = var7.getListOrEmpty("sections");
 
                for(int var11 = 0; var11 < var10.size(); ++var11) {
-                  CompoundTag var12 = var10.getCompound(var11);
-                  var9 = var9 || var12.contains("BlockLight");
-                  var12.remove("BlockLight");
-                  var9 = var9 || var12.contains("SkyLight");
-                  var12.remove("SkyLight");
+                  Optional var12 = var10.getCompound(var11);
+                  if (!var12.isEmpty()) {
+                     CompoundTag var13 = (CompoundTag)var12.get();
+                     var9 = var9 || var13.contains("BlockLight");
+                     var13.remove("BlockLight");
+                     var9 = var9 || var13.contains("SkyLight");
+                     var13.remove("SkyLight");
+                  }
                }
             }
 

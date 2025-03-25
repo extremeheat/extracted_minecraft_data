@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -19,8 +19,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class KelpBlock extends GrowingPlantHeadBlock implements LiquidBlockContainer {
    public static final MapCodec<KelpBlock> CODEC = simpleCodec(KelpBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 9.0, 16.0);
    private static final double GROW_PER_TICK_PROBABILITY = 0.14;
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 9.0);
 
    public MapCodec<KelpBlock> codec() {
       return CODEC;
@@ -42,7 +42,7 @@ public class KelpBlock extends GrowingPlantHeadBlock implements LiquidBlockConta
       return !var1.is(Blocks.MAGMA_BLOCK);
    }
 
-   public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return false;
    }
 

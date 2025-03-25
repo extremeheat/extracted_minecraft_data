@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -65,11 +66,11 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          public void onTake(Player var1, ItemStack var2) {
             ((Slot)CartographyTableMenu.this.slots.get(0)).remove(1);
             ((Slot)CartographyTableMenu.this.slots.get(1)).remove(1);
-            var2.getItem().onCraftedBy(var2, var1.level(), var1);
+            var2.getItem().onCraftedBy(var2, var1);
             var3.execute((var1x, var2x) -> {
                long var3x = var1x.getGameTime();
                if (CartographyTableMenu.this.lastSoundTime != var3x) {
-                  var1x.playSound((Player)null, (BlockPos)var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
                   CartographyTableMenu.this.lastSoundTime = var3x;
                }
 
@@ -142,7 +143,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
          if (var2 == 2) {
-            var5.getItem().onCraftedBy(var5, var1.level(), var1);
+            var5.getItem().onCraftedBy(var5, var1);
             if (!this.moveItemStackTo(var5, 3, 39, true)) {
                return ItemStack.EMPTY;
             }

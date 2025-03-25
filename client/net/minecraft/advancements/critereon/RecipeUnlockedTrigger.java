@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.Recipe;
@@ -29,7 +28,7 @@ public class RecipeUnlockedTrigger extends SimpleCriterionTrigger<TriggerInstanc
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<Recipe<?>> recipe) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.RECIPE).fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Recipe.KEY_CODEC.fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<Recipe<?>> var2) {
          super();

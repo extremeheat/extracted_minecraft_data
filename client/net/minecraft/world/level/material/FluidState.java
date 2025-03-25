@@ -14,11 +14,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -126,12 +129,21 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return this.getType().getShape(this, var1, var2);
    }
 
+   @Nullable
+   public AABB getAABB(BlockGetter var1, BlockPos var2) {
+      return this.getType().getAABB(this, var1, var2);
+   }
+
    public Holder<Fluid> holder() {
       return ((Fluid)this.owner).builtInRegistryHolder();
    }
 
    public Stream<TagKey<Fluid>> getTags() {
       return ((Fluid)this.owner).builtInRegistryHolder().tags();
+   }
+
+   public void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+      this.getType().entityInside(var1, var2, var3, var4);
    }
 
    static {

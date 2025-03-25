@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 public class LocalTime implements SelectItemModelProperty<String> {
    public static final String ROOT_LOCALE = "";
    private static final long UPDATE_INTERVAL_MS;
+   public static final Codec<String> VALUE_CODEC;
    private static final Codec<TimeZone> TIME_ZONE_CODEC;
    private static final MapCodec<Data> DATA_MAP_CODEC;
    public static final SelectItemModelProperty.Type<LocalTime, String> TYPE;
@@ -77,6 +78,10 @@ public class LocalTime implements SelectItemModelProperty<String> {
       return TYPE;
    }
 
+   public Codec<String> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -85,12 +90,13 @@ public class LocalTime implements SelectItemModelProperty<String> {
 
    static {
       UPDATE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1L);
-      TIME_ZONE_CODEC = Codec.STRING.comapFlatMap((var0) -> {
+      VALUE_CODEC = Codec.STRING;
+      TIME_ZONE_CODEC = VALUE_CODEC.comapFlatMap((var0) -> {
          TimeZone var1 = TimeZone.getTimeZone(var0);
          return var1.equals(TimeZone.UNKNOWN_ZONE) ? DataResult.error(() -> "Unknown timezone: " + var0) : DataResult.success(var1);
       }, TimeZone::getID);
       DATA_MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("pattern").forGetter((var0x) -> var0x.format), Codec.STRING.optionalFieldOf("locale", "").forGetter((var0x) -> var0x.localeId), TIME_ZONE_CODEC.optionalFieldOf("time_zone").forGetter((var0x) -> var0x.timeZone)).apply(var0, Data::new));
-      TYPE = SelectItemModelProperty.Type.<LocalTime, String>create(DATA_MAP_CODEC.flatXmap(LocalTime::create, (var0) -> DataResult.success(var0.data)), Codec.STRING);
+      TYPE = SelectItemModelProperty.Type.<LocalTime, String>create(DATA_MAP_CODEC.flatXmap(LocalTime::create, (var0) -> DataResult.success(var0.data)), VALUE_CODEC);
    }
 
    static record Data(String format, String localeId, Optional<TimeZone> timeZone) {

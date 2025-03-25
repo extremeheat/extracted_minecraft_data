@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
@@ -74,7 +73,7 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   private NativeImage(Format var1, int var2, int var3, boolean var4, long var5) {
+   public NativeImage(Format var1, int var2, int var3, boolean var4, long var5) {
       super();
       if (var2 > 0 && var3 > 0) {
          this.format = var1;
@@ -258,7 +257,7 @@ public final class NativeImage implements AutoCloseable {
       return ARGB.fromABGR(this.getPixelABGR(var1, var2));
    }
 
-   private void setPixelABGR(int var1, int var2, int var3) {
+   public void setPixelABGR(int var1, int var2, int var3) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
@@ -291,23 +290,6 @@ public final class NativeImage implements AutoCloseable {
          }
 
          return var2;
-      }
-   }
-
-   public void applyToAllPixels(IntUnaryOperator var1) {
-      if (this.format != NativeImage.Format.RGBA) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "function application only works on RGBA images; have %s", this.format));
-      } else {
-         this.checkAllocated();
-         int var2 = this.width * this.height;
-         IntBuffer var3 = MemoryUtil.memIntBuffer(this.pixels, var2);
-
-         for(int var4 = 0; var4 < var2; ++var4) {
-            int var5 = ARGB.fromABGR(var3.get(var4));
-            int var6 = var1.applyAsInt(var5);
-            var3.put(var4, ARGB.toABGR(var6));
-         }
-
       }
    }
 
@@ -360,74 +342,6 @@ public final class NativeImage implements AutoCloseable {
 
          return var1;
       }
-   }
-
-   public void upload(int var1, int var2, int var3, boolean var4) {
-      this.upload(var1, var2, var3, 0, 0, this.width, this.height, var4);
-   }
-
-   public void upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
-      if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> this._upload(var1, var2, var3, var4, var5, var6, var7, var8));
-      } else {
-         this._upload(var1, var2, var3, var4, var5, var6, var7, var8);
-      }
-
-   }
-
-   private void _upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
-      try {
-         RenderSystem.assertOnRenderThreadOrInit();
-         this.checkAllocated();
-         if (var6 == this.getWidth()) {
-            GlStateManager._pixelStore(3314, 0);
-         } else {
-            GlStateManager._pixelStore(3314, this.getWidth());
-         }
-
-         GlStateManager._pixelStore(3316, var4);
-         GlStateManager._pixelStore(3315, var5);
-         this.format.setUnpackPixelStoreState();
-         GlStateManager._texSubImage2D(3553, var1, var2, var3, var6, var7, this.format.glFormat(), 5121, this.pixels);
-      } finally {
-         if (var8) {
-            this.close();
-         }
-
-      }
-
-   }
-
-   public void downloadTexture(int var1, boolean var2) {
-      RenderSystem.assertOnRenderThread();
-      this.checkAllocated();
-      this.format.setPackPixelStoreState();
-      GlStateManager._getTexImage(3553, var1, this.format.glFormat(), 5121, this.pixels);
-      if (var2 && this.format.hasAlpha()) {
-         for(int var3 = 0; var3 < this.getHeight(); ++var3) {
-            for(int var4 = 0; var4 < this.getWidth(); ++var4) {
-               this.setPixelABGR(var4, var3, this.getPixelABGR(var4, var3) | 255 << this.format.alphaOffset());
-            }
-         }
-      }
-
-   }
-
-   public void downloadDepthBuffer(float var1) {
-      RenderSystem.assertOnRenderThread();
-      if (this.format.components() != 1) {
-         throw new IllegalStateException("Depth buffer must be stored in NativeImage with 1 component.");
-      } else {
-         this.checkAllocated();
-         this.format.setPackPixelStoreState();
-         GlStateManager._readPixels(0, 0, this.width, this.height, 6402, 5121, this.pixels);
-      }
-   }
-
-   public void drawPixels() {
-      RenderSystem.assertOnRenderThread();
-      this.format.setUnpackPixelStoreState();
-      GlStateManager._glDrawPixels(this.width, this.height, this.format.glFormat(), 5121, this.pixels);
    }
 
    public void writeToFile(File var1) throws IOException {
@@ -558,26 +472,6 @@ public final class NativeImage implements AutoCloseable {
 
    }
 
-   public void flipY() {
-      this.checkAllocated();
-      int var1 = this.format.components();
-      int var2 = this.getWidth() * var1;
-      long var3 = MemoryUtil.nmemAlloc((long)var2);
-
-      try {
-         for(int var5 = 0; var5 < this.getHeight() / 2; ++var5) {
-            int var6 = var5 * this.getWidth() * var1;
-            int var7 = (this.getHeight() - 1 - var5) * this.getWidth() * var1;
-            MemoryUtil.memCopy(this.pixels + (long)var6, var3, (long)var2);
-            MemoryUtil.memCopy(this.pixels + (long)var7, this.pixels + (long)var6, (long)var2);
-            MemoryUtil.memCopy(var3, this.pixels + (long)var7, (long)var2);
-         }
-      } finally {
-         MemoryUtil.nmemFree(var3);
-      }
-
-   }
-
    public void resizeSubRectTo(int var1, int var2, int var3, int var4, NativeImage var5) {
       this.checkAllocated();
       if (var5.format() != this.format) {
@@ -590,6 +484,10 @@ public final class NativeImage implements AutoCloseable {
 
    public void untrack() {
       DebugMemoryUntracker.untrack(this.pixels);
+   }
+
+   public long getPointer() {
+      return this.pixels;
    }
 
    static {
@@ -624,36 +522,13 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   public static enum InternalGlFormat {
-      RGBA(6408),
-      RGB(6407),
-      RG(33319),
-      RED(6403);
-
-      private final int glFormat;
-
-      private InternalGlFormat(final int var3) {
-         this.glFormat = var3;
-      }
-
-      public int glFormat() {
-         return this.glFormat;
-      }
-
-      // $FF: synthetic method
-      private static InternalGlFormat[] $values() {
-         return new InternalGlFormat[]{RGBA, RGB, RG, RED};
-      }
-   }
-
    public static enum Format {
-      RGBA(4, 6408, true, true, true, false, true, 0, 8, 16, 255, 24, true),
-      RGB(3, 6407, true, true, true, false, false, 0, 8, 16, 255, 255, true),
-      LUMINANCE_ALPHA(2, 33319, false, false, false, true, true, 255, 255, 255, 0, 8, true),
-      LUMINANCE(1, 6403, false, false, false, true, false, 0, 0, 0, 0, 255, true);
+      RGBA(4, true, true, true, false, true, 0, 8, 16, 255, 24, true),
+      RGB(3, true, true, true, false, false, 0, 8, 16, 255, 255, true),
+      LUMINANCE_ALPHA(2, false, false, false, true, true, 255, 255, 255, 0, 8, true),
+      LUMINANCE(1, false, false, false, true, false, 0, 0, 0, 0, 255, true);
 
       final int components;
-      private final int glFormat;
       private final boolean hasRed;
       private final boolean hasGreen;
       private final boolean hasBlue;
@@ -666,38 +541,23 @@ public final class NativeImage implements AutoCloseable {
       private final int alphaOffset;
       private final boolean supportedByStb;
 
-      private Format(final int var3, final int var4, final boolean var5, final boolean var6, final boolean var7, final boolean var8, final boolean var9, final int var10, final int var11, final int var12, final int var13, final int var14, final boolean var15) {
+      private Format(final int var3, final boolean var4, final boolean var5, final boolean var6, final boolean var7, final boolean var8, final int var9, final int var10, final int var11, final int var12, final int var13, final boolean var14) {
          this.components = var3;
-         this.glFormat = var4;
-         this.hasRed = var5;
-         this.hasGreen = var6;
-         this.hasBlue = var7;
-         this.hasLuminance = var8;
-         this.hasAlpha = var9;
-         this.redOffset = var10;
-         this.greenOffset = var11;
-         this.blueOffset = var12;
-         this.luminanceOffset = var13;
-         this.alphaOffset = var14;
-         this.supportedByStb = var15;
+         this.hasRed = var4;
+         this.hasGreen = var5;
+         this.hasBlue = var6;
+         this.hasLuminance = var7;
+         this.hasAlpha = var8;
+         this.redOffset = var9;
+         this.greenOffset = var10;
+         this.blueOffset = var11;
+         this.luminanceOffset = var12;
+         this.alphaOffset = var13;
+         this.supportedByStb = var14;
       }
 
       public int components() {
          return this.components;
-      }
-
-      public void setPackPixelStoreState() {
-         RenderSystem.assertOnRenderThread();
-         GlStateManager._pixelStore(3333, this.components());
-      }
-
-      public void setUnpackPixelStoreState() {
-         RenderSystem.assertOnRenderThreadOrInit();
-         GlStateManager._pixelStore(3317, this.components());
-      }
-
-      public int glFormat() {
-         return this.glFormat;
       }
 
       public boolean hasRed() {

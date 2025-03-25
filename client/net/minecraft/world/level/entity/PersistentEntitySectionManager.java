@@ -103,6 +103,10 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       return var0.isAlwaysTicking() ? Visibility.TICKING : var1;
    }
 
+   public boolean isTicking(ChunkPos var1) {
+      return ((Visibility)this.chunkVisibility.get(var1.toLong())).isTicking();
+   }
+
    public void addLegacyChunkEntities(Stream<T> var1) {
       var1.forEach((var1x) -> this.addEntity(var1x, true));
    }

@@ -1,7 +1,9 @@
 package com.mojang.blaze3d.buffers;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.opengl.GlStateManager;
 
+@DontObfuscate
 public class GpuFence implements AutoCloseable {
    private long handle = GlStateManager._glFenceSync(37143, 0);
 

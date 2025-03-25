@@ -18,6 +18,7 @@ import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -112,8 +113,8 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                      List var11 = this.getEnchantmentList(var2x.registryAccess(), var2, var10, this.costs[var10]);
                      if (var11 != null && !var11.isEmpty()) {
                         EnchantmentInstance var8 = (EnchantmentInstance)var11.get(this.random.nextInt(var11.size()));
-                        this.enchantClue[var10] = var4.getId(var8.enchantment);
-                        this.levelClue[var10] = var8.level;
+                        this.enchantClue[var10] = var4.getId(var8.enchantment());
+                        this.levelClue[var10] = var8.level();
                      }
                   }
                }
@@ -138,7 +139,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          int var5 = var2 + 1;
          if ((var4.isEmpty() || var4.getCount() < var5) && !var1.hasInfiniteMaterials()) {
             return false;
-         } else if (this.costs[var2] <= 0 || var3.isEmpty() || (var1.experienceLevel < var5 || var1.experienceLevel < this.costs[var2]) && !var1.getAbilities().instabuild) {
+         } else if (this.costs[var2] <= 0 || var3.isEmpty() || (var1.experienceLevel < var5 || var1.experienceLevel < this.costs[var2]) && !var1.hasInfiniteMaterials()) {
             return false;
          } else {
             this.access.execute((var6, var7) -> {
@@ -152,7 +153,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                   }
 
                   for(EnchantmentInstance var11 : var9) {
-                     var8.enchant(var11.enchantment, var11.level);
+                     var8.enchant(var11.enchantment(), var11.level());
                   }
 
                   var4.consume(var5, var1);
@@ -168,7 +169,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                   this.enchantSlots.setChanged();
                   this.enchantmentSeed.set(var1.getEnchantmentSeed());
                   this.slotsChanged(this.enchantSlots);
-                  var6.playSound((Player)null, (BlockPos)var7, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, var6.random.nextFloat() * 0.1F + 0.9F);
+                  var6.playSound((Entity)null, (BlockPos)var7, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, var6.random.nextFloat() * 0.1F + 0.9F);
                }
 
             });

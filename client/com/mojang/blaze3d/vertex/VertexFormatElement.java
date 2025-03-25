@@ -1,11 +1,12 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.DontObfuscate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
+@DontObfuscate
 public record VertexFormatElement(int id, int index, Type type, Usage usage, int count) {
    public static final int MAX_COUNT = 32;
    private static final VertexFormatElement[] BY_ID = new VertexFormatElement[32];
@@ -63,10 +64,6 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       return this.type.size() * this.count;
    }
 
-   public void setupBufferState(int var1, long var2, int var4) {
-      this.usage.setupState.setupBufferState(this.count, this.type.glType(), var4, var2, var1);
-   }
-
    @Nullable
    public static VertexFormatElement byId(int var0) {
       return BY_ID[var0];
@@ -86,26 +83,18 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
    }
 
+   @DontObfuscate
    public static enum Usage {
-      POSITION("Position", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3)),
-      NORMAL("Normal", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3)),
-      COLOR("Vertex Color", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3)),
-      UV("UV", (var0, var1, var2, var3, var5) -> {
-         if (var1 == 5126) {
-            GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
-         } else {
-            GlStateManager._vertexAttribIPointer(var5, var0, var1, var2, var3);
-         }
-
-      }),
-      GENERIC("Generic", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3));
+      POSITION("Position"),
+      NORMAL("Normal"),
+      COLOR("Vertex Color"),
+      UV("UV"),
+      GENERIC("Generic");
 
       private final String name;
-      final SetupState setupState;
 
-      private Usage(final String var3, final SetupState var4) {
+      private Usage(final String var3) {
          this.name = var3;
-         this.setupState = var4;
       }
 
       public String toString() {
@@ -116,38 +105,28 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       private static Usage[] $values() {
          return new Usage[]{POSITION, NORMAL, COLOR, UV, GENERIC};
       }
-
-      @FunctionalInterface
-      interface SetupState {
-         void setupBufferState(int var1, int var2, int var3, long var4, int var6);
-      }
    }
 
+   @DontObfuscate
    public static enum Type {
-      FLOAT(4, "Float", 5126),
-      UBYTE(1, "Unsigned Byte", 5121),
-      BYTE(1, "Byte", 5120),
-      USHORT(2, "Unsigned Short", 5123),
-      SHORT(2, "Short", 5122),
-      UINT(4, "Unsigned Int", 5125),
-      INT(4, "Int", 5124);
+      FLOAT(4, "Float"),
+      UBYTE(1, "Unsigned Byte"),
+      BYTE(1, "Byte"),
+      USHORT(2, "Unsigned Short"),
+      SHORT(2, "Short"),
+      UINT(4, "Unsigned Int"),
+      INT(4, "Int");
 
       private final int size;
       private final String name;
-      private final int glType;
 
-      private Type(final int var3, final String var4, final int var5) {
+      private Type(final int var3, final String var4) {
          this.size = var3;
          this.name = var4;
-         this.glType = var5;
       }
 
       public int size() {
          return this.size;
-      }
-
-      public int glType() {
-         return this.glType;
       }
 
       public String toString() {

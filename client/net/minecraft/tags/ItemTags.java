@@ -47,6 +47,7 @@ public final class ItemTags {
    public static final TagKey<Item> LEAVES = bind("leaves");
    public static final TagKey<Item> TRAPDOORS = bind("trapdoors");
    public static final TagKey<Item> SMALL_FLOWERS = bind("small_flowers");
+   public static final TagKey<Item> FLOWERS = bind("flowers");
    public static final TagKey<Item> BEDS = bind("beds");
    public static final TagKey<Item> FENCES = bind("fences");
    public static final TagKey<Item> PIGLIN_REPELLENTS = bind("piglin_repellents");
@@ -56,6 +57,7 @@ public final class ItemTags {
    public static final TagKey<Item> DUPLICATES_ALLAYS = bind("duplicates_allays");
    public static final TagKey<Item> BREWING_FUEL = bind("brewing_fuel");
    public static final TagKey<Item> SHULKER_BOXES = bind("shulker_boxes");
+   public static final TagKey<Item> EGGS = bind("eggs");
    public static final TagKey<Item> MEAT = bind("meat");
    public static final TagKey<Item> SNIFFER_FOOD = bind("sniffer_food");
    public static final TagKey<Item> PIGLIN_FOOD = bind("piglin_food");
@@ -152,6 +154,7 @@ public final class ItemTags {
    public static final TagKey<Item> DYEABLE = bind("dyeable");
    public static final TagKey<Item> FURNACE_MINECART_FUEL = bind("furnace_minecart_fuel");
    public static final TagKey<Item> BUNDLES = bind("bundles");
+   public static final TagKey<Item> BOOK_CLONING_TARGET = bind("book_cloning_target");
    public static final TagKey<Item> SKELETON_PREFERRED_WEAPONS = bind("skeleton_preferred_weapons");
    public static final TagKey<Item> DROWNED_PREFERRED_WEAPONS = bind("drowned_preferred_weapons");
    public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");

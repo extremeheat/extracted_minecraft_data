@@ -16,16 +16,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.Path;
@@ -83,7 +82,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    }
 
    protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {
-      boolean var5 = this.initialPosition.isPresent() && ((Vec3)this.initialPosition.get()).equals(var2.position()) && this.findJumpTries > 0 && !var2.isInWaterOrBubble() && (this.chosenJump != null || !this.jumpCandidates.isEmpty());
+      boolean var5 = this.initialPosition.isPresent() && ((Vec3)this.initialPosition.get()).equals(var2.position()) && this.findJumpTries > 0 && !var2.isInWater() && (this.chosenJump != null || !this.jumpCandidates.isEmpty());
       if (!var5 && var2.getBrain().getMemory(MemoryModuleType.LONG_JUMP_MID_JUMP).isEmpty()) {
          var2.getBrain().setMemory(MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, this.timeBetweenLongJumps.sample(var1.random) / 2);
          var2.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
@@ -112,7 +111,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
             double var7 = var5 + (double)var2.getJumpBoostPower();
             var2.setDeltaMovement(this.chosenJump.scale(var7 / var5));
             var2.getBrain().setMemory(MemoryModuleType.LONG_JUMP_MID_JUMP, true);
-            var1.playSound((Player)null, var2, (SoundEvent)this.getJumpSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            var1.playSound((Entity)null, var2, (SoundEvent)this.getJumpSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
       } else {
          --this.findJumpTries;
@@ -130,7 +129,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
             }
 
             PossibleJump var6 = (PossibleJump)var5.get();
-            BlockPos var7 = var6.getJumpTarget();
+            BlockPos var7 = var6.targetPos();
             if (!this.isAcceptableLandingPosition(var1, var2, var7)) {
                continue;
             }
@@ -158,7 +157,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    }
 
    protected Optional<PossibleJump> getJumpCandidate(ServerLevel var1) {
-      Optional var2 = WeightedRandom.getRandomItem(var1.random, this.jumpCandidates);
+      Optional var2 = WeightedRandom.getRandomItem(var1.random, this.jumpCandidates, PossibleJump::weight);
       List var10001 = this.jumpCandidates;
       Objects.requireNonNull(var10001);
       var2.ifPresent(var10001::remove);
@@ -198,16 +197,11 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       this.start(var1, (Mob)var2, var3);
    }
 
-   public static class PossibleJump extends WeightedEntry.IntrusiveBase {
-      private final BlockPos jumpTarget;
-
+   public static record PossibleJump(BlockPos targetPos, int weight) {
       public PossibleJump(BlockPos var1, int var2) {
-         super(var2);
-         this.jumpTarget = var1;
-      }
-
-      public BlockPos getJumpTarget() {
-         return this.jumpTarget;
+         super();
+         this.targetPos = var1;
+         this.weight = var2;
       }
    }
 }

@@ -71,7 +71,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    }
 
    @Nullable
-   public <T> T set(DataComponentType<? super T> var1, @Nullable T var2) {
+   public <T> T set(DataComponentType<T> var1, @Nullable T var2) {
       this.ensureMapOwnership();
       Object var3 = this.prototype.get(var1);
       Optional var4;

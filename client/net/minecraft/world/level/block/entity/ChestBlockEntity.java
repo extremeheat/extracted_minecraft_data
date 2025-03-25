@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -103,7 +104,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
             var9 += (double)var11.getStepZ() * 0.5;
          }
 
-         var0.playSound((Player)null, var5, var7, var9, var3, SoundSource.BLOCKS, 0.5F, var0.random.nextFloat() * 0.1F + 0.9F);
+         var0.playSound((Entity)null, var5, var7, var9, var3, SoundSource.BLOCKS, 0.5F, var0.random.nextFloat() * 0.1F + 0.9F);
       }
    }
 

@@ -33,9 +33,9 @@ public class LiquidBlockRenderer {
    }
 
    protected void setupSprites() {
-      this.lavaIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).getParticleIcon();
+      this.lavaIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
       this.lavaIcons[1] = ModelBakery.LAVA_FLOW.sprite();
-      this.waterIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).getParticleIcon();
+      this.waterIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
       this.waterIcons[1] = ModelBakery.WATER_FLOW.sprite();
       this.waterOverlay = ModelBakery.WATER_OVERLAY.sprite();
    }
@@ -53,7 +53,7 @@ public class LiquidBlockRenderer {
          return var0 != Direction.UP || var5;
       } else {
          VoxelShape var4 = Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var1, 1.0);
-         return Shapes.blockOccudes(var4, var3, var0);
+         return Shapes.blockOccludes(var4, var3, var0);
       }
    }
 

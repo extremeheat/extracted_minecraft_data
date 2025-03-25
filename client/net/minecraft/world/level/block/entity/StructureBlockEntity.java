@@ -33,21 +33,35 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-public class StructureBlockEntity extends BlockEntity {
+public class StructureBlockEntity extends BlockEntity implements BoundingBoxRenderable {
    private static final int SCAN_CORNER_BLOCKS_RANGE = 5;
    public static final int MAX_OFFSET_PER_AXIS = 48;
    public static final int MAX_SIZE_PER_AXIS = 48;
    public static final String AUTHOR_TAG = "author";
+   private static final String DEFAULT_AUTHOR = "";
+   private static final String DEFAULT_METADATA = "";
+   private static final BlockPos DEFAULT_POS = new BlockPos(0, 1, 0);
+   private static final Vec3i DEFAULT_SIZE;
+   private static final Rotation DEFAULT_ROTATION;
+   private static final Mirror DEFAULT_MIRROR;
+   private static final boolean DEFAULT_IGNORE_ENTITIES = true;
+   private static final boolean DEFAULT_STRICT = false;
+   private static final boolean DEFAULT_POWERED = false;
+   private static final boolean DEFAULT_SHOW_AIR = false;
+   private static final boolean DEFAULT_SHOW_BOUNDING_BOX = true;
+   private static final float DEFAULT_INTEGRITY = 1.0F;
+   private static final long DEFAULT_SEED = 0L;
    @Nullable
    private ResourceLocation structureName;
    private String author = "";
    private String metaData = "";
-   private BlockPos structurePos = new BlockPos(0, 1, 0);
+   private BlockPos structurePos;
    private Vec3i structureSize;
    private Mirror mirror;
    private Rotation rotation;
    private StructureMode mode;
    private boolean ignoreEntities;
+   private boolean strict;
    private boolean powered;
    private boolean showAir;
    private boolean showBoundingBox;
@@ -56,12 +70,17 @@ public class StructureBlockEntity extends BlockEntity {
 
    public StructureBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.STRUCTURE_BLOCK, var1, var2);
-      this.structureSize = Vec3i.ZERO;
+      this.structurePos = DEFAULT_POS;
+      this.structureSize = DEFAULT_SIZE;
       this.mirror = Mirror.NONE;
       this.rotation = Rotation.NONE;
       this.ignoreEntities = true;
+      this.strict = false;
+      this.powered = false;
+      this.showAir = false;
       this.showBoundingBox = true;
       this.integrity = 1.0F;
+      this.seed = 0L;
       this.mode = (StructureMode)var2.getValue(StructureBlock.MODE);
    }
 
@@ -76,10 +95,11 @@ public class StructureBlockEntity extends BlockEntity {
       var1.putInt("sizeX", this.structureSize.getX());
       var1.putInt("sizeY", this.structureSize.getY());
       var1.putInt("sizeZ", this.structureSize.getZ());
-      var1.putString("rotation", this.rotation.toString());
-      var1.putString("mirror", this.mirror.toString());
-      var1.putString("mode", this.mode.toString());
+      var1.store("rotation", Rotation.LEGACY_CODEC, this.rotation);
+      var1.store("mirror", Mirror.LEGACY_CODEC, this.mirror);
+      var1.store("mode", StructureMode.LEGACY_CODEC, this.mode);
       var1.putBoolean("ignoreEntities", this.ignoreEntities);
+      var1.putBoolean("strict", this.strict);
       var1.putBoolean("powered", this.powered);
       var1.putBoolean("showair", this.showAir);
       var1.putBoolean("showboundingbox", this.showBoundingBox);
@@ -89,47 +109,27 @@ public class StructureBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.setStructureName(var1.getString("name"));
-      this.author = var1.getString("author");
-      this.metaData = var1.getString("metadata");
-      int var3 = Mth.clamp(var1.getInt("posX"), -48, 48);
-      int var4 = Mth.clamp(var1.getInt("posY"), -48, 48);
-      int var5 = Mth.clamp(var1.getInt("posZ"), -48, 48);
+      this.setStructureName(var1.getStringOr("name", ""));
+      this.author = var1.getStringOr("author", "");
+      this.metaData = var1.getStringOr("metadata", "");
+      int var3 = Mth.clamp(var1.getIntOr("posX", DEFAULT_POS.getX()), -48, 48);
+      int var4 = Mth.clamp(var1.getIntOr("posY", DEFAULT_POS.getY()), -48, 48);
+      int var5 = Mth.clamp(var1.getIntOr("posZ", DEFAULT_POS.getZ()), -48, 48);
       this.structurePos = new BlockPos(var3, var4, var5);
-      int var6 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
-      int var7 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
-      int var8 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
+      int var6 = Mth.clamp(var1.getIntOr("sizeX", DEFAULT_SIZE.getX()), 0, 48);
+      int var7 = Mth.clamp(var1.getIntOr("sizeY", DEFAULT_SIZE.getY()), 0, 48);
+      int var8 = Mth.clamp(var1.getIntOr("sizeZ", DEFAULT_SIZE.getZ()), 0, 48);
       this.structureSize = new Vec3i(var6, var7, var8);
-
-      try {
-         this.rotation = Rotation.valueOf(var1.getString("rotation"));
-      } catch (IllegalArgumentException var12) {
-         this.rotation = Rotation.NONE;
-      }
-
-      try {
-         this.mirror = Mirror.valueOf(var1.getString("mirror"));
-      } catch (IllegalArgumentException var11) {
-         this.mirror = Mirror.NONE;
-      }
-
-      try {
-         this.mode = StructureMode.valueOf(var1.getString("mode"));
-      } catch (IllegalArgumentException var10) {
-         this.mode = StructureMode.DATA;
-      }
-
-      this.ignoreEntities = var1.getBoolean("ignoreEntities");
-      this.powered = var1.getBoolean("powered");
-      this.showAir = var1.getBoolean("showair");
-      this.showBoundingBox = var1.getBoolean("showboundingbox");
-      if (var1.contains("integrity")) {
-         this.integrity = var1.getFloat("integrity");
-      } else {
-         this.integrity = 1.0F;
-      }
-
-      this.seed = var1.getLong("seed");
+      this.rotation = (Rotation)var1.read("rotation", Rotation.LEGACY_CODEC).orElse(DEFAULT_ROTATION);
+      this.mirror = (Mirror)var1.read("mirror", Mirror.LEGACY_CODEC).orElse(DEFAULT_MIRROR);
+      this.mode = (StructureMode)var1.read("mode", StructureMode.LEGACY_CODEC).orElse(StructureMode.DATA);
+      this.ignoreEntities = var1.getBooleanOr("ignoreEntities", true);
+      this.strict = var1.getBooleanOr("strict", false);
+      this.powered = var1.getBooleanOr("powered", false);
+      this.showAir = var1.getBooleanOr("showair", false);
+      this.showBoundingBox = var1.getBooleanOr("showboundingbox", true);
+      this.integrity = var1.getFloatOr("integrity", 1.0F);
+      this.seed = var1.getLongOr("seed", 0L);
       this.updateBlockState();
    }
 
@@ -241,8 +241,16 @@ public class StructureBlockEntity extends BlockEntity {
       return this.ignoreEntities;
    }
 
+   public boolean isStrict() {
+      return this.strict;
+   }
+
    public void setIgnoreEntities(boolean var1) {
       this.ignoreEntities = var1;
+   }
+
+   public void setStrict(boolean var1) {
+      this.strict = var1;
    }
 
    public float getIntegrity() {
@@ -318,31 +326,38 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    public boolean saveStructure(boolean var1) {
-      if (this.structureName == null) {
-         return false;
-      } else {
-         BlockPos var2 = this.getBlockPos().offset(this.structurePos);
-         ServerLevel var3 = (ServerLevel)this.level;
-         StructureTemplateManager var4 = var3.getStructureManager();
+      if (this.structureName != null) {
+         Level var3 = this.level;
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            BlockPos var4 = this.getBlockPos().offset(this.structurePos);
+            return saveStructure(var2, this.structureName, var4, this.structureSize, this.ignoreEntities, this.author, var1);
+         }
+      }
 
-         StructureTemplate var5;
+      return false;
+   }
+
+   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6) {
+      StructureTemplateManager var7 = var0.getStructureManager();
+
+      StructureTemplate var8;
+      try {
+         var8 = var7.getOrCreate(var1);
+      } catch (ResourceLocationException var11) {
+         return false;
+      }
+
+      var8.fillFromWorld(var0, var2, var3, !var4, Blocks.STRUCTURE_VOID);
+      var8.setAuthor(var5);
+      if (var6) {
          try {
-            var5 = var4.getOrCreate(this.structureName);
-         } catch (ResourceLocationException var8) {
+            return var7.save(var1);
+         } catch (ResourceLocationException var10) {
             return false;
          }
-
-         var5.fillFromWorld(this.level, var2, this.structureSize, !this.ignoreEntities, Blocks.STRUCTURE_VOID);
-         var5.setAuthor(this.author);
-         if (var1) {
-            try {
-               return var4.save(this.structureName);
-            } catch (ResourceLocationException var7) {
-               return false;
-            }
-         } else {
-            return true;
-         }
+      } else {
+         return true;
       }
    }
 
@@ -398,13 +413,13 @@ public class StructureBlockEntity extends BlockEntity {
 
    private void placeStructure(ServerLevel var1, StructureTemplate var2) {
       this.loadStructureInfo(var2);
-      StructurePlaceSettings var3 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities);
+      StructurePlaceSettings var3 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities).setKnownShape(this.strict);
       if (this.integrity < 1.0F) {
          var3.clearProcessors().addProcessor(new BlockRotProcessor(Mth.clamp(this.integrity, 0.0F, 1.0F))).setRandom(createRandom(this.seed));
       }
 
       BlockPos var4 = this.getBlockPos().offset(this.structurePos);
-      var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2);
+      var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2 | (this.strict ? 816 : 0));
    }
 
    public void unloadStructure() {
@@ -454,6 +469,72 @@ public class StructureBlockEntity extends BlockEntity {
       this.showBoundingBox = var1;
    }
 
+   public BoundingBoxRenderable.Mode renderMode() {
+      if (this.mode != StructureMode.SAVE && this.mode != StructureMode.LOAD) {
+         return BoundingBoxRenderable.Mode.NONE;
+      } else if (this.mode == StructureMode.SAVE && this.showAir) {
+         return BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS;
+      } else {
+         return this.mode != StructureMode.SAVE && !this.showBoundingBox ? BoundingBoxRenderable.Mode.NONE : BoundingBoxRenderable.Mode.BOX;
+      }
+   }
+
+   public BoundingBoxRenderable.RenderableBox getRenderableBox() {
+      BlockPos var1 = this.getStructurePos();
+      Vec3i var2 = this.getStructureSize();
+      int var3 = var1.getX();
+      int var4 = var1.getZ();
+      int var8 = var1.getY();
+      int var11 = var8 + var2.getY();
+      int var5;
+      int var6;
+      switch (this.mirror) {
+         case LEFT_RIGHT:
+            var5 = var2.getX();
+            var6 = -var2.getZ();
+            break;
+         case FRONT_BACK:
+            var5 = -var2.getX();
+            var6 = var2.getZ();
+            break;
+         default:
+            var5 = var2.getX();
+            var6 = var2.getZ();
+      }
+
+      int var7;
+      int var9;
+      int var10;
+      int var12;
+      switch (this.rotation) {
+         case CLOCKWISE_90:
+            var7 = var6 < 0 ? var3 : var3 + 1;
+            var9 = var5 < 0 ? var4 + 1 : var4;
+            var10 = var7 - var6;
+            var12 = var9 + var5;
+            break;
+         case CLOCKWISE_180:
+            var7 = var5 < 0 ? var3 : var3 + 1;
+            var9 = var6 < 0 ? var4 : var4 + 1;
+            var10 = var7 - var5;
+            var12 = var9 - var6;
+            break;
+         case COUNTERCLOCKWISE_90:
+            var7 = var6 < 0 ? var3 + 1 : var3;
+            var9 = var5 < 0 ? var4 : var4 + 1;
+            var10 = var7 + var6;
+            var12 = var9 - var5;
+            break;
+         default:
+            var7 = var5 < 0 ? var3 + 1 : var3;
+            var9 = var6 < 0 ? var4 + 1 : var4;
+            var10 = var7 + var5;
+            var12 = var9 + var6;
+      }
+
+      return BoundingBoxRenderable.RenderableBox.fromCorners(var7, var8, var9, var10, var11, var12);
+   }
+
    // $FF: synthetic method
    public Packet getUpdatePacket() {
       return this.getUpdatePacket();
@@ -462,6 +543,12 @@ public class StructureBlockEntity extends BlockEntity {
    // $FF: synthetic method
    private static void lambda$placeStructure$5(ServerLevel var0, BlockPos var1) {
       var0.setBlock(var1, Blocks.STRUCTURE_VOID.defaultBlockState(), 2);
+   }
+
+   static {
+      DEFAULT_SIZE = Vec3i.ZERO;
+      DEFAULT_ROTATION = Rotation.NONE;
+      DEFAULT_MIRROR = Mirror.NONE;
    }
 
    public static enum UpdateType {

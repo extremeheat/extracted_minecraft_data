@@ -43,10 +43,16 @@ public class DefendVillageTargetGoal extends TargetGoal {
 
       if (this.potentialTarget == null) {
          return false;
-      } else if (!(this.potentialTarget instanceof Player) || !this.potentialTarget.isSpectator() && !((Player)this.potentialTarget).isCreative()) {
-         return true;
       } else {
-         return false;
+         LivingEntity var12 = this.potentialTarget;
+         if (var12 instanceof Player) {
+            Player var11 = (Player)var12;
+            if (var11.isSpectator() || var11.isCreative()) {
+               return false;
+            }
+         }
+
+         return true;
       }
    }
 

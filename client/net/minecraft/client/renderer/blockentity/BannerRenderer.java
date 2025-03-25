@@ -21,6 +21,8 @@ import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static final int MAX_PATTERNS = 16;
@@ -42,25 +44,25 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       this.wallFlagModel = new BannerFlagModel(var1.bakeLayer(ModelLayers.WALL_BANNER_FLAG));
    }
 
-   public void render(BannerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      BlockState var10 = var1.getBlockState();
-      BannerModel var7;
-      BannerFlagModel var8;
-      float var9;
-      if (var10.getBlock() instanceof BannerBlock) {
-         var9 = -RotationSegment.convertToDegrees((Integer)var10.getValue(BannerBlock.ROTATION));
-         var7 = this.standingModel;
-         var8 = this.standingFlagModel;
+   public void render(BannerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      BlockState var11 = var1.getBlockState();
+      BannerModel var8;
+      BannerFlagModel var9;
+      float var10;
+      if (var11.getBlock() instanceof BannerBlock) {
+         var10 = -RotationSegment.convertToDegrees((Integer)var11.getValue(BannerBlock.ROTATION));
+         var8 = this.standingModel;
+         var9 = this.standingFlagModel;
       } else {
-         var9 = -((Direction)var10.getValue(WallBannerBlock.FACING)).toYRot();
-         var7 = this.wallModel;
-         var8 = this.wallFlagModel;
+         var10 = -((Direction)var11.getValue(WallBannerBlock.FACING)).toYRot();
+         var8 = this.wallModel;
+         var9 = this.wallFlagModel;
       }
 
-      long var11 = var1.getLevel().getGameTime();
-      BlockPos var13 = var1.getBlockPos();
-      float var14 = ((float)Math.floorMod((long)(var13.getX() * 7 + var13.getY() * 9 + var13.getZ() * 13) + var11, 100L) + var2) / 100.0F;
-      renderBanner(var3, var4, var5, var6, var9, var7, var8, var14, var1.getBaseColor(), var1.getPatterns());
+      long var12 = var1.getLevel().getGameTime();
+      BlockPos var14 = var1.getBlockPos();
+      float var15 = ((float)Math.floorMod((long)(var14.getX() * 7 + var14.getY() * 9 + var14.getZ() * 13) + var12, 100L) + var2) / 100.0F;
+      renderBanner(var3, var4, var5, var6, var10, var8, var9, var15, var1.getBaseColor(), var1.getPatterns());
    }
 
    public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {
@@ -70,7 +72,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static void renderBanner(PoseStack var0, MultiBufferSource var1, int var2, int var3, float var4, BannerModel var5, BannerFlagModel var6, float var7, DyeColor var8, BannerPatternLayers var9) {
       var0.pushPose();
       var0.translate(0.5F, 0.0F, 0.5F);
-      var0.mulPose(Axis.YP.rotationDegrees(var4));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var4));
       var0.scale(0.6666667F, -0.6666667F, -0.6666667F);
       var5.renderToBuffer(var0, ModelBakery.BANNER_BASE.buffer(var1, RenderType::entitySolid), var2, var3);
       var6.setupAnim(var7);

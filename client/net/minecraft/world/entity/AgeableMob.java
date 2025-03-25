@@ -17,8 +17,10 @@ public abstract class AgeableMob extends PathfinderMob {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    public static final int BABY_START_AGE = -24000;
    private static final int FORCED_AGE_PARTICLE_TICKS = 40;
-   protected int age;
-   protected int forcedAge;
+   protected static final int DEFAULT_AGE = 0;
+   protected static final int DEFAULT_FORCED_AGE = 0;
+   protected int age = 0;
+   protected int forcedAge = 0;
    protected int forcedAgeTimer;
 
    protected AgeableMob(EntityType<? extends AgeableMob> var1, Level var2) {
@@ -104,8 +106,8 @@ public abstract class AgeableMob extends PathfinderMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setAge(var1.getInt("Age"));
-      this.forcedAge = var1.getInt("ForcedAge");
+      this.setAge(var1.getIntOr("Age", 0));
+      this.forcedAge = var1.getIntOr("ForcedAge", 0);
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {

@@ -16,13 +16,13 @@ import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 
 public class SmithingTransformRecipe implements SmithingRecipe {
    final Optional<Ingredient> template;
-   final Optional<Ingredient> base;
+   final Ingredient base;
    final Optional<Ingredient> addition;
-   final ItemStack result;
+   final TransmuteResult result;
    @Nullable
    private PlacementInfo placementInfo;
 
-   public SmithingTransformRecipe(Optional<Ingredient> var1, Optional<Ingredient> var2, Optional<Ingredient> var3, ItemStack var4) {
+   public SmithingTransformRecipe(Optional<Ingredient> var1, Ingredient var2, Optional<Ingredient> var3, TransmuteResult var4) {
       super();
       this.template = var1;
       this.base = var2;
@@ -31,16 +31,14 @@ public class SmithingTransformRecipe implements SmithingRecipe {
    }
 
    public ItemStack assemble(SmithingRecipeInput var1, HolderLookup.Provider var2) {
-      ItemStack var3 = var1.base().transmuteCopy(this.result.getItem(), this.result.getCount());
-      var3.applyComponents(this.result.getComponentsPatch());
-      return var3;
+      return this.result.apply(var1.base());
    }
 
    public Optional<Ingredient> templateIngredient() {
       return this.template;
    }
 
-   public Optional<Ingredient> baseIngredient() {
+   public Ingredient baseIngredient() {
       return this.base;
    }
 
@@ -54,18 +52,18 @@ public class SmithingTransformRecipe implements SmithingRecipe {
 
    public PlacementInfo placementInfo() {
       if (this.placementInfo == null) {
-         this.placementInfo = PlacementInfo.createFromOptionals(List.of(this.template, this.base, this.addition));
+         this.placementInfo = PlacementInfo.createFromOptionals(List.of(this.template, Optional.of(this.base), this.addition));
       }
 
       return this.placementInfo;
    }
 
    public List<RecipeDisplay> display() {
-      return List.of(new SmithingRecipeDisplay(Ingredient.optionalIngredientToDisplay(this.template), Ingredient.optionalIngredientToDisplay(this.base), Ingredient.optionalIngredientToDisplay(this.addition), new SlotDisplay.ItemStackSlotDisplay(this.result), new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)));
+      return List.of(new SmithingRecipeDisplay(Ingredient.optionalIngredientToDisplay(this.template), this.base.display(), Ingredient.optionalIngredientToDisplay(this.addition), this.result.display(), new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)));
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTransformRecipe> {
-      private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> var0x.template), Ingredient.CODEC.optionalFieldOf("base").forGetter((var0x) -> var0x.base), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> var0x.addition), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> var0x.result)).apply(var0, SmithingTransformRecipe::new));
+      private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> var0x.template), Ingredient.CODEC.fieldOf("base").forGetter((var0x) -> var0x.base), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> var0x.addition), TransmuteResult.CODEC.fieldOf("result").forGetter((var0x) -> var0x.result)).apply(var0, SmithingTransformRecipe::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTransformRecipe> STREAM_CODEC;
 
       public Serializer() {
@@ -81,7 +79,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.template, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.base, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.addition, ItemStack.STREAM_CODEC, (var0) -> var0.result, SmithingTransformRecipe::new);
+         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.template, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.base, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.addition, TransmuteResult.STREAM_CODEC, (var0) -> var0.result, SmithingTransformRecipe::new);
       }
    }
 }

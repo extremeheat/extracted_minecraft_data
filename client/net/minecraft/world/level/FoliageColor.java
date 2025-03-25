@@ -16,10 +16,6 @@ public class FoliageColor {
    }
 
    public static int get(double var0, double var2) {
-      var2 *= var0;
-      int var4 = (int)((1.0 - var0) * 255.0);
-      int var5 = (int)((1.0 - var2) * 255.0);
-      int var6 = var5 << 8 | var4;
-      return var6 >= pixels.length ? -12012264 : pixels[var6];
+      return ColorMapColorUtil.get(var0, var2, pixels, -12012264);
    }
 }

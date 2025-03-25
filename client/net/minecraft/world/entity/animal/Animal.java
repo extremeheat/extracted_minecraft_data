@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -37,7 +38,8 @@ import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class Animal extends AgeableMob {
    protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
-   private int inLove;
+   private static final int DEFAULT_IN_LOVE_TIME = 0;
+   private int inLove = 0;
    @Nullable
    private UUID loveCause;
 
@@ -89,16 +91,13 @@ public abstract class Animal extends AgeableMob {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("InLove", this.inLove);
-      if (this.loveCause != null) {
-         var1.putUUID("LoveCause", this.loveCause);
-      }
-
+      var1.storeNullable("LoveCause", UUIDUtil.CODEC, this.loveCause);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.inLove = var1.getInt("InLove");
-      this.loveCause = var1.hasUUID("LoveCause") ? var1.getUUID("LoveCause") : null;
+      this.inLove = var1.getIntOr("InLove", 0);
+      this.loveCause = (UUID)var1.read("LoveCause", UUIDUtil.CODEC).orElse((Object)null);
    }
 
    public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
@@ -219,7 +218,7 @@ public abstract class Animal extends AgeableMob {
       AgeableMob var3 = this.getBreedOffspring(var1, var2);
       if (var3 != null) {
          var3.setBaby(true);
-         var3.moveTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
+         var3.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
          this.finalizeSpawnChildFromBreeding(var1, var2, var3);
          var1.addFreshEntityWithPassengers(var3);
       }

@@ -12,10 +12,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.multiplayer.ClientRegistryLayer;
 import net.minecraft.client.renderer.item.ClientItem;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.PlaceholderLookupProvider;
 import org.slf4j.Logger;
 
 public class ClientItemInfoLoader {
@@ -27,41 +31,44 @@ public class ClientItemInfoLoader {
    }
 
    public static CompletableFuture<LoadedClientInfos> scheduleLoad(ResourceManager var0, Executor var1) {
-      return CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var0), var1).thenCompose((var1x) -> {
-         ArrayList var2 = new ArrayList(var1x.size());
-         var1x.forEach((var2x, var3) -> var2.add(CompletableFuture.supplyAsync(() -> {
-               ResourceLocation var2 = LISTER.fileToId(var2x);
+      RegistryAccess.Frozen var2 = ClientRegistryLayer.createRegistryAccess().compositeAccess();
+      return CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var0), var1).thenCompose((var2x) -> {
+         ArrayList var3 = new ArrayList(var2x.size());
+         var2x.forEach((var3x, var4) -> var3.add(CompletableFuture.supplyAsync(() -> {
+               ResourceLocation var3 = LISTER.fileToId(var3x);
 
                try {
-                  BufferedReader var3x = var3.openAsReader();
+                  BufferedReader var4x = var4.openAsReader();
 
-                  PendingLoad var5;
+                  PendingLoad var8;
                   try {
-                     ClientItem var4 = (ClientItem)ClientItem.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseReader(var3x)).ifError((var2xx) -> LOGGER.error("Couldn't parse item model '{}' from pack '{}': {}", new Object[]{var2, var3.sourcePackId(), var2xx.message()})).result().orElse((Object)null);
-                     var5 = new PendingLoad(var2, var4);
-                  } catch (Throwable var7) {
-                     if (var3x != null) {
+                     PlaceholderLookupProvider var5 = new PlaceholderLookupProvider(var2);
+                     RegistryOps var6 = var5.createSerializationContext(JsonOps.INSTANCE);
+                     ClientItem var7 = (ClientItem)ClientItem.CODEC.parse(var6, JsonParser.parseReader(var4x)).ifError((var2x) -> LOGGER.error("Couldn't parse item model '{}' from pack '{}': {}", new Object[]{var3, var4.sourcePackId(), var2x.message()})).result().map((var1) -> var5.hasRegisteredPlaceholders() ? var1.withRegistrySwapper(var5.createSwapper()) : var1).orElse((Object)null);
+                     var8 = new PendingLoad(var3, var7);
+                  } catch (Throwable var10) {
+                     if (var4x != null) {
                         try {
-                           ((Reader)var3x).close();
-                        } catch (Throwable var6) {
-                           var7.addSuppressed(var6);
+                           ((Reader)var4x).close();
+                        } catch (Throwable var9) {
+                           var10.addSuppressed(var9);
                         }
                      }
 
-                     throw var7;
+                     throw var10;
                   }
 
-                  if (var3x != null) {
-                     ((Reader)var3x).close();
+                  if (var4x != null) {
+                     ((Reader)var4x).close();
                   }
 
-                  return var5;
-               } catch (Exception var8) {
-                  LOGGER.error("Failed to open item model {} from pack '{}'", new Object[]{var2x, var3.sourcePackId(), var8});
-                  return new PendingLoad(var2, (ClientItem)null);
+                  return var8;
+               } catch (Exception var11) {
+                  LOGGER.error("Failed to open item model {} from pack '{}'", new Object[]{var3x, var4.sourcePackId(), var11});
+                  return new PendingLoad(var3, (ClientItem)null);
                }
             }, var1)));
-         return Util.sequence(var2).thenApply((var0) -> {
+         return Util.sequence(var3).thenApply((var0) -> {
             HashMap var1 = new HashMap();
 
             for(PendingLoad var3 : var0) {

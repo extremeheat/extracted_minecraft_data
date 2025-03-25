@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -25,9 +25,9 @@ public class ModelGroupCollector {
       HashMap var2 = new HashMap();
       HashMap var3 = new HashMap();
       var1.models().forEach((var3x, var4x) -> {
-         List var5 = (List)var2.computeIfAbsent(var4x.state().getBlock(), (var1) -> List.copyOf(var0.getColoringProperties(var1)));
-         GroupKey var6 = ModelGroupCollector.GroupKey.create(var4x.state(), var4x.model(), var5);
-         ((Set)var3.computeIfAbsent(var6, (var0x) -> Sets.newIdentityHashSet())).add(var4x.state());
+         List var5 = (List)var2.computeIfAbsent(var3x.getBlock(), (var1) -> List.copyOf(var0.getColoringProperties(var1)));
+         GroupKey var6 = ModelGroupCollector.GroupKey.create(var3x, var4x, var5);
+         ((Set)var3.computeIfAbsent(var6, (var0x) -> Sets.newIdentityHashSet())).add(var3x);
       });
       int var4 = 1;
       Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
@@ -60,7 +60,7 @@ public class ModelGroupCollector {
          this.coloringValues = var2;
       }
 
-      public static GroupKey create(BlockState var0, UnbakedBlockStateModel var1, List<Property<?>> var2) {
+      public static GroupKey create(BlockState var0, BlockStateModel.UnbakedRoot var1, List<Property<?>> var2) {
          List var3 = getColoringValues(var0, var2);
          Object var4 = var1.visualEqualityGroup(var0);
          return new GroupKey(var4, var3);

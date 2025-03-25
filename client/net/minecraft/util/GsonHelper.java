@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -399,7 +401,7 @@ public class GsonHelper {
    @Nullable
    @Contract("_,_,!null,_,_->!null;_,_,null,_,_->_")
    public static <T> T getAsObject(JsonObject var0, String var1, @Nullable T var2, JsonDeserializationContext var3, Class<? extends T> var4) {
-      // $FF: Couldn't be decompiled
+      return var0.has(var1) ? convertToObject(var0.get(var1), var1, var3, var4) : var2;
    }
 
    public static String getType(@Nullable JsonElement var0) {
@@ -582,6 +584,48 @@ public class GsonHelper {
          ArrayList var2 = new ArrayList(var0);
          var2.sort(Entry.comparingByKey(var1));
          return var2;
+      }
+   }
+
+   public static boolean encodesLongerThan(JsonElement var0, int var1) {
+      try {
+         Streams.write(var0, new JsonWriter(Streams.writerForAppendable(new CountedAppendable(var1))));
+         return false;
+      } catch (IllegalStateException var3) {
+         return true;
+      } catch (IOException var4) {
+         throw new UncheckedIOException(var4);
+      }
+   }
+
+   static class CountedAppendable implements Appendable {
+      private int totalCount;
+      private final int limit;
+
+      public CountedAppendable(int var1) {
+         super();
+         this.limit = var1;
+      }
+
+      private Appendable accountChars(int var1) {
+         this.totalCount += var1;
+         if (this.totalCount > this.limit) {
+            throw new IllegalStateException("Character count over limit: " + this.totalCount + " > " + this.limit);
+         } else {
+            return this;
+         }
+      }
+
+      public Appendable append(CharSequence var1) {
+         return this.accountChars(var1.length());
+      }
+
+      public Appendable append(CharSequence var1, int var2, int var3) {
+         return this.accountChars(var3 - var2);
+      }
+
+      public Appendable append(char var1) {
+         return this.accountChars(1);
       }
    }
 }

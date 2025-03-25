@@ -3,20 +3,25 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipProvider;
+import net.minecraft.world.level.ItemLike;
 
-public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<Item> right, Optional<Item> front) {
+public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<Item> right, Optional<Item> front) implements TooltipProvider {
    public static final PotDecorations EMPTY = new PotDecorations(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
    public static final Codec<PotDecorations> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, PotDecorations> STREAM_CODEC;
@@ -46,21 +51,22 @@ public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<
       }
    }
 
-   public CompoundTag save(CompoundTag var1) {
-      if (this.equals(EMPTY)) {
-         return var1;
-      } else {
-         var1.put("sherds", (Tag)CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow());
-         return var1;
-      }
-   }
-
    public List<Item> ordered() {
       return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> (Item)var0.orElse(Items.BRICK)).toList();
    }
 
-   public static PotDecorations load(@Nullable CompoundTag var0) {
-      return var0 != null && var0.contains("sherds") ? (PotDecorations)CODEC.parse(NbtOps.INSTANCE, var0.get("sherds")).result().orElse(EMPTY) : EMPTY;
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      if (!this.equals(EMPTY)) {
+         var2.accept(CommonComponents.EMPTY);
+         addSideDetailsToTooltip(var2, this.front);
+         addSideDetailsToTooltip(var2, this.left);
+         addSideDetailsToTooltip(var2, this.right);
+         addSideDetailsToTooltip(var2, this.back);
+      }
+   }
+
+   private static void addSideDetailsToTooltip(Consumer<Component> var0, Optional<Item> var1) {
+      var0.accept((new ItemStack((ItemLike)var1.orElse(Items.BRICK), 1)).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
    }
 
    static {

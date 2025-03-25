@@ -12,6 +12,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -52,11 +55,11 @@ public abstract class LavaFluid extends FlowingFluid {
             double var8 = (double)var2.getY() + 1.0;
             double var10 = (double)var2.getZ() + var4.nextDouble();
             var1.addParticle(ParticleTypes.LAVA, var6, var8, var10, 0.0, 0.0, 0.0);
-            var1.playLocalSound(var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
+            var1.playLocalSound(var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.AMBIENT, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
 
          if (var4.nextInt(200) == 0) {
-            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.LAVA_AMBIENT, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
+            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.LAVA_AMBIENT, SoundSource.AMBIENT, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
       }
 
@@ -64,40 +67,47 @@ public abstract class LavaFluid extends FlowingFluid {
 
    public void randomTick(ServerLevel var1, BlockPos var2, FluidState var3, RandomSource var4) {
       if (var1.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
-         int var5 = var4.nextInt(3);
-         if (var5 > 0) {
-            BlockPos var6 = var2;
+         if (var1.getGameRules().getBoolean(GameRules.RULE_ALLOWFIRETICKAWAYFROMPLAYERS) || var1.anyPlayerCloseEnoughForSpawning(var2)) {
+            int var5 = var4.nextInt(3);
+            if (var5 > 0) {
+               BlockPos var6 = var2;
 
-            for(int var7 = 0; var7 < var5; ++var7) {
-               var6 = var6.offset(var4.nextInt(3) - 1, 1, var4.nextInt(3) - 1);
-               if (!var1.isLoaded(var6)) {
-                  return;
-               }
-
-               BlockState var8 = var1.getBlockState(var6);
-               if (var8.isAir()) {
-                  if (this.hasFlammableNeighbours(var1, var6)) {
-                     var1.setBlockAndUpdate(var6, BaseFireBlock.getState(var1, var6));
+               for(int var7 = 0; var7 < var5; ++var7) {
+                  var6 = var6.offset(var4.nextInt(3) - 1, 1, var4.nextInt(3) - 1);
+                  if (!var1.isLoaded(var6)) {
                      return;
                   }
-               } else if (var8.blocksMotion()) {
-                  return;
-               }
-            }
-         } else {
-            for(int var9 = 0; var9 < 3; ++var9) {
-               BlockPos var10 = var2.offset(var4.nextInt(3) - 1, 0, var4.nextInt(3) - 1);
-               if (!var1.isLoaded(var10)) {
-                  return;
-               }
 
-               if (var1.isEmptyBlock(var10.above()) && this.isFlammable(var1, var10)) {
-                  var1.setBlockAndUpdate(var10.above(), BaseFireBlock.getState(var1, var10));
+                  BlockState var8 = var1.getBlockState(var6);
+                  if (var8.isAir()) {
+                     if (this.hasFlammableNeighbours(var1, var6)) {
+                        var1.setBlockAndUpdate(var6, BaseFireBlock.getState(var1, var6));
+                        return;
+                     }
+                  } else if (var8.blocksMotion()) {
+                     return;
+                  }
+               }
+            } else {
+               for(int var9 = 0; var9 < 3; ++var9) {
+                  BlockPos var10 = var2.offset(var4.nextInt(3) - 1, 0, var4.nextInt(3) - 1);
+                  if (!var1.isLoaded(var10)) {
+                     return;
+                  }
+
+                  if (var1.isEmptyBlock(var10.above()) && this.isFlammable(var1, var10)) {
+                     var1.setBlockAndUpdate(var10.above(), BaseFireBlock.getState(var1, var10));
+                  }
                }
             }
+
          }
-
       }
+   }
+
+   protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+      var4.apply(InsideBlockEffectType.LAVA_IGNITE);
+      var4.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
    }
 
    private boolean hasFlammableNeighbours(LevelReader var1, BlockPos var2) {

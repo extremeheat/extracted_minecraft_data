@@ -25,7 +25,8 @@ public interface ChunkResult<T> {
 
    @Nullable
    static <R> R orElse(ChunkResult<? extends R> var0, @Nullable R var1) {
-      // $FF: Couldn't be decompiled
+      Object var2 = var0.orElse((Object)null);
+      return var2 != null ? var2 : var1;
    }
 
    @Nullable

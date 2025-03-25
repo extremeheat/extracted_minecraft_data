@@ -12,7 +12,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PotatoBlock extends CropBlock {
    public static final MapCodec<PotatoBlock> CODEC = simpleCodec(PotatoBlock::new);
-   private static final VoxelShape[] SHAPE_BY_AGE = new VoxelShape[]{Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 4.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 5.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 7.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 9.0, 16.0)};
+   private static final VoxelShape[] SHAPES = Block.boxes(7, (var0) -> Block.column(16.0, 0.0, (double)(2 + var0)));
 
    public MapCodec<PotatoBlock> codec() {
       return CODEC;
@@ -27,6 +27,6 @@ public class PotatoBlock extends CropBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[this.getAge(var1)];
+      return SHAPES[this.getAge(var1)];
    }
 }

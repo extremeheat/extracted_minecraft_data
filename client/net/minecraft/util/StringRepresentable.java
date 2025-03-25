@@ -87,8 +87,6 @@ public interface StringRepresentable {
       }
    }
 
-   /** @deprecated */
-   @Deprecated
    public static class EnumCodec<E extends Enum<E> & StringRepresentable> extends StringRepresentableCodec<E> {
       private final Function<String, E> resolver;
 

@@ -1,12 +1,8 @@
 package net.minecraft.world.item;
 
-import java.util.List;
-import java.util.Objects;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -14,7 +10,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -54,15 +49,6 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
       } else {
          return InteractionResult.PASS;
       }
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      Fireworks var5 = (Fireworks)var1.get(DataComponents.FIREWORKS);
-      if (var5 != null) {
-         Objects.requireNonNull(var3);
-         var5.addToTooltip(var2, var3::add, var4);
-      }
-
    }
 
    public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {

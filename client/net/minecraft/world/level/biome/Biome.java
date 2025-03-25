@@ -18,7 +18,8 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.level.DryFoliageColor;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.LevelReader;
@@ -179,8 +180,13 @@ public final class Biome {
    }
 
    public int getGrassColor(double var1, double var3) {
-      int var5 = (Integer)this.specialEffects.getGrassColorOverride().orElseGet(this::getGrassColorFromTexture);
+      int var5 = this.getBaseGrassColor();
       return this.specialEffects.getGrassColorModifier().modifyColor(var1, var3, var5);
+   }
+
+   private int getBaseGrassColor() {
+      Optional var1 = this.specialEffects.getGrassColorOverride();
+      return var1.isPresent() ? (Integer)var1.get() : this.getGrassColorFromTexture();
    }
 
    private int getGrassColorFromTexture() {
@@ -197,6 +203,16 @@ public final class Biome {
       double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
       double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return FoliageColor.get(var1, var3);
+   }
+
+   public int getDryFoliageColor() {
+      return (Integer)this.specialEffects.getDryFoliageColorOverride().orElseGet(this::getDryFoliageColorFromTexture);
+   }
+
+   private int getDryFoliageColorFromTexture() {
+      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      return DryFoliageColor.get(var1, var3);
    }
 
    public float getBaseTemperature() {
@@ -231,7 +247,7 @@ public final class Biome {
       return this.specialEffects.getAmbientAdditionsSettings();
    }
 
-   public Optional<SimpleWeightedRandomList<Music>> getBackgroundMusic() {
+   public Optional<WeightedList<Music>> getBackgroundMusic() {
       return this.specialEffects.getBackgroundMusic();
    }
 

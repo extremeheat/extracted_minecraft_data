@@ -65,6 +65,8 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<CrafterBlockEntity> CRAFTER;
    public static final BlockEntityType<TrialSpawnerBlockEntity> TRIAL_SPAWNER;
    public static final BlockEntityType<VaultBlockEntity> VAULT;
+   public static final BlockEntityType<TestBlockEntity> TEST_BLOCK;
+   public static final BlockEntityType<TestInstanceBlockEntity> TEST_INSTANCE_BLOCK;
    private static final Set<BlockEntityType<?>> OP_ONLY_CUSTOM_DATA;
    private final BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
@@ -91,7 +93,6 @@ public class BlockEntityType<T extends BlockEntity> {
       this.validBlocks = var2;
    }
 
-   @Nullable
    public T create(BlockPos var1, BlockState var2) {
       return this.factory.create(var1, var2);
    }
@@ -162,6 +163,8 @@ public class BlockEntityType<T extends BlockEntity> {
       CRAFTER = register("crafter", CrafterBlockEntity::new, Blocks.CRAFTER);
       TRIAL_SPAWNER = register("trial_spawner", TrialSpawnerBlockEntity::new, Blocks.TRIAL_SPAWNER);
       VAULT = register("vault", VaultBlockEntity::new, Blocks.VAULT);
+      TEST_BLOCK = register("test_block", TestBlockEntity::new, Blocks.TEST_BLOCK);
+      TEST_INSTANCE_BLOCK = register("test_instance_block", TestInstanceBlockEntity::new, Blocks.TEST_INSTANCE_BLOCK);
       OP_ONLY_CUSTOM_DATA = Set.of(COMMAND_BLOCK, LECTERN, SIGN, HANGING_SIGN, MOB_SPAWNER, TRIAL_SPAWNER);
    }
 

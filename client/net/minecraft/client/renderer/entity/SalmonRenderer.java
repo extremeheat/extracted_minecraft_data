@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.SalmonRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Salmon;
+import org.joml.Quaternionfc;
 
 public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, SalmonModel> {
    private static final ResourceLocation SALMON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fish/salmon.png");
@@ -48,10 +49,10 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
       }
 
       float var7 = var5 * 4.3F * Mth.sin(var6 * 0.6F * var1.ageInTicks);
-      var2.mulPose(Axis.YP.rotationDegrees(var7));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var7));
       if (!var1.isInWater) {
          var2.translate(0.2F, 0.1F, 0.0F);
-         var2.mulPose(Axis.ZP.rotationDegrees(90.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
       }
 
    }

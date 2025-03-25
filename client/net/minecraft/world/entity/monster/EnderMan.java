@@ -8,12 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -45,7 +45,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.AbstractThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -173,7 +173,8 @@ public class EnderMan extends Monster implements NeutralMob {
       super.addAdditionalSaveData(var1);
       BlockState var2 = this.getCarriedBlock();
       if (var2 != null) {
-         var1.put("carriedBlockState", NbtUtils.writeBlockState(var2));
+         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("carriedBlockState", BlockState.CODEC, var3, var2);
       }
 
       this.addPersistentAngerSaveData(var1);
@@ -181,15 +182,8 @@ public class EnderMan extends Monster implements NeutralMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      BlockState var2 = null;
-      if (var1.contains("carriedBlockState", 10)) {
-         var2 = NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("carriedBlockState"));
-         if (var2.isAir()) {
-            var2 = null;
-         }
-      }
-
-      this.setCarriedBlock(var2);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setCarriedBlock((BlockState)var1.read("carriedBlockState", BlockState.CODEC, var2).filter((var0) -> !var0.isAir()).orElse((Object)null));
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 
@@ -217,7 +211,7 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    protected void customServerAiStep(ServerLevel var1) {
-      if (var1.isDay() && this.tickCount >= this.targetChangeTime + 600) {
+      if (var1.isBrightOutside() && this.tickCount >= this.targetChangeTime + 600) {
          float var2 = this.getLightLevelDependentMagicValue();
          if (var2 > 0.5F && var1.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (var2 - 0.4F) * 2.0F) {
             this.setTarget((LivingEntity)null);
@@ -265,7 +259,7 @@ public class EnderMan extends Monster implements NeutralMob {
          if (var12) {
             this.level().gameEvent(GameEvent.TELEPORT, var11, GameEvent.Context.of((Entity)this));
             if (!this.isSilent()) {
-               this.level().playSound((Player)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
+               this.level().playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
                this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             }
          }
@@ -316,29 +310,38 @@ public class EnderMan extends Monster implements NeutralMob {
       if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         boolean var4 = var2.getDirectEntity() instanceof ThrownPotion;
-         if (!var2.is(DamageTypeTags.IS_PROJECTILE) && !var4) {
-            boolean var7 = super.hurtServer(var1, var2, var3);
+         Entity var6 = var2.getDirectEntity();
+         AbstractThrownPotion var10000;
+         if (var6 instanceof AbstractThrownPotion) {
+            AbstractThrownPotion var5 = (AbstractThrownPotion)var6;
+            var10000 = var5;
+         } else {
+            var10000 = null;
+         }
+
+         AbstractThrownPotion var4 = var10000;
+         if (!var2.is(DamageTypeTags.IS_PROJECTILE) && var4 == null) {
+            boolean var8 = super.hurtServer(var1, var2, var3);
             if (!(var2.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
                this.teleport();
             }
 
-            return var7;
+            return var8;
          } else {
-            boolean var5 = var4 && this.hurtWithCleanWater(var1, var2, (ThrownPotion)var2.getDirectEntity(), var3);
+            boolean var7 = var4 != null && this.hurtWithCleanWater(var1, var2, var4, var3);
 
-            for(int var6 = 0; var6 < 64; ++var6) {
+            for(int var9 = 0; var9 < 64; ++var9) {
                if (this.teleport()) {
                   return true;
                }
             }
 
-            return var5;
+            return var7;
          }
       }
    }
 
-   private boolean hurtWithCleanWater(ServerLevel var1, DamageSource var2, ThrownPotion var3, float var4) {
+   private boolean hurtWithCleanWater(ServerLevel var1, DamageSource var2, AbstractThrownPotion var3, float var4) {
       ItemStack var5 = var3.getItem();
       PotionContents var6 = (PotionContents)var5.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
       return var6.is(Potions.WATER) ? super.hurtServer(var1, var2, var4) : false;
@@ -467,11 +470,12 @@ public class EnderMan extends Monster implements NeutralMob {
 
       public boolean canUse() {
          this.target = this.enderman.getTarget();
-         if (!(this.target instanceof Player)) {
-            return false;
+         LivingEntity var2 = this.target;
+         if (var2 instanceof Player var1) {
+            double var4 = this.target.distanceToSqr(this.enderman);
+            return var4 > 256.0 ? false : this.enderman.isBeingStaredBy(var1);
          } else {
-            double var1 = this.target.distanceToSqr(this.enderman);
-            return var1 > 256.0 ? false : this.enderman.isBeingStaredBy((Player)this.target);
+            return false;
          }
       }
 

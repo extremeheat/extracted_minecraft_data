@@ -18,6 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.level.Level;
+import org.joml.Quaternionfc;
 
 public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderState> {
    public PaintingRenderer(EntityRendererProvider.Context var1) {
@@ -28,7 +29,7 @@ public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderSta
       PaintingVariant var5 = var1.variant;
       if (var5 != null) {
          var2.pushPose();
-         var2.mulPose(Axis.YP.rotationDegrees((float)(180 - var1.direction.get2DDataValue() * 90)));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(180 - var1.direction.get2DDataValue() * 90)));
          PaintingTextureManager var6 = Minecraft.getInstance().getPaintingTextures();
          TextureAtlasSprite var7 = var6.getBackSprite();
          VertexConsumer var8 = var3.getBuffer(RenderType.entitySolidZOffsetForward(var7.atlasLocation()));

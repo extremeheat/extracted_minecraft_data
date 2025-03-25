@@ -2,25 +2,38 @@ package net.minecraft.world.level.block;
 
 import com.mojang.math.OctahedralGroup;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.function.IntFunction;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 
 public enum Rotation implements StringRepresentable {
-   NONE("none", OctahedralGroup.IDENTITY),
-   CLOCKWISE_90("clockwise_90", OctahedralGroup.ROT_90_Y_NEG),
-   CLOCKWISE_180("180", OctahedralGroup.ROT_180_FACE_XZ),
-   COUNTERCLOCKWISE_90("counterclockwise_90", OctahedralGroup.ROT_90_Y_POS);
+   NONE(0, "none", OctahedralGroup.IDENTITY),
+   CLOCKWISE_90(1, "clockwise_90", OctahedralGroup.ROT_90_Y_NEG),
+   CLOCKWISE_180(2, "180", OctahedralGroup.ROT_180_FACE_XZ),
+   COUNTERCLOCKWISE_90(3, "counterclockwise_90", OctahedralGroup.ROT_90_Y_POS);
 
+   public static final IntFunction<Rotation> BY_ID = ByIdMap.<Rotation>continuous(Rotation::getIndex, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final Codec<Rotation> CODEC = StringRepresentable.<Rotation>fromEnum(Rotation::values);
+   public static final StreamCodec<ByteBuf, Rotation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Rotation::getIndex);
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<Rotation> LEGACY_CODEC = ExtraCodecs.<Rotation>legacyEnum(Rotation::valueOf);
+   private final int index;
    private final String id;
    private final OctahedralGroup rotation;
 
-   private Rotation(final String var3, final OctahedralGroup var4) {
-      this.id = var3;
-      this.rotation = var4;
+   private Rotation(final int var3, final String var4, final OctahedralGroup var5) {
+      this.index = var3;
+      this.id = var4;
+      this.rotation = var5;
    }
 
    public Rotation getRotated(Rotation var1) {
@@ -125,6 +138,10 @@ public enum Rotation implements StringRepresentable {
 
    public String getSerializedName() {
       return this.id;
+   }
+
+   private int getIndex() {
+      return this.index;
    }
 
    // $FF: synthetic method

@@ -1,19 +1,18 @@
 package net.minecraft.world.entity.monster;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
-import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -28,15 +27,17 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.gossip.GossipContainer;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerDataHolder;
-import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -49,86 +50,61 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 public class ZombieVillager extends Zombie implements VillagerDataHolder {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID;
    private static final EntityDataAccessor<VillagerData> DATA_VILLAGER_DATA;
    private static final int VILLAGER_CONVERSION_WAIT_MIN = 3600;
    private static final int VILLAGER_CONVERSION_WAIT_MAX = 6000;
    private static final int MAX_SPECIAL_BLOCKS_COUNT = 14;
    private static final int SPECIAL_BLOCK_RADIUS = 4;
+   private static final int NOT_CONVERTING = -1;
+   private static final int DEFAULT_XP = 0;
    private int villagerConversionTime;
    @Nullable
    private UUID conversionStarter;
    @Nullable
-   private Tag gossips;
+   private GossipContainer gossips;
    @Nullable
    private MerchantOffers tradeOffers;
-   private int villagerXp;
+   private int villagerXp = 0;
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
       super(var1, var2);
-      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> this.setVillagerData(this.getVillagerData().setProfession((VillagerProfession)var1x.value())));
+      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> this.setVillagerData(this.getVillagerData().withProfession(var1x)));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_CONVERTING_ID, false);
-      var1.define(DATA_VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1));
+      var1.define(DATA_VILLAGER_DATA, Villager.createDefaultVillagerData());
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      DataResult var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, this.getVillagerData());
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("VillagerData", var1x));
-      if (this.tradeOffers != null) {
-         var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers).getOrThrow());
-      }
-
-      if (this.gossips != null) {
-         var1.put("Gossips", this.gossips);
-      }
-
+      var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
+      var1.storeNullable("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers);
+      var1.storeNullable("Gossips", GossipContainer.CODEC, this.gossips);
       var1.putInt("ConversionTime", this.isConverting() ? this.villagerConversionTime : -1);
-      if (this.conversionStarter != null) {
-         var1.putUUID("ConversionPlayer", this.conversionStarter);
-      }
-
+      var1.storeNullable("ConversionPlayer", UUIDUtil.CODEC, this.conversionStarter);
       var1.putInt("Xp", this.villagerXp);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("VillagerData", 10)) {
-         DataResult var2 = VillagerData.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("VillagerData")));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var2.resultOrPartial(var10001::error).ifPresent(this::setVillagerData);
+      this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
+      this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse((Object)null);
+      this.gossips = (GossipContainer)var1.read("Gossips", GossipContainer.CODEC).orElse((Object)null);
+      int var2 = var1.getIntOr("ConversionTime", -1);
+      if (var2 != -1) {
+         UUID var3 = (UUID)var1.read("ConversionPlayer", UUIDUtil.CODEC).orElse((Object)null);
+         this.startConverting(var3, var2);
+      } else {
+         this.getEntityData().set(DATA_CONVERTING_ID, false);
+         this.villagerConversionTime = -1;
       }
 
-      if (var1.contains("Offers")) {
-         DataResult var10000 = MerchantOffers.CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1.get("Offers"));
-         Logger var10002 = LOGGER;
-         Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Failed to load offers: ", var10002::warn)).ifPresent((var1x) -> this.tradeOffers = var1x);
-      }
-
-      if (var1.contains("Gossips", 9)) {
-         this.gossips = var1.getList("Gossips", 10);
-      }
-
-      if (var1.contains("ConversionTime", 99) && var1.getInt("ConversionTime") > -1) {
-         this.startConverting(var1.hasUUID("ConversionPlayer") ? var1.getUUID("ConversionPlayer") : null, var1.getInt("ConversionTime"));
-      }
-
-      if (var1.contains("Xp", 3)) {
-         this.villagerXp = var1.getInt("Xp");
-      }
-
+      this.villagerXp = var1.getIntOr("Xp", 0);
    }
 
    public void tick() {
@@ -178,7 +154,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.villagerConversionTime = var2;
       this.getEntityData().set(DATA_CONVERTING_ID, true);
       this.removeEffect(MobEffects.WEAKNESS);
-      this.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, var2, Math.min(this.level().getDifficulty().getId() - 1, 0)));
+      this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, var2, Math.min(this.level().getDifficulty().getId() - 1, 0)));
       this.level().broadcastEntityEvent(this, (byte)16);
    }
 
@@ -220,9 +196,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
             }
          }
 
-         var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
+         var2.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0));
          if (!this.isSilent()) {
-            var1.levelEvent((Player)null, 1027, this.blockPosition(), 0);
+            var1.levelEvent((Entity)null, 1027, this.blockPosition(), 0);
          }
 
       });
@@ -286,19 +262,19 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.tradeOffers = var1;
    }
 
-   public void setGossips(Tag var1) {
+   public void setGossips(GossipContainer var1) {
       this.gossips = var1;
    }
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
+      this.setVillagerData(this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public void setVillagerData(VillagerData var1) {
       VillagerData var2 = this.getVillagerData();
-      if (var2.getProfession() != var1.getProfession()) {
+      if (!var2.profession().equals(var1.profession())) {
          this.tradeOffers = null;
       }
 
@@ -315,6 +291,26 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public void setVillagerXp(int var1) {
       this.villagerXp = var1;
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.VILLAGER_VARIANT ? castComponentValue(var1, this.getVillagerData().type()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.VILLAGER_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.VILLAGER_VARIANT) {
+         Holder var3 = (Holder)castComponentValue(DataComponents.VILLAGER_VARIANT, var2);
+         this.setVillagerData(this.getVillagerData().withType(var3));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    static {

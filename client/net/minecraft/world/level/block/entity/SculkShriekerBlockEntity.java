@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.OptionalInt;
@@ -29,7 +28,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -41,10 +39,8 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class SculkShriekerBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int WARNING_SOUND_RADIUS = 10;
    private static final int WARDEN_SPAWN_ATTEMPTS = 20;
    private static final int WARDEN_SPAWN_RANGE_XZ = 5;
@@ -57,7 +53,8 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       var0.put(3, SoundEvents.WARDEN_NEARBY_CLOSEST);
       var0.put(4, SoundEvents.WARDEN_LISTENING_ANGRY);
    });
-   private int warningLevel;
+   private static final int DEFAULT_WARNING_LEVEL = 0;
+   private int warningLevel = 0;
    private final VibrationSystem.User vibrationUser = new VibrationUser();
    private VibrationSystem.Data vibrationData = new VibrationSystem.Data();
    private final VibrationSystem.Listener vibrationListener = new VibrationSystem.Listener(this);
@@ -76,22 +73,16 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("warning_level", 99)) {
-         this.warningLevel = var1.getInt("warning_level");
-      }
-
+      this.warningLevel = var1.getIntOr("warning_level", 0);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Sculk Shrieker: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
-      }
-
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var3).orElseGet(VibrationSystem.Data::new);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("warning_level", this.warningLevel);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Sculk Shrieker: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
+      var1.store("listener", VibrationSystem.Data.CODEC, var3, this.vibrationData);
    }
 
    @Nullable
@@ -156,6 +147,17 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       return (Boolean)this.getBlockState().getValue(SculkShriekerBlock.CAN_SUMMON) && var1.getDifficulty() != Difficulty.PEACEFUL && var1.getGameRules().getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+      if ((Boolean)var2.getValue(SculkShriekerBlock.SHRIEKING)) {
+         Level var4 = this.level;
+         if (var4 instanceof ServerLevel) {
+            ServerLevel var3 = (ServerLevel)var4;
+            this.tryRespond(var3);
+         }
+      }
+
+   }
+
    public void tryRespond(ServerLevel var1) {
       if (this.canRespond(var1) && this.warningLevel > 0) {
          if (!this.trySummonWarden(var1)) {
@@ -174,7 +176,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          int var4 = var3.getX() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var5 = var3.getY() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var6 = var3.getZ() + Mth.randomBetweenInclusive(var1.random, -10, 10);
-         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
+         var1.playSound((Entity)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
       }
 
    }

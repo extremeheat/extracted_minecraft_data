@@ -14,19 +14,15 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class ItemRenderer {
-   public static final ResourceLocation ENCHANTED_GLINT_ENTITY = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_entity.png");
+   public static final ResourceLocation ENCHANTED_GLINT_ARMOR = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
    public static final ResourceLocation ENCHANTED_GLINT_ITEM = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
    public static final int GUI_SLOT_CENTER_X = 8;
    public static final int GUI_SLOT_CENTER_Y = 8;
@@ -43,20 +39,7 @@ public class ItemRenderer {
       this.resolver = var1;
    }
 
-   private static void renderModelLists(BakedModel var0, int[] var1, int var2, int var3, PoseStack var4, VertexConsumer var5) {
-      RandomSource var6 = RandomSource.create();
-      long var7 = 42L;
-
-      for(Direction var12 : Direction.values()) {
-         var6.setSeed(42L);
-         renderQuadList(var4, var5, var0.getQuads((BlockState)null, var12, var6), var1, var2, var3);
-      }
-
-      var6.setSeed(42L);
-      renderQuadList(var4, var5, var0.getQuads((BlockState)null, (Direction)null, var6), var1, var2, var3);
-   }
-
-   public static void renderItem(ItemDisplayContext var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, int[] var5, BakedModel var6, RenderType var7, ItemStackRenderState.FoilType var8) {
+   public static void renderItem(ItemDisplayContext var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, int[] var5, List<BakedQuad> var6, RenderType var7, ItemStackRenderState.FoilType var8) {
       VertexConsumer var9;
       if (var8 == ItemStackRenderState.FoilType.SPECIAL) {
          PoseStack.Pose var10 = var1.last().copy();
@@ -71,7 +54,7 @@ public class ItemRenderer {
          var9 = getFoilBuffer(var2, var7, true, var8 != ItemStackRenderState.FoilType.NONE);
       }
 
-      renderModelLists(var6, var5, var3, var4, var1, var9);
+      renderQuadList(var1, var9, var6, var5, var3, var4);
    }
 
    public static VertexConsumer getArmorFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2) {
@@ -91,7 +74,7 @@ public class ItemRenderer {
    }
 
    private static int getLayerColorSafe(int[] var0, int var1) {
-      return var1 >= var0.length ? -1 : var0[var1];
+      return var1 >= 0 && var1 < var0.length ? var0[var1] : -1;
    }
 
    private static void renderQuadList(PoseStack var0, VertexConsumer var1, List<BakedQuad> var2, int[] var3, int var4, int var5) {
@@ -103,7 +86,7 @@ public class ItemRenderer {
          float var11;
          float var12;
          if (var8.isTinted()) {
-            int var13 = getLayerColorSafe(var3, var8.getTintIndex());
+            int var13 = getLayerColorSafe(var3, var8.tintIndex());
             var9 = (float)ARGB.alpha(var13) / 255.0F;
             var10 = (float)ARGB.red(var13) / 255.0F;
             var11 = (float)ARGB.green(var13) / 255.0F;
@@ -121,11 +104,11 @@ public class ItemRenderer {
    }
 
    public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
-      this.renderStatic((LivingEntity)null, var1, var2, false, var5, var6, var7, var3, var4, var8);
+      this.renderStatic((LivingEntity)null, var1, var2, var5, var6, var7, var3, var4, var8);
    }
 
-   public void renderStatic(@Nullable LivingEntity var1, ItemStack var2, ItemDisplayContext var3, boolean var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8, int var9, int var10) {
-      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var4, var7, var1, var10);
-      this.scratchItemStackRenderState.render(var5, var6, var8, var9);
+   public void renderStatic(@Nullable LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
+      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
+      this.scratchItemStackRenderState.render(var4, var5, var7, var8);
    }
 }

@@ -3,6 +3,7 @@ package com.mojang.math;
 import java.util.Arrays;
 import net.minecraft.Util;
 import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
 
 public enum SymmetricGroup3 {
    P123(0, 1, 2),
@@ -13,9 +14,9 @@ public enum SymmetricGroup3 {
    P321(2, 1, 0);
 
    private final int[] permutation;
-   private final Matrix3f transformation;
+   private final Matrix3fc transformation;
    private static final int ORDER = 3;
-   private static final SymmetricGroup3[][] cayleyTable = (SymmetricGroup3[][])Util.make(new SymmetricGroup3[values().length][values().length], (var0) -> {
+   private static final SymmetricGroup3[][] CAYLEY_TABLE = (SymmetricGroup3[][])Util.make(new SymmetricGroup3[values().length][values().length], (var0) -> {
       for(SymmetricGroup3 var4 : values()) {
          for(SymmetricGroup3 var8 : values()) {
             int[] var9 = new int[3];
@@ -33,21 +34,22 @@ public enum SymmetricGroup3 {
 
    private SymmetricGroup3(final int var3, final int var4, final int var5) {
       this.permutation = new int[]{var3, var4, var5};
-      this.transformation = new Matrix3f();
-      this.transformation.set(this.permutation(0), 0, 1.0F);
-      this.transformation.set(this.permutation(1), 1, 1.0F);
-      this.transformation.set(this.permutation(2), 2, 1.0F);
+      Matrix3f var6 = (new Matrix3f()).zero();
+      var6.set(this.permutation(0), 0, 1.0F);
+      var6.set(this.permutation(1), 1, 1.0F);
+      var6.set(this.permutation(2), 2, 1.0F);
+      this.transformation = var6;
    }
 
    public SymmetricGroup3 compose(SymmetricGroup3 var1) {
-      return cayleyTable[this.ordinal()][var1.ordinal()];
+      return CAYLEY_TABLE[this.ordinal()][var1.ordinal()];
    }
 
    public int permutation(int var1) {
       return this.permutation[var1];
    }
 
-   public Matrix3f transformation() {
+   public Matrix3fc transformation() {
       return this.transformation;
    }
 

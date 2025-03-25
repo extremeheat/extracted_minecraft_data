@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.WeightedListInt;
 import net.minecraft.world.level.block.Block;
@@ -70,7 +70,7 @@ public class PlacementUtils {
       if (Math.abs(var3 - (float)((int)var3)) > 1.0E-5F) {
          throw new IllegalStateException("Chance data cannot be represented as list weight");
       } else {
-         SimpleWeightedRandomList var4 = SimpleWeightedRandomList.builder().add(ConstantInt.of(var0), (int)var3 - 1).add(ConstantInt.of(var0 + var2), 1).build();
+         WeightedList var4 = WeightedList.builder().add(ConstantInt.of(var0), (int)var3 - 1).add(ConstantInt.of(var0 + var2), 1).build();
          return CountPlacement.of(new WeightedListInt(var4));
       }
    }

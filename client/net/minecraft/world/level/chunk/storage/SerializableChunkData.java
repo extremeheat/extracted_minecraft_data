@@ -1,10 +1,8 @@
 package net.minecraft.world.level.chunk.storage;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
@@ -17,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.core.BlockPos;
@@ -33,7 +32,6 @@ import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -70,6 +68,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import net.minecraft.world.ticks.SavedTick;
@@ -77,6 +76,8 @@ import org.slf4j.Logger;
 
 public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, @Nullable BlendingData.Packed blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, UpgradeData upgradeData, @Nullable long[] carvingMask, Map<Heightmap.Types, long[]> heightmaps, ChunkAccess.PackedTicks packedTicks, ShortList[] postProcessingSections, boolean lightCorrect, List<SectionData> sectionData, List<CompoundTag> entities, List<CompoundTag> blockEntities, CompoundTag structureData) {
    private static final Codec<PalettedContainer<BlockState>> BLOCK_STATE_CODEC;
+   private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC;
+   private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC;
    private static final Logger LOGGER;
    private static final String TAG_UPGRADE_DATA = "UpgradeData";
    private static final String BLOCK_TICKS_TAG = "block_ticks";
@@ -113,107 +114,71 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
 
    @Nullable
    public static SerializableChunkData parse(LevelHeightAccessor var0, RegistryAccess var1, CompoundTag var2) {
-      if (!var2.contains("Status", 8)) {
+      if (var2.getString("Status").isEmpty()) {
          return null;
       } else {
-         ChunkPos var3 = new ChunkPos(var2.getInt("xPos"), var2.getInt("zPos"));
-         long var4 = var2.getLong("LastUpdate");
-         long var6 = var2.getLong("InhabitedTime");
-         ChunkStatus var8 = ChunkStatus.byName(var2.getString("Status"));
-         UpgradeData var9 = var2.contains("UpgradeData", 10) ? new UpgradeData(var2.getCompound("UpgradeData"), var0) : UpgradeData.EMPTY;
-         boolean var10 = var2.getBoolean("isLightOn");
-         BlendingData.Packed var11;
-         if (var2.contains("blending_data", 10)) {
-            DataResult var10000 = BlendingData.Packed.CODEC.parse(NbtOps.INSTANCE, var2.getCompound("blending_data"));
-            Logger var10001 = LOGGER;
-            Objects.requireNonNull(var10001);
-            var11 = (BlendingData.Packed)var10000.resultOrPartial(var10001::error).orElse((Object)null);
-         } else {
-            var11 = null;
-         }
-
-         BelowZeroRetrogen var12;
-         if (var2.contains("below_zero_retrogen", 10)) {
-            DataResult var43 = BelowZeroRetrogen.CODEC.parse(NbtOps.INSTANCE, var2.getCompound("below_zero_retrogen"));
-            Logger var44 = LOGGER;
-            Objects.requireNonNull(var44);
-            var12 = (BelowZeroRetrogen)var43.resultOrPartial(var44::error).orElse((Object)null);
-         } else {
-            var12 = null;
-         }
-
-         long[] var13;
-         if (var2.contains("carving_mask", 12)) {
-            var13 = var2.getLongArray("carving_mask");
-         } else {
-            var13 = null;
-         }
-
-         CompoundTag var14 = var2.getCompound("Heightmaps");
-         EnumMap var15 = new EnumMap(Heightmap.Types.class);
-
-         for(Heightmap.Types var17 : var8.heightmapsAfter()) {
-            String var18 = var17.getSerializationKey();
-            if (var14.contains(var18, 12)) {
-               var15.put(var17, var14.getLongArray(var18));
-            }
-         }
-
-         List var34 = SavedTick.loadTickList(var2.getList("block_ticks", 10), (var0x) -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var3);
-         List var35 = SavedTick.loadTickList(var2.getList("fluid_ticks", 10), (var0x) -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0x)), var3);
-         ChunkAccess.PackedTicks var36 = new ChunkAccess.PackedTicks(var34, var35);
-         ListTag var19 = var2.getList("PostProcessing", 9);
-         ShortList[] var20 = new ShortList[var19.size()];
-
-         for(int var21 = 0; var21 < var19.size(); ++var21) {
-            ListTag var22 = var19.getList(var21);
-            ShortArrayList var23 = new ShortArrayList(var22.size());
-
-            for(int var24 = 0; var24 < var22.size(); ++var24) {
-               var23.add(var22.getShort(var24));
+         ChunkPos var3 = new ChunkPos(var2.getIntOr("xPos", 0), var2.getIntOr("zPos", 0));
+         long var4 = var2.getLongOr("LastUpdate", 0L);
+         long var6 = var2.getLongOr("InhabitedTime", 0L);
+         ChunkStatus var8 = (ChunkStatus)var2.read("Status", ChunkStatus.CODEC).orElse(ChunkStatus.EMPTY);
+         UpgradeData var9 = (UpgradeData)var2.getCompound("UpgradeData").map((var1x) -> new UpgradeData(var1x, var0)).orElse(UpgradeData.EMPTY);
+         boolean var10 = var2.getBooleanOr("isLightOn", false);
+         BlendingData.Packed var11 = (BlendingData.Packed)var2.read("blending_data", BlendingData.Packed.CODEC).orElse((Object)null);
+         BelowZeroRetrogen var12 = (BelowZeroRetrogen)var2.read("below_zero_retrogen", BelowZeroRetrogen.CODEC).orElse((Object)null);
+         long[] var13 = (long[])var2.getLongArray("carving_mask").orElse((Object)null);
+         EnumMap var14 = new EnumMap(Heightmap.Types.class);
+         var2.getCompound("Heightmaps").ifPresent((var2x) -> {
+            for(Heightmap.Types var4 : var8.heightmapsAfter()) {
+               var2x.getLongArray(var4.getSerializationKey()).ifPresent((var2) -> var14.put(var4, var2));
             }
 
-            var20[var21] = var23;
+         });
+         List var15 = SavedTick.filterTickListForChunk((List)var2.read("block_ticks", BLOCK_TICKS_CODEC).orElse(List.of()), var3);
+         List var16 = SavedTick.filterTickListForChunk((List)var2.read("fluid_ticks", FLUID_TICKS_CODEC).orElse(List.of()), var3);
+         ChunkAccess.PackedTicks var17 = new ChunkAccess.PackedTicks(var15, var16);
+         ListTag var18 = var2.getListOrEmpty("PostProcessing");
+         ShortList[] var19 = new ShortList[var18.size()];
+
+         for(int var20 = 0; var20 < var18.size(); ++var20) {
+            ListTag var21 = var18.getListOrEmpty(var20);
+            ShortArrayList var22 = new ShortArrayList(var21.size());
+
+            for(int var23 = 0; var23 < var21.size(); ++var23) {
+               var22.add(var21.getShortOr(var23, (short)0));
+            }
+
+            var19[var20] = var22;
          }
 
-         List var37 = Lists.transform(var2.getList("entities", 10), (var0x) -> (CompoundTag)var0x);
-         List var38 = Lists.transform(var2.getList("block_entities", 10), (var0x) -> (CompoundTag)var0x);
-         CompoundTag var39 = var2.getCompound("structures");
-         ListTag var40 = var2.getList("sections", 10);
-         ArrayList var25 = new ArrayList(var40.size());
-         Registry var26 = var1.lookupOrThrow(Registries.BIOME);
-         Codec var27 = makeBiomeCodec(var26);
+         List var34 = var2.getList("entities").stream().flatMap(ListTag::compoundStream).toList();
+         List var35 = var2.getList("block_entities").stream().flatMap(ListTag::compoundStream).toList();
+         CompoundTag var36 = var2.getCompoundOrEmpty("structures");
+         ListTag var37 = var2.getListOrEmpty("sections");
+         ArrayList var24 = new ArrayList(var37.size());
+         Registry var25 = var1.lookupOrThrow(Registries.BIOME);
+         Codec var26 = makeBiomeCodec(var25);
 
-         for(int var28 = 0; var28 < var40.size(); ++var28) {
-            CompoundTag var29 = var40.getCompound(var28);
-            byte var30 = var29.getByte("Y");
-            LevelChunkSection var31;
-            if (var30 >= var0.getMinSectionY() && var30 <= var0.getMaxSectionY()) {
-               PalettedContainer var32;
-               if (var29.contains("block_states", 10)) {
-                  var32 = (PalettedContainer)BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, var29.getCompound("block_states")).promotePartial((var2x) -> logErrors(var3, var30, var2x)).getOrThrow(ChunkReadException::new);
+         for(int var27 = 0; var27 < var37.size(); ++var27) {
+            Optional var28 = var37.getCompound(var27);
+            if (!var28.isEmpty()) {
+               CompoundTag var29 = (CompoundTag)var28.get();
+               byte var30 = var29.getByteOr("Y", (byte)0);
+               LevelChunkSection var31;
+               if (var30 >= var0.getMinSectionY() && var30 <= var0.getMaxSectionY()) {
+                  PalettedContainer var32 = (PalettedContainer)var29.getCompound("block_states").map((var2x) -> (PalettedContainer)BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, var2x).promotePartial((var2) -> logErrors(var3, var30, var2)).getOrThrow(ChunkReadException::new)).orElseGet(() -> new PalettedContainer(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES));
+                  PalettedContainerRO var33 = (PalettedContainerRO)var29.getCompound("biomes").map((var3x) -> (PalettedContainerRO)var26.parse(NbtOps.INSTANCE, var3x).promotePartial((var2) -> logErrors(var3, var30, var2)).getOrThrow(ChunkReadException::new)).orElseGet(() -> new PalettedContainer(var25.asHolderIdMap(), var25.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES));
+                  var31 = new LevelChunkSection(var32, var33);
                } else {
-                  var32 = new PalettedContainer(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+                  var31 = null;
                }
 
-               Object var33;
-               if (var29.contains("biomes", 10)) {
-                  var33 = (PalettedContainerRO)var27.parse(NbtOps.INSTANCE, var29.getCompound("biomes")).promotePartial((var2x) -> logErrors(var3, var30, var2x)).getOrThrow(ChunkReadException::new);
-               } else {
-                  var33 = new PalettedContainer(var26.asHolderIdMap(), var26.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
-               }
-
-               var31 = new LevelChunkSection(var32, (PalettedContainerRO)var33);
-            } else {
-               var31 = null;
+               DataLayer var38 = (DataLayer)var29.getByteArray("BlockLight").map(DataLayer::new).orElse((Object)null);
+               DataLayer var39 = (DataLayer)var29.getByteArray("SkyLight").map(DataLayer::new).orElse((Object)null);
+               var24.add(new SectionData(var30, var31, var38, var39));
             }
-
-            DataLayer var41 = var29.contains("BlockLight", 7) ? new DataLayer(var29.getByteArray("BlockLight")) : null;
-            DataLayer var42 = var29.contains("SkyLight", 7) ? new DataLayer(var29.getByteArray("SkyLight")) : null;
-            var25.add(new SectionData(var30, var31, var41, var42));
          }
 
-         return new SerializableChunkData(var26, var3, var0.getMinSectionY(), var4, var6, var8, var11, var12, var9, var13, var15, var36, var20, var10, var25, var37, var38, var39);
+         return new SerializableChunkData(var25, var3, var0.getMinSectionY(), var4, var6, var8, var11, var12, var9, var13, var14, var17, var19, var10, var24, var34, var35, var36);
       }
    }
 
@@ -393,20 +358,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
       var1.putLong("LastUpdate", this.lastUpdateTime);
       var1.putLong("InhabitedTime", this.inhabitedTime);
       var1.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(this.chunkStatus).toString());
-      if (this.blendingData != null) {
-         DataResult var10000 = BlendingData.Packed.CODEC.encodeStart(NbtOps.INSTANCE, this.blendingData);
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("blending_data", var1x));
-      }
-
-      if (this.belowZeroRetrogen != null) {
-         DataResult var11 = BelowZeroRetrogen.CODEC.encodeStart(NbtOps.INSTANCE, this.belowZeroRetrogen);
-         Logger var12 = LOGGER;
-         Objects.requireNonNull(var12);
-         var11.resultOrPartial(var12::error).ifPresent((var1x) -> var1.put("below_zero_retrogen", var1x));
-      }
-
+      var1.storeNullable("blending_data", BlendingData.Packed.CODEC, this.blendingData);
+      var1.storeNullable("below_zero_retrogen", BelowZeroRetrogen.CODEC, this.belowZeroRetrogen);
       if (!this.upgradeData.isEmpty()) {
          var1.put("UpgradeData", this.upgradeData.write());
       }
@@ -418,8 +371,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
          CompoundTag var6 = new CompoundTag();
          LevelChunkSection var7 = var5.chunkSection;
          if (var7 != null) {
-            var6.put("block_states", (Tag)BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, var7.getStates()).getOrThrow());
-            var6.put("biomes", (Tag)var3.encodeStart(NbtOps.INSTANCE, var7.getBiomes()).getOrThrow());
+            var6.store("block_states", BLOCK_STATE_CODEC, var7.getStates());
+            var6.store("biomes", var3, var7.getBiomes());
          }
 
          if (var5.blockLight != null) {
@@ -463,24 +416,12 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
    }
 
    private static void saveTicks(CompoundTag var0, ChunkAccess.PackedTicks var1) {
-      ListTag var2 = new ListTag();
-
-      for(SavedTick var4 : var1.blocks()) {
-         var2.add(var4.save((var0x) -> BuiltInRegistries.BLOCK.getKey(var0x).toString()));
-      }
-
-      var0.put("block_ticks", var2);
-      ListTag var6 = new ListTag();
-
-      for(SavedTick var5 : var1.fluids()) {
-         var6.add(var5.save((var0x) -> BuiltInRegistries.FLUID.getKey(var0x).toString()));
-      }
-
-      var0.put("fluid_ticks", var6);
+      var0.store("block_ticks", BLOCK_TICKS_CODEC, var1.blocks());
+      var0.store("fluid_ticks", FLUID_TICKS_CODEC, var1.fluids());
    }
 
-   public static ChunkType getChunkTypeFromTag(@Nullable CompoundTag var0) {
-      return var0 != null ? ChunkStatus.byName(var0.getString("Status")).getChunkType() : ChunkType.PROTOCHUNK;
+   public static ChunkStatus getChunkStatusFromTag(@Nullable CompoundTag var0) {
+      return var0 != null ? (ChunkStatus)var0.read("Status", ChunkStatus.CODEC).orElse(ChunkStatus.EMPTY) : ChunkStatus.EMPTY;
    }
 
    @Nullable
@@ -491,11 +432,11 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
          }
 
          for(CompoundTag var5 : var2) {
-            boolean var6 = var5.getBoolean("keepPacked");
+            boolean var6 = var5.getBooleanOr("keepPacked", false);
             if (var6) {
                var3.setBlockEntityNbt(var5);
             } else {
-               BlockPos var7 = BlockEntity.getPosFromTag(var5);
+               BlockPos var7 = BlockEntity.getPosFromTag(var3.getPos(), var5);
                BlockEntity var8 = BlockEntity.loadStatic(var7, var3.getBlockState(var7), var5, var0.registryAccess());
                if (var8 != null) {
                   var3.setBlockEntity(var8);
@@ -522,7 +463,7 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
       for(Map.Entry var13 : var3.entrySet()) {
          if (!((LongSet)var13.getValue()).isEmpty()) {
             ResourceLocation var10 = var6.getKey((Structure)var13.getKey());
-            var11.put(var10.toString(), new LongArrayTag((LongSet)var13.getValue()));
+            var11.putLongArray(var10.toString(), ((LongSet)var13.getValue()).toLongArray());
          }
       }
 
@@ -533,15 +474,15 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
    private static Map<Structure, StructureStart> unpackStructureStart(StructurePieceSerializationContext var0, CompoundTag var1, long var2) {
       HashMap var4 = Maps.newHashMap();
       Registry var5 = var0.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-      CompoundTag var6 = var1.getCompound("starts");
+      CompoundTag var6 = var1.getCompoundOrEmpty("starts");
 
-      for(String var8 : var6.getAllKeys()) {
+      for(String var8 : var6.keySet()) {
          ResourceLocation var9 = ResourceLocation.tryParse(var8);
          Structure var10 = (Structure)var5.getValue(var9);
          if (var10 == null) {
             LOGGER.error("Unknown structure start: {}", var9);
          } else {
-            StructureStart var11 = StructureStart.loadStaticStart(var0, var6.getCompound(var8), var2);
+            StructureStart var11 = StructureStart.loadStaticStart(var0, var6.getCompoundOrEmpty(var8), var2);
             if (var11 != null) {
                var4.put(var10, var11);
             }
@@ -554,20 +495,19 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
    private static Map<Structure, LongSet> unpackStructureReferences(RegistryAccess var0, ChunkPos var1, CompoundTag var2) {
       HashMap var3 = Maps.newHashMap();
       Registry var4 = var0.lookupOrThrow(Registries.STRUCTURE);
-      CompoundTag var5 = var2.getCompound("References");
-
-      for(String var7 : var5.getAllKeys()) {
-         ResourceLocation var8 = ResourceLocation.tryParse(var7);
-         Structure var9 = (Structure)var4.getValue(var8);
-         if (var9 == null) {
-            LOGGER.warn("Found reference to unknown structure '{}' in chunk {}, discarding", var8, var1);
+      CompoundTag var5 = var2.getCompoundOrEmpty("References");
+      var5.forEach((var3x, var4x) -> {
+         ResourceLocation var5 = ResourceLocation.tryParse(var3x);
+         Structure var6 = (Structure)var4.getValue(var5);
+         if (var6 == null) {
+            LOGGER.warn("Found reference to unknown structure '{}' in chunk {}, discarding", var5, var1);
          } else {
-            long[] var10 = var5.getLongArray(var7);
-            if (var10.length != 0) {
-               var3.put(var9, new LongOpenHashSet(Arrays.stream(var10).filter((var2x) -> {
-                  ChunkPos var4 = new ChunkPos(var2x);
+            Optional var7 = var4x.asLongArray();
+            if (!var7.isEmpty()) {
+               var3.put(var6, new LongOpenHashSet(Arrays.stream((long[])var7.get()).filter((var2) -> {
+                  ChunkPos var4 = new ChunkPos(var2);
                   if (var4.getChessboardDistance(var1) > 8) {
-                     LOGGER.warn("Found invalid structure reference [ {} @ {} ] for chunk {}.", new Object[]{var8, var4, var1});
+                     LOGGER.warn("Found invalid structure reference [ {} @ {} ] for chunk {}.", new Object[]{var5, var4, var1});
                      return false;
                   } else {
                      return true;
@@ -575,8 +515,7 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
                }).toArray()));
             }
          }
-      }
-
+      });
       return var3;
    }
 
@@ -599,6 +538,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
 
    static {
       BLOCK_STATE_CODEC = PalettedContainer.codecRW(Block.BLOCK_STATE_REGISTRY, BlockState.CODEC, PalettedContainer.Strategy.SECTION_STATES, Blocks.AIR.defaultBlockState());
+      BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec()).listOf();
+      FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec()).listOf();
       LOGGER = LogUtils.getLogger();
    }
 

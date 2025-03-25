@@ -47,7 +47,7 @@ class OozingMobEffect extends MobEffect {
       Slime var8 = EntityType.SLIME.create(var1, EntitySpawnReason.TRIGGERED);
       if (var8 != null) {
          var8.setSize(2, true);
-         var8.moveTo(var2, var4, var6, var1.getRandom().nextFloat() * 360.0F, 0.0F);
+         var8.snapTo(var2, var4, var6, var1.getRandom().nextFloat() * 360.0F, 0.0F);
          var1.addFreshEntity(var8);
       }
    }

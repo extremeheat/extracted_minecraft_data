@@ -1,11 +1,10 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,15 +37,15 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CeilingHangingSignBlock extends SignBlock {
    public static final MapCodec<CeilingHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, CeilingHangingSignBlock::new));
    public static final IntegerProperty ROTATION;
    public static final BooleanProperty ATTACHED;
-   protected static final float AABB_OFFSET = 5.0F;
-   protected static final VoxelShape SHAPE;
-   private static final Map<Integer, VoxelShape> AABBS;
+   private static final VoxelShape SHAPE_DEFAULT;
+   private static final Map<Integer, VoxelShape> SHAPES;
 
    public MapCodec<CeilingHangingSignBlock> codec() {
       return CODEC;
@@ -103,8 +102,7 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      VoxelShape var5 = (VoxelShape)AABBS.get(var1.getValue(ROTATION));
-      return var5 == null ? SHAPE : var5;
+      return (VoxelShape)SHAPES.getOrDefault(var1.getValue(ROTATION), SHAPE_DEFAULT);
    }
 
    protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -143,7 +141,7 @@ public class CeilingHangingSignBlock extends SignBlock {
    static {
       ROTATION = BlockStateProperties.ROTATION_16;
       ATTACHED = BlockStateProperties.ATTACHED;
-      SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 16.0, 13.0);
-      AABBS = Maps.newHashMap(ImmutableMap.of(0, Block.box(1.0, 0.0, 7.0, 15.0, 10.0, 9.0), 4, Block.box(7.0, 0.0, 1.0, 9.0, 10.0, 15.0), 8, Block.box(1.0, 0.0, 7.0, 15.0, 10.0, 9.0), 12, Block.box(7.0, 0.0, 1.0, 9.0, 10.0, 15.0)));
+      SHAPE_DEFAULT = Block.column(10.0, 0.0, 16.0);
+      SHAPES = (Map)Shapes.rotateHorizontal(Block.column(14.0, 2.0, 0.0, 10.0)).entrySet().stream().collect(Collectors.toMap((var0) -> RotationSegment.convertToSegment((Direction)var0.getKey()), Map.Entry::getValue));
    }
 }

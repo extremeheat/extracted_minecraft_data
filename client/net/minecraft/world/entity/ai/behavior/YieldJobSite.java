@@ -25,7 +25,7 @@ public class YieldJobSite {
       return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.present(MemoryModuleType.POTENTIAL_JOB_SITE), var1.absent(MemoryModuleType.JOB_SITE), var1.present(MemoryModuleType.NEAREST_LIVING_ENTITIES), var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET)).apply(var1, (var2, var3, var4, var5, var6) -> (var6x, var7, var8) -> {
                if (var7.isBaby()) {
                   return false;
-               } else if (var7.getVillagerData().getProfession() != VillagerProfession.NONE) {
+               } else if (!var7.getVillagerData().profession().is(VillagerProfession.NONE)) {
                   return false;
                } else {
                   BlockPos var10 = ((GlobalPos)var1.get(var2)).pos();
@@ -56,8 +56,8 @@ public class YieldJobSite {
          return false;
       } else {
          Optional var4 = var1.getBrain().getMemory(MemoryModuleType.JOB_SITE);
-         VillagerProfession var5 = var1.getVillagerData().getProfession();
-         if (var5.heldJobSite().test(var0)) {
+         Holder var5 = var1.getVillagerData().profession();
+         if (((VillagerProfession)var5.value()).heldJobSite().test(var0)) {
             return var4.isEmpty() ? canReachPos(var1, var2, (PoiType)var0.value()) : ((GlobalPos)var4.get()).pos().equals(var2);
          } else {
             return false;

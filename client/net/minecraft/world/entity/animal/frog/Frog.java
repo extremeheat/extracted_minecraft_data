@@ -10,7 +10,9 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -18,12 +20,10 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
@@ -44,7 +44,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -56,9 +55,9 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -71,13 +70,12 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.phys.Vec3;
 
-public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+public class Frog extends Animal {
    protected static final ImmutableList<SensorType<? extends Sensor<? super Frog>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
    private static final EntityDataAccessor<Holder<FrogVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<OptionalInt> DATA_TONGUE_TARGET_ID;
    private static final int FROG_FALL_DAMAGE_REDUCTION = 5;
-   public static final String VARIANT_KEY = "variant";
    private static final ResourceKey<FrogVariant> DEFAULT_VARIANT;
    public final AnimationState jumpAnimationState = new AnimationState();
    public final AnimationState croakAnimationState = new AnimationState();
@@ -106,7 +104,8 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
+      Registry var2 = this.registryAccess().lookupOrThrow(Registries.FROG_VARIANT);
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
       var1.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
    }
 
@@ -137,21 +136,37 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setVariant(Holder<FrogVariant> var1) {
+   private void setVariant(Holder<FrogVariant> var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.FROG_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.FROG_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.FROG_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.FROG_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("variant", ((ResourceKey)this.getVariant().unwrapKey().orElse(DEFAULT_VARIANT)).location().toString());
+      VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.FROG_VARIANT, var0));
-      Registry var10001 = BuiltInRegistries.FROG_VARIANT;
-      Objects.requireNonNull(var10001);
-      var10000.flatMap(var10001::get).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.FROG_VARIANT).ifPresent(this::setVariant);
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -167,7 +182,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    public void tick() {
       if (this.level().isClientSide()) {
-         this.swimIdleAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
+         this.swimIdleAnimationState.animateWhen(this.isInWater() && !this.walkAnimation.isMoving(), this.tickCount);
       }
 
       super.tick();
@@ -210,7 +225,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    public void playEatingSound() {
-      this.level().playSound((Player)null, (Entity)this, SoundEvents.FROG_EAT, SoundSource.NEUTRAL, 2.0F, 1.0F);
+      this.level().playSound((Entity)null, (Entity)this, SoundEvents.FROG_EAT, SoundSource.NEUTRAL, 2.0F, 1.0F);
    }
 
    @Nullable
@@ -236,15 +251,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      Holder var5 = var1.getBiome(this.blockPosition());
-      if (var5.is(BiomeTags.SPAWNS_COLD_VARIANT_FROGS)) {
-         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.COLD));
-      } else if (var5.is(BiomeTags.SPAWNS_WARM_VARIANT_FROGS)) {
-         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.WARM));
-      } else {
-         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
-      }
-
+      FrogVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
       FrogAi.initMemories(this, var1.getRandom());
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
@@ -281,12 +288,12 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       DebugPackets.sendEntityBrain(this);
    }
 
-   protected int calculateFallDamage(float var1, float var2) {
-      return super.calculateFallDamage(var1, var2) - 5;
+   protected int calculateFallDamage(double var1, float var3) {
+      return super.calculateFallDamage(var1, var3) - 5;
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater()) {
+      if (this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
@@ -323,22 +330,12 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       return var1.getBlockState(var3.below()).is(BlockTags.FROGS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
-   // $FF: synthetic method
-   public void setVariant(final Object var1) {
-      this.setVariant((Holder)var1);
-   }
-
    static {
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FROG_ATTACKABLES, SensorType.FROG_TEMPTATIONS, SensorType.IS_IN_WATER);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.BREED_TARGET, MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, new MemoryModuleType[]{MemoryModuleType.IS_TEMPTED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.IS_IN_WATER, MemoryModuleType.IS_PREGNANT, MemoryModuleType.IS_PANICKING, MemoryModuleType.UNREACHABLE_TONGUE_TARGETS});
       DATA_VARIANT_ID = SynchedEntityData.<Holder<FrogVariant>>defineId(Frog.class, EntityDataSerializers.FROG_VARIANT);
       DATA_TONGUE_TARGET_ID = SynchedEntityData.<OptionalInt>defineId(Frog.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
-      DEFAULT_VARIANT = FrogVariant.TEMPERATE;
+      DEFAULT_VARIANT = FrogVariants.TEMPERATE;
    }
 
    class FrogLookControl extends LookControl {

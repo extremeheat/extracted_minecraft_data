@@ -53,32 +53,33 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
             }
          }
 
-         BlockState var13 = var1.getBlockState(var9);
-         if (var13.is(var6.getBlock()) && var2.nextInt(10) == 0) {
+         BlockState var14 = var1.getBlockState(var9);
+         if (var14.is(var6.getBlock()) && var2.nextInt(10) == 0) {
             BonemealableBlock var11 = (BonemealableBlock)var6.getBlock();
-            if (var11.isValidBonemealTarget(var1, var9, var13)) {
-               var11.performBonemeal(var1, var2, var9, var13);
+            if (var11.isValidBonemealTarget(var1, var9, var14)) {
+               var11.performBonemeal(var1, var2, var9, var14);
             }
          }
 
-         if (var13.isAir()) {
-            Holder var14;
+         if (var14.isAir()) {
+            Holder var15;
             if (var2.nextInt(8) == 0) {
                List var12 = ((Biome)var1.getBiome(var9).value()).getGenerationSettings().getFlowerFeatures();
                if (var12.isEmpty()) {
                   continue;
                }
 
-               var14 = ((RandomPatchConfiguration)((ConfiguredFeature)var12.get(0)).config()).feature();
+               int var13 = var2.nextInt(var12.size());
+               var15 = ((RandomPatchConfiguration)((ConfiguredFeature)var12.get(var13)).config()).feature();
             } else {
                if (!var7.isPresent()) {
                   continue;
                }
 
-               var14 = (Holder)var7.get();
+               var15 = (Holder)var7.get();
             }
 
-            ((PlacedFeature)var14.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var9);
+            ((PlacedFeature)var15.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var9);
          }
       }
 

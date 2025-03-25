@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
-public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
+public interface DataComponentMap extends Iterable<TypedDataComponent<?>>, DataComponentGetter {
    DataComponentMap EMPTY = new DataComponentMap() {
       @Nullable
       public <T> T get(DataComponentType<? extends T> var1) {
@@ -77,23 +77,10 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       return new Builder();
    }
 
-   @Nullable
-   <T> T get(DataComponentType<? extends T> var1);
-
    Set<DataComponentType<?>> keySet();
 
    default boolean has(DataComponentType<?> var1) {
       return this.get(var1) != null;
-   }
-
-   default <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
-      // $FF: Couldn't be decompiled
-   }
-
-   @Nullable
-   default <T> TypedDataComponent<T> getTyped(DataComponentType<T> var1) {
-      Object var2 = this.get(var1);
-      return var2 != null ? new TypedDataComponent(var1, var2) : null;
    }
 
    default Iterator<TypedDataComponent<?>> iterator() {

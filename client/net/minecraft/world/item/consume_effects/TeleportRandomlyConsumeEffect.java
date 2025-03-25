@@ -62,7 +62,7 @@ public record TeleportRandomlyConsumeEffect(float diameter) implements ConsumeEf
                var13 = SoundSource.PLAYERS;
             }
 
-            var1.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), var14, var13);
+            var1.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), var14, var13);
             var3.resetFallDistance();
             var4 = true;
             break;

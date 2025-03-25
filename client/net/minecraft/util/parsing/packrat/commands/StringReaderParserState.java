@@ -1,16 +1,15 @@
 package net.minecraft.util.parsing.packrat.commands;
 
 import com.mojang.brigadier.StringReader;
-import net.minecraft.util.parsing.packrat.Dictionary;
+import net.minecraft.util.parsing.packrat.CachedParseState;
 import net.minecraft.util.parsing.packrat.ErrorCollector;
-import net.minecraft.util.parsing.packrat.ParseState;
 
-public class StringReaderParserState extends ParseState<StringReader> {
+public class StringReaderParserState extends CachedParseState<StringReader> {
    private final StringReader input;
 
-   public StringReaderParserState(Dictionary<StringReader> var1, ErrorCollector<StringReader> var2, StringReader var3) {
-      super(var1, var2);
-      this.input = var3;
+   public StringReaderParserState(ErrorCollector<StringReader> var1, StringReader var2) {
+      super(var1);
+      this.input = var2;
    }
 
    public StringReader input() {

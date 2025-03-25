@@ -121,7 +121,7 @@ public class EnchantmentHelper {
 
    public static ItemStack createBook(EnchantmentInstance var0) {
       ItemStack var1 = new ItemStack(Items.ENCHANTED_BOOK);
-      var1.enchant(var0.enchantment, var0.level);
+      var1.enchant(var0.enchantment(), var0.level());
       return var1;
    }
 
@@ -478,7 +478,7 @@ public class EnchantmentHelper {
       }
 
       for(EnchantmentInstance var6 : var4) {
-         var1.enchant(var6.enchantment, var6.level);
+         var1.enchant(var6.enchantment(), var6.level());
       }
 
       return var1;
@@ -495,7 +495,7 @@ public class EnchantmentHelper {
          var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var6), 1, 2147483647);
          List var7 = getAvailableEnchantmentResults(var2, var1, var3);
          if (!var7.isEmpty()) {
-            Optional var10000 = WeightedRandom.getRandomItem(var0, var7);
+            Optional var10000 = WeightedRandom.getRandomItem(var0, var7, EnchantmentInstance::weight);
             Objects.requireNonNull(var4);
             var10000.ifPresent(var4::add);
 
@@ -508,7 +508,7 @@ public class EnchantmentHelper {
                   break;
                }
 
-               var10000 = WeightedRandom.getRandomItem(var0, var7);
+               var10000 = WeightedRandom.getRandomItem(var0, var7, EnchantmentInstance::weight);
                Objects.requireNonNull(var4);
                var10000.ifPresent(var4::add);
                var2 /= 2;
@@ -520,7 +520,7 @@ public class EnchantmentHelper {
    }
 
    public static void filterCompatibleEnchantments(List<EnchantmentInstance> var0, EnchantmentInstance var1) {
-      var0.removeIf((var1x) -> !Enchantment.areCompatible(var1.enchantment, var1x.enchantment));
+      var0.removeIf((var1x) -> !Enchantment.areCompatible(var1.enchantment(), var1x.enchantment()));
    }
 
    public static boolean isEnchantmentCompatible(Collection<Holder<Enchantment>> var0, Holder<Enchantment> var1) {

@@ -48,7 +48,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
       return new ResourceKeyArgument<T>(var0);
    }
 
-   private static <T> ResourceKey<T> getRegistryKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
+   public static <T> ResourceKey<T> getRegistryKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = (ResourceKey)var0.getArgument(var1, ResourceKey.class);
       Optional var5 = var4.cast(var2);
       return (ResourceKey)var5.orElseThrow(() -> var3.create(var4.location()));

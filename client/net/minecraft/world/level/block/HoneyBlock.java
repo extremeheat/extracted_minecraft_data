@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
@@ -26,7 +27,7 @@ public class HoneyBlock extends HalfTransparentBlock {
    private static final double MIN_FALL_SPEED_TO_BE_CONSIDERED_SLIDING = 0.08;
    private static final double THROTTLE_SLIDE_SPEED_TO = 0.05;
    private static final int SLIDE_ADVANCEMENT_CHECK_INTERVAL = 20;
-   protected static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
+   private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 15.0);
 
    public MapCodec<HoneyBlock> codec() {
       return CODEC;
@@ -44,7 +45,7 @@ public class HoneyBlock extends HalfTransparentBlock {
       return SHAPE;
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       var4.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
       if (!var1.isClientSide) {
          var1.broadcastEntityEvent(var4, (byte)54);
@@ -56,14 +57,14 @@ public class HoneyBlock extends HalfTransparentBlock {
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (this.isSlidingDown(var3, var4)) {
          this.maybeDoSlideAchievement(var4, var3);
          this.doSlideMovement(var4);
          this.maybeDoSlideEffects(var2, var4);
       }
 
-      super.entityInside(var1, var2, var3, var4);
+      super.entityInside(var1, var2, var3, var4, var5);
    }
 
    private static double getOldDeltaY(double var0) {

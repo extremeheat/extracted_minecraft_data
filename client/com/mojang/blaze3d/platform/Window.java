@@ -24,7 +24,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
@@ -69,16 +68,16 @@ public final class Window implements AutoCloseable {
       Optional var6 = VideoMode.read(var4);
       if (var6.isPresent()) {
          this.preferredFullscreenVideoMode = var6;
-      } else if (var3.fullscreenWidth.isPresent() && var3.fullscreenHeight.isPresent()) {
-         this.preferredFullscreenVideoMode = Optional.of(new VideoMode(var3.fullscreenWidth.getAsInt(), var3.fullscreenHeight.getAsInt(), 8, 8, 8, 60));
+      } else if (var3.fullscreenWidth().isPresent() && var3.fullscreenHeight().isPresent()) {
+         this.preferredFullscreenVideoMode = Optional.of(new VideoMode(var3.fullscreenWidth().getAsInt(), var3.fullscreenHeight().getAsInt(), 8, 8, 8, 60));
       } else {
          this.preferredFullscreenVideoMode = Optional.empty();
       }
 
-      this.actuallyFullscreen = this.fullscreen = var3.isFullscreen;
+      this.actuallyFullscreen = this.fullscreen = var3.isFullscreen();
       Monitor var7 = var2.getMonitor(GLFW.glfwGetPrimaryMonitor());
-      this.windowedWidth = this.width = var3.width > 0 ? var3.width : 1;
-      this.windowedHeight = this.height = var3.height > 0 ? var3.height : 1;
+      this.windowedWidth = this.width = Math.max(var3.width(), 1);
+      this.windowedHeight = this.height = Math.max(var3.height(), 1);
       GLFW.glfwDefaultWindowHints();
       GLFW.glfwWindowHint(139265, 196609);
       GLFW.glfwWindowHint(139275, 221185);
@@ -99,10 +98,6 @@ public final class Window implements AutoCloseable {
          this.windowedY = this.y = var9[0];
       }
 
-      GLFW.glfwMakeContextCurrent(this.window);
-      GL.createCapabilities();
-      int var11 = RenderSystem.maxSupportedTextureSize();
-      GLFW.glfwSetWindowSizeLimits(this.window, -1, -1, var11, var11);
       this.setMode();
       this.refreshFramebufferSize();
       GLFW.glfwSetFramebufferSizeCallback(this.window, this::onFramebufferResize);
@@ -271,7 +266,7 @@ public final class Window implements AutoCloseable {
    }
 
    public void updateVsync(boolean var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
+      RenderSystem.assertOnRenderThread();
       this.vsync = var1;
       GLFW.glfwSwapInterval(var1 ? 1 : 0);
    }

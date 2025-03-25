@@ -61,7 +61,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private void resetTextures() {
-      this.closeTextures();
+      this.textures.clear();
       this.glyphs.clear();
       this.glyphInfos.clear();
       this.glyphsByWidth.clear();
@@ -100,14 +100,6 @@ public class FontSet implements AutoCloseable {
    }
 
    public void close() {
-      this.closeTextures();
-   }
-
-   private void closeTextures() {
-      for(FontTexture var2 : this.textures) {
-         var2.close();
-      }
-
       this.textures.clear();
    }
 
@@ -175,7 +167,8 @@ public class FontSet implements AutoCloseable {
       ResourceLocation var7 = this.name.withSuffix("/" + this.textures.size());
       boolean var8 = var1.isColored();
       GlyphRenderTypes var9 = var8 ? GlyphRenderTypes.createForColorTexture(var7) : GlyphRenderTypes.createForIntensityTexture(var7);
-      FontTexture var5 = new FontTexture(var9, var8);
+      Objects.requireNonNull(var7);
+      FontTexture var5 = new FontTexture(var7::toString, var9, var8);
       this.textures.add(var5);
       this.textureManager.register(var7, var5);
       BakedGlyph var6 = var5.add(var1);

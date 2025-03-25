@@ -61,7 +61,5 @@ public abstract class FallingBlock extends Block implements Fallable {
 
    }
 
-   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return -16777216;
-   }
+   public abstract int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3);
 }

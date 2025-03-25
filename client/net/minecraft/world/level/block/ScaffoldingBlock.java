@@ -27,10 +27,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<ScaffoldingBlock> CODEC = simpleCodec(ScaffoldingBlock::new);
    private static final int TICK_DELAY = 1;
-   private static final VoxelShape STABLE_SHAPE;
-   private static final VoxelShape UNSTABLE_SHAPE;
-   private static final VoxelShape UNSTABLE_SHAPE_BOTTOM = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
-   private static final VoxelShape BELOW_BLOCK = Shapes.block().move(0.0, -1.0, 0.0);
+   private static final VoxelShape SHAPE_STABLE = Shapes.or(Block.column(16.0, 14.0, 16.0), (VoxelShape)Shapes.rotateHorizontal(Block.box(0.0, 0.0, 0.0, 2.0, 16.0, 2.0)).values().stream().reduce(Shapes.empty(), Shapes::or));
+   private static final VoxelShape SHAPE_UNSTABLE_BOTTOM = Block.column(16.0, 0.0, 2.0);
+   private static final VoxelShape SHAPE_UNSTABLE;
+   private static final VoxelShape SHAPE_BELOW_BLOCK;
    public static final int STABILITY_MAX_DISTANCE = 7;
    public static final IntegerProperty DISTANCE;
    public static final BooleanProperty WATERLOGGED;
@@ -51,7 +51,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (!var4.isHoldingItem(var1.getBlock().asItem())) {
-         return (Boolean)var1.getValue(BOTTOM) ? UNSTABLE_SHAPE : STABLE_SHAPE;
+         return (Boolean)var1.getValue(BOTTOM) ? SHAPE_UNSTABLE : SHAPE_STABLE;
       } else {
          return Shapes.block();
       }
@@ -111,10 +111,12 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var4.isAbove(Shapes.block(), var3, true) && !var4.isDescending()) {
-         return STABLE_SHAPE;
+      if (var4.isPlacement()) {
+         return Shapes.empty();
+      } else if (var4.isAbove(Shapes.block(), var3, true) && !var4.isDescending()) {
+         return SHAPE_STABLE;
       } else {
-         return (Integer)var1.getValue(DISTANCE) != 0 && (Boolean)var1.getValue(BOTTOM) && var4.isAbove(BELOW_BLOCK, var3, true) ? UNSTABLE_SHAPE_BOTTOM : Shapes.empty();
+         return (Integer)var1.getValue(DISTANCE) != 0 && (Boolean)var1.getValue(BOTTOM) && var4.isAbove(SHAPE_BELOW_BLOCK, var3, true) ? SHAPE_UNSTABLE_BOTTOM : Shapes.empty();
       }
    }
 
@@ -150,19 +152,10 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    static {
+      SHAPE_UNSTABLE = Shapes.or(SHAPE_STABLE, SHAPE_UNSTABLE_BOTTOM, (VoxelShape)Shapes.rotateHorizontal(Block.boxZ(16.0, 0.0, 2.0, 0.0, 2.0)).values().stream().reduce(Shapes.empty(), Shapes::or));
+      SHAPE_BELOW_BLOCK = Shapes.block().move(0.0, -1.0, 0.0).optimize();
       DISTANCE = BlockStateProperties.STABILITY_DISTANCE;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       BOTTOM = BlockStateProperties.BOTTOM;
-      VoxelShape var0 = Block.box(0.0, 14.0, 0.0, 16.0, 16.0, 16.0);
-      VoxelShape var1 = Block.box(0.0, 0.0, 0.0, 2.0, 16.0, 2.0);
-      VoxelShape var2 = Block.box(14.0, 0.0, 0.0, 16.0, 16.0, 2.0);
-      VoxelShape var3 = Block.box(0.0, 0.0, 14.0, 2.0, 16.0, 16.0);
-      VoxelShape var4 = Block.box(14.0, 0.0, 14.0, 16.0, 16.0, 16.0);
-      STABLE_SHAPE = Shapes.or(var0, var1, var2, var3, var4);
-      VoxelShape var5 = Block.box(0.0, 0.0, 0.0, 2.0, 2.0, 16.0);
-      VoxelShape var6 = Block.box(14.0, 0.0, 0.0, 16.0, 2.0, 16.0);
-      VoxelShape var7 = Block.box(0.0, 0.0, 14.0, 16.0, 2.0, 16.0);
-      VoxelShape var8 = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 2.0);
-      UNSTABLE_SHAPE = Shapes.or(UNSTABLE_SHAPE_BOTTOM, STABLE_SHAPE, var6, var5, var8, var7);
    }
 }

@@ -76,34 +76,34 @@ public class TrialSpawnerConfigInRegistryFix extends NamedEntityFix {
 
       private static CompoundTag parse(String var0) {
          try {
-            return TagParser.parseTag(var0);
+            return TagParser.parseCompoundFully(var0);
          } catch (CommandSyntaxException var2) {
             throw new IllegalArgumentException("Failed to parse Trial Spawner NBT config: " + var0, var2);
          }
       }
 
       private static CompoundTag removeDefaults(CompoundTag var0) {
-         if (var0.getInt("spawn_range") == 4) {
+         if (var0.getIntOr("spawn_range", 0) == 4) {
             var0.remove("spawn_range");
          }
 
-         if (var0.getFloat("total_mobs") == 6.0F) {
+         if (var0.getFloatOr("total_mobs", 0.0F) == 6.0F) {
             var0.remove("total_mobs");
          }
 
-         if (var0.getFloat("simultaneous_mobs") == 2.0F) {
+         if (var0.getFloatOr("simultaneous_mobs", 0.0F) == 2.0F) {
             var0.remove("simultaneous_mobs");
          }
 
-         if (var0.getFloat("total_mobs_added_per_player") == 2.0F) {
+         if (var0.getFloatOr("total_mobs_added_per_player", 0.0F) == 2.0F) {
             var0.remove("total_mobs_added_per_player");
          }
 
-         if (var0.getFloat("simultaneous_mobs_added_per_player") == 1.0F) {
+         if (var0.getFloatOr("simultaneous_mobs_added_per_player", 0.0F) == 1.0F) {
             var0.remove("simultaneous_mobs_added_per_player");
          }
 
-         if (var0.getInt("ticks_between_spawn") == 40) {
+         if (var0.getIntOr("ticks_between_spawn", 0) == 40) {
             var0.remove("ticks_between_spawn");
          }
 

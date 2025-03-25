@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -388,7 +388,7 @@ public abstract class FlowingFluid extends Fluid {
    private static boolean canHoldSpecificFluid(BlockGetter var0, BlockPos var1, BlockState var2, Fluid var3) {
       Block var4 = var2.getBlock();
       if (var4 instanceof LiquidBlockContainer var5) {
-         return var5.canPlaceLiquid((Player)null, var0, var1, var2, var3);
+         return var5.canPlaceLiquid((LivingEntity)null, var0, var1, var2, var3);
       } else {
          return true;
       }
@@ -408,7 +408,7 @@ public abstract class FlowingFluid extends Fluid {
             var4 = var5;
             var3 = Blocks.AIR.defaultBlockState();
             var1.setBlock(var2, var3, 3);
-         } else if (!var5.equals(var4)) {
+         } else if (var5 != var4) {
             var4 = var5;
             var3 = var5.createLegacyBlock();
             var1.setBlock(var2, var3, 3);

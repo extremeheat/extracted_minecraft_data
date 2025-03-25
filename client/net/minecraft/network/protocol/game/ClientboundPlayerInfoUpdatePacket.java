@@ -142,7 +142,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       final RemoteChatSession.Data chatSession;
 
       Entry(ServerPlayer var1) {
-         this(var1.getUUID(), var1.getGameProfile(), true, var1.connection.latency(), var1.gameMode.getGameModeForPlayer(), var1.getTabListDisplayName(), var1.isModelPartShown(PlayerModelPart.HAT), var1.getTabListOrder(), (RemoteChatSession.Data)Optionull.map(var1.getChatSession(), RemoteChatSession::asData));
+         this(var1.getUUID(), var1.getGameProfile(), true, var1.connection.latency(), var1.gameMode(), var1.getTabListDisplayName(), var1.isModelPartShown(PlayerModelPart.HAT), var1.getTabListOrder(), (RemoteChatSession.Data)Optionull.map(var1.getChatSession(), RemoteChatSession::asData));
       }
 
       public Entry(UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, boolean var7, int var8, @Nullable RemoteChatSession.Data var9) {

@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -210,7 +211,7 @@ public class Blaze extends Monster {
                   if (this.attackStep > 1) {
                      double var11 = Math.sqrt(Math.sqrt(var3)) * 0.5;
                      if (!this.blaze.isSilent()) {
-                        this.blaze.level().levelEvent((Player)null, 1018, this.blaze.blockPosition(), 0);
+                        this.blaze.level().levelEvent((Entity)null, 1018, this.blaze.blockPosition(), 0);
                      }
 
                      for(int var13 = 0; var13 < 1; ++var13) {

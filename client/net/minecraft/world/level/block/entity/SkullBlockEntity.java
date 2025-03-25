@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.ProfileResult;
-import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,12 +15,13 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -31,13 +31,11 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 public class SkullBlockEntity extends BlockEntity {
    private static final String TAG_PROFILE = "profile";
    private static final String TAG_NOTE_BLOCK_SOUND = "note_block_sound";
    private static final String TAG_CUSTOM_NAME = "custom_name";
-   private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
    private static Executor mainThreadExecutor;
    @Nullable
@@ -115,36 +113,16 @@ public class SkullBlockEntity extends BlockEntity {
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      if (this.owner != null) {
-         var1.put("profile", (Tag)ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, this.owner).getOrThrow());
-      }
-
-      if (this.noteBlockSound != null) {
-         var1.putString("note_block_sound", this.noteBlockSound.toString());
-      }
-
-      if (this.customName != null) {
-         var1.putString("custom_name", Component.Serializer.toJson(this.customName, var2));
-      }
-
+      var1.storeNullable("profile", ResolvableProfile.CODEC, this.owner);
+      var1.storeNullable("note_block_sound", ResourceLocation.CODEC, this.noteBlockSound);
+      var1.storeNullable("custom_name", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.customName);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("profile")) {
-         ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, var1.get("profile")).resultOrPartial((var0) -> LOGGER.error("Failed to load profile from player head: {}", var0)).ifPresent(this::setOwner);
-      }
-
-      if (var1.contains("note_block_sound", 8)) {
-         this.noteBlockSound = ResourceLocation.tryParse(var1.getString("note_block_sound"));
-      }
-
-      if (var1.contains("custom_name", 8)) {
-         this.customName = parseCustomNameSafe(var1.getString("custom_name"), var2);
-      } else {
-         this.customName = null;
-      }
-
+      this.setOwner((ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null));
+      this.noteBlockSound = (ResourceLocation)var1.read("note_block_sound", ResourceLocation.CODEC).orElse((Object)null);
+      this.customName = parseCustomNameSafe(var1.get("custom_name"), var2);
    }
 
    public static void animation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
@@ -208,7 +186,7 @@ public class SkullBlockEntity extends BlockEntity {
       return var1 != null ? (CompletableFuture)var1.getUnchecked(var0) : CompletableFuture.completedFuture(Optional.empty());
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       this.setOwner((ResolvableProfile)var1.get(DataComponents.PROFILE));
       this.noteBlockSound = (ResourceLocation)var1.get(DataComponents.NOTE_BLOCK_SOUND);

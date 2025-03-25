@@ -20,7 +20,7 @@ public class HayBlock extends RotatedPillarBlock {
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AXIS, Direction.Axis.Y));
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       var4.causeFallDamage(var5, 0.2F, var1.damageSources().fall());
    }
 }

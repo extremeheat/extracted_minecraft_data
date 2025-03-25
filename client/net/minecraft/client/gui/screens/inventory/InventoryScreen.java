@@ -13,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
@@ -29,14 +30,14 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
 
    public void containerTick() {
       super.containerTick();
-      if (this.minecraft.gameMode.hasInfiniteItems()) {
+      if (this.minecraft.player.hasInfiniteMaterials()) {
          this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       }
 
    }
 
    protected void init() {
-      if (this.minecraft.gameMode.hasInfiniteItems()) {
+      if (this.minecraft.player.hasInfiniteMaterials()) {
          this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       } else {
          super.init();
@@ -113,7 +114,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       var0.pose().translate((double)var1, (double)var2, 50.0);
       var0.pose().scale(var3, var3, -var3);
       var0.pose().translate(var4.x, var4.y, var4.z);
-      var0.pose().mulPose(var5);
+      var0.pose().mulPose((Quaternionfc)var5);
       var0.flush();
       Lighting.setupForEntityInInventory();
       EntityRenderDispatcher var8 = Minecraft.getInstance().getEntityRenderDispatcher();

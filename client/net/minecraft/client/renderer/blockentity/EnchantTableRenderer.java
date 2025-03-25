@@ -12,6 +12,8 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity> {
    public static final Material BOOK_LOCATION;
@@ -22,30 +24,30 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       this.bookModel = new BookModel(var1.bakeLayer(ModelLayers.BOOK));
    }
 
-   public void render(EnchantingTableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void render(EnchantingTableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
       var3.pushPose();
       var3.translate(0.5F, 0.75F, 0.5F);
-      float var7 = (float)var1.time + var2;
-      var3.translate(0.0F, 0.1F + Mth.sin(var7 * 0.1F) * 0.01F, 0.0F);
+      float var8 = (float)var1.time + var2;
+      var3.translate(0.0F, 0.1F + Mth.sin(var8 * 0.1F) * 0.01F, 0.0F);
 
-      float var8;
-      for(var8 = var1.rot - var1.oRot; var8 >= 3.1415927F; var8 -= 6.2831855F) {
+      float var9;
+      for(var9 = var1.rot - var1.oRot; var9 >= 3.1415927F; var9 -= 6.2831855F) {
       }
 
-      while(var8 < -3.1415927F) {
-         var8 += 6.2831855F;
+      while(var9 < -3.1415927F) {
+         var9 += 6.2831855F;
       }
 
-      float var9 = var1.oRot + var8 * var2;
-      var3.mulPose(Axis.YP.rotation(-var9));
-      var3.mulPose(Axis.ZP.rotationDegrees(80.0F));
-      float var10 = Mth.lerp(var2, var1.oFlip, var1.flip);
-      float var11 = Mth.frac(var10 + 0.25F) * 1.6F - 0.3F;
-      float var12 = Mth.frac(var10 + 0.75F) * 1.6F - 0.3F;
-      float var13 = Mth.lerp(var2, var1.oOpen, var1.open);
-      this.bookModel.setupAnim(var7, Mth.clamp(var11, 0.0F, 1.0F), Mth.clamp(var12, 0.0F, 1.0F), var13);
-      VertexConsumer var14 = BOOK_LOCATION.buffer(var4, RenderType::entitySolid);
-      this.bookModel.renderToBuffer(var3, var14, var5, var6);
+      float var10 = var1.oRot + var9 * var2;
+      var3.mulPose((Quaternionfc)Axis.YP.rotation(-var10));
+      var3.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));
+      float var11 = Mth.lerp(var2, var1.oFlip, var1.flip);
+      float var12 = Mth.frac(var11 + 0.25F) * 1.6F - 0.3F;
+      float var13 = Mth.frac(var11 + 0.75F) * 1.6F - 0.3F;
+      float var14 = Mth.lerp(var2, var1.oOpen, var1.open);
+      this.bookModel.setupAnim(var8, Mth.clamp(var12, 0.0F, 1.0F), Mth.clamp(var13, 0.0F, 1.0F), var14);
+      VertexConsumer var15 = BOOK_LOCATION.buffer(var4, RenderType::entitySolid);
+      this.bookModel.renderToBuffer(var3, var15, var5, var6);
       var3.popPose();
    }
 

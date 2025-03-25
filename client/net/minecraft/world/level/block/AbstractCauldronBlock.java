@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.server.level.ServerLevel;
@@ -24,13 +25,14 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class AbstractCauldronBlock extends Block {
-   private static final int SIDE_THICKNESS = 2;
-   private static final int LEG_WIDTH = 4;
-   private static final int LEG_HEIGHT = 3;
-   private static final int LEG_DEPTH = 2;
    protected static final int FLOOR_LEVEL = 4;
-   private static final VoxelShape INSIDE = box(2.0, 4.0, 2.0, 14.0, 16.0, 14.0);
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE_INSIDE = Block.column(12.0, 4.0, 16.0);
+   private static final VoxelShape SHAPE = (VoxelShape)Util.make(() -> {
+      boolean var0 = true;
+      boolean var1 = true;
+      boolean var2 = true;
+      return Shapes.join(Shapes.block(), Shapes.or(Block.column(16.0, 8.0, 0.0, 3.0), Block.column(8.0, 16.0, 0.0, 3.0), Block.column(12.0, 0.0, 3.0), SHAPE_INSIDE), BooleanOp.ONLY_FIRST);
+   });
    protected final CauldronInteraction.InteractionMap interactions;
 
    protected abstract MapCodec<? extends AbstractCauldronBlock> codec();
@@ -58,7 +60,7 @@ public abstract class AbstractCauldronBlock extends Block {
    }
 
    protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return INSIDE;
+      return SHAPE_INSIDE;
    }
 
    protected boolean hasAnalogOutputSignal(BlockState var1) {
@@ -87,9 +89,5 @@ public abstract class AbstractCauldronBlock extends Block {
    }
 
    protected void receiveStalactiteDrip(BlockState var1, Level var2, BlockPos var3, Fluid var4) {
-   }
-
-   static {
-      SHAPE = Shapes.join(Shapes.block(), Shapes.or(box(0.0, 0.0, 4.0, 16.0, 3.0, 12.0), box(4.0, 0.0, 0.0, 12.0, 3.0, 16.0), box(2.0, 0.0, 2.0, 14.0, 3.0, 14.0), INSIDE), BooleanOp.ONLY_FIRST);
    }
 }

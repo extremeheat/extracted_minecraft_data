@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import com.mojang.serialization.Codec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -227,14 +228,14 @@ public class Panda extends Animal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("MainGene", this.getMainGene().getSerializedName());
-      var1.putString("HiddenGene", this.getHiddenGene().getSerializedName());
+      var1.store("MainGene", Panda.Gene.CODEC, this.getMainGene());
+      var1.store("HiddenGene", Panda.Gene.CODEC, this.getHiddenGene());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setMainGene(Panda.Gene.byName(var1.getString("MainGene")));
-      this.setHiddenGene(Panda.Gene.byName(var1.getString("HiddenGene")));
+      this.setMainGene((Gene)var1.read("MainGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
+      this.setHiddenGene((Gene)var1.read("HiddenGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
    }
 
    @Nullable
@@ -696,7 +697,7 @@ public class Panda extends Animal {
       WEAK(5, "weak", true),
       AGGRESSIVE(6, "aggressive", false);
 
-      public static final StringRepresentable.EnumCodec<Gene> CODEC = StringRepresentable.<Gene>fromEnum(Gene::values);
+      public static final Codec<Gene> CODEC = StringRepresentable.<Gene>fromEnum(Gene::values);
       private static final IntFunction<Gene> BY_ID = ByIdMap.<Gene>continuous(Gene::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       private static final int MAX_GENE = 6;
       private final int id;
@@ -731,10 +732,6 @@ public class Panda extends Animal {
 
       public static Gene byId(int var0) {
          return (Gene)BY_ID.apply(var0);
-      }
-
-      public static Gene byName(String var0) {
-         return (Gene)CODEC.byName(var0, NORMAL);
       }
 
       public static Gene getRandom(RandomSource var0) {

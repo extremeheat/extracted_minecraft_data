@@ -18,9 +18,15 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
    protected void placeTrunk(LevelAccessor var1, RandomSource var2, BlockPos var3, HugeMushroomFeatureConfiguration var4, int var5, BlockPos.MutableBlockPos var6) {
       for(int var7 = 0; var7 < var5; ++var7) {
          var6.set(var3).move(Direction.UP, var7);
-         if (!var1.getBlockState(var6).isSolidRender()) {
-            this.setBlock(var1, var6, var4.stemProvider.getState(var2, var3));
-         }
+         this.placeMushroomBlock(var1, var6, var4.stemProvider.getState(var2, var3));
+      }
+
+   }
+
+   protected void placeMushroomBlock(LevelAccessor var1, BlockPos.MutableBlockPos var2, BlockState var3) {
+      BlockState var4 = var1.getBlockState(var2);
+      if (var4.isAir() || var4.is(BlockTags.REPLACEABLE_BY_MUSHROOMS)) {
+         this.setBlock(var1, var2, var3);
       }
 
    }

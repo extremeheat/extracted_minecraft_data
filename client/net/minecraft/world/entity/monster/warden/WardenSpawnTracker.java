@@ -32,6 +32,10 @@ public class WardenSpawnTracker {
       this.cooldownTicks = var3;
    }
 
+   public WardenSpawnTracker() {
+      this(0, 0, 0);
+   }
+
    public void tick() {
       if (this.ticksSinceLastWarning >= 12000) {
          this.decreaseWarningLevel();

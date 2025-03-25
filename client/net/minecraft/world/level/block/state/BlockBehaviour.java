@@ -36,6 +36,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.flag.FeatureElement;
@@ -163,11 +164,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (var1.hasBlockEntity() && !var1.is(var4.getBlock())) {
-         var2.removeBlockEntity(var3);
-      }
-
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
    }
 
    protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
@@ -310,6 +307,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.hasCollision ? var1.getShape(var2, var3) : Shapes.empty();
    }
 
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      return Shapes.block();
+   }
+
    protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Block.isShapeFullBlock(var1.getCollisionShape(var2, var3));
    }
@@ -344,11 +345,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return 0;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-   }
-
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
-      return Shapes.block();
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
    }
 
    protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
@@ -1021,6 +1018,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().getCollisionShape(this.asState(), var1, var2, var3);
       }
 
+      public VoxelShape getEntityInsideCollisionShape(BlockGetter var1, BlockPos var2, Entity var3) {
+         return this.getBlock().getEntityInsideCollisionShape(this.asState(), var1, var2, var3);
+      }
+
       public VoxelShape getBlockSupportShape(BlockGetter var1, BlockPos var2) {
          return this.getBlock().getBlockSupportShape(this.asState(), var1, var2);
       }
@@ -1085,8 +1086,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().onPlace(this.asState(), var1, var2, var3, var4);
       }
 
-      public void onRemove(Level var1, BlockPos var2, BlockState var3, boolean var4) {
-         this.getBlock().onRemove(this.asState(), var1, var2, var3, var4);
+      public void affectNeighborsAfterRemoval(ServerLevel var1, BlockPos var2, boolean var3) {
+         this.getBlock().affectNeighborsAfterRemoval(this.asState(), var1, var2, var3);
       }
 
       public void onExplosionHit(ServerLevel var1, BlockPos var2, Explosion var3, BiConsumer<ItemStack, BlockPos> var4) {
@@ -1101,12 +1102,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().randomTick(this.asState(), var1, var2, var3);
       }
 
-      public void entityInside(Level var1, BlockPos var2, Entity var3) {
-         this.getBlock().entityInside(this.asState(), var1, var2, var3);
-      }
-
-      public VoxelShape getEntityInsideCollisionShape(Level var1, BlockPos var2) {
-         return this.getBlock().getEntityInsideCollisionShape(this.asState(), var1, var2);
+      public void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+         this.getBlock().entityInside(this.asState(), var1, var2, var3, var4);
       }
 
       public void spawnAfterBreak(ServerLevel var1, BlockPos var2, ItemStack var3, boolean var4) {

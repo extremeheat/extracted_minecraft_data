@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,8 +28,9 @@ public class LavaCauldronBlock extends AbstractCauldronBlock {
       return true;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (this.isEntityInsideContent(var1, var3, var4)) {
+         var4.lavaIgnite();
          var4.lavaHurt();
       }
 

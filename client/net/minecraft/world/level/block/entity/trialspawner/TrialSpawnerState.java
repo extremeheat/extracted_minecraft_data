@@ -24,7 +24,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -99,7 +98,7 @@ public enum TrialSpawnerState implements StringRepresentable {
                      ++var4.totalMobsSpawned;
                      var4.nextMobSpawnsAt = var3.getGameTime() + (long)var5.ticksBetweenSpawn();
                      var5.spawnPotentialsDefinition().getRandom(var3.getRandom()).ifPresent((var2x) -> {
-                        var4.nextSpawnData = Optional.of((SpawnData)var2x.data());
+                        var4.nextSpawnData = Optional.of(var2x);
                         var2.markUpdated();
                      });
                   });
@@ -110,7 +109,7 @@ public enum TrialSpawnerState implements StringRepresentable {
             break;
          case 3:
             if (var4.isReadyToOpenShutter(var3, 40.0F, var2.getTargetCooldownLength())) {
-               var3.playSound((Player)null, var1, SoundEvents.TRIAL_SPAWNER_OPEN_SHUTTER, SoundSource.BLOCKS);
+               var3.playSound((Entity)null, var1, SoundEvents.TRIAL_SPAWNER_OPEN_SHUTTER, SoundSource.BLOCKS);
                var10000 = EJECTING_REWARD;
             } else {
                var10000 = this;
@@ -120,12 +119,12 @@ public enum TrialSpawnerState implements StringRepresentable {
             if (!var4.isReadyToEjectItems(var3, (float)TIME_BETWEEN_EACH_EJECTION, var2.getTargetCooldownLength())) {
                var10000 = this;
             } else if (var4.detectedPlayers.isEmpty()) {
-               var3.playSound((Player)null, var1, SoundEvents.TRIAL_SPAWNER_CLOSE_SHUTTER, SoundSource.BLOCKS);
+               var3.playSound((Entity)null, var1, SoundEvents.TRIAL_SPAWNER_CLOSE_SHUTTER, SoundSource.BLOCKS);
                var4.ejectingLootTable = Optional.empty();
                var10000 = COOLDOWN;
             } else {
                if (var4.ejectingLootTable.isEmpty()) {
-                  var4.ejectingLootTable = var5.lootTablesToEject().getRandomValue(var3.getRandom());
+                  var4.ejectingLootTable = var5.lootTablesToEject().getRandom(var3.getRandom());
                }
 
                var4.ejectingLootTable.ifPresent((var3x) -> var2.ejectReward(var3, var1, var3x));
@@ -157,15 +156,15 @@ public enum TrialSpawnerState implements StringRepresentable {
    private void spawnOminousOminousItemSpawner(ServerLevel var1, BlockPos var2, TrialSpawner var3) {
       TrialSpawnerData var4 = var3.getData();
       TrialSpawnerConfig var5 = var3.getConfig();
-      ItemStack var6 = (ItemStack)var4.getDispensingItems(var1, var5, var2).getRandomValue(var1.random).orElse(ItemStack.EMPTY);
+      ItemStack var6 = (ItemStack)var4.getDispensingItems(var1, var5, var2).getRandom(var1.random).orElse(ItemStack.EMPTY);
       if (!var6.isEmpty()) {
          if (this.timeToSpawnItemSpawner(var1, var4)) {
             calculatePositionToSpawnSpawner(var1, var2, var3, var4).ifPresent((var4x) -> {
                OminousItemSpawner var5 = OminousItemSpawner.create(var1, var6);
-               var5.moveTo(var4x);
+               var5.snapTo(var4x);
                var1.addFreshEntity(var5);
                float var6x = (var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.2F + 1.0F;
-               var1.playSound((Player)null, BlockPos.containing(var4x), SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM_BEGIN, SoundSource.BLOCKS, 1.0F, var6x);
+               var1.playSound((Entity)null, BlockPos.containing(var4x), SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM_BEGIN, SoundSource.BLOCKS, 1.0F, var6x);
                var4.cooldownEndsAt = var1.getGameTime() + var3.getOminousConfig().ticksBetweenItemSpawners();
             });
          }

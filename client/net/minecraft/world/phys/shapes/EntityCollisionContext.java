@@ -1,6 +1,5 @@
 package net.minecraft.world.phys.shapes;
 
-import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -17,38 +16,45 @@ public class EntityCollisionContext implements CollisionContext {
    protected static final CollisionContext EMPTY;
    private final boolean descending;
    private final double entityBottom;
+   private final boolean placement;
    private final ItemStack heldItem;
    private final Predicate<FluidState> canStandOnFluid;
    @Nullable
    private final Entity entity;
 
-   protected EntityCollisionContext(boolean var1, double var2, ItemStack var4, Predicate<FluidState> var5, @Nullable Entity var6) {
+   protected EntityCollisionContext(boolean var1, boolean var2, double var3, ItemStack var5, Predicate<FluidState> var6, @Nullable Entity var7) {
       super();
       this.descending = var1;
-      this.entityBottom = var2;
-      this.heldItem = var4;
-      this.canStandOnFluid = var5;
-      this.entity = var6;
+      this.placement = var2;
+      this.entityBottom = var3;
+      this.heldItem = var5;
+      this.canStandOnFluid = var6;
+      this.entity = var7;
    }
 
    /** @deprecated */
    @Deprecated
-   protected EntityCollisionContext(Entity var1, boolean var2) {
+   protected EntityCollisionContext(Entity var1, boolean var2, boolean var3) {
       boolean var10001 = var1.isDescending();
-      double var10002 = var1.getY();
-      ItemStack var10003 = var1 instanceof LivingEntity ? ((LivingEntity)var1).getMainHandItem() : ItemStack.EMPTY;
-      Predicate var10004;
-      if (var2) {
-         var10004 = (var0) -> true;
-      } else if (var1 instanceof LivingEntity) {
-         LivingEntity var3 = (LivingEntity)var1;
-         Objects.requireNonNull((LivingEntity)var1);
-         var10004 = var3::canStandOnFluid;
+      double var10003 = var1.getY();
+      ItemStack var10004;
+      if (var1 instanceof LivingEntity var4) {
+         var10004 = var4.getMainHandItem();
       } else {
-         var10004 = (var0) -> false;
+         var10004 = ItemStack.EMPTY;
       }
 
-      this(var10001, var10002, var10003, var10004, var1);
+      Predicate var10005;
+      if (var2) {
+         var10005 = (var0) -> true;
+      } else if (var1 instanceof LivingEntity) {
+         LivingEntity var5 = (LivingEntity)var1;
+         var10005 = (var1x) -> var5.canStandOnFluid(var1x);
+      } else {
+         var10005 = (var0) -> false;
+      }
+
+      this(var10001, var3, var10003, var10004, var10005, var1);
    }
 
    public boolean isHoldingItem(Item var1) {
@@ -76,8 +82,12 @@ public class EntityCollisionContext implements CollisionContext {
       return this.entity;
    }
 
+   public boolean isPlacement() {
+      return this.placement;
+   }
+
    static {
-      EMPTY = new EntityCollisionContext(false, -1.7976931348623157E308, ItemStack.EMPTY, (var0) -> false, (Entity)null) {
+      EMPTY = new EntityCollisionContext(false, false, -1.7976931348623157E308, ItemStack.EMPTY, (var0) -> false, (Entity)null) {
          public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
             return var3;
          }

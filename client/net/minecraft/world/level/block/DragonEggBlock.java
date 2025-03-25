@@ -18,7 +18,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DragonEggBlock extends FallingBlock {
    public static final MapCodec<DragonEggBlock> CODEC = simpleCodec(DragonEggBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+   private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 16.0);
 
    public MapCodec<DragonEggBlock> codec() {
       return CODEC;
@@ -75,5 +75,9 @@ public class DragonEggBlock extends FallingBlock {
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
+   }
+
+   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return -16777216;
    }
 }

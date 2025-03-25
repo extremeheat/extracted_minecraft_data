@@ -6,6 +6,6 @@ public interface ResolvableModel {
    void resolveDependencies(Resolver var1);
 
    public interface Resolver {
-      UnbakedModel resolve(ResourceLocation var1);
+      void markDependency(ResourceLocation var1);
    }
 }

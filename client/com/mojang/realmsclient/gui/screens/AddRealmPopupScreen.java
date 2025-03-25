@@ -1,5 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.net.URI;
 import java.util.List;
@@ -103,7 +104,8 @@ public class AddRealmPopupScreen extends RealmsScreen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
-      RenderSystem.clear(256);
+      RenderTarget var5 = this.minecraft.getMainRenderTarget();
+      RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var5.getDepthTexture(), 1.0);
       this.clearTooltipForNextRenderPass();
       this.renderTransparentBackground(var1);
       var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);

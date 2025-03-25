@@ -10,10 +10,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.advancements.critereon.DataComponentMatchers;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
-import net.minecraft.advancements.critereon.ItemEnchantmentsPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
@@ -21,6 +20,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.predicates.DataComponentPredicates;
+import net.minecraft.core.component.predicates.EnchantmentsPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -40,7 +41,7 @@ import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
-import net.minecraft.world.level.block.PinkPetalsBlock;
+import net.minecraft.world.level.block.SegmentableBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -82,8 +83,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    private static final float[] NORMAL_LEAVES_STICK_CHANCES = new float[]{0.02F, 0.022222223F, 0.025F, 0.033333335F, 0.1F};
 
    protected LootItemCondition.Builder hasSilkTouch() {
-      HolderLookup.RegistryLookup var1 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      return MatchTool.toolMatches(ItemPredicate.Builder.item().withSubPredicate(ItemSubPredicates.ENCHANTMENTS, ItemEnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(var1.getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1))))));
+      return MatchTool.toolMatches(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(this.registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH), MinMaxBounds.Ints.atLeast(1))))).build()));
    }
 
    protected LootItemCondition.Builder doesNotHaveSilkTouch() {
@@ -194,7 +194,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected LootTable.Builder createBannerDrop(Block var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME).include(DataComponents.ITEM_NAME).include(DataComponents.HIDE_ADDITIONAL_TOOLTIP).include(DataComponents.BANNER_PATTERNS).include(DataComponents.RARITY)))));
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME).include(DataComponents.ITEM_NAME).include(DataComponents.TOOLTIP_DISPLAY).include(DataComponents.BANNER_PATTERNS).include(DataComponents.RARITY)))));
    }
 
    protected LootTable.Builder createBeeNestDrop(Block var1) {
@@ -285,8 +285,12 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(List.of(2, 3, 4), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CandleBlock.CANDLES, var1x)))))));
    }
 
-   protected LootTable.Builder createPetalsDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PinkPetalsBlock.AMOUNT, var1x)))))));
+   public LootTable.Builder createSegmentedBlockDrops(Block var1) {
+      if (var1 instanceof SegmentableBlock var2) {
+         return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var2x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var2x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(var2.getSegmentAmountProperty(), var2x)))))));
+      } else {
+         return noDrop();
+      }
    }
 
    protected static LootTable.Builder createCandleCakeDrops(Block var0) {

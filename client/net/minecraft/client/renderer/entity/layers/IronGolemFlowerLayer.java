@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.level.block.Blocks;
+import org.joml.Quaternionfc;
 
 public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
    private final BlockRenderDispatcher blockRenderer;
@@ -28,7 +29,7 @@ public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, Iron
          var1.translate(0.5F, 0.5F, 0.5F);
          float var8 = 0.5F;
          var1.scale(0.5F, 0.5F, 0.5F);
-         var1.mulPose(Axis.XP.rotationDegrees(-90.0F));
+         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
          var1.translate(-0.5F, -0.5F, -0.5F);
          this.blockRenderer.renderSingleBlock(Blocks.POPPY.defaultBlockState(), var1, var2, var3, OverlayTexture.NO_OVERLAY);
          var1.popPose();

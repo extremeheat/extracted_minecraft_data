@@ -31,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class FarmBlock extends Block {
    public static final MapCodec<FarmBlock> CODEC = simpleCodec(FarmBlock::new);
    public static final IntegerProperty MOISTURE;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    public static final int MAX_MOISTURE = 7;
 
    public MapCodec<FarmBlock> codec() {
@@ -89,9 +89,9 @@ public class FarmBlock extends Block {
 
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      if (var1 instanceof ServerLevel var6) {
-         if (var1.random.nextFloat() < var5 - 0.5F && var4 instanceof LivingEntity && (var4 instanceof Player || var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
+      if (var1 instanceof ServerLevel var7) {
+         if ((double)var1.random.nextFloat() < var5 - 0.5 && var4 instanceof LivingEntity && (var4 instanceof Player || var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
             turnToDirt(var4, var2, var1, var3);
          }
       }
@@ -129,6 +129,6 @@ public class FarmBlock extends Block {
 
    static {
       MOISTURE = BlockStateProperties.MOISTURE;
-      SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 15.0, 16.0);
+      SHAPE = Block.column(16.0, 0.0, 15.0);
    }
 }

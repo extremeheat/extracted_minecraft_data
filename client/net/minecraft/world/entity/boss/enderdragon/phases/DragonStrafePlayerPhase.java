@@ -6,9 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -71,11 +71,11 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
                   double var23 = this.attackTarget.getZ() - var17;
                   Vec3 var25 = new Vec3(var19, var21, var23);
                   if (!this.dragon.isSilent()) {
-                     var1.levelEvent((Player)null, 1017, this.dragon.blockPosition(), 0);
+                     var1.levelEvent((Entity)null, 1017, this.dragon.blockPosition(), 0);
                   }
 
                   DragonFireball var26 = new DragonFireball(var1, this.dragon, var25.normalize());
-                  var26.moveTo(var13, var15, var17, 0.0F, 0.0F);
+                  var26.snapTo(var13, var15, var17, 0.0F, 0.0F);
                   var1.addFreshEntity(var26);
                   this.fireballCharge = 0;
                   if (this.currentPath != null) {

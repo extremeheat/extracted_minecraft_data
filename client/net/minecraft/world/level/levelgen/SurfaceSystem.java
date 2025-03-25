@@ -78,7 +78,7 @@ public class SurfaceSystem {
          public void setBlock(int var1, BlockState var2) {
             LevelHeightAccessor var3 = var6.getHeightAccessorForGeneration();
             if (var3.isInsideBuildHeight(var1)) {
-               var6.setBlockState(var9.setY(var1), var2, false);
+               var6.setBlockState(var9.setY(var1), var2);
                if (!var2.getFluidState().isEmpty()) {
                   var6.markPosForPostprocessing(var9);
                }

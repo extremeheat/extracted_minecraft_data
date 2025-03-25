@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -36,12 +37,14 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Projectile extends Entity implements TraceableEntity {
+   private static final boolean DEFAULT_LEFT_OWNER = false;
+   private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
    @Nullable
    private UUID ownerUUID;
    @Nullable
    private Entity cachedOwner;
-   private boolean leftOwner;
-   private boolean hasBeenShot;
+   private boolean leftOwner = false;
+   private boolean hasBeenShot = false;
    @Nullable
    private Entity lastDeflectedBy;
 
@@ -84,10 +87,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
-      if (this.ownerUUID != null) {
-         var1.putUUID("Owner", this.ownerUUID);
-      }
-
+      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
       if (this.leftOwner) {
          var1.putBoolean("LeftOwner", true);
       }
@@ -100,18 +100,15 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.hasUUID("Owner")) {
-         this.setOwnerThroughUUID(var1.getUUID("Owner"));
-      }
-
-      this.leftOwner = var1.getBoolean("LeftOwner");
-      this.hasBeenShot = var1.getBoolean("HasBeenShot");
+      this.setOwnerThroughUUID((UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null));
+      this.leftOwner = var1.getBooleanOr("LeftOwner", false);
+      this.hasBeenShot = var1.getBooleanOr("HasBeenShot", false);
    }
 
-   protected void setOwnerThroughUUID(UUID var1) {
-      if (this.ownerUUID != var1) {
+   protected void setOwnerThroughUUID(@Nullable UUID var1) {
+      if (!Objects.equals(this.ownerUUID, var1)) {
          this.ownerUUID = var1;
-         this.cachedOwner = this.findOwner(var1);
+         this.cachedOwner = var1 != null ? this.findOwner(var1) : null;
       }
 
    }
@@ -170,6 +167,18 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
       Vec3 var10 = var1.getKnownMovement();
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
+   }
+
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      double var3 = var1 ? -0.03 : 0.1;
+      this.setDeltaMovement(this.getDeltaMovement().add(0.0, var3, 0.0));
+      sendBubbleColumnParticles(this.level(), var2);
+   }
+
+   public void onInsideBubbleColumn(boolean var1) {
+      double var2 = var1 ? -0.03 : 0.06;
+      this.setDeltaMovement(this.getDeltaMovement().add(0.0, var2, 0.0));
+      this.resetFallDistance();
    }
 
    public static <T extends Projectile> T spawnProjectileFromRotation(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, float var4, float var5, float var6) {
@@ -320,11 +329,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      Vec3 var2 = new Vec3(var1.getXa(), var1.getYa(), var1.getZa());
-      this.setDeltaMovement(var2);
-      Entity var3 = this.level().getEntity(var1.getData());
-      if (var3 != null) {
-         this.setOwner(var3);
+      Entity var2 = this.level().getEntity(var1.getData());
+      if (var2 != null) {
+         this.setOwner(var2);
       }
 
    }

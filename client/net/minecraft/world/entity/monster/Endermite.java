@@ -27,7 +27,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class Endermite extends Monster {
    private static final int MAX_LIFE = 2400;
-   private int life;
+   private static final int DEFAULT_LIFE = 0;
+   private int life = 0;
 
    public Endermite(EntityType<? extends Endermite> var1, Level var2) {
       super(var1, var2);
@@ -71,7 +72,7 @@ public class Endermite extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.life = var1.getInt("Lifetime");
+      this.life = var1.getIntOr("Lifetime", 0);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

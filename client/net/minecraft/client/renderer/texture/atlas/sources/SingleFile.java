@@ -5,18 +5,18 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
-import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.slf4j.Logger;
 
-public class SingleFile implements SpriteSource {
+public record SingleFile(ResourceLocation resourceId, Optional<ResourceLocation> spriteId) implements SpriteSource {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SingleFile> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter((var0x) -> var0x.resourceId), ResourceLocation.CODEC.optionalFieldOf("sprite").forGetter((var0x) -> var0x.spriteId)).apply(var0, SingleFile::new));
-   private final ResourceLocation resourceId;
-   private final Optional<ResourceLocation> spriteId;
+   public static final MapCodec<SingleFile> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter(SingleFile::resourceId), ResourceLocation.CODEC.optionalFieldOf("sprite").forGetter(SingleFile::spriteId)).apply(var0, SingleFile::new));
+
+   public SingleFile(ResourceLocation var1) {
+      this(var1, Optional.empty());
+   }
 
    public SingleFile(ResourceLocation var1, Optional<ResourceLocation> var2) {
       super();
@@ -35,7 +35,7 @@ public class SingleFile implements SpriteSource {
 
    }
 
-   public SpriteSourceType type() {
-      return SpriteSources.SINGLE_FILE;
+   public MapCodec<SingleFile> codec() {
+      return MAP_CODEC;
    }
 }

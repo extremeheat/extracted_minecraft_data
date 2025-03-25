@@ -185,18 +185,18 @@ public class OceanRuinPieces {
       }
 
       public static OceanRuinPiece create(StructureTemplateManager var0, CompoundTag var1) {
-         Rotation var2 = Rotation.valueOf(var1.getString("Rot"));
-         float var3 = var1.getFloat("Integrity");
-         OceanRuinStructure.Type var4 = OceanRuinStructure.Type.valueOf(var1.getString("BiomeType"));
-         boolean var5 = var1.getBoolean("IsLarge");
+         Rotation var2 = (Rotation)var1.read("Rot", Rotation.LEGACY_CODEC).orElseThrow();
+         float var3 = var1.getFloatOr("Integrity", 0.0F);
+         OceanRuinStructure.Type var4 = (OceanRuinStructure.Type)var1.read("BiomeType", OceanRuinStructure.Type.LEGACY_CODEC).orElseThrow();
+         boolean var5 = var1.getBooleanOr("IsLarge", false);
          return new OceanRuinPiece(var0, var1, var2, var3, var4, var5);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
-         var2.putString("Rot", this.placeSettings.getRotation().name());
+         var2.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
          var2.putFloat("Integrity", this.integrity);
-         var2.putString("BiomeType", this.biomeType.toString());
+         var2.store("BiomeType", OceanRuinStructure.Type.LEGACY_CODEC, this.biomeType);
          var2.putBoolean("IsLarge", this.isLarge);
       }
 
@@ -211,7 +211,7 @@ public class OceanRuinPieces {
             Drowned var7 = EntityType.DROWNED.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var7 != null) {
                var7.setPersistenceRequired();
-               var7.moveTo(var2, 0.0F, 0.0F);
+               var7.snapTo(var2, 0.0F, 0.0F);
                var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                var3.addFreshEntityWithPassengers(var7);
                if (var2.getY() > var3.getSeaLevel()) {

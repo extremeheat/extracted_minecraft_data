@@ -33,6 +33,17 @@ public record LastSeenMessages(List<MessageSignature> entries) {
       return new Packed(this.entries.stream().map((var1x) -> var1x.pack(var1)).toList());
    }
 
+   public byte computeChecksum() {
+      int var1 = 1;
+
+      for(MessageSignature var3 : this.entries) {
+         var1 = 31 * var1 + var3.checksum();
+      }
+
+      byte var4 = (byte)var1;
+      return var4 == 0 ? 1 : var4;
+   }
+
    static {
       CODEC = MessageSignature.CODEC.listOf().xmap(LastSeenMessages::new, LastSeenMessages::entries);
       EMPTY = new LastSeenMessages(List.of());
@@ -70,20 +81,28 @@ public record LastSeenMessages(List<MessageSignature> entries) {
       }
    }
 
-   public static record Update(int offset, BitSet acknowledged) {
+   public static record Update(int offset, BitSet acknowledged, byte checksum) {
+      public static final byte IGNORE_CHECKSUM = 0;
+
       public Update(FriendlyByteBuf var1) {
-         this(var1.readVarInt(), var1.readFixedBitSet(20));
+         this(var1.readVarInt(), var1.readFixedBitSet(20), var1.readByte());
       }
 
-      public Update(int var1, BitSet var2) {
+      public Update(int var1, BitSet var2, byte var3) {
          super();
          this.offset = var1;
          this.acknowledged = var2;
+         this.checksum = var3;
       }
 
       public void write(FriendlyByteBuf var1) {
          var1.writeVarInt(this.offset);
          var1.writeFixedBitSet(this.acknowledged, 20);
+         var1.writeByte(this.checksum);
+      }
+
+      public boolean verifyChecksum(LastSeenMessages var1) {
+         return this.checksum == 0 || this.checksum == var1.computeChecksum();
       }
    }
 }

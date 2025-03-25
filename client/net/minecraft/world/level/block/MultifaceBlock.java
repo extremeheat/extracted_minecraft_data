@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,7 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -25,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -35,17 +33,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<MultifaceBlock> CODEC = simpleCodec(MultifaceBlock::new);
    public static final BooleanProperty WATERLOGGED;
-   private static final float AABB_OFFSET = 1.0F;
-   private static final VoxelShape UP_AABB;
-   private static final VoxelShape DOWN_AABB;
-   private static final VoxelShape WEST_AABB;
-   private static final VoxelShape EAST_AABB;
-   private static final VoxelShape NORTH_AABB;
-   private static final VoxelShape SOUTH_AABB;
    private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
-   private static final Map<Direction, VoxelShape> SHAPE_BY_DIRECTION;
    protected static final Direction[] DIRECTIONS;
-   private final ImmutableMap<BlockState, VoxelShape> shapesCache;
+   private final Function<BlockState, VoxelShape> shapes;
    private final boolean canRotate;
    private final boolean canMirrorX;
    private final boolean canMirrorZ;
@@ -57,10 +47,25 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
    public MultifaceBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState(getDefaultMultifaceState(this.stateDefinition));
-      this.shapesCache = this.getShapeForEachState(MultifaceBlock::calculateMultifaceShape);
+      this.shapes = this.makeShapes();
       this.canRotate = Direction.Plane.HORIZONTAL.stream().allMatch(this::isFaceSupported);
       this.canMirrorX = Direction.Plane.HORIZONTAL.stream().filter(Direction.Axis.X).filter(this::isFaceSupported).count() % 2L == 0L;
       this.canMirrorZ = Direction.Plane.HORIZONTAL.stream().filter(Direction.Axis.Z).filter(this::isFaceSupported).count() % 2L == 0L;
+   }
+
+   private Function<BlockState, VoxelShape> makeShapes() {
+      Map var1 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
+      return this.getShapeForEachState((var1x) -> {
+         VoxelShape var2 = Shapes.empty();
+
+         for(Direction var6 : DIRECTIONS) {
+            if (hasFace(var1x, var6)) {
+               var2 = Shapes.or(var2, (VoxelShape)var1.get(var6));
+            }
+         }
+
+         return var2.isEmpty() ? Shapes.block() : var2;
+      }, new Property[]{WATERLOGGED});
    }
 
    public static Set<Direction> availableFaces(BlockState var0) {
@@ -121,7 +126,7 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
       }
 
       if (!hasAnyFace(var1)) {
-         return this.getFluidState(var1).createLegacyBlock();
+         return Blocks.AIR.defaultBlockState();
       } else {
          return hasFace(var1, var5) && !canAttachTo(var2, var5, var6, var7) ? removeFace(var1, getFaceProperty(var5)) : var1;
       }
@@ -132,7 +137,7 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapesCache.get(var1);
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -256,18 +261,6 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
       return var1;
    }
 
-   private static VoxelShape calculateMultifaceShape(BlockState var0) {
-      VoxelShape var1 = Shapes.empty();
-
-      for(Direction var5 : DIRECTIONS) {
-         if (hasFace(var0, var5)) {
-            var1 = Shapes.or(var1, (VoxelShape)SHAPE_BY_DIRECTION.get(var5));
-         }
-      }
-
-      return var1.isEmpty() ? Shapes.block() : var1;
-   }
-
    protected static boolean hasAnyFace(BlockState var0) {
       for(Direction var4 : DIRECTIONS) {
          if (hasFace(var0, var4)) {
@@ -290,21 +283,7 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
-      DOWN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
-      WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
-      EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
-      SOUTH_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
       PROPERTY_BY_DIRECTION = PipeBlock.PROPERTY_BY_DIRECTION;
-      SHAPE_BY_DIRECTION = (Map)Util.make(Maps.newEnumMap(Direction.class), (var0) -> {
-         var0.put(Direction.NORTH, NORTH_AABB);
-         var0.put(Direction.EAST, EAST_AABB);
-         var0.put(Direction.SOUTH, SOUTH_AABB);
-         var0.put(Direction.WEST, WEST_AABB);
-         var0.put(Direction.UP, UP_AABB);
-         var0.put(Direction.DOWN, DOWN_AABB);
-      });
       DIRECTIONS = Direction.values();
    }
 }

@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class TraderLlama extends Llama {
+   private static final int DEFAULT_DESPAWN_DELAY = 47999;
    private int despawnDelay = 47999;
 
    public TraderLlama(EntityType<? extends TraderLlama> var1, Level var2) {
@@ -45,10 +46,7 @@ public class TraderLlama extends Llama {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("DespawnDelay", 99)) {
-         this.despawnDelay = var1.getInt("DespawnDelay");
-      }
-
+      this.despawnDelay = var1.getIntOr("DespawnDelay", 47999);
    }
 
    protected void registerGoals() {

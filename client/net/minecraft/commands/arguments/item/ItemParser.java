@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.Locale;
 import java.util.Objects;
@@ -26,6 +25,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -46,12 +46,14 @@ public class ItemParser {
    public static final char SYNTAX_REMOVED_COMPONENT = '!';
    static final Function<SuggestionsBuilder, CompletableFuture<Suggestions>> SUGGEST_NOTHING = SuggestionsBuilder::buildFuture;
    final HolderLookup.RegistryLookup<Item> items;
-   final DynamicOps<Tag> registryOps;
+   final RegistryOps<Tag> registryOps;
+   final TagParser<Tag> tagParser;
 
    public ItemParser(HolderLookup.Provider var1) {
       super();
       this.items = var1.lookupOrThrow(Registries.ITEM);
       this.registryOps = var1.<Tag>createSerializationContext(NbtOps.INSTANCE);
+      this.tagParser = TagParser.<Tag>create(this.registryOps);
    }
 
    public ItemResult parse(StringReader var1) throws CommandSyntaxException {
@@ -166,7 +168,7 @@ public class ItemParser {
                this.reader.expect('=');
                this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
                this.reader.skipWhitespace();
-               this.readComponent(var2);
+               this.readComponent(ItemParser.this.tagParser, ItemParser.this.registryOps, var2);
                this.reader.skipWhitespace();
             }
 
@@ -203,13 +205,13 @@ public class ItemParser {
          }
       }
 
-      private <T> void readComponent(DataComponentType<T> var1) throws CommandSyntaxException {
-         int var2 = this.reader.getCursor();
-         Tag var3 = (new TagParser(this.reader)).readValue();
-         DataResult var4 = var1.codecOrThrow().parse(ItemParser.this.registryOps, var3);
-         this.visitor.visitComponent(var1, var4.getOrThrow((var3x) -> {
-            this.reader.setCursor(var2);
-            return ItemParser.ERROR_MALFORMED_COMPONENT.createWithContext(this.reader, var1.toString(), var3x);
+      private <T, O> void readComponent(TagParser<O> var1, RegistryOps<O> var2, DataComponentType<T> var3) throws CommandSyntaxException {
+         int var4 = this.reader.getCursor();
+         Object var5 = var1.parseAsArgument(this.reader);
+         DataResult var6 = var3.codecOrThrow().parse(var2, var5);
+         this.visitor.visitComponent(var3, var6.getOrThrow((var3x) -> {
+            this.reader.setCursor(var4);
+            return ItemParser.ERROR_MALFORMED_COMPONENT.createWithContext(this.reader, var3.toString(), var3x);
          }));
       }
 

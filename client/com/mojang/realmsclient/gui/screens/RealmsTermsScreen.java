@@ -50,7 +50,7 @@ public class RealmsTermsScreen extends RealmsScreen {
    }
 
    private void agreedToTos() {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
 
       try {
          var1.agreeToTos();

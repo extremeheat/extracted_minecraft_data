@@ -19,10 +19,9 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class MushroomBlock extends BushBlock implements BonemealableBlock {
+public class MushroomBlock extends VegetationBlock implements BonemealableBlock {
    public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> var0x.feature), propertiesCodec()).apply(var0, MushroomBlock::new));
-   protected static final float AABB_OFFSET = 3.0F;
-   protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);
+   private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 
    public MapCodec<MushroomBlock> codec() {

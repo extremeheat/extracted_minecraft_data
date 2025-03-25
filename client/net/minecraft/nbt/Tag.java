@@ -2,8 +2,9 @@ package net.minecraft.nbt;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Optional;
 
-public interface Tag {
+public sealed interface Tag permits CompoundTag, CollectionTag, PrimitiveTag, EndTag {
    int OBJECT_HEADER = 8;
    int ARRAY_HEADER = 12;
    int OBJECT_REFERENCE = 4;
@@ -21,7 +22,6 @@ public interface Tag {
    byte TAG_COMPOUND = 10;
    byte TAG_INT_ARRAY = 11;
    byte TAG_LONG_ARRAY = 12;
-   byte TAG_ANY_NUMERIC = 99;
    int MAX_DEPTH = 512;
 
    void write(DataOutput var1) throws IOException;
@@ -36,10 +36,6 @@ public interface Tag {
 
    int sizeInBytes();
 
-   default String getAsString() {
-      return (new StringTagVisitor()).visit(this);
-   }
-
    void accept(TagVisitor var1);
 
    StreamTagVisitor.ValueResult accept(StreamTagVisitor var1);
@@ -50,5 +46,61 @@ public interface Tag {
          this.accept(var1);
       }
 
+   }
+
+   default Optional<String> asString() {
+      return Optional.empty();
+   }
+
+   default Optional<Number> asNumber() {
+      return Optional.empty();
+   }
+
+   default Optional<Byte> asByte() {
+      return this.asNumber().map(Number::byteValue);
+   }
+
+   default Optional<Short> asShort() {
+      return this.asNumber().map(Number::shortValue);
+   }
+
+   default Optional<Integer> asInt() {
+      return this.asNumber().map(Number::intValue);
+   }
+
+   default Optional<Long> asLong() {
+      return this.asNumber().map(Number::longValue);
+   }
+
+   default Optional<Float> asFloat() {
+      return this.asNumber().map(Number::floatValue);
+   }
+
+   default Optional<Double> asDouble() {
+      return this.asNumber().map(Number::doubleValue);
+   }
+
+   default Optional<Boolean> asBoolean() {
+      return this.asByte().map((var0) -> var0 != 0);
+   }
+
+   default Optional<byte[]> asByteArray() {
+      return Optional.empty();
+   }
+
+   default Optional<int[]> asIntArray() {
+      return Optional.empty();
+   }
+
+   default Optional<long[]> asLongArray() {
+      return Optional.empty();
+   }
+
+   default Optional<CompoundTag> asCompound() {
+      return Optional.empty();
+   }
+
+   default Optional<ListTag> asList() {
+      return Optional.empty();
    }
 }

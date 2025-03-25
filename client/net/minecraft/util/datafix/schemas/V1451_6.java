@@ -69,7 +69,7 @@ public class V1451_6 extends NamespacedSchema {
       Supplier var4 = () -> DSL.compoundList(References.ITEM_NAME.in(var1), DSL.constType(DSL.intType()));
       var1.registerType(false, References.STATS, () -> DSL.optionalFields("stats", DSL.optionalFields(new Pair[]{Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:crafted", (TypeTemplate)var4.get()), Pair.of("minecraft:used", (TypeTemplate)var4.get()), Pair.of("minecraft:broken", (TypeTemplate)var4.get()), Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()), Pair.of("minecraft:dropped", (TypeTemplate)var4.get()), Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))})));
       Map var5 = createCriterionTypes(var1);
-      var1.registerType(false, References.OBJECTIVE, () -> DSL.hook(DSL.optionalFields("CriteriaType", DSL.taggedChoiceLazy("type", DSL.string(), var5)), UNPACK_OBJECTIVE_ID, REPACK_OBJECTIVE_ID));
+      var1.registerType(false, References.OBJECTIVE, () -> DSL.hook(DSL.optionalFields("CriteriaType", DSL.taggedChoiceLazy("type", DSL.string(), var5), "DisplayName", References.TEXT_COMPONENT.in(var1)), UNPACK_OBJECTIVE_ID, REPACK_OBJECTIVE_ID));
    }
 
    protected static Map<String, Supplier<TypeTemplate>> createCriterionTypes(Schema var0) {

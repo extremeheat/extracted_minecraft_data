@@ -341,7 +341,7 @@ public class Sniffer extends Animal {
    }
 
    protected void playEatingSound() {
-      this.level().playSound((Player)null, (Entity)this, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
+      this.level().playSound((Entity)null, (Entity)this, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
    }
 
    private void playSearchingSound() {

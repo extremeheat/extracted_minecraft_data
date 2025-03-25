@@ -23,10 +23,10 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
+import org.joml.Vector3fc;
 
 public enum Direction implements StringRepresentable {
    DOWN(0, 1, -1, "down", Direction.AxisDirection.NEGATIVE, Direction.Axis.Y, new Vec3i(0, -1, 0)),
@@ -40,6 +40,12 @@ public enum Direction implements StringRepresentable {
    public static final Codec<Direction> VERTICAL_CODEC = CODEC.validate(Direction::verifyVertical);
    public static final IntFunction<Direction> BY_ID = ByIdMap.<Direction>continuous(Direction::get3DDataValue, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final StreamCodec<ByteBuf, Direction> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Direction::get3DDataValue);
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<Direction> LEGACY_ID_CODEC = Codec.BYTE.xmap(Direction::from3DDataValue, (var0) -> (byte)var0.get3DDataValue());
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<Direction> LEGACY_ID_CODEC_2D = Codec.BYTE.xmap(Direction::from2DDataValue, (var0) -> (byte)var0.get2DDataValue());
    private final int data3d;
    private final int oppositeIndex;
    private final int data2d;
@@ -48,6 +54,7 @@ public enum Direction implements StringRepresentable {
    private final AxisDirection axisDirection;
    private final Vec3i normal;
    private final Vec3 normalVec3;
+   private final Vector3fc normalVec3f;
    private static final Direction[] VALUES = values();
    private static final Direction[] BY_3D_DATA = (Direction[])Arrays.stream(VALUES).sorted(Comparator.comparingInt((var0) -> var0.data3d)).toArray((var0) -> new Direction[var0]);
    private static final Direction[] BY_2D_DATA = (Direction[])Arrays.stream(VALUES).filter((var0) -> var0.getAxis().isHorizontal()).sorted(Comparator.comparingInt((var0) -> var0.data2d)).toArray((var0) -> new Direction[var0]);
@@ -61,6 +68,7 @@ public enum Direction implements StringRepresentable {
       this.axisDirection = var7;
       this.normal = var9;
       this.normalVec3 = Vec3.atLowerCornerOf(var9);
+      this.normalVec3f = new Vector3f((float)var9.getX(), (float)var9.getY(), (float)var9.getZ());
    }
 
    public static Direction[] orderedByNearest(Entity var0) {
@@ -98,10 +106,9 @@ public enum Direction implements StringRepresentable {
       return new Direction[]{var0, var1, var2, var2.getOpposite(), var1.getOpposite(), var0.getOpposite()};
    }
 
-   public static Direction rotate(Matrix4f var0, Direction var1) {
-      Vec3i var2 = var1.getUnitVec3i();
-      Vector4f var3 = var0.transform(new Vector4f((float)var2.getX(), (float)var2.getY(), (float)var2.getZ(), 0.0F));
-      return getApproximateNearest(var3.x(), var3.y(), var3.z());
+   public static Direction rotate(Matrix4fc var0, Direction var1) {
+      Vector3f var2 = var0.transformDirection(var1.normalVec3f, new Vector3f());
+      return getApproximateNearest(var2.x(), var2.y(), var2.z());
    }
 
    public static Collection<Direction> allShuffled(RandomSource var0) {
@@ -303,7 +310,7 @@ public enum Direction implements StringRepresentable {
    }
 
    public Vector3f step() {
-      return new Vector3f((float)this.getStepX(), (float)this.getStepY(), (float)this.getStepZ());
+      return new Vector3f(this.normalVec3f);
    }
 
    public String getName() {
@@ -428,6 +435,10 @@ public enum Direction implements StringRepresentable {
       return this.normalVec3;
    }
 
+   public Vector3fc getUnitVec3f() {
+      return this.normalVec3f;
+   }
+
    public boolean isFacingAngle(float var1) {
       float var2 = var1 * 0.017453292F;
       float var3 = -Mth.sin(var2);
@@ -443,6 +454,10 @@ public enum Direction implements StringRepresentable {
    public static enum Axis implements StringRepresentable, Predicate<Direction> {
       X("x") {
          public int choose(int var1, int var2, int var3) {
+            return var1;
+         }
+
+         public boolean choose(boolean var1, boolean var2, boolean var3) {
             return var1;
          }
 
@@ -472,6 +487,10 @@ public enum Direction implements StringRepresentable {
             return var3;
          }
 
+         public boolean choose(boolean var1, boolean var2, boolean var3) {
+            return var2;
+         }
+
          public Direction getPositive() {
             return Direction.UP;
          }
@@ -492,6 +511,10 @@ public enum Direction implements StringRepresentable {
 
          public double choose(double var1, double var3, double var5) {
             return var5;
+         }
+
+         public boolean choose(boolean var1, boolean var2, boolean var3) {
+            return var3;
          }
 
          public Direction getPositive() {
@@ -577,6 +600,8 @@ public enum Direction implements StringRepresentable {
       public abstract int choose(int var1, int var2, int var3);
 
       public abstract double choose(double var1, double var3, double var5);
+
+      public abstract boolean choose(boolean var1, boolean var2, boolean var3);
 
       // $FF: synthetic method
       public boolean test(@Nullable final Object var1) {

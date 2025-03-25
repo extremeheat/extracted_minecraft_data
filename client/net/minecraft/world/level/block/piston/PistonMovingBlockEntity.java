@@ -4,12 +4,11 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -34,11 +33,15 @@ public class PistonMovingBlockEntity extends BlockEntity {
    private static final int TICKS_TO_EXTEND = 2;
    private static final double PUSH_OFFSET = 0.01;
    public static final double TICK_MOVEMENT = 0.51;
+   private static final BlockState DEFAULT_BLOCK_STATE;
+   private static final float DEFAULT_PROGRESS = 0.0F;
+   private static final boolean DEFAULT_EXTENDING = false;
+   private static final boolean DEFAULT_SOURCE = false;
    private BlockState movedState;
    private Direction direction;
    private boolean extending;
    private boolean isSourcePiston;
-   private static final ThreadLocal<Direction> NOCLIP = ThreadLocal.withInitial(() -> null);
+   private static final ThreadLocal<Direction> NOCLIP;
    private float progress;
    private float progressO;
    private long lastTicked;
@@ -46,7 +49,11 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    public PistonMovingBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.PISTON, var1, var2);
-      this.movedState = Blocks.AIR.defaultBlockState();
+      this.movedState = DEFAULT_BLOCK_STATE;
+      this.extending = false;
+      this.isSourcePiston = false;
+      this.progress = 0.0F;
+      this.progressO = 0.0F;
    }
 
    public PistonMovingBlockEntity(BlockPos var1, BlockState var2, BlockState var3, Direction var4, boolean var5, boolean var6) {
@@ -170,8 +177,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    private static void moveEntityByPiston(Direction var0, Entity var1, double var2, Direction var4) {
       NOCLIP.set(var0);
+      Vec3 var5 = var1.position();
       var1.move(MoverType.PISTON, new Vec3(var2 * (double)var4.getStepX(), var2 * (double)var4.getStepY(), var2 * (double)var4.getStepZ()));
-      var1.applyEffectsFromBlocks();
+      var1.applyEffectsFromBlocks(var5, var1.position());
+      var1.removeLatestMovementRecordingBatch();
       NOCLIP.set((Object)null);
    }
 
@@ -266,6 +275,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+      this.finalTick();
+   }
+
    public Direction getPushDirection() {
       return this.extending ? this.direction : this.direction.getOpposite();
    }
@@ -282,7 +295,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
             if (var0.getBlockState(var1).is(Blocks.MOVING_PISTON)) {
                BlockState var5 = Block.updateFromNeighbourShapes(var3.movedState, var0, var1);
                if (var5.isAir()) {
-                  var0.setBlock(var1, var3.movedState, 84);
+                  var0.setBlock(var1, var3.movedState, 340);
                   Block.updateOrDestroy(var3.movedState, var5, var0, var1, 3);
                } else {
                   if (var5.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var5.getValue(BlockStateProperties.WATERLOGGED)) {
@@ -309,19 +322,20 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK;
-      this.movedState = NbtUtils.readBlockState((HolderGetter)var3, var1.getCompound("blockState"));
-      this.direction = Direction.from3DDataValue(var1.getInt("facing"));
-      this.progress = var1.getFloat("progress");
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      this.movedState = (BlockState)var1.read("blockState", BlockState.CODEC, var3).orElse(DEFAULT_BLOCK_STATE);
+      this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN);
+      this.progress = var1.getFloatOr("progress", 0.0F);
       this.progressO = this.progress;
-      this.extending = var1.getBoolean("extending");
-      this.isSourcePiston = var1.getBoolean("source");
+      this.extending = var1.getBooleanOr("extending", false);
+      this.isSourcePiston = var1.getBooleanOr("source", false);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      var1.put("blockState", NbtUtils.writeBlockState(this.movedState));
-      var1.putInt("facing", this.direction.get3DDataValue());
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      var1.store("blockState", BlockState.CODEC, var3, this.movedState);
+      var1.store("facing", Direction.LEGACY_ID_CODEC, this.direction);
       var1.putFloat("progress", this.progressO);
       var1.putBoolean("extending", this.extending);
       var1.putBoolean("source", this.isSourcePiston);
@@ -364,5 +378,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
          this.movedState = Blocks.AIR.defaultBlockState();
       }
 
+   }
+
+   static {
+      DEFAULT_BLOCK_STATE = Blocks.AIR.defaultBlockState();
+      NOCLIP = ThreadLocal.withInitial(() -> null);
    }
 }

@@ -43,10 +43,12 @@ import net.minecraft.world.phys.Vec3;
 public abstract class Raider extends PatrollingMonster {
    protected static final EntityDataAccessor<Boolean> IS_CELEBRATING;
    static final Predicate<ItemEntity> ALLOWED_ITEMS;
+   private static final int DEFAULT_WAVE = 0;
+   private static final boolean DEFAULT_CAN_JOIN_RAID = false;
    @Nullable
    protected Raid raid;
-   private int wave;
-   private boolean canJoinRaid;
+   private int wave = 0;
+   private boolean canJoinRaid = false;
    private int ticksOutsideRaid;
 
    protected Raider(EntityType<? extends Raider> var1, Level var2) {
@@ -77,20 +79,23 @@ public abstract class Raider extends PatrollingMonster {
    }
 
    public void aiStep() {
-      if (this.level() instanceof ServerLevel && this.isAlive()) {
-         Raid var1 = this.getCurrentRaid();
-         if (this.canJoinRaid()) {
-            if (var1 == null) {
-               if (this.level().getGameTime() % 20L == 0L) {
-                  Raid var2 = ((ServerLevel)this.level()).getRaidAt(this.blockPosition());
-                  if (var2 != null && Raids.canJoinRaid(this, var2)) {
-                     var2.joinRaid(var2.getGroupsSpawned(), this, (BlockPos)null, true);
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         if (this.isAlive()) {
+            Raid var4 = this.getCurrentRaid();
+            if (this.canJoinRaid()) {
+               if (var4 == null) {
+                  if (this.level().getGameTime() % 20L == 0L) {
+                     Raid var3 = var1.getRaidAt(this.blockPosition());
+                     if (var3 != null && Raids.canJoinRaid(this)) {
+                        var3.joinRaid(var1, var3.getGroupsSpawned(), this, (BlockPos)null, true);
+                     }
                   }
-               }
-            } else {
-               LivingEntity var3 = this.getTarget();
-               if (var3 != null && (var3.getType() == EntityType.PLAYER || var3.getType() == EntityType.IRON_GOLEM)) {
-                  this.noActionTime = 0;
+               } else {
+                  LivingEntity var5 = this.getTarget();
+                  if (var5 != null && (var5.getType() == EntityType.PLAYER || var5.getType() == EntityType.IRON_GOLEM)) {
+                     this.noActionTime = 0;
+                  }
                }
             }
          }
@@ -104,19 +109,20 @@ public abstract class Raider extends PatrollingMonster {
    }
 
    public void die(DamageSource var1) {
-      if (this.level() instanceof ServerLevel) {
-         Entity var2 = var1.getEntity();
-         Raid var3 = this.getCurrentRaid();
-         if (var3 != null) {
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         Entity var5 = var1.getEntity();
+         Raid var4 = this.getCurrentRaid();
+         if (var4 != null) {
             if (this.isPatrolLeader()) {
-               var3.removeLeader(this.getWave());
+               var4.removeLeader(this.getWave());
             }
 
-            if (var2 != null && var2.getType() == EntityType.PLAYER) {
-               var3.addHeroOfTheVillage(var2);
+            if (var5 != null && var5.getType() == EntityType.PLAYER) {
+               var4.addHeroOfTheVillage(var5);
             }
 
-            var3.removeFromRaid(this, false);
+            var4.removeFromRaid(var2, this, false);
          }
       }
 
@@ -177,26 +183,31 @@ public abstract class Raider extends PatrollingMonster {
       var1.putInt("Wave", this.wave);
       var1.putBoolean("CanJoinRaid", this.canJoinRaid);
       if (this.raid != null) {
-         var1.putInt("RaidId", this.raid.getId());
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            var2.getRaids().getId(this.raid).ifPresent((var1x) -> var1.putInt("RaidId", var1x));
+         }
       }
 
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.wave = var1.getInt("Wave");
-      this.canJoinRaid = var1.getBoolean("CanJoinRaid");
-      if (var1.contains("RaidId", 3)) {
-         if (this.level() instanceof ServerLevel) {
-            this.raid = ((ServerLevel)this.level()).getRaids().get(var1.getInt("RaidId"));
-         }
-
-         if (this.raid != null) {
-            this.raid.addWaveMob(this.wave, this, false);
-            if (this.isPatrolLeader()) {
-               this.raid.setLeader(this.wave, this);
+      this.wave = var1.getIntOr("Wave", 0);
+      this.canJoinRaid = var1.getBooleanOr("CanJoinRaid", false);
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         var1.getInt("RaidId").ifPresent((var2x) -> {
+            this.raid = var2.getRaids().get(var2x);
+            if (this.raid != null) {
+               this.raid.addWaveMob(var2, this.wave, this, false);
+               if (this.isPatrolLeader()) {
+                  this.raid.setLeader(this.wave, this);
+               }
             }
-         }
+
+         });
       }
 
    }
@@ -207,7 +218,7 @@ public abstract class Raider extends PatrollingMonster {
       if (this.hasActiveRaid() && !var4 && ItemStack.matches(var3, Raid.getOminousBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))) {
          EquipmentSlot var5 = EquipmentSlot.HEAD;
          ItemStack var6 = this.getItemBySlot(var5);
-         double var7 = (double)this.getEquipmentDropChance(var5);
+         double var7 = (double)this.getDropChances().byEquipment(var5);
          if (!var6.isEmpty() && (double)Math.max(this.random.nextFloat() - 0.1F, 0.0F) < var7) {
             this.spawnAtLocation(var1, var6);
          }

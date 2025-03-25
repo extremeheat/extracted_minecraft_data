@@ -21,7 +21,7 @@ public class SlimeBlock extends HalfTransparentBlock {
       super(var1);
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       if (!var4.isSuppressingBounce()) {
          var4.causeFallDamage(var5, 0.0F, var1.damageSources().fall());
       }

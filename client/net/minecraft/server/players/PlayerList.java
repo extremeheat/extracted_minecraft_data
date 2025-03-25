@@ -182,7 +182,7 @@ public abstract class PlayerList {
       LevelData var12 = var10.getLevelData();
       var2.loadGameTypes((CompoundTag)var21.orElse((Object)null));
       ServerGamePacketListenerImpl var13 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
-      var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
+      var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), var13), var13);
       GameRules var14 = var10.getGameRules();
       boolean var15 = var14.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
       boolean var16 = var14.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);
@@ -190,7 +190,7 @@ public abstract class PlayerList {
       var13.send(new ClientboundLoginPacket(var2.getId(), var12.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.viewDistance, this.simulationDistance, var16, !var15, var17, var2.createCommonSpawnInfo(var10), this.server.enforceSecureProfile()));
       var13.send(new ClientboundChangeDifficultyPacket(var12.getDifficulty(), var12.isDifficultyLocked()));
       var13.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
-      var13.send(new ClientboundSetHeldSlotPacket(var2.getInventory().selected));
+      var13.send(new ClientboundSetHeldSlotPacket(var2.getInventory().getSelectedSlot()));
       RecipeManager var18 = this.server.getRecipeManager();
       var13.send(new ClientboundUpdateRecipesPacket(var18.getSynchronizedItemProperties(), var18.getSynchronizedStonecutterRecipes()));
       this.sendPlayerPermissionLevel(var2);
@@ -220,8 +220,10 @@ public abstract class PlayerList {
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendActivePlayerEffects(var2);
-      var2.loadAndSpawnEnderpearls(var21);
-      var2.loadAndSpawnParentVehicle(var21);
+      var21.ifPresent((var1x) -> {
+         var2.loadAndSpawnEnderPearls(var1x);
+         var2.loadAndSpawnParentVehicle(var1x);
+      });
       var2.initInventoryMenu();
    }
 
@@ -406,16 +408,16 @@ public abstract class PlayerList {
          var6.addTag(var8);
       }
 
-      Vec3 var14 = var4.position();
-      var6.moveTo(var14.x, var14.y, var14.z, var4.yRot(), var4.xRot());
+      Vec3 var15 = var4.position();
+      var6.snapTo(var15.x, var15.y, var15.z, var4.yRot(), var4.xRot());
       if (var4.missingRespawnBlock()) {
          var6.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
       }
 
-      int var15 = var2 ? 1 : 0;
+      int var16 = var2 ? 1 : 0;
       ServerLevel var9 = var6.serverLevel();
       LevelData var10 = var9.getLevelData();
-      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var15));
+      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var16));
       var6.connection.teleport(var6.getX(), var6.getY(), var6.getZ(), var6.getYRot(), var6.getXRot());
       var6.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var5.getSharedSpawnPos(), var5.getSharedSpawnAngle()));
       var6.connection.send(new ClientboundChangeDifficultyPacket(var10.getDifficulty(), var10.isDifficultyLocked()));
@@ -428,12 +430,15 @@ public abstract class PlayerList {
       this.playersByUUID.put(var6.getUUID(), var6);
       var6.initInventoryMenu();
       var6.setHealth(var6.getHealth());
-      BlockPos var11 = var6.getRespawnPosition();
-      ServerLevel var12 = this.server.getLevel(var6.getRespawnDimension());
-      if (!var2 && var11 != null && var12 != null) {
-         BlockState var13 = var12.getBlockState(var11);
-         if (var13.is(Blocks.RESPAWN_ANCHOR)) {
-            var6.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)var11.getX(), (double)var11.getY(), (double)var11.getZ(), 1.0F, 1.0F, var5.getRandom().nextLong()));
+      ServerPlayer.RespawnConfig var11 = var6.getRespawnConfig();
+      if (!var2 && var11 != null) {
+         ServerLevel var12 = this.server.getLevel(var11.dimension());
+         if (var12 != null) {
+            BlockPos var13 = var11.pos();
+            BlockState var14 = var12.getBlockState(var13);
+            if (var14.is(Blocks.RESPAWN_ANCHOR)) {
+               var6.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)var13.getX(), (double)var13.getY(), (double)var13.getZ(), 1.0F, 1.0F, var5.getRandom().nextLong()));
+            }
          }
       }
 
@@ -643,7 +648,7 @@ public abstract class PlayerList {
    public void sendAllPlayerInfo(ServerPlayer var1) {
       var1.inventoryMenu.sendAllDataToRemote();
       var1.resetSentInfo();
-      var1.connection.send(new ClientboundSetHeldSlotPacket(var1.getInventory().selected));
+      var1.connection.send(new ClientboundSetHeldSlotPacket(var1.getInventory().getSelectedSlot()));
    }
 
    public int getPlayerCount() {

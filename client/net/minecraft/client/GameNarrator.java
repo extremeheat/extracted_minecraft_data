@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
@@ -26,7 +27,7 @@ public class GameNarrator {
       if (this.getStatus().shouldNarrateChat()) {
          String var2 = var1.getString();
          this.logNarratedMessage(var2);
-         this.narrator.say(var2, false);
+         this.narrateMessage(var2, false);
       }
 
    }
@@ -35,7 +36,7 @@ public class GameNarrator {
       String var2 = var1.getString();
       if (this.getStatus().shouldNarrateSystem() && !var2.isEmpty()) {
          this.logNarratedMessage(var2);
-         this.narrator.say(var2, false);
+         this.narrateMessage(var2, false);
       }
 
    }
@@ -49,10 +50,14 @@ public class GameNarrator {
          this.logNarratedMessage(var1);
          if (this.narrator.active()) {
             this.narrator.clear();
-            this.narrator.say(var1, true);
+            this.narrateMessage(var1, true);
          }
       }
 
+   }
+
+   private void narrateMessage(String var1, boolean var2) {
+      this.narrator.say(var1, var2, this.minecraft.options.getSoundSourceVolume(SoundSource.VOICE) * this.minecraft.options.getSoundSourceVolume(SoundSource.MASTER));
    }
 
    private NarratorStatus getStatus() {
@@ -68,7 +73,7 @@ public class GameNarrator {
 
    public void updateNarratorStatus(NarratorStatus var1) {
       this.clear();
-      this.narrator.say(Component.translatable("options.narrator").append(" : ").append(var1.getName()).getString(), true);
+      this.narrateMessage(Component.translatable("options.narrator").append(" : ").append(var1.getName()).getString(), true);
       ToastManager var2 = Minecraft.getInstance().getToastManager();
       if (this.narrator.active()) {
          if (var1 == NarratorStatus.OFF) {

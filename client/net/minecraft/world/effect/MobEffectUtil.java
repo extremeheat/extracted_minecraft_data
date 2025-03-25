@@ -27,14 +27,14 @@ public final class MobEffectUtil {
    }
 
    public static boolean hasDigSpeed(LivingEntity var0) {
-      return var0.hasEffect(MobEffects.DIG_SPEED) || var0.hasEffect(MobEffects.CONDUIT_POWER);
+      return var0.hasEffect(MobEffects.HASTE) || var0.hasEffect(MobEffects.CONDUIT_POWER);
    }
 
    public static int getDigSpeedAmplification(LivingEntity var0) {
       int var1 = 0;
       int var2 = 0;
-      if (var0.hasEffect(MobEffects.DIG_SPEED)) {
-         var1 = var0.getEffect(MobEffects.DIG_SPEED).getAmplifier();
+      if (var0.hasEffect(MobEffects.HASTE)) {
+         var1 = var0.getEffect(MobEffects.HASTE).getAmplifier();
       }
 
       if (var0.hasEffect(MobEffects.CONDUIT_POWER)) {

@@ -42,10 +42,10 @@ public class PoiCompetitorScan {
 
    private static boolean competesForSameJobsite(GlobalPos var0, Holder<PoiType> var1, Villager var2) {
       Optional var3 = var2.getBrain().getMemory(MemoryModuleType.JOB_SITE);
-      return var3.isPresent() && var0.equals(var3.get()) && hasMatchingProfession(var1, var2.getVillagerData().getProfession());
+      return var3.isPresent() && var0.equals(var3.get()) && hasMatchingProfession(var1, var2.getVillagerData().profession());
    }
 
-   private static boolean hasMatchingProfession(Holder<PoiType> var0, VillagerProfession var1) {
-      return var1.heldJobSite().test(var0);
+   private static boolean hasMatchingProfession(Holder<PoiType> var0, Holder<VillagerProfession> var1) {
+      return ((VillagerProfession)var1.value()).heldJobSite().test(var0);
    }
 }

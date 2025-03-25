@@ -1,13 +1,19 @@
 package net.minecraft.world.entity.animal;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,17 +22,18 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Shearable;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,8 +49,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
-public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant> {
-   private static final EntityDataAccessor<String> DATA_TYPE;
+public class MushroomCow extends AbstractCow implements Shearable {
+   private static final EntityDataAccessor<Integer> DATA_TYPE;
    private static final int MUTATE_CHANCE = 1024;
    private static final String TAG_STEW_EFFECTS = "stew_effects";
    @Nullable
@@ -75,7 +82,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE, MushroomCow.Variant.RED.type);
+      var1.define(DATA_TYPE, MushroomCow.Variant.DEFAULT.id);
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
@@ -141,7 +148,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
    }
 
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Player)null, this, SoundEvents.MOOSHROOM_SHEAR, var2, 1.0F, 1.0F);
+      var1.playSound((Entity)null, this, SoundEvents.MOOSHROOM_SHEAR, var2, 1.0F, 1.0F);
       this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), (var3x) -> {
          var1.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
          this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_MOOSHROOM, var3, (var1x, var2) -> {
@@ -159,20 +166,14 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("Type", this.getVariant().getSerializedName());
-      if (this.stewEffects != null) {
-         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).ifSuccess((var1x) -> var1.put("stew_effects", var1x));
-      }
-
+      var1.store("Type", MushroomCow.Variant.CODEC, this.getVariant());
+      var1.storeNullable("stew_effects", SuspiciousStewEffects.CODEC, this.stewEffects);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(MushroomCow.Variant.byName(var1.getString("Type")));
-      if (var1.contains("stew_effects", 9)) {
-         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).ifSuccess((var1x) -> this.stewEffects = var1x);
-      }
-
+      this.setVariant((Variant)var1.read("Type", MushroomCow.Variant.CODEC).orElse(MushroomCow.Variant.DEFAULT));
+      this.stewEffects = (SuspiciousStewEffects)var1.read("stew_effects", SuspiciousStewEffects.CODEC).orElse((Object)null);
    }
 
    private Optional<SuspiciousStewEffects> getEffectsFromItemStack(ItemStack var1) {
@@ -180,12 +181,31 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
       return var2 != null ? Optional.of(var2.getSuspiciousEffects()) : Optional.empty();
    }
 
-   public void setVariant(Variant var1) {
-      this.entityData.set(DATA_TYPE, var1.type);
+   private void setVariant(Variant var1) {
+      this.entityData.set(DATA_TYPE, var1.id);
    }
 
    public Variant getVariant() {
-      return MushroomCow.Variant.byName((String)this.entityData.get(DATA_TYPE));
+      return MushroomCow.Variant.byId((Integer)this.entityData.get(DATA_TYPE));
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.MOOSHROOM_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.MOOSHROOM_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.MOOSHROOM_VARIANT) {
+         this.setVariant((Variant)castComponentValue(DataComponents.MOOSHROOM_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    @Nullable
@@ -213,36 +233,30 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
 
    // $FF: synthetic method
    @Nullable
-   public Cow getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
-   }
-
-   // $FF: synthetic method
-   @Nullable
    public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
    static {
-      DATA_TYPE = SynchedEntityData.<String>defineId(MushroomCow.class, EntityDataSerializers.STRING);
+      DATA_TYPE = SynchedEntityData.<Integer>defineId(MushroomCow.class, EntityDataSerializers.INT);
    }
 
    public static enum Variant implements StringRepresentable {
-      RED("red", Blocks.RED_MUSHROOM.defaultBlockState()),
-      BROWN("brown", Blocks.BROWN_MUSHROOM.defaultBlockState());
+      RED("red", 0, Blocks.RED_MUSHROOM.defaultBlockState()),
+      BROWN("brown", 1, Blocks.BROWN_MUSHROOM.defaultBlockState());
 
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
-      final String type;
+      public static final Variant DEFAULT = RED;
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
+      private final String type;
+      final int id;
       private final BlockState blockState;
 
-      private Variant(final String var3, final BlockState var4) {
+      private Variant(final String var3, final int var4, final BlockState var5) {
          this.type = var3;
-         this.blockState = var4;
+         this.id = var4;
+         this.blockState = var5;
       }
 
       public BlockState getBlockState() {
@@ -253,8 +267,12 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
          return this.type;
       }
 
-      static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, RED);
+      private int id() {
+         return this.id;
+      }
+
+      static Variant byId(int var0) {
+         return (Variant)BY_ID.apply(var0);
       }
 
       // $FF: synthetic method

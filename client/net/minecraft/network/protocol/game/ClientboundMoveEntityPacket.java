@@ -60,11 +60,11 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
       return this.za;
    }
 
-   public float getyRot() {
+   public float getYRot() {
       return Mth.unpackDegrees(this.yRot);
    }
 
-   public float getxRot() {
+   public float getXRot() {
       return Mth.unpackDegrees(this.xRot);
    }
 

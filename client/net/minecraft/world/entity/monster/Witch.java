@@ -14,6 +14,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,7 +33,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestHealableRaiderTargetGoal
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.ThrownSplashPotion;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -113,7 +114,7 @@ public class Witch extends Raider implements RangedAttackMob {
                this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                PotionContents var4 = (PotionContents)var3.get(DataComponents.POTION_CONTENTS);
                if (var3.is(Items.POTION) && var4 != null) {
-                  var4.forEachEffect(this::addEffect);
+                  var4.forEachEffect(this::addEffect, (Float)var3.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F));
                }
 
                this.gameEvent(GameEvent.DRINK);
@@ -127,7 +128,7 @@ public class Witch extends Raider implements RangedAttackMob {
                var1 = Potions.FIRE_RESISTANCE;
             } else if (this.random.nextFloat() < 0.05F && this.getHealth() < this.getMaxHealth()) {
                var1 = Potions.HEALING;
-            } else if (this.random.nextFloat() < 0.5F && this.getTarget() != null && !this.hasEffect(MobEffects.MOVEMENT_SPEED) && this.getTarget().distanceToSqr(this) > 121.0) {
+            } else if (this.random.nextFloat() < 0.5F && this.getTarget() != null && !this.hasEffect(MobEffects.SPEED) && this.getTarget().distanceToSqr(this) > 121.0) {
                var1 = Potions.SWIFTNESS;
             }
 
@@ -136,7 +137,7 @@ public class Witch extends Raider implements RangedAttackMob {
                this.usingTime = this.getMainHandItem().getUseDuration(this);
                this.setUsingItem(true);
                if (!this.isSilent()) {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+                  this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
                }
 
                AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -197,7 +198,7 @@ public class Witch extends Raider implements RangedAttackMob {
             }
 
             this.setTarget((LivingEntity)null);
-         } else if (var10 >= 8.0 && !var1.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+         } else if (var10 >= 8.0 && !var1.hasEffect(MobEffects.SLOWNESS)) {
             var12 = Potions.SLOWNESS;
          } else if (var1.getHealth() >= 8.0F && !var1.hasEffect(MobEffects.POISON)) {
             var12 = Potions.POISON;
@@ -209,11 +210,11 @@ public class Witch extends Raider implements RangedAttackMob {
          if (var14 instanceof ServerLevel) {
             ServerLevel var13 = (ServerLevel)var14;
             ItemStack var15 = PotionContents.createItemStack(Items.SPLASH_POTION, var12);
-            Projectile.spawnProjectileUsingShoot(ThrownPotion::new, var13, var15, this, var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
+            Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, var13, var15, this, var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
          }
 
          if (!this.isSilent()) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
          }
 
       }

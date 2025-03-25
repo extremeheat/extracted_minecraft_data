@@ -27,7 +27,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
@@ -259,7 +259,7 @@ public class Evoker extends SpellcasterIllager {
             BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
             Vex var5 = EntityType.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
             if (var5 != null) {
-               var5.moveTo(var4, 0.0F, 0.0F);
+               var5.snapTo(var4, 0.0F, 0.0F);
                var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);
                var5.setOwner(Evoker.this);
                var5.setBoundOrigin(var4);

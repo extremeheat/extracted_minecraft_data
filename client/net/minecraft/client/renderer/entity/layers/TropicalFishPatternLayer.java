@@ -35,7 +35,7 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFishRenderStat
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, TropicalFishRenderState var4, float var5, float var6) {
-      TropicalFish.Pattern var7 = var4.variant;
+      TropicalFish.Pattern var7 = var4.pattern;
       Object var10000;
       switch (var7.base()) {
          case SMALL -> var10000 = this.modelA;

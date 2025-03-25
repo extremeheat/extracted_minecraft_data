@@ -3,6 +3,7 @@ package net.minecraft.util;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.ListBuilder;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import java.nio.ByteBuffer;
@@ -167,6 +168,10 @@ public class NullOps implements DynamicOps<Unit> {
 
    public RecordBuilder<Unit> mapBuilder() {
       return new NullMapBuilder(this);
+   }
+
+   public ListBuilder<Unit> listBuilder() {
+      return new NullListBuilder(this);
    }
 
    public String toString() {
@@ -378,6 +383,29 @@ public class NullOps implements DynamicOps<Unit> {
       // $FF: synthetic method
       protected DataResult build(final Object var1, final Object var2) {
          return this.build((Unit)var1, (Unit)var2);
+      }
+
+      // $FF: synthetic method
+      protected Object initBuilder() {
+         return this.initBuilder();
+      }
+   }
+
+   static final class NullListBuilder extends AbstractListBuilder<Unit, Unit> {
+      public NullListBuilder(DynamicOps<Unit> var1) {
+         super(var1);
+      }
+
+      protected Unit initBuilder() {
+         return Unit.INSTANCE;
+      }
+
+      protected Unit append(Unit var1, Unit var2) {
+         return var1;
+      }
+
+      protected DataResult<Unit> build(Unit var1, Unit var2) {
+         return DataResult.success(var1);
       }
 
       // $FF: synthetic method

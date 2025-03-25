@@ -3,15 +3,12 @@ package net.minecraft.world.item;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multisets;
-import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
@@ -19,6 +16,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.context.UseOnContext;
@@ -40,7 +38,7 @@ public class MapItem extends Item {
       super(var1);
    }
 
-   public static ItemStack create(Level var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
+   public static ItemStack create(ServerLevel var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
       ItemStack var6 = new ItemStack(Items.FILLED_MAP);
       MapId var7 = createNewSavedData(var0, var1, var2, var3, var4, var5, var0.dimension());
       var6.set(DataComponents.MAP_ID, var7);
@@ -58,7 +56,7 @@ public class MapItem extends Item {
       return getSavedData(var2, var1);
    }
 
-   private static MapId createNewSavedData(Level var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
+   private static MapId createNewSavedData(ServerLevel var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
       MapItemSavedData var7 = MapItemSavedData.createFresh((double)var1, (double)var2, (byte)var3, var4, var5, var6);
       MapId var8 = var0.getFreeMapId();
       var0.setMapData(var8, var7);
@@ -267,36 +265,37 @@ public class MapItem extends Item {
       }
    }
 
-   public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
-      if (!var2.isClientSide) {
-         MapItemSavedData var6 = getSavedData(var1, var2);
-         if (var6 != null) {
-            if (var3 instanceof Player) {
-               Player var7 = (Player)var3;
-               var6.tickCarriedBy(var7, var1);
-            }
-
-            if (!var6.locked && (var5 || var3 instanceof Player && ((Player)var3).getOffhandItem() == var1)) {
-               this.update(var2, var3, var6);
-            }
-
+   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
+      MapItemSavedData var5 = getSavedData((ItemStack)var1, var2);
+      if (var5 != null) {
+         if (var3 instanceof Player) {
+            Player var6 = (Player)var3;
+            var5.tickCarriedBy(var6, var1);
          }
+
+         if (!var5.locked && var4 != null && var4.getType() == EquipmentSlot.Type.HAND) {
+            this.update(var2, var3, var5);
+         }
+
       }
    }
 
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
       MapPostProcessing var3 = (MapPostProcessing)var1.remove(DataComponents.MAP_POST_PROCESSING);
       if (var3 != null) {
-         switch (var3) {
-            case LOCK -> lockMap(var2, var1);
-            case SCALE -> scaleMap(var1, var2);
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var4 = (ServerLevel)var2;
+            switch (var3) {
+               case LOCK -> lockMap(var1, var4);
+               case SCALE -> scaleMap(var1, var4);
+            }
          }
 
       }
    }
 
-   private static void scaleMap(ItemStack var0, Level var1) {
-      MapItemSavedData var2 = getSavedData(var0, var1);
+   private static void scaleMap(ItemStack var0, ServerLevel var1) {
+      MapItemSavedData var2 = getSavedData((ItemStack)var0, var1);
       if (var2 != null) {
          MapId var3 = var1.getFreeMapId();
          var1.setMapData(var3, var2.scaled());
@@ -305,44 +304,15 @@ public class MapItem extends Item {
 
    }
 
-   public static void lockMap(Level var0, ItemStack var1) {
-      MapItemSavedData var2 = getSavedData(var1, var0);
+   private static void lockMap(ItemStack var0, ServerLevel var1) {
+      MapItemSavedData var2 = getSavedData((ItemStack)var0, var1);
       if (var2 != null) {
-         MapId var3 = var0.getFreeMapId();
+         MapId var3 = var1.getFreeMapId();
          MapItemSavedData var4 = var2.locked();
-         var0.setMapData(var3, var4);
-         var1.set(DataComponents.MAP_ID, var3);
+         var1.setMapData(var3, var4);
+         var0.set(DataComponents.MAP_ID, var3);
       }
 
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      MapId var5 = (MapId)var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var6 = var5 != null ? var2.mapData(var5) : null;
-      MapPostProcessing var7 = (MapPostProcessing)var1.get(DataComponents.MAP_POST_PROCESSING);
-      if (var6 != null && (var6.locked || var7 == MapPostProcessing.LOCK)) {
-         var3.add(Component.translatable("filled_map.locked", var5.id()).withStyle(ChatFormatting.GRAY));
-      }
-
-      if (var4.isAdvanced()) {
-         if (var6 != null) {
-            if (var7 == null) {
-               var3.add(getTooltipForId(var5));
-            }
-
-            int var8 = var7 == MapPostProcessing.SCALE ? 1 : 0;
-            int var9 = Math.min(var6.scale + var8, 4);
-            var3.add(Component.translatable("filled_map.scale", 1 << var9).withStyle(ChatFormatting.GRAY));
-            var3.add(Component.translatable("filled_map.level", var9, 4).withStyle(ChatFormatting.GRAY));
-         } else {
-            var3.add(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
-         }
-      }
-
-   }
-
-   public static Component getTooltipForId(MapId var0) {
-      return Component.translatable("filled_map.id", var0.id()).withStyle(ChatFormatting.GRAY);
    }
 
    public InteractionResult useOn(UseOnContext var1) {

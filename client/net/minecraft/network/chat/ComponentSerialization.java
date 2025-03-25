@@ -1,8 +1,6 @@
 package net.minecraft.network.chat;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -17,7 +15,6 @@ import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -42,51 +39,37 @@ public class ComponentSerialization {
    public static final StreamCodec<RegistryFriendlyByteBuf, Component> TRUSTED_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Component>> TRUSTED_OPTIONAL_STREAM_CODEC;
    public static final StreamCodec<ByteBuf, Component> TRUSTED_CONTEXT_FREE_STREAM_CODEC;
-   public static final Codec<Component> FLAT_CODEC;
 
    public ComponentSerialization() {
       super();
    }
 
-   public static Codec<Component> flatCodec(int var0) {
-      final Codec var1 = Codec.string(0, var0);
+   public static Codec<Component> flatRestrictedCodec(final int var0) {
       return new Codec<Component>() {
-         public <T> DataResult<Pair<Component, T>> decode(DynamicOps<T> var1x, T var2) {
-            DynamicOps var3 = asJsonOps(var1x);
-            return var1.decode(var1x, var2).flatMap((var1xx) -> {
-               try {
-                  JsonElement var2 = JsonParser.parseString((String)var1xx.getFirst());
-                  return ComponentSerialization.CODEC.parse(var3, var2).map((var1x) -> Pair.of(var1x, var1xx.getSecond()));
-               } catch (JsonParseException var3x) {
-                  Objects.requireNonNull(var3x);
-                  return DataResult.error(var3x::getMessage);
-               }
-            });
+         public <T> DataResult<Pair<Component, T>> decode(DynamicOps<T> var1, T var2) {
+            return ComponentSerialization.CODEC.decode(var1, var2).flatMap((var3) -> this.isTooLarge(var1, (Component)var3.getFirst()) ? DataResult.error(() -> "Component was too large: greater than max size " + var0) : DataResult.success(var3));
          }
 
-         public <T> DataResult<T> encode(Component var1x, DynamicOps<T> var2, T var3) {
-            DynamicOps var4 = asJsonOps(var2);
-            return ComponentSerialization.CODEC.encodeStart(var4, var1x).flatMap((var2x) -> {
-               try {
-                  return var1.encodeStart(var2, GsonHelper.toStableString(var2x));
-               } catch (IllegalArgumentException var4) {
-                  Objects.requireNonNull(var4);
-                  return DataResult.error(var4::getMessage);
-               }
-            });
+         public <T> DataResult<T> encode(Component var1, DynamicOps<T> var2, T var3) {
+            return ComponentSerialization.CODEC.encodeStart(var2, var1);
          }
 
-         private static <T> DynamicOps<JsonElement> asJsonOps(DynamicOps<T> var0) {
-            if (var0 instanceof RegistryOps var1x) {
-               return var1x.<JsonElement>withParent(JsonOps.INSTANCE);
+         private <T> boolean isTooLarge(DynamicOps<T> var1, Component var2) {
+            DataResult var3 = ComponentSerialization.CODEC.encodeStart(asJsonOps(var1), var2);
+            return var3.isSuccess() && GsonHelper.encodesLongerThan((JsonElement)var3.getOrThrow(), var0);
+         }
+
+         private static <T> DynamicOps<JsonElement> asJsonOps(DynamicOps<T> var0x) {
+            if (var0x instanceof RegistryOps var1) {
+               return var1.<JsonElement>withParent(JsonOps.INSTANCE);
             } else {
                return JsonOps.INSTANCE;
             }
          }
 
          // $FF: synthetic method
-         public DataResult encode(final Object var1x, final DynamicOps var2, final Object var3) {
-            return this.encode((Component)var1x, var2, var3);
+         public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
+            return this.encode((Component)var1, var2, var3);
          }
       };
    }
@@ -125,7 +108,6 @@ public class ComponentSerialization {
       TRUSTED_STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistriesTrusted(CODEC);
       TRUSTED_OPTIONAL_STREAM_CODEC = TRUSTED_STREAM_CODEC.apply(ByteBufCodecs::optional);
       TRUSTED_CONTEXT_FREE_STREAM_CODEC = ByteBufCodecs.fromCodecTrusted(CODEC);
-      FLAT_CODEC = flatCodec(2147483647);
    }
 
    static class StrictEither<T> extends MapCodec<T> {

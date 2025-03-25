@@ -1,13 +1,21 @@
 package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import io.netty.buffer.ByteBuf;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -31,7 +39,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -49,6 +56,7 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -65,13 +73,14 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
-public class Rabbit extends Animal implements VariantHolder<Variant> {
+public class Rabbit extends Animal {
    public static final double STROLL_SPEED_MOD = 0.6;
    public static final double BREED_SPEED_MOD = 0.8;
    public static final double FOLLOW_SPEED_MOD = 1.0;
    public static final double FLEE_SPEED_MOD = 2.2;
    public static final double ATTACK_SPEED_MOD = 1.4;
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID;
+   private static final int DEFAULT_MORE_CARROT_TICKS = 0;
    private static final ResourceLocation KILLER_BUNNY;
    private static final int DEFAULT_ATTACK_POWER = 3;
    private static final int EVIL_ATTACK_POWER_INCREMENT = 5;
@@ -82,7 +91,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
    private int jumpDuration;
    private boolean wasOnGround;
    private int jumpDelayTicks;
-   int moreCarrotTicks;
+   int moreCarrotTicks = 0;
 
    public Rabbit(EntityType<? extends Rabbit> var1, Level var2) {
       super(var1, var2);
@@ -167,7 +176,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
+      var1.define(DATA_TYPE_ID, Rabbit.Variant.DEFAULT.id);
    }
 
    public void customServerAiStep(ServerLevel var1) {
@@ -266,14 +275,14 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("RabbitType", this.getVariant().id);
+      var1.store("RabbitType", Rabbit.Variant.LEGACY_CODEC, this.getVariant());
       var1.putInt("MoreCarrotTicks", this.moreCarrotTicks);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Rabbit.Variant.byId(var1.getInt("RabbitType")));
-      this.moreCarrotTicks = var1.getInt("MoreCarrotTicks");
+      this.setVariant((Variant)var1.read("RabbitType", Rabbit.Variant.LEGACY_CODEC).orElse(Rabbit.Variant.DEFAULT));
+      this.moreCarrotTicks = var1.getIntOr("MoreCarrotTicks", 0);
    }
 
    protected SoundEvent getJumpSound() {
@@ -336,7 +345,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       return Rabbit.Variant.byId((Integer)this.entityData.get(DATA_TYPE_ID));
    }
 
-   public void setVariant(Variant var1) {
+   private void setVariant(Variant var1) {
       if (var1 == Rabbit.Variant.EVIL) {
          this.getAttribute(Attributes.ARMOR).setBaseValue(8.0);
          this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.4, true));
@@ -352,6 +361,25 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       }
 
       this.entityData.set(DATA_TYPE_ID, var1.id);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.RABBIT_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.RABBIT_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.RABBIT_VARIANT) {
+         this.setVariant((Variant)castComponentValue(DataComponents.RABBIT_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    @Nullable
@@ -408,11 +436,6 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       return this.getBreedOffspring(var1, var2);
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
    static {
       DATA_TYPE_ID = SynchedEntityData.<Integer>defineId(Rabbit.class, EntityDataSerializers.INT);
       KILLER_BUNNY = ResourceLocation.withDefaultNamespace("killer_bunny");
@@ -428,8 +451,13 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       SALT(5, "salt"),
       EVIL(99, "evil");
 
-      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>sparse(Variant::id, values(), BROWN);
+      public static final Variant DEFAULT = BROWN;
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>sparse(Variant::id, values(), DEFAULT);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Variant> LEGACY_CODEC;
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC;
       final int id;
       private final String name;
 
@@ -453,6 +481,14 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{BROWN, WHITE, BLACK, WHITE_SPLOTCHED, GOLD, SALT, EVIL};
+      }
+
+      static {
+         PrimitiveCodec var10000 = Codec.INT;
+         IntFunction var10001 = BY_ID;
+         Objects.requireNonNull(var10001);
+         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::id);
+         STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
       }
    }
 

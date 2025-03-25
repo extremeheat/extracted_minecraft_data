@@ -8,8 +8,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +17,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -81,9 +80,13 @@ public class Zombie extends Monster {
    public static final int REINFORCEMENT_ATTEMPTS = 50;
    public static final int REINFORCEMENT_RANGE_MAX = 40;
    public static final int REINFORCEMENT_RANGE_MIN = 7;
+   private static final int NOT_CONVERTING = -1;
    private static final EntityDimensions BABY_DIMENSIONS;
    private static final float BREAK_DOOR_CHANCE = 0.1F;
    private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE;
+   private static final boolean DEFAULT_BABY = false;
+   private static final boolean DEFAULT_CAN_BREAK_DOORS = false;
+   private static final int DEFAULT_IN_WATER_TIME = 0;
    private final BreakDoorGoal breakDoorGoal;
    private boolean canBreakDoors;
    private int inWaterTime;
@@ -92,6 +95,8 @@ public class Zombie extends Monster {
    public Zombie(EntityType<? extends Zombie> var1, Level var2) {
       super(var1, var2);
       this.breakDoorGoal = new BreakDoorGoal(this, DOOR_BREAKING_PREDICATE);
+      this.canBreakDoors = false;
+      this.inWaterTime = 0;
    }
 
    public Zombie(Level var1) {
@@ -246,7 +251,7 @@ public class Zombie extends Monster {
    protected void doUnderWaterConversion() {
       this.convertToZombieType(EntityType.DROWNED);
       if (!this.isSilent()) {
-         this.level().levelEvent((Player)null, 1040, this.blockPosition(), 0);
+         this.level().levelEvent((Entity)null, 1040, this.blockPosition(), 0);
       }
 
    }
@@ -260,11 +265,11 @@ public class Zombie extends Monster {
       ZombieVillager var3 = (ZombieVillager)var2.convertTo(EntityType.ZOMBIE_VILLAGER, ConversionParams.single(var2, true, true), (var3x) -> {
          var3x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3x.blockPosition()), EntitySpawnReason.CONVERSION, new ZombieGroupData(false, true));
          var3x.setVillagerData(var2.getVillagerData());
-         var3x.setGossips((Tag)var2.getGossips().store(NbtOps.INSTANCE));
+         var3x.setGossips(var2.getGossips().copy());
          var3x.setTradeOffers(var2.getOffers().copy());
          var3x.setVillagerXp(var2.getVillagerXp());
          if (!this.isSilent()) {
-            var1.levelEvent((Player)null, 1026, this.blockPosition(), 0);
+            var1.levelEvent((Entity)null, 1026, this.blockPosition(), 0);
          }
 
       });
@@ -384,11 +389,14 @@ public class Zombie extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setBaby(var1.getBoolean("IsBaby"));
-      this.setCanBreakDoors(var1.getBoolean("CanBreakDoors"));
-      this.inWaterTime = var1.getInt("InWaterTime");
-      if (var1.contains("DrownedConversionTime", 99) && var1.getInt("DrownedConversionTime") > -1) {
-         this.startUnderWaterConversion(var1.getInt("DrownedConversionTime"));
+      this.setBaby(var1.getBooleanOr("IsBaby", false));
+      this.setCanBreakDoors(var1.getBooleanOr("CanBreakDoors", false));
+      this.inWaterTime = var1.getIntOr("InWaterTime", 0);
+      int var2 = var1.getIntOr("DrownedConversionTime", -1);
+      if (var2 != -1) {
+         this.startUnderWaterConversion(var2);
+      } else {
+         this.getEntityData().set(DATA_DROWNED_CONVERSION_ID, false);
       }
 
    }
@@ -413,7 +421,7 @@ public class Zombie extends Monster {
    }
 
    public boolean canHoldItem(ItemStack var1) {
-      return var1.is(Items.EGG) && this.isBaby() && this.isPassenger() ? false : super.canHoldItem(var1);
+      return var1.is(ItemTags.EGGS) && this.isBaby() && this.isPassenger() ? false : super.canHoldItem(var1);
    }
 
    public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
@@ -447,7 +455,7 @@ public class Zombie extends Monster {
                } else if ((double)var5.nextFloat() < 0.05) {
                   Chicken var12 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
                   if (var12 != null) {
-                     var12.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                     var12.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      var12.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);
                      var12.setChickenJockey(true);
                      this.startRiding(var12);
@@ -470,7 +478,7 @@ public class Zombie extends Monster {
          int var14 = var11.get(ChronoField.MONTH_OF_YEAR);
          if (var14 == 10 && var13 == 31 && var5.nextFloat() < 0.25F) {
             this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-            this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
+            this.setDropChance(EquipmentSlot.HEAD, 0.0F);
          }
       }
 
@@ -561,11 +569,11 @@ public class Zombie extends Monster {
       }
 
       public void playDestroyProgressSound(LevelAccessor var1, BlockPos var2) {
-         var1.playSound((Player)null, var2, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
+         var1.playSound((Entity)null, var2, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
       }
 
       public void playBreakSound(Level var1, BlockPos var2) {
-         var1.playSound((Player)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
+         var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
       }
 
       public double acceptedDistance() {

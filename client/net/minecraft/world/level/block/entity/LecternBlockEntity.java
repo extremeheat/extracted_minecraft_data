@@ -4,23 +4,26 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
@@ -165,7 +168,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    private ItemStack resolveBook(ItemStack var1, @Nullable Player var2) {
       Level var4 = this.level;
       if (var4 instanceof ServerLevel var3) {
-         WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(var2, var3), var2);
+         WrittenBookContent.resolveForItem(var1, this.createCommandSourceStack(var2, var3), var2);
       }
 
       return var1;
@@ -188,20 +191,17 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("Book", 10)) {
-         this.book = this.resolveBook((ItemStack)ItemStack.parse(var2, var1.getCompound("Book")).orElse(ItemStack.EMPTY), (Player)null);
-      } else {
-         this.book = ItemStack.EMPTY;
-      }
-
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      this.book = (ItemStack)var1.read("Book", ItemStack.CODEC, var3).map((var1x) -> this.resolveBook(var1x, (Player)null)).orElse(ItemStack.EMPTY);
       this.pageCount = getPageCount(this.book);
-      this.page = Mth.clamp(var1.getInt("Page"), 0, this.pageCount - 1);
+      this.page = Mth.clamp(var1.getIntOr("Page", 0), 0, this.pageCount - 1);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.getBook().isEmpty()) {
-         var1.put("Book", this.getBook().save(var2));
+         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+         var1.store("Book", ItemStack.CODEC, var3, this.getBook());
          var1.putInt("Page", this.page);
       }
 
@@ -209,6 +209,19 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
 
    public void clearContent() {
       this.setBook(ItemStack.EMPTY);
+   }
+
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+      if ((Boolean)var2.getValue(LecternBlock.HAS_BOOK) && this.level != null) {
+         Direction var3 = (Direction)var2.getValue(LecternBlock.FACING);
+         ItemStack var4 = this.getBook().copy();
+         float var5 = 0.25F * (float)var3.getStepX();
+         float var6 = 0.25F * (float)var3.getStepZ();
+         ItemEntity var7 = new ItemEntity(this.level, (double)var1.getX() + 0.5 + (double)var5, (double)(var1.getY() + 1), (double)var1.getZ() + 0.5 + (double)var6, var4);
+         var7.setDefaultPickUpDelay();
+         this.level.addFreshEntity(var7);
+      }
+
    }
 
    public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {

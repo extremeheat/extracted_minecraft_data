@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -36,20 +37,17 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DoorBlock extends Block {
    public static final MapCodec<DoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), propertiesCodec()).apply(var0, DoorBlock::new));
    public static final EnumProperty<Direction> FACING;
-   public static final BooleanProperty OPEN;
-   public static final EnumProperty<DoorHingeSide> HINGE;
-   public static final BooleanProperty POWERED;
    public static final EnumProperty<DoubleBlockHalf> HALF;
-   protected static final float AABB_DOOR_THICKNESS = 3.0F;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape NORTH_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape EAST_AABB;
+   public static final EnumProperty<DoorHingeSide> HINGE;
+   public static final BooleanProperty OPEN;
+   public static final BooleanProperty POWERED;
+   private static final Map<Direction, VoxelShape> SHAPES;
    private final BlockSetType type;
 
    public MapCodec<? extends DoorBlock> codec() {
@@ -68,17 +66,8 @@ public class DoorBlock extends Block {
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = (Direction)var1.getValue(FACING);
-      boolean var6 = !(Boolean)var1.getValue(OPEN);
-      boolean var7 = var1.getValue(HINGE) == DoorHingeSide.RIGHT;
-      VoxelShape var10000;
-      switch (var5) {
-         case SOUTH -> var10000 = var6 ? SOUTH_AABB : (var7 ? EAST_AABB : WEST_AABB);
-         case WEST -> var10000 = var6 ? WEST_AABB : (var7 ? SOUTH_AABB : NORTH_AABB);
-         case NORTH -> var10000 = var6 ? NORTH_AABB : (var7 ? WEST_AABB : EAST_AABB);
-         default -> var10000 = var6 ? EAST_AABB : (var7 ? NORTH_AABB : SOUTH_AABB);
-      }
-
-      return var10000;
+      Direction var6 = (Boolean)var1.getValue(OPEN) ? (var1.getValue(HINGE) == DoorHingeSide.RIGHT ? var5.getCounterClockWise() : var5.getClockWise()) : var5;
+      return (VoxelShape)SHAPES.get(var6);
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -99,7 +88,7 @@ public class DoorBlock extends Block {
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && (var4.isCreative() || !var4.hasCorrectToolForDrops(var3))) {
+      if (!var1.isClientSide && (var4.preventsBlockDrops() || !var4.hasCorrectToolForDrops(var3))) {
          DoublePlantBlock.preventDropFromBottomPart(var1, var2, var3, var4);
       }
 
@@ -256,13 +245,10 @@ public class DoorBlock extends Block {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      OPEN = BlockStateProperties.OPEN;
-      HINGE = BlockStateProperties.DOOR_HINGE;
-      POWERED = BlockStateProperties.POWERED;
       HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
-      SOUTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
-      WEST_AABB = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
+      HINGE = BlockStateProperties.DOOR_HINGE;
+      OPEN = BlockStateProperties.OPEN;
+      POWERED = BlockStateProperties.POWERED;
+      SHAPES = Shapes.rotateHorizontal(Block.boxZ(16.0, 13.0, 16.0));
    }
 }

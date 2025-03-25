@@ -3,10 +3,13 @@ package net.minecraft.world.level.block.entity;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Nameable;
@@ -36,17 +39,14 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (this.hasCustomName()) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
+         var1.store("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
       }
 
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("CustomName", 8)) {
-         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
-      }
-
+      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
    }
 
    public static void bookAnimationTick(Level var0, BlockPos var1, BlockState var2, EnchantingTableBlockEntity var3) {
@@ -118,7 +118,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
       return this.name;
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);
    }

@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -16,14 +18,17 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
@@ -48,8 +53,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var2.pushPose();
       float var5 = var1.getHistoricalPos(7).yRot();
       float var6 = (float)(var1.getHistoricalPos(5).y() - var1.getHistoricalPos(10).y());
-      var2.mulPose(Axis.YP.rotationDegrees(-var5));
-      var2.mulPose(Axis.XP.rotationDegrees(var6 * 10.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var5));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var6 * 10.0F));
       var2.translate(0.0F, 0.0F, 1.0F);
       var2.scale(-1.0F, -1.0F, 1.0F);
       var2.translate(0.0F, -1.501F, 0.0F);
@@ -100,7 +105,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
 
       for(int var13 = 0; var13 < var12; ++var13) {
          var11.rotationXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F).rotateXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F + var1 * 1.5707964F);
-         var0.mulPose(var11);
+         var0.mulPose((Quaternionfc)var11);
          float var14 = var6.nextFloat() * 20.0F + 5.0F + var3 * 10.0F;
          float var15 = var6.nextFloat() * 2.0F + 1.0F + var3 * 2.0F;
          var8.set(-HALF_SQRT_3 * var15, var14, -0.5F * var15);
@@ -126,8 +131,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       float var8 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2);
       var4.pushPose();
       var4.translate(0.0F, 2.0F, 0.0F);
-      var4.mulPose(Axis.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
-      var4.mulPose(Axis.XP.rotation((float)(-Math.atan2((double)var7, (double)var1)) - 1.5707964F));
+      var4.mulPose((Quaternionfc)Axis.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
+      var4.mulPose((Quaternionfc)Axis.XP.rotation((float)(-Math.atan2((double)var7, (double)var1)) - 1.5707964F));
       VertexConsumer var9 = var5.getBuffer(BEAM);
       float var10 = 0.0F - var3 * 0.01F;
       float var11 = var8 / 32.0F - var3 * 0.01F;
@@ -177,6 +182,20 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var2.distanceToEgg = var6.distToCenterSqr(var1.position());
       var2.partialTicks = var1.isDeadOrDying() ? 0.0F : var3;
       var2.flightHistory.copyFrom(var1.flightHistory);
+   }
+
+   protected void extractAdditionalHitboxes(EnderDragon var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
+      super.extractAdditionalHitboxes(var1, var2, var3);
+      double var4 = -Mth.lerp((double)var3, var1.xOld, var1.getX());
+      double var6 = -Mth.lerp((double)var3, var1.yOld, var1.getY());
+      double var8 = -Mth.lerp((double)var3, var1.zOld, var1.getZ());
+
+      for(EnderDragonPart var13 : var1.getSubEntities()) {
+         AABB var14 = var13.getBoundingBox();
+         HitboxRenderState var15 = new HitboxRenderState(var14.minX - var13.getX(), var14.minY - var13.getY(), var14.minZ - var13.getZ(), var14.maxX - var13.getX(), var14.maxY - var13.getY(), var14.maxZ - var13.getZ(), (float)(var4 + Mth.lerp((double)var3, var13.xOld, var13.getX())), (float)(var6 + Mth.lerp((double)var3, var13.yOld, var13.getY())), (float)(var8 + Mth.lerp((double)var3, var13.zOld, var13.getZ())), 0.25F, 1.0F, 0.0F);
+         var2.add(var15);
+      }
+
    }
 
    protected boolean affectedByCulling(EnderDragon var1) {

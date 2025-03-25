@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState, GuardianModel> {
    private static final ResourceLocation GUARDIAN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/guardian.png");
@@ -78,8 +79,8 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       var2 = var2.normalize();
       float var7 = (float)Math.acos(var2.y);
       float var8 = 1.5707964F - (float)Math.atan2(var2.z, var2.x);
-      var0.mulPose(Axis.YP.rotationDegrees(var8 * 57.295776F));
-      var0.mulPose(Axis.XP.rotationDegrees(var7 * 57.295776F));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * 57.295776F));
+      var0.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var7 * 57.295776F));
       float var9 = var3 * 0.05F * -1.5F;
       float var10 = var4 * var4;
       int var11 = 64 + (int)(var10 * 191.0F);

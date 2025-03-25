@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -30,6 +29,7 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
    public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> var0x.treeGrower), propertiesCodec()).apply(var0, MangrovePropaguleBlock::new));
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 4;
+   private static final int[] SHAPE_MIN_Y;
    private static final VoxelShape[] SHAPE_PER_AGE;
    private static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty HANGING;
@@ -59,15 +59,8 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var3);
-      VoxelShape var6;
-      if (!(Boolean)var1.getValue(HANGING)) {
-         var6 = SHAPE_PER_AGE[4];
-      } else {
-         var6 = SHAPE_PER_AGE[(Integer)var1.getValue(AGE)];
-      }
-
-      return var6.move(var5.x, var5.y, var5.z);
+      int var5 = (Boolean)var1.getValue(HANGING) ? (Integer)var1.getValue(AGE) : 4;
+      return SHAPE_PER_AGE[var5].move(var1.getOffset(var3));
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -135,7 +128,8 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
 
    static {
       AGE = BlockStateProperties.AGE_4;
-      SHAPE_PER_AGE = new VoxelShape[]{Block.box(7.0, 13.0, 7.0, 9.0, 16.0, 9.0), Block.box(7.0, 10.0, 7.0, 9.0, 16.0, 9.0), Block.box(7.0, 7.0, 7.0, 9.0, 16.0, 9.0), Block.box(7.0, 3.0, 7.0, 9.0, 16.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0)};
+      SHAPE_MIN_Y = new int[]{13, 10, 7, 3, 0};
+      SHAPE_PER_AGE = Block.boxes(4, (var0) -> Block.column(2.0, (double)SHAPE_MIN_Y[var0], 16.0));
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       HANGING = BlockStateProperties.HANGING;
    }

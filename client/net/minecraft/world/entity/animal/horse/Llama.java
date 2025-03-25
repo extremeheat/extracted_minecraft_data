@@ -1,12 +1,20 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import io.netty.buffer.ByteBuf;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -31,7 +39,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -47,7 +54,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LlamaSpit;
@@ -60,7 +67,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class Llama extends AbstractChestedHorse implements VariantHolder<Variant>, RangedAttackMob {
+public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    private static final int MAX_STRENGTH = 5;
    private static final EntityDataAccessor<Integer> DATA_STRENGTH_ID;
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID;
@@ -95,14 +102,14 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant().id);
+      var1.store("Variant", Llama.Variant.LEGACY_CODEC, this.getVariant());
       var1.putInt("Strength", this.getStrength());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.setStrength(var1.getInt("Strength"));
+      this.setStrength(var1.getIntOr("Strength", 0));
       super.readAdditionalSaveData(var1);
-      this.setVariant(Llama.Variant.byId(var1.getInt("Variant")));
+      this.setVariant((Variant)var1.read("Variant", Llama.Variant.LEGACY_CODEC).orElse(Llama.Variant.DEFAULT));
    }
 
    protected void registerGoals() {
@@ -135,8 +142,27 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       return Llama.Variant.byId((Integer)this.entityData.get(DATA_VARIANT_ID));
    }
 
-   public void setVariant(Variant var1) {
+   private void setVariant(Variant var1) {
       this.entityData.set(DATA_VARIANT_ID, var1.id);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.LLAMA_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.LLAMA_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.LLAMA_VARIANT) {
+         this.setVariant((Variant)castComponentValue(DataComponents.LLAMA_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public boolean isFood(ItemStack var1) {
@@ -171,22 +197,19 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
          this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
          if (!this.level().isClientSide) {
             this.ageUp(var3);
+            var6 = true;
          }
-
-         var6 = true;
       }
 
-      if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper()) {
+      if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide) {
+         this.modifyTemper(var4);
          var6 = true;
-         if (!this.level().isClientSide) {
-            this.modifyTemper(var4);
-         }
       }
 
       if (var6 && !this.isSilent()) {
          SoundEvent var7 = this.getEatingSound();
          if (var7 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -254,10 +277,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       return true;
    }
 
-   public boolean isSaddleable() {
-      return false;
-   }
-
    public int getMaxTemper() {
       return 30;
    }
@@ -301,7 +320,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       }
 
       if (!this.isSilent()) {
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
       }
 
       this.didSpit = true;
@@ -311,18 +330,14 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       this.didSpit = var1;
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      int var4 = this.calculateFallDamage(var1, var2);
-      if (var4 <= 0) {
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
+      int var5 = this.calculateFallDamage(var1, var3);
+      if (var5 <= 0) {
          return false;
       } else {
-         if (var1 >= 6.0F) {
-            this.hurt(var3, (float)var4);
-            if (this.isVehicle()) {
-               for(Entity var6 : this.getIndirectPassengers()) {
-                  var6.hurt(var3, (float)var4);
-               }
-            }
+         if (var1 >= 6.0) {
+            this.hurt(var4, (float)var5);
+            this.propagateFallToPassengers(var1, var3, var4);
          }
 
          this.playBlockFallSound();
@@ -393,11 +408,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       return this.getBreedOffspring(var1, var2);
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
    static {
       DATA_STRENGTH_ID = SynchedEntityData.<Integer>defineId(Llama.class, EntityDataSerializers.INT);
       DATA_VARIANT_ID = SynchedEntityData.<Integer>defineId(Llama.class, EntityDataSerializers.INT);
@@ -410,8 +420,13 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       BROWN(2, "brown"),
       GRAY(3, "gray");
 
-      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      public static final Variant DEFAULT = CREAMY;
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      /** @deprecated */
+      @Deprecated
+      public static final Codec<Variant> LEGACY_CODEC;
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC;
       final int id;
       private final String name;
 
@@ -435,6 +450,14 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{CREAMY, WHITE, BROWN, GRAY};
+      }
+
+      static {
+         PrimitiveCodec var10000 = Codec.INT;
+         IntFunction var10001 = BY_ID;
+         Objects.requireNonNull(var10001);
+         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::getId);
+         STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       }
    }
 

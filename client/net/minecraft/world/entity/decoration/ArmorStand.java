@@ -3,13 +3,11 @@ package net.minecraft.world.entity.decoration;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -75,8 +73,12 @@ public class ArmorStand extends LivingEntity {
    public static final EntityDataAccessor<Rotations> DATA_LEFT_LEG_POSE;
    public static final EntityDataAccessor<Rotations> DATA_RIGHT_LEG_POSE;
    private static final Predicate<Entity> RIDABLE_MINECARTS;
-   private final NonNullList<ItemStack> handItems;
-   private final NonNullList<ItemStack> armorItems;
+   private static final boolean DEFAULT_INVISIBLE = false;
+   private static final int DEFAULT_DISABLED_SLOTS = 0;
+   private static final boolean DEFAULT_SMALL = false;
+   private static final boolean DEFAULT_SHOW_ARMS = false;
+   private static final boolean DEFAULT_NO_BASE_PLATE = false;
+   private static final boolean DEFAULT_MARKER = false;
    private boolean invisible;
    public long lastHit;
    private int disabledSlots;
@@ -89,8 +91,8 @@ public class ArmorStand extends LivingEntity {
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
-      this.handItems = NonNullList.<ItemStack>withSize(2, ItemStack.EMPTY);
-      this.armorItems = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
+      this.invisible = false;
+      this.disabledSlots = 0;
       this.headPose = DEFAULT_HEAD_POSE;
       this.bodyPose = DEFAULT_BODY_POSE;
       this.leftArmPose = DEFAULT_LEFT_ARM_POSE;
@@ -135,57 +137,12 @@ public class ArmorStand extends LivingEntity {
       var1.define(DATA_RIGHT_LEG_POSE, DEFAULT_RIGHT_LEG_POSE);
    }
 
-   public Iterable<ItemStack> getHandSlots() {
-      return this.handItems;
-   }
-
-   public Iterable<ItemStack> getArmorSlots() {
-      return this.armorItems;
-   }
-
-   public ItemStack getItemBySlot(EquipmentSlot var1) {
-      switch (var1.getType()) {
-         case HAND -> {
-            return this.handItems.get(var1.getIndex());
-         }
-         case HUMANOID_ARMOR -> {
-            return this.armorItems.get(var1.getIndex());
-         }
-         default -> {
-            return ItemStack.EMPTY;
-         }
-      }
-   }
-
    public boolean canUseSlot(EquipmentSlot var1) {
-      return var1 != EquipmentSlot.BODY && !this.isDisabled(var1);
-   }
-
-   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
-      this.verifyEquippedItem(var2);
-      switch (var1.getType()) {
-         case HAND -> this.onEquipItem(var1, this.handItems.set(var1.getIndex(), var2), var2);
-         case HUMANOID_ARMOR -> this.onEquipItem(var1, this.armorItems.set(var1.getIndex(), var2), var2);
-      }
-
+      return var1 != EquipmentSlot.BODY && var1 != EquipmentSlot.SADDLE && !this.isDisabled(var1);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      ListTag var2 = new ListTag();
-
-      for(ItemStack var4 : this.armorItems) {
-         var2.add(var4.saveOptional(this.registryAccess()));
-      }
-
-      var1.put("ArmorItems", var2);
-      ListTag var6 = new ListTag();
-
-      for(ItemStack var5 : this.handItems) {
-         var6.add(var5.saveOptional(this.registryAccess()));
-      }
-
-      var1.put("HandItems", var6);
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Small", this.isSmall());
       var1.putBoolean("ShowArms", this.showArms());
@@ -200,74 +157,49 @@ public class ArmorStand extends LivingEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("ArmorItems", 9)) {
-         ListTag var2 = var1.getList("ArmorItems", 10);
-
-         for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
-            CompoundTag var4 = var2.getCompound(var3);
-            this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
-         }
-      }
-
-      if (var1.contains("HandItems", 9)) {
-         ListTag var5 = var1.getList("HandItems", 10);
-
-         for(int var7 = 0; var7 < this.handItems.size(); ++var7) {
-            CompoundTag var8 = var5.getCompound(var7);
-            this.handItems.set(var7, ItemStack.parseOptional(this.registryAccess(), var8));
-         }
-      }
-
-      this.setInvisible(var1.getBoolean("Invisible"));
-      this.setSmall(var1.getBoolean("Small"));
-      this.setShowArms(var1.getBoolean("ShowArms"));
-      this.disabledSlots = var1.getInt("DisabledSlots");
-      this.setNoBasePlate(var1.getBoolean("NoBasePlate"));
-      this.setMarker(var1.getBoolean("Marker"));
+      this.setInvisible(var1.getBooleanOr("Invisible", false));
+      this.setSmall(var1.getBooleanOr("Small", false));
+      this.setShowArms(var1.getBooleanOr("ShowArms", false));
+      this.disabledSlots = var1.getIntOr("DisabledSlots", 0);
+      this.setNoBasePlate(var1.getBooleanOr("NoBasePlate", false));
+      this.setMarker(var1.getBooleanOr("Marker", false));
       this.noPhysics = !this.hasPhysics();
-      CompoundTag var6 = var1.getCompound("Pose");
-      this.readPose(var6);
+      this.readPose(var1.getCompoundOrEmpty("Pose"));
    }
 
    private void readPose(CompoundTag var1) {
-      ListTag var2 = var1.getList("Head", 5);
-      this.setHeadPose(var2.isEmpty() ? DEFAULT_HEAD_POSE : new Rotations(var2));
-      ListTag var3 = var1.getList("Body", 5);
-      this.setBodyPose(var3.isEmpty() ? DEFAULT_BODY_POSE : new Rotations(var3));
-      ListTag var4 = var1.getList("LeftArm", 5);
-      this.setLeftArmPose(var4.isEmpty() ? DEFAULT_LEFT_ARM_POSE : new Rotations(var4));
-      ListTag var5 = var1.getList("RightArm", 5);
-      this.setRightArmPose(var5.isEmpty() ? DEFAULT_RIGHT_ARM_POSE : new Rotations(var5));
-      ListTag var6 = var1.getList("LeftLeg", 5);
-      this.setLeftLegPose(var6.isEmpty() ? DEFAULT_LEFT_LEG_POSE : new Rotations(var6));
-      ListTag var7 = var1.getList("RightLeg", 5);
-      this.setRightLegPose(var7.isEmpty() ? DEFAULT_RIGHT_LEG_POSE : new Rotations(var7));
+      this.setHeadPose((Rotations)var1.read("Head", Rotations.CODEC).orElse(DEFAULT_HEAD_POSE));
+      this.setBodyPose((Rotations)var1.read("Body", Rotations.CODEC).orElse(DEFAULT_BODY_POSE));
+      this.setLeftArmPose((Rotations)var1.read("LeftArm", Rotations.CODEC).orElse(DEFAULT_LEFT_ARM_POSE));
+      this.setRightArmPose((Rotations)var1.read("RightArm", Rotations.CODEC).orElse(DEFAULT_RIGHT_ARM_POSE));
+      this.setLeftLegPose((Rotations)var1.read("LeftLeg", Rotations.CODEC).orElse(DEFAULT_LEFT_LEG_POSE));
+      this.setRightLegPose((Rotations)var1.read("RightLeg", Rotations.CODEC).orElse(DEFAULT_RIGHT_LEG_POSE));
    }
 
    private CompoundTag writePose() {
       CompoundTag var1 = new CompoundTag();
       if (!DEFAULT_HEAD_POSE.equals(this.headPose)) {
-         var1.put("Head", this.headPose.save());
+         var1.store("Head", Rotations.CODEC, this.headPose);
       }
 
       if (!DEFAULT_BODY_POSE.equals(this.bodyPose)) {
-         var1.put("Body", this.bodyPose.save());
+         var1.store("Body", Rotations.CODEC, this.bodyPose);
       }
 
       if (!DEFAULT_LEFT_ARM_POSE.equals(this.leftArmPose)) {
-         var1.put("LeftArm", this.leftArmPose.save());
+         var1.store("LeftArm", Rotations.CODEC, this.leftArmPose);
       }
 
       if (!DEFAULT_RIGHT_ARM_POSE.equals(this.rightArmPose)) {
-         var1.put("RightArm", this.rightArmPose.save());
+         var1.store("RightArm", Rotations.CODEC, this.rightArmPose);
       }
 
       if (!DEFAULT_LEFT_LEG_POSE.equals(this.leftLegPose)) {
-         var1.put("LeftLeg", this.leftLegPose.save());
+         var1.store("LeftLeg", Rotations.CODEC, this.leftLegPose);
       }
 
       if (!DEFAULT_RIGHT_LEG_POSE.equals(this.rightLegPose)) {
-         var1.put("RightLeg", this.rightLegPose.save());
+         var1.store("RightLeg", Rotations.CODEC, this.rightLegPose);
       }
 
       return var1;
@@ -489,32 +421,22 @@ public class ArmorStand extends LivingEntity {
       this.playBrokenSound();
       this.dropAllDeathLoot(var1, var2);
 
-      for(int var3 = 0; var3 < this.handItems.size(); ++var3) {
-         ItemStack var4 = this.handItems.get(var3);
-         if (!var4.isEmpty()) {
-            Block.popResource(this.level(), this.blockPosition().above(), var4);
-            this.handItems.set(var3, ItemStack.EMPTY);
-         }
-      }
-
-      for(int var5 = 0; var5 < this.armorItems.size(); ++var5) {
-         ItemStack var6 = this.armorItems.get(var5);
-         if (!var6.isEmpty()) {
-            Block.popResource(this.level(), this.blockPosition().above(), var6);
-            this.armorItems.set(var5, ItemStack.EMPTY);
+      for(EquipmentSlot var4 : EquipmentSlot.VALUES) {
+         ItemStack var5 = this.equipment.set(var4, ItemStack.EMPTY);
+         if (!var5.isEmpty()) {
+            Block.popResource(this.level(), this.blockPosition().above(), var5);
          }
       }
 
    }
 
    private void playBrokenSound() {
-      this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
+      this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
    }
 
-   protected float tickHeadTurn(float var1, float var2) {
+   protected void tickHeadTurn(float var1) {
       this.yBodyRotO = this.yRotO;
       this.yBodyRot = this.getYRot();
-      return 0.0F;
    }
 
    public void travel(Vec3 var1) {
@@ -698,7 +620,16 @@ public class ArmorStand extends LivingEntity {
    }
 
    public boolean skipAttackInteraction(Entity var1) {
-      return var1 instanceof Player && !this.level().mayInteract((Player)var1, this.blockPosition());
+      boolean var10000;
+      if (var1 instanceof Player var2) {
+         if (!this.level().mayInteract(var2, this.blockPosition())) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    public HumanoidArm getMainArm() {

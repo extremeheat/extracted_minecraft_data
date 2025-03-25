@@ -2,10 +2,7 @@ package net.minecraft.world.entity.ai.gossip;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -17,8 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.DoublePredicate;
@@ -28,15 +23,19 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
-import org.slf4j.Logger;
 
 public class GossipContainer {
-   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Codec<GossipContainer> CODEC;
    public static final int DISCARD_THRESHOLD = 2;
-   private final Map<UUID, EntityGossips> gossips = Maps.newHashMap();
+   private final Map<UUID, EntityGossips> gossips = new HashMap();
 
    public GossipContainer() {
       super();
+   }
+
+   private GossipContainer(List<GossipEntry> var1) {
+      super();
+      var1.forEach((var1x) -> this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value));
    }
 
    @VisibleForDebug
@@ -154,14 +153,12 @@ public class GossipContainer {
 
    }
 
-   public <T> T store(DynamicOps<T> var1) {
-      Optional var10000 = GossipContainer.GossipEntry.LIST_CODEC.encodeStart(var1, this.unpack().toList()).resultOrPartial((var0) -> LOGGER.warn("Failed to serialize gossips: {}", var0));
-      Objects.requireNonNull(var1);
-      return (T)var10000.orElseGet(var1::emptyList);
+   public void clear() {
+      this.gossips.clear();
    }
 
-   public void update(Dynamic<?> var1) {
-      GossipContainer.GossipEntry.LIST_CODEC.decode(var1).resultOrPartial((var0) -> LOGGER.warn("Failed to deserialize gossips: {}", var0)).stream().flatMap((var0) -> ((List)var0.getFirst()).stream()).forEach((var1x) -> this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value));
+   public void putAll(GossipContainer var1) {
+      var1.gossips.forEach((var1x, var2) -> this.getOrCreate(var1x).entries.putAll(var2.entries));
    }
 
    private static int mergeValuesForTransfer(int var0, int var1) {
@@ -173,12 +170,21 @@ public class GossipContainer {
       return var4 > var1.max ? Math.max(var1.max, var2) : var4;
    }
 
+   public GossipContainer copy() {
+      GossipContainer var1 = new GossipContainer();
+      var1.putAll(this);
+      return var1;
+   }
+
+   static {
+      CODEC = GossipContainer.GossipEntry.CODEC.listOf().xmap(GossipContainer::new, (var0) -> var0.unpack().toList());
+   }
+
    static record GossipEntry(UUID target, GossipType type, int value) {
       final UUID target;
       final GossipType type;
       final int value;
       public static final Codec<GossipEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipEntry::target), GossipType.CODEC.fieldOf("Type").forGetter(GossipEntry::type), ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipEntry::value)).apply(var0, GossipEntry::new));
-      public static final Codec<List<GossipEntry>> LIST_CODEC;
 
       GossipEntry(UUID var1, GossipType var2, int var3) {
          super();
@@ -189,10 +195,6 @@ public class GossipContainer {
 
       public int weightedValue() {
          return this.value * this.type.weight;
-      }
-
-      static {
-         LIST_CODEC = CODEC.listOf();
       }
    }
 

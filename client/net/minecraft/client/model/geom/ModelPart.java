@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public final class ModelPart {
@@ -155,7 +156,7 @@ public final class ModelPart {
    public void translateAndRotate(PoseStack var1) {
       var1.translate(this.x / 16.0F, this.y / 16.0F, this.z / 16.0F);
       if (this.xRot != 0.0F || this.yRot != 0.0F || this.zRot != 0.0F) {
-         var1.mulPose((new Quaternionf()).rotationZYX(this.zRot, this.yRot, this.xRot));
+         var1.mulPose((Quaternionfc)(new Quaternionf()).rotationZYX(this.zRot, this.yRot, this.xRot));
       }
 
       if (this.xScale != 1.0F || this.yScale != 1.0F || this.zScale != 1.0F) {

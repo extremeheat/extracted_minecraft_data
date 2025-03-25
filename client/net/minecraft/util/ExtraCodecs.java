@@ -29,6 +29,8 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -57,6 +59,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -69,7 +72,7 @@ public class ExtraCodecs {
    public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS;
    public static final Codec<AxisAngle4f> AXISANGLE4F;
    public static final Codec<Quaternionf> QUATERNIONF;
-   public static final Codec<Matrix4f> MATRIX4F;
+   public static final Codec<Matrix4fc> MATRIX4F;
    public static final Codec<Integer> RGB_COLOR_CODEC;
    public static final Codec<Integer> ARGB_COLOR_CODEC;
    public static final Codec<Integer> UNSIGNED_BYTE;
@@ -93,6 +96,8 @@ public class ExtraCodecs {
    public static final Codec<String> NON_EMPTY_STRING;
    public static final Codec<Integer> CODEPOINT;
    public static final Codec<String> RESOURCE_PATH_CODEC;
+   public static final Codec<URI> UNTRUSTED_URI;
+   public static final Codec<String> CHAT_STRING;
 
    public ExtraCodecs() {
       super();
@@ -405,6 +410,18 @@ public class ExtraCodecs {
       };
    }
 
+   /** @deprecated */
+   @Deprecated
+   public static <E extends Enum<E>> Codec<E> legacyEnum(Function<String, E> var0) {
+      return Codec.STRING.comapFlatMap((var1) -> {
+         try {
+            return DataResult.success((Enum)var0.apply(var1));
+         } catch (IllegalArgumentException var3) {
+            return DataResult.error(() -> "No value with id: " + var1);
+         }
+      }, Enum::toString);
+   }
+
    static {
       JSON = converter(JsonOps.INSTANCE);
       JAVA = converter(JavaOps.INSTANCE);
@@ -485,6 +502,24 @@ public class ExtraCodecs {
          return var1.length != 1 ? DataResult.error(() -> "Expected one codepoint, got: " + var0) : DataResult.success(var1[0]);
       }, Character::toString);
       RESOURCE_PATH_CODEC = Codec.STRING.validate((var0) -> !ResourceLocation.isValidPath(var0) ? DataResult.error(() -> "Invalid string to use as a resource path element: " + var0) : DataResult.success(var0));
+      UNTRUSTED_URI = Codec.STRING.comapFlatMap((var0) -> {
+         try {
+            return DataResult.success(Util.parseAndValidateUntrustedUri(var0));
+         } catch (URISyntaxException var2) {
+            Objects.requireNonNull(var2);
+            return DataResult.error(var2::getMessage);
+         }
+      }, URI::toString);
+      CHAT_STRING = Codec.STRING.validate((var0) -> {
+         for(int var1 = 0; var1 < var0.length(); ++var1) {
+            char var2 = var0.charAt(var1);
+            if (!StringUtil.isAllowedChatCharacter(var2)) {
+               return DataResult.error(() -> "Disallowed chat character: '" + var2 + "'");
+            }
+         }
+
+         return DataResult.success(var0);
+      });
    }
 
    public static record StrictUnboundedMapCodec<K, V>(Codec<K> keyCodec, Codec<V> elementCodec) implements Codec<Map<K, V>>, BaseMapCodec<K, V> {

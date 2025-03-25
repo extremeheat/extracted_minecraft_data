@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
+import org.joml.Quaternionfc;
 
 public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, ShulkerBulletRenderState> {
    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/shulker/spark.png");
@@ -33,9 +34,9 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       var2.pushPose();
       float var5 = var1.ageInTicks;
       var2.translate(0.0F, 0.15F, 0.0F);
-      var2.mulPose(Axis.YP.rotationDegrees(Mth.sin(var5 * 0.1F) * 180.0F));
-      var2.mulPose(Axis.XP.rotationDegrees(Mth.cos(var5 * 0.1F) * 180.0F));
-      var2.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var5 * 0.15F) * 360.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin(var5 * 0.1F) * 180.0F));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos(var5 * 0.1F) * 180.0F));
+      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 0.15F) * 360.0F));
       var2.scale(-0.5F, -0.5F, 0.5F);
       this.model.setupAnim(var1);
       VertexConsumer var6 = var3.getBuffer(this.model.renderType(TEXTURE_LOCATION));

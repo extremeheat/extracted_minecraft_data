@@ -35,10 +35,10 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
    public DesertPyramidPiece(CompoundTag var1) {
       super(StructurePieceType.DESERT_PYRAMID_PIECE, var1);
       this.randomCollapsedRoofPos = BlockPos.ZERO;
-      this.hasPlacedChest[0] = var1.getBoolean("hasPlacedChest0");
-      this.hasPlacedChest[1] = var1.getBoolean("hasPlacedChest1");
-      this.hasPlacedChest[2] = var1.getBoolean("hasPlacedChest2");
-      this.hasPlacedChest[3] = var1.getBoolean("hasPlacedChest3");
+      this.hasPlacedChest[0] = var1.getBooleanOr("hasPlacedChest0", false);
+      this.hasPlacedChest[1] = var1.getBooleanOr("hasPlacedChest1", false);
+      this.hasPlacedChest[2] = var1.getBooleanOr("hasPlacedChest2", false);
+      this.hasPlacedChest[3] = var1.getBooleanOr("hasPlacedChest3", false);
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

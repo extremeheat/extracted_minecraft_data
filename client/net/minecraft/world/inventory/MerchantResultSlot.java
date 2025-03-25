@@ -37,7 +37,7 @@ public class MerchantResultSlot extends Slot {
    }
 
    protected void checkTakeAchievements(ItemStack var1) {
-      var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
+      var1.onCraftedBy(this.player, this.removeCount);
       this.removeCount = 0;
    }
 

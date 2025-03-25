@@ -55,8 +55,8 @@ public record PiecesContainer(List<StructurePiece> pieces) {
       ArrayList var2 = Lists.newArrayList();
 
       for(int var3 = 0; var3 < var0.size(); ++var3) {
-         CompoundTag var4 = var0.getCompound(var3);
-         String var5 = var4.getString("id").toLowerCase(Locale.ROOT);
+         CompoundTag var4 = var0.getCompoundOrEmpty(var3);
+         String var5 = var4.getStringOr("id", "").toLowerCase(Locale.ROOT);
          ResourceLocation var6 = ResourceLocation.parse(var5);
          ResourceLocation var7 = (ResourceLocation)RENAMES.getOrDefault(var6, var6);
          StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.getValue(var7);

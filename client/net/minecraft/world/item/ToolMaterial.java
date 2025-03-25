@@ -13,6 +13,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -38,9 +39,9 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
       return var1.durability(this.durability).repairable(this.repairItems).enchantable(this.enchantmentValue);
    }
 
-   public Item.Properties applyToolProperties(Item.Properties var1, TagKey<Block> var2, float var3, float var4) {
-      HolderGetter var5 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(var5.getOrThrow(this.incorrectBlocksForDrops)), Tool.Rule.minesAndDrops(var5.getOrThrow(var2), this.speed)), 1.0F, 1)).attributes(this.createToolAttributes(var3, var4));
+   public Item.Properties applyToolProperties(Item.Properties var1, TagKey<Block> var2, float var3, float var4, float var5) {
+      HolderGetter var6 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
+      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(var6.getOrThrow(this.incorrectBlocksForDrops)), Tool.Rule.minesAndDrops(var6.getOrThrow(var2), this.speed)), 1.0F, 1, true)).attributes(this.createToolAttributes(var3, var4)).component(DataComponents.WEAPON, new Weapon(2, var5));
    }
 
    private ItemAttributeModifiers createToolAttributes(float var1, float var2) {
@@ -49,7 +50,7 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
 
    public Item.Properties applySwordProperties(Item.Properties var1, float var2, float var3) {
       HolderGetter var4 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_EFFICIENT), 1.5F)), 1.0F, 2)).attributes(this.createSwordAttributes(var2, var3));
+      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_INSTANTLY_MINES), 3.4028235E38F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_EFFICIENT), 1.5F)), 1.0F, 2, false)).attributes(this.createSwordAttributes(var2, var3)).component(DataComponents.WEAPON, new Weapon(1));
    }
 
    private ItemAttributeModifiers createSwordAttributes(float var1, float var2) {

@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -31,10 +32,10 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
 
    public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
       RandomSource var5 = var2.getRandom();
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var4.sound().value(), SoundSource.NEUTRAL, 1.0F, var5.triangle(1.0F, 0.4F));
+      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var4.sound().value(), SoundSource.NEUTRAL, 1.0F, var5.triangle(1.0F, 0.4F));
       if (var2 instanceof Player var6) {
          var6.getFoodData().eat(this);
-         var1.playSound((Player)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
+         var1.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
       }
 
    }

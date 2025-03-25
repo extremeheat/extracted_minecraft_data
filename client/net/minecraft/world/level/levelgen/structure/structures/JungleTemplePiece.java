@@ -42,10 +42,10 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
 
    public JungleTemplePiece(CompoundTag var1) {
       super(StructurePieceType.JUNGLE_PYRAMID_PIECE, var1);
-      this.placedMainChest = var1.getBoolean("placedMainChest");
-      this.placedHiddenChest = var1.getBoolean("placedHiddenChest");
-      this.placedTrap1 = var1.getBoolean("placedTrap1");
-      this.placedTrap2 = var1.getBoolean("placedTrap2");
+      this.placedMainChest = var1.getBooleanOr("placedMainChest", false);
+      this.placedHiddenChest = var1.getBooleanOr("placedHiddenChest", false);
+      this.placedTrap1 = var1.getBooleanOr("placedTrap1", false);
+      this.placedTrap2 = var1.getBooleanOr("placedTrap2", false);
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

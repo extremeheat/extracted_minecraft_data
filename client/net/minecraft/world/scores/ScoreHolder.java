@@ -24,7 +24,7 @@ public interface ScoreHolder {
 
    default Component getFeedbackDisplayName() {
       Component var1 = this.getDisplayName();
-      return var1 != null ? var1.copy().withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.getScoreboardName()))))) : Component.literal(this.getScoreboardName());
+      return var1 != null ? var1.copy().withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(Component.literal(this.getScoreboardName()))))) : Component.literal(this.getScoreboardName());
    }
 
    static ScoreHolder forNameOnly(final String var0) {

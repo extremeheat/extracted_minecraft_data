@@ -1,15 +1,16 @@
 package net.minecraft.advancements.critereon;
 
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.component.predicates.DataComponentPredicate;
 
-public interface SingleComponentItemPredicate<T> extends ItemSubPredicate {
-   default boolean matches(ItemStack var1) {
+public interface SingleComponentItemPredicate<T> extends DataComponentPredicate {
+   default boolean matches(DataComponentGetter var1) {
       Object var2 = var1.get(this.componentType());
-      return var2 != null && this.matches(var1, var2);
+      return var2 != null && this.matches(var2);
    }
 
    DataComponentType<T> componentType();
 
-   boolean matches(ItemStack var1, T var2);
+   boolean matches(T var1);
 }

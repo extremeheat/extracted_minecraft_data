@@ -2,17 +2,14 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -22,6 +19,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -37,7 +35,6 @@ import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -92,7 +89,7 @@ public class BeehiveBlock extends BaseEntityBlock {
       if (!var1.isClientSide && var5 instanceof BeehiveBlockEntity var7) {
          if (!EnchantmentHelper.hasTag(var6, EnchantmentTags.PREVENTS_BEE_SPAWNS_WHEN_MINING)) {
             var7.emptyAllLivingFromHive(var2, var4, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
-            var1.updateNeighbourForOutputSignal(var3, this);
+            Containers.updateNeighboursAfterDestroy(var4, var1, var3);
             this.angerNearbyBees(var1, var3);
          }
 
@@ -256,7 +253,7 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (var1 instanceof ServerLevel var5) {
-         if (var4.isCreative() && var5.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+         if (var4.preventsBlockDrops() && var5.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
             BlockEntity var6 = var1.getBlockEntity(var2);
             if (var6 instanceof BeehiveBlockEntity) {
                BeehiveBlockEntity var7 = (BeehiveBlockEntity)var6;
@@ -317,15 +314,6 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    public BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      BlockItemStateProperties var5 = (BlockItemStateProperties)var1.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
-      int var6 = (Integer)Objects.requireNonNullElse((Integer)var5.get(HONEY_LEVEL), 0);
-      int var7 = ((List)var1.getOrDefault(DataComponents.BEES, List.of())).size();
-      var3.add(Component.translatable("container.beehive.bees", var7, 3).withStyle(ChatFormatting.GRAY));
-      var3.add(Component.translatable("container.beehive.honey", var6, 5).withStyle(ChatFormatting.GRAY));
    }
 
    static {

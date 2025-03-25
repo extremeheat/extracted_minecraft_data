@@ -18,7 +18,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DirtPathBlock extends Block {
    public static final MapCodec<DirtPathBlock> CODEC = simpleCodec(DirtPathBlock::new);
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 15.0);
 
    public MapCodec<DirtPathBlock> codec() {
       return CODEC;
@@ -59,9 +59,5 @@ public class DirtPathBlock extends Block {
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
-   }
-
-   static {
-      SHAPE = FarmBlock.SHAPE;
    }
 }

@@ -20,6 +20,6 @@ public record PackLocationInfo(String id, Component title, PackSource source, Op
    }
 
    public Component createChatLink(boolean var1, Component var2) {
-      return ComponentUtils.wrapInSquareBrackets(this.source.decorate(Component.literal(this.id))).withStyle((UnaryOperator)((var3) -> var3.withColor(var1 ? ChatFormatting.GREEN : ChatFormatting.RED).withInsertion(StringArgumentType.escapeIfRequired(this.id)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.empty().append(this.title).append("\n").append(var2)))));
+      return ComponentUtils.wrapInSquareBrackets(this.source.decorate(Component.literal(this.id))).withStyle((UnaryOperator)((var3) -> var3.withColor(var1 ? ChatFormatting.GREEN : ChatFormatting.RED).withInsertion(StringArgumentType.escapeIfRequired(this.id)).withHoverEvent(new HoverEvent.ShowText(Component.empty().append(this.title).append("\n").append(var2)))));
    }
 }

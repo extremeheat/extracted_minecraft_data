@@ -23,7 +23,7 @@ public abstract class ResettingWorldTask extends LongRunningTask {
    protected abstract void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException;
 
    public void run() {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
       int var2 = 0;
 
       while(var2 < 25) {

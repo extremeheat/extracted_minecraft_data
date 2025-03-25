@@ -99,7 +99,7 @@ public class RealmsBackupScreen extends RealmsScreen {
    private void fetchRealmsBackups() {
       (new Thread("Realms-fetch-backups") {
          public void run() {
-            RealmsClient var1 = RealmsClient.create();
+            RealmsClient var1 = RealmsClient.getOrCreate();
 
             try {
                List var2 = var1.backupsFor(RealmsBackupScreen.this.serverData.id).backups;

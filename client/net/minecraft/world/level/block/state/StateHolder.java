@@ -71,11 +71,19 @@ public abstract class StateHolder<O, S> {
       return var1.toString();
    }
 
+   public final boolean equals(Object var1) {
+      return super.equals(var1);
+   }
+
+   public int hashCode() {
+      return super.hashCode();
+   }
+
    public Collection<Property<?>> getProperties() {
       return Collections.unmodifiableCollection(this.values.keySet());
    }
 
-   public <T extends Comparable<T>> boolean hasProperty(Property<T> var1) {
+   public boolean hasProperty(Property<?> var1) {
       return this.values.containsKey(var1);
    }
 
@@ -98,7 +106,7 @@ public abstract class StateHolder<O, S> {
    }
 
    @Nullable
-   public <T extends Comparable<T>> T getNullableValue(Property<T> var1) {
+   private <T extends Comparable<T>> T getNullableValue(Property<T> var1) {
       Comparable var2 = (Comparable)this.values.get(var1);
       return (T)(var2 == null ? null : (Comparable)var1.getValueClass().cast(var2));
    }

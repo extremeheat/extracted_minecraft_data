@@ -21,7 +21,7 @@ public class RealmCreationTask extends LongRunningTask {
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
 
       try {
          var1.initializeRealm(this.realmId, this.name, this.motd);

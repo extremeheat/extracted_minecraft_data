@@ -10,7 +10,6 @@ import com.mojang.serialization.MapLike;
 import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -50,13 +49,6 @@ public final class CustomData {
       return new CustomData(var0.copy());
    }
 
-   public static Predicate<ItemStack> itemMatcher(DataComponentType<CustomData> var0, CompoundTag var1) {
-      return (var2) -> {
-         CustomData var3 = (CustomData)var2.getOrDefault(var0, EMPTY);
-         return var3.matchedBy(var1);
-      };
-   }
-
    public boolean matchedBy(CompoundTag var1) {
       return NbtUtils.compareNbt(var1, this.tag, true);
    }
@@ -88,7 +80,7 @@ public final class CustomData {
 
    @Nullable
    public ResourceLocation parseEntityId() {
-      return !this.tag.contains("id", 8) ? null : ResourceLocation.tryParse(this.tag.getString("id"));
+      return (ResourceLocation)this.tag.read("id", ResourceLocation.CODEC).orElse((Object)null);
    }
 
    @Nullable
@@ -183,8 +175,8 @@ public final class CustomData {
    }
 
    static {
-      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
-      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
+      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.FLATTENED_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
+      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().getString("id").isPresent() ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
       STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
    }
 }

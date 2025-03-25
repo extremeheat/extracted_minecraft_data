@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBlockEntity> {
    private static final int BLACK_TEXT_OUTLINE_COLOR = -988212;
@@ -46,11 +47,11 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
 
    protected abstract void translateSign(PoseStack var1, float var2, BlockState var3);
 
-   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      BlockState var7 = var1.getBlockState();
-      SignBlock var8 = (SignBlock)var7.getBlock();
-      Model var9 = this.getSignModel(var7, var8.type());
-      this.renderSignWithText(var1, var3, var4, var5, var6, var7, var8, var8.type(), var9);
+   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      BlockState var8 = var1.getBlockState();
+      SignBlock var9 = (SignBlock)var8.getBlock();
+      Model var10 = this.getSignModel(var8, var9.type());
+      this.renderSignWithText(var1, var3, var4, var5, var6, var8, var9, var9.type(), var10);
    }
 
    private void renderSignWithText(SignBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, BlockState var6, SignBlock var7, WoodType var8, Model var9) {
@@ -110,7 +111,7 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
 
    private void translateSignText(PoseStack var1, boolean var2, Vec3 var3) {
       if (!var2) {
-         var1.mulPose(Axis.YP.rotationDegrees(180.0F));
+         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
       }
 
       float var4 = 0.015625F * this.getSignTextRenderScale();

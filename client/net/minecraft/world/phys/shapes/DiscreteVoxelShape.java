@@ -1,5 +1,6 @@
 package net.minecraft.world.phys.shapes;
 
+import com.mojang.math.OctahedralGroup;
 import net.minecraft.core.AxisCycle;
 import net.minecraft.core.Direction;
 
@@ -17,6 +18,41 @@ public abstract class DiscreteVoxelShape {
          this.zSize = var3;
       } else {
          throw new IllegalArgumentException("Need all positive sizes: x: " + var1 + ", y: " + var2 + ", z: " + var3);
+      }
+   }
+
+   public DiscreteVoxelShape rotate(OctahedralGroup var1) {
+      if (var1 == OctahedralGroup.IDENTITY) {
+         return this;
+      } else {
+         Direction.Axis var2 = var1.permute(Direction.Axis.X);
+         Direction.Axis var3 = var1.permute(Direction.Axis.Y);
+         Direction.Axis var4 = var1.permute(Direction.Axis.Z);
+         int var5 = var2.choose(this.xSize, this.ySize, this.zSize);
+         int var6 = var3.choose(this.xSize, this.ySize, this.zSize);
+         int var7 = var4.choose(this.xSize, this.ySize, this.zSize);
+         boolean var8 = var1.inverts(var2);
+         boolean var9 = var1.inverts(var3);
+         boolean var10 = var1.inverts(var4);
+         boolean var11 = var2.choose(var8, var9, var10);
+         boolean var12 = var3.choose(var8, var9, var10);
+         boolean var13 = var4.choose(var8, var9, var10);
+         BitSetDiscreteVoxelShape var14 = new BitSetDiscreteVoxelShape(var5, var6, var7);
+
+         for(int var15 = 0; var15 < this.xSize; ++var15) {
+            for(int var16 = 0; var16 < this.ySize; ++var16) {
+               for(int var17 = 0; var17 < this.zSize; ++var17) {
+                  if (this.isFull(var15, var16, var17)) {
+                     int var18 = var2.choose(var15, var16, var17);
+                     int var19 = var3.choose(var15, var16, var17);
+                     int var20 = var4.choose(var15, var16, var17);
+                     ((DiscreteVoxelShape)var14).fill(var11 ? var5 - 1 - var18 : var18, var12 ? var6 - 1 - var19 : var19, var13 ? var7 - 1 - var20 : var20);
+                  }
+               }
+            }
+         }
+
+         return var14;
       }
    }
 

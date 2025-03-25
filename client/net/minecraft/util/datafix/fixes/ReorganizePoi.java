@@ -35,7 +35,7 @@ public class ReorganizePoi extends DataFix {
          if (var4.isPresent()) {
             Dynamic var5 = (Dynamic)var4.get();
             Dynamic var6 = var0.createMap(ImmutableMap.of(var0.createString("Records"), var5));
-            var1.put(var0.createInt(var2), var6);
+            var1.put(var0.createString(Integer.toString(var2)), var6);
             var0 = var0.remove(var3);
          }
       }

@@ -9,6 +9,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.windcharge.WindCharge;
@@ -29,7 +30,7 @@ public class WindChargeItem extends Item implements ProjectileItem {
          Projectile.spawnProjectileFromRotation((var2x, var3x, var4x) -> new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z()), var5, var4, var2, 0.0F, PROJECTILE_SHOOT_POWER, 1.0F);
       }
 
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       var2.awardStat(Stats.ITEM_USED.get(this));
       var4.consume(1, var2);
       return InteractionResult.SUCCESS;

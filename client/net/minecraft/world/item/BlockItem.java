@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -8,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -78,7 +76,7 @@ public class BlockItem extends Item {
                }
 
                SoundType var9 = var8.getSoundType();
-               var5.playSound(var6, var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
+               var5.playSound(var6, (BlockPos)var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
                var5.gameEvent(GameEvent.BLOCK_PLACE, var4, GameEvent.Context.of(var6, var8));
                var7.consume(1, var6);
                return InteractionResult.SUCCESS;
@@ -131,8 +129,7 @@ public class BlockItem extends Item {
 
    protected boolean canPlace(BlockPlaceContext var1, BlockState var2) {
       Player var3 = var1.getPlayer();
-      CollisionContext var4 = var3 == null ? CollisionContext.empty() : CollisionContext.of(var3);
-      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), var4);
+      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), CollisionContext.placementContext(var3));
    }
 
    protected boolean mustSurvive() {
@@ -171,11 +168,6 @@ public class BlockItem extends Item {
 
          return false;
       }
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      this.getBlock().appendHoverText(var1, var2, var3, var4);
    }
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {

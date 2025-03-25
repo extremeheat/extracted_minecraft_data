@@ -11,6 +11,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,9 +36,7 @@ public class CakeBlock extends Block {
    public static final int MAX_BITES = 6;
    public static final IntegerProperty BITES;
    public static final int FULL_CAKE_SIGNAL;
-   protected static final float AABB_OFFSET = 1.0F;
-   protected static final float AABB_SIZE_PER_BITE = 2.0F;
-   protected static final VoxelShape[] SHAPE_BY_BITE;
+   private static final VoxelShape[] SHAPES;
 
    public MapCodec<CakeBlock> codec() {
       return CODEC;
@@ -49,7 +48,7 @@ public class CakeBlock extends Block {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_BITE[(Integer)var1.getValue(BITES)];
+      return SHAPES[(Integer)var1.getValue(BITES)];
    }
 
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
@@ -59,7 +58,7 @@ public class CakeBlock extends Block {
          if (var10 instanceof CandleBlock) {
             CandleBlock var9 = (CandleBlock)var10;
             var1.consume(1, var5);
-            var3.playSound((Player)null, (BlockPos)var4, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var3.playSound((Entity)null, (BlockPos)var4, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS, 1.0F, 1.0F);
             var3.setBlockAndUpdate(var4, CandleCakeBlock.byCandle(var9));
             var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
             var5.awardStat(Stats.ITEM_USED.get(var8));
@@ -134,6 +133,6 @@ public class CakeBlock extends Block {
    static {
       BITES = BlockStateProperties.BITES;
       FULL_CAKE_SIGNAL = getOutputSignal(0);
-      SHAPE_BY_BITE = new VoxelShape[]{Block.box(1.0, 0.0, 1.0, 15.0, 8.0, 15.0), Block.box(3.0, 0.0, 1.0, 15.0, 8.0, 15.0), Block.box(5.0, 0.0, 1.0, 15.0, 8.0, 15.0), Block.box(7.0, 0.0, 1.0, 15.0, 8.0, 15.0), Block.box(9.0, 0.0, 1.0, 15.0, 8.0, 15.0), Block.box(11.0, 0.0, 1.0, 15.0, 8.0, 15.0), Block.box(13.0, 0.0, 1.0, 15.0, 8.0, 15.0)};
+      SHAPES = Block.boxes(6, (var0) -> Block.box((double)(1 + var0 * 2), 0.0, 1.0, 15.0, 8.0, 15.0));
    }
 }

@@ -1,10 +1,11 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.Map;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -17,7 +18,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -32,6 +33,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.Tilt;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
@@ -39,7 +41,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -51,13 +52,10 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    private static final int NO_TICK = -1;
    private static final Object2IntMap<Tilt> DELAY_UNTIL_NEXT_TILT_STATE;
    private static final int MAX_GEN_HEIGHT = 5;
-   private static final int STEM_WIDTH = 6;
    private static final int ENTITY_DETECTION_MIN_Y = 11;
    private static final int LOWEST_LEAF_TOP = 13;
-   private static final Map<Tilt, VoxelShape> LEAF_SHAPES;
-   private static final VoxelShape STEM_SLICER;
-   private static final Map<Direction, VoxelShape> STEM_SHAPES;
-   private final Map<BlockState, VoxelShape> shapesCache;
+   private static final Map<Tilt, VoxelShape> SHAPE_LEAF;
+   private final Function<BlockState, VoxelShape> shapes;
 
    public MapCodec<BigDripleafBlock> codec() {
       return CODEC;
@@ -66,11 +64,12 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    protected BigDripleafBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(WATERLOGGED, false)).setValue(FACING, Direction.NORTH)).setValue(TILT, Tilt.NONE));
-      this.shapesCache = this.getShapeForEachState(BigDripleafBlock::calculateShape);
+      this.shapes = this.makeShapes();
    }
 
-   private static VoxelShape calculateShape(BlockState var0) {
-      return Shapes.or((VoxelShape)LEAF_SHAPES.get(var0.getValue(TILT)), (VoxelShape)STEM_SHAPES.get(var0.getValue(FACING)));
+   private Function<BlockState, VoxelShape> makeShapes() {
+      Map var1 = Shapes.rotateHorizontal(Block.column(6.0, 0.0, 13.0).move(0.0, 0.0, 0.25).optimize());
+      return this.getShapeForEachState((var1x) -> Shapes.or((VoxelShape)SHAPE_LEAF.get(var1x.getValue(TILT)), (VoxelShape)var1.get(var1x.getValue(FACING))), new Property[]{WATERLOGGED});
    }
 
    public static void placeWithRandomHeight(LevelAccessor var0, RandomSource var1, BlockPos var2, Direction var3) {
@@ -153,7 +152,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!var2.isClientSide) {
          if (var1.getValue(TILT) == Tilt.NONE && canEntityTilt(var3, var4) && !var2.hasNeighborSignal(var3)) {
             this.setTiltAndScheduleTick(var1, var2, var3, Tilt.UNSTABLE, (SoundEvent)null);
@@ -187,7 +186,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
 
    private static void playTiltSound(Level var0, BlockPos var1, SoundEvent var2) {
       float var3 = Mth.randomBetween(var0.random, 0.8F, 1.2F);
-      var0.playSound((Player)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, var3);
+      var0.playSound((Entity)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, var3);
    }
 
    private static boolean canEntityTilt(BlockPos var0, Entity var1) {
@@ -225,11 +224,11 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)LEAF_SHAPES.get(var1.getValue(TILT));
+      return (VoxelShape)SHAPE_LEAF.get(var1.getValue(TILT));
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapesCache.get(var1);
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -252,8 +251,6 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
          var0.put(Tilt.PARTIAL, 10);
          var0.put(Tilt.FULL, 100);
       });
-      LEAF_SHAPES = ImmutableMap.of(Tilt.NONE, Block.box(0.0, 11.0, 0.0, 16.0, 15.0, 16.0), Tilt.UNSTABLE, Block.box(0.0, 11.0, 0.0, 16.0, 15.0, 16.0), Tilt.PARTIAL, Block.box(0.0, 11.0, 0.0, 16.0, 13.0, 16.0), Tilt.FULL, Shapes.empty());
-      STEM_SLICER = Block.box(0.0, 13.0, 0.0, 16.0, 16.0, 16.0);
-      STEM_SHAPES = ImmutableMap.of(Direction.NORTH, Shapes.joinUnoptimized(BigDripleafStemBlock.NORTH_SHAPE, STEM_SLICER, BooleanOp.ONLY_FIRST), Direction.SOUTH, Shapes.joinUnoptimized(BigDripleafStemBlock.SOUTH_SHAPE, STEM_SLICER, BooleanOp.ONLY_FIRST), Direction.EAST, Shapes.joinUnoptimized(BigDripleafStemBlock.EAST_SHAPE, STEM_SLICER, BooleanOp.ONLY_FIRST), Direction.WEST, Shapes.joinUnoptimized(BigDripleafStemBlock.WEST_SHAPE, STEM_SLICER, BooleanOp.ONLY_FIRST));
+      SHAPE_LEAF = Maps.newEnumMap(Map.of(Tilt.NONE, Block.column(16.0, 11.0, 15.0), Tilt.UNSTABLE, Block.column(16.0, 11.0, 15.0), Tilt.PARTIAL, Block.column(16.0, 11.0, 13.0), Tilt.FULL, Shapes.empty()));
    }
 }

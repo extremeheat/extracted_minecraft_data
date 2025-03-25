@@ -12,7 +12,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
@@ -20,6 +19,7 @@ public class Skeleton extends AbstractSkeleton {
    private static final int TOTAL_CONVERSION_TIME = 300;
    private static final EntityDataAccessor<Boolean> DATA_STRAY_CONVERSION_ID;
    public static final String CONVERSION_TAG = "StrayConversionTime";
+   private static final int NOT_CONVERTING = -1;
    private int inPowderSnowTime;
    private int conversionTime;
 
@@ -74,8 +74,11 @@ public class Skeleton extends AbstractSkeleton {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("StrayConversionTime", 99) && var1.getInt("StrayConversionTime") > -1) {
-         this.startFreezeConversion(var1.getInt("StrayConversionTime"));
+      int var2 = var1.getIntOr("StrayConversionTime", -1);
+      if (var2 != -1) {
+         this.startFreezeConversion(var2);
+      } else {
+         this.setFreezeConverting(false);
       }
 
    }
@@ -89,7 +92,7 @@ public class Skeleton extends AbstractSkeleton {
    protected void doFreezeConversion() {
       this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), (var1) -> {
          if (!this.isSilent()) {
-            this.level().levelEvent((Player)null, 1048, this.blockPosition(), 0);
+            this.level().levelEvent((Entity)null, 1048, this.blockPosition(), 0);
          }
 
       });

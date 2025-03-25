@@ -68,7 +68,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    }
 
    protected void onTake(Player var1, ItemStack var2) {
-      if (!var1.getAbilities().instabuild) {
+      if (!var1.hasInfiniteMaterials()) {
          var1.giveExperienceLevels(-this.cost.get());
       }
 
@@ -170,7 +170,7 @@ public class AnvilMenu extends ItemCombinerMenu {
                   var17 = var16 == var17 ? var17 + 1 : Math.max(var17, var16);
                   Enchantment var18 = (Enchantment)var15.value();
                   boolean var19 = var18.canEnchant(var1);
-                  if (this.player.getAbilities().instabuild || var1.is(Items.ENCHANTED_BOOK)) {
+                  if (this.player.hasInfiniteMaterials() || var1.is(Items.ENCHANTED_BOOK)) {
                      var19 = true;
                   }
 
@@ -236,7 +236,7 @@ public class AnvilMenu extends ItemCombinerMenu {
             this.onlyRenaming = true;
          }
 
-         if (this.cost.get() >= 40 && !this.player.getAbilities().instabuild) {
+         if (this.cost.get() >= 40 && !this.player.hasInfiniteMaterials()) {
             var6 = ItemStack.EMPTY;
          }
 

@@ -1,26 +1,17 @@
 package net.minecraft.resources;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
-import java.lang.reflect.Type;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.GsonHelper;
 
 public final class ResourceLocation implements Comparable<ResourceLocation> {
    public static final Codec<ResourceLocation> CODEC;
@@ -276,29 +267,5 @@ public final class ResourceLocation implements Comparable<ResourceLocation> {
       CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
       STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ResourceLocation::parse, ResourceLocation::toString);
       ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
-   }
-
-   public static class Serializer implements JsonDeserializer<ResourceLocation>, JsonSerializer<ResourceLocation> {
-      public Serializer() {
-         super();
-      }
-
-      public ResourceLocation deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return ResourceLocation.parse(GsonHelper.convertToString(var1, "location"));
-      }
-
-      public JsonElement serialize(ResourceLocation var1, Type var2, JsonSerializationContext var3) {
-         return new JsonPrimitive(var1.toString());
-      }
-
-      // $FF: synthetic method
-      public JsonElement serialize(final Object var1, final Type var2, final JsonSerializationContext var3) {
-         return this.serialize((ResourceLocation)var1, var2, var3);
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
-      }
    }
 }

@@ -30,20 +30,19 @@ public class ItemModelResolver {
       this.clientProperties = var1::getItemProperties;
    }
 
-   public void updateForLiving(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, boolean var4, LivingEntity var5) {
-      this.updateForTopItem(var1, var2, var3, var4, var5.level(), var5, var5.getId() + var3.ordinal());
+   public void updateForLiving(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, LivingEntity var4) {
+      this.updateForTopItem(var1, var2, var3, var4.level(), var4, var4.getId() + var3.ordinal());
    }
 
    public void updateForNonLiving(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, Entity var4) {
-      this.updateForTopItem(var1, var2, var3, false, var4.level(), (LivingEntity)null, var4.getId());
+      this.updateForTopItem(var1, var2, var3, var4.level(), (LivingEntity)null, var4.getId());
    }
 
-   public void updateForTopItem(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, boolean var4, @Nullable Level var5, @Nullable LivingEntity var6, int var7) {
+   public void updateForTopItem(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable LivingEntity var5, int var6) {
       var1.clear();
       if (!var2.isEmpty()) {
          var1.displayContext = var3;
-         var1.isLeftHand = var4;
-         this.appendItemLayers(var1, var2, var3, var5, var6, var7);
+         this.appendItemLayers(var1, var2, var3, var4, var5, var6);
       }
 
    }

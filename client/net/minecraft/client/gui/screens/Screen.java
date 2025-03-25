@@ -4,12 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
-import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -47,7 +46,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -276,44 +274,94 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                this.insertText(var1.getInsertion(), false);
             }
          } else if (var2 != null) {
-            if (var2.getAction() == ClickEvent.Action.OPEN_URL) {
-               if (!(Boolean)this.minecraft.options.chatLinks().get()) {
-                  return false;
-               }
+            Objects.requireNonNull(var2);
+            byte var4 = 0;
+            //$FF: var4->value
+            //0->net/minecraft/network/chat/ClickEvent$OpenUrl
+            //1->net/minecraft/network/chat/ClickEvent$OpenFile
+            //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
+            //3->net/minecraft/network/chat/ClickEvent$RunCommand
+            //4->net/minecraft/network/chat/ClickEvent$CopyToClipboard
+            switch (var2.typeSwitch<invokedynamic>(var2, var4)) {
+               case 0:
+                  ClickEvent.OpenUrl var5 = (ClickEvent.OpenUrl)var2;
+                  ClickEvent.OpenUrl var27 = var5;
 
-               try {
-                  URI var3 = Util.parseAndValidateUntrustedUri(var2.getValue());
+                  try {
+                     var28 = var27.uri();
+                  } catch (Throwable var18) {
+                     throw new MatchException(var18.toString(), var18);
+                  }
+
+                  URI var19 = var28;
+                  if (!(Boolean)this.minecraft.options.chatLinks().get()) {
+                     return false;
+                  }
+
                   if ((Boolean)this.minecraft.options.chatLinksPrompt().get()) {
                      this.minecraft.setScreen(new ConfirmLinkScreen((var2x) -> {
                         if (var2x) {
-                           Util.getPlatform().openUri(var3);
+                           Util.getPlatform().openUri(var19);
                         }
 
                         this.minecraft.setScreen(this);
-                     }, var2.getValue(), false));
+                     }, var19.toString(), false));
                   } else {
-                     Util.getPlatform().openUri(var3);
+                     Util.getPlatform().openUri(var19);
                   }
-               } catch (URISyntaxException var4) {
-                  LOGGER.error("Can't open url for {}", var2, var4);
-               }
-            } else if (var2.getAction() == ClickEvent.Action.OPEN_FILE) {
-               Util.getPlatform().openFile(new File(var2.getValue()));
-            } else if (var2.getAction() == ClickEvent.Action.SUGGEST_COMMAND) {
-               this.insertText(StringUtil.filterText(var2.getValue()), true);
-            } else if (var2.getAction() == ClickEvent.Action.RUN_COMMAND) {
-               String var5 = StringUtil.filterText(var2.getValue());
-               if (var5.startsWith("/")) {
-                  if (!this.minecraft.player.connection.sendUnsignedCommand(var5.substring(1))) {
-                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var5);
+                  break;
+               case 1:
+                  ClickEvent.OpenFile var7 = (ClickEvent.OpenFile)var2;
+                  Util.getPlatform().openFile(var7.file());
+                  break;
+               case 2:
+                  ClickEvent.SuggestCommand var8 = (ClickEvent.SuggestCommand)var2;
+                  ClickEvent.SuggestCommand var25 = var8;
+
+                  try {
+                     var26 = var25.command();
+                  } catch (Throwable var17) {
+                     throw new MatchException(var17.toString(), var17);
                   }
-               } else {
-                  LOGGER.error("Failed to run command without '/' prefix from click event: '{}'", var5);
-               }
-            } else if (var2.getAction() == ClickEvent.Action.COPY_TO_CLIPBOARD) {
-               this.minecraft.keyboardHandler.setClipboard(var2.getValue());
-            } else {
-               LOGGER.error("Don't know how to handle {}", var2);
+
+                  String var20 = var26;
+                  this.insertText(var20, true);
+                  break;
+               case 3:
+                  ClickEvent.RunCommand var10 = (ClickEvent.RunCommand)var2;
+                  ClickEvent.RunCommand var23 = var10;
+
+                  try {
+                     var24 = var23.command();
+                  } catch (Throwable var16) {
+                     throw new MatchException(var16.toString(), var16);
+                  }
+
+                  String var21 = var24;
+                  String var11 = var21;
+                  if (var21.startsWith("/")) {
+                     var11 = var21.substring(1);
+                  }
+
+                  if (!this.minecraft.player.connection.sendUnsignedCommand(var11)) {
+                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var11);
+                  }
+                  break;
+               case 4:
+                  ClickEvent.CopyToClipboard var12 = (ClickEvent.CopyToClipboard)var2;
+                  ClickEvent.CopyToClipboard var10000 = var12;
+
+                  try {
+                     var22 = var10000.value();
+                  } catch (Throwable var15) {
+                     throw new MatchException(var15.toString(), var15);
+                  }
+
+                  String var14 = var22;
+                  this.minecraft.keyboardHandler.setClipboard(var14);
+                  break;
+               default:
+                  LOGGER.error("Don't know how to handle {}", var2);
             }
 
             return true;
@@ -374,7 +422,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected void renderBlurredBackground() {
       this.minecraft.gameRenderer.processBlurEffect();
-      this.minecraft.getMainRenderTarget().bindWrite(false);
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {

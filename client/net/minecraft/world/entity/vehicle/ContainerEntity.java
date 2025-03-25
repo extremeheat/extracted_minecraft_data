@@ -4,10 +4,8 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -72,10 +70,10 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    default void readChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
       this.clearItemStacks();
-      if (var1.contains("LootTable", 8)) {
-         this.setContainerLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("LootTable"))));
-         this.setContainerLootTableSeed(var1.getLong("LootTableSeed"));
-      } else {
+      ResourceKey var3 = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
+      this.setContainerLootTable(var3);
+      this.setContainerLootTableSeed(var1.getLongOr("LootTableSeed", 0L));
+      if (var3 == null) {
          ContainerHelper.loadAllItems(var1, this.getItemStacks(), var2);
       }
 

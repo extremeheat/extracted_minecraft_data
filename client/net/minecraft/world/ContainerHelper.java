@@ -47,11 +47,11 @@ public class ContainerHelper {
    }
 
    public static void loadAllItems(CompoundTag var0, NonNullList<ItemStack> var1, HolderLookup.Provider var2) {
-      ListTag var3 = var0.getList("Items", 10);
+      ListTag var3 = var0.getListOrEmpty("Items");
 
       for(int var4 = 0; var4 < var3.size(); ++var4) {
-         CompoundTag var5 = var3.getCompound(var4);
-         int var6 = var5.getByte("Slot") & 255;
+         CompoundTag var5 = var3.getCompoundOrEmpty(var4);
+         int var6 = var5.getByteOr("Slot", (byte)0) & 255;
          if (var6 >= 0 && var6 < var1.size()) {
             var1.set(var6, (ItemStack)ItemStack.parse(var2, var5).orElse(ItemStack.EMPTY));
          }

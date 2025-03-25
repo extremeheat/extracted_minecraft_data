@@ -1,12 +1,14 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.item.ItemStack;
@@ -21,22 +23,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBlock {
    public static final MapCodec<PitcherCropBlock> CODEC = simpleCodec(PitcherCropBlock::new);
-   public static final IntegerProperty AGE;
    public static final int MAX_AGE = 4;
+   public static final IntegerProperty AGE;
+   public static final EnumProperty<DoubleBlockHalf> HALF;
    private static final int DOUBLE_PLANT_AGE_INTERSECTION = 3;
    private static final int BONEMEAL_INCREASE = 1;
-   private static final VoxelShape FULL_UPPER_SHAPE;
-   private static final VoxelShape FULL_LOWER_SHAPE;
-   private static final VoxelShape COLLISION_SHAPE_BULB;
-   private static final VoxelShape COLLISION_SHAPE_CROP;
-   private static final VoxelShape[] UPPER_SHAPE_BY_AGE;
-   private static final VoxelShape[] LOWER_SHAPE_BY_AGE;
+   private static final VoxelShape SHAPE_BULB;
+   private static final VoxelShape SHAPE_CROP;
+   private final Function<BlockState, VoxelShape> shapes = this.makeShapes();
 
    public MapCodec<PitcherCropBlock> codec() {
       return CODEC;
@@ -46,20 +48,36 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       super(var1);
    }
 
+   private Function<BlockState, VoxelShape> makeShapes() {
+      int[] var1 = new int[]{0, 9, 11, 22, 26};
+      return this.getShapeForEachState((var1x) -> {
+         int var2 = ((Integer)var1x.getValue(AGE) == 0 ? 4 : 6) + var1[(Integer)var1x.getValue(AGE)];
+         int var3 = (Integer)var1x.getValue(AGE) == 0 ? 6 : 10;
+         VoxelShape var10000;
+         switch ((DoubleBlockHalf)var1x.getValue(HALF)) {
+            case LOWER -> var10000 = Block.column((double)var3, -1.0, (double)Math.min(16, -1 + var2));
+            case UPPER -> var10000 = Block.column((double)var3, 0.0, (double)Math.max(0, -1 + var2 - 16));
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      });
+   }
+
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       return this.defaultBlockState();
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return var1.getValue(HALF) == DoubleBlockHalf.UPPER ? UPPER_SHAPE_BY_AGE[Math.min(Math.abs(4 - ((Integer)var1.getValue(AGE) + 1)), UPPER_SHAPE_BY_AGE.length - 1)] : LOWER_SHAPE_BY_AGE[(Integer)var1.getValue(AGE)];
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if ((Integer)var1.getValue(AGE) == 0) {
-         return COLLISION_SHAPE_BULB;
+      if (var1.getValue(HALF) == DoubleBlockHalf.LOWER) {
+         return (Integer)var1.getValue(AGE) == 0 ? SHAPE_BULB : SHAPE_CROP;
       } else {
-         return var1.getValue(HALF) == DoubleBlockHalf.LOWER ? COLLISION_SHAPE_CROP : super.getCollisionShape(var1, var2, var3, var4);
+         return Shapes.empty();
       }
    }
 
@@ -84,14 +102,13 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       super.createBlockStateDefinition(var1);
    }
 
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var2 instanceof ServerLevel var5) {
-         if (var4 instanceof Ravager && var5.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            var5.destroyBlock(var3, true, var4);
+   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (var2 instanceof ServerLevel var6) {
+         if (var4 instanceof Ravager && var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            var6.destroyBlock(var3, true, var4);
          }
       }
 
-      super.entityInside(var1, var2, var3, var4);
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
@@ -180,12 +197,9 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
 
    static {
       AGE = BlockStateProperties.AGE_4;
-      FULL_UPPER_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 15.0, 13.0);
-      FULL_LOWER_SHAPE = Block.box(3.0, -1.0, 3.0, 13.0, 16.0, 13.0);
-      COLLISION_SHAPE_BULB = Block.box(5.0, -1.0, 5.0, 11.0, 3.0, 11.0);
-      COLLISION_SHAPE_CROP = Block.box(3.0, -1.0, 3.0, 13.0, 5.0, 13.0);
-      UPPER_SHAPE_BY_AGE = new VoxelShape[]{Block.box(3.0, 0.0, 3.0, 13.0, 11.0, 13.0), FULL_UPPER_SHAPE};
-      LOWER_SHAPE_BY_AGE = new VoxelShape[]{COLLISION_SHAPE_BULB, Block.box(3.0, -1.0, 3.0, 13.0, 14.0, 13.0), FULL_LOWER_SHAPE, FULL_LOWER_SHAPE, FULL_LOWER_SHAPE};
+      HALF = DoublePlantBlock.HALF;
+      SHAPE_BULB = Block.column(6.0, -1.0, 3.0);
+      SHAPE_CROP = Block.column(10.0, -1.0, 5.0);
    }
 
    static record PosAndState(BlockPos pos, BlockState state) {

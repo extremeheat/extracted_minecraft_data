@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -27,20 +28,20 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FenceBlock extends CrossCollisionBlock {
    public static final MapCodec<FenceBlock> CODEC = simpleCodec(FenceBlock::new);
-   private final VoxelShape[] occlusionByIndex;
+   private final Function<BlockState, VoxelShape> occlusionShapes;
 
    public MapCodec<FenceBlock> codec() {
       return CODEC;
    }
 
    public FenceBlock(BlockBehaviour.Properties var1) {
-      super(2.0F, 2.0F, 16.0F, 16.0F, 24.0F, var1);
+      super(4.0F, 16.0F, 4.0F, 16.0F, 24.0F, var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));
-      this.occlusionByIndex = this.makeShapes(2.0F, 1.0F, 16.0F, 6.0F, 15.0F);
+      this.occlusionShapes = this.makeShapes(4.0F, 16.0F, 2.0F, 6.0F, 15.0F);
    }
 
    protected VoxelShape getOcclusionShape(BlockState var1) {
-      return this.occlusionByIndex[this.getAABBIndex(var1)];
+      return (VoxelShape)this.occlusionShapes.apply(var1);
    }
 
    protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

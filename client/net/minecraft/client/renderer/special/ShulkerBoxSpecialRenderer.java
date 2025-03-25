@@ -55,7 +55,7 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
       }
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         return new ShulkerBoxSpecialRenderer(new ShulkerBoxRenderer(var1), this.openness, this.orientation, Sheets.createShulkerMaterial(this.texture));
+         return new ShulkerBoxSpecialRenderer(new ShulkerBoxRenderer(var1), this.openness, this.orientation, Sheets.SHULKER_MAPPER.apply(this.texture));
       }
    }
 }

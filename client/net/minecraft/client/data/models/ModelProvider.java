@@ -1,7 +1,6 @@
 package net.minecraft.client.data.models;
 
-import com.google.gson.JsonElement;
-import java.nio.file.Path;
+import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +11,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.client.data.models.blockstates.BlockStateGenerator;
+import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
+import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,10 +50,6 @@ public class ModelProvider implements DataProvider {
       return CompletableFuture.allOf(var3.save(var1, this.blockStatePathProvider), var4.save(var1, this.modelPathProvider), var2.save(var1, this.itemInfoPathProvider));
    }
 
-   static <T> CompletableFuture<?> saveAll(CachedOutput var0, Function<T, Path> var1, Map<T, ? extends Supplier<JsonElement>> var2) {
-      return DataProvider.saveAll(var0, Supplier::get, var1, var2);
-   }
-
    public final String getName() {
       return "Model Definitions";
    }
@@ -73,8 +69,9 @@ public class ModelProvider implements DataProvider {
       }
 
       public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
+         Function var10001 = Supplier::get;
          Objects.requireNonNull(var2);
-         return ModelProvider.saveAll(var1, var2::json, this.models);
+         return DataProvider.saveAll(var1, var10001, var2::json, this.models);
       }
 
       // $FF: synthetic method
@@ -83,16 +80,16 @@ public class ModelProvider implements DataProvider {
       }
    }
 
-   static class BlockStateGeneratorCollector implements Consumer<BlockStateGenerator> {
-      private final Map<Block, BlockStateGenerator> generators = new HashMap();
+   static class BlockStateGeneratorCollector implements Consumer<BlockModelDefinitionGenerator> {
+      private final Map<Block, BlockModelDefinitionGenerator> generators = new HashMap();
 
       BlockStateGeneratorCollector() {
          super();
       }
 
-      public void accept(BlockStateGenerator var1) {
-         Block var2 = var1.getBlock();
-         BlockStateGenerator var3 = (BlockStateGenerator)this.generators.put(var2, var1);
+      public void accept(BlockModelDefinitionGenerator var1) {
+         Block var2 = var1.block();
+         BlockModelDefinitionGenerator var3 = (BlockModelDefinitionGenerator)this.generators.put(var2, var1);
          if (var3 != null) {
             throw new IllegalStateException("Duplicate blockstate definition for " + String.valueOf(var2));
          }
@@ -107,12 +104,14 @@ public class ModelProvider implements DataProvider {
       }
 
       public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
-         return ModelProvider.saveAll(var1, (var1x) -> var2.json(var1x.builtInRegistryHolder().key().location()), this.generators);
+         Map var3 = Maps.transformValues(this.generators, BlockModelDefinitionGenerator::create);
+         Function var4 = (var1x) -> var2.json(var1x.builtInRegistryHolder().key().location());
+         return DataProvider.saveAll(var1, BlockModelDefinition.CODEC, var4, var3);
       }
 
       // $FF: synthetic method
       public void accept(final Object var1) {
-         this.accept((BlockStateGenerator)var1);
+         this.accept((BlockModelDefinitionGenerator)var1);
       }
    }
 

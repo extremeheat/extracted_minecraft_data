@@ -1,6 +1,9 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.math.OctahedralGroup;
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -26,71 +29,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
    public static final MapCodec<GrindstoneBlock> CODEC = simpleCodec(GrindstoneBlock::new);
-   public static final VoxelShape FLOOR_NORTH_SOUTH_LEFT_POST = Block.box(2.0, 0.0, 6.0, 4.0, 7.0, 10.0);
-   public static final VoxelShape FLOOR_NORTH_SOUTH_RIGHT_POST = Block.box(12.0, 0.0, 6.0, 14.0, 7.0, 10.0);
-   public static final VoxelShape FLOOR_NORTH_SOUTH_LEFT_PIVOT = Block.box(2.0, 7.0, 5.0, 4.0, 13.0, 11.0);
-   public static final VoxelShape FLOOR_NORTH_SOUTH_RIGHT_PIVOT = Block.box(12.0, 7.0, 5.0, 14.0, 13.0, 11.0);
-   public static final VoxelShape FLOOR_NORTH_SOUTH_LEFT_LEG;
-   public static final VoxelShape FLOOR_NORTH_SOUTH_RIGHT_LEG;
-   public static final VoxelShape FLOOR_NORTH_SOUTH_ALL_LEGS;
-   public static final VoxelShape FLOOR_NORTH_SOUTH_GRINDSTONE;
-   public static final VoxelShape FLOOR_EAST_WEST_LEFT_POST;
-   public static final VoxelShape FLOOR_EAST_WEST_RIGHT_POST;
-   public static final VoxelShape FLOOR_EAST_WEST_LEFT_PIVOT;
-   public static final VoxelShape FLOOR_EAST_WEST_RIGHT_PIVOT;
-   public static final VoxelShape FLOOR_EAST_WEST_LEFT_LEG;
-   public static final VoxelShape FLOOR_EAST_WEST_RIGHT_LEG;
-   public static final VoxelShape FLOOR_EAST_WEST_ALL_LEGS;
-   public static final VoxelShape FLOOR_EAST_WEST_GRINDSTONE;
-   public static final VoxelShape WALL_SOUTH_LEFT_POST;
-   public static final VoxelShape WALL_SOUTH_RIGHT_POST;
-   public static final VoxelShape WALL_SOUTH_LEFT_PIVOT;
-   public static final VoxelShape WALL_SOUTH_RIGHT_PIVOT;
-   public static final VoxelShape WALL_SOUTH_LEFT_LEG;
-   public static final VoxelShape WALL_SOUTH_RIGHT_LEG;
-   public static final VoxelShape WALL_SOUTH_ALL_LEGS;
-   public static final VoxelShape WALL_SOUTH_GRINDSTONE;
-   public static final VoxelShape WALL_NORTH_LEFT_POST;
-   public static final VoxelShape WALL_NORTH_RIGHT_POST;
-   public static final VoxelShape WALL_NORTH_LEFT_PIVOT;
-   public static final VoxelShape WALL_NORTH_RIGHT_PIVOT;
-   public static final VoxelShape WALL_NORTH_LEFT_LEG;
-   public static final VoxelShape WALL_NORTH_RIGHT_LEG;
-   public static final VoxelShape WALL_NORTH_ALL_LEGS;
-   public static final VoxelShape WALL_NORTH_GRINDSTONE;
-   public static final VoxelShape WALL_WEST_LEFT_POST;
-   public static final VoxelShape WALL_WEST_RIGHT_POST;
-   public static final VoxelShape WALL_WEST_LEFT_PIVOT;
-   public static final VoxelShape WALL_WEST_RIGHT_PIVOT;
-   public static final VoxelShape WALL_WEST_LEFT_LEG;
-   public static final VoxelShape WALL_WEST_RIGHT_LEG;
-   public static final VoxelShape WALL_WEST_ALL_LEGS;
-   public static final VoxelShape WALL_WEST_GRINDSTONE;
-   public static final VoxelShape WALL_EAST_LEFT_POST;
-   public static final VoxelShape WALL_EAST_RIGHT_POST;
-   public static final VoxelShape WALL_EAST_LEFT_PIVOT;
-   public static final VoxelShape WALL_EAST_RIGHT_PIVOT;
-   public static final VoxelShape WALL_EAST_LEFT_LEG;
-   public static final VoxelShape WALL_EAST_RIGHT_LEG;
-   public static final VoxelShape WALL_EAST_ALL_LEGS;
-   public static final VoxelShape WALL_EAST_GRINDSTONE;
-   public static final VoxelShape CEILING_NORTH_SOUTH_LEFT_POST;
-   public static final VoxelShape CEILING_NORTH_SOUTH_RIGHT_POST;
-   public static final VoxelShape CEILING_NORTH_SOUTH_LEFT_PIVOT;
-   public static final VoxelShape CEILING_NORTH_SOUTH_RIGHT_PIVOT;
-   public static final VoxelShape CEILING_NORTH_SOUTH_LEFT_LEG;
-   public static final VoxelShape CEILING_NORTH_SOUTH_RIGHT_LEG;
-   public static final VoxelShape CEILING_NORTH_SOUTH_ALL_LEGS;
-   public static final VoxelShape CEILING_NORTH_SOUTH_GRINDSTONE;
-   public static final VoxelShape CEILING_EAST_WEST_LEFT_POST;
-   public static final VoxelShape CEILING_EAST_WEST_RIGHT_POST;
-   public static final VoxelShape CEILING_EAST_WEST_LEFT_PIVOT;
-   public static final VoxelShape CEILING_EAST_WEST_RIGHT_PIVOT;
-   public static final VoxelShape CEILING_EAST_WEST_LEFT_LEG;
-   public static final VoxelShape CEILING_EAST_WEST_RIGHT_LEG;
-   public static final VoxelShape CEILING_EAST_WEST_ALL_LEGS;
-   public static final VoxelShape CEILING_EAST_WEST_GRINDSTONE;
-   private static final Component CONTAINER_TITLE;
+   private static final Component CONTAINER_TITLE = Component.translatable("container.grindstone_title");
+   private final Function<BlockState, VoxelShape> shapes;
 
    public MapCodec<GrindstoneBlock> codec() {
       return CODEC;
@@ -99,38 +39,19 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
    protected GrindstoneBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(FACE, AttachFace.WALL));
+      this.shapes = this.makeShapes();
+   }
+
+   private Function<BlockState, VoxelShape> makeShapes() {
+      VoxelShape var1 = Shapes.or(Block.box(2.0, 6.0, 7.0, 4.0, 10.0, 16.0), Block.box(2.0, 5.0, 3.0, 4.0, 11.0, 9.0));
+      VoxelShape var2 = Shapes.rotate(var1, OctahedralGroup.INVERT_X);
+      VoxelShape var3 = Shapes.or(Block.boxZ(8.0, 2.0, 14.0, 0.0, 12.0), var1, var2);
+      Map var4 = Shapes.rotateAttachFace(var3);
+      return this.getShapeForEachState((var1x) -> (VoxelShape)((Map)var4.get(var1x.getValue(FACE))).get(var1x.getValue(FACING)));
    }
 
    private VoxelShape getVoxelShape(BlockState var1) {
-      Direction var2 = (Direction)var1.getValue(FACING);
-      switch ((AttachFace)var1.getValue(FACE)) {
-         case FLOOR:
-            if (var2 != Direction.NORTH && var2 != Direction.SOUTH) {
-               return FLOOR_EAST_WEST_GRINDSTONE;
-            }
-
-            return FLOOR_NORTH_SOUTH_GRINDSTONE;
-         case WALL:
-            if (var2 == Direction.NORTH) {
-               return WALL_NORTH_GRINDSTONE;
-            } else if (var2 == Direction.SOUTH) {
-               return WALL_SOUTH_GRINDSTONE;
-            } else {
-               if (var2 == Direction.EAST) {
-                  return WALL_EAST_GRINDSTONE;
-               }
-
-               return WALL_WEST_GRINDSTONE;
-            }
-         case CEILING:
-            if (var2 != Direction.NORTH && var2 != Direction.SOUTH) {
-               return CEILING_EAST_WEST_GRINDSTONE;
-            }
-
-            return CEILING_NORTH_SOUTH_GRINDSTONE;
-         default:
-            return FLOOR_EAST_WEST_GRINDSTONE;
-      }
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -172,69 +93,5 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
-   }
-
-   static {
-      FLOOR_NORTH_SOUTH_LEFT_LEG = Shapes.or(FLOOR_NORTH_SOUTH_LEFT_POST, FLOOR_NORTH_SOUTH_LEFT_PIVOT);
-      FLOOR_NORTH_SOUTH_RIGHT_LEG = Shapes.or(FLOOR_NORTH_SOUTH_RIGHT_POST, FLOOR_NORTH_SOUTH_RIGHT_PIVOT);
-      FLOOR_NORTH_SOUTH_ALL_LEGS = Shapes.or(FLOOR_NORTH_SOUTH_LEFT_LEG, FLOOR_NORTH_SOUTH_RIGHT_LEG);
-      FLOOR_NORTH_SOUTH_GRINDSTONE = Shapes.or(FLOOR_NORTH_SOUTH_ALL_LEGS, Block.box(4.0, 4.0, 2.0, 12.0, 16.0, 14.0));
-      FLOOR_EAST_WEST_LEFT_POST = Block.box(6.0, 0.0, 2.0, 10.0, 7.0, 4.0);
-      FLOOR_EAST_WEST_RIGHT_POST = Block.box(6.0, 0.0, 12.0, 10.0, 7.0, 14.0);
-      FLOOR_EAST_WEST_LEFT_PIVOT = Block.box(5.0, 7.0, 2.0, 11.0, 13.0, 4.0);
-      FLOOR_EAST_WEST_RIGHT_PIVOT = Block.box(5.0, 7.0, 12.0, 11.0, 13.0, 14.0);
-      FLOOR_EAST_WEST_LEFT_LEG = Shapes.or(FLOOR_EAST_WEST_LEFT_POST, FLOOR_EAST_WEST_LEFT_PIVOT);
-      FLOOR_EAST_WEST_RIGHT_LEG = Shapes.or(FLOOR_EAST_WEST_RIGHT_POST, FLOOR_EAST_WEST_RIGHT_PIVOT);
-      FLOOR_EAST_WEST_ALL_LEGS = Shapes.or(FLOOR_EAST_WEST_LEFT_LEG, FLOOR_EAST_WEST_RIGHT_LEG);
-      FLOOR_EAST_WEST_GRINDSTONE = Shapes.or(FLOOR_EAST_WEST_ALL_LEGS, Block.box(2.0, 4.0, 4.0, 14.0, 16.0, 12.0));
-      WALL_SOUTH_LEFT_POST = Block.box(2.0, 6.0, 0.0, 4.0, 10.0, 7.0);
-      WALL_SOUTH_RIGHT_POST = Block.box(12.0, 6.0, 0.0, 14.0, 10.0, 7.0);
-      WALL_SOUTH_LEFT_PIVOT = Block.box(2.0, 5.0, 7.0, 4.0, 11.0, 13.0);
-      WALL_SOUTH_RIGHT_PIVOT = Block.box(12.0, 5.0, 7.0, 14.0, 11.0, 13.0);
-      WALL_SOUTH_LEFT_LEG = Shapes.or(WALL_SOUTH_LEFT_POST, WALL_SOUTH_LEFT_PIVOT);
-      WALL_SOUTH_RIGHT_LEG = Shapes.or(WALL_SOUTH_RIGHT_POST, WALL_SOUTH_RIGHT_PIVOT);
-      WALL_SOUTH_ALL_LEGS = Shapes.or(WALL_SOUTH_LEFT_LEG, WALL_SOUTH_RIGHT_LEG);
-      WALL_SOUTH_GRINDSTONE = Shapes.or(WALL_SOUTH_ALL_LEGS, Block.box(4.0, 2.0, 4.0, 12.0, 14.0, 16.0));
-      WALL_NORTH_LEFT_POST = Block.box(2.0, 6.0, 7.0, 4.0, 10.0, 16.0);
-      WALL_NORTH_RIGHT_POST = Block.box(12.0, 6.0, 7.0, 14.0, 10.0, 16.0);
-      WALL_NORTH_LEFT_PIVOT = Block.box(2.0, 5.0, 3.0, 4.0, 11.0, 9.0);
-      WALL_NORTH_RIGHT_PIVOT = Block.box(12.0, 5.0, 3.0, 14.0, 11.0, 9.0);
-      WALL_NORTH_LEFT_LEG = Shapes.or(WALL_NORTH_LEFT_POST, WALL_NORTH_LEFT_PIVOT);
-      WALL_NORTH_RIGHT_LEG = Shapes.or(WALL_NORTH_RIGHT_POST, WALL_NORTH_RIGHT_PIVOT);
-      WALL_NORTH_ALL_LEGS = Shapes.or(WALL_NORTH_LEFT_LEG, WALL_NORTH_RIGHT_LEG);
-      WALL_NORTH_GRINDSTONE = Shapes.or(WALL_NORTH_ALL_LEGS, Block.box(4.0, 2.0, 0.0, 12.0, 14.0, 12.0));
-      WALL_WEST_LEFT_POST = Block.box(7.0, 6.0, 2.0, 16.0, 10.0, 4.0);
-      WALL_WEST_RIGHT_POST = Block.box(7.0, 6.0, 12.0, 16.0, 10.0, 14.0);
-      WALL_WEST_LEFT_PIVOT = Block.box(3.0, 5.0, 2.0, 9.0, 11.0, 4.0);
-      WALL_WEST_RIGHT_PIVOT = Block.box(3.0, 5.0, 12.0, 9.0, 11.0, 14.0);
-      WALL_WEST_LEFT_LEG = Shapes.or(WALL_WEST_LEFT_POST, WALL_WEST_LEFT_PIVOT);
-      WALL_WEST_RIGHT_LEG = Shapes.or(WALL_WEST_RIGHT_POST, WALL_WEST_RIGHT_PIVOT);
-      WALL_WEST_ALL_LEGS = Shapes.or(WALL_WEST_LEFT_LEG, WALL_WEST_RIGHT_LEG);
-      WALL_WEST_GRINDSTONE = Shapes.or(WALL_WEST_ALL_LEGS, Block.box(0.0, 2.0, 4.0, 12.0, 14.0, 12.0));
-      WALL_EAST_LEFT_POST = Block.box(0.0, 6.0, 2.0, 9.0, 10.0, 4.0);
-      WALL_EAST_RIGHT_POST = Block.box(0.0, 6.0, 12.0, 9.0, 10.0, 14.0);
-      WALL_EAST_LEFT_PIVOT = Block.box(7.0, 5.0, 2.0, 13.0, 11.0, 4.0);
-      WALL_EAST_RIGHT_PIVOT = Block.box(7.0, 5.0, 12.0, 13.0, 11.0, 14.0);
-      WALL_EAST_LEFT_LEG = Shapes.or(WALL_EAST_LEFT_POST, WALL_EAST_LEFT_PIVOT);
-      WALL_EAST_RIGHT_LEG = Shapes.or(WALL_EAST_RIGHT_POST, WALL_EAST_RIGHT_PIVOT);
-      WALL_EAST_ALL_LEGS = Shapes.or(WALL_EAST_LEFT_LEG, WALL_EAST_RIGHT_LEG);
-      WALL_EAST_GRINDSTONE = Shapes.or(WALL_EAST_ALL_LEGS, Block.box(4.0, 2.0, 4.0, 16.0, 14.0, 12.0));
-      CEILING_NORTH_SOUTH_LEFT_POST = Block.box(2.0, 9.0, 6.0, 4.0, 16.0, 10.0);
-      CEILING_NORTH_SOUTH_RIGHT_POST = Block.box(12.0, 9.0, 6.0, 14.0, 16.0, 10.0);
-      CEILING_NORTH_SOUTH_LEFT_PIVOT = Block.box(2.0, 3.0, 5.0, 4.0, 9.0, 11.0);
-      CEILING_NORTH_SOUTH_RIGHT_PIVOT = Block.box(12.0, 3.0, 5.0, 14.0, 9.0, 11.0);
-      CEILING_NORTH_SOUTH_LEFT_LEG = Shapes.or(CEILING_NORTH_SOUTH_LEFT_POST, CEILING_NORTH_SOUTH_LEFT_PIVOT);
-      CEILING_NORTH_SOUTH_RIGHT_LEG = Shapes.or(CEILING_NORTH_SOUTH_RIGHT_POST, CEILING_NORTH_SOUTH_RIGHT_PIVOT);
-      CEILING_NORTH_SOUTH_ALL_LEGS = Shapes.or(CEILING_NORTH_SOUTH_LEFT_LEG, CEILING_NORTH_SOUTH_RIGHT_LEG);
-      CEILING_NORTH_SOUTH_GRINDSTONE = Shapes.or(CEILING_NORTH_SOUTH_ALL_LEGS, Block.box(4.0, 0.0, 2.0, 12.0, 12.0, 14.0));
-      CEILING_EAST_WEST_LEFT_POST = Block.box(6.0, 9.0, 2.0, 10.0, 16.0, 4.0);
-      CEILING_EAST_WEST_RIGHT_POST = Block.box(6.0, 9.0, 12.0, 10.0, 16.0, 14.0);
-      CEILING_EAST_WEST_LEFT_PIVOT = Block.box(5.0, 3.0, 2.0, 11.0, 9.0, 4.0);
-      CEILING_EAST_WEST_RIGHT_PIVOT = Block.box(5.0, 3.0, 12.0, 11.0, 9.0, 14.0);
-      CEILING_EAST_WEST_LEFT_LEG = Shapes.or(CEILING_EAST_WEST_LEFT_POST, CEILING_EAST_WEST_LEFT_PIVOT);
-      CEILING_EAST_WEST_RIGHT_LEG = Shapes.or(CEILING_EAST_WEST_RIGHT_POST, CEILING_EAST_WEST_RIGHT_PIVOT);
-      CEILING_EAST_WEST_ALL_LEGS = Shapes.or(CEILING_EAST_WEST_LEFT_LEG, CEILING_EAST_WEST_RIGHT_LEG);
-      CEILING_EAST_WEST_GRINDSTONE = Shapes.or(CEILING_EAST_WEST_ALL_LEGS, Block.box(2.0, 0.0, 4.0, 14.0, 12.0, 12.0));
-      CONTAINER_TITLE = Component.translatable("container.grindstone_title");
    }
 }

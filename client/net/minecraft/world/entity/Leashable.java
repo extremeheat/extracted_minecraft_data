@@ -1,13 +1,14 @@
 package net.minecraft.world.entity;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
@@ -48,7 +49,7 @@ public interface Leashable {
    }
 
    default void readLeashData(CompoundTag var1) {
-      LeashData var2 = readLeashDataInternal(var1);
+      LeashData var2 = (LeashData)var1.read("leash", Leashable.LeashData.CODEC).orElse((Object)null);
       if (this.getLeashData() != null && var2 == null) {
          this.removeLeash();
       }
@@ -56,41 +57,8 @@ public interface Leashable {
       this.setLeashData(var2);
    }
 
-   @Nullable
-   private static LeashData readLeashDataInternal(CompoundTag var0) {
-      if (var0.contains("leash", 10)) {
-         return new LeashData(Either.left(var0.getCompound("leash").getUUID("UUID")));
-      } else {
-         if (var0.contains("leash", 11)) {
-            Either var1 = (Either)NbtUtils.readBlockPos(var0, "leash").map(Either::right).orElse((Object)null);
-            if (var1 != null) {
-               return new LeashData(var1);
-            }
-         }
-
-         return null;
-      }
-   }
-
    default void writeLeashData(CompoundTag var1, @Nullable LeashData var2) {
-      if (var2 != null) {
-         Either var3 = var2.delayedLeashInfo;
-         Entity var5 = var2.leashHolder;
-         if (var5 instanceof LeashFenceKnotEntity) {
-            LeashFenceKnotEntity var4 = (LeashFenceKnotEntity)var5;
-            var3 = Either.right(var4.getPos());
-         } else if (var2.leashHolder != null) {
-            var3 = Either.left(var2.leashHolder.getUUID());
-         }
-
-         if (var3 != null) {
-            var1.put("leash", (Tag)var3.map((var0) -> {
-               CompoundTag var1 = new CompoundTag();
-               var1.putUUID("UUID", var0);
-               return var1;
-            }, NbtUtils::writeBlockPos));
-         }
-      }
+      var1.storeNullable("leash", Leashable.LeashData.CODEC, var2);
    }
 
    private static <E extends Entity & Leashable> void restoreLeashFromSave(E var0, LeashData var1) {
@@ -258,13 +226,14 @@ public interface Leashable {
    }
 
    public static final class LeashData {
+      public static final Codec<LeashData> CODEC;
       int delayedLeashHolderId;
       @Nullable
       public Entity leashHolder;
       @Nullable
       public Either<UUID, BlockPos> delayedLeashInfo;
 
-      LeashData(Either<UUID, BlockPos> var1) {
+      private LeashData(Either<UUID, BlockPos> var1) {
          super();
          this.delayedLeashInfo = var1;
       }
@@ -283,6 +252,17 @@ public interface Leashable {
          this.leashHolder = var1;
          this.delayedLeashInfo = null;
          this.delayedLeashHolderId = 0;
+      }
+
+      static {
+         CODEC = Codec.xor(UUIDUtil.CODEC.fieldOf("UUID").codec(), BlockPos.CODEC).xmap(LeashData::new, (var0) -> {
+            Entity var2 = var0.leashHolder;
+            if (var2 instanceof LeashFenceKnotEntity var1) {
+               return Either.right(var1.getPos());
+            } else {
+               return var0.leashHolder != null ? Either.left(var0.leashHolder.getUUID()) : (Either)Objects.requireNonNull(var0.delayedLeashInfo, "Invalid LeashData had no attachment");
+            }
+         });
       }
    }
 }

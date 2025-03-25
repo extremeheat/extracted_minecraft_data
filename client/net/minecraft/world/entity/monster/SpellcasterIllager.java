@@ -20,7 +20,8 @@ import net.minecraft.world.level.Level;
 
 public abstract class SpellcasterIllager extends AbstractIllager {
    private static final EntityDataAccessor<Byte> DATA_SPELL_CASTING_ID;
-   protected int spellCastingTickCount;
+   private static final int DEFAULT_SPELLCASTING_TICKS = 0;
+   protected int spellCastingTickCount = 0;
    private IllagerSpell currentSpell;
 
    protected SpellcasterIllager(EntityType<? extends SpellcasterIllager> var1, Level var2) {
@@ -35,7 +36,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.spellCastingTickCount = var1.getInt("SpellTicks");
+      this.spellCastingTickCount = var1.getIntOr("SpellTicks", 0);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

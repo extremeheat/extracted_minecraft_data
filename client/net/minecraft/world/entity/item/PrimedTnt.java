@@ -4,12 +4,12 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -21,6 +21,7 @@ import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,8 +31,9 @@ import net.minecraft.world.level.portal.TeleportTransition;
 public class PrimedTnt extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<Integer> DATA_FUSE_ID;
    private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
-   private static final int DEFAULT_FUSE_TIME = 80;
+   private static final short DEFAULT_FUSE_TIME = 80;
    private static final float DEFAULT_EXPLOSION_POWER = 4.0F;
+   private static final BlockState DEFAULT_BLOCK_STATE;
    private static final String TAG_BLOCK_STATE = "block_state";
    public static final String TAG_FUSE = "fuse";
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
@@ -61,7 +63,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_FUSE_ID, 80);
-      var1.define(DATA_BLOCK_STATE_ID, Blocks.TNT.defaultBlockState());
+      var1.define(DATA_BLOCK_STATE_ID, DEFAULT_BLOCK_STATE);
    }
 
    protected Entity.MovementEmission getMovementEmission() {
@@ -103,12 +105,19 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    private void explode() {
-      this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         if (var1.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
+         }
+      }
+
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.putShort("fuse", (short)this.getFuse());
-      var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
+      var1.store("block_state", BlockState.CODEC, var2, this.getBlockState());
       if (this.explosionPower != 4.0F) {
          var1.putFloat("explosion_power", this.explosionPower);
       }
@@ -116,15 +125,10 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.setFuse(var1.getShort("fuse"));
-      if (var1.contains("block_state", 10)) {
-         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
-      }
-
-      if (var1.contains("explosion_power", 99)) {
-         this.explosionPower = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.setFuse(var1.getShortOr("fuse", (short)80));
+      this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(DEFAULT_BLOCK_STATE));
+      this.explosionPower = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
    }
 
    @Nullable
@@ -183,6 +187,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    static {
       DATA_FUSE_ID = SynchedEntityData.<Integer>defineId(PrimedTnt.class, EntityDataSerializers.INT);
       DATA_BLOCK_STATE_ID = SynchedEntityData.<BlockState>defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
+      DEFAULT_BLOCK_STATE = Blocks.TNT.defaultBlockState();
       USED_PORTAL_DAMAGE_CALCULATOR = new ExplosionDamageCalculator() {
          public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
             return var4.is(Blocks.NETHER_PORTAL) ? false : super.shouldBlockExplode(var1, var2, var3, var4, var5);

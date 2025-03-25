@@ -29,7 +29,7 @@ public class StrollThroughVillageGoal extends Goal {
    public boolean canUse() {
       if (this.mob.hasControllingPassenger()) {
          return false;
-      } else if (this.mob.level().isDay()) {
+      } else if (this.mob.level().isBrightOutside()) {
          return false;
       } else if (this.mob.getRandom().nextInt(this.interval) != 0) {
          return false;

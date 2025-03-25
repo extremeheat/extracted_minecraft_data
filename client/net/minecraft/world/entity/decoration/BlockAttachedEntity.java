@@ -110,18 +110,15 @@ public abstract class BlockAttachedEntity extends Entity {
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      BlockPos var2 = this.getPos();
-      var1.putInt("TileX", var2.getX());
-      var1.putInt("TileY", var2.getY());
-      var1.putInt("TileZ", var2.getZ());
+      var1.store("block_pos", BlockPos.CODEC, this.getPos());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      BlockPos var2 = new BlockPos(var1.getInt("TileX"), var1.getInt("TileY"), var1.getInt("TileZ"));
-      if (!var2.closerThan(this.blockPosition(), 16.0)) {
-         LOGGER.error("Block-attached entity at invalid position: {}", var2);
-      } else {
+      BlockPos var2 = (BlockPos)var1.read("block_pos", BlockPos.CODEC).orElse((Object)null);
+      if (var2 != null && var2.closerThan(this.blockPosition(), 16.0)) {
          this.pos = var2;
+      } else {
+         LOGGER.error("Block-attached entity at invalid position: {}", var2);
       }
    }
 

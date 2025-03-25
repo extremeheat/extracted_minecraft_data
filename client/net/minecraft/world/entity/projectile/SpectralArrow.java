@@ -12,6 +12,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class SpectralArrow extends AbstractArrow {
+   private static final int DEFAULT_DURATION = 200;
    private int duration = 200;
 
    public SpectralArrow(EntityType<? extends SpectralArrow> var1, Level var2) {
@@ -42,10 +43,7 @@ public class SpectralArrow extends AbstractArrow {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("Duration")) {
-         this.duration = var1.getInt("Duration");
-      }
-
+      this.duration = var1.getIntOr("Duration", 200);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

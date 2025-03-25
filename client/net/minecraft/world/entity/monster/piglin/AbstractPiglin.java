@@ -23,7 +23,9 @@ import net.minecraft.world.level.pathfinder.PathType;
 public abstract class AbstractPiglin extends Monster {
    protected static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION;
    public static final int CONVERSION_TIME = 300;
-   protected int timeInOverworld;
+   private static final boolean DEFAULT_IMMUNE_TO_ZOMBIFICATION = false;
+   private static final int DEFAULT_TIME_IN_OVERWORLD = 0;
+   protected int timeInOverworld = 0;
 
    public AbstractPiglin(EntityType<? extends AbstractPiglin> var1, Level var2) {
       super(var1, var2);
@@ -57,17 +59,18 @@ public abstract class AbstractPiglin extends Monster {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.isImmuneToZombification()) {
-         var1.putBoolean("IsImmuneToZombification", true);
-      }
-
+      var1.putBoolean("IsImmuneToZombification", this.isImmuneToZombification());
       var1.putInt("TimeInOverworld", this.timeInOverworld);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setImmuneToZombification(var1.getBoolean("IsImmuneToZombification"));
-      this.timeInOverworld = var1.getInt("TimeInOverworld");
+      if (!var1.contains("CanPickUpLoot")) {
+         this.setCanPickUpLoot(true);
+      }
+
+      this.setImmuneToZombification(var1.getBooleanOr("IsImmuneToZombification", false));
+      this.timeInOverworld = var1.getIntOr("TimeInOverworld", 0);
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -95,7 +98,7 @@ public abstract class AbstractPiglin extends Monster {
    }
 
    protected void finishConversion(ServerLevel var1) {
-      this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0)));
+      this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
    }
 
    public boolean isAdult() {

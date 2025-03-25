@@ -6,12 +6,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractThrownPotion;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.level.Level;
 
-public class ThrowablePotionItem extends PotionItem implements ProjectileItem {
+public abstract class ThrowablePotionItem extends PotionItem implements ProjectileItem {
    public static float PROJECTILE_SHOOT_POWER = 0.5F;
 
    public ThrowablePotionItem(Item.Properties var1) {
@@ -21,7 +22,7 @@ public class ThrowablePotionItem extends PotionItem implements ProjectileItem {
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(ThrownPotion::new, var5, var4, var2, -20.0F, PROJECTILE_SHOOT_POWER, 1.0F);
+         Projectile.spawnProjectileFromRotation(this::createPotion, var5, var4, var2, -20.0F, PROJECTILE_SHOOT_POWER, 1.0F);
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));
@@ -29,8 +30,12 @@ public class ThrowablePotionItem extends PotionItem implements ProjectileItem {
       return InteractionResult.SUCCESS;
    }
 
+   protected abstract AbstractThrownPotion createPotion(ServerLevel var1, LivingEntity var2, ItemStack var3);
+
+   protected abstract AbstractThrownPotion createPotion(Level var1, Position var2, ItemStack var3);
+
    public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      return new ThrownPotion(var1, var2.x(), var2.y(), var2.z(), var3);
+      return this.createPotion(var1, var2, var3);
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {

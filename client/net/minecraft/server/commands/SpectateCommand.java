@@ -13,7 +13,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.GameType;
 
 public class SpectateCommand {
    private static final SimpleCommandExceptionType ERROR_SELF = new SimpleCommandExceptionType(Component.translatable("commands.spectate.self"));
@@ -30,7 +29,7 @@ public class SpectateCommand {
    private static int spectate(CommandSourceStack var0, @Nullable Entity var1, ServerPlayer var2) throws CommandSyntaxException {
       if (var2 == var1) {
          throw ERROR_SELF.create();
-      } else if (var2.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
+      } else if (!var2.isSpectator()) {
          throw ERROR_NOT_SPECTATOR.create(var2.getDisplayName());
       } else {
          var2.setCamera(var1);

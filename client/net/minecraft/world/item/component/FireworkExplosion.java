@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -37,13 +38,9 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
       this.hasTwinkle = var5;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
-      this.addShapeNameTooltip(var2);
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      var2.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
       this.addAdditionalTooltip(var2);
-   }
-
-   public void addShapeNameTooltip(Consumer<Component> var1) {
-      var1.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
    }
 
    public void addAdditionalTooltip(Consumer<Component> var1) {

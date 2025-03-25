@@ -12,7 +12,18 @@ public final class EntitySelector {
    public static final Predicate<Entity> LIVING_ENTITY_STILL_ALIVE = (var0) -> var0.isAlive() && var0 instanceof LivingEntity;
    public static final Predicate<Entity> ENTITY_NOT_BEING_RIDDEN = (var0) -> var0.isAlive() && !var0.isVehicle() && !var0.isPassenger();
    public static final Predicate<Entity> CONTAINER_ENTITY_SELECTOR = (var0) -> var0 instanceof Container && var0.isAlive();
-   public static final Predicate<Entity> NO_CREATIVE_OR_SPECTATOR = (var0) -> !(var0 instanceof Player) || !var0.isSpectator() && !((Player)var0).isCreative();
+   public static final Predicate<Entity> NO_CREATIVE_OR_SPECTATOR = (var0) -> {
+      boolean var10000;
+      if (var0 instanceof Player var1) {
+         if (var0.isSpectator() || var1.isCreative()) {
+            var10000 = false;
+            return var10000;
+         }
+      }
+
+      var10000 = true;
+      return var10000;
+   };
    public static final Predicate<Entity> NO_SPECTATORS = (var0) -> !var0.isSpectator();
    public static final Predicate<Entity> CAN_BE_COLLIDED_WITH;
    public static final Predicate<Entity> CAN_BE_PICKED;
@@ -32,21 +43,32 @@ public final class EntitySelector {
       return (Predicate<Entity>)(var2 == Team.CollisionRule.NEVER ? Predicates.alwaysFalse() : NO_SPECTATORS.and((var3) -> {
          if (!var3.isPushable()) {
             return false;
-         } else if (!var0.level().isClientSide || var3 instanceof Player && ((Player)var3).isLocalPlayer()) {
-            PlayerTeam var4 = var3.getTeam();
-            Team.CollisionRule var5 = var4 == null ? Team.CollisionRule.ALWAYS : ((Team)var4).getCollisionRule();
+         } else {
+            if (var0.level().isClientSide) {
+               if (!(var3 instanceof Player)) {
+                  return false;
+               }
+
+               Player var4 = (Player)var3;
+               if (!var4.isLocalPlayer()) {
+                  return false;
+               }
+            }
+
+            PlayerTeam var7 = var3.getTeam();
+            Team.CollisionRule var5 = var7 == null ? Team.CollisionRule.ALWAYS : ((Team)var7).getCollisionRule();
             if (var5 == Team.CollisionRule.NEVER) {
                return false;
             } else {
-               boolean var6 = var1 != null && var1.isAlliedTo(var4);
+               boolean var6 = var1 != null && var1.isAlliedTo(var7);
                if ((var2 == Team.CollisionRule.PUSH_OWN_TEAM || var5 == Team.CollisionRule.PUSH_OWN_TEAM) && var6) {
                   return false;
+               } else if ((var2 == Team.CollisionRule.PUSH_OTHER_TEAMS || var5 == Team.CollisionRule.PUSH_OTHER_TEAMS) && !var6) {
+                  return false;
                } else {
-                  return var2 != Team.CollisionRule.PUSH_OTHER_TEAMS && var5 != Team.CollisionRule.PUSH_OTHER_TEAMS || var6;
+                  return true;
                }
             }
-         } else {
-            return false;
          }
       }));
    }

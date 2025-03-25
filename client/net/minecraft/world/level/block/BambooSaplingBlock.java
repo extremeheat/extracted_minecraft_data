@@ -6,10 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -17,14 +15,12 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BambooSaplingBlock extends Block implements BonemealableBlock {
    public static final MapCodec<BambooSaplingBlock> CODEC = simpleCodec(BambooSaplingBlock::new);
-   protected static final float SAPLING_AABB_OFFSET = 4.0F;
-   protected static final VoxelShape SAPLING_SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 12.0, 12.0);
+   private static final VoxelShape SHAPE = Block.column(8.0, 0.0, 12.0);
 
    public MapCodec<BambooSaplingBlock> codec() {
       return CODEC;
@@ -35,8 +31,7 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var3);
-      return SAPLING_SHAPE.move(var5.x, var5.y, var5.z);
+      return SHAPE.move(var1.getOffset(var3));
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
@@ -72,10 +67,6 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       this.growBamboo(var1, var3);
-   }
-
-   protected float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
-      return var2.getMainHandItem().getItem() instanceof SwordItem ? 1.0F : super.getDestroyProgress(var1, var2, var3, var4);
    }
 
    protected void growBamboo(Level var1, BlockPos var2) {

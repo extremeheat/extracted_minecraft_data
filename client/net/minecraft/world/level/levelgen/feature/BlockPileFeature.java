@@ -48,7 +48,7 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
 
    private void tryPlaceBlock(LevelAccessor var1, BlockPos var2, RandomSource var3, BlockPileConfiguration var4) {
       if (var1.isEmptyBlock(var2) && this.mayPlaceOn(var1, var2, var3)) {
-         var1.setBlock(var2, var4.stateProvider.getState(var3, var2), 4);
+         var1.setBlock(var2, var4.stateProvider.getState(var3, var2), 260);
       }
 
    }

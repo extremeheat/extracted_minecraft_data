@@ -15,7 +15,6 @@ import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -72,7 +71,7 @@ public class ShootTongue extends Behavior<Frog> {
    }
 
    private void eatEntity(ServerLevel var1, Frog var2) {
-      var1.playSound((Player)null, var2, this.eatSound, SoundSource.NEUTRAL, 2.0F, 1.0F);
+      var1.playSound((Entity)null, var2, this.eatSound, SoundSource.NEUTRAL, 2.0F, 1.0F);
       Optional var3 = var2.getTongueTarget();
       if (var3.isPresent()) {
          Entity var4 = (Entity)var3.get();
@@ -92,7 +91,7 @@ public class ShootTongue extends Behavior<Frog> {
       switch (this.state.ordinal()) {
          case 0:
             if (var5.distanceTo(var2) < 1.75F) {
-               var1.playSound((Player)null, var2, this.tongueSound, SoundSource.NEUTRAL, 2.0F, 1.0F);
+               var1.playSound((Entity)null, var2, this.tongueSound, SoundSource.NEUTRAL, 2.0F, 1.0F);
                var2.setPose(Pose.USING_TONGUE);
                var5.setDeltaMovement(var5.position().vectorTo(var2.position()).normalize().scale(0.75));
                this.itemSpawnPos = var5.position();

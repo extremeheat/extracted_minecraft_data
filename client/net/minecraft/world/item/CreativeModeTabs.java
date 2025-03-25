@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.MapEncoder;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -24,13 +23,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.InstrumentTags;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -40,6 +37,8 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
+import net.minecraft.world.level.block.TestBlock;
+import net.minecraft.world.level.block.state.properties.TestBlockMode;
 
 public class CreativeModeTabs {
    private static final ResourceLocation INVENTORY_BACKGROUND = CreativeModeTab.createTextureLocation("inventory");
@@ -818,6 +817,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.WARPED_FUNGUS);
          var1.accept((ItemLike)Items.SHORT_GRASS);
          var1.accept((ItemLike)Items.FERN);
+         var1.accept((ItemLike)Items.DRY_SHORT_GRASS);
+         var1.accept((ItemLike)Items.BUSH);
          var1.accept((ItemLike)Items.DEAD_BUSH);
          var1.accept((ItemLike)Items.DANDELION);
          var1.accept((ItemLike)Items.POPPY);
@@ -832,11 +833,15 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CORNFLOWER);
          var1.accept((ItemLike)Items.LILY_OF_THE_VALLEY);
          var1.accept((ItemLike)Items.TORCHFLOWER);
+         var1.accept((ItemLike)Items.CACTUS_FLOWER);
          var1.accept((ItemLike)Items.CLOSED_EYEBLOSSOM);
          var1.accept((ItemLike)Items.OPEN_EYEBLOSSOM);
          var1.accept((ItemLike)Items.WITHER_ROSE);
          var1.accept((ItemLike)Items.PINK_PETALS);
+         var1.accept((ItemLike)Items.WILDFLOWERS);
+         var1.accept((ItemLike)Items.LEAF_LITTER);
          var1.accept((ItemLike)Items.SPORE_BLOSSOM);
+         var1.accept((ItemLike)Items.FIREFLY_BUSH);
          var1.accept((ItemLike)Items.BAMBOO);
          var1.accept((ItemLike)Items.SUGAR_CANE);
          var1.accept((ItemLike)Items.CACTUS);
@@ -848,6 +853,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.VINE);
          var1.accept((ItemLike)Items.TALL_GRASS);
          var1.accept((ItemLike)Items.LARGE_FERN);
+         var1.accept((ItemLike)Items.DRY_TALL_GRASS);
          var1.accept((ItemLike)Items.SUNFLOWER);
          var1.accept((ItemLike)Items.LILAC);
          var1.accept((ItemLike)Items.ROSE_BUSH);
@@ -1372,6 +1378,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.END_CRYSTAL);
          var1.accept((ItemLike)Items.SNOWBALL);
          var1.accept((ItemLike)Items.EGG);
+         var1.accept((ItemLike)Items.BROWN_EGG);
+         var1.accept((ItemLike)Items.BLUE_EGG);
          var1.accept((ItemLike)Items.WIND_CHARGE);
          var1.accept((ItemLike)Items.BOW);
          var1.accept((ItemLike)Items.CROSSBOW);
@@ -1458,6 +1466,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.FEATHER);
          var1.accept((ItemLike)Items.SNOWBALL);
          var1.accept((ItemLike)Items.EGG);
+         var1.accept((ItemLike)Items.BROWN_EGG);
+         var1.accept((ItemLike)Items.BLUE_EGG);
          var1.accept((ItemLike)Items.LEATHER);
          var1.accept((ItemLike)Items.RABBIT_HIDE);
          var1.accept((ItemLike)Items.HONEYCOMB);
@@ -1541,8 +1551,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.BREWER_POTTERY_SHERD);
          var1.accept((ItemLike)Items.BURN_POTTERY_SHERD);
          var1.accept((ItemLike)Items.DANGER_POTTERY_SHERD);
-         var1.accept((ItemLike)Items.FLOW_POTTERY_SHERD);
          var1.accept((ItemLike)Items.EXPLORER_POTTERY_SHERD);
+         var1.accept((ItemLike)Items.FLOW_POTTERY_SHERD);
          var1.accept((ItemLike)Items.FRIEND_POTTERY_SHERD);
          var1.accept((ItemLike)Items.GUSTER_POTTERY_SHERD);
          var1.accept((ItemLike)Items.HEART_POTTERY_SHERD);
@@ -1584,7 +1594,7 @@ public class CreativeModeTabs {
             generateEnchantmentBookTypesAllLevels(var1, var1x, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
          });
       }).build());
-      Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> new ItemStack(Items.PIG_SPAWN_EGG)).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> new ItemStack(Items.CREEPER_SPAWN_EGG)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.SPAWNER);
          var1.accept((ItemLike)Items.TRIAL_SPAWNER);
          var1.accept((ItemLike)Items.CREAKING_HEART);
@@ -1679,12 +1689,17 @@ public class CreativeModeTabs {
             var1.accept((ItemLike)Items.STRUCTURE_VOID);
             var1.accept((ItemLike)Items.BARRIER);
             var1.accept((ItemLike)Items.DEBUG_STICK);
+            var1.accept((ItemLike)Items.TEST_INSTANCE_BLOCK);
 
-            for(int var2 = 15; var2 >= 0; --var2) {
-               var1.accept(LightBlock.setLightOnStack(new ItemStack(Items.LIGHT), var2));
+            for(TestBlockMode var5 : TestBlockMode.values()) {
+               var1.accept(TestBlock.setModeOnStack(new ItemStack(Items.TEST_BLOCK), var5));
             }
 
-            var0x.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((var2x) -> generatePresetPaintings(var1, var0x.holders(), var2x, (var0) -> !var0.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+            for(int var6 = 15; var6 >= 0; --var6) {
+               var1.accept(LightBlock.setLightOnStack(new ItemStack(Items.LIGHT), var6));
+            }
+
+            var0x.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((var2) -> generatePresetPaintings(var1, var0x.holders(), var2, (var0) -> !var0.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          }
 
       }).build());
@@ -1758,11 +1773,10 @@ public class CreativeModeTabs {
 
    private static void generatePresetPaintings(CreativeModeTab.Output var0, HolderLookup.Provider var1, HolderLookup.RegistryLookup<PaintingVariant> var2, Predicate<Holder<PaintingVariant>> var3, CreativeModeTab.TabVisibility var4) {
       RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);
-      var2.listElements().filter(var3).sorted(PAINTING_COMPARATOR).forEach((var3x) -> {
-         CustomData var4x = ((CustomData)CustomData.EMPTY.update(var5, (MapEncoder)Painting.VARIANT_MAP_CODEC, var3x).getOrThrow()).update((var0x) -> var0x.putString("id", "minecraft:painting"));
-         ItemStack var5x = new ItemStack(Items.PAINTING);
-         var5x.set(DataComponents.ENTITY_DATA, var4x);
-         var0.accept(var5x, var4);
+      var2.listElements().filter(var3).sorted(PAINTING_COMPARATOR).forEach((var2x) -> {
+         ItemStack var3 = new ItemStack(Items.PAINTING);
+         var3.set(DataComponents.PAINTING_VARIANT, var2x);
+         var0.accept(var3, var4);
       });
    }
 

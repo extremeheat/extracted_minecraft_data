@@ -1,11 +1,12 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import javax.annotation.Nullable;
 
 public class TextureTarget extends RenderTarget {
-   public TextureTarget(int var1, int var2, boolean var3) {
-      super(var3);
-      RenderSystem.assertOnRenderThreadOrInit();
-      this.resize(var1, var2);
+   public TextureTarget(@Nullable String var1, int var2, int var3, boolean var4) {
+      super(var1, var4);
+      RenderSystem.assertOnRenderThread();
+      this.resize(var2, var3);
    }
 }

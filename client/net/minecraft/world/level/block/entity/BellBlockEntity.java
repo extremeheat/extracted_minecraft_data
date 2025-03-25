@@ -11,9 +11,9 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -65,7 +65,7 @@ public class BellBlockEntity extends BlockEntity {
 
       if (var3.ticks >= 5 && var3.resonationTicks == 0 && areRaidersNearby(var1, var3.nearbyEntities)) {
          var3.resonating = true;
-         var0.playSound((Player)null, (BlockPos)var1, SoundEvents.BELL_RESONATE, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.BELL_RESONATE, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       if (var3.resonating) {

@@ -1,16 +1,11 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -45,10 +40,5 @@ public class SpawnerBlock extends BaseEntityBlock {
          this.popExperience(var2, var3, var6);
       }
 
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      Spawner.appendHoverText(var1, var3, "SpawnData");
    }
 }

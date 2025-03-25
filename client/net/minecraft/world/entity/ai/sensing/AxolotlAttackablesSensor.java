@@ -13,7 +13,7 @@ public class AxolotlAttackablesSensor extends NearestVisibleLivingEntitySensor {
    }
 
    protected boolean isMatchingEntity(ServerLevel var1, LivingEntity var2, LivingEntity var3) {
-      return this.isClose(var2, var3) && var3.isInWaterOrBubble() && (this.isHostileTarget(var3) || this.isHuntTarget(var2, var3)) && Sensor.isEntityAttackable(var1, var2, var3);
+      return this.isClose(var2, var3) && var3.isInWater() && (this.isHostileTarget(var3) || this.isHuntTarget(var2, var3)) && Sensor.isEntityAttackable(var1, var2, var3);
    }
 
    private boolean isHuntTarget(LivingEntity var1, LivingEntity var2) {

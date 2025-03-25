@@ -10,8 +10,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StructureVoidBlock extends Block {
    public static final MapCodec<StructureVoidBlock> CODEC = simpleCodec(StructureVoidBlock::new);
-   private static final double SIZE = 5.0;
-   private static final VoxelShape SHAPE = Block.box(5.0, 5.0, 5.0, 11.0, 11.0, 11.0);
+   private static final VoxelShape SHAPE = Block.cube(6.0);
 
    public MapCodec<StructureVoidBlock> codec() {
       return CODEC;

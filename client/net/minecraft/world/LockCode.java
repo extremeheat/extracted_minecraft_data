@@ -1,8 +1,6 @@
 package net.minecraft.world;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -25,21 +23,13 @@ public record LockCode(ItemPredicate predicate) {
 
    public void addToTag(CompoundTag var1, HolderLookup.Provider var2) {
       if (this != NO_LOCK) {
-         DataResult var3 = CODEC.encode(this, var2.createSerializationContext(NbtOps.INSTANCE), new CompoundTag());
-         var3.result().ifPresent((var1x) -> var1.put("lock", var1x));
+         var1.store("lock", CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this);
       }
 
    }
 
    public static LockCode fromTag(CompoundTag var0, HolderLookup.Provider var1) {
-      if (var0.contains("lock", 10)) {
-         DataResult var2 = CODEC.decode(var1.createSerializationContext(NbtOps.INSTANCE), var0.get("lock"));
-         if (var2.isSuccess()) {
-            return (LockCode)((Pair)var2.getOrThrow()).getFirst();
-         }
-      }
-
-      return NO_LOCK;
+      return (LockCode)var0.read("lock", CODEC, var1.createSerializationContext(NbtOps.INSTANCE)).orElse(NO_LOCK);
    }
 
    static {

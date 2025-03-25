@@ -1,58 +1,34 @@
 package net.minecraft.world.level.timers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
-import java.util.Map;
-import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import org.slf4j.Logger;
+import net.minecraft.util.ExtraCodecs;
 
 public class TimerCallbacks<C> {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   public static final TimerCallbacks<MinecraftServer> SERVER_CALLBACKS = (new TimerCallbacks<MinecraftServer>()).register(new FunctionCallback.Serializer()).register(new FunctionTagCallback.Serializer());
-   private final Map<ResourceLocation, TimerCallback.Serializer<C, ?>> idToSerializer = Maps.newHashMap();
-   private final Map<Class<?>, TimerCallback.Serializer<C, ?>> classToSerializer = Maps.newHashMap();
+   public static final TimerCallbacks<MinecraftServer> SERVER_CALLBACKS;
+   private final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends TimerCallback<C>>> idMapper = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends TimerCallback<C>>>();
+   private final Codec<TimerCallback<C>> codec;
 
    @VisibleForTesting
    public TimerCallbacks() {
       super();
+      this.codec = this.idMapper.codec(ResourceLocation.CODEC).dispatch("Type", TimerCallback::codec, Function.identity());
    }
 
-   public TimerCallbacks<C> register(TimerCallback.Serializer<C, ?> var1) {
-      this.idToSerializer.put(var1.getId(), var1);
-      this.classToSerializer.put(var1.getCls(), var1);
+   public TimerCallbacks<C> register(ResourceLocation var1, MapCodec<? extends TimerCallback<C>> var2) {
+      this.idMapper.put(var1, var2);
       return this;
    }
 
-   private <T extends TimerCallback<C>> TimerCallback.Serializer<C, T> getSerializer(Class<?> var1) {
-      return (TimerCallback.Serializer)this.classToSerializer.get(var1);
+   public Codec<TimerCallback<C>> codec() {
+      return this.codec;
    }
 
-   public <T extends TimerCallback<C>> CompoundTag serialize(T var1) {
-      TimerCallback.Serializer var2 = this.getSerializer(var1.getClass());
-      CompoundTag var3 = new CompoundTag();
-      var2.serialize(var3, var1);
-      var3.putString("Type", var2.getId().toString());
-      return var3;
-   }
-
-   @Nullable
-   public TimerCallback<C> deserialize(CompoundTag var1) {
-      ResourceLocation var2 = ResourceLocation.tryParse(var1.getString("Type"));
-      TimerCallback.Serializer var3 = (TimerCallback.Serializer)this.idToSerializer.get(var2);
-      if (var3 == null) {
-         LOGGER.error("Failed to deserialize timer callback: {}", var1);
-         return null;
-      } else {
-         try {
-            return var3.deserialize(var1);
-         } catch (Exception var5) {
-            LOGGER.error("Failed to deserialize timer callback: {}", var1, var5);
-            return null;
-         }
-      }
+   static {
+      SERVER_CALLBACKS = (new TimerCallbacks<MinecraftServer>()).register(ResourceLocation.withDefaultNamespace("function"), FunctionCallback.CODEC).register(ResourceLocation.withDefaultNamespace("function_tag"), FunctionTagCallback.CODEC);
    }
 }

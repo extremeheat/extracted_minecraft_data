@@ -195,18 +195,21 @@ public class BookViewScreen extends Screen {
       ClickEvent var2 = var1.getClickEvent();
       if (var2 == null) {
          return false;
-      } else if (var2.getAction() == ClickEvent.Action.CHANGE_PAGE) {
-         String var6 = var2.getValue();
+      } else if (var2 instanceof ClickEvent.ChangePage) {
+         ClickEvent.ChangePage var7 = (ClickEvent.ChangePage)var2;
+         ClickEvent.ChangePage var10000 = var7;
 
          try {
-            int var4 = Integer.parseInt(var6) - 1;
-            return this.forcePage(var4);
-         } catch (Exception var5) {
-            return false;
+            var8 = var10000.page();
+         } catch (Throwable var6) {
+            throw new MatchException(var6.toString(), var6);
          }
+
+         int var5 = var8;
+         return this.forcePage(var5 - 1);
       } else {
          boolean var3 = super.handleComponentClicked(var1);
-         if (var3 && var2.getAction() == ClickEvent.Action.RUN_COMMAND) {
+         if (var3 && var2.action() == ClickEvent.Action.RUN_COMMAND) {
             this.closeScreen();
          }
 

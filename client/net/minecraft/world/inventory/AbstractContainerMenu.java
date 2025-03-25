@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.HashedStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -50,9 +52,9 @@ public abstract class AbstractContainerMenu {
    public final NonNullList<Slot> slots = NonNullList.<Slot>create();
    private final List<DataSlot> dataSlots = Lists.newArrayList();
    private ItemStack carried;
-   private final NonNullList<ItemStack> remoteSlots;
+   private final NonNullList<RemoteSlot> remoteSlots;
    private final IntList remoteDataSlots;
-   private ItemStack remoteCarried;
+   private RemoteSlot remoteCarried;
    private int stateId;
    @Nullable
    private final MenuType<?> menuType;
@@ -68,9 +70,9 @@ public abstract class AbstractContainerMenu {
    protected AbstractContainerMenu(@Nullable MenuType<?> var1, int var2) {
       super();
       this.carried = ItemStack.EMPTY;
-      this.remoteSlots = NonNullList.<ItemStack>create();
+      this.remoteSlots = NonNullList.<RemoteSlot>create();
       this.remoteDataSlots = new IntArrayList();
-      this.remoteCarried = ItemStack.EMPTY;
+      this.remoteCarried = RemoteSlot.PLACEHOLDER;
       this.quickcraftType = -1;
       this.quickcraftSlots = Sets.newHashSet();
       this.containerListeners = Lists.newArrayList();
@@ -135,7 +137,7 @@ public abstract class AbstractContainerMenu {
       var1.index = this.slots.size();
       this.slots.add(var1);
       this.lastSlots.add(ItemStack.EMPTY);
-      this.remoteSlots.add(ItemStack.EMPTY);
+      this.remoteSlots.add(this.synchronizer != null ? this.synchronizer.createSlot() : RemoteSlot.PLACEHOLDER);
       return var1;
    }
 
@@ -161,25 +163,31 @@ public abstract class AbstractContainerMenu {
 
    public void setSynchronizer(ContainerSynchronizer var1) {
       this.synchronizer = var1;
+      this.remoteCarried = var1.createSlot();
+      this.remoteSlots.replaceAll((var1x) -> var1.createSlot());
       this.sendAllDataToRemote();
    }
 
    public void sendAllDataToRemote() {
-      int var1 = 0;
+      ArrayList var1 = new ArrayList(this.slots.size());
+      int var2 = 0;
 
-      for(int var2 = this.slots.size(); var1 < var2; ++var1) {
-         this.remoteSlots.set(var1, ((Slot)this.slots.get(var1)).getItem().copy());
+      for(int var3 = this.slots.size(); var2 < var3; ++var2) {
+         ItemStack var4 = ((Slot)this.slots.get(var2)).getItem();
+         var1.add(var4.copy());
+         ((RemoteSlot)this.remoteSlots.get(var2)).force(var4);
       }
 
-      this.remoteCarried = this.getCarried().copy();
-      var1 = 0;
+      ItemStack var5 = this.getCarried();
+      this.remoteCarried.force(var5);
+      int var6 = 0;
 
-      for(int var4 = this.dataSlots.size(); var1 < var4; ++var1) {
-         this.remoteDataSlots.set(var1, ((DataSlot)this.dataSlots.get(var1)).get());
+      for(int var7 = this.dataSlots.size(); var6 < var7; ++var6) {
+         this.remoteDataSlots.set(var6, ((DataSlot)this.dataSlots.get(var6)).get());
       }
 
       if (this.synchronizer != null) {
-         this.synchronizer.sendInitialData(this, this.remoteSlots, this.remoteCarried, this.remoteDataSlots.toIntArray());
+         this.synchronizer.sendInitialData(this, var1, var5.copy(), this.remoteDataSlots.toIntArray());
       }
 
    }
@@ -260,12 +268,11 @@ public abstract class AbstractContainerMenu {
 
    private void synchronizeSlotToRemote(int var1, ItemStack var2, java.util.function.Supplier<ItemStack> var3) {
       if (!this.suppressRemoteUpdates) {
-         ItemStack var4 = this.remoteSlots.get(var1);
-         if (!ItemStack.matches(var4, var2)) {
-            ItemStack var5 = (ItemStack)var3.get();
-            this.remoteSlots.set(var1, var5);
+         RemoteSlot var4 = this.remoteSlots.get(var1);
+         if (!var4.matches(var2)) {
+            var4.force(var2);
             if (this.synchronizer != null) {
-               this.synchronizer.sendSlotChange(this, var1, var5);
+               this.synchronizer.sendSlotChange(this, var1, (ItemStack)var3.get());
             }
          }
 
@@ -287,10 +294,11 @@ public abstract class AbstractContainerMenu {
 
    private void synchronizeCarriedToRemote() {
       if (!this.suppressRemoteUpdates) {
-         if (!ItemStack.matches(this.getCarried(), this.remoteCarried)) {
-            this.remoteCarried = this.getCarried().copy();
+         ItemStack var1 = this.getCarried();
+         if (!this.remoteCarried.matches(var1)) {
+            this.remoteCarried.force(var1);
             if (this.synchronizer != null) {
-               this.synchronizer.sendCarriedChange(this, this.remoteCarried);
+               this.synchronizer.sendCarriedChange(this, var1.copy());
             }
          }
 
@@ -298,19 +306,19 @@ public abstract class AbstractContainerMenu {
    }
 
    public void setRemoteSlot(int var1, ItemStack var2) {
-      this.remoteSlots.set(var1, var2.copy());
+      ((RemoteSlot)this.remoteSlots.get(var1)).force(var2);
    }
 
-   public void setRemoteSlotNoCopy(int var1, ItemStack var2) {
+   public void setRemoteSlotUnsafe(int var1, HashedStack var2) {
       if (var1 >= 0 && var1 < this.remoteSlots.size()) {
-         this.remoteSlots.set(var1, var2);
+         ((RemoteSlot)this.remoteSlots.get(var1)).receive(var2);
       } else {
          LOGGER.debug("Incorrect slot index: {} available slots: {}", var1, this.remoteSlots.size());
       }
    }
 
-   public void setRemoteCarried(ItemStack var1) {
-      this.remoteCarried = var1.copy();
+   public void setRemoteCarried(HashedStack var1) {
+      this.remoteCarried.receive(var1);
    }
 
    public boolean clickMenuButton(Player var1, int var2) {
@@ -834,12 +842,20 @@ public abstract class AbstractContainerMenu {
          var2.put(var4.container, var4.getContainerSlot(), var3);
       }
 
-      for(int var6 = 0; var6 < this.slots.size(); ++var6) {
-         Slot var7 = this.slots.get(var6);
-         Integer var5 = (Integer)var2.get(var7.container, var7.getContainerSlot());
+      for(int var10 = 0; var10 < this.slots.size(); ++var10) {
+         Slot var11 = this.slots.get(var10);
+         Integer var5 = (Integer)var2.get(var11.container, var11.getContainerSlot());
          if (var5 != null) {
-            this.lastSlots.set(var6, var1.lastSlots.get(var5));
-            this.remoteSlots.set(var6, var1.remoteSlots.get(var5));
+            this.lastSlots.set(var10, var1.lastSlots.get(var5));
+            RemoteSlot var6 = var1.remoteSlots.get(var5);
+            RemoteSlot var7 = this.remoteSlots.get(var10);
+            if (var6 instanceof RemoteSlot.Synchronized) {
+               RemoteSlot.Synchronized var8 = (RemoteSlot.Synchronized)var6;
+               if (var7 instanceof RemoteSlot.Synchronized) {
+                  RemoteSlot.Synchronized var9 = (RemoteSlot.Synchronized)var7;
+                  var9.copyFrom(var8);
+               }
+            }
          }
       }
 

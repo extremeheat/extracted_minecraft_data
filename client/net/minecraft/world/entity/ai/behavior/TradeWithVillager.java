@@ -42,11 +42,12 @@ public class TradeWithVillager extends Behavior<Villager> {
       if (!(var2.distanceToSqr(var5) > 5.0)) {
          BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
          var2.gossip(var1, var5, var3);
-         if (var2.hasExcessFood() && (var2.getVillagerData().getProfession() == VillagerProfession.FARMER || var5.wantsMoreFood())) {
+         boolean var6 = var2.getVillagerData().profession().is(VillagerProfession.FARMER);
+         if (var2.hasExcessFood() && (var6 || var5.wantsMoreFood())) {
             throwHalfStack(var2, Villager.FOOD_POINTS.keySet(), var5);
          }
 
-         if (var5.getVillagerData().getProfession() == VillagerProfession.FARMER && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
+         if (var6 && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
             throwHalfStack(var2, ImmutableSet.of(Items.WHEAT), var5);
          }
 
@@ -62,8 +63,8 @@ public class TradeWithVillager extends Behavior<Villager> {
    }
 
    private static Set<Item> figureOutWhatIAmWillingToTrade(Villager var0, Villager var1) {
-      ImmutableSet var2 = var1.getVillagerData().getProfession().requestedItems();
-      ImmutableSet var3 = var0.getVillagerData().getProfession().requestedItems();
+      ImmutableSet var2 = ((VillagerProfession)var1.getVillagerData().profession().value()).requestedItems();
+      ImmutableSet var3 = ((VillagerProfession)var0.getVillagerData().profession().value()).requestedItems();
       return (Set)var2.stream().filter((var1x) -> !var3.contains(var1x)).collect(Collectors.toSet());
    }
 

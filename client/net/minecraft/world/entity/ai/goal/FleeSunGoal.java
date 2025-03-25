@@ -28,7 +28,7 @@ public class FleeSunGoal extends Goal {
    public boolean canUse() {
       if (this.mob.getTarget() != null) {
          return false;
-      } else if (!this.level.isDay()) {
+      } else if (!this.level.isBrightOutside()) {
          return false;
       } else if (!this.mob.isOnFire()) {
          return false;

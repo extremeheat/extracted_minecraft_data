@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -27,10 +28,10 @@ public class FishingRodItem extends Item {
             var4.hurtAndBreak(var5, var2, LivingEntity.getSlotForHand(var3));
          }
 
-         var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.NEUTRAL, 1.0F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+         var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.NEUTRAL, 1.0F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
          var2.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
       } else {
-         var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+         var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
          if (var1 instanceof ServerLevel) {
             ServerLevel var8 = (ServerLevel)var1;
             int var6 = (int)(EnchantmentHelper.getFishingTimeReduction(var8, var4, var2) * 20.0F);

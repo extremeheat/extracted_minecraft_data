@@ -20,6 +20,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
+import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
@@ -236,7 +237,7 @@ public class KeyboardHandler {
                Path var5 = this.minecraft.gameDirectory.toPath().toAbsolutePath();
                Path var6 = TextureUtil.getDebugTexturePath(var5);
                this.minecraft.getTextureManager().dumpAllSheets(var6);
-               MutableComponent var7 = Component.literal(var5.relativize(var6).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.toFile().toString()))));
+               MutableComponent var7 = Component.literal(var5.relativize(var6).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var6))));
                this.debugFeedbackTranslated("debug.dump_dynamic_textures", var7);
                return true;
             case 84:
@@ -366,7 +367,15 @@ public class KeyboardHandler {
          if (var5 == 1 && (!(this.minecraft.screen instanceof KeyBindsScreen) || ((KeyBindsScreen)var8).lastKeySelection <= Util.getMillis() - 20L)) {
             if (this.minecraft.options.keyFullscreen.matches(var3, var4)) {
                this.minecraft.getWindow().toggleFullScreen();
-               this.minecraft.options.fullscreen().set(this.minecraft.getWindow().isFullscreen());
+               boolean var16 = this.minecraft.getWindow().isFullscreen();
+               this.minecraft.options.fullscreen().set(var16);
+               this.minecraft.options.save();
+               Screen var22 = this.minecraft.screen;
+               if (var22 instanceof VideoSettingsScreen) {
+                  VideoSettingsScreen var20 = (VideoSettingsScreen)var22;
+                  var20.updateFullscreenButton(var16);
+               }
+
                return;
             }
 
@@ -391,7 +400,7 @@ public class KeyboardHandler {
                   }
                }
 
-               LocalPlayer var16 = this.minecraft.player;
+               LocalPlayer var17 = this.minecraft.player;
             }
          }
 
@@ -408,44 +417,44 @@ public class KeyboardHandler {
                   }
                }
             } catch (Throwable var14) {
-               CrashReport var17 = CrashReport.forThrowable(var14, "keyPressed event handler");
-               var8.fillCrashDetails(var17);
-               CrashReportCategory var11 = var17.addCategory("Key");
+               CrashReport var18 = CrashReport.forThrowable(var14, "keyPressed event handler");
+               var8.fillCrashDetails(var18);
+               CrashReportCategory var11 = var18.addCategory("Key");
                var11.setDetail("Key", var3);
                var11.setDetail("Scancode", var4);
                var11.setDetail("Mods", var6);
-               throw new ReportedException(var17);
+               throw new ReportedException(var18);
             }
          }
 
          InputConstants.Key var15;
-         boolean var18;
+         boolean var19;
          boolean var10000;
-         label201: {
+         label205: {
             var15 = InputConstants.getKey(var3, var4);
-            var18 = this.minecraft.screen == null;
-            if (!var18) {
-               label197: {
+            var19 = this.minecraft.screen == null;
+            if (!var19) {
+               label201: {
                   Screen var13 = this.minecraft.screen;
                   if (var13 instanceof PauseScreen) {
                      PauseScreen var12 = (PauseScreen)var13;
                      if (!var12.showsPauseMenu()) {
-                        break label197;
+                        break label201;
                      }
                   }
 
                   var10000 = false;
-                  break label201;
+                  break label205;
                }
             }
 
             var10000 = true;
          }
 
-         boolean var19 = var10000;
+         boolean var21 = var10000;
          if (var5 == 0) {
             KeyMapping.set(var15, false);
-            if (var19 && var3 == 292) {
+            if (var21 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
                } else {
@@ -454,19 +463,19 @@ public class KeyboardHandler {
             }
 
          } else {
-            boolean var20 = false;
-            if (var19) {
+            boolean var23 = false;
+            if (var21) {
                if (var3 == 293 && this.minecraft.gameRenderer != null) {
                   this.minecraft.gameRenderer.togglePostEffect();
                }
 
                if (var3 == 256) {
                   this.minecraft.pauseGame(var7);
-                  var20 |= var7;
+                  var23 |= var7;
                }
 
-               var20 |= var7 && this.handleDebugKeys(var3);
-               this.handledDebugKey |= var20;
+               var23 |= var7 && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var23;
                if (var3 == 290) {
                   this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
                }
@@ -476,8 +485,8 @@ public class KeyboardHandler {
                }
             }
 
-            if (var18) {
-               if (var20) {
+            if (var19) {
+               if (var23) {
                   KeyMapping.set(var15, false);
                } else {
                   KeyMapping.set(var15, true);

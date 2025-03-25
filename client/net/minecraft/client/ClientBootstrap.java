@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.item.properties.conditional.ConditionalItem
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperties;
 import net.minecraft.client.renderer.item.properties.select.SelectItemModelProperties;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
+import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 
 public class ClientBootstrap {
    private static volatile boolean isBootstrapped;
@@ -23,6 +24,7 @@ public class ClientBootstrap {
          SelectItemModelProperties.bootstrap();
          ConditionalItemModelProperties.bootstrap();
          RangeSelectItemModelProperties.bootstrap();
+         SpriteSources.bootstrap();
       }
    }
 }

@@ -57,10 +57,13 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    private static final float KNOCKBACK_RESISTANCE = 0.6F;
    private static final int ATTACK_DAMAGE = 6;
    private static final float BABY_ATTACK_DAMAGE = 0.5F;
+   private static final boolean DEFAULT_IMMUNE_TO_ZOMBIFICATION = false;
+   private static final int DEFAULT_TIME_IN_OVERWORLD = 0;
+   private static final boolean DEFAULT_CANNOT_BE_HUNTED = false;
    public static final int CONVERSION_TIME = 300;
    private int attackAnimationRemainingTicks;
-   private int timeInOverworld;
-   private boolean cannotBeHunted;
+   private int timeInOverworld = 0;
+   private boolean cannotBeHunted = false;
    protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Hoglin>>> SENSOR_TYPES;
    protected static final ImmutableList<? extends MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -94,7 +97,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       }
    }
 
-   protected void blockedByShield(LivingEntity var1) {
+   protected void blockedByItem(LivingEntity var1) {
       if (this.isAdult()) {
          HoglinBase.throwTarget(this, var1);
       }
@@ -220,7 +223,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    private void finishConversion() {
-      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0)));
+      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
    }
 
    public boolean isFood(ItemStack var1) {
@@ -238,22 +241,16 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.isImmuneToZombification()) {
-         var1.putBoolean("IsImmuneToZombification", true);
-      }
-
+      var1.putBoolean("IsImmuneToZombification", this.isImmuneToZombification());
       var1.putInt("TimeInOverworld", this.timeInOverworld);
-      if (this.cannotBeHunted) {
-         var1.putBoolean("CannotBeHunted", true);
-      }
-
+      var1.putBoolean("CannotBeHunted", this.cannotBeHunted);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setImmuneToZombification(var1.getBoolean("IsImmuneToZombification"));
-      this.timeInOverworld = var1.getInt("TimeInOverworld");
-      this.setCannotBeHunted(var1.getBoolean("CannotBeHunted"));
+      this.setImmuneToZombification(var1.getBooleanOr("IsImmuneToZombification", false));
+      this.timeInOverworld = var1.getIntOr("TimeInOverworld", 0);
+      this.setCannotBeHunted(var1.getBooleanOr("CannotBeHunted", false));
    }
 
    public void setImmuneToZombification(boolean var1) {

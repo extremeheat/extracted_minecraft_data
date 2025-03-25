@@ -8,10 +8,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -61,16 +61,16 @@ public class SnifferEggBlock extends Block {
 
    public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!this.isReadyToHatch(var1)) {
-         var2.playSound((Player)null, var3, SoundEvents.SNIFFER_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
+         var2.playSound((Entity)null, var3, SoundEvents.SNIFFER_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
          var2.setBlock(var3, (BlockState)var1.setValue(HATCH, this.getHatchLevel(var1) + 1), 2);
       } else {
-         var2.playSound((Player)null, var3, SoundEvents.SNIFFER_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
+         var2.playSound((Entity)null, var3, SoundEvents.SNIFFER_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
          var2.destroyBlock(var3, false);
          Sniffer var5 = EntityType.SNIFFER.create(var2, EntitySpawnReason.BREEDING);
          if (var5 != null) {
             Vec3 var6 = var3.getCenter();
             var5.setBaby(true);
-            var5.moveTo(var6.x(), var6.y(), var6.z(), Mth.wrapDegrees(var2.random.nextFloat() * 360.0F), 0.0F);
+            var5.snapTo(var6.x(), var6.y(), var6.z(), Mth.wrapDegrees(var2.random.nextFloat() * 360.0F), 0.0F);
             var2.addFreshEntity(var5);
          }
 
@@ -99,6 +99,6 @@ public class SnifferEggBlock extends Block {
 
    static {
       HATCH = BlockStateProperties.HATCH;
-      SHAPE = Block.box(1.0, 0.0, 2.0, 15.0, 16.0, 14.0);
+      SHAPE = Block.column(14.0, 12.0, 0.0, 16.0);
    }
 }

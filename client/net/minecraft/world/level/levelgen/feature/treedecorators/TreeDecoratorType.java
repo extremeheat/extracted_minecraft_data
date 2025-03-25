@@ -13,6 +13,8 @@ public class TreeDecoratorType<P extends TreeDecorator> {
    public static final TreeDecoratorType<BeehiveDecorator> BEEHIVE;
    public static final TreeDecoratorType<AlterGroundDecorator> ALTER_GROUND;
    public static final TreeDecoratorType<AttachedToLeavesDecorator> ATTACHED_TO_LEAVES;
+   public static final TreeDecoratorType<PlaceOnGroundDecorator> PLACE_ON_GROUND;
+   public static final TreeDecoratorType<AttachedToLogsDecorator> ATTACHED_TO_LOGS;
    private final MapCodec<P> codec;
 
    private static <P extends TreeDecorator> TreeDecoratorType<P> register(String var0, MapCodec<P> var1) {
@@ -37,5 +39,7 @@ public class TreeDecoratorType<P extends TreeDecorator> {
       BEEHIVE = register("beehive", BeehiveDecorator.CODEC);
       ALTER_GROUND = register("alter_ground", AlterGroundDecorator.CODEC);
       ATTACHED_TO_LEAVES = register("attached_to_leaves", AttachedToLeavesDecorator.CODEC);
+      PLACE_ON_GROUND = register("place_on_ground", PlaceOnGroundDecorator.CODEC);
+      ATTACHED_TO_LOGS = register("attached_to_logs", AttachedToLogsDecorator.CODEC);
    }
 }

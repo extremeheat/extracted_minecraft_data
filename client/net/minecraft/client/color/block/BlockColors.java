@@ -38,17 +38,18 @@ public class BlockColors {
       BlockColors var0 = new BlockColors();
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var0x.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER ? var2.below() : var2) : GrassColor.getDefaultColor(), Blocks.LARGE_FERN, Blocks.TALL_GRASS);
       var0.addColoringState(DoublePlantBlock.HALF, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
-      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor(), Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.SHORT_GRASS, Blocks.POTTED_FERN);
+      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor(), Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.SHORT_GRASS, Blocks.POTTED_FERN, Blocks.BUSH);
       var0.register((var0x, var1, var2, var3) -> {
          if (var3 != 0) {
             return var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor();
          } else {
             return -1;
          }
-      }, Blocks.PINK_PETALS);
+      }, Blocks.PINK_PETALS, Blocks.WILDFLOWERS);
       var0.register((var0x, var1, var2, var3) -> -10380959, Blocks.SPRUCE_LEAVES);
       var0.register((var0x, var1, var2, var3) -> -8345771, Blocks.BIRCH_LEAVES);
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageFoliageColor(var1, var2) : -12012264, Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.VINE, Blocks.MANGROVE_LEAVES);
+      var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageDryFoliageColor(var1, var2) : -10732494, Blocks.LEAF_LITTER);
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageWaterColor(var1, var2) : -1, Blocks.WATER, Blocks.BUBBLE_COLUMN, Blocks.WATER_CAULDRON);
       var0.register((var0x, var1, var2, var3) -> RedStoneWireBlock.getColorForPower((Integer)var0x.getValue(RedStoneWireBlock.POWER)), Blocks.REDSTONE_WIRE);
       var0.addColoringState(RedStoneWireBlock.POWER, Blocks.REDSTONE_WIRE);

@@ -14,28 +14,28 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4189;
+   public static final int WORLD_VERSION = 4325;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "1.21.4";
+   public static final String VERSION_STRING = "1.21.5";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 769;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 770;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 228;
-   public static final int SNBT_NAG_VERSION = 4173;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 243;
+   public static final int SNBT_NAG_VERSION = 4292;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = false;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 46;
+   public static final int RESOURCE_PACK_FORMAT = 55;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 61;
+   public static final int DATA_PACK_FORMAT = 71;
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -93,6 +93,7 @@ public class SharedConstants {
    public static final boolean DEBUG_TRIAL_SPAWNER_DETECTS_SHEEP_AS_PLAYERS = false;
    public static final boolean DEBUG_VAULT_DETECTS_SHEEP_AS_PLAYERS = false;
    public static final boolean DEBUG_FORCE_ONBOARDING_SCREEN = false;
+   public static final boolean DEBUG_CURSOR_POS = false;
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = false;
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
    public static final boolean DEBUG_AQUIFERS = false;
@@ -175,7 +176,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 769;
+      return 770;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

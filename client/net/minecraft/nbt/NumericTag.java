@@ -1,25 +1,51 @@
 package net.minecraft.nbt;
 
-public abstract class NumericTag implements Tag {
-   protected NumericTag() {
-      super();
+import java.util.Optional;
+
+public sealed interface NumericTag extends PrimitiveTag permits ByteTag, ShortTag, IntTag, LongTag, FloatTag, DoubleTag {
+   byte byteValue();
+
+   short shortValue();
+
+   int intValue();
+
+   long longValue();
+
+   float floatValue();
+
+   double doubleValue();
+
+   Number box();
+
+   default Optional<Number> asNumber() {
+      return Optional.of(this.box());
    }
 
-   public abstract long getAsLong();
+   default Optional<Byte> asByte() {
+      return Optional.of(this.byteValue());
+   }
 
-   public abstract int getAsInt();
+   default Optional<Short> asShort() {
+      return Optional.of(this.shortValue());
+   }
 
-   public abstract short getAsShort();
+   default Optional<Integer> asInt() {
+      return Optional.of(this.intValue());
+   }
 
-   public abstract byte getAsByte();
+   default Optional<Long> asLong() {
+      return Optional.of(this.longValue());
+   }
 
-   public abstract double getAsDouble();
+   default Optional<Float> asFloat() {
+      return Optional.of(this.floatValue());
+   }
 
-   public abstract float getAsFloat();
+   default Optional<Double> asDouble() {
+      return Optional.of(this.doubleValue());
+   }
 
-   public abstract Number getAsNumber();
-
-   public String toString() {
-      return this.getAsString();
+   default Optional<Boolean> asBoolean() {
+      return Optional.of(this.byteValue() != 0);
    }
 }

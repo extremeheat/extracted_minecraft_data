@@ -98,7 +98,7 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
    }
 
    private static RealmsServer createSnapshotRealm(RealmsServer var0) {
-      RealmsClient var1 = RealmsClient.create();
+      RealmsClient var1 = RealmsClient.getOrCreate();
 
       try {
          return var1.createSnapshotRealm(var0.id);

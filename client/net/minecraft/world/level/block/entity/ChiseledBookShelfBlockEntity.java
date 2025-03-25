@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 public class ChiseledBookShelfBlockEntity extends BlockEntity implements Container {
    public static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int DEFAULT_LAST_INTERACTED_SLOT = -1;
    private final NonNullList<ItemStack> items;
    private int lastInteractedSlot;
 
@@ -56,7 +58,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      this.lastInteractedSlot = var1.getInt("last_interacted_slot");
+      this.lastInteractedSlot = var1.getIntOr("last_interacted_slot", -1);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -135,7 +137,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       return this.lastInteractedSlot;
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.items);
    }

@@ -20,7 +20,6 @@ import org.lwjgl.openal.ALC11;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.openal.ALUtil;
-import org.lwjgl.openal.SOFTHRTF;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 
@@ -75,11 +74,10 @@ public class Library {
       } else if (!var3.OpenALC11) {
          throw new IllegalStateException("OpenAL 1.1 not supported");
       } else {
-         this.setHrtf(var3.ALC_SOFT_HRTF && var2);
          MemoryStack var4 = MemoryStack.stackPush();
 
          try {
-            IntBuffer var5 = var4.callocInt(3).put(6554).put(1).put(0).flip();
+            IntBuffer var5 = this.createAttributes(var4, var3.ALC_SOFT_HRTF && var2);
             this.context = ALC10.alcCreateContext(this.currentDevice, var5);
          } catch (Throwable var9) {
             if (var4 != null) {
@@ -124,33 +122,17 @@ public class Library {
       }
    }
 
-   private void setHrtf(boolean var1) {
-      int var2 = ALC10.alcGetInteger(this.currentDevice, 6548);
-      if (var2 > 0) {
-         MemoryStack var3 = MemoryStack.stackPush();
-
-         try {
-            IntBuffer var4 = var3.callocInt(10).put(6546).put(var1 ? 1 : 0).put(6550).put(0).put(0).flip();
-            if (!SOFTHRTF.alcResetDeviceSOFT(this.currentDevice, var4)) {
-               LOGGER.warn("Failed to reset device: {}", ALC10.alcGetString(this.currentDevice, ALC10.alcGetError(this.currentDevice)));
-            }
-         } catch (Throwable var7) {
-            if (var3 != null) {
-               try {
-                  var3.close();
-               } catch (Throwable var6) {
-                  var7.addSuppressed(var6);
-               }
-            }
-
-            throw var7;
-         }
-
-         if (var3 != null) {
-            var3.close();
-         }
+   private IntBuffer createAttributes(MemoryStack var1, boolean var2) {
+      boolean var3 = true;
+      IntBuffer var4 = var1.callocInt(11);
+      int var5 = ALC10.alcGetInteger(this.currentDevice, 6548);
+      if (var5 > 0) {
+         var4.put(6546).put(var2 ? 1 : 0);
+         var4.put(6550).put(0);
       }
 
+      var4.put(6554).put(1);
+      return var4.put(0).flip();
    }
 
    private int getChannelCount() {

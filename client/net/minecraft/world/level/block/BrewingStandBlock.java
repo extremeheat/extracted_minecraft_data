@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
@@ -30,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class BrewingStandBlock extends BaseEntityBlock {
    public static final MapCodec<BrewingStandBlock> CODEC = simpleCodec(BrewingStandBlock::new);
    public static final BooleanProperty[] HAS_BOTTLE;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<BrewingStandBlock> codec() {
       return CODEC;
@@ -74,9 +75,8 @@ public class BrewingStandBlock extends BaseEntityBlock {
       var2.addParticle(ParticleTypes.SMOKE, var5, var7, var9, 0.0, 0.0, 0.0);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
-      super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected boolean hasAnalogOutputSignal(BlockState var1) {
@@ -97,6 +97,6 @@ public class BrewingStandBlock extends BaseEntityBlock {
 
    static {
       HAS_BOTTLE = new BooleanProperty[]{BlockStateProperties.HAS_BOTTLE_0, BlockStateProperties.HAS_BOTTLE_1, BlockStateProperties.HAS_BOTTLE_2};
-      SHAPE = Shapes.or(Block.box(1.0, 0.0, 1.0, 15.0, 2.0, 15.0), Block.box(7.0, 0.0, 7.0, 9.0, 14.0, 9.0));
+      SHAPE = Shapes.or(Block.column(2.0, 2.0, 14.0), Block.column(14.0, 0.0, 2.0));
    }
 }

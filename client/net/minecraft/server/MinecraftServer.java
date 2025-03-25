@@ -13,7 +13,6 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.jtracy.DiscontinuousFrame;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.awt.image.BufferedImage;
@@ -149,11 +148,11 @@ import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.DataPackConfig;
-import net.minecraft.world.level.ForcedChunksSavedData;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.entity.FuelValues;
@@ -343,7 +342,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private void readScoreboard(DimensionDataStorage var1) {
-      var1.computeIfAbsent(this.getScoreboard().dataFactory(), "scoreboard");
+      var1.computeIfAbsent(ServerScoreboard.TYPE);
    }
 
    protected abstract boolean initServer() throws IOException;
@@ -508,15 +507,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.waitUntilNextTick();
 
       for(ServerLevel var8 : this.levels.values()) {
-         ForcedChunksSavedData var9 = (ForcedChunksSavedData)var8.getDataStorage().get(ForcedChunksSavedData.factory(), "chunks");
+         TicketStorage var9 = (TicketStorage)var8.getDataStorage().get(TicketStorage.TYPE);
          if (var9 != null) {
-            LongIterator var10 = var9.getChunks().iterator();
-
-            while(var10.hasNext()) {
-               long var11 = var10.nextLong();
-               ChunkPos var13 = new ChunkPos(var11);
-               var8.getChunkSource().updateChunkForced(var13, true);
-            }
+            var9.activateAllDeactivatedTickets();
          }
       }
 
@@ -611,7 +604,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.nextTickTimeNanos = Util.getNanos() + TimeUtil.NANOSECONDS_PER_MILLISECOND;
 
          for(ServerLevel var8 : this.getAllLevels()) {
-            var8.getChunkSource().removeTicketsOnClosing();
+            var8.getChunkSource().deactivateTicketsOnClosing();
             var8.getChunkSource().tick(() -> true, false);
          }
 
@@ -1084,7 +1077,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.tickConnection();
       var2.popPush("players");
       this.playerList.tick();
-      if (SharedConstants.IS_RUNNING_IN_IDE && this.tickRateManager.runsNormally()) {
+      if (this.tickRateManager.runsNormally()) {
          GameTestTicker.SINGLETON.tick();
       }
 

@@ -1,29 +1,24 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.CatVariantTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.StructureTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -38,7 +33,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -58,6 +52,8 @@ import net.minecraft.world.entity.ai.goal.target.NonTameRandomTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -70,7 +66,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.AABB;
 
-public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVariant>> {
+public class Cat extends TamableAnimal {
    public static final double TEMPT_SPEED_MOD = 0.6;
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
@@ -79,6 +75,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    private static final EntityDataAccessor<Boolean> RELAX_STATE_ONE;
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
    private static final ResourceKey<CatVariant> DEFAULT_VARIANT;
+   private static final DyeColor DEFAULT_COLLAR_COLOR;
    @Nullable
    private CatAvoidEntityGoal<Player> avoidPlayersGoal;
    @Nullable
@@ -119,8 +116,35 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setVariant(Holder<CatVariant> var1) {
+   private void setVariant(Holder<CatVariant> var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      if (var1 == DataComponents.CAT_VARIANT) {
+         return (T)castComponentValue(var1, this.getVariant());
+      } else {
+         return (T)(var1 == DataComponents.CAT_COLLAR ? castComponentValue(var1, this.getCollarColor()) : super.get(var1));
+      }
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.CAT_VARIANT);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.CAT_COLLAR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.CAT_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.CAT_VARIANT, var2));
+         return true;
+      } else if (var1 == DataComponents.CAT_COLLAR) {
+         this.setCollarColor((DyeColor)castComponentValue(DataComponents.CAT_COLLAR, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public void setLying(boolean var1) {
@@ -149,28 +173,22 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, BuiltInRegistries.CAT_VARIANT.getOrThrow(DEFAULT_VARIANT));
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
       var1.define(IS_LYING, false);
       var1.define(RELAX_STATE_ONE, false);
-      var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
+      var1.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("variant", ((ResourceKey)this.getVariant().unwrapKey().orElse(DEFAULT_VARIANT)).location().toString());
-      var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
+      VariantUtils.writeVariant(var1, this.getVariant());
+      var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.CAT_VARIANT, var0));
-      Registry var10001 = BuiltInRegistries.CAT_VARIANT;
-      Objects.requireNonNull(var10001);
-      var10000.flatMap(var10001::get).ifPresent(this::setVariant);
-      if (var1.contains("CollarColor", 99)) {
-         this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
-      }
-
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.CAT_VARIANT).ifPresent(this::setVariant);
+      this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
    }
 
    public void customServerAiStep(ServerLevel var1) {
@@ -310,7 +328,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
          }
 
          if (this.isTame()) {
-            var3.setOwnerUUID(this.getOwnerUUID());
+            var3.setOwnerReference(this.getOwnerReference());
             var3.setTame(true, true);
             DyeColor var5 = this.getCollarColor();
             DyeColor var6 = var4.getCollarColor();
@@ -335,15 +353,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
-      boolean var5 = var1.getMoonBrightness() > 0.9F;
-      TagKey var6 = var5 ? CatVariantTags.FULL_MOON_SPAWNS : CatVariantTags.DEFAULT_SPAWNS;
-      BuiltInRegistries.CAT_VARIANT.getRandomElementOf(var6, var1.getRandom()).ifPresent(this::setVariant);
-      ServerLevel var7 = var1.getLevel();
-      if (var7.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid()) {
-         this.setVariant(BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.ALL_BLACK));
-         this.setPersistenceRequired();
-      }
-
+      CatVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
       return var4;
    }
 
@@ -448,22 +458,13 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       return this.getBreedOffspring(var1, var2);
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
-   // $FF: synthetic method
-   public void setVariant(final Object var1) {
-      this.setVariant((Holder)var1);
-   }
-
    static {
       DATA_VARIANT_ID = SynchedEntityData.<Holder<CatVariant>>defineId(Cat.class, EntityDataSerializers.CAT_VARIANT);
       IS_LYING = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       RELAX_STATE_ONE = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Cat.class, EntityDataSerializers.INT);
-      DEFAULT_VARIANT = CatVariant.BLACK;
+      DEFAULT_VARIANT = CatVariants.BLACK;
+      DEFAULT_COLLAR_COLOR = DyeColor.RED;
    }
 
    static class CatAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
@@ -535,7 +536,8 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
          } else {
             LivingEntity var1 = this.cat.getOwner();
             if (var1 instanceof Player) {
-               this.ownerPlayer = (Player)var1;
+               Player var2 = (Player)var1;
+               this.ownerPlayer = var2;
                if (!var1.isSleeping()) {
                   return false;
                }
@@ -544,10 +546,10 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
                   return false;
                }
 
-               BlockPos var2 = this.ownerPlayer.blockPosition();
-               BlockState var3 = this.cat.level().getBlockState(var2);
-               if (var3.is(BlockTags.BEDS)) {
-                  this.goalPos = (BlockPos)var3.getOptionalValue(BedBlock.FACING).map((var1x) -> var2.relative(var1x.getOpposite())).orElseGet(() -> new BlockPos(var2));
+               BlockPos var3 = this.ownerPlayer.blockPosition();
+               BlockState var4 = this.cat.level().getBlockState(var3);
+               if (var4.is(BlockTags.BEDS)) {
+                  this.goalPos = (BlockPos)var4.getOptionalValue(BedBlock.FACING).map((var1x) -> var3.relative(var1x.getOpposite())).orElseGet(() -> new BlockPos(var3));
                   return !this.spaceIsOccupied();
                }
             }

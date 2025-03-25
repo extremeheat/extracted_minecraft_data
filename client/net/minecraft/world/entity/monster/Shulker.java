@@ -7,6 +7,9 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -26,11 +29,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -56,7 +59,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-public class Shulker extends AbstractGolem implements VariantHolder<Optional<DyeColor>>, Enemy {
+public class Shulker extends AbstractGolem implements Enemy {
    private static final ResourceLocation COVERED_ARMOR_MODIFIER_ID = ResourceLocation.withDefaultNamespace("covered");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER;
    protected static final EntityDataAccessor<Direction> DATA_ATTACH_FACE_ID;
@@ -69,6 +72,8 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    private static final int OTHER_SHULKER_SCAN_RADIUS = 8;
    private static final int OTHER_SHULKER_LIMIT = 5;
    private static final float PEEK_PER_TICK = 0.05F;
+   private static final byte DEFAULT_PEEK = 0;
+   private static final Direction DEFAULT_ATTACH_FACE;
    static final Vector3f FORWARD;
    private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
@@ -123,7 +128,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_ATTACH_FACE_ID, Direction.DOWN);
+      var1.define(DATA_ATTACH_FACE_ID, DEFAULT_ATTACH_FACE);
       var1.define(DATA_PEEK_ID, (byte)0);
       var1.define(DATA_COLOR_ID, (byte)16);
    }
@@ -138,17 +143,14 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setAttachFace(Direction.from3DDataValue(var1.getByte("AttachFace")));
-      this.entityData.set(DATA_PEEK_ID, var1.getByte("Peek"));
-      if (var1.contains("Color", 99)) {
-         this.entityData.set(DATA_COLOR_ID, var1.getByte("Color"));
-      }
-
+      this.setAttachFace((Direction)var1.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(DEFAULT_ATTACH_FACE));
+      this.entityData.set(DATA_PEEK_ID, var1.getByteOr("Peek", (byte)0));
+      this.entityData.set(DATA_COLOR_ID, var1.getByteOr("Color", (byte)16));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putByte("AttachFace", (byte)this.getAttachFace().get3DDataValue());
+      var1.store("AttachFace", Direction.LEGACY_ID_CODEC, this.getAttachFace());
       var1.putByte("Peek", (Byte)this.entityData.get(DATA_PEEK_ID));
       var1.putByte("Color", (Byte)this.entityData.get(DATA_COLOR_ID));
    }
@@ -368,10 +370,8 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       }
    }
 
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.lerpSteps = 0;
-      this.setPos(var1, var3, var5);
-      this.setRot(var7, var8);
+   public InterpolationHandler getInterpolation() {
+      return null;
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
@@ -412,7 +412,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
             Shulker var5 = EntityType.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
             if (var5 != null) {
                var5.setVariant(this.getVariant());
-               var5.moveTo(var1);
+               var5.snapTo(var1);
                this.level().addFreshEntity(var5);
             }
 
@@ -501,7 +501,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       return Math.min(var1, 3.0F);
    }
 
-   public void setVariant(Optional<DyeColor> var1) {
+   private void setVariant(Optional<DyeColor> var1) {
       this.entityData.set(DATA_COLOR_ID, (Byte)var1.map((var0) -> (byte)var0.getId()).orElse((byte)16));
    }
 
@@ -515,9 +515,23 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       return var1 != 16 && var1 <= 15 ? DyeColor.byId(var1) : null;
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.SHULKER_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.SHULKER_COLOR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.SHULKER_COLOR) {
+         this.setVariant(Optional.of((DyeColor)castComponentValue(DataComponents.SHULKER_COLOR, var2)));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    static {
@@ -525,6 +539,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       DATA_ATTACH_FACE_ID = SynchedEntityData.<Direction>defineId(Shulker.class, EntityDataSerializers.DIRECTION);
       DATA_PEEK_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
       DATA_COLOR_ID = SynchedEntityData.<Byte>defineId(Shulker.class, EntityDataSerializers.BYTE);
+      DEFAULT_ATTACH_FACE = Direction.DOWN;
       FORWARD = (Vector3f)Util.make(() -> {
          Vec3i var0 = Direction.SOUTH.getUnitVec3i();
          return new Vector3f((float)var0.getX(), (float)var0.getY(), (float)var0.getZ());

@@ -6,7 +6,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.blaze3d.platform.GlUtil;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -182,19 +183,22 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
 
       ImmutableMap<String, String> apply() {
          ImmutableMap.Builder var1 = new ImmutableMap.Builder();
-         String var2 = matchAny(this.rendererPatterns, GlUtil.getRenderer());
-         if (!var2.isEmpty()) {
-            var1.put("renderer", var2);
-         }
+         GpuDevice var2 = RenderSystem.getDevice();
+         if (var2.getBackendName().equals("OpenGL")) {
+            String var3 = matchAny(this.rendererPatterns, var2.getRenderer());
+            if (!var3.isEmpty()) {
+               var1.put("renderer", var3);
+            }
 
-         String var3 = matchAny(this.versionPatterns, GlUtil.getOpenGLVersion());
-         if (!var3.isEmpty()) {
-            var1.put("version", var3);
-         }
+            String var4 = matchAny(this.versionPatterns, var2.getVersion());
+            if (!var4.isEmpty()) {
+               var1.put("version", var4);
+            }
 
-         String var4 = matchAny(this.vendorPatterns, GlUtil.getVendor());
-         if (!var4.isEmpty()) {
-            var1.put("vendor", var4);
+            String var5 = matchAny(this.vendorPatterns, var2.getVendor());
+            if (!var5.isEmpty()) {
+               var1.put("vendor", var5);
+            }
          }
 
          return var1.build();

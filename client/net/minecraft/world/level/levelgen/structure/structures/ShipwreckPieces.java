@@ -59,14 +59,14 @@ public class ShipwreckPieces {
       }
 
       public ShipwreckPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.SHIPWRECK_PIECE, var2, var1, (var1x) -> makeSettings(Rotation.valueOf(var2.getString("Rot"))));
-         this.isBeached = var2.getBoolean("isBeached");
+         super(StructurePieceType.SHIPWRECK_PIECE, var2, var1, (var1x) -> makeSettings((Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
+         this.isBeached = var2.getBooleanOr("isBeached", false);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
          var2.putBoolean("isBeached", this.isBeached);
-         var2.putString("Rot", this.placeSettings.getRotation().name());
+         var2.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
       }
 
       private static StructurePlaceSettings makeSettings(Rotation var0) {

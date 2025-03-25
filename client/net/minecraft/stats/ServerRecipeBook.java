@@ -4,14 +4,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import net.minecraft.ResourceLocationException;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -19,7 +19,6 @@ import net.minecraft.network.protocol.game.ClientboundRecipeBookAddPacket;
 import net.minecraft.network.protocol.game.ClientboundRecipeBookRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundRecipeBookSettingsPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -29,6 +28,7 @@ import org.slf4j.Logger;
 public class ServerRecipeBook extends RecipeBook {
    public static final String RECIPE_BOOK_TAG = "recipeBook";
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Codec<List<ResourceKey<Recipe<?>>>> RECIPE_LIST_CODEC;
    private final DisplayResolver displayResolver;
    @VisibleForTesting
    protected final Set<ResourceKey<Recipe<?>>> known = Sets.newIdentityHashSet();
@@ -121,25 +121,18 @@ public class ServerRecipeBook extends RecipeBook {
 
    public void fromNbt(CompoundTag var1, Predicate<ResourceKey<Recipe<?>>> var2) {
       this.setBookSettings(RecipeBookSettings.read(var1));
-      ListTag var3 = var1.getList("recipes", 8);
+      List var3 = (List)var1.read("recipes", RECIPE_LIST_CODEC).orElse(List.of());
       this.loadRecipes(var3, this::add, var2);
-      ListTag var4 = var1.getList("toBeDisplayed", 8);
+      List var4 = (List)var1.read("toBeDisplayed", RECIPE_LIST_CODEC).orElse(List.of());
       this.loadRecipes(var4, this::addHighlight, var2);
    }
 
-   private void loadRecipes(ListTag var1, Consumer<ResourceKey<Recipe<?>>> var2, Predicate<ResourceKey<Recipe<?>>> var3) {
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
-         String var5 = var1.getString(var4);
-
-         try {
-            ResourceKey var6 = ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var5));
-            if (!var3.test(var6)) {
-               LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var6);
-            } else {
-               var2.accept(var6);
-            }
-         } catch (ResourceLocationException var7) {
-            LOGGER.error("Tried to load improperly formatted recipe: {} removed now.", var5);
+   private void loadRecipes(List<ResourceKey<Recipe<?>>> var1, Consumer<ResourceKey<Recipe<?>>> var2, Predicate<ResourceKey<Recipe<?>>> var3) {
+      for(ResourceKey var5 : var1) {
+         if (!var3.test(var5)) {
+            LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var5);
+         } else {
+            var2.accept(var5);
          }
       }
 
@@ -162,6 +155,10 @@ public class ServerRecipeBook extends RecipeBook {
       this.bookSettings.replaceFrom(var1.bookSettings);
       this.known.addAll(var1.known);
       this.highlight.addAll(var1.highlight);
+   }
+
+   static {
+      RECIPE_LIST_CODEC = Recipe.KEY_CODEC.listOf();
    }
 
    @FunctionalInterface

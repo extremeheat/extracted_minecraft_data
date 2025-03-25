@@ -1,6 +1,9 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,25 +22,14 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CocoaBlock extends HorizontalDirectionalBlock implements BonemealableBlock {
    public static final MapCodec<CocoaBlock> CODEC = simpleCodec(CocoaBlock::new);
    public static final int MAX_AGE = 2;
    public static final IntegerProperty AGE;
-   protected static final int AGE_0_WIDTH = 4;
-   protected static final int AGE_0_HEIGHT = 5;
-   protected static final int AGE_0_HALFWIDTH = 2;
-   protected static final int AGE_1_WIDTH = 6;
-   protected static final int AGE_1_HEIGHT = 7;
-   protected static final int AGE_1_HALFWIDTH = 3;
-   protected static final int AGE_2_WIDTH = 8;
-   protected static final int AGE_2_HEIGHT = 9;
-   protected static final int AGE_2_HALFWIDTH = 4;
-   protected static final VoxelShape[] EAST_AABB;
-   protected static final VoxelShape[] WEST_AABB;
-   protected static final VoxelShape[] NORTH_AABB;
-   protected static final VoxelShape[] SOUTH_AABB;
+   private static final List<Map<Direction, VoxelShape>> SHAPES;
 
    public MapCodec<CocoaBlock> codec() {
       return CODEC;
@@ -68,18 +60,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      int var5 = (Integer)var1.getValue(AGE);
-      switch ((Direction)var1.getValue(FACING)) {
-         case SOUTH:
-            return SOUTH_AABB[var5];
-         case NORTH:
-         default:
-            return NORTH_AABB[var5];
-         case WEST:
-            return WEST_AABB[var5];
-         case EAST:
-            return EAST_AABB[var5];
-      }
+      return (VoxelShape)((Map)SHAPES.get((Integer)var1.getValue(AGE))).get(var1.getValue(FACING));
    }
 
    @Nullable
@@ -126,9 +107,6 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
 
    static {
       AGE = BlockStateProperties.AGE_2;
-      EAST_AABB = new VoxelShape[]{Block.box(11.0, 7.0, 6.0, 15.0, 12.0, 10.0), Block.box(9.0, 5.0, 5.0, 15.0, 12.0, 11.0), Block.box(7.0, 3.0, 4.0, 15.0, 12.0, 12.0)};
-      WEST_AABB = new VoxelShape[]{Block.box(1.0, 7.0, 6.0, 5.0, 12.0, 10.0), Block.box(1.0, 5.0, 5.0, 7.0, 12.0, 11.0), Block.box(1.0, 3.0, 4.0, 9.0, 12.0, 12.0)};
-      NORTH_AABB = new VoxelShape[]{Block.box(6.0, 7.0, 1.0, 10.0, 12.0, 5.0), Block.box(5.0, 5.0, 1.0, 11.0, 12.0, 7.0), Block.box(4.0, 3.0, 1.0, 12.0, 12.0, 9.0)};
-      SOUTH_AABB = new VoxelShape[]{Block.box(6.0, 7.0, 11.0, 10.0, 12.0, 15.0), Block.box(5.0, 5.0, 9.0, 11.0, 12.0, 15.0), Block.box(4.0, 3.0, 7.0, 12.0, 12.0, 15.0)};
+      SHAPES = IntStream.rangeClosed(0, 2).mapToObj((var0) -> Shapes.rotateHorizontal(Block.column((double)(4 + var0 * 2), (double)(7 - var0 * 2), 12.0).move(0.0, 0.0, (double)(var0 - 5) / 16.0).optimize())).toList();
    }
 }

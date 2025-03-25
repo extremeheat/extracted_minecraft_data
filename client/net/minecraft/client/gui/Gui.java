@@ -24,6 +24,7 @@ import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -207,38 +208,39 @@ public class Gui {
          this.renderVignette(var1, this.minecraft.getCameraEntity());
       }
 
-      float var3 = var2.getGameTimeDeltaTicks();
-      this.scopeScale = Mth.lerp(0.5F * var3, this.scopeScale, 1.125F);
+      LocalPlayer var3 = this.minecraft.player;
+      float var4 = var2.getGameTimeDeltaTicks();
+      this.scopeScale = Mth.lerp(0.5F * var4, this.scopeScale, 1.125F);
       if (this.minecraft.options.getCameraType().isFirstPerson()) {
-         if (this.minecraft.player.isScoping()) {
+         if (var3.isScoping()) {
             this.renderSpyglassOverlay(var1, this.scopeScale);
          } else {
             this.scopeScale = 0.5F;
 
-            for(EquipmentSlot var7 : EquipmentSlot.values()) {
-               ItemStack var8 = this.minecraft.player.getItemBySlot(var7);
-               Equippable var9 = (Equippable)var8.get(DataComponents.EQUIPPABLE);
-               if (var9 != null && var9.slot() == var7 && var9.cameraOverlay().isPresent()) {
-                  this.renderTextureOverlay(var1, ((ResourceLocation)var9.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
+            for(EquipmentSlot var8 : EquipmentSlot.values()) {
+               ItemStack var9 = var3.getItemBySlot(var8);
+               Equippable var10 = (Equippable)var9.get(DataComponents.EQUIPPABLE);
+               if (var10 != null && var10.slot() == var8 && var10.cameraOverlay().isPresent()) {
+                  this.renderTextureOverlay(var1, ((ResourceLocation)var10.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
                }
             }
          }
       }
 
-      if (this.minecraft.player.getTicksFrozen() > 0) {
-         this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, this.minecraft.player.getPercentFrozen());
+      if (var3.getTicksFrozen() > 0) {
+         this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, var3.getPercentFrozen());
       }
 
-      float var10 = Mth.lerp(var2.getGameTimeDeltaPartialTick(false), this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity);
-      if (var10 > 0.0F) {
-         if (!this.minecraft.player.hasEffect(MobEffects.CONFUSION)) {
-            this.renderPortalOverlay(var1, var10);
-         } else {
-            float var11 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
-            if (var11 < 1.0F) {
-               float var12 = var10 * (1.0F - var11);
-               this.renderConfusionOverlay(var1, var12);
-            }
+      float var11 = var2.getGameTimeDeltaPartialTick(false);
+      float var12 = Mth.lerp(var11, var3.oPortalEffectIntensity, var3.portalEffectIntensity);
+      float var13 = var3.getEffectBlendFactor(MobEffects.NAUSEA, var11);
+      if (var12 > 0.0F) {
+         this.renderPortalOverlay(var1, var12);
+      } else if (var13 > 0.0F) {
+         float var14 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
+         if (var14 < 1.0F) {
+            float var15 = var13 * (1.0F - var14);
+            this.renderConfusionOverlay(var1, var15);
          }
       }
 
@@ -331,8 +333,8 @@ public class Gui {
    private void renderChat(GuiGraphics var1, DeltaTracker var2) {
       if (!this.chat.isChatFocused()) {
          Window var3 = this.minecraft.getWindow();
-         int var4 = Mth.floor(this.minecraft.mouseHandler.xpos() * (double)var3.getGuiScaledWidth() / (double)var3.getScreenWidth());
-         int var5 = Mth.floor(this.minecraft.mouseHandler.ypos() * (double)var3.getGuiScaledHeight() / (double)var3.getScreenHeight());
+         int var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var3));
+         int var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var3));
          this.chat.render(var1, this.tickCount, var4, var5, false);
       }
 
@@ -381,7 +383,7 @@ public class Gui {
                var11.rotateX(-var10.getXRot() * 0.017453292F);
                var11.rotateY(var10.getYRot() * 0.017453292F);
                var11.scale(-1.0F, -1.0F, -1.0F);
-               RenderSystem.renderCrosshair(10);
+               this.debugOverlay.render3dCrosshair();
                var11.popMatrix();
             } else {
                boolean var4 = true;
@@ -514,7 +516,7 @@ public class Gui {
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, -90.0F);
          var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().selected * 20, var1.guiHeight() - 22 - 1, 24, 23);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
          if (!var4.isEmpty()) {
             if (var5 == HumanoidArm.LEFT) {
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
@@ -529,7 +531,7 @@ public class Gui {
          for(int var10 = 0; var10 < 9; ++var10) {
             int var11 = var6 - 90 + var10 * 20 + 2;
             int var12 = var1.guiHeight() - 16 - 3;
-            this.renderSlot(var1, var11, var12, var2, var3, var3.getInventory().items.get(var10), var9++);
+            this.renderSlot(var1, var11, var12, var2, var3, var3.getInventory().getItem(var10), var9++);
          }
 
          if (!var4.isEmpty()) {
@@ -1147,7 +1149,7 @@ public class Gui {
       }
 
       if (this.minecraft.player != null) {
-         ItemStack var2 = this.minecraft.player.getInventory().getSelected();
+         ItemStack var2 = this.minecraft.player.getInventory().getSelectedItem();
          if (var2.isEmpty()) {
             this.toolHighlightTimer = 0;
          } else if (!this.lastToolHighlight.isEmpty() && var2.is(this.lastToolHighlight.getItem()) && var2.getHoverName().equals(this.lastToolHighlight.getHoverName())) {

@@ -8,6 +8,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -18,8 +20,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
@@ -34,6 +34,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
    public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", var0));
    private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.resource_or_id.invalid"));
+   private static final TagParser<?> VALUE_PARSER;
    private final HolderLookup.Provider registryLookup;
    private final boolean hasRegistry;
    private final Codec<Holder<T>> codec;
@@ -75,29 +76,30 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    @Nullable
    public Holder<T> parse(StringReader var1) throws CommandSyntaxException {
-      Tag var2 = parseInlineOrId(var1);
-      if (!this.hasRegistry) {
-         return null;
-      } else {
-         RegistryOps var3 = this.registryLookup.createSerializationContext(NbtOps.INSTANCE);
-         return (Holder)this.codec.parse(var3, var2).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
-      }
+      return this.parse(var1, VALUE_PARSER);
+   }
+
+   @Nullable
+   private <O> Holder<T> parse(StringReader var1, TagParser<O> var2) throws CommandSyntaxException {
+      RegistryOps var3 = this.registryLookup.createSerializationContext(var2.getOps());
+      Dynamic var4 = parseInlineOrId(var3, var2, var1);
+      return !this.hasRegistry ? null : (Holder)this.codec.parse(var4).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
    }
 
    @VisibleForTesting
-   static Tag parseInlineOrId(StringReader var0) throws CommandSyntaxException {
-      int var1 = var0.getCursor();
-      Tag var2 = (new TagParser(var0)).readValue();
-      if (hasConsumedWholeArg(var0)) {
-         return var2;
+   static <T> Dynamic<T> parseInlineOrId(DynamicOps<T> var0, TagParser<T> var1, StringReader var2) throws CommandSyntaxException {
+      int var3 = var2.getCursor();
+      Object var4 = var1.parseAsArgument(var2);
+      if (hasConsumedWholeArg(var2)) {
+         return new Dynamic(var0, var4);
       } else {
-         var0.setCursor(var1);
-         ResourceLocation var3 = ResourceLocation.read(var0);
-         if (hasConsumedWholeArg(var0)) {
-            return StringTag.valueOf(var3.toString());
+         var2.setCursor(var3);
+         ResourceLocation var5 = ResourceLocation.read(var2);
+         if (hasConsumedWholeArg(var2)) {
+            return new Dynamic(var0, var0.createString(var5.toString()));
          } else {
-            var0.setCursor(var1);
-            throw ERROR_INVALID.createWithContext(var0);
+            var2.setCursor(var3);
+            throw ERROR_INVALID.createWithContext(var2);
          }
       }
    }
@@ -114,6 +116,10 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    @Nullable
    public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
+   }
+
+   static {
+      VALUE_PARSER = TagParser.create(NbtOps.INSTANCE);
    }
 
    public static class LootTableArgument extends ResourceOrIdArgument<LootTable> {

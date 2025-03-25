@@ -1,16 +1,12 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
@@ -41,10 +37,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
-import org.slf4j.Logger;
 
 public class MineshaftPieces {
-   static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_SHAFT_WIDTH = 3;
    private static final int DEFAULT_SHAFT_HEIGHT = 3;
    private static final int DEFAULT_SHAFT_LENGTH = 5;
@@ -106,7 +100,7 @@ public class MineshaftPieces {
 
       public MineShaftPiece(StructurePieceType var1, CompoundTag var2) {
          super(var1, var2);
-         this.type = MineshaftStructure.Type.byId(var2.getInt("MST"));
+         this.type = MineshaftStructure.Type.byId(var2.getIntOr("MST", 0));
       }
 
       protected boolean canBeReplaced(LevelReader var1, int var2, int var3, int var4, BoundingBox var5) {
@@ -201,13 +195,7 @@ public class MineshaftPieces {
 
       public MineShaftRoom(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_ROOM, var1);
-         DataResult var10000 = BoundingBox.CODEC.listOf().parse(NbtOps.INSTANCE, var1.getList("Entrances", 11));
-         Logger var10001 = MineshaftPieces.LOGGER;
-         Objects.requireNonNull(var10001);
-         Optional var2 = var10000.resultOrPartial(var10001::error);
-         List var3 = this.childEntranceBoxes;
-         Objects.requireNonNull(var3);
-         var2.ifPresent(var3::addAll);
+         this.childEntranceBoxes.addAll((Collection)var1.read("Entrances", BoundingBox.CODEC.listOf()).orElse(List.of()));
       }
 
       public void addChildren(StructurePiece var1, StructurePieceAccessor var2, RandomSource var3) {
@@ -295,10 +283,7 @@ public class MineshaftPieces {
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
-         DataResult var10000 = BoundingBox.CODEC.listOf().encodeStart(NbtOps.INSTANCE, this.childEntranceBoxes);
-         Logger var10001 = MineshaftPieces.LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("Entrances", var1x));
+         var2.store("Entrances", BoundingBox.CODEC.listOf(), this.childEntranceBoxes);
       }
    }
 
@@ -310,10 +295,10 @@ public class MineshaftPieces {
 
       public MineShaftCorridor(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_CORRIDOR, var1);
-         this.hasRails = var1.getBoolean("hr");
-         this.spiderCorridor = var1.getBoolean("sc");
-         this.hasPlacedSpider = var1.getBoolean("hps");
-         this.numSections = var1.getInt("Num");
+         this.hasRails = var1.getBooleanOr("hr", false);
+         this.spiderCorridor = var1.getBooleanOr("sc", false);
+         this.hasPlacedSpider = var1.getBooleanOr("hps", false);
+         this.numSections = var1.getIntOr("Num", 0);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -665,14 +650,14 @@ public class MineshaftPieces {
 
       public MineShaftCrossing(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_CROSSING, var1);
-         this.isTwoFloored = var1.getBoolean("tf");
-         this.direction = Direction.from2DDataValue(var1.getInt("D"));
+         this.isTwoFloored = var1.getBooleanOr("tf", false);
+         this.direction = (Direction)var1.read("D", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
          var2.putBoolean("tf", this.isTwoFloored);
-         var2.putInt("D", this.direction.get2DDataValue());
+         var2.store("D", Direction.LEGACY_ID_CODEC_2D, this.direction);
       }
 
       public MineShaftCrossing(int var1, BoundingBox var2, @Nullable Direction var3, MineshaftStructure.Type var4) {

@@ -1,36 +1,32 @@
 package net.minecraft.stats;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -40,9 +36,20 @@ import org.slf4j.Logger;
 
 public class ServerStatsCounter extends StatsCounter {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Codec<Map<Stat<?>, Integer>> STATS_CODEC;
    private final MinecraftServer server;
    private final File file;
    private final Set<Stat<?>> dirty = Sets.newHashSet();
+
+   private static <T> Codec<Map<Stat<?>, Integer>> createTypedStatsCodec(StatType<T> var0) {
+      Codec var1 = var0.getRegistry().byNameCodec();
+      Objects.requireNonNull(var0);
+      Codec var2 = var1.flatComapMap(var0::get, (var1x) -> var1x.getType() == var0 ? DataResult.success(var1x.getValue()) : DataResult.error(() -> {
+            String var10000 = String.valueOf(var0);
+            return "Expected type " + var10000 + ", but got " + String.valueOf(var1x.getType());
+         }));
+      return Codec.unboundedMap(var2, Codec.INT);
+   }
 
    public ServerStatsCounter(MinecraftServer var1, File var2) {
       super();
@@ -84,52 +91,26 @@ public class ServerStatsCounter extends StatsCounter {
       try {
          JsonReader var3 = new JsonReader(new StringReader(var2));
 
-         label47: {
+         label35: {
             try {
                var3.setLenient(false);
                JsonElement var4 = Streams.parse(var3);
                if (!var4.isJsonNull()) {
-                  CompoundTag var5 = fromJson(var4.getAsJsonObject());
-                  var5 = DataFixTypes.STATS.updateToCurrentVersion(var1, var5, NbtUtils.getDataVersion(var5, 1343));
-                  if (!var5.contains("stats", 10)) {
-                     break label47;
-                  }
-
-                  CompoundTag var6 = var5.getCompound("stats");
-                  Iterator var7 = var6.getAllKeys().iterator();
-
-                  while(true) {
-                     if (!var7.hasNext()) {
-                        break label47;
-                     }
-
-                     String var8 = (String)var7.next();
-                     if (var6.contains(var8, 10)) {
-                        Util.ifElse(BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.parse(var8)), (var3x) -> {
-                           CompoundTag var4 = var6.getCompound(var8);
-
-                           for(String var6x : var4.getAllKeys()) {
-                              if (var4.contains(var6x, 99)) {
-                                 Util.ifElse(this.getStat(var3x, var6x), (var3) -> this.stats.put(var3, var4.getInt(var6x)), () -> LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, var6x));
-                              } else {
-                                 LOGGER.warn("Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4.get(var6x), var6x});
-                              }
-                           }
-
-                        }, () -> LOGGER.warn("Invalid statistic type in {}: Don't know what {} is", this.file, var8));
-                     }
-                  }
+                  Dynamic var5 = new Dynamic(JsonOps.INSTANCE, var4);
+                  var5 = DataFixTypes.STATS.updateToCurrentVersion(var1, var5, NbtUtils.getDataVersion((Dynamic)var5, 1343));
+                  this.stats.putAll((Map)STATS_CODEC.parse(var5.get("stats").orElseEmptyMap()).resultOrPartial((var1x) -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, var1x)).orElse(Map.of()));
+                  break label35;
                }
 
                LOGGER.error("Unable to parse Stat data from {}", this.file);
-            } catch (Throwable var10) {
+            } catch (Throwable var7) {
                try {
                   var3.close();
-               } catch (Throwable var9) {
-                  var10.addSuppressed(var9);
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
                }
 
-               throw var10;
+               throw var7;
             }
 
             var3.close();
@@ -137,63 +118,17 @@ public class ServerStatsCounter extends StatsCounter {
          }
 
          var3.close();
-      } catch (IOException | JsonParseException var11) {
-         LOGGER.error("Unable to parse Stat data from {}", this.file, var11);
+      } catch (IOException | JsonParseException var8) {
+         LOGGER.error("Unable to parse Stat data from {}", this.file, var8);
       }
 
-   }
-
-   private <T> Optional<Stat<T>> getStat(StatType<T> var1, String var2) {
-      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var2));
-      Registry var10001 = var1.getRegistry();
-      Objects.requireNonNull(var10001);
-      var10000 = var10000.flatMap(var10001::getOptional);
-      Objects.requireNonNull(var1);
-      return var10000.map(var1::get);
-   }
-
-   private static CompoundTag fromJson(JsonObject var0) {
-      CompoundTag var1 = new CompoundTag();
-
-      for(Map.Entry var3 : var0.entrySet()) {
-         JsonElement var4 = (JsonElement)var3.getValue();
-         if (var4.isJsonObject()) {
-            var1.put((String)var3.getKey(), fromJson(var4.getAsJsonObject()));
-         } else if (var4.isJsonPrimitive()) {
-            JsonPrimitive var5 = var4.getAsJsonPrimitive();
-            if (var5.isNumber()) {
-               var1.putInt((String)var3.getKey(), var5.getAsInt());
-            }
-         }
-      }
-
-      return var1;
    }
 
    protected String toJson() {
-      HashMap var1 = Maps.newHashMap();
-      ObjectIterator var2 = this.stats.object2IntEntrySet().iterator();
-
-      while(var2.hasNext()) {
-         Object2IntMap.Entry var3 = (Object2IntMap.Entry)var2.next();
-         Stat var4 = (Stat)var3.getKey();
-         ((JsonObject)var1.computeIfAbsent(var4.getType(), (var0) -> new JsonObject())).addProperty(getKey(var4).toString(), var3.getIntValue());
-      }
-
-      JsonObject var5 = new JsonObject();
-
-      for(Map.Entry var8 : var1.entrySet()) {
-         var5.add(BuiltInRegistries.STAT_TYPE.getKey((StatType)var8.getKey()).toString(), (JsonElement)var8.getValue());
-      }
-
-      JsonObject var7 = new JsonObject();
-      var7.add("stats", var5);
-      var7.addProperty("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-      return var7.toString();
-   }
-
-   private static <T> ResourceLocation getKey(Stat<T> var0) {
-      return var0.getType().getRegistry().getKey(var0.getValue());
+      JsonObject var1 = new JsonObject();
+      var1.add("stats", (JsonElement)STATS_CODEC.encodeStart(JsonOps.INSTANCE, this.stats).getOrThrow());
+      var1.addProperty("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+      return var1.toString();
    }
 
    public void markAllDirty() {
@@ -208,5 +143,13 @@ public class ServerStatsCounter extends StatsCounter {
       }
 
       var1.connection.send(new ClientboundAwardStatsPacket(var2));
+   }
+
+   static {
+      STATS_CODEC = Codec.dispatchedMap(BuiltInRegistries.STAT_TYPE.byNameCodec(), Util.memoize(ServerStatsCounter::createTypedStatsCodec)).xmap((var0) -> {
+         HashMap var1 = new HashMap();
+         var0.forEach((var1x, var2) -> var1.putAll(var2));
+         return var1;
+      }, (var0) -> (Map)var0.entrySet().stream().collect(Collectors.groupingBy((var0x) -> ((Stat)var0x.getKey()).getType(), Util.toMap())));
    }
 }

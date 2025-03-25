@@ -15,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -120,15 +119,20 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    public static final String TAG_HAS_NECTAR = "HasNectar";
    public static final String TAG_FLOWER_POS = "flower_pos";
    public static final String TAG_HIVE_POS = "hive_pos";
+   public static final boolean DEFAULT_HAS_NECTAR = false;
+   private static final boolean DEFAULT_HAS_STUNG = false;
+   private static final int DEFAULT_TICKS_SINCE_POLLINATION = 0;
+   private static final int DEFAULT_CANNOT_ENTER_HIVE_TICKS = 0;
+   private static final int DEFAULT_CROPS_GROWN_SINCE_POLLINATION = 0;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    @Nullable
    private UUID persistentAngerTarget;
    private float rollAmount;
    private float rollAmountO;
    private int timeSinceSting;
-   int ticksWithoutNectarSinceExitingHive;
-   private int stayOutOfHiveCountdown;
-   private int numCropsGrownSincePollination;
+   int ticksWithoutNectarSinceExitingHive = 0;
+   private int stayOutOfHiveCountdown = 0;
+   private int numCropsGrownSincePollination = 0;
    private static final int COOLDOWN_BEFORE_LOCATING_NEW_HIVE = 200;
    int remainingCooldownBeforeLocatingNewHive;
    private static final int COOLDOWN_BEFORE_LOCATING_NEW_FLOWER = 200;
@@ -191,14 +195,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.hasHive()) {
-         var1.put("hive_pos", NbtUtils.writeBlockPos(this.getHivePos()));
-      }
-
-      if (this.hasSavedFlowerPos()) {
-         var1.put("flower_pos", NbtUtils.writeBlockPos(this.getSavedFlowerPos()));
-      }
-
+      var1.storeNullable("hive_pos", BlockPos.CODEC, this.hivePos);
+      var1.storeNullable("flower_pos", BlockPos.CODEC, this.savedFlowerPos);
       var1.putBoolean("HasNectar", this.hasNectar());
       var1.putBoolean("HasStung", this.hasStung());
       var1.putInt("TicksSincePollination", this.ticksWithoutNectarSinceExitingHive);
@@ -209,13 +207,13 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setHasNectar(var1.getBoolean("HasNectar"));
-      this.setHasStung(var1.getBoolean("HasStung"));
-      this.ticksWithoutNectarSinceExitingHive = var1.getInt("TicksSincePollination");
-      this.stayOutOfHiveCountdown = var1.getInt("CannotEnterHiveTicks");
-      this.numCropsGrownSincePollination = var1.getInt("CropsGrownSincePollination");
-      this.hivePos = (BlockPos)NbtUtils.readBlockPos(var1, "hive_pos").orElse((Object)null);
-      this.savedFlowerPos = (BlockPos)NbtUtils.readBlockPos(var1, "flower_pos").orElse((Object)null);
+      this.setHasNectar(var1.getBooleanOr("HasNectar", false));
+      this.setHasStung(var1.getBooleanOr("HasStung", false));
+      this.ticksWithoutNectarSinceExitingHive = var1.getIntOr("TicksSincePollination", 0);
+      this.stayOutOfHiveCountdown = var1.getIntOr("CannotEnterHiveTicks", 0);
+      this.numCropsGrownSincePollination = var1.getIntOr("CropsGrownSincePollination", 0);
+      this.hivePos = (BlockPos)var1.read("hive_pos", BlockPos.CODEC).orElse((Object)null);
+      this.savedFlowerPos = (BlockPos)var1.read("flower_pos", BlockPos.CODEC).orElse((Object)null);
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 
@@ -335,7 +333,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    public static boolean isNightOrRaining(Level var0) {
-      return var0.dimensionType().hasSkyLight() && (var0.isNight() || var0.isRaining());
+      return var0.dimensionType().hasSkyLight() && (var0.isDarkOutside() || var0.isRaining());
    }
 
    public void setStayOutOfHiveCountdown(int var1) {
@@ -358,7 +356,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    protected void customServerAiStep(ServerLevel var1) {
       boolean var2 = this.hasStung();
-      if (this.isInWaterOrBubble()) {
+      if (this.isInWater()) {
          ++this.underWaterTicks;
       } else {
          this.underWaterTicks = 0;

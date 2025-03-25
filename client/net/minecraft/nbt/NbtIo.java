@@ -1,5 +1,6 @@
 package net.minecraft.nbt;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -382,7 +383,8 @@ public class NbtIo {
       writeUnnamedTag(var0, new StringFallbackDataOutput(var1));
    }
 
-   private static Tag readUnnamedTag(DataInput var0, NbtAccounter var1) throws IOException {
+   @VisibleForTesting
+   public static Tag readUnnamedTag(DataInput var0, NbtAccounter var1) throws IOException {
       byte var2 = var0.readByte();
       if (var2 == 0) {
          return EndTag.INSTANCE;

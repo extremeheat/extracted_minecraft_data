@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -45,18 +46,11 @@ public class BellBlock extends BaseEntityBlock {
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<BellAttachType> ATTACHMENT;
    public static final BooleanProperty POWERED;
-   private static final VoxelShape NORTH_SOUTH_FLOOR_SHAPE;
-   private static final VoxelShape EAST_WEST_FLOOR_SHAPE;
-   private static final VoxelShape BELL_TOP_SHAPE;
-   private static final VoxelShape BELL_BOTTOM_SHAPE;
    private static final VoxelShape BELL_SHAPE;
-   private static final VoxelShape NORTH_SOUTH_BETWEEN;
-   private static final VoxelShape EAST_WEST_BETWEEN;
-   private static final VoxelShape TO_WEST;
-   private static final VoxelShape TO_EAST;
-   private static final VoxelShape TO_NORTH;
-   private static final VoxelShape TO_SOUTH;
-   private static final VoxelShape CEILING_SHAPE;
+   private static final VoxelShape SHAPE_CEILING;
+   private static final Map<Direction.Axis, VoxelShape> SHAPE_FLOOR;
+   private static final Map<Direction.Axis, VoxelShape> SHAPE_DOUBLE_WALL;
+   private static final Map<Direction, VoxelShape> SHAPE_SINGLE_WALL;
    public static final int EVENT_BELL_RING = 1;
 
    public MapCodec<BellBlock> codec() {
@@ -82,7 +76,14 @@ public class BellBlock extends BaseEntityBlock {
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       Entity var5 = var4.getOwner();
-      Player var6 = var5 instanceof Player ? (Player)var5 : null;
+      Player var10000;
+      if (var5 instanceof Player var7) {
+         var10000 = var7;
+      } else {
+         var10000 = null;
+      }
+
+      Player var6 = var10000;
       this.onHit(var1, var2, var3, var6, true);
    }
 
@@ -138,7 +139,7 @@ public class BellBlock extends BaseEntityBlock {
          }
 
          ((BellBlockEntity)var5).onHit(var4);
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 2.0F, 1.0F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 2.0F, 1.0F);
          var2.gameEvent(var1, GameEvent.BLOCK_CHANGE, var3);
          return true;
       } else {
@@ -148,20 +149,16 @@ public class BellBlock extends BaseEntityBlock {
 
    private VoxelShape getVoxelShape(BlockState var1) {
       Direction var2 = (Direction)var1.getValue(FACING);
-      BellAttachType var3 = (BellAttachType)var1.getValue(ATTACHMENT);
-      if (var3 == BellAttachType.FLOOR) {
-         return var2 != Direction.NORTH && var2 != Direction.SOUTH ? EAST_WEST_FLOOR_SHAPE : NORTH_SOUTH_FLOOR_SHAPE;
-      } else if (var3 == BellAttachType.CEILING) {
-         return CEILING_SHAPE;
-      } else if (var3 == BellAttachType.DOUBLE_WALL) {
-         return var2 != Direction.NORTH && var2 != Direction.SOUTH ? EAST_WEST_BETWEEN : NORTH_SOUTH_BETWEEN;
-      } else if (var2 == Direction.NORTH) {
-         return TO_NORTH;
-      } else if (var2 == Direction.SOUTH) {
-         return TO_SOUTH;
-      } else {
-         return var2 == Direction.EAST ? TO_EAST : TO_WEST;
+      VoxelShape var10000;
+      switch ((BellAttachType)var1.getValue(ATTACHMENT)) {
+         case FLOOR -> var10000 = (VoxelShape)SHAPE_FLOOR.get(var2.getAxis());
+         case SINGLE_WALL -> var10000 = (VoxelShape)SHAPE_SINGLE_WALL.get(var2);
+         case DOUBLE_WALL -> var10000 = (VoxelShape)SHAPE_DOUBLE_WALL.get(var2.getAxis());
+         case CEILING -> var10000 = SHAPE_CEILING;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -277,17 +274,10 @@ public class BellBlock extends BaseEntityBlock {
       FACING = HorizontalDirectionalBlock.FACING;
       ATTACHMENT = BlockStateProperties.BELL_ATTACHMENT;
       POWERED = BlockStateProperties.POWERED;
-      NORTH_SOUTH_FLOOR_SHAPE = Block.box(0.0, 0.0, 4.0, 16.0, 16.0, 12.0);
-      EAST_WEST_FLOOR_SHAPE = Block.box(4.0, 0.0, 0.0, 12.0, 16.0, 16.0);
-      BELL_TOP_SHAPE = Block.box(5.0, 6.0, 5.0, 11.0, 13.0, 11.0);
-      BELL_BOTTOM_SHAPE = Block.box(4.0, 4.0, 4.0, 12.0, 6.0, 12.0);
-      BELL_SHAPE = Shapes.or(BELL_BOTTOM_SHAPE, BELL_TOP_SHAPE);
-      NORTH_SOUTH_BETWEEN = Shapes.or(BELL_SHAPE, Block.box(7.0, 13.0, 0.0, 9.0, 15.0, 16.0));
-      EAST_WEST_BETWEEN = Shapes.or(BELL_SHAPE, Block.box(0.0, 13.0, 7.0, 16.0, 15.0, 9.0));
-      TO_WEST = Shapes.or(BELL_SHAPE, Block.box(0.0, 13.0, 7.0, 13.0, 15.0, 9.0));
-      TO_EAST = Shapes.or(BELL_SHAPE, Block.box(3.0, 13.0, 7.0, 16.0, 15.0, 9.0));
-      TO_NORTH = Shapes.or(BELL_SHAPE, Block.box(7.0, 13.0, 0.0, 9.0, 15.0, 13.0));
-      TO_SOUTH = Shapes.or(BELL_SHAPE, Block.box(7.0, 13.0, 3.0, 9.0, 15.0, 16.0));
-      CEILING_SHAPE = Shapes.or(BELL_SHAPE, Block.box(7.0, 13.0, 7.0, 9.0, 16.0, 9.0));
+      BELL_SHAPE = Shapes.or(Block.column(6.0, 6.0, 13.0), Block.column(8.0, 4.0, 6.0));
+      SHAPE_CEILING = Shapes.or(BELL_SHAPE, Block.column(2.0, 13.0, 16.0));
+      SHAPE_FLOOR = Shapes.rotateHorizontalAxis(Block.cube(16.0, 16.0, 8.0));
+      SHAPE_DOUBLE_WALL = Shapes.rotateHorizontalAxis(Shapes.or(BELL_SHAPE, Block.column(2.0, 16.0, 13.0, 15.0)));
+      SHAPE_SINGLE_WALL = Shapes.rotateHorizontal(Shapes.or(BELL_SHAPE, Block.boxZ(2.0, 13.0, 15.0, 0.0, 13.0)));
    }
 }

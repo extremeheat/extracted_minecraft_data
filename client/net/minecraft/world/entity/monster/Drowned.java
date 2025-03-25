@@ -175,7 +175,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public boolean okTarget(@Nullable LivingEntity var1) {
       if (var1 != null) {
-         return !this.level().isDay() || var1.isInWater();
+         return !this.level().isBrightOutside() || var1.isInWater();
       } else {
          return false;
       }
@@ -195,7 +195,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isUnderWater() && this.wantsToSwim()) {
+      if (this.isUnderWater() && this.wantsToSwim()) {
          this.moveRelative(0.01F, var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
@@ -300,7 +300,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       public boolean canUse() {
-         return !this.drowned.level().isDay() && this.drowned.isInWater() && this.drowned.getY() < (double)(this.seaLevel - 2);
+         return !this.drowned.level().isBrightOutside() && this.drowned.isInWater() && this.drowned.getY() < (double)(this.seaLevel - 2);
       }
 
       public boolean canContinueToUse() {
@@ -339,7 +339,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       public boolean canUse() {
-         return super.canUse() && !this.drowned.level().isDay() && this.drowned.isInWater() && this.drowned.getY() >= (double)(this.drowned.level().getSeaLevel() - 3);
+         return super.canUse() && !this.drowned.level().isBrightOutside() && this.drowned.isInWater() && this.drowned.getY() >= (double)(this.drowned.level().getSeaLevel() - 3);
       }
 
       public boolean canContinueToUse() {
@@ -379,7 +379,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       public boolean canUse() {
-         if (!this.level.isDay()) {
+         if (!this.level.isBrightOutside()) {
             return false;
          } else if (this.mob.isInWater()) {
             return false;

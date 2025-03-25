@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.google.common.base.MoreObjects;
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -12,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -29,6 +29,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireHookBlock extends Block {
@@ -39,11 +40,7 @@ public class TripWireHookBlock extends Block {
    protected static final int WIRE_DIST_MIN = 1;
    protected static final int WIRE_DIST_MAX = 42;
    private static final int RECHECK_PERIOD = 10;
-   protected static final int AABB_OFFSET = 3;
-   protected static final VoxelShape NORTH_AABB;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape EAST_AABB;
+   private static final Map<Direction, VoxelShape> SHAPES;
 
    public MapCodec<TripWireHookBlock> codec() {
       return CODEC;
@@ -55,17 +52,7 @@ public class TripWireHookBlock extends Block {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case EAST:
-         default:
-            return EAST_AABB;
-         case WEST:
-            return WEST_AABB;
-         case SOUTH:
-            return SOUTH_AABB;
-         case NORTH:
-            return NORTH_AABB;
-      }
+      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -185,16 +172,16 @@ public class TripWireHookBlock extends Block {
 
    private static void emitState(Level var0, BlockPos var1, boolean var2, boolean var3, boolean var4, boolean var5) {
       if (var3 && !var5) {
-         var0.playSound((Player)null, (BlockPos)var1, SoundEvents.TRIPWIRE_CLICK_ON, SoundSource.BLOCKS, 0.4F, 0.6F);
+         var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.TRIPWIRE_CLICK_ON, SoundSource.BLOCKS, 0.4F, 0.6F);
          var0.gameEvent((Entity)null, GameEvent.BLOCK_ACTIVATE, var1);
       } else if (!var3 && var5) {
-         var0.playSound((Player)null, (BlockPos)var1, SoundEvents.TRIPWIRE_CLICK_OFF, SoundSource.BLOCKS, 0.4F, 0.5F);
+         var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.TRIPWIRE_CLICK_OFF, SoundSource.BLOCKS, 0.4F, 0.5F);
          var0.gameEvent((Entity)null, GameEvent.BLOCK_DEACTIVATE, var1);
       } else if (var2 && !var4) {
-         var0.playSound((Player)null, (BlockPos)var1, SoundEvents.TRIPWIRE_ATTACH, SoundSource.BLOCKS, 0.4F, 0.7F);
+         var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.TRIPWIRE_ATTACH, SoundSource.BLOCKS, 0.4F, 0.7F);
          var0.gameEvent((Entity)null, GameEvent.BLOCK_ATTACH, var1);
       } else if (!var2 && var4) {
-         var0.playSound((Player)null, (BlockPos)var1, SoundEvents.TRIPWIRE_DETACH, SoundSource.BLOCKS, 0.4F, 1.2F / (var0.random.nextFloat() * 0.2F + 0.9F));
+         var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.TRIPWIRE_DETACH, SoundSource.BLOCKS, 0.4F, 1.2F / (var0.random.nextFloat() * 0.2F + 0.9F));
          var0.gameEvent((Entity)null, GameEvent.BLOCK_DETACH, var1);
       }
 
@@ -207,19 +194,18 @@ public class TripWireHookBlock extends Block {
       var1.updateNeighborsAt(var2.relative(var4), var0, var5);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
-         boolean var6 = (Boolean)var1.getValue(ATTACHED);
-         boolean var7 = (Boolean)var1.getValue(POWERED);
-         if (var6 || var7) {
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4) {
+         boolean var5 = (Boolean)var1.getValue(ATTACHED);
+         boolean var6 = (Boolean)var1.getValue(POWERED);
+         if (var5 || var6) {
             calculateState(var2, var3, var1, true, false, -1, (BlockState)null);
          }
 
-         if (var7) {
+         if (var6) {
             notifyNeighbors(this, var2, var3, (Direction)var1.getValue(FACING));
          }
 
-         super.onRemove(var1, var2, var3, var4, var5);
       }
    }
 
@@ -255,9 +241,6 @@ public class TripWireHookBlock extends Block {
       FACING = HorizontalDirectionalBlock.FACING;
       POWERED = BlockStateProperties.POWERED;
       ATTACHED = BlockStateProperties.ATTACHED;
-      NORTH_AABB = Block.box(5.0, 0.0, 10.0, 11.0, 10.0, 16.0);
-      SOUTH_AABB = Block.box(5.0, 0.0, 0.0, 11.0, 10.0, 6.0);
-      WEST_AABB = Block.box(10.0, 0.0, 5.0, 16.0, 10.0, 11.0);
-      EAST_AABB = Block.box(0.0, 0.0, 5.0, 6.0, 10.0, 11.0);
+      SHAPES = Shapes.rotateHorizontal(Block.boxZ(6.0, 0.0, 10.0, 10.0, 16.0));
    }
 }

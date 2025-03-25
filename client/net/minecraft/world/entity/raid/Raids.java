@@ -1,15 +1,17 @@
 package net.minecraft.world.entity.raid;
 
-import com.google.common.collect.Maps;
-import java.util.Iterator;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.List;
-import java.util.Map;
+import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,45 +23,71 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.Vec3;
 
 public class Raids extends SavedData {
    private static final String RAID_FILE_ID = "raids";
-   private final Map<Integer, Raid> raidMap = Maps.newHashMap();
-   private final ServerLevel level;
-   private int nextAvailableID;
+   public static final Codec<Raids> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Raids.RaidWithId.CODEC.listOf().optionalFieldOf("raids", List.of()).forGetter((var0x) -> var0x.raidMap.int2ObjectEntrySet().stream().map(RaidWithId::from).toList()), Codec.INT.fieldOf("next_id").forGetter((var0x) -> var0x.nextId), Codec.INT.fieldOf("tick").forGetter((var0x) -> var0x.tick)).apply(var0, Raids::new));
+   public static final SavedDataType<Raids> TYPE;
+   public static final SavedDataType<Raids> TYPE_END;
+   private final Int2ObjectMap<Raid> raidMap = new Int2ObjectOpenHashMap();
+   private int nextId = 1;
    private int tick;
 
-   public static SavedData.Factory<Raids> factory(ServerLevel var0) {
-      return new SavedData.Factory<Raids>(() -> new Raids(var0), (var1, var2) -> load(var0, var1), DataFixTypes.SAVED_DATA_RAIDS);
+   public static SavedDataType<Raids> getType(Holder<DimensionType> var0) {
+      return var0.is(BuiltinDimensionTypes.END) ? TYPE_END : TYPE;
    }
 
-   public Raids(ServerLevel var1) {
+   public Raids() {
       super();
-      this.level = var1;
-      this.nextAvailableID = 1;
       this.setDirty();
    }
 
+   private Raids(List<RaidWithId> var1, int var2, int var3) {
+      super();
+
+      for(RaidWithId var5 : var1) {
+         this.raidMap.put(var5.id, var5.raid);
+      }
+
+      this.nextId = var2;
+      this.tick = var3;
+   }
+
+   @Nullable
    public Raid get(int var1) {
       return (Raid)this.raidMap.get(var1);
    }
 
-   public void tick() {
-      ++this.tick;
-      Iterator var1 = this.raidMap.values().iterator();
+   public OptionalInt getId(Raid var1) {
+      ObjectIterator var2 = this.raidMap.int2ObjectEntrySet().iterator();
 
-      while(var1.hasNext()) {
-         Raid var2 = (Raid)var1.next();
-         if (this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
-            var2.stop();
+      while(var2.hasNext()) {
+         Int2ObjectMap.Entry var3 = (Int2ObjectMap.Entry)var2.next();
+         if (var3.getValue() == var1) {
+            return OptionalInt.of(var3.getIntKey());
+         }
+      }
+
+      return OptionalInt.empty();
+   }
+
+   public void tick(ServerLevel var1) {
+      ++this.tick;
+      ObjectIterator var2 = this.raidMap.values().iterator();
+
+      while(var2.hasNext()) {
+         Raid var3 = (Raid)var2.next();
+         if (var1.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
+            var3.stop();
          }
 
-         if (var2.isStopped()) {
-            var1.remove();
+         if (var3.isStopped()) {
+            var2.remove();
             this.setDirty();
          } else {
-            var2.tick();
+            var3.tick(var1);
          }
       }
 
@@ -67,110 +95,81 @@ public class Raids extends SavedData {
          this.setDirty();
       }
 
-      DebugPackets.sendRaids(this.level, this.raidMap.values());
+      DebugPackets.sendRaids(var1, this.raidMap.values());
    }
 
-   public static boolean canJoinRaid(Raider var0, Raid var1) {
-      if (var0 != null && var1 != null && var1.getLevel() != null) {
-         return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level().dimensionType() == var1.getLevel().dimensionType();
-      } else {
-         return false;
-      }
+   public static boolean canJoinRaid(Raider var0) {
+      return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400;
    }
 
    @Nullable
    public Raid createOrExtendRaid(ServerPlayer var1, BlockPos var2) {
       if (var1.isSpectator()) {
          return null;
-      } else if (this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
-         return null;
       } else {
-         DimensionType var3 = var1.level().dimensionType();
-         if (!var3.hasRaids()) {
+         ServerLevel var3 = var1.serverLevel();
+         if (var3.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
             return null;
          } else {
-            List var4 = this.level.getPoiManager().getInRange((var0) -> var0.is(PoiTypeTags.VILLAGE), var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
-            int var5 = 0;
-            Vec3 var6 = Vec3.ZERO;
-
-            for(PoiRecord var8 : var4) {
-               BlockPos var9 = var8.getPos();
-               var6 = var6.add((double)var9.getX(), (double)var9.getY(), (double)var9.getZ());
-               ++var5;
-            }
-
-            BlockPos var11;
-            if (var5 > 0) {
-               var6 = var6.scale(1.0 / (double)var5);
-               var11 = BlockPos.containing(var6);
+            DimensionType var4 = var3.dimensionType();
+            if (!var4.hasRaids()) {
+               return null;
             } else {
-               var11 = var2;
-            }
+               List var5 = var3.getPoiManager().getInRange((var0) -> var0.is(PoiTypeTags.VILLAGE), var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
+               int var6 = 0;
+               Vec3 var7 = Vec3.ZERO;
 
-            Raid var12 = this.getOrCreateRaid(var1.serverLevel(), var11);
-            if (!var12.isStarted() && !this.raidMap.containsKey(var12.getId())) {
-               this.raidMap.put(var12.getId(), var12);
-            }
+               for(PoiRecord var9 : var5) {
+                  BlockPos var10 = var9.getPos();
+                  var7 = var7.add((double)var10.getX(), (double)var10.getY(), (double)var10.getZ());
+                  ++var6;
+               }
 
-            if (!var12.isStarted() || var12.getRaidOmenLevel() < var12.getMaxRaidOmenLevel()) {
-               var12.absorbRaidOmen(var1);
-            }
+               BlockPos var12;
+               if (var6 > 0) {
+                  var7 = var7.scale(1.0 / (double)var6);
+                  var12 = BlockPos.containing(var7);
+               } else {
+                  var12 = var2;
+               }
 
-            this.setDirty();
-            return var12;
+               Raid var13 = this.getOrCreateRaid(var3, var12);
+               if (!var13.isStarted() && !this.raidMap.containsValue(var13)) {
+                  this.raidMap.put(this.getUniqueId(), var13);
+               }
+
+               if (!var13.isStarted() || var13.getRaidOmenLevel() < var13.getMaxRaidOmenLevel()) {
+                  var13.absorbRaidOmen(var1);
+               }
+
+               this.setDirty();
+               return var13;
+            }
          }
       }
    }
 
    private Raid getOrCreateRaid(ServerLevel var1, BlockPos var2) {
       Raid var3 = var1.getRaidAt(var2);
-      return var3 != null ? var3 : new Raid(this.getUniqueId(), var1, var2);
+      return var3 != null ? var3 : new Raid(var2, var1.getDifficulty());
    }
 
-   public static Raids load(ServerLevel var0, CompoundTag var1) {
-      Raids var2 = new Raids(var0);
-      var2.nextAvailableID = var1.getInt("NextAvailableID");
-      var2.tick = var1.getInt("Tick");
-      ListTag var3 = var1.getList("Raids", 10);
-
-      for(int var4 = 0; var4 < var3.size(); ++var4) {
-         CompoundTag var5 = var3.getCompound(var4);
-         Raid var6 = new Raid(var0, var5);
-         var2.raidMap.put(var6.getId(), var6);
-      }
-
-      return var2;
-   }
-
-   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
-      var1.putInt("NextAvailableID", this.nextAvailableID);
-      var1.putInt("Tick", this.tick);
-      ListTag var3 = new ListTag();
-
-      for(Raid var5 : this.raidMap.values()) {
-         CompoundTag var6 = new CompoundTag();
-         var5.save(var6);
-         var3.add(var6);
-      }
-
-      var1.put("Raids", var3);
-      return var1;
-   }
-
-   public static String getFileId(Holder<DimensionType> var0) {
-      return var0.is(BuiltinDimensionTypes.END) ? "raids_end" : "raids";
+   public static Raids load(CompoundTag var0) {
+      return (Raids)CODEC.parse(NbtOps.INSTANCE, var0).resultOrPartial().orElseGet(Raids::new);
    }
 
    private int getUniqueId() {
-      return ++this.nextAvailableID;
+      return ++this.nextId;
    }
 
    @Nullable
    public Raid getNearbyRaid(BlockPos var1, int var2) {
       Raid var3 = null;
       double var4 = (double)var2;
+      ObjectIterator var6 = this.raidMap.values().iterator();
 
-      for(Raid var7 : this.raidMap.values()) {
+      while(var6.hasNext()) {
+         Raid var7 = (Raid)var6.next();
          double var8 = var7.getCenter().distSqr(var1);
          if (var7.isActive() && var8 < var4) {
             var3 = var7;
@@ -179,5 +178,26 @@ public class Raids extends SavedData {
       }
 
       return var3;
+   }
+
+   static {
+      TYPE = new SavedDataType<Raids>("raids", Raids::new, CODEC, DataFixTypes.SAVED_DATA_RAIDS);
+      TYPE_END = new SavedDataType<Raids>("raids_end", Raids::new, CODEC, DataFixTypes.SAVED_DATA_RAIDS);
+   }
+
+   static record RaidWithId(int id, Raid raid) {
+      final int id;
+      final Raid raid;
+      public static final Codec<RaidWithId> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("id").forGetter(RaidWithId::id), Raid.MAP_CODEC.forGetter(RaidWithId::raid)).apply(var0, RaidWithId::new));
+
+      private RaidWithId(int var1, Raid var2) {
+         super();
+         this.id = var1;
+         this.raid = var2;
+      }
+
+      public static RaidWithId from(Int2ObjectMap.Entry<Raid> var0) {
+         return new RaidWithId(var0.getIntKey(), (Raid)var0.getValue());
+      }
    }
 }

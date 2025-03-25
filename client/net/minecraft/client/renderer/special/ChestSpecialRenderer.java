@@ -56,7 +56,7 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
          ChestModel var2 = new ChestModel(var1.bakeLayer(ModelLayers.CHEST));
-         Material var3 = Sheets.chestMaterial(this.texture);
+         Material var3 = Sheets.CHEST_MAPPER.apply(this.texture);
          return new ChestSpecialRenderer(var2, var3, this.openness);
       }
    }

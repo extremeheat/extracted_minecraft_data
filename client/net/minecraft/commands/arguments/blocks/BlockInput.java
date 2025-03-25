@@ -59,24 +59,32 @@ public class BlockInput implements Predicate<BlockInWorld> {
    }
 
    public boolean place(ServerLevel var1, BlockPos var2, int var3) {
-      BlockState var4 = Block.updateFromNeighbourShapes(this.state, var1, var2);
+      BlockState var4 = (var3 & 16) != 0 ? this.state : Block.updateFromNeighbourShapes(this.state, var1, var2);
       if (var4.isAir()) {
          var4 = this.state;
       }
 
       var4 = this.overwriteWithDefinedProperties(var4);
-      if (!var1.setBlock(var2, var4, var3)) {
-         return false;
-      } else {
-         if (this.tag != null) {
-            BlockEntity var5 = var1.getBlockEntity(var2);
-            if (var5 != null) {
-               var5.loadWithComponents(this.tag, var1.registryAccess());
+      boolean var5 = false;
+      if (var1.setBlock(var2, var4, var3)) {
+         var5 = true;
+      }
+
+      if (this.tag != null) {
+         BlockEntity var6 = var1.getBlockEntity(var2);
+         if (var6 != null) {
+            CompoundTag var7 = var6.saveWithoutMetadata(var1.registryAccess());
+            var6.loadWithComponents(this.tag, var1.registryAccess());
+            CompoundTag var8 = var6.saveWithoutMetadata(var1.registryAccess());
+            if (!var8.equals(var7)) {
+               var5 = true;
+               var6.setChanged();
+               var1.getChunkSource().blockChanged(var2);
             }
          }
-
-         return true;
       }
+
+      return var5;
    }
 
    private BlockState overwriteWithDefinedProperties(BlockState var1) {
@@ -92,7 +100,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
    }
 
    private static <T extends Comparable<T>> BlockState copyProperty(BlockState var0, BlockState var1, Property<T> var2) {
-      return (BlockState)var0.setValue(var2, var1.getValue(var2));
+      return (BlockState)var0.trySetValue(var2, var1.getValue(var2));
    }
 
    // $FF: synthetic method

@@ -36,11 +36,13 @@ public class EquipmentAssetProvider implements DataProvider {
       var0.accept(EquipmentAssets.NETHERITE, onlyHumanoid("netherite"));
       var0.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
       var0.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
+      EquipmentClientInfo.Layer var1 = new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("saddle"));
+      var0.accept(EquipmentAssets.SADDLE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.PIG_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.STRIDER_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.CAMEL_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.DONKEY_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.MULE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, var1).build());
 
-      for(Map.Entry var2 : EquipmentAssets.CARPETS.entrySet()) {
-         DyeColor var3 = (DyeColor)var2.getKey();
-         ResourceKey var4 = (ResourceKey)var2.getValue();
-         var0.accept(var4, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace(var3.getSerializedName()))).build());
+      for(Map.Entry var3 : EquipmentAssets.CARPETS.entrySet()) {
+         DyeColor var4 = (DyeColor)var3.getKey();
+         ResourceKey var5 = (ResourceKey)var3.getValue();
+         var0.accept(var5, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace(var4.getSerializedName()))).build());
       }
 
       var0.accept(EquipmentAssets.TRADER_LLAMA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("trader_llama"))).build());

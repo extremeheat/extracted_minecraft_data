@@ -2,9 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -40,6 +38,7 @@ public class SignBlockEntity extends BlockEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TEXT_LINE_WIDTH = 90;
    private static final int TEXT_LINE_HEIGHT = 10;
+   private static final boolean DEFAULT_IS_WAXED = false;
    @Nullable
    private UUID playerWhoMayEdit;
    private SignText frontText;
@@ -52,6 +51,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public SignBlockEntity(BlockEntityType var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
+      this.isWaxed = false;
       this.frontText = this.createDefaultSignText();
       this.backText = this.createDefaultSignText();
    }
@@ -97,35 +97,17 @@ public class SignBlockEntity extends BlockEntity {
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.frontText);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("front_text", var1x));
-      var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.backText);
-      var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("back_text", var1x));
+      var1.store("front_text", SignText.DIRECT_CODEC, var3, this.frontText);
+      var1.store("back_text", SignText.DIRECT_CODEC, var3, this.backText);
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("front_text")) {
-         DataResult var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("front_text"));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.frontText = this.loadLines(var1x));
-      }
-
-      if (var1.contains("back_text")) {
-         DataResult var4 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("back_text"));
-         Logger var5 = LOGGER;
-         Objects.requireNonNull(var5);
-         var4.resultOrPartial(var5::error).ifPresent((var1x) -> this.backText = this.loadLines(var1x));
-      }
-
-      this.isWaxed = var1.getBoolean("is_waxed");
+      this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
+      this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
+      this.isWaxed = var1.getBooleanOr("is_waxed", false);
    }
 
    private SignText loadLines(SignText var1) {
@@ -213,8 +195,17 @@ public class SignBlockEntity extends BlockEntity {
       for(Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
          Style var10 = var9.getStyle();
          ClickEvent var11 = var10.getClickEvent();
-         if (var11 != null && var11.getAction() == ClickEvent.Action.RUN_COMMAND) {
-            var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var11.getValue());
+         if (var11 instanceof ClickEvent.RunCommand var12) {
+            ClickEvent.RunCommand var10000 = var12;
+
+            try {
+               var16 = var10000.command();
+            } catch (Throwable var15) {
+               throw new MatchException(var15.toString(), var15);
+            }
+
+            String var14 = var16;
+            var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var14);
             var5 = true;
          }
       }

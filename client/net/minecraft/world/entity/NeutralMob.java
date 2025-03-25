@@ -3,6 +3,7 @@ package net.minecraft.world.entity;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -26,36 +27,19 @@ public interface NeutralMob {
 
    default void addPersistentAngerSaveData(CompoundTag var1) {
       var1.putInt("AngerTime", this.getRemainingPersistentAngerTime());
-      if (this.getPersistentAngerTarget() != null) {
-         var1.putUUID("AngryAt", this.getPersistentAngerTarget());
-      }
-
+      var1.storeNullable("AngryAt", UUIDUtil.CODEC, this.getPersistentAngerTarget());
    }
 
    default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
-      this.setRemainingPersistentAngerTime(var2.getInt("AngerTime"));
-      if (var1 instanceof ServerLevel) {
-         if (!var2.hasUUID("AngryAt")) {
-            this.setPersistentAngerTarget((UUID)null);
-         } else {
-            UUID var3 = var2.getUUID("AngryAt");
-            this.setPersistentAngerTarget(var3);
-            Entity var4 = ((ServerLevel)var1).getEntity(var3);
-            if (var4 != null) {
-               if (var4 instanceof Mob) {
-                  Mob var5 = (Mob)var4;
-                  this.setTarget(var5);
-                  this.setLastHurtByMob(var5);
-               }
-
-               if (var4 instanceof Player) {
-                  Player var6 = (Player)var4;
-                  this.setTarget(var6);
-                  this.setLastHurtByPlayer(var6);
-               }
-
-            }
+      this.setRemainingPersistentAngerTime(var2.getIntOr("AngerTime", 0));
+      if (var1 instanceof ServerLevel var3) {
+         UUID var4 = (UUID)var2.read("AngryAt", UUIDUtil.CODEC).orElse((Object)null);
+         this.setPersistentAngerTarget(var4);
+         Entity var5 = var4 != null ? var3.getEntity(var4) : null;
+         if (var5 instanceof LivingEntity var6) {
+            this.setTarget(var6);
          }
+
       }
    }
 
@@ -120,8 +104,6 @@ public interface NeutralMob {
    LivingEntity getLastHurtByMob();
 
    void setLastHurtByMob(@Nullable LivingEntity var1);
-
-   void setLastHurtByPlayer(@Nullable Player var1);
 
    void setTarget(@Nullable LivingEntity var1);
 

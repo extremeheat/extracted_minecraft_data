@@ -8,6 +8,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -26,9 +27,12 @@ public class CactusBlock extends Block {
    public static final MapCodec<CactusBlock> CODEC = simpleCodec(CactusBlock::new);
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 15;
-   protected static final int AABB_OFFSET = 1;
-   protected static final VoxelShape COLLISION_SHAPE;
-   protected static final VoxelShape OUTLINE_SHAPE;
+   private static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE_COLLISION;
+   private static final int MAX_CACTUS_GROWING_HEIGHT = 3;
+   private static final int ATTEMPT_GROW_CACTUS_FLOWER_AGE = 8;
+   private static final double ATTEMPT_GROW_CACTUS_FLOWER_SMALL_CACTUS_CHANCE = 0.1;
+   private static final double ATTEMPT_GROW_CACTUS_FLOWER_TALL_CACTUS_CHANCE = 0.25;
 
    public MapCodec<CactusBlock> codec() {
       return CODEC;
@@ -49,31 +53,41 @@ public class CactusBlock extends Block {
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.above();
       if (var2.isEmptyBlock(var5)) {
-         int var6;
-         for(var6 = 1; var2.getBlockState(var3.below(var6)).is(this); ++var6) {
-         }
+         int var6 = 1;
+         int var7 = (Integer)var1.getValue(AGE);
 
-         if (var6 < 3) {
-            int var7 = (Integer)var1.getValue(AGE);
-            if (var7 == 15) {
-               var2.setBlockAndUpdate(var5, this.defaultBlockState());
-               BlockState var8 = (BlockState)var1.setValue(AGE, 0);
-               var2.setBlock(var3, var8, 4);
-               var2.neighborChanged(var8, var5, this, (Orientation)null, false);
-            } else {
-               var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 4);
+         while(var2.getBlockState(var3.below(var6)).is(this)) {
+            ++var6;
+            if (var6 == 3 && var7 == 15) {
+               return;
             }
-
          }
+
+         if (var7 == 8 && this.canSurvive(this.defaultBlockState(), var2, var3.above())) {
+            double var10 = var6 >= 3 ? 0.25 : 0.1;
+            if (var4.nextDouble() <= var10) {
+               var2.setBlockAndUpdate(var5, Blocks.CACTUS_FLOWER.defaultBlockState());
+            }
+         } else if (var7 == 15 && var6 < 3) {
+            var2.setBlockAndUpdate(var5, this.defaultBlockState());
+            BlockState var8 = (BlockState)var1.setValue(AGE, 0);
+            var2.setBlock(var3, var8, 260);
+            var2.neighborChanged(var8, var5, this, (Orientation)null, false);
+         }
+
+         if (var7 < 15) {
+            var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 260);
+         }
+
       }
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return COLLISION_SHAPE;
+      return SHAPE_COLLISION;
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return OUTLINE_SHAPE;
+      return SHAPE;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -96,7 +110,7 @@ public class CactusBlock extends Block {
       return (var7.is(Blocks.CACTUS) || var7.is(BlockTags.SAND)) && !var2.getBlockState(var3.above()).liquid();
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       var4.hurt(var2.damageSources().cactus(), 1.0F);
    }
 
@@ -110,7 +124,7 @@ public class CactusBlock extends Block {
 
    static {
       AGE = BlockStateProperties.AGE_15;
-      COLLISION_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
-      OUTLINE_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+      SHAPE = Block.column(14.0, 0.0, 16.0);
+      SHAPE_COLLISION = Block.column(14.0, 0.0, 15.0);
    }
 }

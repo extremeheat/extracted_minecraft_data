@@ -160,7 +160,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
          byte var2 = var1.readByte();
          Data var3 = this.createOrReuseData(this.data, var2);
          var3.palette.read(var1);
-         var1.readLongArray(var3.storage.getRaw());
+         var1.readFixedSizeLongArray(var3.storage.getRaw());
          this.data = var3;
       } finally {
          this.release();
@@ -309,7 +309,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       public void write(FriendlyByteBuf var1) {
          var1.writeByte(this.storage.getBits());
          this.palette.write(var1);
-         var1.writeLongArray(this.storage.getRaw());
+         var1.writeFixedSizeLongArray(this.storage.getRaw());
       }
 
       public Data<T> copy(PaletteResize<T> var1) {

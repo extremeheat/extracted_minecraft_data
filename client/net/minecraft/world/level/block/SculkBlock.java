@@ -6,7 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,7 +35,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
                BlockPos var11 = var8.above();
                BlockState var12 = this.getRandomGrowthState(var2, var11, var4, var5.isWorldGeneration());
                var2.setBlock(var11, var12, 3);
-               var2.playSound((Player)null, var8, var12.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+               var2.playSound((Entity)null, var8, var12.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
             return Math.max(0, var7 - var10);

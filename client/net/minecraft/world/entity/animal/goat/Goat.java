@@ -65,6 +65,9 @@ public class Goat extends Animal {
    private static final EntityDataAccessor<Boolean> DATA_IS_SCREAMING_GOAT;
    private static final EntityDataAccessor<Boolean> DATA_HAS_LEFT_HORN;
    private static final EntityDataAccessor<Boolean> DATA_HAS_RIGHT_HORN;
+   private static final boolean DEFAULT_IS_SCREAMING = false;
+   private static final boolean DEFAULT_HAS_LEFT_HORN = true;
+   private static final boolean DEFAULT_HAS_RIGHT_HORN = true;
    private boolean isLoweringHead;
    private int lowerHeadTick;
 
@@ -104,8 +107,8 @@ public class Goat extends Animal {
 
    }
 
-   protected int calculateFallDamage(float var1, float var2) {
-      return super.calculateFallDamage(var1, var2) - 10;
+   protected int calculateFallDamage(double var1, float var3) {
+      return super.calculateFallDamage(var1, var3) - 10;
    }
 
    protected SoundEvent getAmbientSound() {
@@ -187,7 +190,7 @@ public class Goat extends Animal {
    }
 
    protected void playEatingSound() {
-      this.level().playSound((Player)null, (Entity)this, this.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_EAT : SoundEvents.GOAT_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
+      this.level().playSound((Entity)null, (Entity)this, this.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_EAT : SoundEvents.GOAT_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
    }
 
    public boolean isFood(ItemStack var1) {
@@ -242,9 +245,9 @@ public class Goat extends Animal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setScreamingGoat(var1.getBoolean("IsScreamingGoat"));
-      this.entityData.set(DATA_HAS_LEFT_HORN, var1.getBoolean("HasLeftHorn"));
-      this.entityData.set(DATA_HAS_RIGHT_HORN, var1.getBoolean("HasRightHorn"));
+      this.setScreamingGoat(var1.getBooleanOr("IsScreamingGoat", false));
+      this.entityData.set(DATA_HAS_LEFT_HORN, var1.getBooleanOr("HasLeftHorn", true));
+      this.entityData.set(DATA_HAS_RIGHT_HORN, var1.getBooleanOr("HasRightHorn", true));
    }
 
    public void handleEntityEvent(byte var1) {

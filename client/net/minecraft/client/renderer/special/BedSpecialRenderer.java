@@ -43,7 +43,7 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
       }
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         return new BedSpecialRenderer(new BedRenderer(var1), Sheets.createBedMaterial(this.texture));
+         return new BedSpecialRenderer(new BedRenderer(var1), Sheets.BED_MAPPER.apply(this.texture));
       }
    }
 }

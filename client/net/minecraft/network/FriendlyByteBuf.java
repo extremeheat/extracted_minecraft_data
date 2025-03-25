@@ -324,35 +324,48 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public FriendlyByteBuf writeLongArray(long[] var1) {
-      this.writeVarInt(var1.length);
-
-      for(long var5 : var1) {
-         this.writeLong(var5);
-      }
-
+      writeLongArray(this, var1);
       return this;
    }
 
-   public long[] readLongArray() {
-      return this.readLongArray((long[])null);
+   public static void writeLongArray(ByteBuf var0, long[] var1) {
+      VarInt.write(var0, var1.length);
+      writeFixedSizeLongArray(var0, var1);
    }
 
-   public long[] readLongArray(@Nullable long[] var1) {
-      return this.readLongArray(var1, this.readableBytes() / 8);
+   public FriendlyByteBuf writeFixedSizeLongArray(long[] var1) {
+      writeFixedSizeLongArray(this, var1);
+      return this;
    }
 
-   public long[] readLongArray(@Nullable long[] var1, int var2) {
-      int var3 = this.readVarInt();
-      if (var1 == null || var1.length != var3) {
-         if (var3 > var2) {
-            throw new DecoderException("LongArray with size " + var3 + " is bigger than allowed " + var2);
-         }
-
-         var1 = new long[var3];
+   public static void writeFixedSizeLongArray(ByteBuf var0, long[] var1) {
+      for(long var5 : var1) {
+         var0.writeLong(var5);
       }
 
-      for(int var4 = 0; var4 < var1.length; ++var4) {
-         var1[var4] = this.readLong();
+   }
+
+   public long[] readLongArray() {
+      return readLongArray(this);
+   }
+
+   public long[] readFixedSizeLongArray(long[] var1) {
+      return readFixedSizeLongArray(this, var1);
+   }
+
+   public static long[] readLongArray(ByteBuf var0) {
+      int var1 = VarInt.read(var0);
+      int var2 = var0.readableBytes() / 8;
+      if (var1 > var2) {
+         throw new DecoderException("LongArray with size " + var1 + " is bigger than allowed " + var2);
+      } else {
+         return readFixedSizeLongArray(var0, new long[var1]);
+      }
+   }
+
+   public static long[] readFixedSizeLongArray(ByteBuf var0, long[] var1) {
+      for(int var2 = 0; var2 < var1.length; ++var2) {
+         var1[var2] = var0.readLong();
       }
 
       return var1;

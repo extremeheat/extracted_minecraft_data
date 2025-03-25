@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
@@ -14,13 +13,11 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -34,6 +31,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.Bees;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
@@ -41,13 +39,11 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import org.slf4j.Logger;
 
 public class BeehiveBlockEntity extends BlockEntity {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_FLOWER_POS = "flower_pos";
    private static final String BEES = "bees";
-   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "ArmorDropChances", "ArmorItems", "Brain", "CanPickUpLoot", "DeathTime", "FallDistance", "FallFlying", "Fire", "HandDropChances", "HandItems", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "SleepingX", "SleepingY", "SleepingZ", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
+   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "drop_chances", "ArmorItems", "Brain", "CanPickUpLoot", "DeathTime", "fall_distance", "FallFlying", "Fire", "HandItems", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "SleepingX", "SleepingY", "SleepingZ", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
    public static final int MAX_OCCUPANTS = 3;
    private static final int MIN_TICKS_BEFORE_REENTERING_HIVE = 400;
    private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
@@ -145,7 +141,7 @@ public class BeehiveBlockEntity extends BlockEntity {
             }
 
             BlockPos var2 = this.getBlockPos();
-            this.level.playSound((Player)null, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level.playSound((Entity)null, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
             this.level.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var1, this.getBlockState()));
          }
 
@@ -200,10 +196,10 @@ public class BeehiveBlockEntity extends BlockEntity {
                   double var15 = (double)var1.getX() + 0.5 + var22 * (double)var7.getStepX();
                   double var17 = (double)var1.getY() + 0.5 - (double)(var10.getBbHeight() / 2.0F);
                   double var19 = (double)var1.getZ() + 0.5 + var22 * (double)var7.getStepZ();
-                  var10.moveTo(var15, var17, var19, var10.getYRot(), var10.getXRot());
+                  var10.snapTo(var15, var17, var19, var10.getYRot(), var10.getXRot());
                }
 
-               var0.playSound((Player)null, (BlockPos)var1, SoundEvents.BEEHIVE_EXIT, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.BEEHIVE_EXIT, SoundSource.BLOCKS, 1.0F, 1.0F);
                var0.gameEvent(GameEvent.BLOCK_CHANGE, var1, GameEvent.Context.of(var10, var0.getBlockState(var1)));
                return var0.addFreshEntity(var10);
             } else {
@@ -244,7 +240,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          double var4 = (double)var1.getX() + 0.5;
          double var6 = (double)var1.getY();
          double var8 = (double)var1.getZ() + 0.5;
-         var0.playSound((Player)null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Entity)null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       DebugPackets.sendHiveInfo(var0, var1, var2, var3);
@@ -253,32 +249,26 @@ public class BeehiveBlockEntity extends BlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.stored.clear();
-      if (var1.contains("bees")) {
-         BeehiveBlockEntity.Occupant.LIST_CODEC.parse(NbtOps.INSTANCE, var1.get("bees")).resultOrPartial((var0) -> LOGGER.error("Failed to parse bees: '{}'", var0)).ifPresent((var1x) -> var1x.forEach(this::storeBee));
-      }
-
-      this.savedFlowerPos = (BlockPos)NbtUtils.readBlockPos(var1, "flower_pos").orElse((Object)null);
+      ((List)var1.read("bees", BeehiveBlockEntity.Occupant.LIST_CODEC).orElse(List.of())).forEach(this::storeBee);
+      this.savedFlowerPos = (BlockPos)var1.read("flower_pos", BlockPos.CODEC).orElse((Object)null);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      var1.put("bees", (Tag)BeehiveBlockEntity.Occupant.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.getBees()).getOrThrow());
-      if (this.hasSavedFlowerPos()) {
-         var1.put("flower_pos", NbtUtils.writeBlockPos(this.savedFlowerPos));
-      }
-
+      var1.store("bees", BeehiveBlockEntity.Occupant.LIST_CODEC, this.getBees());
+      var1.storeNullable("flower_pos", BlockPos.CODEC, this.savedFlowerPos);
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       this.stored.clear();
-      List var2 = (List)var1.getOrDefault(DataComponents.BEES, List.of());
+      List var2 = ((Bees)var1.getOrDefault(DataComponents.BEES, Bees.EMPTY)).bees();
       var2.forEach(this::storeBee);
    }
 
    protected void collectImplicitComponents(DataComponentMap.Builder var1) {
       super.collectImplicitComponents(var1);
-      var1.set(DataComponents.BEES, this.getBees());
+      var1.set(DataComponents.BEES, new Bees(this.getBees()));
    }
 
    public void removeComponentsFromTag(CompoundTag var1) {
@@ -323,7 +313,7 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
 
       public boolean hasNectar() {
-         return this.occupant.entityData.getUnsafe().getBoolean("HasNectar");
+         return this.occupant.entityData.getUnsafe().getBooleanOr("HasNectar", false);
       }
    }
 
@@ -347,7 +337,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var1);
          var10000.forEach(var1::remove);
-         boolean var2 = var1.getBoolean("HasNectar");
+         boolean var2 = var1.getBooleanOr("HasNectar", false);
          return new Occupant(CustomData.of(var1), 0, var2 ? 2400 : 600);
       }
 

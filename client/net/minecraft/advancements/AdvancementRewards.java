@@ -7,15 +7,14 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CacheableFunction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -24,7 +23,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceKey<Recipe<?>>> recipes, Optional<CacheableFunction> function) {
-   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), ResourceKey.codec(Registries.LOOT_TABLE).listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), ResourceKey.codec(Registries.RECIPE).listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new));
+   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), LootTable.KEY_CODEC.listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), Recipe.KEY_CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new));
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
    public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceKey<Recipe<?>>> var3, Optional<CacheableFunction> var4) {
@@ -46,7 +45,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          while(var6.hasNext()) {
             ItemStack var7 = (ItemStack)var6.next();
             if (var1.addItem(var7)) {
-               var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+               var1.level().playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                var3 = true;
             } else {
                ItemEntity var8 = var1.drop(var7, false);

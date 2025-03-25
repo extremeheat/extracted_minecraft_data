@@ -1,6 +1,8 @@
 package net.minecraft.world.level.block.state.properties;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
 public enum StructureMode implements StringRepresentable {
@@ -9,6 +11,9 @@ public enum StructureMode implements StringRepresentable {
    CORNER("corner"),
    DATA("data");
 
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<StructureMode> LEGACY_CODEC = ExtraCodecs.<StructureMode>legacyEnum(StructureMode::valueOf);
    private final String name;
    private final Component displayName;
 

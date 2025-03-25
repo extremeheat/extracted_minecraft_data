@@ -12,53 +12,40 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
-public class ItemTransform {
+public record ItemTransform(Vector3fc rotation, Vector3fc translation, Vector3fc scale) {
    public static final ItemTransform NO_TRANSFORM = new ItemTransform(new Vector3f(), new Vector3f(), new Vector3f(1.0F, 1.0F, 1.0F));
-   public final Vector3f rotation;
-   public final Vector3f translation;
-   public final Vector3f scale;
 
-   public ItemTransform(Vector3f var1, Vector3f var2, Vector3f var3) {
+   public ItemTransform(Vector3fc var1, Vector3fc var2, Vector3fc var3) {
       super();
-      this.rotation = new Vector3f(var1);
-      this.translation = new Vector3f(var2);
-      this.scale = new Vector3f(var3);
+      this.rotation = var1;
+      this.translation = var2;
+      this.scale = var3;
    }
 
-   public void apply(boolean var1, PoseStack var2) {
-      if (this != NO_TRANSFORM) {
-         float var3 = this.rotation.x();
-         float var4 = this.rotation.y();
-         float var5 = this.rotation.z();
+   public void apply(boolean var1, PoseStack.Pose var2) {
+      if (this == NO_TRANSFORM) {
+         var2.translate(-0.5F, -0.5F, -0.5F);
+      } else {
+         float var3;
+         float var4;
+         float var5;
          if (var1) {
-            var4 = -var4;
-            var5 = -var5;
+            var3 = -this.translation.x();
+            var4 = -this.rotation.y();
+            var5 = -this.rotation.z();
+         } else {
+            var3 = this.translation.x();
+            var4 = this.rotation.y();
+            var5 = this.rotation.z();
          }
 
-         int var6 = var1 ? -1 : 1;
-         var2.translate((float)var6 * this.translation.x(), this.translation.y(), this.translation.z());
-         var2.mulPose((new Quaternionf()).rotationXYZ(var3 * 0.017453292F, var4 * 0.017453292F, var5 * 0.017453292F));
+         var2.translate(var3, this.translation.y(), this.translation.z());
+         var2.rotate((new Quaternionf()).rotationXYZ(this.rotation.x() * 0.017453292F, var4 * 0.017453292F, var5 * 0.017453292F));
          var2.scale(this.scale.x(), this.scale.y(), this.scale.z());
+         var2.translate(-0.5F, -0.5F, -0.5F);
       }
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (this.getClass() != var1.getClass()) {
-         return false;
-      } else {
-         ItemTransform var2 = (ItemTransform)var1;
-         return this.rotation.equals(var2.rotation) && this.scale.equals(var2.scale) && this.translation.equals(var2.translation);
-      }
-   }
-
-   public int hashCode() {
-      int var1 = this.rotation.hashCode();
-      var1 = 31 * var1 + this.translation.hashCode();
-      var1 = 31 * var1 + this.scale.hashCode();
-      return var1;
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemTransform> {

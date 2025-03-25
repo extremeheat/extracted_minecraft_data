@@ -3,17 +3,17 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 
 public class EatBlockGoal extends Goal {
    private static final int EAT_ANIMATION_TICKS = 40;
-   private static final Predicate<BlockState> IS_TALL_GRASS;
+   private static final Predicate<BlockState> IS_EDIBLE = (var0) -> var0.is(BlockTags.EDIBLE_FOR_SHEEP);
    private final Mob mob;
    private final Level level;
    private int eatAnimationTick;
@@ -30,7 +30,7 @@ public class EatBlockGoal extends Goal {
          return false;
       } else {
          BlockPos var1 = this.mob.blockPosition();
-         if (IS_TALL_GRASS.test(this.level.getBlockState(var1))) {
+         if (IS_EDIBLE.test(this.level.getBlockState(var1))) {
             return true;
          } else {
             return this.level.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK);
@@ -60,7 +60,7 @@ public class EatBlockGoal extends Goal {
       this.eatAnimationTick = Math.max(0, this.eatAnimationTick - 1);
       if (this.eatAnimationTick == this.adjustedTickDelay(4)) {
          BlockPos var1 = this.mob.blockPosition();
-         if (IS_TALL_GRASS.test(this.level.getBlockState(var1))) {
+         if (IS_EDIBLE.test(this.level.getBlockState(var1))) {
             if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                this.level.destroyBlock(var1, false);
             }
@@ -79,9 +79,5 @@ public class EatBlockGoal extends Goal {
          }
 
       }
-   }
-
-   static {
-      IS_TALL_GRASS = BlockStatePredicate.forBlock(Blocks.SHORT_GRASS);
    }
 }

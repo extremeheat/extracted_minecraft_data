@@ -7,7 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -43,7 +44,7 @@ public class SpongeBlock extends Block {
    protected void tryAbsorbWater(Level var1, BlockPos var2) {
       if (this.removeWaterBreadthFirstSearch(var1, var2)) {
          var1.setBlock(var2, Blocks.WET_SPONGE.defaultBlockState(), 2);
-         var1.playSound((Player)null, (BlockPos)var2, SoundEvents.SPONGE_ABSORB, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.SPONGE_ABSORB, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
    }
@@ -66,7 +67,7 @@ public class SpongeBlock extends Block {
                Block var6 = var3.getBlock();
                if (var6 instanceof BucketPickup) {
                   BucketPickup var5 = (BucketPickup)var6;
-                  if (!var5.pickupBlock((Player)null, var1, var2x, var3).isEmpty()) {
+                  if (!var5.pickupBlock((LivingEntity)null, var1, var2x, var3).isEmpty()) {
                      return BlockPos.TraversalNodeStatus.ACCEPT;
                   }
                }

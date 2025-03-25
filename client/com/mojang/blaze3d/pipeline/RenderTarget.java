@@ -1,238 +1,138 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.nio.IntBuffer;
-import java.util.Objects;
-import net.minecraft.Util;
-import net.minecraft.client.renderer.CompiledShaderProgram;
-import net.minecraft.client.renderer.CoreShaders;
+import java.util.OptionalInt;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.RenderPipelines;
 
 public abstract class RenderTarget {
-   private static final int RED_CHANNEL = 0;
-   private static final int GREEN_CHANNEL = 1;
-   private static final int BLUE_CHANNEL = 2;
-   private static final int ALPHA_CHANNEL = 3;
+   private static int UNNAMED_RENDER_TARGETS = 0;
    public int width;
    public int height;
    public int viewWidth;
    public int viewHeight;
+   protected final String label;
    public final boolean useDepth;
-   public int frameBufferId;
-   protected int colorTextureId;
-   protected int depthBufferId;
-   private final float[] clearChannels = (float[])Util.make(() -> {
-      float[] var0 = new float[]{1.0F, 1.0F, 1.0F, 0.0F};
-      return var0;
-   });
-   public int filterMode;
+   @Nullable
+   protected GpuTexture colorTexture;
+   @Nullable
+   protected GpuTexture depthTexture;
+   public FilterMode filterMode;
 
-   public RenderTarget(boolean var1) {
+   public RenderTarget(@Nullable String var1, boolean var2) {
       super();
-      this.useDepth = var1;
-      this.frameBufferId = -1;
-      this.colorTextureId = -1;
-      this.depthBufferId = -1;
+      this.label = var1 == null ? "FBO " + UNNAMED_RENDER_TARGETS++ : var1;
+      this.useDepth = var2;
    }
 
    public void resize(int var1, int var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._enableDepthTest();
-      if (this.frameBufferId >= 0) {
-         this.destroyBuffers();
-      }
-
+      RenderSystem.assertOnRenderThread();
+      this.destroyBuffers();
       this.createBuffers(var1, var2);
-      GlStateManager._glBindFramebuffer(36160, 0);
    }
 
    public void destroyBuffers() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      this.unbindRead();
-      this.unbindWrite();
-      if (this.depthBufferId > -1) {
-         TextureUtil.releaseTextureId(this.depthBufferId);
-         this.depthBufferId = -1;
+      RenderSystem.assertOnRenderThread();
+      if (this.depthTexture != null) {
+         this.depthTexture.close();
+         this.depthTexture = null;
       }
 
-      if (this.colorTextureId > -1) {
-         TextureUtil.releaseTextureId(this.colorTextureId);
-         this.colorTextureId = -1;
-      }
-
-      if (this.frameBufferId > -1) {
-         GlStateManager._glBindFramebuffer(36160, 0);
-         GlStateManager._glDeleteFramebuffers(this.frameBufferId);
-         this.frameBufferId = -1;
+      if (this.colorTexture != null) {
+         this.colorTexture.close();
+         this.colorTexture = null;
       }
 
    }
 
    public void copyDepthFrom(RenderTarget var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._glBindFramebuffer(36008, var1.frameBufferId);
-      GlStateManager._glBindFramebuffer(36009, this.frameBufferId);
-      GlStateManager._glBlitFrameBuffer(0, 0, var1.width, var1.height, 0, 0, this.width, this.height, 256, 9728);
-      GlStateManager._glBindFramebuffer(36160, 0);
+      RenderSystem.assertOnRenderThread();
+      if (this.depthTexture == null) {
+         throw new IllegalStateException("Trying to copy depth texture to a RenderTarget without a depth texture");
+      } else if (var1.depthTexture == null) {
+         throw new IllegalStateException("Trying to copy depth texture from a RenderTarget without a depth texture");
+      } else {
+         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(var1.depthTexture, this.depthTexture, 0, 0, 0, 0, 0, this.width, this.height);
+      }
    }
 
    public void createBuffers(int var1, int var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      int var3 = RenderSystem.maxSupportedTextureSize();
+      RenderSystem.assertOnRenderThread();
+      int var3 = RenderSystem.getDevice().getMaxTextureSize();
       if (var1 > 0 && var1 <= var3 && var2 > 0 && var2 <= var3) {
          this.viewWidth = var1;
          this.viewHeight = var2;
          this.width = var1;
          this.height = var2;
-         this.frameBufferId = GlStateManager.glGenFramebuffers();
-         this.colorTextureId = TextureUtil.generateTextureId();
          if (this.useDepth) {
-            this.depthBufferId = TextureUtil.generateTextureId();
-            GlStateManager._bindTexture(this.depthBufferId);
-            GlStateManager._texParameter(3553, 10241, 9728);
-            GlStateManager._texParameter(3553, 10240, 9728);
-            GlStateManager._texParameter(3553, 34892, 0);
-            GlStateManager._texParameter(3553, 10242, 33071);
-            GlStateManager._texParameter(3553, 10243, 33071);
-            GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, (IntBuffer)null);
+            this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), TextureFormat.DEPTH32, var1, var2, 1);
+            this.depthTexture.setTextureFilter(FilterMode.NEAREST, false);
+            this.depthTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          }
 
-         this.setFilterMode(9728, true);
-         GlStateManager._bindTexture(this.colorTextureId);
-         GlStateManager._texParameter(3553, 10242, 33071);
-         GlStateManager._texParameter(3553, 10243, 33071);
-         GlStateManager._texImage2D(3553, 0, 32856, this.width, this.height, 0, 6408, 5121, (IntBuffer)null);
-         GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
-         GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorTextureId, 0);
-         if (this.useDepth) {
-            GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthBufferId, 0);
-         }
-
-         this.checkStatus();
-         this.clear();
-         this.unbindRead();
+         this.colorTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), TextureFormat.RGBA8, var1, var2, 1);
+         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
+         this.setFilterMode(FilterMode.NEAREST, true);
       } else {
          throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var3 + ")");
       }
    }
 
-   public void setFilterMode(int var1) {
+   public void setFilterMode(FilterMode var1) {
       this.setFilterMode(var1, false);
    }
 
-   private void setFilterMode(int var1, boolean var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      if (var2 || var1 != this.filterMode) {
-         this.filterMode = var1;
-         GlStateManager._bindTexture(this.colorTextureId);
-         GlStateManager._texParameter(3553, 10241, var1);
-         GlStateManager._texParameter(3553, 10240, var1);
-         GlStateManager._bindTexture(0);
-      }
-
-   }
-
-   public void checkStatus() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      int var1 = GlStateManager.glCheckFramebufferStatus(36160);
-      if (var1 != 36053) {
-         if (var1 == 36054) {
-            throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
-         } else if (var1 == 36055) {
-            throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
-         } else if (var1 == 36059) {
-            throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
-         } else if (var1 == 36060) {
-            throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
-         } else if (var1 == 36061) {
-            throw new RuntimeException("GL_FRAMEBUFFER_UNSUPPORTED");
-         } else if (var1 == 1285) {
-            throw new RuntimeException("GL_OUT_OF_MEMORY");
-         } else {
-            throw new RuntimeException("glCheckFramebufferStatus returned unknown status:" + var1);
+   private void setFilterMode(FilterMode var1, boolean var2) {
+      if (this.colorTexture == null) {
+         throw new IllegalStateException("Can't change filter mode, color texture doesn't exist yet");
+      } else {
+         if (var2 || var1 != this.filterMode) {
+            this.filterMode = var1;
+            this.colorTexture.setTextureFilter(var1, false);
          }
+
       }
    }
 
-   public void bindRead() {
+   public void blitToScreen() {
+      if (this.colorTexture == null) {
+         throw new IllegalStateException("Can't blit to screen, color texture doesn't exist yet");
+      } else {
+         RenderSystem.getDevice().createCommandEncoder().presentTexture(this.colorTexture);
+      }
+   }
+
+   public void blitAndBlendToTexture(GpuTexture var1) {
       RenderSystem.assertOnRenderThread();
-      GlStateManager._bindTexture(this.colorTextureId);
-   }
+      RenderSystem.AutoStorageIndexBuffer var2 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      GpuBuffer var3 = var2.getBuffer(6);
+      GpuBuffer var4 = RenderSystem.getQuadVertexBuffer();
 
-   public void unbindRead() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._bindTexture(0);
-   }
-
-   public void bindWrite(boolean var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
-      if (var1) {
-         GlStateManager._viewport(0, 0, this.viewWidth, this.viewHeight);
+      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, OptionalInt.empty())) {
+         var5.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
+         var5.setVertexBuffer(0, var4);
+         var5.setIndexBuffer(var3, var2.type());
+         var5.bindSampler("InSampler", this.colorTexture);
+         var5.drawIndexed(0, 6);
       }
 
    }
 
-   public void unbindWrite() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._glBindFramebuffer(36160, 0);
+   @Nullable
+   public GpuTexture getColorTexture() {
+      return this.colorTexture;
    }
 
-   public void setClearColor(float var1, float var2, float var3, float var4) {
-      this.clearChannels[0] = var1;
-      this.clearChannels[1] = var2;
-      this.clearChannels[2] = var3;
-      this.clearChannels[3] = var4;
-   }
-
-   public void blitToScreen(int var1, int var2) {
-      GlStateManager._glBindFramebuffer(36008, this.frameBufferId);
-      GlStateManager._glBlitFrameBuffer(0, 0, this.width, this.height, 0, 0, var1, var2, 16384, 9728);
-      GlStateManager._glBindFramebuffer(36008, 0);
-   }
-
-   public void blitAndBlendToScreen(int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager._colorMask(true, true, true, false);
-      GlStateManager._disableDepthTest();
-      GlStateManager._depthMask(false);
-      GlStateManager._viewport(0, 0, var1, var2);
-      CompiledShaderProgram var3 = (CompiledShaderProgram)Objects.requireNonNull(RenderSystem.setShader(CoreShaders.BLIT_SCREEN), "Blit shader not loaded");
-      var3.bindSampler("InSampler", this.colorTextureId);
-      BufferBuilder var4 = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLIT_SCREEN);
-      var4.addVertex(0.0F, 0.0F, 0.0F);
-      var4.addVertex(1.0F, 0.0F, 0.0F);
-      var4.addVertex(1.0F, 1.0F, 0.0F);
-      var4.addVertex(0.0F, 1.0F, 0.0F);
-      BufferUploader.drawWithShader(var4.buildOrThrow());
-      GlStateManager._depthMask(true);
-      GlStateManager._colorMask(true, true, true, true);
-   }
-
-   public void clear() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      this.bindWrite(true);
-      GlStateManager._clearColor(this.clearChannels[0], this.clearChannels[1], this.clearChannels[2], this.clearChannels[3]);
-      int var1 = 16384;
-      if (this.useDepth) {
-         GlStateManager._clearDepth(1.0);
-         var1 |= 256;
-      }
-
-      GlStateManager._clear(var1);
-      this.unbindWrite();
-   }
-
-   public int getColorTextureId() {
-      return this.colorTextureId;
-   }
-
-   public int getDepthTextureId() {
-      return this.depthBufferId;
+   @Nullable
+   public GpuTexture getDepthTexture() {
+      return this.depthTexture;
    }
 }

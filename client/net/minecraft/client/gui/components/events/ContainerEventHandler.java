@@ -57,7 +57,7 @@ public interface ContainerEventHandler extends GuiEventListener {
          }
       }
 
-      return this.getChildAt(var1, var3).filter((var5x) -> var5x.mouseReleased(var1, var3, var5)).isPresent();
+      return false;
    }
 
    default boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {

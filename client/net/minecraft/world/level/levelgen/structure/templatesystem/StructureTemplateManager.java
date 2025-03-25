@@ -20,7 +20,6 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -131,18 +130,18 @@ public class StructureTemplateManager {
    }
 
    private Optional<StructureTemplate> loadFromTestStructures(ResourceLocation var1) {
-      return this.loadFromSnbt(var1, Paths.get(StructureUtils.testStructuresDir));
+      return this.loadFromSnbt(var1, StructureUtils.testStructuresDir);
    }
 
    private Stream<ResourceLocation> listTestStructures() {
-      Path var1 = Paths.get(StructureUtils.testStructuresDir);
-      if (!Files.isDirectory(var1, new LinkOption[0])) {
+      if (!Files.isDirectory(StructureUtils.testStructuresDir, new LinkOption[0])) {
          return Stream.empty();
       } else {
-         ArrayList var2 = new ArrayList();
-         Objects.requireNonNull(var2);
-         this.listFolderContents(var1, "minecraft", ".snbt", var2::add);
-         return var2.stream();
+         ArrayList var1 = new ArrayList();
+         Path var10001 = StructureUtils.testStructuresDir;
+         Objects.requireNonNull(var1);
+         this.listFolderContents(var10001, "minecraft", ".snbt", var1::add);
+         return var1.stream();
       }
    }
 

@@ -2,14 +2,16 @@ package net.minecraft.data.tags;
 
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.block.Block;
 
 public class VanillaItemTagsProvider extends ItemTagsProvider {
@@ -59,6 +61,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.WOODEN_TRAPDOORS, ItemTags.WOODEN_TRAPDOORS);
       this.copy(BlockTags.TRAPDOORS, ItemTags.TRAPDOORS);
       this.copy(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS);
+      this.copy(BlockTags.FLOWERS, ItemTags.FLOWERS);
       this.copy(BlockTags.BEDS, ItemTags.BEDS);
       this.copy(BlockTags.FENCES, ItemTags.FENCES);
       this.copy(BlockTags.BEE_ATTRACTIVE, ItemTags.BEE_FOOD);
@@ -81,6 +84,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.BOATS).add(Items.OAK_BOAT, Items.SPRUCE_BOAT, Items.BIRCH_BOAT, Items.JUNGLE_BOAT, Items.ACACIA_BOAT, Items.DARK_OAK_BOAT, Items.PALE_OAK_BOAT, Items.MANGROVE_BOAT, Items.BAMBOO_RAFT, Items.CHERRY_BOAT).addTag(ItemTags.CHEST_BOATS);
       this.tag(ItemTags.BUNDLES).add(Items.BUNDLE, Items.BLACK_BUNDLE, Items.BLUE_BUNDLE, Items.BROWN_BUNDLE, Items.CYAN_BUNDLE, Items.GRAY_BUNDLE, Items.GREEN_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.LIME_BUNDLE, Items.MAGENTA_BUNDLE, Items.ORANGE_BUNDLE, Items.PINK_BUNDLE, Items.PURPLE_BUNDLE, Items.RED_BUNDLE, Items.YELLOW_BUNDLE, Items.WHITE_BUNDLE);
       this.tag(ItemTags.CHEST_BOATS).add(Items.OAK_CHEST_BOAT, Items.SPRUCE_CHEST_BOAT, Items.BIRCH_CHEST_BOAT, Items.JUNGLE_CHEST_BOAT, Items.ACACIA_CHEST_BOAT, Items.DARK_OAK_CHEST_BOAT, Items.PALE_OAK_CHEST_BOAT, Items.MANGROVE_CHEST_BOAT, Items.BAMBOO_CHEST_RAFT, Items.CHERRY_CHEST_BOAT);
+      this.tag(ItemTags.EGGS).add(Items.EGG, Items.BLUE_EGG, Items.BROWN_EGG);
       this.tag(ItemTags.FISHES).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.PUFFERFISH, Items.TROPICAL_FISH);
       this.copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
       this.copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
@@ -137,12 +141,13 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.HEAD_ARMOR).add(Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
       this.tag(ItemTags.SKULLS).add(Items.PLAYER_HEAD, Items.CREEPER_HEAD, Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.DRAGON_HEAD, Items.PIGLIN_HEAD);
       this.tag(ItemTags.TRIMMABLE_ARMOR).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR);
-      var1.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().sorted(Comparator.comparing((var0) -> var0.key().location())).forEach((var1x) -> this.tag(ItemTags.TRIM_MATERIALS).add((Item)((TrimMaterial)var1x.value()).ingredient().value()));
+      this.tag(ItemTags.TRIM_MATERIALS).addAll(var1.lookupOrThrow(Registries.ITEM).listElements().filter((var0) -> ((Item)var0.value()).components().has(DataComponents.PROVIDES_TRIM_MATERIAL)).map(Holder.Reference::key).sorted(Comparator.comparing(ResourceKey::location)).toList());
       this.tag(ItemTags.BOOKSHELF_BOOKS).add(Items.BOOK, Items.WRITTEN_BOOK, Items.ENCHANTED_BOOK, Items.WRITABLE_BOOK, Items.KNOWLEDGE_BOOK);
       this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD);
       this.tag(ItemTags.SNIFFER_FOOD).add(Items.TORCHFLOWER_SEEDS);
       this.tag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add(Items.WHEAT_SEEDS, Items.POTATO, Items.CARROT, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD);
       this.tag(ItemTags.VILLAGER_PICKS_UP).addTag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add(Items.BREAD, Items.WHEAT, Items.BEETROOT);
+      this.tag(ItemTags.BOOK_CLONING_TARGET).add(Items.WRITABLE_BOOK);
       this.tag(ItemTags.FOOT_ARMOR_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR);
       this.tag(ItemTags.LEG_ARMOR_ENCHANTABLE).addTag(ItemTags.LEG_ARMOR);
       this.tag(ItemTags.CHEST_ARMOR_ENCHANTABLE).addTag(ItemTags.CHEST_ARMOR);

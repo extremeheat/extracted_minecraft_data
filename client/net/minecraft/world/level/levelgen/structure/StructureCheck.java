@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -140,39 +141,33 @@ public class StructureCheck {
 
    @Nullable
    private Object2IntMap<Structure> loadStructures(CompoundTag var1) {
-      if (!var1.contains("structures", 10)) {
+      Optional var2 = var1.getCompound("structures").flatMap((var0) -> var0.getCompound("starts"));
+      if (var2.isEmpty()) {
          return null;
       } else {
-         CompoundTag var2 = var1.getCompound("structures");
-         if (!var2.contains("starts", 10)) {
-            return null;
+         CompoundTag var3 = (CompoundTag)var2.get();
+         if (var3.isEmpty()) {
+            return Object2IntMaps.emptyMap();
          } else {
-            CompoundTag var3 = var2.getCompound("starts");
-            if (var3.isEmpty()) {
-               return Object2IntMaps.emptyMap();
-            } else {
-               Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
-               Registry var5 = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
-
-               for(String var7 : var3.getAllKeys()) {
-                  ResourceLocation var8 = ResourceLocation.tryParse(var7);
-                  if (var8 != null) {
-                     Structure var9 = (Structure)var5.getValue(var8);
-                     if (var9 != null) {
-                        CompoundTag var10 = var3.getCompound(var7);
-                        if (!var10.isEmpty()) {
-                           String var11 = var10.getString("id");
-                           if (!"INVALID".equals(var11)) {
-                              int var12 = var10.getInt("references");
-                              var4.put(var9, var12);
-                           }
+            Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
+            Registry var5 = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
+            var3.forEach((var2x, var3x) -> {
+               ResourceLocation var4x = ResourceLocation.tryParse(var2x);
+               if (var4x != null) {
+                  Structure var5x = (Structure)var5.getValue(var4x);
+                  if (var5x != null) {
+                     var3x.asCompound().ifPresent((var2) -> {
+                        String var3 = var2.getStringOr("id", "");
+                        if (!"INVALID".equals(var3)) {
+                           int var4x = var2.getIntOr("references", 0);
+                           var4.put(var5x, var4x);
                         }
-                     }
+
+                     });
                   }
                }
-
-               return var4;
-            }
+            });
+            return var4;
          }
       }
    }

@@ -7,6 +7,7 @@ import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
+import net.minecraft.client.resources.model.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 
@@ -14,7 +15,7 @@ public class GuiSpriteManager extends TextureAtlasHolder {
    private static final Set<MetadataSectionType<?>> METADATA_SECTIONS;
 
    public GuiSpriteManager(TextureManager var1) {
-      super(var1, ResourceLocation.withDefaultNamespace("textures/atlas/gui.png"), ResourceLocation.withDefaultNamespace("gui"), METADATA_SECTIONS);
+      super(var1, ResourceLocation.withDefaultNamespace("textures/atlas/gui.png"), AtlasIds.GUI, METADATA_SECTIONS);
    }
 
    public TextureAtlasSprite getSprite(ResourceLocation var1) {

@@ -26,7 +26,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
@@ -197,12 +196,12 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.putByte("Difficulty", (byte)this.settings.difficulty().getId());
       var2.putBoolean("DifficultyLocked", this.difficultyLocked);
       var2.put("GameRules", this.settings.gameRules().createTag());
-      var2.put("DragonFight", (Tag)EndDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, this.endDragonFightData).getOrThrow());
+      var2.store("DragonFight", EndDragonFight.Data.CODEC, this.endDragonFightData);
       if (var3 != null) {
          var2.put("Player", var3);
       }
 
-      WorldDataConfiguration.CODEC.encodeStart(NbtOps.INSTANCE, this.settings.getDataConfiguration()).ifSuccess((var1x) -> var2.merge((CompoundTag)var1x)).ifError((var0) -> LOGGER.warn("Failed to encode configuration {}", var0.message()));
+      var2.store(WorldDataConfiguration.MAP_CODEC, this.settings.getDataConfiguration());
       if (this.customBossEvents != null) {
          var2.put("CustomBossEvents", this.customBossEvents);
       }
@@ -210,10 +209,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.put("ScheduledEvents", this.scheduledEvents.store());
       var2.putInt("WanderingTraderSpawnDelay", this.wanderingTraderSpawnDelay);
       var2.putInt("WanderingTraderSpawnChance", this.wanderingTraderSpawnChance);
-      if (this.wanderingTraderId != null) {
-         var2.putUUID("WanderingTraderId", this.wanderingTraderId);
-      }
-
+      var2.storeNullable("WanderingTraderId", UUIDUtil.CODEC, this.wanderingTraderId);
    }
 
    private static ListTag stringCollectionToTag(Set<String> var0) {

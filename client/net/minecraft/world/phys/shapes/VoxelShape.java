@@ -11,6 +11,7 @@ import net.minecraft.Util;
 import net.minecraft.core.AxisCycle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -60,6 +61,10 @@ public abstract class VoxelShape {
 
    public VoxelShape move(Vec3 var1) {
       return this.move(var1.x, var1.y, var1.z);
+   }
+
+   public VoxelShape move(Vec3i var1) {
+      return this.move((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
    }
 
    public VoxelShape move(double var1, double var3, double var5) {
@@ -251,6 +256,10 @@ public abstract class VoxelShape {
 
          return var3;
       }
+   }
+
+   public boolean equals(Object var1) {
+      return super.equals(var1);
    }
 
    public String toString() {

@@ -1,9 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.List;
 import java.util.function.ToIntFunction;
@@ -45,10 +43,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    public static final BooleanProperty WATERLOGGED;
    public static final ToIntFunction<BlockState> LIGHT_EMISSION;
    private static final Int2ObjectMap<List<Vec3>> PARTICLE_OFFSETS;
-   private static final VoxelShape ONE_AABB;
-   private static final VoxelShape TWO_AABB;
-   private static final VoxelShape THREE_AABB;
-   private static final VoxelShape FOUR_AABB;
+   private static final VoxelShape[] SHAPES;
 
    public MapCodec<CandleBlock> codec() {
       return CODEC;
@@ -96,17 +91,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Integer)var1.getValue(CANDLES)) {
-         case 1:
-         default:
-            return ONE_AABB;
-         case 2:
-            return TWO_AABB;
-         case 3:
-            return THREE_AABB;
-         case 4:
-            return FOUR_AABB;
-      }
+      return SHAPES[(Integer)var1.getValue(CANDLES) - 1];
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
@@ -150,18 +135,13 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
       LIT = AbstractCandleBlock.LIT;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       LIGHT_EMISSION = (var0) -> (Boolean)var0.getValue(LIT) ? 3 * (Integer)var0.getValue(CANDLES) : 0;
-      PARTICLE_OFFSETS = (Int2ObjectMap)Util.make(() -> {
-         Int2ObjectOpenHashMap var0 = new Int2ObjectOpenHashMap();
-         var0.defaultReturnValue(ImmutableList.of());
-         var0.put(1, ImmutableList.of(new Vec3(0.5, 0.5, 0.5)));
-         var0.put(2, ImmutableList.of(new Vec3(0.375, 0.44, 0.5), new Vec3(0.625, 0.5, 0.44)));
-         var0.put(3, ImmutableList.of(new Vec3(0.5, 0.313, 0.625), new Vec3(0.375, 0.44, 0.5), new Vec3(0.56, 0.5, 0.44)));
-         var0.put(4, ImmutableList.of(new Vec3(0.44, 0.313, 0.56), new Vec3(0.625, 0.44, 0.56), new Vec3(0.375, 0.44, 0.375), new Vec3(0.56, 0.5, 0.375)));
-         return Int2ObjectMaps.unmodifiable(var0);
+      PARTICLE_OFFSETS = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(4), (var0) -> {
+         float var1 = 0.0625F;
+         var0.put(1, List.of((new Vec3(8.0, 8.0, 8.0)).scale(0.0625)));
+         var0.put(2, List.of((new Vec3(6.0, 7.0, 8.0)).scale(0.0625), (new Vec3(10.0, 8.0, 7.0)).scale(0.0625)));
+         var0.put(3, List.of((new Vec3(8.0, 5.0, 10.0)).scale(0.0625), (new Vec3(6.0, 7.0, 8.0)).scale(0.0625), (new Vec3(9.0, 8.0, 7.0)).scale(0.0625)));
+         var0.put(4, List.of((new Vec3(7.0, 5.0, 9.0)).scale(0.0625), (new Vec3(10.0, 7.0, 9.0)).scale(0.0625), (new Vec3(6.0, 7.0, 6.0)).scale(0.0625), (new Vec3(9.0, 8.0, 6.0)).scale(0.0625)));
       });
-      ONE_AABB = Block.box(7.0, 0.0, 7.0, 9.0, 6.0, 9.0);
-      TWO_AABB = Block.box(5.0, 0.0, 6.0, 11.0, 6.0, 9.0);
-      THREE_AABB = Block.box(5.0, 0.0, 6.0, 10.0, 6.0, 11.0);
-      FOUR_AABB = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 10.0);
+      SHAPES = new VoxelShape[]{Block.column(2.0, 0.0, 6.0), Block.box(5.0, 0.0, 6.0, 11.0, 6.0, 9.0), Block.box(5.0, 0.0, 6.0, 10.0, 6.0, 11.0), Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 10.0)};
    }
 }

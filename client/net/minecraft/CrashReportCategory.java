@@ -162,13 +162,14 @@ public class CrashReportCategory {
       return this.stackTrace;
    }
 
-   public static void populateBlockDetails(CrashReportCategory var0, LevelHeightAccessor var1, BlockPos var2, @Nullable BlockState var3) {
-      if (var3 != null) {
-         Objects.requireNonNull(var3);
-         var0.setDetail("Block", var3::toString);
-      }
+   public static void populateBlockDetails(CrashReportCategory var0, LevelHeightAccessor var1, BlockPos var2, BlockState var3) {
+      Objects.requireNonNull(var3);
+      var0.setDetail("Block", var3::toString);
+      populateBlockLocationDetails(var0, var1, var2);
+   }
 
-      var0.setDetail("Block location", (CrashReportDetail)(() -> formatLocation(var1, var2)));
+   public static CrashReportCategory populateBlockLocationDetails(CrashReportCategory var0, LevelHeightAccessor var1, BlockPos var2) {
+      return var0.setDetail("Block location", (CrashReportDetail)(() -> formatLocation(var1, var2)));
    }
 
    static class Entry {

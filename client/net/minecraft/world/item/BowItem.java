@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -43,7 +44,7 @@ public class BowItem extends ProjectileWeaponItem {
                   }
                }
 
-               var2.playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.4F + 1.2F) + var8 * 0.5F);
+               var2.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.4F + 1.2F) + var8 * 0.5F);
                var5.awardStat(Stats.ITEM_USED.get(this));
                return true;
             }

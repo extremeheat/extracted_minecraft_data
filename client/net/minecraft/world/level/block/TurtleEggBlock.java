@@ -33,13 +33,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TurtleEggBlock extends Block {
    public static final MapCodec<TurtleEggBlock> CODEC = simpleCodec(TurtleEggBlock::new);
+   public static final IntegerProperty HATCH;
+   public static final IntegerProperty EGGS;
    public static final int MAX_HATCH_LEVEL = 2;
    public static final int MIN_EGGS = 1;
    public static final int MAX_EGGS = 4;
-   private static final VoxelShape ONE_EGG_AABB = Block.box(3.0, 0.0, 3.0, 12.0, 7.0, 12.0);
-   private static final VoxelShape MULTIPLE_EGGS_AABB = Block.box(1.0, 0.0, 1.0, 15.0, 7.0, 15.0);
-   public static final IntegerProperty HATCH;
-   public static final IntegerProperty EGGS;
+   private static final VoxelShape SHAPE_SINGLE;
+   private static final VoxelShape SHAPE_MULTIPLE;
 
    public MapCodec<TurtleEggBlock> codec() {
       return CODEC;
@@ -58,7 +58,7 @@ public class TurtleEggBlock extends Block {
       super.stepOn(var1, var2, var3, var4);
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       if (!(var4 instanceof Zombie)) {
          this.destroyEgg(var1, var2, var3, var4, 3);
       }
@@ -76,7 +76,7 @@ public class TurtleEggBlock extends Block {
    }
 
    private void decreaseEggs(Level var1, BlockPos var2, BlockState var3) {
-      var1.playSound((Player)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
+      var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
       int var4 = (Integer)var3.getValue(EGGS);
       if (var4 <= 1) {
          var1.destroyBlock(var2, false);
@@ -92,11 +92,11 @@ public class TurtleEggBlock extends Block {
       if (this.shouldUpdateHatchLevel(var2) && onSand(var2, var3)) {
          int var5 = (Integer)var1.getValue(HATCH);
          if (var5 < 2) {
-            var2.playSound((Player)null, var3, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
+            var2.playSound((Entity)null, var3, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
             var2.setBlock(var3, (BlockState)var1.setValue(HATCH, var5 + 1), 2);
             var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
          } else {
-            var2.playSound((Player)null, var3, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
+            var2.playSound((Entity)null, var3, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
             var2.removeBlock(var3, false);
             var2.gameEvent(GameEvent.BLOCK_DESTROY, var3, GameEvent.Context.of(var1));
 
@@ -106,7 +106,7 @@ public class TurtleEggBlock extends Block {
                if (var7 != null) {
                   var7.setAge(-24000);
                   var7.setHomePos(var3);
-                  var7.moveTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
+                  var7.snapTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
                   var2.addFreshEntity(var7);
                }
             }
@@ -155,7 +155,7 @@ public class TurtleEggBlock extends Block {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Integer)var1.getValue(EGGS) > 1 ? MULTIPLE_EGGS_AABB : ONE_EGG_AABB;
+      return (Integer)var1.getValue(EGGS) == 1 ? SHAPE_SINGLE : SHAPE_MULTIPLE;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
@@ -177,5 +177,7 @@ public class TurtleEggBlock extends Block {
    static {
       HATCH = BlockStateProperties.HATCH;
       EGGS = BlockStateProperties.EGGS;
+      SHAPE_SINGLE = Block.box(3.0, 0.0, 3.0, 12.0, 7.0, 12.0);
+      SHAPE_MULTIPLE = Block.column(14.0, 0.0, 7.0);
    }
 }

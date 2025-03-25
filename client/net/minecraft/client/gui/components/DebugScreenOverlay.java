@@ -2,7 +2,22 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.GlUtil;
+import com.google.common.collect.Maps;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.DataFixUtils;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -10,12 +25,13 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -34,6 +50,7 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,21 +92,18 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class DebugScreenOverlay {
+   private static final float CROSSHAIR_LENGTH = 10.0F;
+   private static final int CROSHAIR_INDEX_COUNT = 18;
    private static final int COLOR_GREY = 14737632;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
    private static final int MARGIN_TOP = 2;
-   private static final Map<Heightmap.Types, String> HEIGHTMAP_NAMES = (Map)Util.make(new EnumMap(Heightmap.Types.class), (var0) -> {
-      var0.put(Heightmap.Types.WORLD_SURFACE_WG, "SW");
-      var0.put(Heightmap.Types.WORLD_SURFACE, "S");
-      var0.put(Heightmap.Types.OCEAN_FLOOR_WG, "OW");
-      var0.put(Heightmap.Types.OCEAN_FLOOR, "O");
-      var0.put(Heightmap.Types.MOTION_BLOCKING, "M");
-      var0.put(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "ML");
-   });
+   private static final Map<Heightmap.Types, String> HEIGHTMAP_NAMES;
    private final Minecraft minecraft;
    private final AllocationRateCalculator allocationRateCalculator;
    private final Font font;
+   private final GpuBuffer crosshairBuffer;
+   private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies;
    private HitResult block;
    private HitResult liquid;
    @Nullable
@@ -102,10 +116,10 @@ public class DebugScreenOverlay {
    private boolean renderProfilerChart;
    private boolean renderFpsCharts;
    private boolean renderNetworkCharts;
-   private final LocalSampleLogger frameTimeLogger = new LocalSampleLogger(1);
-   private final LocalSampleLogger tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
-   private final LocalSampleLogger pingLogger = new LocalSampleLogger(1);
-   private final LocalSampleLogger bandwidthLogger = new LocalSampleLogger(1);
+   private final LocalSampleLogger frameTimeLogger;
+   private final LocalSampleLogger tickTimeLogger;
+   private final LocalSampleLogger pingLogger;
+   private final LocalSampleLogger bandwidthLogger;
    private final Map<RemoteDebugSampleType, LocalSampleLogger> remoteSupportingLoggers;
    private final FpsDebugChart fpsChart;
    private final TpsDebugChart tpsChart;
@@ -115,6 +129,11 @@ public class DebugScreenOverlay {
 
    public DebugScreenOverlay(Minecraft var1) {
       super();
+      this.crosshairIndicies = RenderSystem.getSequentialBuffer(VertexFormat.Mode.LINES);
+      this.frameTimeLogger = new LocalSampleLogger(1);
+      this.tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
+      this.pingLogger = new LocalSampleLogger(1);
+      this.bandwidthLogger = new LocalSampleLogger(1);
       this.remoteSupportingLoggers = Map.of(RemoteDebugSampleType.TICK_TIME, this.tickTimeLogger);
       this.minecraft = var1;
       this.allocationRateCalculator = new AllocationRateCalculator();
@@ -124,6 +143,21 @@ public class DebugScreenOverlay {
       this.pingChart = new PingDebugChart(this.font, this.pingLogger);
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
+
+      try (ByteBufferBuilder var2 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
+         BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+         var3.addVertex(10.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+         var3.addVertex(0.0F, 10.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+         var3.addVertex(0.0F, 0.0F, 10.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+
+         try (MeshData var4 = var3.buildOrThrow()) {
+            this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "Crosshair vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var4.vertexBuffer());
+         }
+      }
+
    }
 
    public void clearChunkCache() {
@@ -239,7 +273,7 @@ public class DebugScreenOverlay {
          String var11 = var10 ? "-" : String.format(Locale.ROOT, "%.1f", var8.millisecondsPerTick());
          var1 = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", var2.getCurrentSmoothedTickTime(), var11, var7, var5, var6);
       } else {
-         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.serverBrand(), var7, var5, var6);
+         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.lambda$fillCrashReport$0(), var7, var5, var6);
       }
 
       BlockPos var28 = this.minecraft.getCameraEntity().blockPosition();
@@ -276,7 +310,7 @@ public class DebugScreenOverlay {
          }
 
          Level var14 = this.getLevel();
-         Object var15 = var14 instanceof ServerLevel ? ((ServerLevel)var14).getForcedChunks() : LongSets.EMPTY_SET;
+         Object var15 = var14 instanceof ServerLevel ? ((ServerLevel)var14).getForceLoadedChunks() : LongSets.EMPTY_SET;
          String[] var10000 = new String[7];
          String var10003 = SharedConstants.getCurrentVersion().getName();
          var10000[0] = "Minecraft " + var10003 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType()) + ")";
@@ -431,52 +465,53 @@ public class DebugScreenOverlay {
       long var3 = Runtime.getRuntime().totalMemory();
       long var5 = Runtime.getRuntime().freeMemory();
       long var7 = var3 - var5;
-      ArrayList var9 = Lists.newArrayList(new String[]{String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")), String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)), String.format(Locale.ROOT, "Allocation rate: %03dMB/s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))), String.format(Locale.ROOT, "Allocated: %2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)), "", String.format(Locale.ROOT, "CPU: %s", GlUtil.getCpuInfo()), "", String.format(Locale.ROOT, "Display: %dx%d (%s)", Minecraft.getInstance().getWindow().getWidth(), Minecraft.getInstance().getWindow().getHeight(), GlUtil.getVendor()), GlUtil.getRenderer(), GlUtil.getOpenGLVersion()});
+      GpuDevice var9 = RenderSystem.getDevice();
+      ArrayList var10 = Lists.newArrayList(new String[]{String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")), String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)), String.format(Locale.ROOT, "Allocation rate: %03dMB/s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))), String.format(Locale.ROOT, "Allocated: %2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)), "", String.format(Locale.ROOT, "CPU: %s", GLX._getCpuInfo()), "", String.format(Locale.ROOT, "Display: %dx%d (%s)", Minecraft.getInstance().getWindow().getWidth(), Minecraft.getInstance().getWindow().getHeight(), var9.getVendor()), var9.getRenderer(), String.format(Locale.ROOT, "%s %s", var9.getBackendName(), var9.getVersion())});
       if (this.minecraft.showOnlyReducedInfo()) {
-         return var9;
+         return var10;
       } else {
          if (this.block.getType() == HitResult.Type.BLOCK) {
-            BlockPos var10 = ((BlockHitResult)this.block).getBlockPos();
-            BlockState var11 = this.minecraft.level.getBlockState(var10);
-            var9.add("");
+            BlockPos var11 = ((BlockHitResult)this.block).getBlockPos();
+            BlockState var12 = this.minecraft.level.getBlockState(var11);
+            var10.add("");
             String var10001 = String.valueOf(ChatFormatting.UNDERLINE);
-            var9.add(var10001 + "Targeted Block: " + var10.getX() + ", " + var10.getY() + ", " + var10.getZ());
-            var9.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var11.getBlock())));
+            var10.add(var10001 + "Targeted Block: " + var11.getX() + ", " + var11.getY() + ", " + var11.getZ());
+            var10.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var12.getBlock())));
 
-            for(Map.Entry var13 : var11.getValues().entrySet()) {
-               var9.add(this.getPropertyValueString(var13));
+            for(Map.Entry var14 : var12.getValues().entrySet()) {
+               var10.add(this.getPropertyValueString(var14));
             }
 
-            Stream var10000 = var11.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
-            Objects.requireNonNull(var9);
-            var10000.forEach(var9::add);
+            Stream var10000 = var12.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
+            Objects.requireNonNull(var10);
+            var10000.forEach(var10::add);
          }
 
          if (this.liquid.getType() == HitResult.Type.BLOCK) {
-            BlockPos var14 = ((BlockHitResult)this.liquid).getBlockPos();
-            FluidState var16 = this.minecraft.level.getFluidState(var14);
-            var9.add("");
-            String var20 = String.valueOf(ChatFormatting.UNDERLINE);
-            var9.add(var20 + "Targeted Fluid: " + var14.getX() + ", " + var14.getY() + ", " + var14.getZ());
-            var9.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var16.getType())));
+            BlockPos var15 = ((BlockHitResult)this.liquid).getBlockPos();
+            FluidState var17 = this.minecraft.level.getFluidState(var15);
+            var10.add("");
+            String var21 = String.valueOf(ChatFormatting.UNDERLINE);
+            var10.add(var21 + "Targeted Fluid: " + var15.getX() + ", " + var15.getY() + ", " + var15.getZ());
+            var10.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var17.getType())));
 
-            for(Map.Entry var18 : var16.getValues().entrySet()) {
-               var9.add(this.getPropertyValueString(var18));
+            for(Map.Entry var19 : var17.getValues().entrySet()) {
+               var10.add(this.getPropertyValueString(var19));
             }
 
-            Stream var19 = var16.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
-            Objects.requireNonNull(var9);
-            var19.forEach(var9::add);
+            Stream var20 = var17.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
+            Objects.requireNonNull(var10);
+            var20.forEach(var10::add);
          }
 
-         Entity var15 = this.minecraft.crosshairPickEntity;
-         if (var15 != null) {
-            var9.add("");
-            var9.add(String.valueOf(ChatFormatting.UNDERLINE) + "Targeted Entity");
-            var9.add(String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(var15.getType())));
+         Entity var16 = this.minecraft.crosshairPickEntity;
+         if (var16 != null) {
+            var10.add("");
+            var10.add(String.valueOf(ChatFormatting.UNDERLINE) + "Targeted Entity");
+            var10.add(String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(var16.getType())));
          }
 
-         return var9;
+         return var10;
       }
    }
 
@@ -579,6 +614,33 @@ public class DebugScreenOverlay {
       this.tickTimeLogger.reset();
       this.pingLogger.reset();
       this.bandwidthLogger.reset();
+   }
+
+   public void render3dCrosshair() {
+      RenderPipeline var1 = RenderPipelines.LINES;
+      RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+      RenderTarget var2 = Minecraft.getInstance().getMainRenderTarget();
+      GpuTexture var3 = var2.getColorTexture();
+      GpuTexture var4 = var2.getDepthTexture();
+      GpuBuffer var5 = this.crosshairIndicies.getBuffer(18);
+
+      try (RenderPass var6 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
+         var6.setPipeline(var1);
+         RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+         RenderSystem.lineWidth(4.0F);
+         var6.setVertexBuffer(0, this.crosshairBuffer);
+         var6.setIndexBuffer(var5, this.crosshairIndicies.type());
+         var6.drawIndexed(0, 18);
+         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+         RenderSystem.lineWidth(2.0F);
+         var6.drawIndexed(0, 18);
+         RenderSystem.lineWidth(1.0F);
+      }
+
+   }
+
+   static {
+      HEIGHTMAP_NAMES = Maps.newEnumMap(Map.of(Heightmap.Types.WORLD_SURFACE_WG, "SW", Heightmap.Types.WORLD_SURFACE, "S", Heightmap.Types.OCEAN_FLOOR_WG, "OW", Heightmap.Types.OCEAN_FLOOR, "O", Heightmap.Types.MOTION_BLOCKING, "M", Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "ML"));
    }
 
    static class AllocationRateCalculator {

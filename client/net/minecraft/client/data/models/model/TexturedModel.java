@@ -22,6 +22,10 @@ public class TexturedModel {
    public static final Provider FLOWERBED_2;
    public static final Provider FLOWERBED_3;
    public static final Provider FLOWERBED_4;
+   public static final Provider LEAF_LITTER_1;
+   public static final Provider LEAF_LITTER_2;
+   public static final Provider LEAF_LITTER_3;
+   public static final Provider LEAF_LITTER_4;
    public static final Provider GLAZED_TERRACOTTA;
    public static final Provider CORAL_FAN;
    public static final Provider ANVIL;
@@ -87,6 +91,10 @@ public class TexturedModel {
       FLOWERBED_2 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_2);
       FLOWERBED_3 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_3);
       FLOWERBED_4 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_4);
+      LEAF_LITTER_1 = createDefault(TextureMapping::defaultTexture, ModelTemplates.LEAF_LITTER_1);
+      LEAF_LITTER_2 = createDefault(TextureMapping::defaultTexture, ModelTemplates.LEAF_LITTER_2);
+      LEAF_LITTER_3 = createDefault(TextureMapping::defaultTexture, ModelTemplates.LEAF_LITTER_3);
+      LEAF_LITTER_4 = createDefault(TextureMapping::defaultTexture, ModelTemplates.LEAF_LITTER_4);
       GLAZED_TERRACOTTA = createDefault(TextureMapping::pattern, ModelTemplates.GLAZED_TERRACOTTA);
       CORAL_FAN = createDefault(TextureMapping::fan, ModelTemplates.CORAL_FAN);
       ANVIL = createDefault(TextureMapping::top, ModelTemplates.ANVIL);

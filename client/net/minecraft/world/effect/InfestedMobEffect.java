@@ -42,7 +42,7 @@ class InfestedMobEffect extends MobEffect {
          float var11 = 1.5707964F;
          float var12 = Mth.randomBetween(var10, -1.5707964F, 1.5707964F);
          Vector3f var13 = var2.getLookAngle().toVector3f().mul(0.3F).mul(1.0F, 1.5F, 1.0F).rotateY(var12);
-         var9.moveTo(var3, var5, var7, var1.getRandom().nextFloat() * 360.0F, 0.0F);
+         var9.snapTo(var3, var5, var7, var1.getRandom().nextFloat() * 360.0F, 0.0F);
          var9.setDeltaMovement(new Vec3(var13));
          var1.addFreshEntity(var9);
          var9.playSound(SoundEvents.SILVERFISH_HURT);

@@ -213,7 +213,7 @@ public class JigsawPlacement {
             BlockPos var22 = var21.relative(var20);
             int var23 = var21.getY() - var16;
             int var24 = -2147483648;
-            ResourceKey var25 = readPoolKey(var18, var7);
+            ResourceKey var25 = var7.lookup(var18.pool());
             Optional var26 = this.pools.get(var25);
             if (var26.isEmpty()) {
                JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.location());
@@ -260,7 +260,7 @@ public class JigsawPlacement {
                                  if (!var38.isInside(var4.pos().relative(JigsawBlock.getFrontFacing(var4.state())))) {
                                     return 0;
                                  } else {
-                                    ResourceKey var5 = readPoolKey(var3x, var7);
+                                    ResourceKey var5 = var7.lookup(var3x.pool());
                                     Optional var6 = this.pools.get(var5);
                                     Optional var7x = var6.map((var0) -> ((StructureTemplatePool)var0.value()).getFallback());
                                     int var8 = (Integer)var6.map((var1) -> ((StructureTemplatePool)var1.value()).getMaxSize(this.structureTemplateManager)).orElse(0);
@@ -343,10 +343,6 @@ public class JigsawPlacement {
             }
          }
 
-      }
-
-      private static ResourceKey<StructureTemplatePool> readPoolKey(StructureTemplate.JigsawBlockInfo var0, PoolAliasLookup var1) {
-         return var1.lookup(Pools.createKey(var0.pool()));
       }
    }
 }

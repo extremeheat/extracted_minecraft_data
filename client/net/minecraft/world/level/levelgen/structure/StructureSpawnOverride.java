@@ -3,13 +3,13 @@ package net.minecraft.world.level.levelgen.structure;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
-public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedRandomList<MobSpawnSettings.SpawnerData> spawns) {
-   public static final Codec<StructureSpawnOverride> CODEC = RecordCodecBuilder.create((var0) -> var0.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedRandomList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(var0, StructureSpawnOverride::new));
+public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedList<MobSpawnSettings.SpawnerData> spawns) {
+   public static final Codec<StructureSpawnOverride> CODEC = RecordCodecBuilder.create((var0) -> var0.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(var0, StructureSpawnOverride::new));
 
-   public StructureSpawnOverride(BoundingBoxType var1, WeightedRandomList<MobSpawnSettings.SpawnerData> var2) {
+   public StructureSpawnOverride(BoundingBoxType var1, WeightedList<MobSpawnSettings.SpawnerData> var2) {
       super();
       this.boundingBox = var1;
       this.spawns = var2;

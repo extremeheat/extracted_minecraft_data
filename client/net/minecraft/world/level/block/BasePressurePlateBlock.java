@@ -9,7 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -23,9 +23,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class BasePressurePlateBlock extends Block {
-   protected static final VoxelShape PRESSED_AABB = Block.box(1.0, 0.0, 1.0, 15.0, 0.5, 15.0);
-   protected static final VoxelShape AABB = Block.box(1.0, 0.0, 1.0, 15.0, 1.0, 15.0);
-   protected static final AABB TOUCH_AABB = new AABB(0.0625, 0.0, 0.0625, 0.9375, 0.25, 0.9375);
+   private static final VoxelShape SHAPE_PRESSED = Block.column(14.0, 0.0, 0.5);
+   private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 1.0);
+   protected static final AABB TOUCH_AABB = (AABB)Block.column(14.0, 0.0, 4.0).toAabbs().getFirst();
    protected final BlockSetType type;
 
    protected BasePressurePlateBlock(BlockBehaviour.Properties var1, BlockSetType var2) {
@@ -36,7 +36,7 @@ public abstract class BasePressurePlateBlock extends Block {
    protected abstract MapCodec<? extends BasePressurePlateBlock> codec();
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.getSignalForState(var1) > 0 ? PRESSED_AABB : AABB;
+      return this.getSignalForState(var1) > 0 ? SHAPE_PRESSED : SHAPE;
    }
 
    protected int getPressedTime() {
@@ -64,11 +64,11 @@ public abstract class BasePressurePlateBlock extends Block {
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!var2.isClientSide) {
-         int var5 = this.getSignalForState(var1);
-         if (var5 == 0) {
-            this.checkPressed(var4, var2, var3, var1, var5);
+         int var6 = this.getSignalForState(var1);
+         if (var6 == 0) {
+            this.checkPressed(var4, var2, var3, var1, var6);
          }
 
       }
@@ -86,10 +86,10 @@ public abstract class BasePressurePlateBlock extends Block {
       }
 
       if (!var8 && var7) {
-         var2.playSound((Player)null, var3, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
+         var2.playSound((Entity)null, var3, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
          var2.gameEvent(var1, GameEvent.BLOCK_DEACTIVATE, var3);
       } else if (var8 && !var7) {
-         var2.playSound((Player)null, var3, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
+         var2.playSound((Entity)null, var3, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
          var2.gameEvent(var1, GameEvent.BLOCK_ACTIVATE, var3);
       }
 
@@ -99,14 +99,11 @@ public abstract class BasePressurePlateBlock extends Block {
 
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
-         if (this.getSignalForState(var1) > 0) {
-            this.updateNeighbours(var2, var3);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4 && this.getSignalForState(var1) > 0) {
+         this.updateNeighbours(var2, var3);
       }
+
    }
 
    protected void updateNeighbours(Level var1, BlockPos var2) {

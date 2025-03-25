@@ -15,7 +15,7 @@ public class MinecartCollisionContext extends EntityCollisionContext {
    private BlockPos slopeIgnore;
 
    protected MinecartCollisionContext(AbstractMinecart var1, boolean var2) {
-      super(var1, var2);
+      super(var1, var2, false);
       this.setupContext(var1);
    }
 

@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -35,7 +34,6 @@ import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -48,10 +46,10 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class WanderingTrader extends AbstractVillager implements Consumable.OverrideConsumeSound {
-   private static final int NUMBER_OF_TRADE_OFFERS = 5;
+   private static final int DEFAULT_DESPAWN_DELAY = 0;
    @Nullable
    private BlockPos wanderTarget;
-   private int despawnDelay;
+   private int despawnDelay = 0;
 
    public WanderingTrader(EntityType<? extends WanderingTrader> var1, Level var2) {
       super(var1, var2);
@@ -59,8 +57,8 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> this.level().isNight() && !var1.isInvisible()));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> this.level().isDay() && var1.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> this.level().isDarkOutside() && !var1.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> this.level().isBrightOutside() && var1.isInvisible()));
       this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Zombie.class, 8.0F, 0.5, 0.5));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Evoker.class, 12.0F, 0.5, 0.5));
@@ -110,29 +108,9 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
    }
 
    protected void updateTrades() {
-      if (this.level().enabledFeatures().contains(FeatureFlags.TRADE_REBALANCE)) {
-         this.experimentalUpdateTrades();
-      } else {
-         VillagerTrades.ItemListing[] var1 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES.get(1);
-         VillagerTrades.ItemListing[] var2 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES.get(2);
-         if (var1 != null && var2 != null) {
-            MerchantOffers var3 = this.getOffers();
-            this.addOffersFromItemListings(var3, var1, 5);
-            int var4 = this.random.nextInt(var2.length);
-            VillagerTrades.ItemListing var5 = var2[var4];
-            MerchantOffer var6 = var5.getOffer(this, this.random);
-            if (var6 != null) {
-               var3.add(var6);
-            }
-
-         }
-      }
-   }
-
-   private void experimentalUpdateTrades() {
       MerchantOffers var1 = this.getOffers();
 
-      for(Pair var3 : VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES) {
+      for(Pair var3 : VillagerTrades.WANDERING_TRADER_TRADES) {
          VillagerTrades.ItemListing[] var4 = (VillagerTrades.ItemListing[])var3.getLeft();
          this.addOffersFromItemListings(var1, var4, (Integer)var3.getRight());
       }
@@ -142,19 +120,13 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("DespawnDelay", this.despawnDelay);
-      if (this.wanderTarget != null) {
-         var1.put("wander_target", NbtUtils.writeBlockPos(this.wanderTarget));
-      }
-
+      var1.storeNullable("wander_target", BlockPos.CODEC, this.wanderTarget);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("DespawnDelay", 99)) {
-         this.despawnDelay = var1.getInt("DespawnDelay");
-      }
-
-      NbtUtils.readBlockPos(var1, "wander_target").ifPresent((var1x) -> this.wanderTarget = var1x);
+      this.despawnDelay = var1.getIntOr("DespawnDelay", 0);
+      this.wanderTarget = (BlockPos)var1.read("wander_target", BlockPos.CODEC).orElse((Object)null);
       this.setAge(Math.max(0, this.getAge()));
    }
 

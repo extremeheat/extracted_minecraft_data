@@ -22,8 +22,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SugarCaneBlock extends Block {
    public static final MapCodec<SugarCaneBlock> CODEC = simpleCodec(SugarCaneBlock::new);
    public static final IntegerProperty AGE;
-   protected static final float AABB_OFFSET = 6.0F;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<SugarCaneBlock> codec() {
       return CODEC;
@@ -55,9 +54,9 @@ public class SugarCaneBlock extends Block {
             int var6 = (Integer)var1.getValue(AGE);
             if (var6 == 15) {
                var2.setBlockAndUpdate(var3.above(), this.defaultBlockState());
-               var2.setBlock(var3, (BlockState)var1.setValue(AGE, 0), 4);
+               var2.setBlock(var3, (BlockState)var1.setValue(AGE, 0), 260);
             } else {
-               var2.setBlock(var3, (BlockState)var1.setValue(AGE, var6 + 1), 4);
+               var2.setBlock(var3, (BlockState)var1.setValue(AGE, var6 + 1), 260);
             }
          }
       }
@@ -99,6 +98,6 @@ public class SugarCaneBlock extends Block {
 
    static {
       AGE = BlockStateProperties.AGE_15;
-      SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
+      SHAPE = Block.column(12.0, 0.0, 16.0);
    }
 }

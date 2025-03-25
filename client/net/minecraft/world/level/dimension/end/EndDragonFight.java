@@ -33,7 +33,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Unit;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -146,7 +145,7 @@ public class EndDragonFight {
       }
 
       if (!this.dragonEvent.getPlayers().isEmpty()) {
-         this.level.getChunkSource().addRegionTicket(TicketType.DRAGON, new ChunkPos(0, 0), 9, Unit.INSTANCE);
+         this.level.getChunkSource().addTicketWithRadius(TicketType.DRAGON, new ChunkPos(0, 0), 9);
          boolean var1 = this.isArenaLoaded();
          if (this.needsStateScanning && var1) {
             this.scanState();
@@ -174,7 +173,7 @@ public class EndDragonFight {
             }
          }
       } else {
-         this.level.getChunkSource().removeRegionTicket(TicketType.DRAGON, new ChunkPos(0, 0), 9, Unit.INSTANCE);
+         this.level.getChunkSource().removeTicketWithRadius(TicketType.DRAGON, new ChunkPos(0, 0), 9);
       }
 
    }
@@ -398,6 +397,8 @@ public class EndDragonFight {
       if (this.portalLocation == null) {
          for(this.portalLocation = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.origin)).below(); this.level.getBlockState(this.portalLocation).is(Blocks.BEDROCK) && this.portalLocation.getY() > 63; this.portalLocation = this.portalLocation.below()) {
          }
+
+         this.portalLocation = this.portalLocation.atY(Math.max(this.level.getMinY() + 1, this.portalLocation.getY()));
       }
 
       if (var2.place(FeatureConfiguration.NONE, this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), this.portalLocation)) {
@@ -415,7 +416,7 @@ public class EndDragonFight {
          var1.setDragonFight(this);
          var1.setFightOrigin(this.origin);
          var1.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
-         var1.moveTo((double)this.origin.getX(), (double)(128 + this.origin.getY()), (double)this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
+         var1.snapTo((double)this.origin.getX(), (double)(128 + this.origin.getY()), (double)this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
          this.level.addFreshEntity(var1);
          this.dragonUUID = var1.getUUID();
       }

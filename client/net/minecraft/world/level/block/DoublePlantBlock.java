@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Fluids;
 
-public class DoublePlantBlock extends BushBlock {
+public class DoublePlantBlock extends VegetationBlock {
    public static final MapCodec<DoublePlantBlock> CODEC = simpleCodec(DoublePlantBlock::new);
    public static final EnumProperty<DoubleBlockHalf> HALF;
 
@@ -78,7 +78,7 @@ public class DoublePlantBlock extends BushBlock {
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide) {
-         if (var4.isCreative()) {
+         if (var4.preventsBlockDrops()) {
             preventDropFromBottomPart(var1, var2, var3, var4);
          } else {
             dropResources(var3, var1, var2, (BlockEntity)null, var4, var4.getMainHandItem());

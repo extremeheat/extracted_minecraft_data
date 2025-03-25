@@ -26,7 +26,7 @@ public class ChorusFlowerBlock extends Block {
    public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter((var0x) -> var0x.plant), propertiesCodec()).apply(var0, ChorusFlowerBlock::new));
    public static final int DEAD_AGE = 5;
    public static final IntegerProperty AGE;
-   protected static final VoxelShape BLOCK_SUPPORT_SHAPE;
+   private static final VoxelShape SHAPE_BLOCK_SUPPORT;
    private final Block plant;
 
    public MapCodec<ChorusFlowerBlock> codec() {
@@ -51,7 +51,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return BLOCK_SUPPORT_SHAPE;
+      return SHAPE_BLOCK_SUPPORT;
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
@@ -238,6 +238,6 @@ public class ChorusFlowerBlock extends Block {
 
    static {
       AGE = BlockStateProperties.AGE_5;
-      BLOCK_SUPPORT_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
+      SHAPE_BLOCK_SUPPORT = Block.column(14.0, 0.0, 15.0);
    }
 }

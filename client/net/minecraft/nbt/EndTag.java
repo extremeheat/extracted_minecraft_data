@@ -4,7 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class EndTag implements Tag {
+public final class EndTag implements Tag {
    private static final int SELF_SIZE_IN_BYTES = 8;
    public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
       public EndTag load(DataInput var1, NbtAccounter var2) {
@@ -29,10 +29,6 @@ public class EndTag implements Tag {
 
       public String getPrettyName() {
          return "TAG_End";
-      }
-
-      public boolean isValue() {
-         return true;
       }
 
       // $FF: synthetic method
@@ -62,7 +58,9 @@ public class EndTag implements Tag {
    }
 
    public String toString() {
-      return this.getAsString();
+      StringTagVisitor var1 = new StringTagVisitor();
+      var1.visitEnd(this);
+      return var1.build();
    }
 
    public EndTag copy() {

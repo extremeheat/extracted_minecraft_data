@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.texture.atlas;
 
+import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -13,7 +14,7 @@ public interface SpriteSource {
 
    void run(ResourceManager var1, Output var2);
 
-   SpriteSourceType type();
+   MapCodec<? extends SpriteSource> codec();
 
    public interface Output {
       default void add(ResourceLocation var1, Resource var2) {

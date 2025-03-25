@@ -3,14 +3,18 @@ package net.minecraft.core;
 import com.google.common.base.MoreObjects;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
 import java.util.stream.IntStream;
 import javax.annotation.concurrent.Immutable;
 import net.minecraft.Util;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 
 @Immutable
 public class Vec3i implements Comparable<Vec3i> {
    public static final Codec<Vec3i> CODEC;
+   public static final StreamCodec<ByteBuf, Vec3i> STREAM_CODEC;
    public static final Vec3i ZERO;
    private int x;
    private int y;
@@ -238,6 +242,7 @@ public class Vec3i implements Comparable<Vec3i> {
 
    static {
       CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 3).map((var0x) -> new Vec3i(var0x[0], var0x[1], var0x[2])), (var0) -> IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()}));
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Vec3i::getX, ByteBufCodecs.VAR_INT, Vec3i::getY, ByteBufCodecs.VAR_INT, Vec3i::getZ, Vec3i::new);
       ZERO = new Vec3i(0, 0, 0);
    }
 }

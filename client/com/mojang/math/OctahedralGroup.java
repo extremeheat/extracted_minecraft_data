@@ -1,6 +1,5 @@
 package com.mojang.math;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
@@ -13,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.util.StringRepresentable;
 import org.joml.Matrix3f;
+import org.joml.Matrix3fc;
 
 public enum OctahedralGroup implements StringRepresentable {
    IDENTITY("identity", SymmetricGroup3.P123, false, false, false),
@@ -64,7 +64,8 @@ public enum OctahedralGroup implements StringRepresentable {
    ROT_90_REF_Z_NEG("rot_90_ref_z_neg", SymmetricGroup3.P213, false, true, true),
    ROT_90_REF_Z_POS("rot_90_ref_z_pos", SymmetricGroup3.P213, true, false, true);
 
-   private final Matrix3f transformation;
+   private static final Direction.Axis[] AXES = Direction.Axis.values();
+   private final Matrix3fc transformation;
    private final String name;
    @Nullable
    private Map<Direction, Direction> rotatedDirections;
@@ -72,7 +73,7 @@ public enum OctahedralGroup implements StringRepresentable {
    private final boolean invertY;
    private final boolean invertZ;
    private final SymmetricGroup3 permutation;
-   private static final OctahedralGroup[][] cayleyTable = (OctahedralGroup[][])Util.make(new OctahedralGroup[values().length][values().length], (var0) -> {
+   private static final OctahedralGroup[][] CAYLEY_TABLE = (OctahedralGroup[][])Util.make(new OctahedralGroup[values().length][values().length], (var0) -> {
       Map var1 = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0x) -> Pair.of(var0x.permutation, var0x.packInversions()), (var0x) -> var0x));
 
       for(OctahedralGroup var5 : values()) {
@@ -91,7 +92,25 @@ public enum OctahedralGroup implements StringRepresentable {
       }
 
    });
-   private static final OctahedralGroup[] inverseTable = (OctahedralGroup[])Arrays.stream(values()).map((var0) -> (OctahedralGroup)Arrays.stream(values()).filter((var1) -> var0.compose(var1) == IDENTITY).findAny().get()).toArray((var0) -> new OctahedralGroup[var0]);
+   private static final OctahedralGroup[] INVERSE_TABLE = (OctahedralGroup[])Arrays.stream(values()).map((var0) -> (OctahedralGroup)Arrays.stream(values()).filter((var1) -> var0.compose(var1) == IDENTITY).findAny().get()).toArray((var0) -> new OctahedralGroup[var0]);
+   private static final OctahedralGroup[][] XY_TABLE = (OctahedralGroup[][])Util.make(new OctahedralGroup[Quadrant.values().length][Quadrant.values().length], (var0) -> {
+      for(Quadrant var4 : Quadrant.values()) {
+         for(Quadrant var8 : Quadrant.values()) {
+            OctahedralGroup var9 = IDENTITY;
+
+            for(int var10 = 0; var10 < var8.shift; ++var10) {
+               var9 = var9.compose(ROT_90_Y_NEG);
+            }
+
+            for(int var11 = 0; var11 < var4.shift; ++var11) {
+               var9 = var9.compose(ROT_90_X_NEG);
+            }
+
+            var0[var4.ordinal()][var8.ordinal()] = var9;
+         }
+      }
+
+   });
 
    private OctahedralGroup(final String var3, final SymmetricGroup3 var4, final boolean var5, final boolean var6, final boolean var7) {
       this.name = var3;
@@ -99,8 +118,9 @@ public enum OctahedralGroup implements StringRepresentable {
       this.invertY = var6;
       this.invertZ = var7;
       this.permutation = var4;
-      this.transformation = (new Matrix3f()).scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
-      this.transformation.mul(var4.transformation());
+      Matrix3f var8 = (new Matrix3f()).scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
+      var8.mul(var4.transformation());
+      this.transformation = var8;
    }
 
    private BooleanList packInversions() {
@@ -108,15 +128,15 @@ public enum OctahedralGroup implements StringRepresentable {
    }
 
    public OctahedralGroup compose(OctahedralGroup var1) {
-      return cayleyTable[this.ordinal()][var1.ordinal()];
+      return CAYLEY_TABLE[this.ordinal()][var1.ordinal()];
    }
 
    public OctahedralGroup inverse() {
-      return inverseTable[this.ordinal()];
+      return INVERSE_TABLE[this.ordinal()];
    }
 
-   public Matrix3f transformation() {
-      return new Matrix3f(this.transformation);
+   public Matrix3fc transformation() {
+      return this.transformation;
    }
 
    public String toString() {
@@ -129,36 +149,40 @@ public enum OctahedralGroup implements StringRepresentable {
 
    public Direction rotate(Direction var1) {
       if (this.rotatedDirections == null) {
-         this.rotatedDirections = Maps.newEnumMap(Direction.class);
-         Direction.Axis[] var2 = Direction.Axis.values();
-
-         for(Direction var6 : Direction.values()) {
-            Direction.Axis var7 = var6.getAxis();
-            Direction.AxisDirection var8 = var6.getAxisDirection();
-            Direction.Axis var9 = var2[this.permutation.permutation(var7.ordinal())];
-            Direction.AxisDirection var10 = this.inverts(var9) ? var8.opposite() : var8;
-            Direction var11 = Direction.fromAxisAndDirection(var9, var10);
-            this.rotatedDirections.put(var6, var11);
-         }
+         this.rotatedDirections = Util.<Direction, Direction>makeEnumMap(Direction.class, (var1x) -> {
+            Direction.Axis var2 = var1x.getAxis();
+            Direction.AxisDirection var3 = var1x.getAxisDirection();
+            Direction.Axis var4 = this.permute(var2);
+            Direction.AxisDirection var5 = this.inverts(var4) ? var3.opposite() : var3;
+            return Direction.fromAxisAndDirection(var4, var5);
+         });
       }
 
       return (Direction)this.rotatedDirections.get(var1);
    }
 
    public boolean inverts(Direction.Axis var1) {
+      boolean var10000;
       switch (var1) {
-         case X:
-            return this.invertX;
-         case Y:
-            return this.invertY;
-         case Z:
-         default:
-            return this.invertZ;
+         case X -> var10000 = this.invertX;
+         case Y -> var10000 = this.invertY;
+         case Z -> var10000 = this.invertZ;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
+   }
+
+   public Direction.Axis permute(Direction.Axis var1) {
+      return AXES[this.permutation.permutation(var1.ordinal())];
    }
 
    public FrontAndTop rotate(FrontAndTop var1) {
       return FrontAndTop.fromFrontAndTop(this.rotate(var1.front()), this.rotate(var1.top()));
+   }
+
+   public static OctahedralGroup fromXYAngles(Quadrant var0, Quadrant var1) {
+      return XY_TABLE[var0.ordinal()][var1.ordinal()];
    }
 
    // $FF: synthetic method

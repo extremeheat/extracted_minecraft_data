@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 public interface BlockEntityRenderer<T extends BlockEntity> {
-   void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6);
+   void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7);
 
    default boolean shouldRenderOffScreen(T var1) {
       return false;

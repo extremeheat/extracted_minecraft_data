@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.item.properties.select;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -8,6 +9,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public record DisplayContext() implements SelectItemModelProperty<ItemDisplayContext> {
+   public static final Codec<ItemDisplayContext> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<DisplayContext, ItemDisplayContext> TYPE;
 
    public DisplayContext() {
@@ -22,12 +24,17 @@ public record DisplayContext() implements SelectItemModelProperty<ItemDisplayCon
       return TYPE;
    }
 
+   public Codec<ItemDisplayContext> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
       return this.get(var1, var2, var3, var4, var5);
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<DisplayContext, ItemDisplayContext>create(MapCodec.unit(new DisplayContext()), ItemDisplayContext.CODEC);
+      VALUE_CODEC = ItemDisplayContext.CODEC;
+      TYPE = SelectItemModelProperty.Type.<DisplayContext, ItemDisplayContext>create(MapCodec.unit(new DisplayContext()), VALUE_CODEC);
    }
 }

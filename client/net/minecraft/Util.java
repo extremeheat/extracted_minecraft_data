@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
@@ -473,6 +474,10 @@ public class Util {
       }
    }
 
+   public static int growByHalf(int var0, int var1) {
+      return (int)Math.max(Math.min((long)var0 + (long)(var0 >> 1), 2147483639L), (long)var1);
+   }
+
    public static OS getPlatform() {
       String var0 = System.getProperty("os.name").toLowerCase(Locale.ROOT);
       if (var0.contains("win")) {
@@ -535,7 +540,21 @@ public class Util {
    }
 
    public static <T> T findPreviousInIterable(Iterable<T> var0, @Nullable T var1) {
-      // $FF: Couldn't be decompiled
+      Iterator var2 = var0.iterator();
+
+      Object var3;
+      Object var4;
+      for(var3 = null; var2.hasNext(); var3 = var4) {
+         var4 = var2.next();
+         if (var4 == var1) {
+            if (var3 == null) {
+               var3 = var2.hasNext() ? Iterators.getLast(var2) : var1;
+            }
+            break;
+         }
+      }
+
+      return (T)var3;
    }
 
    public static <T> T make(Supplier<T> var0) {
@@ -547,7 +566,7 @@ public class Util {
       return var0;
    }
 
-   public static <K extends Enum<K>, V> EnumMap<K, V> makeEnumMap(Class<K> var0, Function<K, V> var1) {
+   public static <K extends Enum<K>, V> Map<K, V> makeEnumMap(Class<K> var0, Function<K, V> var1) {
       EnumMap var2 = new EnumMap(var0);
 
       for(Enum var6 : (Enum[])var0.getEnumConstants()) {
@@ -555,6 +574,14 @@ public class Util {
       }
 
       return var2;
+   }
+
+   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> var0, Function<? super V1, V2> var1) {
+      return (Map)var0.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var1x) -> var1.apply(var1x.getValue())));
+   }
+
+   public static <K, V1, V2> Map<K, V2> mapValuesLazy(Map<K, V1> var0, com.google.common.base.Function<V1, V2> var1) {
+      return Maps.transformValues(var0, var1);
    }
 
    public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {

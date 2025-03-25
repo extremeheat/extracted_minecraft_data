@@ -3,6 +3,7 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -33,9 +34,9 @@ public record OminousBottleAmplifier(int value) implements ConsumableListener, T
       var2.addEffect(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
-      List var4 = List.of(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
-      PotionContents.addPotionTooltip(var4, var2, 1.0F, var1.tickRate());
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      List var5 = List.of(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
+      PotionContents.addPotionTooltip(var5, var2, 1.0F, var1.tickRate());
    }
 
    static {

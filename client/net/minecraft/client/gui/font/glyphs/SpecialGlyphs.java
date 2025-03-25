@@ -3,6 +3,8 @@ package net.minecraft.client.gui.font.glyphs;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -54,8 +56,8 @@ public enum SpecialGlyphs implements GlyphInfo {
             return 1.0F;
          }
 
-         public void upload(int var1, int var2) {
-            SpecialGlyphs.this.image.upload(0, var1, var2, false);
+         public void upload(int var1, int var2, GpuTexture var3) {
+            RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, SpecialGlyphs.this.image, 0, var1, var2, SpecialGlyphs.this.image.getWidth(), SpecialGlyphs.this.image.getHeight(), 0, 0);
          }
 
          public boolean isColored() {

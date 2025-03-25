@@ -64,7 +64,14 @@ public class MeleeAttackGoal extends Goal {
       } else if (!this.mob.isWithinRestriction(var1.blockPosition())) {
          return false;
       } else {
-         return !(var1 instanceof Player) || !var1.isSpectator() && !((Player)var1).isCreative();
+         if (var1 instanceof Player) {
+            Player var2 = (Player)var1;
+            if (var2.isSpectator() || var2.isCreative()) {
+               return false;
+            }
+         }
+
+         return true;
       }
    }
 

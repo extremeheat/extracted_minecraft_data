@@ -38,6 +38,10 @@ public enum ItemDisplayContext implements StringRepresentable {
       return this == FIRST_PERSON_LEFT_HAND || this == FIRST_PERSON_RIGHT_HAND;
    }
 
+   public boolean leftHand() {
+      return this == FIRST_PERSON_LEFT_HAND || this == THIRD_PERSON_LEFT_HAND;
+   }
+
    // $FF: synthetic method
    private static ItemDisplayContext[] $values() {
       return new ItemDisplayContext[]{NONE, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, HEAD, GUI, GROUND, FIXED};

@@ -11,8 +11,11 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
@@ -24,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 public abstract class BaseCommandBlock implements CommandSource {
    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
    private static final Component DEFAULT_NAME = Component.literal("@");
+   private static final int NO_LAST_EXECUTION = -1;
    private long lastExecution = -1L;
    private boolean updateLastExecution = true;
    private int successCount;
@@ -53,17 +57,15 @@ public abstract class BaseCommandBlock implements CommandSource {
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putString("Command", this.command);
       var1.putInt("SuccessCount", this.successCount);
-      if (this.customName != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.customName, var2));
-      }
-
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var3, this.customName);
       var1.putBoolean("TrackOutput", this.trackOutput);
-      if (this.lastOutput != null && this.trackOutput) {
-         var1.putString("LastOutput", Component.Serializer.toJson(this.lastOutput, var2));
+      if (this.trackOutput) {
+         var1.storeNullable("LastOutput", ComponentSerialization.CODEC, var3, this.lastOutput);
       }
 
       var1.putBoolean("UpdateLastExecution", this.updateLastExecution);
-      if (this.updateLastExecution && this.lastExecution > 0L) {
+      if (this.updateLastExecution && this.lastExecution != -1L) {
          var1.putLong("LastExecution", this.lastExecution);
       }
 
@@ -71,34 +73,19 @@ public abstract class BaseCommandBlock implements CommandSource {
    }
 
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      this.command = var1.getString("Command");
-      this.successCount = var1.getInt("SuccessCount");
-      if (var1.contains("CustomName", 8)) {
-         this.setCustomName(BlockEntity.parseCustomNameSafe(var1.getString("CustomName"), var2));
-      } else {
-         this.setCustomName((Component)null);
-      }
-
-      if (var1.contains("TrackOutput", 1)) {
-         this.trackOutput = var1.getBoolean("TrackOutput");
-      }
-
-      if (var1.contains("LastOutput", 8) && this.trackOutput) {
-         try {
-            this.lastOutput = Component.Serializer.fromJson(var1.getString("LastOutput"), var2);
-         } catch (Throwable var4) {
-            this.lastOutput = Component.literal(var4.getMessage());
-         }
+      this.command = var1.getStringOr("Command", "");
+      this.successCount = var1.getIntOr("SuccessCount", 0);
+      this.setCustomName(BlockEntity.parseCustomNameSafe(var1.get("CustomName"), var2));
+      this.trackOutput = var1.getBooleanOr("TrackOutput", true);
+      if (this.trackOutput) {
+         this.lastOutput = BlockEntity.parseCustomNameSafe(var1.get("LastOutput"), var2);
       } else {
          this.lastOutput = null;
       }
 
-      if (var1.contains("UpdateLastExecution")) {
-         this.updateLastExecution = var1.getBoolean("UpdateLastExecution");
-      }
-
-      if (this.updateLastExecution && var1.contains("LastExecution")) {
-         this.lastExecution = var1.getLong("LastExecution");
+      this.updateLastExecution = var1.getBooleanOr("UpdateLastExecution", true);
+      if (this.updateLastExecution) {
+         this.lastExecution = var1.getLongOr("LastExecution", -1L);
       } else {
          this.lastExecution = -1L;
       }

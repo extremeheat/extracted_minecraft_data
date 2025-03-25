@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,46 +47,50 @@ public class SectionCompiler {
       ModelBlockRenderer.enableCaching();
       Reference2ObjectArrayMap var10 = new Reference2ObjectArrayMap(RenderType.chunkBufferLayers().size());
       RandomSource var11 = RandomSource.create();
+      ObjectArrayList var12 = new ObjectArrayList();
 
-      for(BlockPos var13 : BlockPos.betweenClosed(var6, var7)) {
-         BlockState var14 = var2.getBlockState(var13);
-         if (var14.isSolidRender()) {
-            var8.setOpaque(var13);
+      for(BlockPos var14 : BlockPos.betweenClosed(var6, var7)) {
+         BlockState var15 = var2.getBlockState(var14);
+         if (var15.isSolidRender()) {
+            var8.setOpaque(var14);
          }
 
-         if (var14.hasBlockEntity()) {
-            BlockEntity var15 = var2.getBlockEntity(var13);
-            if (var15 != null) {
-               this.handleBlockEntity(var5, var15);
+         if (var15.hasBlockEntity()) {
+            BlockEntity var16 = var2.getBlockEntity(var14);
+            if (var16 != null) {
+               this.handleBlockEntity(var5, var16);
             }
          }
 
-         FluidState var21 = var14.getFluidState();
-         if (!var21.isEmpty()) {
-            RenderType var16 = ItemBlockRenderTypes.getRenderLayer(var21);
-            BufferBuilder var17 = this.getOrBeginLayer(var10, var4, var16);
-            this.blockRenderer.renderLiquid(var13, var2, var17, var14, var21);
+         FluidState var22 = var15.getFluidState();
+         if (!var22.isEmpty()) {
+            RenderType var17 = ItemBlockRenderTypes.getRenderLayer(var22);
+            BufferBuilder var18 = this.getOrBeginLayer(var10, var4, var17);
+            this.blockRenderer.renderLiquid(var14, var2, var18, var15, var22);
          }
 
-         if (var14.getRenderShape() == RenderShape.MODEL) {
-            RenderType var23 = ItemBlockRenderTypes.getChunkRenderType(var14);
-            BufferBuilder var24 = this.getOrBeginLayer(var10, var4, var23);
+         if (var15.getRenderShape() == RenderShape.MODEL) {
+            RenderType var24 = ItemBlockRenderTypes.getChunkRenderType(var15);
+            BufferBuilder var25 = this.getOrBeginLayer(var10, var4, var24);
+            var11.setSeed(var15.getSeed(var14));
+            this.blockRenderer.getBlockModel(var15).collectParts(var11, var12);
             var9.pushPose();
-            var9.translate((float)SectionPos.sectionRelative(var13.getX()), (float)SectionPos.sectionRelative(var13.getY()), (float)SectionPos.sectionRelative(var13.getZ()));
-            this.blockRenderer.renderBatched(var14, var13, var2, var9, var24, true, var11);
+            var9.translate((float)SectionPos.sectionRelative(var14.getX()), (float)SectionPos.sectionRelative(var14.getY()), (float)SectionPos.sectionRelative(var14.getZ()));
+            this.blockRenderer.renderBatched(var15, var14, var2, var9, var25, true, var12);
             var9.popPose();
+            var12.clear();
          }
       }
 
-      for(Map.Entry var19 : var10.entrySet()) {
-         RenderType var20 = (RenderType)var19.getKey();
-         MeshData var22 = ((BufferBuilder)var19.getValue()).build();
-         if (var22 != null) {
-            if (var20 == RenderType.translucent()) {
-               var5.transparencyState = var22.sortQuads(var4.buffer(RenderType.translucent()), var3);
+      for(Map.Entry var20 : var10.entrySet()) {
+         RenderType var21 = (RenderType)var20.getKey();
+         MeshData var23 = ((BufferBuilder)var20.getValue()).build();
+         if (var23 != null) {
+            if (var21 == RenderType.translucent()) {
+               var5.transparencyState = var23.sortQuads(var4.buffer(RenderType.translucent()), var3);
             }
 
-            var5.renderedLayers.put(var20, var22);
+            var5.renderedLayers.put(var21, var23);
          }
       }
 

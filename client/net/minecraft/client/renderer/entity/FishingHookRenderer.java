@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHookRenderState> {
    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fishing_hook.png");
@@ -35,7 +36,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       var2.pushPose();
       var2.pushPose();
       var2.scale(0.5F, 0.5F, 0.5F);
-      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
       PoseStack.Pose var5 = var2.last();
       VertexConsumer var6 = var3.getBuffer(RENDER_TYPE);
       vertex(var6, var5, var4, 0.0F, 0, 0, 1);

@@ -1,9 +1,12 @@
 package net.minecraft.world.level.block;
 
+import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +33,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -39,18 +43,12 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    public static final BooleanProperty OPEN;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty IN_WALL;
-   protected static final VoxelShape Z_SHAPE;
-   protected static final VoxelShape X_SHAPE;
-   protected static final VoxelShape Z_SHAPE_LOW;
-   protected static final VoxelShape X_SHAPE_LOW;
-   protected static final VoxelShape Z_COLLISION_SHAPE;
-   protected static final VoxelShape X_COLLISION_SHAPE;
-   protected static final VoxelShape Z_SUPPORT_SHAPE;
-   protected static final VoxelShape X_SUPPORT_SHAPE;
-   protected static final VoxelShape Z_OCCLUSION_SHAPE;
-   protected static final VoxelShape X_OCCLUSION_SHAPE;
-   protected static final VoxelShape Z_OCCLUSION_SHAPE_LOW;
-   protected static final VoxelShape X_OCCLUSION_SHAPE_LOW;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES_WALL;
+   private static final Map<Direction.Axis, VoxelShape> SHAPE_COLLISION;
+   private static final Map<Direction.Axis, VoxelShape> SHAPE_SUPPORT;
+   private static final Map<Direction.Axis, VoxelShape> SHAPE_OCCLUSION;
+   private static final Map<Direction.Axis, VoxelShape> SHAPE_OCCLUSION_WALL;
    private final WoodType type;
 
    public MapCodec<FenceGateBlock> codec() {
@@ -64,11 +62,8 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if ((Boolean)var1.getValue(IN_WALL)) {
-         return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.X ? X_SHAPE_LOW : Z_SHAPE_LOW;
-      } else {
-         return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.X ? X_SHAPE : Z_SHAPE;
-      }
+      Direction.Axis var5 = ((Direction)var1.getValue(FACING)).getAxis();
+      return (VoxelShape)((Boolean)var1.getValue(IN_WALL) ? SHAPES_WALL : SHAPES).get(var5);
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -82,27 +77,18 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      if ((Boolean)var1.getValue(OPEN)) {
-         return Shapes.empty();
-      } else {
-         return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.Z ? Z_SUPPORT_SHAPE : X_SUPPORT_SHAPE;
-      }
+      Direction.Axis var4 = ((Direction)var1.getValue(FACING)).getAxis();
+      return (Boolean)var1.getValue(OPEN) ? Shapes.empty() : (VoxelShape)SHAPE_SUPPORT.get(var4);
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if ((Boolean)var1.getValue(OPEN)) {
-         return Shapes.empty();
-      } else {
-         return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.Z ? Z_COLLISION_SHAPE : X_COLLISION_SHAPE;
-      }
+      Direction.Axis var5 = ((Direction)var1.getValue(FACING)).getAxis();
+      return (Boolean)var1.getValue(OPEN) ? Shapes.empty() : (VoxelShape)SHAPE_COLLISION.get(var5);
    }
 
    protected VoxelShape getOcclusionShape(BlockState var1) {
-      if ((Boolean)var1.getValue(IN_WALL)) {
-         return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.X ? X_OCCLUSION_SHAPE_LOW : Z_OCCLUSION_SHAPE_LOW;
-      } else {
-         return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.X ? X_OCCLUSION_SHAPE : Z_OCCLUSION_SHAPE;
-      }
+      Direction.Axis var2 = ((Direction)var1.getValue(FACING)).getAxis();
+      return (VoxelShape)((Boolean)var1.getValue(IN_WALL) ? SHAPE_OCCLUSION_WALL : SHAPE_OCCLUSION).get(var2);
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
@@ -151,7 +137,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       }
 
       boolean var8 = (Boolean)var1.getValue(OPEN);
-      var2.playSound(var4, var3, var8 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+      var2.playSound(var4, (BlockPos)var3, var8 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
       var2.gameEvent(var4, var8 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
       return InteractionResult.SUCCESS;
    }
@@ -160,7 +146,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       if (var4.canTriggerBlocks() && !(Boolean)var1.getValue(POWERED)) {
          boolean var6 = (Boolean)var1.getValue(OPEN);
          var2.setBlockAndUpdate(var3, (BlockState)var1.setValue(OPEN, !var6));
-         var2.playSound((Player)null, var3, var6 ? this.type.fenceGateClose() : this.type.fenceGateOpen(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+         var2.playSound((Entity)null, var3, var6 ? this.type.fenceGateClose() : this.type.fenceGateOpen(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
          var2.gameEvent(var6 ? GameEvent.BLOCK_CLOSE : GameEvent.BLOCK_OPEN, var3, GameEvent.Context.of(var1));
       }
 
@@ -173,7 +159,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
          if ((Boolean)var1.getValue(POWERED) != var7) {
             var2.setBlock(var3, (BlockState)((BlockState)var1.setValue(POWERED, var7)).setValue(OPEN, var7), 2);
             if ((Boolean)var1.getValue(OPEN) != var7) {
-               var2.playSound((Player)null, (BlockPos)var3, var7 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+               var2.playSound((Entity)null, (BlockPos)var3, var7 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
                var2.gameEvent((Entity)null, var7 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
             }
          }
@@ -193,17 +179,11 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       OPEN = BlockStateProperties.OPEN;
       POWERED = BlockStateProperties.POWERED;
       IN_WALL = BlockStateProperties.IN_WALL;
-      Z_SHAPE = Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
-      X_SHAPE = Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
-      Z_SHAPE_LOW = Block.box(0.0, 0.0, 6.0, 16.0, 13.0, 10.0);
-      X_SHAPE_LOW = Block.box(6.0, 0.0, 0.0, 10.0, 13.0, 16.0);
-      Z_COLLISION_SHAPE = Block.box(0.0, 0.0, 6.0, 16.0, 24.0, 10.0);
-      X_COLLISION_SHAPE = Block.box(6.0, 0.0, 0.0, 10.0, 24.0, 16.0);
-      Z_SUPPORT_SHAPE = Block.box(0.0, 5.0, 6.0, 16.0, 24.0, 10.0);
-      X_SUPPORT_SHAPE = Block.box(6.0, 5.0, 0.0, 10.0, 24.0, 16.0);
-      Z_OCCLUSION_SHAPE = Shapes.or(Block.box(0.0, 5.0, 7.0, 2.0, 16.0, 9.0), Block.box(14.0, 5.0, 7.0, 16.0, 16.0, 9.0));
-      X_OCCLUSION_SHAPE = Shapes.or(Block.box(7.0, 5.0, 0.0, 9.0, 16.0, 2.0), Block.box(7.0, 5.0, 14.0, 9.0, 16.0, 16.0));
-      Z_OCCLUSION_SHAPE_LOW = Shapes.or(Block.box(0.0, 2.0, 7.0, 2.0, 13.0, 9.0), Block.box(14.0, 2.0, 7.0, 16.0, 13.0, 9.0));
-      X_OCCLUSION_SHAPE_LOW = Shapes.or(Block.box(7.0, 2.0, 0.0, 9.0, 13.0, 2.0), Block.box(7.0, 2.0, 14.0, 9.0, 13.0, 16.0));
+      SHAPES = Shapes.rotateHorizontalAxis(Block.cube(16.0, 16.0, 4.0));
+      SHAPES_WALL = Maps.newEnumMap(Util.mapValues(SHAPES, (var0) -> Shapes.join(var0, Block.column(16.0, 13.0, 16.0), BooleanOp.ONLY_FIRST)));
+      SHAPE_COLLISION = Shapes.rotateHorizontalAxis(Block.column(16.0, 4.0, 0.0, 24.0));
+      SHAPE_SUPPORT = Shapes.rotateHorizontalAxis(Block.column(16.0, 4.0, 5.0, 24.0));
+      SHAPE_OCCLUSION = Shapes.rotateHorizontalAxis(Shapes.or(Block.box(0.0, 5.0, 7.0, 2.0, 16.0, 9.0), Block.box(14.0, 5.0, 7.0, 16.0, 16.0, 9.0)));
+      SHAPE_OCCLUSION_WALL = Maps.newEnumMap(Util.mapValues(SHAPE_OCCLUSION, (var0) -> var0.move(0.0, -0.1875, 0.0).optimize()));
    }
 }

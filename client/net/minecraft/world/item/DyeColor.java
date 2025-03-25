@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
@@ -44,6 +45,9 @@ public enum DyeColor implements StringRepresentable {
    private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap((Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.fireworkColor, (var0) -> var0)));
    public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.<DyeColor>fromEnum(DyeColor::values);
    public static final StreamCodec<ByteBuf, DyeColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DyeColor::getId);
+   /** @deprecated */
+   @Deprecated
+   public static final Codec<DyeColor> LEGACY_ID_CODEC = Codec.BYTE.xmap(DyeColor::byId, (var0) -> (byte)var0.id);
    private final int id;
    private final String name;
    private final MapColor mapColor;

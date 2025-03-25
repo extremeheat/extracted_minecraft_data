@@ -32,7 +32,7 @@ public class PacketEncoder<T extends PacketListener> extends MessageToByteEncode
       } catch (Throwable var9) {
          LOGGER.error("Error sending packet {}", var4, var9);
          if (var2.isSkippable()) {
-            throw new SkipPacketException(var9);
+            throw new SkipPacketEncoderException(var9);
          }
 
          throw var9;

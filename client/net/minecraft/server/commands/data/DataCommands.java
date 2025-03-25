@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
@@ -26,7 +27,9 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.NbtTagArgument;
 import net.minecraft.nbt.CollectionTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.PrimitiveTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -90,11 +93,35 @@ public class DataCommands {
    }
 
    private static String getAsText(Tag var0) throws CommandSyntaxException {
-      if (var0.getType().isValue()) {
-         return var0.getAsString();
-      } else {
-         throw ERROR_EXPECTED_VALUE.create(var0);
+      Objects.requireNonNull(var0);
+      byte var2 = 0;
+      String var10000;
+      //$FF: var2->value
+      //0->net/minecraft/nbt/StringTag
+      //1->net/minecraft/nbt/PrimitiveTag
+      switch (var0.typeSwitch<invokedynamic>(var0, var2)) {
+         case 0:
+            StringTag var3 = (StringTag)var0;
+            StringTag var8 = var3;
+
+            try {
+               var9 = var8.value();
+            } catch (Throwable var6) {
+               throw new MatchException(var6.toString(), var6);
+            }
+
+            String var7 = var9;
+            var10000 = var7;
+            break;
+         case 1:
+            PrimitiveTag var5 = (PrimitiveTag)var0;
+            var10000 = var5.toString();
+            break;
+         default:
+            throw ERROR_EXPECTED_VALUE.create(var0);
       }
+
+      return var10000;
    }
 
    private static List<Tag> stringifyTagList(List<Tag> var0, StringProcessor var1) throws CommandSyntaxException {
@@ -205,21 +232,49 @@ public class DataCommands {
 
    private static int getData(CommandSourceStack var0, DataAccessor var1, NbtPathArgument.NbtPath var2) throws CommandSyntaxException {
       Tag var3 = getSingleTag(var2, var1);
-      int var4;
-      if (var3 instanceof NumericTag) {
-         var4 = Mth.floor(((NumericTag)var3).getAsDouble());
-      } else if (var3 instanceof CollectionTag) {
-         var4 = ((CollectionTag)var3).size();
-      } else if (var3 instanceof CompoundTag) {
-         var4 = ((CompoundTag)var3).size();
-      } else {
-         if (!(var3 instanceof StringTag)) {
-            throw ERROR_GET_NON_EXISTENT.create(var2.toString());
-         }
+      Objects.requireNonNull(var3);
+      byte var6 = 0;
+      int var16;
+      //$FF: var6->value
+      //0->net/minecraft/nbt/NumericTag
+      //1->net/minecraft/nbt/CollectionTag
+      //2->net/minecraft/nbt/CompoundTag
+      //3->net/minecraft/nbt/StringTag
+      //4->net/minecraft/nbt/EndTag
+      switch (var3.typeSwitch<invokedynamic>(var3, var6)) {
+         case 0:
+            NumericTag var7 = (NumericTag)var3;
+            var16 = Mth.floor(var7.doubleValue());
+            break;
+         case 1:
+            CollectionTag var8 = (CollectionTag)var3;
+            var16 = var8.size();
+            break;
+         case 2:
+            CompoundTag var9 = (CompoundTag)var3;
+            var16 = var9.size();
+            break;
+         case 3:
+            StringTag var10 = (StringTag)var3;
+            StringTag var10000 = var10;
 
-         var4 = var3.getAsString().length();
+            try {
+               var15 = var10000.value();
+            } catch (Throwable var13) {
+               throw new MatchException(var13.toString(), var13);
+            }
+
+            String var14 = var15;
+            var16 = var14.length();
+            break;
+         case 4:
+            EndTag var12 = (EndTag)var3;
+            throw ERROR_GET_NON_EXISTENT.create(var2.toString());
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
 
+      int var4 = var16;
       var0.sendSuccess(() -> var1.getPrintSuccess(var3), false);
       return var4;
    }
@@ -229,7 +284,7 @@ public class DataCommands {
       if (!(var5 instanceof NumericTag)) {
          throw ERROR_GET_NOT_NUMBER.create(var2.toString());
       } else {
-         int var6 = Mth.floor(((NumericTag)var5).getAsDouble() * var3);
+         int var6 = Mth.floor(((NumericTag)var5).doubleValue() * var3);
          var0.sendSuccess(() -> var1.getPrintSuccess(var2, var3, var6), false);
          return var6;
       }

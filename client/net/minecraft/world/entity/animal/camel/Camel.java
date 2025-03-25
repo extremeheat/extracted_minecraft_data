@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -17,6 +18,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
@@ -29,6 +31,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -43,7 +46,9 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -62,6 +67,7 @@ public class Camel extends AbstractHorse {
    private static final int STANDUP_DURATION_TICKS = 52;
    private static final int IDLE_MINIMAL_DURATION_TICKS = 80;
    private static final float SITTING_HEIGHT_DIFFERENCE = 1.43F;
+   private static final long DEFAULT_LAST_POSE_CHANGE_TICK = 0L;
    public static final EntityDataAccessor<Boolean> DASH;
    public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK;
    public final AnimationState sitAnimationState = new AnimationState();
@@ -89,7 +95,7 @@ public class Camel extends AbstractHorse {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      long var2 = var1.getLong("LastPoseTick");
+      long var2 = var1.getLongOr("LastPoseTick", 0L);
       if (var2 < 0L) {
          this.setPose(Pose.SITTING);
       }
@@ -111,6 +117,10 @@ public class Camel extends AbstractHorse {
       CamelAi.initMemories(this, var1.getRandom());
       this.resetLastPoseChangeTickToFullStand(var1.getLevel().getGameTime());
       return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
+   public static boolean checkCamelSpawnRules(EntityType<Camel> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      return var1.getBlockState(var3.below()).is(BlockTags.CAMELS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
    protected Brain.Provider<Camel> brainProvider() {
@@ -149,7 +159,7 @@ public class Camel extends AbstractHorse {
       if (this.dashCooldown > 0) {
          --this.dashCooldown;
          if (this.dashCooldown == 0) {
-            this.level().playSound((Player)null, (BlockPos)this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
       }
 
@@ -368,7 +378,7 @@ public class Camel extends AbstractHorse {
             if (!this.isSilent()) {
                SoundEvent var6 = this.getEatingSound();
                if (var6 != null) {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var6, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+                  this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var6, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
                }
             }
 
@@ -538,8 +548,8 @@ public class Camel extends AbstractHorse {
       return this.level().getGameTime() - Math.abs((Long)this.entityData.get(LAST_POSE_CHANGE_TICK));
    }
 
-   public SoundEvent getSaddleSoundEvent() {
-      return SoundEvents.CAMEL_SADDLE;
+   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
+      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.CAMEL_SADDLE : super.getEquipSound(var1, var2, var3));
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {

@@ -62,7 +62,7 @@ public class WitherSkullBlock extends SkullBlock {
                if (var6 != null) {
                   CarvedPumpkinBlock.clearPatternBlocks(var0, var5);
                   BlockPos var7 = var5.getBlock(1, 2, 0).getPos();
-                  var6.moveTo((double)var7.getX() + 0.5, (double)var7.getY() + 0.55, (double)var7.getZ() + 0.5, var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+                  var6.snapTo((double)var7.getX() + 0.5, (double)var7.getY() + 0.55, (double)var7.getZ() + 0.5, var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
                   var6.yBodyRot = var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
                   var6.makeInvulnerable();
 

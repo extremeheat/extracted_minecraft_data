@@ -46,6 +46,7 @@ public class ParticleTypes {
    public static final SimpleParticleType INFESTED = register("infested", false);
    public static final SimpleParticleType CHERRY_LEAVES = register("cherry_leaves", false);
    public static final SimpleParticleType PALE_OAK_LEAVES = register("pale_oak_leaves", false);
+   public static final ParticleType<ColorParticleOption> TINTED_LEAVES = register("tinted_leaves", false, ColorParticleOption::codec, ColorParticleOption::streamCodec);
    public static final SimpleParticleType SCULK_SOUL = register("sculk_soul", false);
    public static final ParticleType<SculkChargeParticleOptions> SCULK_CHARGE = register("sculk_charge", true, (var0) -> SculkChargeParticleOptions.CODEC, (var0) -> SculkChargeParticleOptions.STREAM_CODEC);
    public static final SimpleParticleType SCULK_CHARGE_POP = register("sculk_charge_pop", true);
@@ -123,6 +124,7 @@ public class ParticleTypes {
    public static final SimpleParticleType RAID_OMEN = register("raid_omen", false);
    public static final SimpleParticleType TRIAL_OMEN = register("trial_omen", false);
    public static final ParticleType<BlockParticleOption> BLOCK_CRUMBLE = register("block_crumble", false, BlockParticleOption::codec, BlockParticleOption::streamCodec);
+   public static final SimpleParticleType FIREFLY = register("firefly", false);
    public static final Codec<ParticleOptions> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ParticleOptions> STREAM_CODEC;
 

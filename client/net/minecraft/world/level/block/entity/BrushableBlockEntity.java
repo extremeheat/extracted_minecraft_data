@@ -8,17 +8,17 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -56,7 +56,7 @@ public class BrushableBlockEntity extends BlockEntity {
       this.item = ItemStack.EMPTY;
    }
 
-   public boolean brush(long var1, ServerLevel var3, Player var4, Direction var5, ItemStack var6) {
+   public boolean brush(long var1, ServerLevel var3, LivingEntity var4, Direction var5, ItemStack var6) {
       if (this.hitDirection == null) {
          this.hitDirection = var5;
       }
@@ -85,7 +85,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   private void unpackLootTable(ServerLevel var1, Player var2, ItemStack var3) {
+   private void unpackLootTable(ServerLevel var1, LivingEntity var2, ItemStack var3) {
       if (this.lootTable != null) {
          LootTable var4 = var1.getServer().reloadableRegistries().getLootTable(this.lootTable);
          if (var2 instanceof ServerPlayer) {
@@ -114,7 +114,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   private void brushingCompleted(ServerLevel var1, Player var2, ItemStack var3) {
+   private void brushingCompleted(ServerLevel var1, LivingEntity var2, ItemStack var3) {
       this.dropContent(var1, var2, var3);
       BlockState var4 = this.getBlockState();
       var1.levelEvent(3008, this.getBlockPos(), Block.getId(var4));
@@ -129,7 +129,7 @@ public class BrushableBlockEntity extends BlockEntity {
       var1.setBlock(this.worldPosition, var6.defaultBlockState(), 3);
    }
 
-   private void dropContent(ServerLevel var1, Player var2, ItemStack var3) {
+   private void dropContent(ServerLevel var1, LivingEntity var2, ItemStack var3) {
       this.unpackLootTable(var1, var2, var3);
       if (!this.item.isEmpty()) {
          double var4 = (double)EntityType.ITEM.getWidth();
@@ -172,20 +172,16 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    private boolean tryLoadLootTable(CompoundTag var1) {
-      if (var1.contains("LootTable", 8)) {
-         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("LootTable")));
-         this.lootTableSeed = var1.getLong("LootTableSeed");
-         return true;
-      } else {
-         return false;
-      }
+      this.lootTable = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
+      this.lootTableSeed = var1.getLongOr("LootTableSeed", 0L);
+      return this.lootTable != null;
    }
 
    private boolean trySaveLootTable(CompoundTag var1) {
       if (this.lootTable == null) {
          return false;
       } else {
-         var1.putString("LootTable", this.lootTable.location().toString());
+         var1.store("LootTable", LootTable.KEY_CODEC, this.lootTable);
          if (this.lootTableSeed != 0L) {
             var1.putLong("LootTableSeed", this.lootTableSeed);
          }
@@ -196,12 +192,10 @@ public class BrushableBlockEntity extends BlockEntity {
 
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
       CompoundTag var2 = super.getUpdateTag(var1);
-      if (this.hitDirection != null) {
-         var2.putInt("hit_direction", this.hitDirection.ordinal());
-      }
-
+      var2.storeNullable("hit_direction", Direction.LEGACY_ID_CODEC, this.hitDirection);
       if (!this.item.isEmpty()) {
-         var2.put("item", this.item.save(var1));
+         RegistryOps var3 = var1.createSerializationContext(NbtOps.INSTANCE);
+         var2.store("item", ItemStack.CODEC, var3, this.item);
       }
 
       return var2;
@@ -213,22 +207,21 @@ public class BrushableBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (!this.tryLoadLootTable(var1) && var1.contains("item")) {
-         this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      if (!this.tryLoadLootTable(var1)) {
+         this.item = (ItemStack)var1.read("item", ItemStack.CODEC, var3).orElse(ItemStack.EMPTY);
       } else {
          this.item = ItemStack.EMPTY;
       }
 
-      if (var1.contains("hit_direction")) {
-         this.hitDirection = Direction.values()[var1.getInt("hit_direction")];
-      }
-
+      this.hitDirection = (Direction)var1.read("hit_direction", Direction.LEGACY_ID_CODEC).orElse((Object)null);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
-         var1.put("item", this.item.save(var2));
+         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+         var1.store("item", ItemStack.CODEC, var3, this.item);
       }
 
    }

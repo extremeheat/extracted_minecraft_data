@@ -17,6 +17,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
    private static final int FLAG_IGNORE_ENTITIES = 1;
    private static final int FLAG_SHOW_AIR = 2;
    private static final int FLAG_SHOW_BOUNDING_BOX = 4;
+   private static final int FLAG_STRICT = 8;
    private final BlockPos pos;
    private final StructureBlockEntity.UpdateType updateType;
    private final StructureMode mode;
@@ -27,12 +28,13 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
    private final Rotation rotation;
    private final String data;
    private final boolean ignoreEntities;
+   private final boolean strict;
    private final boolean showAir;
    private final boolean showBoundingBox;
    private final float integrity;
    private final long seed;
 
-   public ServerboundSetStructureBlockPacket(BlockPos var1, StructureBlockEntity.UpdateType var2, StructureMode var3, String var4, BlockPos var5, Vec3i var6, Mirror var7, Rotation var8, String var9, boolean var10, boolean var11, boolean var12, float var13, long var14) {
+   public ServerboundSetStructureBlockPacket(BlockPos var1, StructureBlockEntity.UpdateType var2, StructureMode var3, String var4, BlockPos var5, Vec3i var6, Mirror var7, Rotation var8, String var9, boolean var10, boolean var11, boolean var12, boolean var13, float var14, long var15) {
       super();
       this.pos = var1;
       this.updateType = var2;
@@ -44,10 +46,11 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       this.rotation = var8;
       this.data = var9;
       this.ignoreEntities = var10;
-      this.showAir = var11;
-      this.showBoundingBox = var12;
-      this.integrity = var13;
-      this.seed = var14;
+      this.strict = var11;
+      this.showAir = var12;
+      this.showBoundingBox = var13;
+      this.integrity = var14;
+      this.seed = var15;
    }
 
    private ServerboundSetStructureBlockPacket(FriendlyByteBuf var1) {
@@ -67,6 +70,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       this.seed = var1.readVarLong();
       byte var4 = var1.readByte();
       this.ignoreEntities = (var4 & 1) != 0;
+      this.strict = (var4 & 8) != 0;
       this.showAir = (var4 & 2) != 0;
       this.showBoundingBox = (var4 & 4) != 0;
    }
@@ -98,6 +102,10 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
 
       if (this.showBoundingBox) {
          var2 |= 4;
+      }
+
+      if (this.strict) {
+         var2 |= 8;
       }
 
       var1.writeByte(var2);
@@ -149,6 +157,10 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
 
    public boolean isIgnoreEntities() {
       return this.ignoreEntities;
+   }
+
+   public boolean isStrict() {
+      return this.strict;
    }
 
    public boolean isShowAir() {

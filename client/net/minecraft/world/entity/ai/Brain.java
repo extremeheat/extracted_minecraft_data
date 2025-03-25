@@ -342,6 +342,10 @@ public class Brain<E extends LivingEntity> {
       this.addActivityAndRemoveMemoriesWhenStopped(var1, var2, ImmutableSet.of(), Sets.newHashSet());
    }
 
+   public void addActivityWithConditions(Activity var1, int var2, ImmutableList<? extends BehaviorControl<? super E>> var3, Set<Pair<MemoryModuleType<?>, MemoryStatus>> var4) {
+      this.addActivityWithConditions(var1, this.createPriorityPairs(var2, var3), var4);
+   }
+
    public void addActivityWithConditions(Activity var1, ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> var2, Set<Pair<MemoryModuleType<?>, MemoryStatus>> var3) {
       this.addActivityAndRemoveMemoriesWhenStopped(var1, var2, var3, Sets.newHashSet());
    }

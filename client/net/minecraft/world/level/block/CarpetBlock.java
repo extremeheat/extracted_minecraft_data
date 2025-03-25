@@ -14,7 +14,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CarpetBlock extends Block {
    public static final MapCodec<CarpetBlock> CODEC = simpleCodec(CarpetBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 1.0);
 
    public MapCodec<? extends CarpetBlock> codec() {
       return CODEC;

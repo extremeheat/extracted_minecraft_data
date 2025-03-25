@@ -32,7 +32,7 @@ public record SetBlockProperties(BlockItemStateProperties properties, Vec3i offs
       BlockPos var6 = BlockPos.containing(var5).offset(this.offset);
       BlockState var7 = var4.level().getBlockState(var6);
       BlockState var8 = this.properties.apply(var7);
-      if (!var7.equals(var8) && var4.level().setBlock(var6, var8, 3)) {
+      if (var7 != var8 && var4.level().setBlock(var6, var8, 3)) {
          this.triggerGameEvent.ifPresent((var3x) -> var1.gameEvent(var4, var3x, var6));
       }
 

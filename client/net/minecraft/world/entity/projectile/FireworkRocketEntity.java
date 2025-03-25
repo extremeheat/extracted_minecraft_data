@@ -8,18 +8,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -36,6 +38,9 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    private static final EntityDataAccessor<ItemStack> DATA_ID_FIREWORKS_ITEM;
    private static final EntityDataAccessor<OptionalInt> DATA_ATTACHED_TO_TARGET;
    private static final EntityDataAccessor<Boolean> DATA_SHOT_AT_ANGLE;
+   private static final int DEFAULT_LIFE = 0;
+   private static final int DEFAULT_LIFE_TIME = 0;
+   private static final boolean DEFAULT_SHOT_AT_ANGLE = false;
    private int life;
    private int lifetime;
    @Nullable
@@ -43,10 +48,14 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    public FireworkRocketEntity(EntityType<? extends FireworkRocketEntity> var1, Level var2) {
       super(var1, var2);
+      this.life = 0;
+      this.lifetime = 0;
    }
 
    public FireworkRocketEntity(Level var1, double var2, double var4, double var6, ItemStack var8) {
       super(EntityType.FIREWORK_ROCKET, var1);
+      this.life = 0;
+      this.lifetime = 0;
       this.life = 0;
       this.setPos(var2, var4, var6);
       this.entityData.set(DATA_ID_FIREWORKS_ITEM, var8.copy());
@@ -147,7 +156,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       this.updateRotation();
       if (this.life == 0 && !this.isSilent()) {
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
+         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
       }
 
       ++this.life;
@@ -183,7 +192,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    protected void onHitBlock(BlockHitResult var1) {
       BlockPos var2 = new BlockPos(var1.getBlockPos());
-      this.level().getBlockState(var2).entityInside(this.level(), var2, this);
+      this.level().getBlockState(var2).entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP);
       Level var4 = this.level();
       if (var4 instanceof ServerLevel var3) {
          if (this.hasExplosion()) {
@@ -257,24 +266,18 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       super.addAdditionalSaveData(var1);
       var1.putInt("Life", this.life);
       var1.putInt("LifeTime", this.lifetime);
-      var1.put("FireworksItem", this.getItem().save(this.registryAccess()));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.store("FireworksItem", ItemStack.CODEC, var2, this.getItem());
       var1.putBoolean("ShotAtAngle", (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE));
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.life = var1.getInt("Life");
-      this.lifetime = var1.getInt("LifeTime");
-      if (var1.contains("FireworksItem", 10)) {
-         this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("FireworksItem")).orElseGet(FireworkRocketEntity::getDefaultItem));
-      } else {
-         this.entityData.set(DATA_ID_FIREWORKS_ITEM, getDefaultItem());
-      }
-
-      if (var1.contains("ShotAtAngle")) {
-         this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBoolean("ShotAtAngle"));
-      }
-
+      this.life = var1.getIntOr("Life", 0);
+      this.lifetime = var1.getIntOr("LifeTime", 0);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)var1.read("FireworksItem", ItemStack.CODEC, var2).orElse(getDefaultItem()));
+      this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBooleanOr("ShotAtAngle", false));
    }
 
    private List<FireworkExplosion> getExplosions() {

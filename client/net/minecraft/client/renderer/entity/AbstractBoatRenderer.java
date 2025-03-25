@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 
 public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, BoatRenderState> {
    public AbstractBoatRenderer(EntityRendererProvider.Context var1) {
@@ -22,18 +23,18 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
    public void render(BoatRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
       var2.translate(0.0F, 0.375F, 0.0F);
-      var2.mulPose(Axis.YP.rotationDegrees(180.0F - var1.yRot));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var1.yRot));
       float var5 = var1.hurtTime;
       if (var5 > 0.0F) {
-         var2.mulPose(Axis.XP.rotationDegrees(Mth.sin(var5) * var5 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var5) * var5 * var1.damageTime / 10.0F * (float)var1.hurtDir));
       }
 
-      if (!Mth.equal(var1.bubbleAngle, 0.0F)) {
-         var2.mulPose((new Quaternionf()).setAngleAxis(var1.bubbleAngle * 0.017453292F, 1.0F, 0.0F, 1.0F));
+      if (!var1.isUnderWater && !Mth.equal(var1.bubbleAngle, 0.0F)) {
+         var2.mulPose((Quaternionfc)(new Quaternionf()).setAngleAxis(var1.bubbleAngle * 0.017453292F, 1.0F, 0.0F, 1.0F));
       }
 
       var2.scale(-1.0F, -1.0F, 1.0F);
-      var2.mulPose(Axis.YP.rotationDegrees(90.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
       EntityModel var6 = this.model();
       var6.setupAnim(var1);
       VertexConsumer var7 = var3.getBuffer(this.renderType());

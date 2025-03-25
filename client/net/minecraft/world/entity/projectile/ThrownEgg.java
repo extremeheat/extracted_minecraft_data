@@ -1,5 +1,8 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.Objects;
+import java.util.Optional;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityDimensions;
@@ -7,6 +10,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Chicken;
+import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -58,7 +62,10 @@ public class ThrownEgg extends ThrowableItemProjectile {
                Chicken var4 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);
                if (var4 != null) {
                   var4.setAge(-24000);
-                  var4.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                  var4.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                  Optional var10000 = Optional.ofNullable((EitherHolder)this.getItem().get(DataComponents.CHICKEN_VARIANT)).flatMap((var1x) -> var1x.unwrap(this.registryAccess()));
+                  Objects.requireNonNull(var4);
+                  var10000.ifPresent(var4::setVariant);
                   if (!var4.fudgePositionAfterSizeChange(ZERO_SIZED_DIMENSIONS)) {
                      break;
                   }

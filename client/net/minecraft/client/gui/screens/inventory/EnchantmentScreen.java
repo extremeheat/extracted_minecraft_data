@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import org.joml.Quaternionfc;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
    private static final ResourceLocation[] ENABLED_LEVEL_SPRITES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3")};
@@ -94,7 +95,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
             int var13 = 86 - this.font.width(var12);
             FormattedText var14 = EnchantmentNames.getInstance().getRandomName(this.font, var13);
             int var15 = 6839882;
-            if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.getAbilities().instabuild) {
+            if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.hasInfiniteMaterials()) {
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1, false);
@@ -129,11 +130,11 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       var1.pose().translate((float)var2 + 33.0F, (float)var3 + 31.0F, 100.0F);
       float var7 = 40.0F;
       var1.pose().scale(-40.0F, 40.0F, 40.0F);
-      var1.pose().mulPose(Axis.XP.rotationDegrees(25.0F));
+      var1.pose().mulPose((Quaternionfc)Axis.XP.rotationDegrees(25.0F));
       var1.pose().translate((1.0F - var5) * 0.2F, (1.0F - var5) * 0.1F, (1.0F - var5) * 0.25F);
       float var8 = -(1.0F - var5) * 90.0F - 90.0F;
-      var1.pose().mulPose(Axis.YP.rotationDegrees(var8));
-      var1.pose().mulPose(Axis.XP.rotationDegrees(180.0F));
+      var1.pose().mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8));
+      var1.pose().mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
       float var9 = Mth.clamp(Mth.frac(var6 + 0.25F) * 1.6F - 0.3F, 0.0F, 1.0F);
       float var10 = Mth.clamp(Mth.frac(var6 + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       this.bookModel.setupAnim(0.0F, var9, var10, var5);
@@ -150,7 +151,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       float var5 = this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
       super.render(var1, var2, var3, var5);
       this.renderTooltip(var1, var2, var3);
-      boolean var6 = this.minecraft.player.getAbilities().instabuild;
+      boolean var6 = this.minecraft.player.hasInfiniteMaterials();
       int var7 = ((EnchantmentMenu)this.menu).getGoldCount();
 
       for(int var8 = 0; var8 < 3; ++var8) {

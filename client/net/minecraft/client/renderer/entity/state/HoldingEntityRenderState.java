@@ -13,6 +13,6 @@ public class HoldingEntityRenderState extends LivingEntityRenderState {
    }
 
    public static void extractHoldingEntityRenderState(LivingEntity var0, HoldingEntityRenderState var1, ItemModelResolver var2) {
-      var2.updateForLiving(var1.heldItem, var0.getMainHandItem(), ItemDisplayContext.GROUND, false, var0);
+      var2.updateForLiving(var1.heldItem, var0.getMainHandItem(), ItemDisplayContext.GROUND, var0);
    }
 }

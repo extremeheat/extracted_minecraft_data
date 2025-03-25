@@ -1,6 +1,8 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.util.ArrayList;
@@ -124,9 +126,9 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return var9.size() <= 1 ? null : new AnimatedTexture(List.copyOf(var9), var5, var4.interpolatedFrames());
    }
 
-   void upload(int var1, int var2, int var3, int var4, NativeImage[] var5) {
-      for(int var6 = 0; var6 < this.byMipLevel.length; ++var6) {
-         var5[var6].upload(var6, var1 >> var6, var2 >> var6, var3 >> var6, var4 >> var6, this.width >> var6, this.height >> var6, false);
+   void upload(int var1, int var2, int var3, int var4, NativeImage[] var5, GpuTexture var6) {
+      for(int var7 = 0; var7 < this.byMipLevel.length; ++var7) {
+         RenderSystem.getDevice().createCommandEncoder().writeToTexture(var6, var5[var7], var7, var1 >> var7, var2 >> var7, this.width >> var7, this.height >> var7, var3 >> var7, var4 >> var7);
       }
 
    }
@@ -179,11 +181,11 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return ARGB.alpha(this.originalImage.getPixel(var4, var5)) == 0;
    }
 
-   public void uploadFirstFrame(int var1, int var2) {
+   public void uploadFirstFrame(int var1, int var2, GpuTexture var3) {
       if (this.animatedTexture != null) {
-         this.animatedTexture.uploadFirstFrame(var1, var2);
+         this.animatedTexture.uploadFirstFrame(var1, var2, var3);
       } else {
-         this.upload(var1, var2, 0, 0, this.byMipLevel);
+         this.upload(var1, var2, 0, 0, this.byMipLevel, var3);
       }
 
    }
@@ -203,28 +205,28 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
       }
 
-      void uploadInterpolatedFrame(int var1, int var2, Ticker var3) {
-         AnimatedTexture var4 = var3.animationInfo;
-         List var5 = var4.frames;
-         FrameInfo var6 = (FrameInfo)var5.get(var3.frame);
-         float var7 = (float)var3.subFrame / (float)var6.time;
-         int var8 = var6.index;
-         int var9 = ((FrameInfo)var5.get((var3.frame + 1) % var5.size())).index;
-         if (var8 != var9) {
-            for(int var10 = 0; var10 < this.activeFrame.length; ++var10) {
-               int var11 = SpriteContents.this.width >> var10;
-               int var12 = SpriteContents.this.height >> var10;
+      void uploadInterpolatedFrame(int var1, int var2, Ticker var3, GpuTexture var4) {
+         AnimatedTexture var5 = var3.animationInfo;
+         List var6 = var5.frames;
+         FrameInfo var7 = (FrameInfo)var6.get(var3.frame);
+         float var8 = (float)var3.subFrame / (float)var7.time;
+         int var9 = var7.index;
+         int var10 = ((FrameInfo)var6.get((var3.frame + 1) % var6.size())).index;
+         if (var9 != var10) {
+            for(int var11 = 0; var11 < this.activeFrame.length; ++var11) {
+               int var12 = SpriteContents.this.width >> var11;
+               int var13 = SpriteContents.this.height >> var11;
 
-               for(int var13 = 0; var13 < var12; ++var13) {
-                  for(int var14 = 0; var14 < var11; ++var14) {
-                     int var15 = this.getPixel(var4, var8, var10, var14, var13);
-                     int var16 = this.getPixel(var4, var9, var10, var14, var13);
-                     this.activeFrame[var10].setPixel(var14, var13, ARGB.lerp(var7, var15, var16));
+               for(int var14 = 0; var14 < var13; ++var14) {
+                  for(int var15 = 0; var15 < var12; ++var15) {
+                     int var16 = this.getPixel(var5, var9, var11, var15, var14);
+                     int var17 = this.getPixel(var5, var10, var11, var15, var14);
+                     this.activeFrame[var11].setPixel(var15, var14, ARGB.lerp(var8, var16, var17));
                   }
                }
             }
 
-            SpriteContents.this.upload(var1, var2, 0, 0, this.activeFrame);
+            SpriteContents.this.upload(var1, var2, 0, 0, this.activeFrame, var4);
          }
 
       }
@@ -272,18 +274,18 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          return var1 / this.frameRowSize;
       }
 
-      void uploadFrame(int var1, int var2, int var3) {
-         int var4 = this.getFrameX(var3) * SpriteContents.this.width;
-         int var5 = this.getFrameY(var3) * SpriteContents.this.height;
-         SpriteContents.this.upload(var1, var2, var4, var5, SpriteContents.this.byMipLevel);
+      void uploadFrame(int var1, int var2, int var3, GpuTexture var4) {
+         int var5 = this.getFrameX(var3) * SpriteContents.this.width;
+         int var6 = this.getFrameY(var3) * SpriteContents.this.height;
+         SpriteContents.this.upload(var1, var2, var5, var6, SpriteContents.this.byMipLevel, var4);
       }
 
       public SpriteTicker createTicker() {
          return SpriteContents.this.new Ticker(this, this.interpolateFrames ? SpriteContents.this.new InterpolationData() : null);
       }
 
-      public void uploadFirstFrame(int var1, int var2) {
-         this.uploadFrame(var1, var2, ((FrameInfo)this.frames.get(0)).index);
+      public void uploadFirstFrame(int var1, int var2, GpuTexture var3) {
+         this.uploadFrame(var1, var2, ((FrameInfo)this.frames.get(0)).index, var3);
       }
 
       public IntStream getUniqueFrames() {
@@ -304,19 +306,19 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          this.interpolationData = var3;
       }
 
-      public void tickAndUpload(int var1, int var2) {
+      public void tickAndUpload(int var1, int var2, GpuTexture var3) {
          ++this.subFrame;
-         FrameInfo var3 = (FrameInfo)this.animationInfo.frames.get(this.frame);
-         if (this.subFrame >= var3.time) {
-            int var4 = var3.index;
+         FrameInfo var4 = (FrameInfo)this.animationInfo.frames.get(this.frame);
+         if (this.subFrame >= var4.time) {
+            int var5 = var4.index;
             this.frame = (this.frame + 1) % this.animationInfo.frames.size();
             this.subFrame = 0;
-            int var5 = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
-            if (var4 != var5) {
-               this.animationInfo.uploadFrame(var1, var2, var5);
+            int var6 = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
+            if (var5 != var6) {
+               this.animationInfo.uploadFrame(var1, var2, var6, var3);
             }
          } else if (this.interpolationData != null) {
-            this.interpolationData.uploadInterpolatedFrame(var1, var2, this);
+            this.interpolationData.uploadInterpolatedFrame(var1, var2, this, var3);
          }
 
       }

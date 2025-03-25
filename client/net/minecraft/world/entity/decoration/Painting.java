@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,9 +8,11 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -25,8 +25,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -34,10 +34,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class Painting extends HangingEntity implements VariantHolder<Holder<PaintingVariant>> {
+public class Painting extends HangingEntity {
    private static final EntityDataAccessor<Holder<PaintingVariant>> DATA_PAINTING_VARIANT_ID;
-   public static final MapCodec<Holder<PaintingVariant>> VARIANT_MAP_CODEC;
-   public static final Codec<Holder<PaintingVariant>> VARIANT_CODEC;
    public static final float DEPTH = 0.0625F;
 
    public Painting(EntityType<? extends Painting> var1, Level var2) {
@@ -45,7 +43,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_PAINTING_VARIANT_ID, (Holder)this.registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT).getAny().orElseThrow());
+      var1.define(DATA_PAINTING_VARIANT_ID, VariantUtils.getAny(this.registryAccess(), Registries.PAINTING_VARIANT));
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -55,12 +53,31 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
 
    }
 
-   public void setVariant(Holder<PaintingVariant> var1) {
+   private void setVariant(Holder<PaintingVariant> var1) {
       this.entityData.set(DATA_PAINTING_VARIANT_ID, var1);
    }
 
    public Holder<PaintingVariant> getVariant() {
       return (Holder)this.entityData.get(DATA_PAINTING_VARIANT_ID);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.PAINTING_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.PAINTING_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.PAINTING_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.PAINTING_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public static Optional<Painting> create(Level var0, BlockPos var1, Direction var2) {
@@ -109,16 +126,16 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getVariant()).ifSuccess((var1x) -> var1.merge((CompoundTag)var1x));
-      var1.putByte("facing", (byte)this.direction.get2DDataValue());
+      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.direction);
       super.addAdditionalSaveData(var1);
+      VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      VARIANT_CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).ifSuccess(this::setVariant);
-      this.direction = Direction.from2DDataValue(var1.getByte("facing"));
+      this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       super.readAdditionalSaveData(var1);
       this.setDirection(this.direction);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
    }
 
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
@@ -158,11 +175,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
       this.playSound(SoundEvents.PAINTING_PLACE, 1.0F, 1.0F);
    }
 
-   public void moveTo(double var1, double var3, double var5, float var7, float var8) {
-      this.setPos(var1, var3, var5);
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
+   public void snapTo(double var1, double var3, double var5, float var7, float var8) {
       this.setPos(var1, var3, var5);
    }
 
@@ -183,19 +196,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
       return new ItemStack(Items.PAINTING);
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
-   // $FF: synthetic method
-   public void setVariant(final Object var1) {
-      this.setVariant((Holder)var1);
-   }
-
    static {
       DATA_PAINTING_VARIANT_ID = SynchedEntityData.<Holder<PaintingVariant>>defineId(Painting.class, EntityDataSerializers.PAINTING_VARIANT);
-      VARIANT_MAP_CODEC = PaintingVariant.CODEC.fieldOf("variant");
-      VARIANT_CODEC = VARIANT_MAP_CODEC.codec();
    }
 }

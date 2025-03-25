@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
-import java.util.Objects;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -20,25 +18,23 @@ import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.slf4j.Logger;
 
 public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, TrialSpawner.StateAccessor {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private TrialSpawner trialSpawner;
+   private TrialSpawner trialSpawner = this.createDefaultSpawner();
 
    public TrialSpawnerBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.TRIAL_SPAWNER, var1, var2);
-      PlayerDetector var3 = PlayerDetector.NO_CREATIVE_PLAYERS;
-      PlayerDetector.EntitySelector var4 = PlayerDetector.EntitySelector.SELECT_FROM_LEVEL;
-      this.trialSpawner = new TrialSpawner(this, var3, var4);
+   }
+
+   private TrialSpawner createDefaultSpawner() {
+      PlayerDetector var1 = PlayerDetector.NO_CREATIVE_PLAYERS;
+      PlayerDetector.EntitySelector var2 = PlayerDetector.EntitySelector.SELECT_FROM_LEVEL;
+      return new TrialSpawner(this, var1, var2);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      DataResult var10000 = this.trialSpawner.codec().parse(var2.createSerializationContext(NbtOps.INSTANCE), var1);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.trialSpawner = var1x);
+      this.trialSpawner = (TrialSpawner)var1.read((MapCodec)this.trialSpawner.codec(), var2.createSerializationContext(NbtOps.INSTANCE)).orElseGet(this::createDefaultSpawner);
       if (this.level != null) {
          this.markUpdated();
       }
@@ -47,7 +43,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      this.trialSpawner.codec().encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.trialSpawner).ifSuccess((var1x) -> var1.merge((CompoundTag)var1x)).ifError((var0) -> LOGGER.warn("Failed to encode TrialSpawner {}", var0.message()));
+      var1.store((MapCodec)this.trialSpawner.codec(), var2.createSerializationContext(NbtOps.INSTANCE), this.trialSpawner);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

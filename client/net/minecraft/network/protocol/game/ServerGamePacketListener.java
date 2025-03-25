@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.ping.ServerPingPacketListener;
 
-public interface ServerGamePacketListener extends ServerPingPacketListener, ServerCommonPacketListener {
+public interface ServerGamePacketListener extends ServerCommonPacketListener, ServerPingPacketListener {
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
    }
@@ -84,6 +84,10 @@ public interface ServerGamePacketListener extends ServerPingPacketListener, Serv
    void handleSetBeaconPacket(ServerboundSetBeaconPacket var1);
 
    void handleSetStructureBlock(ServerboundSetStructureBlockPacket var1);
+
+   void handleSetTestBlock(ServerboundSetTestBlockPacket var1);
+
+   void handleTestInstanceBlockAction(ServerboundTestInstanceBlockActionPacket var1);
 
    void handleSelectTrade(ServerboundSelectTradePacket var1);
 

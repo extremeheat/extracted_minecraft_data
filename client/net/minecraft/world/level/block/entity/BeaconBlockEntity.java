@@ -2,9 +2,11 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -12,14 +14,16 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -32,6 +36,7 @@ import net.minecraft.world.Nameable;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -46,7 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
-public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Nameable {
+public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Nameable, BeaconBeamOwner {
    private static final int MAX_LEVELS = 4;
    public static final List<List<Holder<MobEffect>>> BEACON_EFFECTS;
    private static final Set<Holder<MobEffect>> VALID_EFFECTS;
@@ -58,8 +63,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    private static final Component DEFAULT_NAME;
    private static final String TAG_PRIMARY = "primary_effect";
    private static final String TAG_SECONDARY = "secondary_effect";
-   List<BeaconBeamSection> beamSections = Lists.newArrayList();
-   private List<BeaconBeamSection> checkingBeamSections = Lists.newArrayList();
+   List<BeaconBeamOwner.Section> beamSections = new ArrayList();
+   private List<BeaconBeamOwner.Section> checkingBeamSections = new ArrayList();
    int levels;
    private int lastCheckY;
    @Nullable
@@ -129,7 +134,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          var7 = new BlockPos(var4, var3.lastCheckY + 1, var6);
       }
 
-      BeaconBeamSection var8 = var3.checkingBeamSections.isEmpty() ? null : (BeaconBeamSection)var3.checkingBeamSections.get(var3.checkingBeamSections.size() - 1);
+      BeaconBeamOwner.Section var8 = var3.checkingBeamSections.isEmpty() ? null : (BeaconBeamOwner.Section)var3.checkingBeamSections.get(var3.checkingBeamSections.size() - 1);
       int var9 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
 
       for(int var10 = 0; var10 < 10 && var7.getY() <= var9; ++var10) {
@@ -138,13 +143,13 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          if (var12 instanceof BeaconBeamBlock var13) {
             int var14 = var13.getColor().getTextureDiffuseColor();
             if (var3.checkingBeamSections.size() <= 1) {
-               var8 = new BeaconBeamSection(var14);
+               var8 = new BeaconBeamOwner.Section(var14);
                var3.checkingBeamSections.add(var8);
             } else if (var8 != null) {
-               if (var14 == var8.color) {
+               if (var14 == var8.getColor()) {
                   var8.increaseHeight();
                } else {
-                  var8 = new BeaconBeamSection(ARGB.average(var8.color, var14));
+                  var8 = new BeaconBeamOwner.Section(ARGB.average(var8.getColor(), var14));
                   var3.checkingBeamSections.add(var8);
                }
             }
@@ -253,11 +258,11 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    public static void playSound(Level var0, BlockPos var1, SoundEvent var2) {
-      var0.playSound((Player)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var0.playSound((Entity)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
-   public List<BeaconBeamSection> getBeamSections() {
-      return (List<BeaconBeamSection>)(this.levels == 0 ? ImmutableList.of() : this.beamSections);
+   public List<BeaconBeamOwner.Section> getBeamSections() {
+      return (List<BeaconBeamOwner.Section>)(this.levels == 0 ? ImmutableList.of() : this.beamSections);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -277,22 +282,17 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    @Nullable
    private static Holder<MobEffect> loadEffect(CompoundTag var0, String var1) {
-      if (var0.contains(var1, 8)) {
-         ResourceLocation var2 = ResourceLocation.tryParse(var0.getString(var1));
-         return var2 == null ? null : (Holder)BuiltInRegistries.MOB_EFFECT.get(var2).map(BeaconBlockEntity::filterEffect).orElse((Object)null);
-      } else {
-         return null;
-      }
+      Optional var10000 = var0.read(var1, BuiltInRegistries.MOB_EFFECT.holderByNameCodec());
+      Set var10001 = VALID_EFFECTS;
+      Objects.requireNonNull(var10001);
+      return (Holder)var10000.filter(var10001::contains).orElse((Object)null);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.primaryPower = loadEffect(var1, "primary_effect");
       this.secondaryPower = loadEffect(var1, "secondary_effect");
-      if (var1.contains("CustomName", 8)) {
-         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
-      }
-
+      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
       this.lockKey = LockCode.fromTag(var1, var2);
    }
 
@@ -301,10 +301,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       storeEffect(var1, "primary_effect", this.primaryPower);
       storeEffect(var1, "secondary_effect", this.secondaryPower);
       var1.putInt("Levels", this.levels);
-      if (this.name != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
-      }
-
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
       this.lockKey.addToTag(var1, var2);
    }
 
@@ -330,7 +327,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       return this.name != null ? this.name : DEFAULT_NAME;
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);
       this.lockKey = (LockCode)var1.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
@@ -361,31 +358,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    static {
-      BEACON_EFFECTS = List.of(List.of(MobEffects.MOVEMENT_SPEED, MobEffects.DIG_SPEED), List.of(MobEffects.DAMAGE_RESISTANCE, MobEffects.JUMP), List.of(MobEffects.DAMAGE_BOOST), List.of(MobEffects.REGENERATION));
+      BEACON_EFFECTS = List.of(List.of(MobEffects.SPEED, MobEffects.HASTE), List.of(MobEffects.RESISTANCE, MobEffects.JUMP_BOOST), List.of(MobEffects.STRENGTH), List.of(MobEffects.REGENERATION));
       VALID_EFFECTS = (Set)BEACON_EFFECTS.stream().flatMap(Collection::stream).collect(Collectors.toSet());
       DEFAULT_NAME = Component.translatable("container.beacon");
-   }
-
-   public static class BeaconBeamSection {
-      final int color;
-      private int height;
-
-      public BeaconBeamSection(int var1) {
-         super();
-         this.color = var1;
-         this.height = 1;
-      }
-
-      protected void increaseHeight() {
-         ++this.height;
-      }
-
-      public int getColor() {
-         return this.color;
-      }
-
-      public int getHeight() {
-         return this.height;
-      }
    }
 }

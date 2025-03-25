@@ -20,7 +20,7 @@ public class WaterAvoidingRandomStrollGoal extends RandomStrollGoal {
 
    @Nullable
    protected Vec3 getPosition() {
-      if (this.mob.isInWaterOrBubble()) {
+      if (this.mob.isInWater()) {
          Vec3 var1 = LandRandomPos.getPos(this.mob, 15, 7);
          return var1 == null ? super.getPosition() : var1;
       } else {

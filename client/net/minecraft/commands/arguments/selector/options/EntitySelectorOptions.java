@@ -38,7 +38,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -217,11 +216,11 @@ public class EntitySelectorOptions {
                } else {
                   var0.setIncludesEntities(false);
                   var0.addPredicate((var2x) -> {
-                     if (!(var2x instanceof ServerPlayer)) {
-                        return false;
+                     if (var2x instanceof ServerPlayer var3) {
+                        GameType var4x = var3.gameMode();
+                        return var4x == var4 ^ var2;
                      } else {
-                        GameType var3 = ((ServerPlayer)var2x).gameMode.getGameModeForPlayer();
-                        return var2 ? var3 != var4 : var3 == var4;
+                        return false;
                      }
                   });
                   if (var2) {
@@ -237,13 +236,9 @@ public class EntitySelectorOptions {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
             var0.addPredicate((var2x) -> {
-               if (!(var2x instanceof LivingEntity)) {
-                  return false;
-               } else {
-                  PlayerTeam var3 = var2x.getTeam();
-                  String var4 = var3 == null ? "" : ((Team)var3).getName();
-                  return var4.equals(var2) != var1;
-               }
+               PlayerTeam var3 = var2x.getTeam();
+               String var4 = var3 == null ? "" : ((Team)var3).getName();
+               return var4.equals(var2) != var1;
             });
             if (var1) {
                var0.setHasTeamNotEquals(true);
@@ -307,11 +302,11 @@ public class EntitySelectorOptions {
          }, (var0) -> true, Component.translatable("argument.entity.options.tag.description"));
          register("nbt", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
-            CompoundTag var2 = (new TagParser(var0.getReader())).readStruct();
+            CompoundTag var2 = TagParser.parseCompoundAsArgument(var0.getReader());
             var0.addPredicate((var2x) -> {
                CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
                if (var2x instanceof ServerPlayer var4) {
-                  ItemStack var5 = var4.getInventory().getSelected();
+                  ItemStack var5 = var4.getInventory().getSelectedItem();
                   if (!var5.isEmpty()) {
                      var3.put("SelectedItem", var5.save(var4.registryAccess()));
                   }

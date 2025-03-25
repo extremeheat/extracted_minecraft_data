@@ -525,12 +525,12 @@ public class ExecuteCommand {
       return var0.withEntity(var2);
    }
 
-   public static <T extends ExecutionCommandSource<T>> void scheduleFunctionConditionsAndTest(T var0, List<T> var1, Function<T, T> var2, IntPredicate var3, ContextChain<T> var4, @Nullable CompoundTag var5, ExecutionControl<T> var6, CommandGetter<T, Collection<CommandFunction<T>>> var7, ChainModifiers var8) {
+   public static <T extends ExecutionCommandSource<T>> void scheduleFunctionConditionsAndTest(T var0, List<T> var1, Function<T, T> var2, IntPredicate var3, ContextChain<T> var4, @Nullable CompoundTag var5, ExecutionControl<T> var6, InCommandFunction<CommandContext<T>, Collection<CommandFunction<T>>> var7, ChainModifiers var8) {
       ArrayList var9 = new ArrayList(var1.size());
 
       Collection var10;
       try {
-         var10 = (Collection)var7.get(var4.getTopContext().copyFor(var0));
+         var10 = (Collection)var7.apply(var4.getTopContext().copyFor(var0));
       } catch (CommandSyntaxException var18) {
          var0.handleError(var18, var8.isForked(), var6.tracer());
          return;
@@ -586,11 +586,6 @@ public class ExecuteCommand {
       public void apply(CommandSourceStack var1, List<CommandSourceStack> var2, ContextChain<CommandSourceStack> var3, ChainModifiers var4, ExecutionControl<CommandSourceStack> var5) {
          ExecuteCommand.scheduleFunctionConditionsAndTest(var1, var2, FunctionCommand::modifySenderForExecution, this.check, var3, (CompoundTag)null, var5, (var0) -> FunctionArgument.getFunctions(var0, "name"), var4);
       }
-   }
-
-   @FunctionalInterface
-   public interface CommandGetter<T, R> {
-      R get(CommandContext<T> var1) throws CommandSyntaxException;
    }
 
    @FunctionalInterface

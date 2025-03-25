@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -10,15 +11,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -55,6 +54,11 @@ public abstract class AbstractArrow extends Projectile {
    private static final int SHAKE_TIME = 7;
    private static final float WATER_INERTIA = 0.6F;
    private static final float INERTIA = 0.99F;
+   private static final short DEFAULT_LIFE = 0;
+   private static final byte DEFAULT_SHAKE = 0;
+   private static final boolean DEFAULT_IN_GROUND = false;
+   private static final boolean DEFAULT_CRIT = false;
+   private static final byte DEFAULT_PIERCE_LEVEL = 0;
    private static final EntityDataAccessor<Byte> ID_FLAGS;
    private static final EntityDataAccessor<Byte> PIERCE_LEVEL;
    private static final EntityDataAccessor<Boolean> IN_GROUND;
@@ -79,6 +83,8 @@ public abstract class AbstractArrow extends Projectile {
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2) {
       super(var1, var2);
       this.pickup = AbstractArrow.Pickup.DISALLOWED;
+      this.shakeTime = 0;
+      this.life = 0;
       this.baseDamage = 2.0;
       this.soundEvent = this.getDefaultHitGroundSoundEvent();
       this.pickupItemStack = this.getDefaultPickupItem();
@@ -88,7 +94,7 @@ public abstract class AbstractArrow extends Projectile {
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8, ItemStack var9, @Nullable ItemStack var10) {
       this(var1, var8);
       this.pickupItemStack = var9.copy();
-      this.setCustomName((Component)var9.get(DataComponents.CUSTOM_NAME));
+      this.applyComponentsFromItemStack(var9);
       Unit var11 = (Unit)var9.remove(DataComponents.INTANGIBLE_PROJECTILE);
       if (var11 != null) {
          this.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
@@ -139,11 +145,6 @@ public abstract class AbstractArrow extends Projectile {
       this.life = 0;
    }
 
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.setPos(var1, var3, var5);
-      this.setRot(var7, var8);
-   }
-
    public void lerpMotion(double var1, double var3, double var5) {
       super.lerpMotion(var1, var3, var5);
       this.life = 0;
@@ -173,6 +174,7 @@ public abstract class AbstractArrow extends Projectile {
 
             for(AABB var8 : var5.toAabbs()) {
                if (var8.move(var3).contains(var6)) {
+                  this.setDeltaMovement(Vec3.ZERO);
                   this.setInGround(true);
                   break;
                }
@@ -200,6 +202,10 @@ public abstract class AbstractArrow extends Projectile {
          ++this.inGroundTime;
          if (this.isAlive()) {
             this.applyEffectsFromBlocks();
+         }
+
+         if (!this.level().isClientSide) {
+            this.setSharedFlagOnFire(this.getRemainingFireTicks() > 0);
          }
 
       } else {
@@ -318,6 +324,10 @@ public abstract class AbstractArrow extends Projectile {
       this.entityData.set(IN_GROUND, var1);
    }
 
+   public boolean isPushedByFluid() {
+      return !this.isInGround();
+   }
+
    public void move(MoverType var1, Vec3 var2) {
       super.move(var1, var2);
       if (var1 != MoverType.SELF && this.shouldFall()) {
@@ -347,6 +357,12 @@ public abstract class AbstractArrow extends Projectile {
 
    protected void onItemBreak(Item var1) {
       this.firedFromWeapon = null;
+   }
+
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      if (!this.isInGround()) {
+         super.onAboveBubbleColumn(var1, var2);
+      }
    }
 
    public void onInsideBubbleColumn(boolean var1) {
@@ -428,8 +444,11 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             this.doPostHurtEffects(var11);
-            if (var11 != var6 && var11 instanceof Player && var6 instanceof ServerPlayer && !this.isSilent()) {
-               ((ServerPlayer)var6).connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));
+            if (var11 instanceof Player && var6 instanceof ServerPlayer) {
+               ServerPlayer var19 = (ServerPlayer)var6;
+               if (!this.isSilent() && var11 != var19) {
+                  var19.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND, 0.0F));
+               }
             }
 
             if (!var2.isAlive() && this.piercedAndKilledEntities != null) {
@@ -437,11 +456,11 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             if (!this.level().isClientSide && var6 instanceof ServerPlayer) {
-               ServerPlayer var19 = (ServerPlayer)var6;
+               ServerPlayer var20 = (ServerPlayer)var6;
                if (this.piercedAndKilledEntities != null) {
-                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var19, this.piercedAndKilledEntities, this.firedFromWeapon);
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var20, this.piercedAndKilledEntities, this.firedFromWeapon);
                } else if (!var2.isAlive()) {
-                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var19, List.of(var2), this.firedFromWeapon);
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var20, List.of(var2), this.firedFromWeapon);
                }
             }
          }
@@ -454,9 +473,9 @@ public abstract class AbstractArrow extends Projectile {
          var2.setRemainingFireTicks(var10);
          this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
          this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
-         Level var20 = this.level();
-         if (var20 instanceof ServerLevel) {
-            ServerLevel var18 = (ServerLevel)var20;
+         Level var21 = this.level();
+         if (var21 instanceof ServerLevel) {
+            ServerLevel var18 = (ServerLevel)var21;
             if (this.getDeltaMovement().lengthSqr() < 1.0E-7) {
                if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
                   this.spawnAtLocation(var18, this.getPickupItem(), 0.1F);
@@ -569,57 +588,34 @@ public abstract class AbstractArrow extends Projectile {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.putShort("life", (short)this.life);
-      if (this.lastState != null) {
-         var1.put("inBlockState", NbtUtils.writeBlockState(this.lastState));
-      }
-
+      var1.storeNullable("inBlockState", BlockState.CODEC, var2, this.lastState);
       var1.putByte("shake", (byte)this.shakeTime);
       var1.putBoolean("inGround", this.isInGround());
-      var1.putByte("pickup", (byte)this.pickup.ordinal());
+      var1.store("pickup", AbstractArrow.Pickup.LEGACY_CODEC, this.pickup);
       var1.putDouble("damage", this.baseDamage);
       var1.putBoolean("crit", this.isCritArrow());
       var1.putByte("PierceLevel", this.getPierceLevel());
-      var1.putString("SoundEvent", BuiltInRegistries.SOUND_EVENT.getKey(this.soundEvent).toString());
-      var1.put("item", this.pickupItemStack.save(this.registryAccess()));
-      if (this.firedFromWeapon != null) {
-         var1.put("weapon", this.firedFromWeapon.save(this.registryAccess(), new CompoundTag()));
-      }
-
+      var1.store("SoundEvent", BuiltInRegistries.SOUND_EVENT.byNameCodec(), this.soundEvent);
+      var1.store("item", ItemStack.CODEC, var2, this.pickupItemStack);
+      var1.storeNullable("weapon", ItemStack.CODEC, var2, this.firedFromWeapon);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.life = var1.getShort("life");
-      if (var1.contains("inBlockState", 10)) {
-         this.lastState = NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("inBlockState"));
-      }
-
-      this.shakeTime = var1.getByte("shake") & 255;
-      this.setInGround(var1.getBoolean("inGround"));
-      if (var1.contains("damage", 99)) {
-         this.baseDamage = var1.getDouble("damage");
-      }
-
-      this.pickup = AbstractArrow.Pickup.byOrdinal(var1.getByte("pickup"));
-      this.setCritArrow(var1.getBoolean("crit"));
-      this.setPierceLevel(var1.getByte("PierceLevel"));
-      if (var1.contains("SoundEvent", 8)) {
-         this.soundEvent = (SoundEvent)BuiltInRegistries.SOUND_EVENT.getOptional(ResourceLocation.parse(var1.getString("SoundEvent"))).orElse(this.getDefaultHitGroundSoundEvent());
-      }
-
-      if (var1.contains("item", 10)) {
-         this.setPickupItemStack((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(this.getDefaultPickupItem()));
-      } else {
-         this.setPickupItemStack(this.getDefaultPickupItem());
-      }
-
-      if (var1.contains("weapon", 10)) {
-         this.firedFromWeapon = (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("weapon")).orElse((Object)null);
-      } else {
-         this.firedFromWeapon = null;
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.life = var1.getShortOr("life", (short)0);
+      this.lastState = (BlockState)var1.read("inBlockState", BlockState.CODEC, var2).orElse((Object)null);
+      this.shakeTime = var1.getByteOr("shake", (byte)0) & 255;
+      this.setInGround(var1.getBooleanOr("inGround", false));
+      this.baseDamage = var1.getDoubleOr("damage", 2.0);
+      this.pickup = (Pickup)var1.read("pickup", AbstractArrow.Pickup.LEGACY_CODEC).orElse(AbstractArrow.Pickup.DISALLOWED);
+      this.setCritArrow(var1.getBooleanOr("crit", false));
+      this.setPierceLevel(var1.getByteOr("PierceLevel", (byte)0));
+      this.soundEvent = (SoundEvent)var1.read("SoundEvent", BuiltInRegistries.SOUND_EVENT.byNameCodec()).orElse(this.getDefaultHitGroundSoundEvent());
+      this.setPickupItemStack((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(this.getDefaultPickupItem()));
+      this.firedFromWeapon = (ItemStack)var1.read("weapon", ItemStack.CODEC, var2).orElse((Object)null);
    }
 
    public void setOwner(@Nullable Entity var1) {
@@ -695,10 +691,6 @@ public abstract class AbstractArrow extends Projectile {
 
    public void setBaseDamage(double var1) {
       this.baseDamage = var1;
-   }
-
-   public double getBaseDamage() {
-      return this.baseDamage;
    }
 
    public boolean isAttackable() {
@@ -784,6 +776,8 @@ public abstract class AbstractArrow extends Projectile {
       DISALLOWED,
       ALLOWED,
       CREATIVE_ONLY;
+
+      public static final Codec<Pickup> LEGACY_CODEC = Codec.BYTE.xmap(Pickup::byOrdinal, (var0) -> (byte)var0.ordinal());
 
       private Pickup() {
       }

@@ -23,4 +23,8 @@ public class MeshDefinition {
    public MeshDefinition transformed(UnaryOperator<PartPose> var1) {
       return new MeshDefinition(this.root.transformed(var1));
    }
+
+   public MeshDefinition apply(MeshTransformer var1) {
+      return var1.apply(this);
+   }
 }

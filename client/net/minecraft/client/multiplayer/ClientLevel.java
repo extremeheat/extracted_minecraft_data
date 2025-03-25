@@ -59,6 +59,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
@@ -95,6 +96,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
@@ -102,7 +104,7 @@ import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.slf4j.Logger;
 
-public class ClientLevel extends Level {
+public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final double FLUID_PARTICLE_SPAWN_OFFSET = 0.05;
    private static final int NORMAL_LIGHT_UPDATES_PER_FRAME = 10;
@@ -124,6 +126,7 @@ public class ClientLevel extends Level {
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (var1x) -> {
       var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.GRASS_COLOR_RESOLVER)));
       var1x.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
+      var1x.put(BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER)));
       var1x.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.WATER_COLOR_RESOLVER)));
    });
    private final ClientChunkCache chunkSource;
@@ -151,7 +154,7 @@ public class ClientLevel extends Level {
          this.setBlock(var1, var2, 19);
          LocalPlayer var5 = this.minecraft.player;
          if (this == ((Player)var5).level() && ((Player)var5).isColliding(var1, var2)) {
-            ((Player)var5).absMoveTo(var3.x, var3.y, var3.z);
+            ((Player)var5).absSnapTo(var3.x, var3.y, var3.z);
          }
       }
 
@@ -340,6 +343,11 @@ public class ClientLevel extends Level {
 
    }
 
+   public List<Entity> getPushableEntities(Entity var1, AABB var2) {
+      LocalPlayer var3 = this.minecraft.player;
+      return var3 != null && var3 != var1 && var3.getBoundingBox().intersects(var2) && EntitySelector.pushableBy(var1).test(var3) ? List.of(var3) : List.of();
+   }
+
    @Nullable
    public Entity getEntity(int var1) {
       return (Entity)this.getEntities().get(var1);
@@ -445,20 +453,20 @@ public class ClientLevel extends Level {
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
+      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.lambda$fillCrashReport$0()));
       var2.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
       var2.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
       return var2;
    }
 
-   public void playSeededSound(@Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12) {
+   public void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12) {
       if (var1 == this.minecraft.player) {
          this.playSound(var2, var4, var6, (SoundEvent)var8.value(), var9, var10, var11, false, var12);
       }
 
    }
 
-   public void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
+   public void playSeededSound(@Nullable Entity var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
       if (var1 == this.minecraft.player) {
          this.minecraft.getSoundManager().play(new EntityBoundSoundInstance((SoundEvent)var3.value(), var4, var5, var6, var2, var7));
       }
@@ -467,6 +475,13 @@ public class ClientLevel extends Level {
 
    public void playLocalSound(Entity var1, SoundEvent var2, SoundSource var3, float var4, float var5) {
       this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var2, var3, var4, var5, var1, this.random.nextLong()));
+   }
+
+   public void playPlayerSound(SoundEvent var1, SoundSource var2, float var3, float var4) {
+      if (this.minecraft.player != null) {
+         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var1, var2, var3, var4, this.minecraft.player, this.random.nextLong()));
+      }
+
    }
 
    public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
@@ -529,13 +544,6 @@ public class ClientLevel extends Level {
       this.mapData.put(var1, var2);
    }
 
-   public void setMapData(MapId var1, MapItemSavedData var2) {
-   }
-
-   public MapId getFreeMapId() {
-      return new MapId(0);
-   }
-
    public Scoreboard getScoreboard() {
       return this.connection.scoreboard();
    }
@@ -564,7 +572,7 @@ public class ClientLevel extends Level {
       this.levelEventHandler.globalLevelEvent(var1, var2, var3);
    }
 
-   public void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4) {
+   public void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4) {
       try {
          this.levelEventHandler.levelEvent(var2, var3, var4);
       } catch (Throwable var8) {
@@ -797,6 +805,14 @@ public class ClientLevel extends Level {
 
    public int getSeaLevel() {
       return this.seaLevel;
+   }
+
+   public int getClientLeafTintColor(BlockPos var1) {
+      return Minecraft.getInstance().getBlockColors().getColor(this.getBlockState(var1), this, var1, 0);
+   }
+
+   public void registerForCleaning(CacheSlot<ClientLevel, ?> var1) {
+      this.connection.registerForCleaning(var1);
    }
 
    // $FF: synthetic method

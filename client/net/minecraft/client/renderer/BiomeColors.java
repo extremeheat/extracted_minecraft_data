@@ -8,6 +8,7 @@ import net.minecraft.world.level.biome.Biome;
 public class BiomeColors {
    public static final ColorResolver GRASS_COLOR_RESOLVER = Biome::getGrassColor;
    public static final ColorResolver FOLIAGE_COLOR_RESOLVER = (var0, var1, var3) -> var0.getFoliageColor();
+   public static final ColorResolver DRY_FOLIAGE_COLOR_RESOLVER = (var0, var1, var3) -> var0.getDryFoliageColor();
    public static final ColorResolver WATER_COLOR_RESOLVER = (var0, var1, var3) -> var0.getWaterColor();
 
    public BiomeColors() {
@@ -24,6 +25,10 @@ public class BiomeColors {
 
    public static int getAverageFoliageColor(BlockAndTintGetter var0, BlockPos var1) {
       return getAverageColor(var0, var1, FOLIAGE_COLOR_RESOLVER);
+   }
+
+   public static int getAverageDryFoliageColor(BlockAndTintGetter var0, BlockPos var1) {
+      return getAverageColor(var0, var1, DRY_FOLIAGE_COLOR_RESOLVER);
    }
 
    public static int getAverageWaterColor(BlockAndTintGetter var0, BlockPos var1) {

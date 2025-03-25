@@ -1,7 +1,9 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -42,12 +45,15 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    public TextureAtlas(ResourceLocation var1) {
       super();
       this.location = var1;
-      this.maxSupportedTextureSize = RenderSystem.maxSupportedTextureSize();
+      this.maxSupportedTextureSize = RenderSystem.getDevice().getMaxTextureSize();
    }
 
    public void upload(SpriteLoader.Preparations var1) {
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{var1.width(), var1.height(), var1.mipLevel(), this.location});
-      TextureUtil.prepareImage(this.getId(), var1.mipLevel(), var1.width(), var1.height());
+      GpuDevice var10001 = RenderSystem.getDevice();
+      ResourceLocation var10002 = this.location;
+      Objects.requireNonNull(var10002);
+      this.texture = var10001.createTexture(var10002::toString, TextureFormat.RGBA8, var1.width(), var1.height(), var1.mipLevel() + 1);
       this.width = var1.width();
       this.height = var1.height();
       this.mipLevel = var1.mipLevel();
@@ -56,8 +62,8 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       this.texturesByName = Map.copyOf(var1.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {
-         String var10002 = String.valueOf(this.location);
-         throw new IllegalStateException("Atlas '" + var10002 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
+         String var10 = String.valueOf(this.location);
+         throw new IllegalStateException("Atlas '" + var10 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
       } else {
          ArrayList var2 = new ArrayList();
          ArrayList var3 = new ArrayList();
@@ -66,7 +72,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
             var2.add(var5.contents());
 
             try {
-               var5.uploadFirstFrame();
+               var5.uploadFirstFrame(this.texture);
             } catch (Throwable var9) {
                CrashReport var7 = CrashReport.forThrowable(var9, "Stitching texture atlas");
                CrashReportCategory var8 = var7.addCategory("Texture being stitched together");
@@ -88,7 +94,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
    public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
       String var3 = var1.toDebugFileName();
-      TextureUtil.writeAsPNG(var2, var3, this.getId(), this.mipLevel, this.width, this.height);
+      TextureUtil.writeAsPNG(var2, var3, this.getTexture(), this.mipLevel, (var0) -> var0);
       dumpSpriteNames(var2, var3, this.texturesByName);
    }
 
@@ -125,12 +131,12 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    }
 
    public void cycleAnimationFrames() {
-      this.bind();
+      if (this.texture != null) {
+         for(TextureAtlasSprite.Ticker var2 : this.animatedTextures) {
+            var2.tickAndUpload(this.texture);
+         }
 
-      for(TextureAtlasSprite.Ticker var2 : this.animatedTextures) {
-         var2.tickAndUpload();
       }
-
    }
 
    public void tick() {

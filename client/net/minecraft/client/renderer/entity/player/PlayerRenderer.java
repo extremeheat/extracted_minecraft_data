@@ -52,6 +52,7 @@ import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
+import org.joml.Quaternionfc;
 
 public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerRenderState, PlayerModel> {
    public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
@@ -92,6 +93,8 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    private static HumanoidModel.ArmPose getArmPose(Player var0, ItemStack var1, InteractionHand var2) {
       if (var1.isEmpty()) {
          return HumanoidModel.ArmPose.EMPTY;
+      } else if (!var0.swinging && var1.is(Items.CROSSBOW) && CrossbowItem.isCharged(var1)) {
+         return HumanoidModel.ArmPose.CROSSBOW_HOLD;
       } else {
          if (var0.getUsedItemHand() == var2 && var0.getUseItemRemainingTicks() > 0) {
             ItemUseAnimation var3 = var1.getUseAnimation();
@@ -122,8 +125,6 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
             if (var3 == ItemUseAnimation.BRUSH) {
                return HumanoidModel.ArmPose.BRUSH;
             }
-         } else if (!var0.swinging && var1.is(Items.CROSSBOW) && CrossbowItem.isCharged(var1)) {
-            return HumanoidModel.ArmPose.CROSSBOW_HOLD;
          }
 
          return HumanoidModel.ArmPose.ITEM;
@@ -197,7 +198,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       if (var2.isUsingItem) {
          ItemStack var8 = var1.getItemInHand(var2.useItemHand);
          if (var8.is(Items.SPYGLASS)) {
-            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, false, var1);
+            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, var1);
          }
       }
 
@@ -207,13 +208,11 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var1.fallFlyingTimeInTicks = (float)var0.getFallFlyingTicks() + var2;
       Vec3 var3 = var0.getViewVector(var2);
       Vec3 var4 = var0.getDeltaMovementLerped(var2);
-      double var5 = var4.horizontalDistanceSqr();
-      double var7 = var3.horizontalDistanceSqr();
-      if (var5 > 0.0 && var7 > 0.0) {
+      if (var4.horizontalDistanceSqr() > 9.999999747378752E-6 && var3.horizontalDistanceSqr() > 9.999999747378752E-6) {
          var1.shouldApplyFlyingYRot = true;
-         double var9 = Math.min(1.0, (var4.x * var3.x + var4.z * var3.z) / Math.sqrt(var5 * var7));
-         double var11 = var4.x * var3.z - var4.z * var3.x;
-         var1.flyingYRot = (float)(Math.signum(var11) * Math.acos(var9));
+         double var5 = var4.horizontal().normalize().dot(var3.horizontal().normalize());
+         double var7 = var4.x * var3.z - var4.z * var3.x;
+         var1.flyingYRot = (float)(Math.signum(var7) * Math.acos(Math.min(1.0, Math.abs(var5))));
       } else {
          var1.shouldApplyFlyingYRot = false;
          var1.flyingYRot = 0.0F;
@@ -243,7 +242,12 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    @Nullable
    private static Parrot.Variant getParrotOnShoulder(AbstractClientPlayer var0, boolean var1) {
       CompoundTag var2 = var1 ? var0.getShoulderEntityLeft() : var0.getShoulderEntityRight();
-      return EntityType.byString(var2.getString("id")).filter((var0x) -> var0x == EntityType.PARROT).isPresent() ? Parrot.Variant.byId(var2.getInt("Variant")) : null;
+      if (var2.isEmpty()) {
+         return null;
+      } else {
+         EntityType var3 = (EntityType)var2.read("id", EntityType.CODEC).orElse((Object)null);
+         return var3 == EntityType.PARROT ? (Parrot.Variant)var2.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE) : null;
+      }
    }
 
    public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
@@ -272,17 +276,17 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          super.setupRotations(var1, var2, var3, var4);
          float var7 = var1.fallFlyingScale();
          if (!var1.isAutoSpinAttack) {
-            var2.mulPose(Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
+            var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
          }
 
          if (var1.shouldApplyFlyingYRot) {
-            var2.mulPose(Axis.YP.rotation(var1.flyingYRot));
+            var2.mulPose((Quaternionfc)Axis.YP.rotation(var1.flyingYRot));
          }
       } else if (var5 > 0.0F) {
          super.setupRotations(var1, var2, var3, var4);
          float var9 = var1.isInWater ? -90.0F - var6 : -90.0F;
          float var8 = Mth.lerp(var5, 0.0F, var9);
-         var2.mulPose(Axis.XP.rotationDegrees(var8));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var8));
          if (var1.isVisuallySwimming) {
             var2.translate(0.0F, -1.0F, 0.3F);
          }

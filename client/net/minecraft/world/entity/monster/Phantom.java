@@ -45,13 +45,13 @@ public class Phantom extends FlyingMob implements Enemy {
    public static final int TICKS_PER_FLAP = Mth.ceil(24.166098F);
    private static final EntityDataAccessor<Integer> ID_SIZE;
    Vec3 moveTargetPoint;
+   @Nullable
    BlockPos anchorPoint;
    AttackPhase attackPhase;
 
    public Phantom(EntityType<? extends Phantom> var1, Level var2) {
       super(var1, var2);
       this.moveTargetPoint = Vec3.ZERO;
-      this.anchorPoint = BlockPos.ZERO;
       this.attackPhase = Phantom.AttackPhase.CIRCLE;
       this.xpReward = 5;
       this.moveControl = new PhantomMoveControl(this);
@@ -142,19 +142,14 @@ public class Phantom extends FlyingMob implements Enemy {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("AX")) {
-         this.anchorPoint = new BlockPos(var1.getInt("AX"), var1.getInt("AY"), var1.getInt("AZ"));
-      }
-
-      this.setPhantomSize(var1.getInt("Size"));
+      this.anchorPoint = (BlockPos)var1.read("anchor_pos", BlockPos.CODEC).orElse((Object)null);
+      this.setPhantomSize(var1.getIntOr("size", 0));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("AX", this.anchorPoint.getX());
-      var1.putInt("AY", this.anchorPoint.getY());
-      var1.putInt("AZ", this.anchorPoint.getZ());
-      var1.putInt("Size", this.getPhantomSize());
+      var1.storeNullable("anchor_pos", BlockPos.CODEC, this.anchorPoint);
+      var1.putInt("size", this.getPhantomSize());
    }
 
    public boolean shouldRenderAtSqrDistance(double var1) {
@@ -347,7 +342,7 @@ public class Phantom extends FlyingMob implements Enemy {
       }
 
       private void selectNext() {
-         if (BlockPos.ZERO.equals(Phantom.this.anchorPoint)) {
+         if (Phantom.this.anchorPoint == null) {
             Phantom.this.anchorPoint = Phantom.this.blockPosition();
          }
 
@@ -447,7 +442,10 @@ public class Phantom extends FlyingMob implements Enemy {
       }
 
       public void stop() {
-         Phantom.this.anchorPoint = Phantom.this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, Phantom.this.anchorPoint).above(10 + Phantom.this.random.nextInt(20));
+         if (Phantom.this.anchorPoint != null) {
+            Phantom.this.anchorPoint = Phantom.this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, Phantom.this.anchorPoint).above(10 + Phantom.this.random.nextInt(20));
+         }
+
       }
 
       public void tick() {
@@ -464,11 +462,13 @@ public class Phantom extends FlyingMob implements Enemy {
       }
 
       private void setAnchorAboveTarget() {
-         Phantom.this.anchorPoint = Phantom.this.getTarget().blockPosition().above(20 + Phantom.this.random.nextInt(20));
-         if (Phantom.this.anchorPoint.getY() < Phantom.this.level().getSeaLevel()) {
-            Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level().getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
-         }
+         if (Phantom.this.anchorPoint != null) {
+            Phantom.this.anchorPoint = Phantom.this.getTarget().blockPosition().above(20 + Phantom.this.random.nextInt(20));
+            if (Phantom.this.anchorPoint.getY() < Phantom.this.level().getSeaLevel()) {
+               Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level().getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
+            }
 
+         }
       }
    }
 

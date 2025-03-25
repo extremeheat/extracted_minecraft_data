@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,15 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class AnvilBlock extends FallingBlock {
    public static final MapCodec<AnvilBlock> CODEC = simpleCodec(AnvilBlock::new);
    public static final EnumProperty<Direction> FACING;
-   private static final VoxelShape BASE;
-   private static final VoxelShape X_LEG1;
-   private static final VoxelShape X_LEG2;
-   private static final VoxelShape X_TOP;
-   private static final VoxelShape Z_LEG1;
-   private static final VoxelShape Z_LEG2;
-   private static final VoxelShape Z_TOP;
-   private static final VoxelShape X_AXIS_AABB;
-   private static final VoxelShape Z_AXIS_AABB;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES;
    private static final Component CONTAINER_TITLE;
    private static final float FALL_DAMAGE_PER_DISTANCE = 2.0F;
    private static final int FALL_DAMAGE_MAX = 40;
@@ -72,8 +65,7 @@ public class AnvilBlock extends FallingBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Direction var5 = (Direction)var1.getValue(FACING);
-      return var5.getAxis() == Direction.Axis.X ? X_AXIS_AABB : Z_AXIS_AABB;
+      return (VoxelShape)SHAPES.get(((Direction)var1.getValue(FACING)).getAxis());
    }
 
    protected void falling(FallingBlockEntity var1) {
@@ -125,15 +117,7 @@ public class AnvilBlock extends FallingBlock {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      BASE = Block.box(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
-      X_LEG1 = Block.box(3.0, 4.0, 4.0, 13.0, 5.0, 12.0);
-      X_LEG2 = Block.box(4.0, 5.0, 6.0, 12.0, 10.0, 10.0);
-      X_TOP = Block.box(0.0, 10.0, 3.0, 16.0, 16.0, 13.0);
-      Z_LEG1 = Block.box(4.0, 4.0, 3.0, 12.0, 5.0, 13.0);
-      Z_LEG2 = Block.box(6.0, 5.0, 4.0, 10.0, 10.0, 12.0);
-      Z_TOP = Block.box(3.0, 10.0, 0.0, 13.0, 16.0, 16.0);
-      X_AXIS_AABB = Shapes.or(BASE, X_LEG1, X_LEG2, X_TOP);
-      Z_AXIS_AABB = Shapes.or(BASE, Z_LEG1, Z_LEG2, Z_TOP);
+      SHAPES = Shapes.rotateHorizontalAxis(Shapes.or(Block.column(12.0, 0.0, 4.0), Block.column(8.0, 10.0, 4.0, 5.0), Block.column(4.0, 8.0, 5.0, 10.0), Block.column(10.0, 16.0, 10.0, 16.0)));
       CONTAINER_TITLE = Component.translatable("container.repair");
    }
 }

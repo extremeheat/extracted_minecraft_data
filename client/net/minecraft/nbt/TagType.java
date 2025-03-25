@@ -25,10 +25,6 @@ public interface TagType<T extends Tag> {
 
    void skip(DataInput var1, NbtAccounter var2) throws IOException;
 
-   default boolean isValue() {
-      return false;
-   }
-
    String getName();
 
    String getPrettyName();

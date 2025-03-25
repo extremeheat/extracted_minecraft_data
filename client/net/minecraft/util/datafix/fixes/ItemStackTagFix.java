@@ -8,7 +8,6 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -29,14 +28,14 @@ public abstract class ItemStackTagFix extends DataFix {
       return this.fixTypeEverywhereTyped(this.name, var1, createFixer(var1, this.idFilter, this::fixItemStackTag));
    }
 
-   public static UnaryOperator<Typed<?>> createFixer(Type<?> var0, Predicate<String> var1, UnaryOperator<Dynamic<?>> var2) {
+   public static UnaryOperator<Typed<?>> createFixer(Type<?> var0, Predicate<String> var1, UnaryOperator<Typed<?>> var2) {
       OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var4 = var0.findField("tag");
       return (var4x) -> {
          Optional var5 = var4x.getOptional(var3);
-         return var5.isPresent() && var1.test((String)((Pair)var5.get()).getSecond()) ? var4x.updateTyped(var4, (var1x) -> var1x.update(DSL.remainderFinder(), var2)) : var4x;
+         return var5.isPresent() && var1.test((String)((Pair)var5.get()).getSecond()) ? var4x.updateTyped(var4, var2) : var4x;
       };
    }
 
-   protected abstract <T> Dynamic<T> fixItemStackTag(Dynamic<T> var1);
+   protected abstract Typed<?> fixItemStackTag(Typed<?> var1);
 }

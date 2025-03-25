@@ -1,49 +1,48 @@
 package net.minecraft.nbt;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 public class StringTagVisitor implements TagVisitor {
-   private static final Pattern SIMPLE_VALUE = Pattern.compile("[A-Za-z0-9._+-]+");
+   private static final Pattern UNQUOTED_KEY_MATCH = Pattern.compile("[A-Za-z._]+[A-Za-z0-9._+-]*");
    private final StringBuilder builder = new StringBuilder();
 
    public StringTagVisitor() {
       super();
    }
 
-   public String visit(Tag var1) {
-      var1.accept((TagVisitor)this);
+   public String build() {
       return this.builder.toString();
    }
 
    public void visitString(StringTag var1) {
-      this.builder.append(StringTag.quoteAndEscape(var1.getAsString()));
+      this.builder.append(StringTag.quoteAndEscape(var1.value()));
    }
 
    public void visitByte(ByteTag var1) {
-      this.builder.append(var1.getAsNumber()).append('b');
+      this.builder.append(var1.value()).append('b');
    }
 
    public void visitShort(ShortTag var1) {
-      this.builder.append(var1.getAsNumber()).append('s');
+      this.builder.append(var1.value()).append('s');
    }
 
    public void visitInt(IntTag var1) {
-      this.builder.append(var1.getAsNumber());
+      this.builder.append(var1.value());
    }
 
    public void visitLong(LongTag var1) {
-      this.builder.append(var1.getAsNumber()).append('L');
+      this.builder.append(var1.value()).append('L');
    }
 
    public void visitFloat(FloatTag var1) {
-      this.builder.append(var1.getAsFloat()).append('f');
+      this.builder.append(var1.value()).append('f');
    }
 
    public void visitDouble(DoubleTag var1) {
-      this.builder.append(var1.getAsDouble()).append('d');
+      this.builder.append(var1.value()).append('d');
    }
 
    public void visitByteArray(ByteArrayTag var1) {
@@ -99,7 +98,7 @@ public class StringTagVisitor implements TagVisitor {
             this.builder.append(',');
          }
 
-         this.builder.append((new StringTagVisitor()).visit(var1.get(var2)));
+         var1.get(var2).accept((TagVisitor)this);
       }
 
       this.builder.append(']');
@@ -107,22 +106,30 @@ public class StringTagVisitor implements TagVisitor {
 
    public void visitCompound(CompoundTag var1) {
       this.builder.append('{');
-      ArrayList var2 = Lists.newArrayList(var1.getAllKeys());
-      Collections.sort(var2);
+      ArrayList var2 = new ArrayList(var1.entrySet());
+      var2.sort(Entry.comparingByKey());
 
-      for(String var4 : var2) {
-         if (this.builder.length() != 1) {
+      for(int var3 = 0; var3 < var2.size(); ++var3) {
+         Map.Entry var4 = (Map.Entry)var2.get(var3);
+         if (var3 != 0) {
             this.builder.append(',');
          }
 
-         this.builder.append(handleEscape(var4)).append(':').append((new StringTagVisitor()).visit(var1.get(var4)));
+         this.handleKeyEscape((String)var4.getKey());
+         this.builder.append(':');
+         ((Tag)var4.getValue()).accept((TagVisitor)this);
       }
 
       this.builder.append('}');
    }
 
-   protected static String handleEscape(String var0) {
-      return SIMPLE_VALUE.matcher(var0).matches() ? var0 : StringTag.quoteAndEscape(var0);
+   private void handleKeyEscape(String var1) {
+      if (!var1.equalsIgnoreCase("true") && !var1.equalsIgnoreCase("false") && UNQUOTED_KEY_MATCH.matcher(var1).matches()) {
+         this.builder.append(var1);
+      } else {
+         StringTag.quoteAndEscape(var1, this.builder);
+      }
+
    }
 
    public void visitEnd(EndTag var1) {

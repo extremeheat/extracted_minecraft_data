@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -65,7 +66,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
          }
 
          public void onTake(Player var1, ItemStack var2) {
-            var2.onCraftedBy(var1.level(), var1, var2.getCount());
+            var2.onCraftedBy(var1, var2.getCount());
             StonecutterMenu.this.resultContainer.awardUsedRecipes(var1, this.getRelevantItems());
             ItemStack var3x = StonecutterMenu.this.inputSlot.remove(1);
             if (!var3x.isEmpty()) {
@@ -75,7 +76,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
             var3.execute((var1x, var2x) -> {
                long var3x = var1x.getGameTime();
                if (StonecutterMenu.this.lastSoundTime != var3x) {
-                  var1x.playSound((Player)null, (BlockPos)var2x, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
                   StonecutterMenu.this.lastSoundTime = var3x;
                }
 
@@ -187,7 +188,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
          Item var6 = var5.getItem();
          var3 = var5.copy();
          if (var2 == 1) {
-            var6.onCraftedBy(var5, var1.level(), var1);
+            var6.onCraftedBy(var5, var1);
             if (!this.moveItemStackTo(var5, 2, 38, true)) {
                return ItemStack.EMPTY;
             }

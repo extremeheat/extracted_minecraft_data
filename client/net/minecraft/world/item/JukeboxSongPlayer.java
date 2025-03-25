@@ -6,7 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -50,7 +50,7 @@ public class JukeboxSongPlayer {
       this.song = var2;
       this.ticksSinceSongStarted = 0L;
       int var3 = var1.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).getId(this.song.value());
-      var1.levelEvent((Player)null, 1010, this.blockPos, var3);
+      var1.levelEvent((Entity)null, 1010, this.blockPos, var3);
       this.onSongChanged.notifyChange();
    }
 

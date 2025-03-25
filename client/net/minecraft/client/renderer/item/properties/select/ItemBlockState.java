@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.item.properties.select;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 
 public record ItemBlockState(String property) implements SelectItemModelProperty<String> {
+   public static final PrimitiveCodec<String> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<ItemBlockState, String> TYPE;
 
    public ItemBlockState(String var1) {
@@ -28,6 +30,10 @@ public record ItemBlockState(String property) implements SelectItemModelProperty
       return TYPE;
    }
 
+   public Codec<String> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -35,6 +41,7 @@ public record ItemBlockState(String property) implements SelectItemModelProperty
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<ItemBlockState, String>create(RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block_state_property").forGetter(ItemBlockState::property)).apply(var0, ItemBlockState::new)), Codec.STRING);
+      VALUE_CODEC = Codec.STRING;
+      TYPE = SelectItemModelProperty.Type.<ItemBlockState, String>create(RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block_state_property").forGetter(ItemBlockState::property)).apply(var0, ItemBlockState::new)), VALUE_CODEC);
    }
 }

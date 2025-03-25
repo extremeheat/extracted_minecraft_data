@@ -20,7 +20,7 @@ public class BeetrootBlock extends CropBlock {
    public static final MapCodec<BeetrootBlock> CODEC = simpleCodec(BeetrootBlock::new);
    public static final int MAX_AGE = 3;
    public static final IntegerProperty AGE;
-   private static final VoxelShape[] SHAPE_BY_AGE;
+   private static final VoxelShape[] SHAPES;
 
    public MapCodec<BeetrootBlock> codec() {
       return CODEC;
@@ -58,11 +58,11 @@ public class BeetrootBlock extends CropBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[this.getAge(var1)];
+      return SHAPES[this.getAge(var1)];
    }
 
    static {
       AGE = BlockStateProperties.AGE_3;
-      SHAPE_BY_AGE = new VoxelShape[]{Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 4.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0)};
+      SHAPES = Block.boxes(3, (var0) -> Block.column(16.0, 0.0, (double)(2 + var0 * 2)));
    }
 }

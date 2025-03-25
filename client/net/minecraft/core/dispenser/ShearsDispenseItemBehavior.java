@@ -44,7 +44,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       if (var2.is(BlockTags.BEEHIVES, (var0x) -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock)) {
          int var3 = (Integer)var2.getValue(BeehiveBlock.HONEY_LEVEL);
          if (var3 >= 5) {
-            var0.playSound((Player)null, var1, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var0.playSound((Entity)null, var1, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
             BeehiveBlock.dropHoneycomb(var0, var1);
             ((BeehiveBlock)var2.getBlock()).releaseBeesAndResetHoneyLevel(var0, var2, var1, (Player)null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
             var0.gameEvent((Entity)null, GameEvent.SHEAR, var1);

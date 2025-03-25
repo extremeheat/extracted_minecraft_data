@@ -74,7 +74,7 @@ public class RealmsInviteScreen extends RealmsScreen {
          this.showMessage(INVITING_PLAYER_TEXT);
          CompletableFuture.supplyAsync(() -> {
             try {
-               return RealmsClient.create().invite(var1, var3);
+               return RealmsClient.getOrCreate().invite(var1, var3);
             } catch (Exception var4) {
                LOGGER.error("Couldn't invite user");
                return null;

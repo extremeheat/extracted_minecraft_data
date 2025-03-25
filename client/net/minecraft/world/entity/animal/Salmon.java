@@ -1,10 +1,14 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.function.Consumer;
+import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -12,7 +16,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
@@ -20,14 +24,12 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
-public class Salmon extends AbstractSchoolingFish implements VariantHolder<Variant> {
+public class Salmon extends AbstractSchoolingFish {
    private static final String TAG_TYPE = "type";
    private static final EntityDataAccessor<Integer> DATA_TYPE;
 
@@ -62,7 +64,7 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE, Salmon.Variant.MEDIUM.id());
+      var1.define(DATA_TYPE, Salmon.Variant.DEFAULT.id());
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -75,25 +77,20 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("type", this.getVariant().getSerializedName());
+      var1.store("type", Salmon.Variant.CODEC, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Salmon.Variant.byName(var1.getString("type")));
+      this.setVariant((Variant)var1.read("type", Salmon.Variant.CODEC).orElse(Salmon.Variant.DEFAULT));
    }
 
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> var1x.putString("type", this.getVariant().getSerializedName())));
+      var1.copyFrom(DataComponents.SALMON_SIZE, this);
    }
 
-   public void loadFromBucketTag(CompoundTag var1) {
-      Bucketable.loadDefaultDataFromBucketTag(this, var1);
-      this.setVariant(Salmon.Variant.byName(var1.getString("type")));
-   }
-
-   public void setVariant(Variant var1) {
+   private void setVariant(Variant var1) {
       this.entityData.set(DATA_TYPE, var1.id);
    }
 
@@ -102,12 +99,31 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
    }
 
    @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.SALMON_SIZE ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.SALMON_SIZE);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.SALMON_SIZE) {
+         this.setVariant((Variant)castComponentValue(DataComponents.SALMON_SIZE, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
+   }
+
+   @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      SimpleWeightedRandomList.Builder var5 = SimpleWeightedRandomList.builder();
+      WeightedList.Builder var5 = WeightedList.builder();
       var5.add(Salmon.Variant.SMALL, 30);
       var5.add(Salmon.Variant.MEDIUM, 50);
       var5.add(Salmon.Variant.LARGE, 15);
-      var5.build().getRandomValue(this.random).ifPresent(this::setVariant);
+      var5.build().getRandom(this.random).ifPresent(this::setVariant);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
@@ -119,11 +135,6 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
       return super.getDefaultDimensions(var1).scale(this.getSalmonScale());
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
    static {
       DATA_TYPE = SynchedEntityData.<Integer>defineId(Salmon.class, EntityDataSerializers.INT);
    }
@@ -133,8 +144,10 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
       MEDIUM("medium", 1, 1.0F),
       LARGE("large", 2, 1.5F);
 
+      public static final Variant DEFAULT = MEDIUM;
       public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
       private final String name;
       final int id;
       final float boundingBoxScale;
@@ -151,10 +164,6 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
 
       int id() {
          return this.id;
-      }
-
-      static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, MEDIUM);
       }
 
       // $FF: synthetic method

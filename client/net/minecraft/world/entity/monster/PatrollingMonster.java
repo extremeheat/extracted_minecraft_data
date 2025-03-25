@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -24,10 +23,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class PatrollingMonster extends Monster {
+   private static final boolean DEFAULT_PATROL_LEADER = false;
+   private static final boolean DEFAULT_PATROLLING = false;
    @Nullable
    private BlockPos patrolTarget;
-   private boolean patrolLeader;
-   private boolean patrolling;
+   private boolean patrolLeader = false;
+   private boolean patrolling = false;
 
    protected PatrollingMonster(EntityType<? extends PatrollingMonster> var1, Level var2) {
       super(var1, var2);
@@ -40,19 +41,16 @@ public abstract class PatrollingMonster extends Monster {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.patrolTarget != null) {
-         var1.put("patrol_target", NbtUtils.writeBlockPos(this.patrolTarget));
-      }
-
+      var1.storeNullable("patrol_target", BlockPos.CODEC, this.patrolTarget);
       var1.putBoolean("PatrolLeader", this.patrolLeader);
       var1.putBoolean("Patrolling", this.patrolling);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      NbtUtils.readBlockPos(var1, "patrol_target").ifPresent((var1x) -> this.patrolTarget = var1x);
-      this.patrolLeader = var1.getBoolean("PatrolLeader");
-      this.patrolling = var1.getBoolean("Patrolling");
+      this.patrolTarget = (BlockPos)var1.read("patrol_target", BlockPos.CODEC).orElse((Object)null);
+      this.patrolLeader = var1.getBooleanOr("PatrolLeader", false);
+      this.patrolling = var1.getBooleanOr("Patrolling", false);
    }
 
    public boolean canBeLeader() {

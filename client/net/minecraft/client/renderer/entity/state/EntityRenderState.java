@@ -1,10 +1,14 @@
 package net.minecraft.client.renderer.entity.state;
 
+import java.util.Locale;
 import javax.annotation.Nullable;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityRenderState {
+   public EntityType<?> entityType;
    public double x;
    public double y;
    public double z;
@@ -24,9 +28,18 @@ public class EntityRenderState {
    public Vec3 nameTagAttachment;
    @Nullable
    public LeashState leashState;
+   @Nullable
+   public HitboxesRenderState hitboxesRenderState;
+   @Nullable
+   public ServerHitboxesRenderState serverHitboxesRenderState;
 
    public EntityRenderState() {
       super();
+   }
+
+   public void fillCrashReportCategory(CrashReportCategory var1) {
+      var1.setDetail("EntityRenderState", this.getClass().getCanonicalName());
+      var1.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.x, this.y, this.z));
    }
 
    public static class LeashState {

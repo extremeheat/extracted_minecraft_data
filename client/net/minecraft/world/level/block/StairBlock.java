@@ -1,8 +1,10 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.math.OctahedralGroup;
+import com.mojang.math.Quadrant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.stream.IntStream;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -32,49 +34,20 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    public static final EnumProperty<Half> HALF;
    public static final EnumProperty<StairsShape> SHAPE;
    public static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape TOP_AABB;
-   protected static final VoxelShape BOTTOM_AABB;
-   protected static final VoxelShape OCTET_NNN;
-   protected static final VoxelShape OCTET_NNP;
-   protected static final VoxelShape OCTET_NPN;
-   protected static final VoxelShape OCTET_NPP;
-   protected static final VoxelShape OCTET_PNN;
-   protected static final VoxelShape OCTET_PNP;
-   protected static final VoxelShape OCTET_PPN;
-   protected static final VoxelShape OCTET_PPP;
-   protected static final VoxelShape[] TOP_SHAPES;
-   protected static final VoxelShape[] BOTTOM_SHAPES;
-   private static final int[] SHAPE_BY_STATE;
+   private static final VoxelShape SHAPE_OUTER;
+   private static final VoxelShape SHAPE_STRAIGHT;
+   private static final VoxelShape SHAPE_INNER;
+   private static final Map<Direction, VoxelShape> SHAPE_BOTTOM_OUTER;
+   private static final Map<Direction, VoxelShape> SHAPE_BOTTOM_STRAIGHT;
+   private static final Map<Direction, VoxelShape> SHAPE_BOTTOM_INNER;
+   private static final Map<Direction, VoxelShape> SHAPE_TOP_OUTER;
+   private static final Map<Direction, VoxelShape> SHAPE_TOP_STRAIGHT;
+   private static final Map<Direction, VoxelShape> SHAPE_TOP_INNER;
    private final Block base;
    protected final BlockState baseState;
 
    public MapCodec<? extends StairBlock> codec() {
       return CODEC;
-   }
-
-   private static VoxelShape[] makeShapes(VoxelShape var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4) {
-      return (VoxelShape[])IntStream.range(0, 16).mapToObj((var5) -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray((var0x) -> new VoxelShape[var0x]);
-   }
-
-   private static VoxelShape makeStairShape(int var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4, VoxelShape var5) {
-      VoxelShape var6 = var1;
-      if ((var0 & 1) != 0) {
-         var6 = Shapes.or(var1, var2);
-      }
-
-      if ((var0 & 2) != 0) {
-         var6 = Shapes.or(var6, var3);
-      }
-
-      if ((var0 & 4) != 0) {
-         var6 = Shapes.or(var6, var4);
-      }
-
-      if ((var0 & 8) != 0) {
-         var6 = Shapes.or(var6, var5);
-      }
-
-      return var6;
    }
 
    protected StairBlock(BlockState var1, BlockBehaviour.Properties var2) {
@@ -89,11 +62,43 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (var1.getValue(HALF) == Half.TOP ? TOP_SHAPES : BOTTOM_SHAPES)[SHAPE_BY_STATE[this.getShapeIndex(var1)]];
-   }
+      boolean var5 = var1.getValue(HALF) == Half.BOTTOM;
+      Direction var6 = (Direction)var1.getValue(FACING);
+      Map var10000;
+      switch ((StairsShape)var1.getValue(SHAPE)) {
+         case STRAIGHT:
+            var10000 = var5 ? SHAPE_BOTTOM_STRAIGHT : SHAPE_TOP_STRAIGHT;
+            break;
+         case OUTER_LEFT:
+         case OUTER_RIGHT:
+            var10000 = var5 ? SHAPE_BOTTOM_OUTER : SHAPE_TOP_OUTER;
+            break;
+         case INNER_RIGHT:
+         case INNER_LEFT:
+            var10000 = var5 ? SHAPE_BOTTOM_INNER : SHAPE_TOP_INNER;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
+      }
 
-   private int getShapeIndex(BlockState var1) {
-      return ((StairsShape)var1.getValue(SHAPE)).ordinal() * 4 + ((Direction)var1.getValue(FACING)).get2DDataValue();
+      Direction var10001;
+      switch ((StairsShape)var1.getValue(SHAPE)) {
+         case STRAIGHT:
+         case OUTER_LEFT:
+         case INNER_RIGHT:
+            var10001 = var6;
+            break;
+         case INNER_LEFT:
+            var10001 = var6.getCounterClockWise();
+            break;
+         case OUTER_RIGHT:
+            var10001 = var6.getClockWise();
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return (VoxelShape)var10000.get(var10001);
    }
 
    public float getExplosionResistance() {
@@ -165,14 +170,14 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
          case LEFT_RIGHT:
             if (var3.getAxis() == Direction.Axis.Z) {
                switch (var4) {
-                  case INNER_LEFT -> {
-                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
+                  case OUTER_LEFT -> {
+                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
                   }
                   case INNER_RIGHT -> {
                      return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
                   }
-                  case OUTER_LEFT -> {
-                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
+                  case INNER_LEFT -> {
+                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
                   }
                   case OUTER_RIGHT -> {
                      return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_LEFT);
@@ -186,20 +191,20 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
          case FRONT_BACK:
             if (var3.getAxis() == Direction.Axis.X) {
                switch (var4) {
-                  case INNER_LEFT -> {
-                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
-                  }
-                  case INNER_RIGHT -> {
-                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
+                  case STRAIGHT -> {
+                     return var1.rotate(Rotation.CLOCKWISE_180);
                   }
                   case OUTER_LEFT -> {
                      return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
                   }
+                  case INNER_RIGHT -> {
+                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
+                  }
+                  case INNER_LEFT -> {
+                     return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
+                  }
                   case OUTER_RIGHT -> {
                      return (BlockState)var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_LEFT);
-                  }
-                  case STRAIGHT -> {
-                     return var1.rotate(Rotation.CLOCKWISE_180);
                   }
                }
             }
@@ -225,18 +230,14 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
       HALF = BlockStateProperties.HALF;
       SHAPE = BlockStateProperties.STAIRS_SHAPE;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      TOP_AABB = SlabBlock.TOP_AABB;
-      BOTTOM_AABB = SlabBlock.BOTTOM_AABB;
-      OCTET_NNN = Block.box(0.0, 0.0, 0.0, 8.0, 8.0, 8.0);
-      OCTET_NNP = Block.box(0.0, 0.0, 8.0, 8.0, 8.0, 16.0);
-      OCTET_NPN = Block.box(0.0, 8.0, 0.0, 8.0, 16.0, 8.0);
-      OCTET_NPP = Block.box(0.0, 8.0, 8.0, 8.0, 16.0, 16.0);
-      OCTET_PNN = Block.box(8.0, 0.0, 0.0, 16.0, 8.0, 8.0);
-      OCTET_PNP = Block.box(8.0, 0.0, 8.0, 16.0, 8.0, 16.0);
-      OCTET_PPN = Block.box(8.0, 8.0, 0.0, 16.0, 16.0, 8.0);
-      OCTET_PPP = Block.box(8.0, 8.0, 8.0, 16.0, 16.0, 16.0);
-      TOP_SHAPES = makeShapes(TOP_AABB, OCTET_NNN, OCTET_PNN, OCTET_NNP, OCTET_PNP);
-      BOTTOM_SHAPES = makeShapes(BOTTOM_AABB, OCTET_NPN, OCTET_PPN, OCTET_NPP, OCTET_PPP);
-      SHAPE_BY_STATE = new int[]{12, 5, 3, 10, 14, 13, 7, 11, 13, 7, 11, 14, 8, 4, 1, 2, 4, 1, 2, 8};
+      SHAPE_OUTER = Shapes.or(Block.column(16.0, 0.0, 8.0), Block.box(0.0, 8.0, 0.0, 8.0, 16.0, 8.0));
+      SHAPE_STRAIGHT = Shapes.or(SHAPE_OUTER, Shapes.rotate(SHAPE_OUTER, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90)));
+      SHAPE_INNER = Shapes.or(SHAPE_STRAIGHT, Shapes.rotate(SHAPE_STRAIGHT, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90)));
+      SHAPE_BOTTOM_OUTER = Shapes.rotateHorizontal(SHAPE_OUTER);
+      SHAPE_BOTTOM_STRAIGHT = Shapes.rotateHorizontal(SHAPE_STRAIGHT);
+      SHAPE_BOTTOM_INNER = Shapes.rotateHorizontal(SHAPE_INNER);
+      SHAPE_TOP_OUTER = Shapes.rotateHorizontal(Shapes.rotate(SHAPE_OUTER, OctahedralGroup.INVERT_Y));
+      SHAPE_TOP_STRAIGHT = Shapes.rotateHorizontal(Shapes.rotate(SHAPE_STRAIGHT, OctahedralGroup.INVERT_Y));
+      SHAPE_TOP_INNER = Shapes.rotateHorizontal(Shapes.rotate(SHAPE_INNER, OctahedralGroup.INVERT_Y));
    }
 }

@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class BlockEntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers = ImmutableMap.of();
@@ -67,7 +68,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
          if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
             if (var5.shouldRender(var1, this.camera.getPosition())) {
                try {
-                  setupAndRender(var5, var1, var2, var3, var4);
+                  setupAndRender(var5, var1, var2, var3, var4, this.camera.getPosition());
                } catch (Throwable var9) {
                   CrashReport var7 = CrashReport.forThrowable(var9, "Rendering Block Entity");
                   CrashReportCategory var8 = var7.addCategory("Block Entity Details");
@@ -79,16 +80,16 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       }
    }
 
-   private static <T extends BlockEntity> void setupAndRender(BlockEntityRenderer<T> var0, T var1, float var2, PoseStack var3, MultiBufferSource var4) {
-      Level var6 = var1.getLevel();
-      int var5;
-      if (var6 != null) {
-         var5 = LevelRenderer.getLightColor(var6, var1.getBlockPos());
+   private static <T extends BlockEntity> void setupAndRender(BlockEntityRenderer<T> var0, T var1, float var2, PoseStack var3, MultiBufferSource var4, Vec3 var5) {
+      Level var7 = var1.getLevel();
+      int var6;
+      if (var7 != null) {
+         var6 = LevelRenderer.getLightColor(var7, var1.getBlockPos());
       } else {
-         var5 = 15728880;
+         var6 = 15728880;
       }
 
-      var0.render(var1, var2, var3, var4, var5, OverlayTexture.NO_OVERLAY);
+      var0.render(var1, var2, var3, var4, var6, OverlayTexture.NO_OVERLAY, var5);
    }
 
    public void setLevel(@Nullable Level var1) {

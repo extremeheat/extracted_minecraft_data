@@ -1,7 +1,10 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
@@ -16,6 +19,7 @@ public enum Variant implements StringRepresentable {
 
    public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
    private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
    private final int id;
    private final String name;
 

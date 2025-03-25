@@ -2,6 +2,7 @@ package net.minecraft;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +39,7 @@ public enum ChatFormatting implements StringRepresentable {
    RESET("RESET", 'r', -1, (Integer)null);
 
    public static final Codec<ChatFormatting> CODEC = StringRepresentable.<ChatFormatting>fromEnum(ChatFormatting::values);
+   public static final Codec<ChatFormatting> COLOR_CODEC = CODEC.validate((var0) -> var0.isFormat() ? DataResult.error(() -> "Formatting was not a valid color: " + String.valueOf(var0)) : DataResult.success(var0));
    public static final char PREFIX_CODE = '\u00a7';
    private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> cleanName(var0.name), (var0) -> var0));
    private static final Pattern STRIP_FORMATTING_PATTERN = Pattern.compile("(?i)\u00a7[0-9A-FK-OR]");

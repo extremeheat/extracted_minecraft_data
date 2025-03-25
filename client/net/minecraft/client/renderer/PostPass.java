@@ -1,117 +1,101 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.shaders.Uniform;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 public class PostPass {
    private final String name;
-   private final CompiledShaderProgram shader;
+   private final RenderPipeline pipeline;
    private final ResourceLocation outputTargetId;
    private final List<PostChainConfig.Uniform> uniforms;
    private final List<Input> inputs = new ArrayList();
 
-   public PostPass(String var1, CompiledShaderProgram var2, ResourceLocation var3, List<PostChainConfig.Uniform> var4) {
+   public PostPass(RenderPipeline var1, ResourceLocation var2, List<PostChainConfig.Uniform> var3) {
       super();
-      this.name = var1;
-      this.shader = var2;
-      this.outputTargetId = var3;
-      this.uniforms = var4;
+      this.pipeline = var1;
+      this.name = var1.getLocation().toString();
+      this.outputTargetId = var2;
+      this.uniforms = var3;
    }
 
    public void addInput(Input var1) {
       this.inputs.add(var1);
    }
 
-   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, Matrix4f var3) {
-      FramePass var4 = var1.addPass(this.name);
+   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, Matrix4f var3, @Nullable Consumer<RenderPass> var4) {
+      FramePass var5 = var1.addPass(this.name);
 
-      for(Input var6 : this.inputs) {
-         var6.addToPass(var4, var2);
+      for(Input var7 : this.inputs) {
+         var7.addToPass(var5, var2);
       }
 
-      ResourceHandle var7 = (ResourceHandle)var2.computeIfPresent(this.outputTargetId, (var1x, var2x) -> var4.readsAndWrites(var2x));
-      if (var7 == null) {
+      ResourceHandle var8 = (ResourceHandle)var2.computeIfPresent(this.outputTargetId, (var1x, var2x) -> var5.readsAndWrites(var2x));
+      if (var8 == null) {
          throw new IllegalStateException("Missing handle for target " + String.valueOf(this.outputTargetId));
       } else {
-         var4.executes(() -> {
-            RenderTarget var4 = (RenderTarget)var7.get();
-            RenderSystem.viewport(0, 0, var4.width, var4.height);
-
-            for(Input var6 : this.inputs) {
-               var6.bindTo(this.shader, var2);
-            }
-
-            this.shader.safeGetUniform("OutSize").set((float)var4.width, (float)var4.height);
-
-            for(PostChainConfig.Uniform var10 : this.uniforms) {
-               Uniform var7x = this.shader.getUniform(var10.name());
-               if (var7x != null) {
-                  var7x.setFromConfig(var10.values(), var10.values().size());
-               }
-            }
-
-            var4.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            var4.clear();
-            var4.bindWrite(false);
-            RenderSystem.depthFunc(519);
-            RenderSystem.setShader(this.shader);
+         var5.executes(() -> {
+            RenderTarget var5 = (RenderTarget)var8.get();
             RenderSystem.backupProjectionMatrix();
             RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
-            BufferBuilder var9 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            var9.addVertex(0.0F, 0.0F, 500.0F);
-            var9.addVertex((float)var4.width, 0.0F, 500.0F);
-            var9.addVertex((float)var4.width, (float)var4.height, 500.0F);
-            var9.addVertex(0.0F, (float)var4.height, 500.0F);
-            BufferUploader.drawWithShader(var9.buildOrThrow());
-            RenderSystem.depthFunc(515);
-            RenderSystem.restoreProjectionMatrix();
-            var4.unbindWrite();
+            GpuBuffer var6 = RenderSystem.getQuadVertexBuffer();
+            RenderSystem.AutoStorageIndexBuffer var7 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            GpuBuffer var8x = var7.getBuffer(6);
 
-            for(Input var12 : this.inputs) {
-               var12.cleanup(var2);
+            try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5.getColorTexture(), OptionalInt.empty(), var5.useDepth ? var5.getDepthTexture() : null, OptionalDouble.empty())) {
+               var9.setPipeline(this.pipeline);
+               var9.setUniform("OutSize", (float)var5.width, (float)var5.height);
+               var9.setVertexBuffer(0, var6);
+               var9.setIndexBuffer(var8x, var7.type());
+
+               for(Input var11 : this.inputs) {
+                  var11.bindTo(var9, var2);
+               }
+
+               if (var4 != null) {
+                  var4.accept(var9);
+               }
+
+               for(PostChainConfig.Uniform var17 : this.uniforms) {
+                  var17.setOnRenderPass(var9);
+               }
+
+               var9.drawIndexed(0, 6);
             }
 
-            this.restoreDefaultUniforms();
+            RenderSystem.restoreProjectionMatrix();
+
+            for(Input var16 : this.inputs) {
+               var16.cleanup(var2);
+            }
+
          });
       }
-   }
-
-   private void restoreDefaultUniforms() {
-      for(PostChainConfig.Uniform var2 : this.uniforms) {
-         String var3 = var2.name();
-         Uniform var4 = this.shader.getUniform(var3);
-         ShaderProgramConfig.Uniform var5 = this.shader.getUniformConfig(var3);
-         if (var4 != null && var5 != null && !var2.values().equals(var5.values())) {
-            var4.setFromConfig(var5);
-         }
-      }
-
-   }
-
-   public CompiledShaderProgram getShader() {
-      return this.shader;
    }
 
    public interface Input {
       void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
 
-      void bindTo(CompiledShaderProgram var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
+      void bindTo(RenderPass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
 
       default void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
       }
@@ -129,9 +113,9 @@ public class PostPass {
       public void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
       }
 
-      public void bindTo(CompiledShaderProgram var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
-         var1.bindSampler(this.samplerName + "Sampler", this.texture.getId());
-         var1.safeGetUniform(this.samplerName + "Size").set((float)this.width, (float)this.height);
+      public void bindTo(RenderPass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
+         var1.bindSampler(this.samplerName + "Sampler", this.texture.getTexture());
+         var1.setUniform(this.samplerName + "Size", (float)this.width, (float)this.height);
       }
    }
 
@@ -157,17 +141,23 @@ public class PostPass {
          var1.reads(this.getHandle(var2));
       }
 
-      public void bindTo(CompiledShaderProgram var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
+      public void bindTo(RenderPass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
          ResourceHandle var3 = this.getHandle(var2);
          RenderTarget var4 = (RenderTarget)var3.get();
-         var4.setFilterMode(this.bilinear ? 9729 : 9728);
-         var1.bindSampler(this.samplerName + "Sampler", this.depthBuffer ? var4.getDepthTextureId() : var4.getColorTextureId());
-         var1.safeGetUniform(this.samplerName + "Size").set((float)var4.width, (float)var4.height);
+         var4.setFilterMode(this.bilinear ? FilterMode.LINEAR : FilterMode.NEAREST);
+         GpuTexture var5 = this.depthBuffer ? var4.getDepthTexture() : var4.getColorTexture();
+         if (var5 == null) {
+            String var10002 = this.depthBuffer ? "depth" : "color";
+            throw new IllegalStateException("Missing " + var10002 + "texture for target " + String.valueOf(this.targetId));
+         } else {
+            var1.bindSampler(this.samplerName + "Sampler", var5);
+            var1.setUniform(this.samplerName + "Size", (float)var4.width, (float)var4.height);
+         }
       }
 
       public void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
          if (this.bilinear) {
-            ((RenderTarget)this.getHandle(var1).get()).setFilterMode(9728);
+            ((RenderTarget)this.getHandle(var1).get()).setFilterMode(FilterMode.NEAREST);
          }
 
       }

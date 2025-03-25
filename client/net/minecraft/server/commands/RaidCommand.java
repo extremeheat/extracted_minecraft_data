@@ -18,11 +18,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.raid.Raids;
@@ -34,7 +34,7 @@ public class RaidCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getResolvedComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int glow(CommandSourceStack var0) throws CommandSyntaxException {
@@ -86,7 +86,7 @@ public class RaidCommand {
       if (var1 != null && var1.getString().equals("local")) {
          ServerLevel var2 = var0.getLevel();
          Vec3 var3 = var0.getPosition().add(5.0, 0.0, 0.0);
-         var2.playSeededSound((Player)null, var3.x, var3.y, var3.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, var2.random.nextLong());
+         var2.playSeededSound((Entity)null, var3.x, var3.y, var3.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, var2.random.nextLong());
       }
 
       return 1;

@@ -1,13 +1,10 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -48,10 +45,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.RuleProcessor
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import org.slf4j.Logger;
 
 public class RuinedPortalPiece extends TemplateStructurePiece {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final float PROBABILITY_OF_GOLD_GONE = 0.3F;
    private static final float PROBABILITY_OF_MAGMA_INSTEAD_OF_NETHERRACK = 0.07F;
    private static final float PROBABILITY_OF_MAGMA_INSTEAD_OF_LAVA = 0.2F;
@@ -66,25 +61,22 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
 
    public RuinedPortalPiece(StructureTemplateManager var1, CompoundTag var2) {
       super(StructurePieceType.RUINED_PORTAL, var2, var1, (var2x) -> makeSettings(var1, var2, var2x));
-      this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
-      this.properties = (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties"))).getPartialOrThrow();
+      this.verticalPlacement = (VerticalPlacement)var2.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow();
+      this.properties = (Properties)var2.read("Properties", RuinedPortalPiece.Properties.CODEC).orElseThrow();
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
       super.addAdditionalSaveData(var1, var2);
-      var2.putString("Rotation", this.placeSettings.getRotation().name());
-      var2.putString("Mirror", this.placeSettings.getMirror().name());
-      var2.putString("VerticalPlacement", this.verticalPlacement.getName());
-      DataResult var10000 = RuinedPortalPiece.Properties.CODEC.encodeStart(NbtOps.INSTANCE, this.properties);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("Properties", var1x));
+      var2.store("Rotation", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
+      var2.store("Mirror", Mirror.LEGACY_CODEC, this.placeSettings.getMirror());
+      var2.store("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC, this.verticalPlacement);
+      var2.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
    }
 
    private static StructurePlaceSettings makeSettings(StructureTemplateManager var0, CompoundTag var1, ResourceLocation var2) {
       StructureTemplate var3 = var0.getOrCreate(var2);
       BlockPos var4 = new BlockPos(var3.getSize().getX() / 2, 0, var3.getSize().getZ() / 2);
-      return makeSettings(Mirror.valueOf(var1.getString("Mirror")), Rotation.valueOf(var1.getString("Rotation")), RuinedPortalPiece.VerticalPlacement.byName(var1.getString("VerticalPlacement")), var4, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow());
+      return makeSettings((Mirror)var1.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)var1.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)var1.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), var4, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow());
    }
 
    private static StructurePlaceSettings makeSettings(Mirror var0, Rotation var1, VerticalPlacement var2, BlockPos var3, Properties var4) {
@@ -284,7 +276,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       UNDERGROUND("underground"),
       IN_NETHER("in_nether");
 
-      public static final StringRepresentable.EnumCodec<VerticalPlacement> CODEC = StringRepresentable.<VerticalPlacement>fromEnum(VerticalPlacement::values);
+      public static final Codec<VerticalPlacement> CODEC = StringRepresentable.<VerticalPlacement>fromEnum(VerticalPlacement::values);
       private final String name;
 
       private VerticalPlacement(final String var3) {
@@ -293,10 +285,6 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
 
       public String getName() {
          return this.name;
-      }
-
-      public static VerticalPlacement byName(String var0) {
-         return CODEC.byName(var0);
       }
 
       public String getSerializedName() {

@@ -1,73 +1,103 @@
 package net.minecraft.client.resources.model;
 
 import com.mojang.math.OctahedralGroup;
+import com.mojang.math.Quadrant;
 import com.mojang.math.Transformation;
-import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import net.minecraft.util.Mth;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import net.minecraft.Util;
+import net.minecraft.core.BlockMath;
+import net.minecraft.core.Direction;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public enum BlockModelRotation implements ModelState {
-   X0_Y0(0, 0),
-   X0_Y90(0, 90),
-   X0_Y180(0, 180),
-   X0_Y270(0, 270),
-   X90_Y0(90, 0),
-   X90_Y90(90, 90),
-   X90_Y180(90, 180),
-   X90_Y270(90, 270),
-   X180_Y0(180, 0),
-   X180_Y90(180, 90),
-   X180_Y180(180, 180),
-   X180_Y270(180, 270),
-   X270_Y0(270, 0),
-   X270_Y90(270, 90),
-   X270_Y180(270, 180),
-   X270_Y270(270, 270);
+   X0_Y0(Quadrant.R0, Quadrant.R0),
+   X0_Y90(Quadrant.R0, Quadrant.R90),
+   X0_Y180(Quadrant.R0, Quadrant.R180),
+   X0_Y270(Quadrant.R0, Quadrant.R270),
+   X90_Y0(Quadrant.R90, Quadrant.R0),
+   X90_Y90(Quadrant.R90, Quadrant.R90),
+   X90_Y180(Quadrant.R90, Quadrant.R180),
+   X90_Y270(Quadrant.R90, Quadrant.R270),
+   X180_Y0(Quadrant.R180, Quadrant.R0),
+   X180_Y90(Quadrant.R180, Quadrant.R90),
+   X180_Y180(Quadrant.R180, Quadrant.R180),
+   X180_Y270(Quadrant.R180, Quadrant.R270),
+   X270_Y0(Quadrant.R270, Quadrant.R0),
+   X270_Y90(Quadrant.R270, Quadrant.R90),
+   X270_Y180(Quadrant.R270, Quadrant.R180),
+   X270_Y270(Quadrant.R270, Quadrant.R270);
 
-   private static final int DEGREES = 360;
-   private static final Map<Integer, BlockModelRotation> BY_INDEX = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.index, (var0) -> var0));
-   private final Transformation transformation;
+   private static final BlockModelRotation[][] XY_TABLE = (BlockModelRotation[][])Util.make(new BlockModelRotation[Quadrant.values().length][Quadrant.values().length], (var0) -> {
+      for(BlockModelRotation var4 : values()) {
+         var0[var4.xRotation.ordinal()][var4.yRotation.ordinal()] = var4;
+      }
+
+   });
+   private final Quadrant xRotation;
+   private final Quadrant yRotation;
+   final Transformation transformation;
    private final OctahedralGroup actualRotation;
-   private final int index;
+   final Map<Direction, Matrix4fc> faceMapping = new EnumMap(Direction.class);
+   final Map<Direction, Matrix4fc> inverseFaceMapping = new EnumMap(Direction.class);
+   private final WithUvLock withUvLock = new WithUvLock(this);
 
-   private static int getIndex(int var0, int var1) {
-      return var0 * 360 + var1;
-   }
-
-   private BlockModelRotation(final int var3, final int var4) {
-      this.index = getIndex(var3, var4);
-      Quaternionf var5 = (new Quaternionf()).rotateYXZ((float)(-var4) * 0.017453292F, (float)(-var3) * 0.017453292F, 0.0F);
-      OctahedralGroup var6 = OctahedralGroup.IDENTITY;
-
-      for(int var7 = 0; var7 < var4; var7 += 90) {
-         var6 = var6.compose(OctahedralGroup.ROT_90_Y_NEG);
+   private BlockModelRotation(final Quadrant var3, final Quadrant var4) {
+      this.xRotation = var3;
+      this.yRotation = var4;
+      this.actualRotation = OctahedralGroup.fromXYAngles(var3, var4);
+      if (this.actualRotation != OctahedralGroup.IDENTITY) {
+         this.transformation = new Transformation(new Matrix4f(this.actualRotation.transformation()));
+      } else {
+         this.transformation = Transformation.identity();
       }
 
-      for(int var8 = 0; var8 < var3; var8 += 90) {
-         var6 = var6.compose(OctahedralGroup.ROT_90_X_NEG);
+      for(Direction var8 : Direction.values()) {
+         Matrix4fc var9 = BlockMath.getFaceTransformation(this.transformation, var8).getMatrix();
+         this.faceMapping.put(var8, var9);
+         this.inverseFaceMapping.put(var8, var9.invertAffine(new Matrix4f()));
       }
 
-      this.transformation = new Transformation((Vector3f)null, var5, (Vector3f)null, (Quaternionf)null);
-      this.actualRotation = var6;
    }
 
-   public Transformation getRotation() {
+   public Transformation transformation() {
       return this.transformation;
    }
 
-   public static BlockModelRotation by(int var0, int var1) {
-      return (BlockModelRotation)BY_INDEX.get(getIndex(Mth.positiveModulo(var0, 360), Mth.positiveModulo(var1, 360)));
+   public static BlockModelRotation by(Quadrant var0, Quadrant var1) {
+      return XY_TABLE[var0.ordinal()][var1.ordinal()];
    }
 
    public OctahedralGroup actualRotation() {
       return this.actualRotation;
    }
 
+   public ModelState withUvLock() {
+      return this.withUvLock;
+   }
+
    // $FF: synthetic method
    private static BlockModelRotation[] $values() {
       return new BlockModelRotation[]{X0_Y0, X0_Y90, X0_Y180, X0_Y270, X90_Y0, X90_Y90, X90_Y180, X90_Y270, X180_Y0, X180_Y90, X180_Y180, X180_Y270, X270_Y0, X270_Y90, X270_Y180, X270_Y270};
+   }
+
+   static record WithUvLock(BlockModelRotation parent) implements ModelState {
+      WithUvLock(BlockModelRotation var1) {
+         super();
+         this.parent = var1;
+      }
+
+      public Transformation transformation() {
+         return this.parent.transformation;
+      }
+
+      public Matrix4fc faceTransformation(Direction var1) {
+         return (Matrix4fc)this.parent.faceMapping.getOrDefault(var1, NO_TRANSFORM);
+      }
+
+      public Matrix4fc inverseFaceTransformation(Direction var1) {
+         return (Matrix4fc)this.parent.inverseFaceMapping.getOrDefault(var1, NO_TRANSFORM);
+      }
    }
 }

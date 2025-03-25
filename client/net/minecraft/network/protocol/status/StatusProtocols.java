@@ -5,14 +5,15 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.protocol.ProtocolInfoBuilder;
+import net.minecraft.network.protocol.SimpleUnboundProtocol;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.network.protocol.ping.PingPacketTypes;
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 
 public class StatusProtocols {
-   public static final ProtocolInfo.Unbound<ServerStatusPacketListener, ByteBuf> SERVERBOUND_TEMPLATE;
+   public static final SimpleUnboundProtocol<ServerStatusPacketListener, ByteBuf> SERVERBOUND_TEMPLATE;
    public static final ProtocolInfo<ServerStatusPacketListener> SERVERBOUND;
-   public static final ProtocolInfo.Unbound<ClientStatusPacketListener, FriendlyByteBuf> CLIENTBOUND_TEMPLATE;
+   public static final SimpleUnboundProtocol<ClientStatusPacketListener, FriendlyByteBuf> CLIENTBOUND_TEMPLATE;
    public static final ProtocolInfo<ClientStatusPacketListener> CLIENTBOUND;
 
    public StatusProtocols() {

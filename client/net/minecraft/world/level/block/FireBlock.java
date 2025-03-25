@@ -1,12 +1,10 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,6 +23,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -38,13 +37,8 @@ public class FireBlock extends BaseFireBlock {
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
    public static final BooleanProperty UP;
-   private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
-   private static final VoxelShape UP_AABB;
-   private static final VoxelShape WEST_AABB;
-   private static final VoxelShape EAST_AABB;
-   private static final VoxelShape NORTH_AABB;
-   private static final VoxelShape SOUTH_AABB;
-   private final Map<BlockState, VoxelShape> shapesCache;
+   public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
+   private final Function<BlockState, VoxelShape> shapes;
    private static final int IGNITE_INSTANT = 60;
    private static final int IGNITE_EASY = 30;
    private static final int IGNITE_MEDIUM = 15;
@@ -63,32 +57,22 @@ public class FireBlock extends BaseFireBlock {
    public FireBlock(BlockBehaviour.Properties var1) {
       super(var1, 1.0F);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false));
-      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().filter((var0) -> (Integer)var0.getValue(AGE) == 0).collect(Collectors.toMap(Function.identity(), FireBlock::calculateShape)));
+      this.shapes = this.makeShapes();
    }
 
-   private static VoxelShape calculateShape(BlockState var0) {
-      VoxelShape var1 = Shapes.empty();
-      if ((Boolean)var0.getValue(UP)) {
-         var1 = UP_AABB;
-      }
+   private Function<BlockState, VoxelShape> makeShapes() {
+      Map var1 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
+      return this.getShapeForEachState((var1x) -> {
+         VoxelShape var2 = Shapes.empty();
 
-      if ((Boolean)var0.getValue(NORTH)) {
-         var1 = Shapes.or(var1, NORTH_AABB);
-      }
+         for(Map.Entry var4 : PROPERTY_BY_DIRECTION.entrySet()) {
+            if ((Boolean)var1x.getValue((Property)var4.getValue())) {
+               var2 = Shapes.or(var2, (VoxelShape)var1.get(var4.getKey()));
+            }
+         }
 
-      if ((Boolean)var0.getValue(SOUTH)) {
-         var1 = Shapes.or(var1, SOUTH_AABB);
-      }
-
-      if ((Boolean)var0.getValue(EAST)) {
-         var1 = Shapes.or(var1, EAST_AABB);
-      }
-
-      if ((Boolean)var0.getValue(WEST)) {
-         var1 = Shapes.or(var1, WEST_AABB);
-      }
-
-      return var1.isEmpty() ? DOWN_AABB : var1;
+         return var2.isEmpty() ? SHAPE : var2;
+      }, new Property[]{AGE});
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -96,7 +80,7 @@ public class FireBlock extends BaseFireBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapesCache.get(var1.setValue(AGE, 0));
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -130,75 +114,77 @@ public class FireBlock extends BaseFireBlock {
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
-         if (!var1.canSurvive(var2, var3)) {
-            var2.removeBlock(var3, false);
-         }
-
-         BlockState var5 = var2.getBlockState(var3.below());
-         boolean var6 = var5.is(var2.dimensionType().infiniburn());
-         int var7 = (Integer)var1.getValue(AGE);
-         if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
-            var2.removeBlock(var3, false);
-         } else {
-            int var8 = Math.min(15, var7 + var4.nextInt(3) / 2);
-            if (var7 != var8) {
-               var1 = (BlockState)var1.setValue(AGE, var8);
-               var2.setBlock(var3, var1, 4);
+         if (var2.getGameRules().getBoolean(GameRules.RULE_ALLOWFIRETICKAWAYFROMPLAYERS) || var2.anyPlayerCloseEnoughForSpawning(var3)) {
+            if (!var1.canSurvive(var2, var3)) {
+               var2.removeBlock(var3, false);
             }
 
-            if (!var6) {
-               if (!this.isValidFireLocation(var2, var3)) {
-                  BlockPos var20 = var3.below();
-                  if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
-                     var2.removeBlock(var3, false);
+            BlockState var5 = var2.getBlockState(var3.below());
+            boolean var6 = var5.is(var2.dimensionType().infiniburn());
+            int var7 = (Integer)var1.getValue(AGE);
+            if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
+               var2.removeBlock(var3, false);
+            } else {
+               int var8 = Math.min(15, var7 + var4.nextInt(3) / 2);
+               if (var7 != var8) {
+                  var1 = (BlockState)var1.setValue(AGE, var8);
+                  var2.setBlock(var3, var1, 260);
+               }
+
+               if (!var6) {
+                  if (!this.isValidFireLocation(var2, var3)) {
+                     BlockPos var20 = var3.below();
+                     if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
+                        var2.removeBlock(var3, false);
+                     }
+
+                     return;
                   }
 
-                  return;
+                  if (var7 == 15 && var4.nextInt(4) == 0 && !this.canBurn(var2.getBlockState(var3.below()))) {
+                     var2.removeBlock(var3, false);
+                     return;
+                  }
                }
 
-               if (var7 == 15 && var4.nextInt(4) == 0 && !this.canBurn(var2.getBlockState(var3.below()))) {
-                  var2.removeBlock(var3, false);
-                  return;
-               }
-            }
+               boolean var9 = var2.getBiome(var3).is(BiomeTags.INCREASED_FIRE_BURNOUT);
+               int var10 = var9 ? -50 : 0;
+               this.checkBurnOut(var2, var3.east(), 300 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.west(), 300 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.below(), 250 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.above(), 250 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.north(), 300 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.south(), 300 + var10, var4, var7);
+               BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
 
-            boolean var9 = var2.getBiome(var3).is(BiomeTags.INCREASED_FIRE_BURNOUT);
-            int var10 = var9 ? -50 : 0;
-            this.checkBurnOut(var2, var3.east(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.west(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.below(), 250 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.above(), 250 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.north(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.south(), 300 + var10, var4, var7);
-            BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
-
-            for(int var12 = -1; var12 <= 1; ++var12) {
-               for(int var13 = -1; var13 <= 1; ++var13) {
-                  for(int var14 = -1; var14 <= 4; ++var14) {
-                     if (var12 != 0 || var14 != 0 || var13 != 0) {
-                        int var15 = 100;
-                        if (var14 > 1) {
-                           var15 += (var14 - 1) * 100;
-                        }
-
-                        var11.setWithOffset(var3, var12, var14, var13);
-                        int var16 = this.getIgniteOdds(var2, var11);
-                        if (var16 > 0) {
-                           int var17 = (var16 + 40 + var2.getDifficulty().getId() * 7) / (var7 + 30);
-                           if (var9) {
-                              var17 /= 2;
+               for(int var12 = -1; var12 <= 1; ++var12) {
+                  for(int var13 = -1; var13 <= 1; ++var13) {
+                     for(int var14 = -1; var14 <= 4; ++var14) {
+                        if (var12 != 0 || var14 != 0 || var13 != 0) {
+                           int var15 = 100;
+                           if (var14 > 1) {
+                              var15 += (var14 - 1) * 100;
                            }
 
-                           if (var17 > 0 && var4.nextInt(var15) <= var17 && (!var2.isRaining() || !this.isNearRain(var2, var11))) {
-                              int var18 = Math.min(15, var7 + var4.nextInt(5) / 4);
-                              var2.setBlock(var11, this.getStateWithAge(var2, var11, var18), 3);
+                           var11.setWithOffset(var3, var12, var14, var13);
+                           int var16 = this.getIgniteOdds(var2, var11);
+                           if (var16 > 0) {
+                              int var17 = (var16 + 40 + var2.getDifficulty().getId() * 7) / (var7 + 30);
+                              if (var9) {
+                                 var17 /= 2;
+                              }
+
+                              if (var17 > 0 && var4.nextInt(var15) <= var17 && (!var2.isRaining() || !this.isNearRain(var2, var11))) {
+                                 int var18 = Math.min(15, var7 + var4.nextInt(5) / 4);
+                                 var2.setBlock(var11, this.getStateWithAge(var2, var11, var18), 3);
+                              }
                            }
                         }
                      }
                   }
                }
-            }
 
+            }
          }
       }
    }
@@ -228,7 +214,7 @@ public class FireBlock extends BaseFireBlock {
 
          Block var9 = var7.getBlock();
          if (var9 instanceof TntBlock) {
-            TntBlock.explode(var1, var2);
+            TntBlock.prime(var1, var2);
          }
       }
 
@@ -394,6 +380,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.SHORT_GRASS, 60, 100);
       var0.setFlammable(Blocks.FERN, 60, 100);
       var0.setFlammable(Blocks.DEAD_BUSH, 60, 100);
+      var0.setFlammable(Blocks.SHORT_DRY_GRASS, 60, 100);
+      var0.setFlammable(Blocks.TALL_DRY_GRASS, 60, 100);
       var0.setFlammable(Blocks.SUNFLOWER, 60, 100);
       var0.setFlammable(Blocks.LILAC, 60, 100);
       var0.setFlammable(Blocks.ROSE_BUSH, 60, 100);
@@ -418,6 +406,9 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.PITCHER_PLANT, 60, 100);
       var0.setFlammable(Blocks.WITHER_ROSE, 60, 100);
       var0.setFlammable(Blocks.PINK_PETALS, 60, 100);
+      var0.setFlammable(Blocks.WILDFLOWERS, 60, 100);
+      var0.setFlammable(Blocks.LEAF_LITTER, 60, 100);
+      var0.setFlammable(Blocks.CACTUS_FLOWER, 60, 100);
       var0.setFlammable(Blocks.WHITE_WOOL, 30, 60);
       var0.setFlammable(Blocks.ORANGE_WOOL, 30, 60);
       var0.setFlammable(Blocks.MAGENTA_WOOL, 30, 60);
@@ -477,6 +468,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.SMALL_DRIPLEAF, 60, 100);
       var0.setFlammable(Blocks.HANGING_ROOTS, 30, 60);
       var0.setFlammable(Blocks.GLOW_LICHEN, 15, 100);
+      var0.setFlammable(Blocks.FIREFLY_BUSH, 60, 100);
+      var0.setFlammable(Blocks.BUSH, 60, 100);
    }
 
    static {
@@ -487,10 +480,5 @@ public class FireBlock extends BaseFireBlock {
       WEST = PipeBlock.WEST;
       UP = PipeBlock.UP;
       PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> var0.getKey() != Direction.DOWN).collect(Util.toMap());
-      UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
-      WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
-      EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
-      SOUTH_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
    }
 }

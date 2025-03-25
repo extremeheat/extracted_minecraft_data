@@ -1,20 +1,22 @@
 package net.minecraft.world.level.levelgen.structure;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 public class StructureFeatureIndexSavedData extends SavedData {
-   private static final String TAG_REMAINING_INDEXES = "Remaining";
-   private static final String TAG_All_INDEXES = "All";
    private final LongSet all;
    private final LongSet remaining;
+   private static final Codec<LongSet> LONG_SET;
+   public static final Codec<StructureFeatureIndexSavedData> CODEC;
 
-   public static SavedData.Factory<StructureFeatureIndexSavedData> factory() {
-      return new SavedData.Factory<StructureFeatureIndexSavedData>(StructureFeatureIndexSavedData::new, StructureFeatureIndexSavedData::load, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
+   public static SavedDataType<StructureFeatureIndexSavedData> type(String var0) {
+      return new SavedDataType<StructureFeatureIndexSavedData>(var0, StructureFeatureIndexSavedData::new, CODEC, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
    }
 
    private StructureFeatureIndexSavedData(LongSet var1, LongSet var2) {
@@ -25,16 +27,6 @@ public class StructureFeatureIndexSavedData extends SavedData {
 
    public StructureFeatureIndexSavedData() {
       this(new LongOpenHashSet(), new LongOpenHashSet());
-   }
-
-   public static StructureFeatureIndexSavedData load(CompoundTag var0, HolderLookup.Provider var1) {
-      return new StructureFeatureIndexSavedData(new LongOpenHashSet(var0.getLongArray("All")), new LongOpenHashSet(var0.getLongArray("Remaining")));
-   }
-
-   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
-      var1.putLongArray("All", this.all.toLongArray());
-      var1.putLongArray("Remaining", this.remaining.toLongArray());
-      return var1;
    }
 
    public void addIndex(long var1) {
@@ -60,5 +52,10 @@ public class StructureFeatureIndexSavedData extends SavedData {
 
    public LongSet getAll() {
       return this.all;
+   }
+
+   static {
+      LONG_SET = Codec.LONG_STREAM.xmap(LongOpenHashSet::toSet, LongCollection::longStream);
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(LONG_SET.fieldOf("All").forGetter((var0x) -> var0x.all), LONG_SET.fieldOf("Remaining").forGetter((var0x) -> var0x.remaining)).apply(var0, StructureFeatureIndexSavedData::new));
    }
 }

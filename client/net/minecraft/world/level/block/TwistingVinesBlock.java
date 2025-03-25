@@ -9,7 +9,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TwistingVinesBlock extends GrowingPlantHeadBlock {
    public static final MapCodec<TwistingVinesBlock> CODEC = simpleCodec(TwistingVinesBlock::new);
-   public static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 15.0, 12.0);
+   private static final VoxelShape SHAPE = Block.column(8.0, 0.0, 15.0);
 
    public MapCodec<TwistingVinesBlock> codec() {
       return CODEC;

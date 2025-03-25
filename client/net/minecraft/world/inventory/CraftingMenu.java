@@ -102,7 +102,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
          if (var2 == 0) {
-            this.access.execute((var2x, var3x) -> var5.getItem().onCraftedBy(var5, var2x, var1));
+            var5.getItem().onCraftedBy(var5, var1);
             if (!this.moveItemStackTo(var5, 10, 46, true)) {
                return ItemStack.EMPTY;
             }

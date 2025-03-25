@@ -30,17 +30,14 @@ public class ArrayVoxelShape extends VoxelShape {
    }
 
    public DoubleList getCoords(Direction.Axis var1) {
+      DoubleList var10000;
       switch (var1) {
-         case X -> {
-            return this.xs;
-         }
-         case Y -> {
-            return this.ys;
-         }
-         case Z -> {
-            return this.zs;
-         }
-         default -> throw new IllegalArgumentException();
+         case X -> var10000 = this.xs;
+         case Y -> var10000 = this.ys;
+         case Z -> var10000 = this.zs;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 }

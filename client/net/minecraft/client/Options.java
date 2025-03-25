@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -57,6 +56,8 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -251,6 +252,7 @@ public class Options {
    private final OptionInstance<String> soundDevice;
    public boolean onboardAccessibility;
    public boolean syncWrites;
+   public boolean startedCleanly;
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
       return this.darkMojangStudiosBackground;
@@ -759,12 +761,7 @@ public class Options {
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, (var0) -> {
       });
       this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", false);
-      this.soundSourceVolumes = (Map)Util.make(new EnumMap(SoundSource.class), (var1x) -> {
-         for(SoundSource var5 : SoundSource.values()) {
-            var1x.put(var5, this.createSoundSliderOptionInstance("soundCategory." + var5.getName(), var5));
-         }
-
-      });
+      this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (var1x) -> this.createSoundSliderOptionInstance("soundCategory." + var1x.getName(), var1x));
       this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", false);
       this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (var0) -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
          SoundManager var1 = Minecraft.getInstance().getSoundManager();
@@ -884,6 +881,7 @@ public class Options {
          var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
+      this.startedCleanly = true;
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
@@ -1009,6 +1007,7 @@ public class Options {
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
+      this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1068,35 +1067,48 @@ public class Options {
          }
 
          final CompoundTag var8 = this.dataFix(var1);
-         if (!var8.contains("graphicsMode") && var8.contains("fancyGraphics")) {
-            if (isTrue(var8.getString("fancyGraphics"))) {
-               this.graphicsMode.set(GraphicsStatus.FANCY);
-            } else {
-               this.graphicsMode.set(GraphicsStatus.FAST);
-            }
+         Optional var3 = var8.getString("fancyGraphics");
+         if (var3.isPresent() && !var8.contains("graphicsMode")) {
+            this.graphicsMode.set(isTrue((String)var3.get()) ? GraphicsStatus.FANCY : GraphicsStatus.FAST);
          }
 
          this.processOptions(new FieldAccess() {
             @Nullable
-            private String getValueOrNull(String var1) {
-               return var8.contains(var1) ? var8.get(var1).getAsString() : null;
+            private String getValue(String var1) {
+               Tag var2 = var8.get(var1);
+               if (var2 == null) {
+                  return null;
+               } else if (var2 instanceof StringTag) {
+                  StringTag var3 = (StringTag)var2;
+                  StringTag var10000 = var3;
+
+                  try {
+                     var7 = var10000.value();
+                  } catch (Throwable var6) {
+                     throw new MatchException(var6.toString(), var6);
+                  }
+
+                  String var5 = var7;
+                  return var5;
+               } else {
+                  throw new IllegalStateException("Cannot read field of wrong type, expected string: " + String.valueOf(var2));
+               }
             }
 
             public <T> void process(String var1, OptionInstance<T> var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                if (var3 != null) {
                   JsonReader var4 = new JsonReader(new StringReader(var3.isEmpty() ? "\"\"" : var3));
                   JsonElement var5 = JsonParser.parseReader(var4);
-                  DataResult var6 = var2.codec().parse(JsonOps.INSTANCE, var5);
-                  var6.error().ifPresent((var2x) -> Options.LOGGER.error("Error parsing option value " + var3 + " for option " + String.valueOf(var2) + ": " + var2x.message()));
+                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var5).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
                   Objects.requireNonNull(var2);
-                  var6.ifSuccess(var2::set);
+                  var10000.ifSuccess(var2::set);
                }
 
             }
 
             public int process(String var1, int var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                if (var3 != null) {
                   try {
                      return Integer.parseInt(var3);
@@ -1109,16 +1121,16 @@ public class Options {
             }
 
             public boolean process(String var1, boolean var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                return var3 != null ? Options.isTrue(var3) : var2;
             }
 
             public String process(String var1, String var2) {
-               return (String)MoreObjects.firstNonNull(this.getValueOrNull(var1), var2);
+               return (String)MoreObjects.firstNonNull(this.getValue(var1), var2);
             }
 
             public float process(String var1, float var2) {
-               String var3 = this.getValueOrNull(var1);
+               String var3 = this.getValue(var1);
                if (var3 != null) {
                   if (Options.isTrue(var3)) {
                      return 1.0F;
@@ -1139,13 +1151,11 @@ public class Options {
             }
 
             public <T> T process(String var1, T var2, Function<String, T> var3, Function<T, String> var4) {
-               // $FF: Couldn't be decompiled
+               String var5 = this.getValue(var1);
+               return var5 == null ? var2 : var3.apply(var5);
             }
          });
-         if (var8.contains("fullscreenResolution")) {
-            this.fullscreenVideoModeString = var8.getString("fullscreenResolution");
-         }
-
+         var8.getString("fullscreenResolution").ifPresent((var1x) -> this.fullscreenVideoModeString = var1x);
          KeyMapping.resetMapping();
       } catch (Exception var7) {
          LOGGER.error("Failed to load options", var7);
@@ -1165,7 +1175,7 @@ public class Options {
       int var2 = 0;
 
       try {
-         var2 = Integer.parseInt(var1.getString("version"));
+         var2 = (Integer)var1.getString("version").map(Integer::parseInt).orElse(0);
       } catch (RuntimeException var4) {
       }
 
@@ -1225,8 +1235,9 @@ public class Options {
                   return var2;
                }
             });
-            if (this.minecraft.getWindow().getPreferredFullscreenVideoMode().isPresent()) {
-               var1.println("fullscreenResolution:" + ((VideoMode)this.minecraft.getWindow().getPreferredFullscreenVideoMode().get()).write());
+            String var2 = this.getFullscreenVideoModeString();
+            if (var2 != null) {
+               var1.println("fullscreenResolution:" + var2);
             }
          } catch (Throwable var5) {
             try {
@@ -1244,6 +1255,16 @@ public class Options {
       }
 
       this.broadcastOptions();
+   }
+
+   @Nullable
+   private String getFullscreenVideoModeString() {
+      Window var1 = this.minecraft.getWindow();
+      if (var1 == null) {
+         return this.fullscreenVideoModeString;
+      } else {
+         return var1.getPreferredFullscreenVideoMode().isPresent() ? ((VideoMode)var1.getPreferredFullscreenVideoMode().get()).write() : null;
+      }
    }
 
    public ClientInformation buildPlayerInformation() {

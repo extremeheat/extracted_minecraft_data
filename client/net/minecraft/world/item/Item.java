@@ -5,10 +5,10 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -21,20 +21,27 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
@@ -48,17 +55,23 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -72,6 +85,7 @@ import org.slf4j.Logger;
 
 public class Item implements FeatureElement, ItemLike {
    public static final Codec<Holder<Item>> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> STREAM_CODEC;
    private static final Logger LOGGER;
    public static final Map<Block, Item> BY_BLOCK;
    public static final ResourceLocation BASE_ATTACK_DAMAGE_ID;
@@ -79,6 +93,7 @@ public class Item implements FeatureElement, ItemLike {
    public static final int DEFAULT_MAX_STACK_SIZE = 64;
    public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
+   protected static final int APPROXIMATELY_INFINITE_USE_DURATION = 72000;
    private final Holder.Reference<Item> builtInRegistryHolder;
    private final DataComponentMap components;
    @Nullable
@@ -139,8 +154,23 @@ public class Item implements FeatureElement, ItemLike {
    public void verifyComponentsAfterLoad(ItemStack var1) {
    }
 
-   public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      return true;
+   public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
+      Tool var6 = (Tool)var1.get(DataComponents.TOOL);
+      if (var6 != null && !var6.canDestroyBlocksInCreative()) {
+         boolean var10000;
+         if (var5 instanceof Player) {
+            Player var7 = (Player)var5;
+            if (var7.getAbilities().instabuild) {
+               var10000 = false;
+               return var10000;
+            }
+         }
+
+         var10000 = true;
+         return var10000;
+      } else {
+         return true;
+      }
    }
 
    public Item asItem() {
@@ -163,7 +193,17 @@ public class Item implements FeatureElement, ItemLike {
          return var5.startConsuming(var2, var4, var3);
       } else {
          Equippable var6 = (Equippable)var4.get(DataComponents.EQUIPPABLE);
-         return (InteractionResult)(var6 != null && var6.swappable() ? var6.swapWithEquipmentSlot(var4, var2) : InteractionResult.PASS);
+         if (var6 != null && var6.swappable()) {
+            return var6.swapWithEquipmentSlot(var4, var2);
+         } else {
+            BlocksAttacks var7 = (BlocksAttacks)var4.get(DataComponents.BLOCKS_ATTACKS);
+            if (var7 != null) {
+               var2.startUsingItem(var3);
+               return InteractionResult.CONSUME;
+            } else {
+               return InteractionResult.PASS;
+            }
+         }
       }
    }
 
@@ -203,8 +243,7 @@ public class Item implements FeatureElement, ItemLike {
       return null;
    }
 
-   public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      return false;
+   public void hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
    }
 
    public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
@@ -240,11 +279,11 @@ public class Item implements FeatureElement, ItemLike {
       return this.craftingRemainingItem == null ? ItemStack.EMPTY : new ItemStack(this.craftingRemainingItem);
    }
 
-   public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
+   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
    }
 
-   public void onCraftedBy(ItemStack var1, Level var2, Player var3) {
-      this.onCraftedPostProcess(var1, var2);
+   public void onCraftedBy(ItemStack var1, Player var2) {
+      this.onCraftedPostProcess(var1, var2.level());
    }
 
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
@@ -252,19 +291,31 @@ public class Item implements FeatureElement, ItemLike {
 
    public ItemUseAnimation getUseAnimation(ItemStack var1) {
       Consumable var2 = (Consumable)var1.get(DataComponents.CONSUMABLE);
-      return var2 != null ? var2.animation() : ItemUseAnimation.NONE;
+      if (var2 != null) {
+         return var2.animation();
+      } else {
+         BlocksAttacks var3 = (BlocksAttacks)var1.get(DataComponents.BLOCKS_ATTACKS);
+         return var3 != null ? ItemUseAnimation.BLOCK : ItemUseAnimation.NONE;
+      }
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
       Consumable var3 = (Consumable)var1.get(DataComponents.CONSUMABLE);
-      return var3 != null ? var3.consumeTicks() : 0;
+      if (var3 != null) {
+         return var3.consumeTicks();
+      } else {
+         BlocksAttacks var4 = (BlocksAttacks)var1.get(DataComponents.BLOCKS_ATTACKS);
+         return var4 != null ? 72000 : 0;
+      }
    }
 
    public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       return false;
    }
 
-   public void appendHoverText(ItemStack var1, TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+   /** @deprecated */
+   @Deprecated
+   public void appendHoverText(ItemStack var1, TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
@@ -302,10 +353,6 @@ public class Item implements FeatureElement, ItemLike {
       return new ItemStack(this);
    }
 
-   public SoundEvent getBreakingSound() {
-      return SoundEvents.ITEM_BREAK;
-   }
-
    public boolean canFitInsideContainerItems() {
       return true;
    }
@@ -320,6 +367,7 @@ public class Item implements FeatureElement, ItemLike {
 
    static {
       CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
       LOGGER = LogUtils.getLogger();
       BY_BLOCK = Maps.newHashMap();
       BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
@@ -387,7 +435,7 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Properties jukeboxPlayable(ResourceKey<JukeboxSong> var1) {
-         return this.component(DataComponents.JUKEBOX_PLAYABLE, new JukeboxPlayable(new EitherHolder(var1), true));
+         return this.component(DataComponents.JUKEBOX_PLAYABLE, new JukeboxPlayable(new EitherHolder(var1)));
       }
 
       public Properties enchantable(int var1) {
@@ -409,6 +457,47 @@ public class Item implements FeatureElement, ItemLike {
 
       public Properties equippableUnswappable(EquipmentSlot var1) {
          return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).setSwappable(false).build());
+      }
+
+      public Properties tool(ToolMaterial var1, TagKey<Block> var2, float var3, float var4, float var5) {
+         return var1.applyToolProperties(this, var2, var3, var4, var5);
+      }
+
+      public Properties pickaxe(ToolMaterial var1, float var2, float var3) {
+         return this.tool(var1, BlockTags.MINEABLE_WITH_PICKAXE, var2, var3, 0.0F);
+      }
+
+      public Properties axe(ToolMaterial var1, float var2, float var3) {
+         return this.tool(var1, BlockTags.MINEABLE_WITH_AXE, var2, var3, 5.0F);
+      }
+
+      public Properties hoe(ToolMaterial var1, float var2, float var3) {
+         return this.tool(var1, BlockTags.MINEABLE_WITH_HOE, var2, var3, 0.0F);
+      }
+
+      public Properties shovel(ToolMaterial var1, float var2, float var3) {
+         return this.tool(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2, var3, 0.0F);
+      }
+
+      public Properties sword(ToolMaterial var1, float var2, float var3) {
+         return var1.applySwordProperties(this, var2, var3);
+      }
+
+      public Properties humanoidArmor(ArmorMaterial var1, ArmorType var2) {
+         return this.durability(var2.getDurability(var1.durability())).attributes(var1.createAttributes(var2)).enchantable(var1.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).build()).repairable(var1.repairIngredient());
+      }
+
+      public Properties wolfArmor(ArmorMaterial var1) {
+         return this.durability(ArmorType.BODY.getDurability(var1.durability())).attributes(var1.createAttributes(ArmorType.BODY)).repairable(var1.repairIngredient()).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).setAllowedEntities(HolderSet.direct(EntityType.WOLF.builtInRegistryHolder())).build()).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
+      }
+
+      public Properties horseArmor(ArmorMaterial var1) {
+         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
+         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).build()).stacksTo(1);
+      }
+
+      public Properties trimMaterial(ResourceKey<TrimMaterial> var1) {
+         return this.component(DataComponents.PROVIDES_TRIM_MATERIAL, new ProvidesTrimMaterial(var1));
       }
 
       public Properties requiredFeatures(FeatureFlag... var1) {

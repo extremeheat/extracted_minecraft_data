@@ -34,7 +34,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Turtle;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -145,7 +145,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          int var8 = var6.get(ChronoField.MONTH_OF_YEAR);
          if (var8 == 10 && var7 == 31 && var5.nextFloat() < 0.25F) {
             this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-            this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
+            this.setDropChance(EquipmentSlot.HEAD, 0.0F);
          }
       }
 
@@ -213,8 +213,8 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.reassessWeaponGoal();
    }
 
-   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
-      super.setItemSlot(var1, var2);
+   public void onEquipItem(EquipmentSlot var1, ItemStack var2, ItemStack var3) {
+      super.onEquipItem(var1, var2, var3);
       if (!this.level().isClientSide) {
          this.reassessWeaponGoal();
       }

@@ -14,6 +14,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class LargeFireball extends Fireball {
+   private static final byte DEFAULT_EXPLOSION_POWER = 1;
    private int explosionPower = 1;
 
    public LargeFireball(EntityType<? extends LargeFireball> var1, Level var2) {
@@ -55,9 +56,6 @@ public class LargeFireball extends Fireball {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("ExplosionPower", 99)) {
-         this.explosionPower = var1.getByte("ExplosionPower");
-      }
-
+      this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
    }
 }

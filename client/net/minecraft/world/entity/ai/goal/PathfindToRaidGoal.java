@@ -25,11 +25,11 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
    }
 
    public boolean canUse() {
-      return this.mob.getTarget() == null && !this.mob.hasControllingPassenger() && this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
+      return this.mob.getTarget() == null && !this.mob.hasControllingPassenger() && this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && !getServerLevel(this.mob.level()).isVillage(this.mob.blockPosition());
    }
 
    public boolean canContinueToUse() {
-      return this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && this.mob.level() instanceof ServerLevel && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
+      return this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && !getServerLevel(this.mob.level()).isVillage(this.mob.blockPosition());
    }
 
    public void tick() {
@@ -52,12 +52,13 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
 
    private void recruitNearby(Raid var1) {
       if (var1.isActive()) {
-         HashSet var2 = Sets.newHashSet();
-         List var3 = this.mob.level().getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (var1x) -> !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1));
-         var2.addAll(var3);
+         ServerLevel var2 = getServerLevel(this.mob.level());
+         HashSet var3 = Sets.newHashSet();
+         List var4 = var2.getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (var0) -> !var0.hasActiveRaid() && Raids.canJoinRaid(var0));
+         var3.addAll(var4);
 
-         for(Raider var5 : var2) {
-            var1.joinRaid(var1.getGroupsSpawned(), var5, (BlockPos)null, true);
+         for(Raider var6 : var3) {
+            var1.joinRaid(var2, var1.getGroupsSpawned(), var6, (BlockPos)null, true);
          }
       }
 

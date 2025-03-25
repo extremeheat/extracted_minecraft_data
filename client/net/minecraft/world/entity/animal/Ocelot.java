@@ -53,6 +53,7 @@ public class Ocelot extends Animal {
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
    private static final EntityDataAccessor<Boolean> DATA_TRUSTING;
+   private static final boolean DEFAULT_TRUSTING = false;
    @Nullable
    private OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
    @Nullable
@@ -79,7 +80,7 @@ public class Ocelot extends Animal {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setTrusting(var1.getBoolean("Trusting"));
+      this.setTrusting(var1.getBooleanOr("Trusting", false));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

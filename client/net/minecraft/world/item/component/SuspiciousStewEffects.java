@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -42,15 +43,15 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
 
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       if (var3.isCreative()) {
-         ArrayList var4 = new ArrayList();
+         ArrayList var5 = new ArrayList();
 
-         for(Entry var6 : this.effects) {
-            var4.add(var6.createEffectInstance());
+         for(Entry var7 : this.effects) {
+            var5.add(var7.createEffectInstance());
          }
 
-         PotionContents.addPotionTooltip(var4, var2, 1.0F, var1.tickRate());
+         PotionContents.addPotionTooltip(var5, var2, 1.0F, var1.tickRate());
       }
 
    }

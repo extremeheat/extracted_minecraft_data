@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.IronGolem;
+import org.joml.Quaternionfc;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderState, IronGolemModel> {
    private static final ResourceLocation GOLEM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
@@ -42,7 +43,7 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderSta
          float var5 = 13.0F;
          float var6 = var1.walkAnimationPos + 6.0F;
          float var7 = (Math.abs(var6 % 13.0F - 6.5F) - 3.25F) / 3.25F;
-         var2.mulPose(Axis.ZP.rotationDegrees(6.5F * var7));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.5F * var7));
       }
    }
 

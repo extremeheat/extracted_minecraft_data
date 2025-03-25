@@ -23,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class HangingRootsBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<HangingRootsBlock> CODEC = simpleCodec(HangingRootsBlock::new);
    private static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<HangingRootsBlock> codec() {
       return CODEC;
@@ -77,6 +77,6 @@ public class HangingRootsBlock extends Block implements SimpleWaterloggedBlock {
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      SHAPE = Block.box(2.0, 10.0, 2.0, 14.0, 16.0, 14.0);
+      SHAPE = Block.column(12.0, 10.0, 16.0);
    }
 }

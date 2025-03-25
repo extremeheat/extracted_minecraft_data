@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.HumanoidArm;
+import org.joml.Quaternionfc;
 
 public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityModel<S> & ArmedModel> extends RenderLayer<S, M> {
    public ItemInHandLayer(RenderLayerParent<S, M> var1) {
@@ -25,8 +26,8 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
       if (!var2.isEmpty()) {
          var4.pushPose();
          ((ArmedModel)this.getParentModel()).translateToHand(var3, var4);
-         var4.mulPose(Axis.XP.rotationDegrees(-90.0F));
-         var4.mulPose(Axis.YP.rotationDegrees(180.0F));
+         var4.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
+         var4.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
          boolean var7 = var3 == HumanoidArm.LEFT;
          var4.translate((float)(var7 ? -1 : 1) / 16.0F, 0.125F, -0.625F);
          var2.render(var4, var5, var6, OverlayTexture.NO_OVERLAY);

@@ -45,7 +45,8 @@ public class BlockEntityRenderers {
       register(BlockEntityType.BEACON, BeaconRenderer::new);
       register(BlockEntityType.SKULL, SkullBlockRenderer::new);
       register(BlockEntityType.BANNER, BannerRenderer::new);
-      register(BlockEntityType.STRUCTURE_BLOCK, StructureBlockRenderer::new);
+      register(BlockEntityType.STRUCTURE_BLOCK, BlockEntityWithBoundingBoxRenderer::new);
+      register(BlockEntityType.TEST_INSTANCE_BLOCK, TestInstanceRenderer::new);
       register(BlockEntityType.SHULKER_BOX, ShulkerBoxRenderer::new);
       register(BlockEntityType.BED, BedRenderer::new);
       register(BlockEntityType.CONDUIT, ConduitRenderer::new);

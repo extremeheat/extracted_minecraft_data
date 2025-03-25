@@ -25,15 +25,15 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class SeaPickleBlock extends BushBlock implements BonemealableBlock, SimpleWaterloggedBlock {
+public class SeaPickleBlock extends VegetationBlock implements BonemealableBlock, SimpleWaterloggedBlock {
    public static final MapCodec<SeaPickleBlock> CODEC = simpleCodec(SeaPickleBlock::new);
    public static final int MAX_PICKLES = 4;
    public static final IntegerProperty PICKLES;
    public static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape ONE_AABB;
-   protected static final VoxelShape TWO_AABB;
-   protected static final VoxelShape THREE_AABB;
-   protected static final VoxelShape FOUR_AABB;
+   private static final VoxelShape SHAPE_ONE;
+   private static final VoxelShape SHAPE_TWO;
+   private static final VoxelShape SHAPE_THREE;
+   private static final VoxelShape SHAPE_FOUR;
 
    public MapCodec<SeaPickleBlock> codec() {
       return CODEC;
@@ -86,17 +86,15 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+      VoxelShape var10000;
       switch ((Integer)var1.getValue(PICKLES)) {
-         case 1:
-         default:
-            return ONE_AABB;
-         case 2:
-            return TWO_AABB;
-         case 3:
-            return THREE_AABB;
-         case 4:
-            return FOUR_AABB;
+         case 2 -> var10000 = SHAPE_TWO;
+         case 3 -> var10000 = SHAPE_THREE;
+         case 4 -> var10000 = SHAPE_FOUR;
+         default -> var10000 = SHAPE_ONE;
       }
+
+      return var10000;
    }
 
    protected FluidState getFluidState(BlockState var1) {
@@ -159,9 +157,9 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    static {
       PICKLES = BlockStateProperties.PICKLES;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      ONE_AABB = Block.box(6.0, 0.0, 6.0, 10.0, 6.0, 10.0);
-      TWO_AABB = Block.box(3.0, 0.0, 3.0, 13.0, 6.0, 13.0);
-      THREE_AABB = Block.box(2.0, 0.0, 2.0, 14.0, 6.0, 14.0);
-      FOUR_AABB = Block.box(2.0, 0.0, 2.0, 14.0, 7.0, 14.0);
+      SHAPE_ONE = Block.column(4.0, 0.0, 6.0);
+      SHAPE_TWO = Block.column(10.0, 0.0, 6.0);
+      SHAPE_THREE = Block.column(12.0, 0.0, 6.0);
+      SHAPE_FOUR = Block.column(12.0, 0.0, 7.0);
    }
 }

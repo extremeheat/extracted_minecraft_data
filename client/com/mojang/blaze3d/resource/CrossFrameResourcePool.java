@@ -29,11 +29,17 @@ public class CrossFrameResourcePool implements GraphicsResourceAllocator, AutoCl
    }
 
    public <T> T acquire(ResourceDescriptor<T> var1) {
+      Object var2 = this.acquireWithoutPreparing(var1);
+      var1.prepare(var2);
+      return (T)var2;
+   }
+
+   private <T> T acquireWithoutPreparing(ResourceDescriptor<T> var1) {
       Iterator var2 = this.pool.iterator();
 
       while(var2.hasNext()) {
          ResourceEntry var3 = (ResourceEntry)var2.next();
-         if (var3.descriptor.equals(var1)) {
+         if (var1.canUsePhysicalResource(var3.descriptor)) {
             var2.remove();
             return var3.value;
          }

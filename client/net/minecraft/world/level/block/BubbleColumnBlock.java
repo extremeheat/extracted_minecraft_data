@@ -12,7 +12,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -46,18 +47,11 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(DRAG_DOWN, true));
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      BlockState var5 = var2.getBlockState(var3.above());
-      if (var5.isAir()) {
-         var4.onAboveBubbleCol((Boolean)var1.getValue(DRAG_DOWN));
-         if (!var2.isClientSide) {
-            ServerLevel var6 = (ServerLevel)var2;
-
-            for(int var7 = 0; var7 < 2; ++var7) {
-               var6.sendParticles(ParticleTypes.SPLASH, (double)var3.getX() + var2.random.nextDouble(), (double)(var3.getY() + 1), (double)var3.getZ() + var2.random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
-               var6.sendParticles(ParticleTypes.BUBBLE, (double)var3.getX() + var2.random.nextDouble(), (double)(var3.getY() + 1), (double)var3.getZ() + var2.random.nextDouble(), 1, 0.0, 0.01, 0.0, 0.2);
-            }
-         }
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      BlockState var6 = var2.getBlockState(var3.above());
+      boolean var7 = var6.getCollisionShape(var2, var3).isEmpty() && var6.getFluidState().isEmpty();
+      if (var7) {
+         var4.onAboveBubbleColumn((Boolean)var1.getValue(DRAG_DOWN), var3);
       } else {
          var4.onInsideBubbleColumn((Boolean)var1.getValue(DRAG_DOWN));
       }
@@ -152,7 +146,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
       var1.add(DRAG_DOWN);
    }
 
-   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
       return new ItemStack(Items.WATER_BUCKET);
    }

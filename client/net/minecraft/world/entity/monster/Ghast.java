@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.FlyingMob;
@@ -34,6 +35,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Ghast extends FlyingMob implements Enemy {
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING;
+   private static final byte DEFAULT_EXPLOSION_POWER = 1;
    private int explosionPower = 1;
 
    public Ghast(EntityType<? extends Ghast> var1, Level var2) {
@@ -126,10 +128,7 @@ public class Ghast extends FlyingMob implements Enemy {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("ExplosionPower", 99)) {
-         this.explosionPower = var1.getByte("ExplosionPower");
-      }
-
+      this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
    }
 
    static {
@@ -280,7 +279,7 @@ public class Ghast extends FlyingMob implements Enemy {
                Level var4 = this.ghast.level();
                ++this.chargeTime;
                if (this.chargeTime == 10 && !this.ghast.isSilent()) {
-                  var4.levelEvent((Player)null, 1015, this.ghast.blockPosition(), 0);
+                  var4.levelEvent((Entity)null, 1015, this.ghast.blockPosition(), 0);
                }
 
                if (this.chargeTime == 20) {
@@ -291,7 +290,7 @@ public class Ghast extends FlyingMob implements Enemy {
                   double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0);
                   Vec3 var14 = new Vec3(var8, var10, var12);
                   if (!this.ghast.isSilent()) {
-                     var4.levelEvent((Player)null, 1016, this.ghast.blockPosition(), 0);
+                     var4.levelEvent((Entity)null, 1016, this.ghast.blockPosition(), 0);
                   }
 
                   LargeFireball var15 = new LargeFireball(var4, this.ghast, var14.normalize(), this.ghast.getExplosionPower());

@@ -30,8 +30,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class EnchantingTableBlock extends BaseEntityBlock {
    public static final MapCodec<EnchantingTableBlock> CODEC = simpleCodec(EnchantingTableBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
    public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.betweenClosedStream(-2, 0, -2, 2, 1, 2).filter((var0) -> Math.abs(var0.getX()) == 2 || Math.abs(var0.getZ()) == 2).map(BlockPos::immutable).toList();
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 12.0);
 
    public MapCodec<EnchantingTableBlock> codec() {
       return CODEC;

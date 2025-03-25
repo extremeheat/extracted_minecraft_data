@@ -39,7 +39,7 @@ public class FaviconTexture implements AutoCloseable {
          try {
             this.checkOpen();
             if (this.texture == null) {
-               this.texture = new DynamicTexture(var1);
+               this.texture = new DynamicTexture(() -> "Favicon " + String.valueOf(this.textureLocation), var1);
             } else {
                this.texture.setPixels(var1);
                this.texture.upload();

@@ -1,10 +1,8 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
+import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +11,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -26,45 +25,32 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
    public static final BooleanProperty WATERLOGGED;
-   protected static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
-   protected final VoxelShape[] collisionShapeByIndex;
-   protected final VoxelShape[] shapeByIndex;
-   private final Object2IntMap<BlockState> stateToIndex = new Object2IntOpenHashMap();
+   public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
+   private final Function<BlockState, VoxelShape> collisionShapes;
+   private final Function<BlockState, VoxelShape> shapes;
 
    protected CrossCollisionBlock(float var1, float var2, float var3, float var4, float var5, BlockBehaviour.Properties var6) {
       super(var6);
-      this.collisionShapeByIndex = this.makeShapes(var1, var2, var5, 0.0F, var5);
-      this.shapeByIndex = this.makeShapes(var1, var2, var3, 0.0F, var4);
-      UnmodifiableIterator var7 = this.stateDefinition.getPossibleStates().iterator();
-
-      while(var7.hasNext()) {
-         BlockState var8 = (BlockState)var7.next();
-         this.getAABBIndex(var8);
-      }
-
+      this.collisionShapes = this.makeShapes(var1, var5, var3, 0.0F, var5);
+      this.shapes = this.makeShapes(var1, var2, var3, 0.0F, var4);
    }
 
    protected abstract MapCodec<? extends CrossCollisionBlock> codec();
 
-   protected VoxelShape[] makeShapes(float var1, float var2, float var3, float var4, float var5) {
-      float var6 = 8.0F - var1;
-      float var7 = 8.0F + var1;
-      float var8 = 8.0F - var2;
-      float var9 = 8.0F + var2;
-      VoxelShape var10 = Block.box((double)var6, 0.0, (double)var6, (double)var7, (double)var3, (double)var7);
-      VoxelShape var11 = Block.box((double)var8, (double)var4, 0.0, (double)var9, (double)var5, (double)var9);
-      VoxelShape var12 = Block.box((double)var8, (double)var4, (double)var8, (double)var9, (double)var5, 16.0);
-      VoxelShape var13 = Block.box(0.0, (double)var4, (double)var8, (double)var9, (double)var5, (double)var9);
-      VoxelShape var14 = Block.box((double)var8, (double)var4, (double)var8, 16.0, (double)var5, (double)var9);
-      VoxelShape var15 = Shapes.or(var11, var14);
-      VoxelShape var16 = Shapes.or(var12, var13);
-      VoxelShape[] var17 = new VoxelShape[]{Shapes.empty(), var12, var13, var16, var11, Shapes.or(var12, var11), Shapes.or(var13, var11), Shapes.or(var16, var11), var14, Shapes.or(var12, var14), Shapes.or(var13, var14), Shapes.or(var16, var14), var15, Shapes.or(var12, var15), Shapes.or(var13, var15), Shapes.or(var16, var15)};
+   protected Function<BlockState, VoxelShape> makeShapes(float var1, float var2, float var3, float var4, float var5) {
+      VoxelShape var6 = Block.column((double)var1, 0.0, (double)var2);
+      Map var7 = Shapes.rotateHorizontal(Block.boxZ((double)var3, (double)var4, (double)var5, 0.0, 8.0));
+      return this.getShapeForEachState((var2x) -> {
+         VoxelShape var3 = var6;
 
-      for(int var18 = 0; var18 < 16; ++var18) {
-         var17[var18] = Shapes.or(var10, var17[var18]);
-      }
+         for(Map.Entry var5 : PROPERTY_BY_DIRECTION.entrySet()) {
+            if ((Boolean)var2x.getValue((Property)var5.getValue())) {
+               var3 = Shapes.or(var3, (VoxelShape)var7.get(var5.getKey()));
+            }
+         }
 
-      return var17;
+         return var3;
+      }, new Property[]{WATERLOGGED});
    }
 
    protected boolean propagatesSkylightDown(BlockState var1) {
@@ -72,38 +58,11 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.shapeByIndex[this.getAABBIndex(var1)];
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.collisionShapeByIndex[this.getAABBIndex(var1)];
-   }
-
-   private static int indexFor(Direction var0) {
-      return 1 << var0.get2DDataValue();
-   }
-
-   protected int getAABBIndex(BlockState var1) {
-      return this.stateToIndex.computeIntIfAbsent(var1, (var0) -> {
-         int var1 = 0;
-         if ((Boolean)var0.getValue(NORTH)) {
-            var1 |= indexFor(Direction.NORTH);
-         }
-
-         if ((Boolean)var0.getValue(EAST)) {
-            var1 |= indexFor(Direction.EAST);
-         }
-
-         if ((Boolean)var0.getValue(SOUTH)) {
-            var1 |= indexFor(Direction.SOUTH);
-         }
-
-         if ((Boolean)var0.getValue(WEST)) {
-            var1 |= indexFor(Direction.WEST);
-         }
-
-         return var1;
-      });
+      return (VoxelShape)this.collisionShapes.apply(var1);
    }
 
    protected FluidState getFluidState(BlockState var1) {

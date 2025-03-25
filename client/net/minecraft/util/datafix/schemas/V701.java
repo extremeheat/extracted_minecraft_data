@@ -10,14 +10,10 @@ public class V701 extends Schema {
       super(var1, var2);
    }
 
-   protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> V100.equipment(var0));
-   }
-
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      registerMob(var1, var2, "WitherSkeleton");
-      registerMob(var1, var2, "Stray");
+      var1.registerSimple(var2, "WitherSkeleton");
+      var1.registerSimple(var2, "Stray");
       return var2;
    }
 }

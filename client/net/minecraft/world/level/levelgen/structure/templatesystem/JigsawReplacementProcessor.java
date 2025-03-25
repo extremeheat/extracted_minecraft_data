@@ -30,7 +30,7 @@ public class JigsawReplacementProcessor extends StructureProcessor {
             LOGGER.warn("Jigsaw block at {} is missing nbt, will not replace", var2);
             return var5;
          } else {
-            String var8 = var5.nbt().getString("final_state");
+            String var8 = var5.nbt().getStringOr("final_state", "minecraft:air");
 
             BlockState var9;
             try {

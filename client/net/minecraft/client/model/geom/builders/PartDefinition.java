@@ -36,7 +36,12 @@ public class PartDefinition {
    }
 
    public PartDefinition clearChild(String var1) {
-      return this.addOrReplaceChild(var1, CubeListBuilder.create(), PartPose.ZERO);
+      PartDefinition var2 = (PartDefinition)this.children.get(var1);
+      if (var2 == null) {
+         throw new IllegalArgumentException("No child with name: " + var1);
+      } else {
+         return this.addOrReplaceChild(var1, CubeListBuilder.create(), var2.partPose);
+      }
    }
 
    public ModelPart bake(int var1, int var2) {

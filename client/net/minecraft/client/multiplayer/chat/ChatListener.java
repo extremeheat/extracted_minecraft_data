@@ -90,21 +90,26 @@ public class ChatListener {
       this.handleMessage(var1.signature(), () -> {
          boolean var7x = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
          ClientPacketListener var8 = this.minecraft.getConnection();
-         if (var8 != null) {
-            var8.markMessageAsProcessed(var1, var7x);
+         if (var8 != null && var1.signature() != null) {
+            var8.markMessageAsProcessed(var1.signature(), var7x);
          }
 
          return var7x;
       });
    }
 
-   public void handleChatMessageError(UUID var1, ChatType.Bound var2) {
+   public void handleChatMessageError(UUID var1, @Nullable MessageSignature var2, ChatType.Bound var3) {
       this.handleMessage((MessageSignature)null, () -> {
+         ClientPacketListener var4 = this.minecraft.getConnection();
+         if (var4 != null && var2 != null) {
+            var4.markMessageAsProcessed(var2, false);
+         }
+
          if (this.minecraft.isBlocked(var1)) {
             return false;
          } else {
-            Component var3 = var2.decorate(CHAT_VALIDATION_ERROR);
-            this.minecraft.gui.getChat().addMessage(var3, (MessageSignature)null, GuiMessageTag.chatError());
+            Component var5 = var3.decorate(CHAT_VALIDATION_ERROR);
+            this.minecraft.gui.getChat().addMessage(var5, (MessageSignature)null, GuiMessageTag.chatError());
             this.previousMessageTime = Util.getMillis();
             return true;
          }

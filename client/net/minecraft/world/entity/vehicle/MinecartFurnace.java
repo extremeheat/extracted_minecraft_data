@@ -25,12 +25,14 @@ public class MinecartFurnace extends AbstractMinecart {
    private static final EntityDataAccessor<Boolean> DATA_ID_FUEL;
    private static final int FUEL_TICKS_PER_ITEM = 3600;
    private static final int MAX_FUEL_TICKS = 32000;
-   private int fuel;
+   private static final short DEFAULT_FUEL = 0;
+   private static final Vec3 DEFAULT_PUSH;
+   private int fuel = 0;
    public Vec3 push;
 
    public MinecartFurnace(EntityType<? extends MinecartFurnace> var1, Level var2) {
       super(var1, var2);
-      this.push = Vec3.ZERO;
+      this.push = DEFAULT_PUSH;
    }
 
    public boolean isFurnace() {
@@ -118,10 +120,10 @@ public class MinecartFurnace extends AbstractMinecart {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      double var2 = var1.getDouble("PushX");
-      double var4 = var1.getDouble("PushZ");
+      double var2 = var1.getDoubleOr("PushX", DEFAULT_PUSH.x);
+      double var4 = var1.getDoubleOr("PushZ", DEFAULT_PUSH.z);
       this.push = new Vec3(var2, 0.0, var4);
-      this.fuel = var1.getShort("Fuel");
+      this.fuel = var1.getShortOr("Fuel", (short)0);
    }
 
    protected boolean hasFuel() {
@@ -138,5 +140,6 @@ public class MinecartFurnace extends AbstractMinecart {
 
    static {
       DATA_ID_FUEL = SynchedEntityData.<Boolean>defineId(MinecartFurnace.class, EntityDataSerializers.BOOLEAN);
+      DEFAULT_PUSH = Vec3.ZERO;
    }
 }

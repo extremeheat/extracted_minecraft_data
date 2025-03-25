@@ -142,7 +142,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       }
 
       private void op(int var1) {
-         RealmsClient var2 = RealmsClient.create();
+         RealmsClient var2 = RealmsClient.getOrCreate();
          UUID var3 = ((PlayerInfo)RealmsPlayerScreen.this.serverData.players.get(var1)).getUuid();
 
          try {
@@ -152,10 +152,11 @@ public class RealmsPlayerScreen extends RealmsScreen {
          }
 
          this.updateOpButtons();
+         this.setFocused(this.removeOpButton);
       }
 
       private void deop(int var1) {
-         RealmsClient var2 = RealmsClient.create();
+         RealmsClient var2 = RealmsClient.getOrCreate();
          UUID var3 = ((PlayerInfo)RealmsPlayerScreen.this.serverData.players.get(var1)).getUuid();
 
          try {
@@ -165,6 +166,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
          }
 
          this.updateOpButtons();
+         this.setFocused(this.makeOpButton);
       }
 
       private void uninvite(int var1) {
@@ -172,7 +174,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
             PlayerInfo var2 = (PlayerInfo)RealmsPlayerScreen.this.serverData.players.get(var1);
             RealmsConfirmScreen var3 = new RealmsConfirmScreen((var3x) -> {
                if (var3x) {
-                  RealmsClient var4 = RealmsClient.create();
+                  RealmsClient var4 = RealmsClient.getOrCreate();
 
                   try {
                      var4.uninvite(RealmsPlayerScreen.this.serverData.id, var2.getUuid());

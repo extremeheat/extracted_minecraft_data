@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
@@ -36,16 +37,16 @@ public class ActiveProfiler implements ProfileCollector {
    private boolean started;
    @Nullable
    private PathEntry currentEntry;
-   private final boolean warn;
+   private final BooleanSupplier suppressWarnings;
    private final Set<Pair<String, MetricCategory>> chartedPaths = new ObjectArraySet();
 
-   public ActiveProfiler(LongSupplier var1, IntSupplier var2, boolean var3) {
+   public ActiveProfiler(LongSupplier var1, IntSupplier var2, BooleanSupplier var3) {
       super();
       this.startTimeNano = var1.getAsLong();
       this.getRealTime = var1;
       this.startTimeTicks = var2.getAsInt();
       this.getTickTime = var2;
-      this.warn = var3;
+      this.suppressWarnings = var3;
    }
 
    public void startTick() {
@@ -110,7 +111,7 @@ public class ActiveProfiler implements ProfileCollector {
          ++var7.count;
          var7.maxDuration = Math.max(var7.maxDuration, var5);
          var7.minDuration = Math.min(var7.minDuration, var5);
-         if (this.warn && var5 > WARNING_TIME_NANOS) {
+         if (var5 > WARNING_TIME_NANOS && !this.suppressWarnings.getAsBoolean()) {
             LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)var5 / 1000000.0));
          }
 

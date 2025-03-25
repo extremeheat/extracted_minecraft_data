@@ -30,8 +30,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<ConduitBlock> CODEC = simpleCodec(ConduitBlock::new);
    public static final BooleanProperty WATERLOGGED;
-   private static final int SIZE = 3;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<ConduitBlock> codec() {
       return CODEC;
@@ -83,6 +82,6 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      SHAPE = Block.box(5.0, 5.0, 5.0, 11.0, 11.0, 11.0);
+      SHAPE = Block.cube(6.0);
    }
 }

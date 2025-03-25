@@ -26,6 +26,10 @@ public class V3818_3 extends NamespacedSchema {
       var1.put("minecraft:entity_data", (Supplier)() -> References.ENTITY_TREE.in(var0));
       var1.put("minecraft:pot_decorations", (Supplier)() -> DSL.list(References.ITEM_NAME.in(var0)));
       var1.put("minecraft:food", (Supplier)() -> DSL.optionalFields("using_converts_to", References.ITEM_STACK.in(var0)));
+      var1.put("minecraft:custom_name", (Supplier)() -> References.TEXT_COMPONENT.in(var0));
+      var1.put("minecraft:item_name", (Supplier)() -> References.TEXT_COMPONENT.in(var0));
+      var1.put("minecraft:lore", (Supplier)() -> DSL.list(References.TEXT_COMPONENT.in(var0)));
+      var1.put("minecraft:written_book_content", (Supplier)() -> DSL.optionalFields("pages", DSL.list(DSL.or(DSL.optionalFields("raw", References.TEXT_COMPONENT.in(var0), "filtered", References.TEXT_COMPONENT.in(var0)), References.TEXT_COMPONENT.in(var0)))));
       return var1;
    }
 

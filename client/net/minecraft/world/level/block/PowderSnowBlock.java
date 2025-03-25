@@ -14,6 +14,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
@@ -54,42 +56,49 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return var2.is(this) ? true : super.skipRendering(var1, var2, var3);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!(var4 instanceof LivingEntity) || var4.getInBlockState().is(this)) {
          var4.makeStuckInBlock(var1, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
          if (var2.isClientSide) {
-            RandomSource var5 = var2.getRandom();
-            boolean var6 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
-            if (var6 && var5.nextBoolean()) {
-               var2.addParticle(ParticleTypes.SNOWFLAKE, var4.getX(), (double)(var3.getY() + 1), var4.getZ(), (double)(Mth.randomBetween(var5, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(var5, -1.0F, 1.0F) * 0.083333336F));
+            RandomSource var6 = var2.getRandom();
+            boolean var7 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
+            if (var7 && var6.nextBoolean()) {
+               var2.addParticle(ParticleTypes.SNOWFLAKE, var4.getX(), (double)(var3.getY() + 1), var4.getZ(), (double)(Mth.randomBetween(var6, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(var6, -1.0F, 1.0F) * 0.083333336F));
             }
          }
       }
 
-      var4.setIsInPowderSnow(true);
-      if (var2 instanceof ServerLevel var7) {
-         if (var4.isOnFire() && (var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || var4 instanceof Player) && var4.mayInteract(var7, var3)) {
-            var2.destroyBlock(var3, false);
+      BlockPos var8 = var3.immutable();
+      var5.runBefore(InsideBlockEffectType.EXTINGUISH, (var2x) -> {
+         if (var2 instanceof ServerLevel var3) {
+            if (var2x.isOnFire() && (var3.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || var2x instanceof Player) && var2x.mayInteract(var3, var8)) {
+               var2.destroyBlock(var8, false);
+            }
          }
 
-         var4.setSharedFlagOnFire(false);
-      }
-
+      });
+      var5.apply(InsideBlockEffectType.FREEZE);
+      var5.apply(InsideBlockEffectType.EXTINGUISH);
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      if (!((double)var5 < 4.0) && var4 instanceof LivingEntity var6) {
-         LivingEntity.Fallsounds var7 = var6.getFallSounds();
-         SoundEvent var8 = (double)var5 < 7.0 ? var7.small() : var7.big();
-         var4.playSound(var8, 1.0F, 1.0F);
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
+      if (!(var5 < 4.0) && var4 instanceof LivingEntity var7) {
+         LivingEntity.Fallsounds var8 = var7.getFallSounds();
+         SoundEvent var9 = var5 < 7.0 ? var8.small() : var8.big();
+         var4.playSound(var9, 1.0F, 1.0F);
       }
+   }
+
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      VoxelShape var5 = this.getCollisionShape(var1, var2, var3, CollisionContext.of(var4));
+      return var5.isEmpty() ? Shapes.block() : var5;
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var4 instanceof EntityCollisionContext var5) {
+      if (!var4.isPlacement() && var4 instanceof EntityCollisionContext var5) {
          Entity var6 = var5.getEntity();
          if (var6 != null) {
-            if (var6.fallDistance > 2.5F) {
+            if (var6.fallDistance > 2.5) {
                return FALLING_COLLISION_SHAPE;
             }
 
@@ -115,7 +124,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
-   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
       if (!var2.isClientSide()) {
          var2.levelEvent(2001, var3, Block.getId(var4));

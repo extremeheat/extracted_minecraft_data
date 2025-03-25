@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -40,6 +42,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.joml.Quaternionfc;
 
 public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M> {
    private static final float EYE_BED_OFFSET = 0.1F;
@@ -170,7 +173,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
 
       if (!var1.hasPose(Pose.SLEEPING)) {
-         var2.mulPose(Axis.YP.rotationDegrees(180.0F - var3));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
       }
 
       if (var1.deathTime > 0.0F) {
@@ -180,19 +183,19 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
             var5 = 1.0F;
          }
 
-         var2.mulPose(Axis.ZP.rotationDegrees(var5 * this.getFlipDegrees()));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var5 * this.getFlipDegrees()));
       } else if (var1.isAutoSpinAttack) {
-         var2.mulPose(Axis.XP.rotationDegrees(-90.0F - var1.xRot));
-         var2.mulPose(Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F - var1.xRot));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
       } else if (var1.hasPose(Pose.SLEEPING)) {
          Direction var8 = var1.bedOrientation;
          float var6 = var8 != null ? sleepDirectionToRotation(var8) : var3;
-         var2.mulPose(Axis.YP.rotationDegrees(var6));
-         var2.mulPose(Axis.ZP.rotationDegrees(this.getFlipDegrees()));
-         var2.mulPose(Axis.YP.rotationDegrees(270.0F));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var6));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(this.getFlipDegrees()));
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(270.0F));
       } else if (var1.isUpsideDown) {
          var2.translate(0.0F, (var1.boundingBoxHeight + 0.1F) / var4, 0.0F);
-         var2.mulPose(Axis.ZP.rotationDegrees(180.0F));
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
       }
 
    }
@@ -251,7 +254,17 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       if (var0 instanceof Player || var0.hasCustomName()) {
          String var1 = ChatFormatting.stripFormatting(var0.getName().getString());
          if ("Dinnerbone".equals(var1) || "Grumm".equals(var1)) {
-            return !(var0 instanceof Player) || ((Player)var0).isModelPartShown(PlayerModelPart.CAPE);
+            boolean var10000;
+            if (var0 instanceof Player) {
+               Player var2 = (Player)var0;
+               if (!var2.isModelPartShown(PlayerModelPart.CAPE)) {
+                  var10000 = false;
+                  return var10000;
+               }
+            }
+
+            var10000 = true;
+            return var10000;
          }
       }
 
@@ -319,7 +332,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.wornHeadType = null;
          var2.wornHeadProfile = null;
          if (!HumanoidArmorLayer.shouldRender(var9, EquipmentSlot.HEAD)) {
-            this.itemModelResolver.updateForLiving(var2.headItem, var9, ItemDisplayContext.HEAD, false, var1);
+            this.itemModelResolver.updateForLiving(var2.headItem, var9, ItemDisplayContext.HEAD, var1);
          } else {
             var2.headItem.clear();
          }
@@ -329,6 +342,13 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       Minecraft var11 = Minecraft.getInstance();
       var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var11.player);
       var2.appearsGlowing = var11.shouldEntityAppearGlowing(var1);
+   }
+
+   protected void extractAdditionalHitboxes(T var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
+      AABB var4 = var1.getBoundingBox();
+      float var5 = 0.01F;
+      HitboxRenderState var6 = new HitboxRenderState(var4.minX - var1.getX(), (double)(var1.getEyeHeight() - 0.01F), var4.minZ - var1.getZ(), var4.maxX - var1.getX(), (double)(var1.getEyeHeight() + 0.01F), var4.maxZ - var1.getZ(), 1.0F, 0.0F, 0.0F);
+      var2.add(var6);
    }
 
    private static float solveBodyRot(LivingEntity var0, float var1, float var2) {

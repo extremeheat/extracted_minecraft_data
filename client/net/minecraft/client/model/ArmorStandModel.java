@@ -52,15 +52,15 @@ public class ArmorStandModel extends ArmorStandArmorModel {
       this.leftArm.visible = var1.showArms;
       this.rightArm.visible = var1.showArms;
       this.basePlate.visible = var1.showBasePlate;
-      this.rightBodyStick.xRot = 0.017453292F * var1.bodyPose.getX();
-      this.rightBodyStick.yRot = 0.017453292F * var1.bodyPose.getY();
-      this.rightBodyStick.zRot = 0.017453292F * var1.bodyPose.getZ();
-      this.leftBodyStick.xRot = 0.017453292F * var1.bodyPose.getX();
-      this.leftBodyStick.yRot = 0.017453292F * var1.bodyPose.getY();
-      this.leftBodyStick.zRot = 0.017453292F * var1.bodyPose.getZ();
-      this.shoulderStick.xRot = 0.017453292F * var1.bodyPose.getX();
-      this.shoulderStick.yRot = 0.017453292F * var1.bodyPose.getY();
-      this.shoulderStick.zRot = 0.017453292F * var1.bodyPose.getZ();
+      this.rightBodyStick.xRot = 0.017453292F * var1.bodyPose.x();
+      this.rightBodyStick.yRot = 0.017453292F * var1.bodyPose.y();
+      this.rightBodyStick.zRot = 0.017453292F * var1.bodyPose.z();
+      this.leftBodyStick.xRot = 0.017453292F * var1.bodyPose.x();
+      this.leftBodyStick.yRot = 0.017453292F * var1.bodyPose.y();
+      this.leftBodyStick.zRot = 0.017453292F * var1.bodyPose.z();
+      this.shoulderStick.xRot = 0.017453292F * var1.bodyPose.x();
+      this.shoulderStick.yRot = 0.017453292F * var1.bodyPose.y();
+      this.shoulderStick.zRot = 0.017453292F * var1.bodyPose.z();
    }
 
    public void translateToHand(HumanoidArm var1, PoseStack var2) {

@@ -7,8 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -23,18 +21,14 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BambooStalkBlock extends Block implements BonemealableBlock {
    public static final MapCodec<BambooStalkBlock> CODEC = simpleCodec(BambooStalkBlock::new);
-   protected static final float SMALL_LEAVES_AABB_OFFSET = 3.0F;
-   protected static final float LARGE_LEAVES_AABB_OFFSET = 5.0F;
-   protected static final float COLLISION_AABB_OFFSET = 1.5F;
-   protected static final VoxelShape SMALL_SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 16.0, 11.0);
-   protected static final VoxelShape LARGE_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 16.0, 13.0);
-   protected static final VoxelShape COLLISION_SHAPE = Block.box(6.5, 0.0, 6.5, 9.5, 16.0, 9.5);
+   private static final VoxelShape SHAPE_SMALL = Block.column(6.0, 0.0, 16.0);
+   private static final VoxelShape SHAPE_LARGE = Block.column(10.0, 0.0, 16.0);
+   private static final VoxelShape SHAPE_COLLISION = Block.column(3.0, 0.0, 16.0);
    public static final IntegerProperty AGE;
    public static final EnumProperty<BambooLeaves> LEAVES;
    public static final IntegerProperty STAGE;
@@ -62,9 +56,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      VoxelShape var5 = var1.getValue(LEAVES) == BambooLeaves.LARGE ? LARGE_SHAPE : SMALL_SHAPE;
-      Vec3 var6 = var1.getOffset(var3);
-      return var5.move(var6.x, var6.y, var6.z);
+      VoxelShape var5 = var1.getValue(LEAVES) == BambooLeaves.LARGE ? SHAPE_LARGE : SHAPE_SMALL;
+      return var5.move(var1.getOffset(var3));
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
@@ -72,8 +65,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var3);
-      return COLLISION_SHAPE.move(var5.x, var5.y, var5.z);
+      return SHAPE_COLLISION.move(var1.getOffset(var3));
    }
 
    protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -166,10 +158,6 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
          ++var7;
       }
 
-   }
-
-   protected float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
-      return var2.getMainHandItem().getItem() instanceof SwordItem ? 1.0F : super.getDestroyProgress(var1, var2, var3, var4);
    }
 
    protected void growBamboo(BlockState var1, Level var2, BlockPos var3, RandomSource var4, int var5) {

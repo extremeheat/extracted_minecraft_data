@@ -15,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.TransmuteRecipe;
+import net.minecraft.world.item.crafting.TransmuteResult;
 
 public class TransmuteRecipeBuilder implements RecipeBuilder {
    private final RecipeCategory category;
@@ -57,7 +58,7 @@ public class TransmuteRecipeBuilder implements RecipeBuilder {
       Map var10000 = this.criteria;
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
-      TransmuteRecipe var4 = new TransmuteRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.input, this.material, this.result);
+      TransmuteRecipe var4 = new TransmuteRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.input, this.material, new TransmuteResult(this.result.value()));
       var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 

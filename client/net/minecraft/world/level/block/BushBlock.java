@@ -2,41 +2,41 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
-public abstract class BushBlock extends Block {
+public class BushBlock extends VegetationBlock implements BonemealableBlock {
+   public static final MapCodec<BushBlock> CODEC = simpleCodec(BushBlock::new);
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 13.0);
+
+   public MapCodec<BushBlock> codec() {
+      return CODEC;
+   }
+
    protected BushBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }
 
-   protected abstract MapCodec<? extends BushBlock> codec();
-
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.DIRT) || var1.is(Blocks.FARMLAND);
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+      return SHAPE;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+      return BonemealableBlock.hasSpreadableNeighbourPos(var1, var2, var3);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      return this.mayPlaceOn(var2.getBlockState(var4), var2, var4);
+   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+      return true;
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
-      return var1.getFluidState().isEmpty();
-   }
-
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      return var2 == PathComputationType.AIR && !this.hasCollision ? true : super.isPathfindable(var1, var2);
+   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
+      BonemealableBlock.findSpreadableNeighbourPos(var1, var3, var4).ifPresent((var2x) -> var1.setBlockAndUpdate(var2x, this.defaultBlockState()));
    }
 }

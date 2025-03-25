@@ -2,14 +2,15 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -48,17 +49,9 @@ public class RedStoneWireBlock extends Block {
    public static final EnumProperty<RedstoneSide> WEST;
    public static final IntegerProperty POWER;
    public static final Map<Direction, EnumProperty<RedstoneSide>> PROPERTY_BY_DIRECTION;
-   protected static final int H = 1;
-   protected static final int W = 3;
-   protected static final int E = 13;
-   protected static final int N = 3;
-   protected static final int S = 13;
-   private static final VoxelShape SHAPE_DOT;
-   private static final Map<Direction, VoxelShape> SHAPES_FLOOR;
-   private static final Map<Direction, VoxelShape> SHAPES_UP;
-   private static final Map<BlockState, VoxelShape> SHAPES_CACHE;
    private static final int[] COLORS;
    private static final float PARTICLE_DENSITY = 0.2F;
+   private final Function<BlockState, VoxelShape> shapes;
    private final BlockState crossState;
    private final RedstoneWireEvaluator evaluator = new DefaultRedstoneWireEvaluator(this);
    private boolean shouldSignal = true;
@@ -70,35 +63,37 @@ public class RedStoneWireBlock extends Block {
    public RedStoneWireBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, RedstoneSide.NONE)).setValue(EAST, RedstoneSide.NONE)).setValue(SOUTH, RedstoneSide.NONE)).setValue(WEST, RedstoneSide.NONE)).setValue(POWER, 0));
+      this.shapes = this.makeShapes();
       this.crossState = (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, RedstoneSide.SIDE)).setValue(EAST, RedstoneSide.SIDE)).setValue(SOUTH, RedstoneSide.SIDE)).setValue(WEST, RedstoneSide.SIDE);
-      UnmodifiableIterator var2 = this.getStateDefinition().getPossibleStates().iterator();
-
-      while(var2.hasNext()) {
-         BlockState var3 = (BlockState)var2.next();
-         if ((Integer)var3.getValue(POWER) == 0) {
-            SHAPES_CACHE.put(var3, this.calculateShape(var3));
-         }
-      }
-
    }
 
-   private VoxelShape calculateShape(BlockState var1) {
-      VoxelShape var2 = SHAPE_DOT;
+   private Function<BlockState, VoxelShape> makeShapes() {
+      boolean var1 = true;
+      boolean var2 = true;
+      VoxelShape var3 = Block.column(10.0, 0.0, 1.0);
+      Map var4 = Shapes.rotateHorizontal(Block.boxZ(10.0, 0.0, 1.0, 0.0, 8.0));
+      Map var5 = Shapes.rotateHorizontal(Block.boxZ(10.0, 16.0, 0.0, 1.0));
+      return this.getShapeForEachState((var3x) -> {
+         VoxelShape var4x = var3;
 
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
-         RedstoneSide var5 = (RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var4));
-         if (var5 == RedstoneSide.SIDE) {
-            var2 = Shapes.or(var2, (VoxelShape)SHAPES_FLOOR.get(var4));
-         } else if (var5 == RedstoneSide.UP) {
-            var2 = Shapes.or(var2, (VoxelShape)SHAPES_UP.get(var4));
+         for(Map.Entry var6 : PROPERTY_BY_DIRECTION.entrySet()) {
+            VoxelShape var10000;
+            switch ((RedstoneSide)var3x.getValue((Property)var6.getValue())) {
+               case UP -> var10000 = Shapes.or(var4x, (VoxelShape)var4.get(var6.getKey()), (VoxelShape)var5.get(var6.getKey()));
+               case SIDE -> var10000 = Shapes.or(var4x, (VoxelShape)var4.get(var6.getKey()));
+               case NONE -> var10000 = var4x;
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            var4x = var10000;
          }
-      }
 
-      return var2;
+         return var4x;
+      }, new Property[]{POWER});
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES_CACHE.get(var1.setValue(POWER, 0));
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -263,17 +258,14 @@ public class RedStoneWireBlock extends Block {
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
-         super.onRemove(var1, var2, var3, var4, var5);
-         if (!var2.isClientSide) {
-            for(Direction var9 : Direction.values()) {
-               var2.updateNeighborsAt(var3.relative(var9), this);
-            }
-
-            this.updatePowerStrength(var2, var3, var1, (Orientation)null, false);
-            this.updateNeighborsOfNeighboringWires(var2, var3);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4) {
+         for(Direction var8 : Direction.values()) {
+            var2.updateNeighborsAt(var3.relative(var8), this);
          }
+
+         this.updatePowerStrength(var2, var3, var1, (Orientation)null, false);
+         this.updateNeighborsOfNeighboringWires(var2, var3);
       }
    }
 
@@ -457,11 +449,7 @@ public class RedStoneWireBlock extends Block {
       SOUTH = BlockStateProperties.SOUTH_REDSTONE;
       WEST = BlockStateProperties.WEST_REDSTONE;
       POWER = BlockStateProperties.POWER;
-      PROPERTY_BY_DIRECTION = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST));
-      SHAPE_DOT = Block.box(3.0, 0.0, 3.0, 13.0, 1.0, 13.0);
-      SHAPES_FLOOR = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Block.box(3.0, 0.0, 0.0, 13.0, 1.0, 13.0), Direction.SOUTH, Block.box(3.0, 0.0, 3.0, 13.0, 1.0, 16.0), Direction.EAST, Block.box(3.0, 0.0, 3.0, 16.0, 1.0, 13.0), Direction.WEST, Block.box(0.0, 0.0, 3.0, 13.0, 1.0, 13.0)));
-      SHAPES_UP = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.NORTH), Block.box(3.0, 0.0, 0.0, 13.0, 16.0, 1.0)), Direction.SOUTH, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.SOUTH), Block.box(3.0, 0.0, 15.0, 13.0, 16.0, 16.0)), Direction.EAST, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.EAST), Block.box(15.0, 0.0, 3.0, 16.0, 16.0, 13.0)), Direction.WEST, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.WEST), Block.box(0.0, 0.0, 3.0, 1.0, 16.0, 13.0))));
-      SHAPES_CACHE = Maps.newHashMap();
+      PROPERTY_BY_DIRECTION = ImmutableMap.copyOf(Maps.newEnumMap(Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST)));
       COLORS = (int[])Util.make(new int[16], (var0) -> {
          for(int var1 = 0; var1 <= 15; ++var1) {
             float var2 = (float)var1 / 15.0F;

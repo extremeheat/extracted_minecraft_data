@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal.armadillo;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
@@ -238,17 +239,14 @@ public class Armadillo extends Animal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("state", this.getState().getSerializedName());
+      var1.store("state", Armadillo.ArmadilloState.CODEC, this.getState());
       var1.putInt("scute_time", this.scuteTime);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.switchToState(Armadillo.ArmadilloState.fromName(var1.getString("state")));
-      if (var1.contains("scute_time")) {
-         this.scuteTime = var1.getInt("scute_time");
-      }
-
+      this.switchToState((ArmadilloState)var1.read("state", Armadillo.ArmadilloState.CODEC).orElse(Armadillo.ArmadilloState.IDLE));
+      var1.getInt("scute_time").ifPresent((var1x) -> this.scuteTime = var1x);
    }
 
    public void rollUp() {
@@ -387,7 +385,7 @@ public class Armadillo extends Animal {
          }
       };
 
-      private static final StringRepresentable.EnumCodec<ArmadilloState> CODEC = StringRepresentable.<ArmadilloState>fromEnum(ArmadilloState::values);
+      static final Codec<ArmadilloState> CODEC = StringRepresentable.<ArmadilloState>fromEnum(ArmadilloState::values);
       private static final IntFunction<ArmadilloState> BY_ID = ByIdMap.<ArmadilloState>continuous(ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, ArmadilloState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ArmadilloState::id);
       private final String name;
@@ -400,10 +398,6 @@ public class Armadillo extends Animal {
          this.isThreatened = var4;
          this.animationDuration = var5;
          this.id = var6;
-      }
-
-      public static ArmadilloState fromName(String var0) {
-         return (ArmadilloState)CODEC.byName(var0, IDLE);
       }
 
       public String getSerializedName() {

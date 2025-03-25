@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -22,11 +21,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public class HoeItem extends DiggerItem {
+public class HoeItem extends Item {
    protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES;
 
    public HoeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var1, BlockTags.MINEABLE_WITH_HOE, var2, var3, var4);
+      super(var4.hoe(var1, var2, var3));
    }
 
    public InteractionResult useOn(UseOnContext var1) {
@@ -40,7 +39,7 @@ public class HoeItem extends DiggerItem {
          Consumer var6 = (Consumer)var4.getSecond();
          if (var5.test(var1)) {
             Player var7 = var1.getPlayer();
-            var2.playSound(var7, var3, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var2.playSound(var7, (BlockPos)var3, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
             if (!var2.isClientSide) {
                var6.accept(var1);
                if (var7 != null) {

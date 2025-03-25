@@ -20,10 +20,10 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -32,6 +32,7 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("particle.notFound", var0));
    public static final DynamicCommandExceptionType ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("particle.invalidOptions", var0));
    private final HolderLookup.Provider registries;
+   private static final TagParser<?> VALUE_PARSER;
 
    public ParticleArgument(CommandBuildContext var1) {
       super();
@@ -56,7 +57,7 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
 
    public static ParticleOptions readParticle(StringReader var0, HolderLookup.Provider var1) throws CommandSyntaxException {
       ParticleType var2 = readParticleType(var0, var1.lookupOrThrow(Registries.PARTICLE_TYPE));
-      return readParticle(var0, var2, var1);
+      return readParticle(VALUE_PARSER, var0, var2, var1);
    }
 
    private static ParticleType<?> readParticleType(StringReader var0, HolderLookup<ParticleType<?>> var1) throws CommandSyntaxException {
@@ -65,15 +66,16 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
       return (ParticleType)((Holder.Reference)var1.get(var3).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.createWithContext(var0, var2))).value();
    }
 
-   private static <T extends ParticleOptions> T readParticle(StringReader var0, ParticleType<T> var1, HolderLookup.Provider var2) throws CommandSyntaxException {
-      CompoundTag var3;
-      if (var0.canRead() && var0.peek() == '{') {
-         var3 = (new TagParser(var0)).readStruct();
+   private static <T extends ParticleOptions, O> T readParticle(TagParser<O> var0, StringReader var1, ParticleType<T> var2, HolderLookup.Provider var3) throws CommandSyntaxException {
+      RegistryOps var5 = var3.createSerializationContext(var0.getOps());
+      Object var4;
+      if (var1.canRead() && var1.peek() == '{') {
+         var4 = var0.parseAsArgument(var1);
       } else {
-         var3 = new CompoundTag();
+         var4 = var5.emptyMap();
       }
 
-      DataResult var10000 = var1.codec().codec().parse(var2.createSerializationContext(NbtOps.INSTANCE), var3);
+      DataResult var10000 = var2.codec().codec().parse(var5, var4);
       DynamicCommandExceptionType var10001 = ERROR_INVALID_OPTIONS;
       Objects.requireNonNull(var10001);
       return (T)(var10000.getOrThrow(var10001::create));
@@ -87,5 +89,9 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    // $FF: synthetic method
    public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
+   }
+
+   static {
+      VALUE_PARSER = TagParser.create(NbtOps.INSTANCE);
    }
 }

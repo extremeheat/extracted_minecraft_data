@@ -1,11 +1,13 @@
 package net.minecraft.world.item;
 
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 public class SmithingTemplateItem extends Item {
    private static final ChatFormatting TITLE_FORMAT;
@@ -78,14 +80,13 @@ public class SmithingTemplateItem extends Item {
       return List.of(EMPTY_SLOT_INGOT);
    }
 
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      var3.add(SMITHING_TEMPLATE_SUFFIX);
-      var3.add(CommonComponents.EMPTY);
-      var3.add(APPLIES_TO_TITLE);
-      var3.add(CommonComponents.space().append(this.appliesTo));
-      var3.add(INGREDIENTS_TITLE);
-      var3.add(CommonComponents.space().append(this.ingredients));
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
+      var4.accept(SMITHING_TEMPLATE_SUFFIX);
+      var4.accept(CommonComponents.EMPTY);
+      var4.accept(APPLIES_TO_TITLE);
+      var4.accept(CommonComponents.space().append(this.appliesTo));
+      var4.accept(INGREDIENTS_TITLE);
+      var4.accept(CommonComponents.space().append(this.ingredients));
    }
 
    public Component getBaseSlotDescription() {

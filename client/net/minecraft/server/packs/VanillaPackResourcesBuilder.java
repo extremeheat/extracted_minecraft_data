@@ -5,9 +5,6 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.FileSystemAlreadyExistsException;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -25,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.Util;
+import net.minecraft.util.FileSystemUtil;
 import org.slf4j.Logger;
 
 public class VanillaPackResourcesBuilder {
@@ -48,7 +46,7 @@ public class VanillaPackResourcesBuilder {
                      LOGGER.warn("Assets URL '{}' uses unexpected schema", var8);
                   }
 
-                  Path var10 = safeGetPath(var8);
+                  Path var10 = FileSystemUtil.safeGetPath(var8);
                   var1.put(var5, var10.getParent());
                } catch (Exception var12) {
                   LOGGER.error("Couldn't resolve path to vanilla assets", var12);
@@ -66,22 +64,6 @@ public class VanillaPackResourcesBuilder {
 
    public VanillaPackResourcesBuilder() {
       super();
-   }
-
-   private static Path safeGetPath(URI var0) throws IOException {
-      try {
-         return Paths.get(var0);
-      } catch (FileSystemNotFoundException var3) {
-      } catch (Throwable var4) {
-         LOGGER.warn("Unable to get path for: {}", var0, var4);
-      }
-
-      try {
-         FileSystems.newFileSystem(var0, Collections.emptyMap());
-      } catch (FileSystemAlreadyExistsException var2) {
-      }
-
-      return Paths.get(var0);
    }
 
    private boolean validateDirPath(Path var1) {
@@ -174,14 +156,7 @@ public class VanillaPackResourcesBuilder {
    }
 
    public VanillaPackResources build(PackLocationInfo var1) {
-      EnumMap var2 = new EnumMap(PackType.class);
-
-      for(PackType var6 : PackType.values()) {
-         List var7 = copyAndReverse((Collection)this.pathsForType.getOrDefault(var6, Set.of()));
-         var2.put(var6, var7);
-      }
-
-      return new VanillaPackResources(var1, this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), var2);
+      return new VanillaPackResources(var1, this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), Util.makeEnumMap(PackType.class, (var1x) -> copyAndReverse((Collection)this.pathsForType.getOrDefault(var1x, Set.of()))));
    }
 
    private static List<Path> copyAndReverse(Collection<Path> var0) {

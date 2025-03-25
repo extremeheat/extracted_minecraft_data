@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -44,6 +45,16 @@ public class Sheets {
    private static final RenderType SOLID_BLOCK_SHEET;
    private static final RenderType CUTOUT_BLOCK_SHEET;
    private static final RenderType TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
+   public static final MaterialMapper ITEMS_MAPPER;
+   public static final MaterialMapper BLOCKS_MAPPER;
+   public static final MaterialMapper BANNER_MAPPER;
+   public static final MaterialMapper SHIELD_MAPPER;
+   public static final MaterialMapper CHEST_MAPPER;
+   public static final MaterialMapper DECORATED_POT_MAPPER;
+   public static final MaterialMapper BED_MAPPER;
+   public static final MaterialMapper SHULKER_MAPPER;
+   public static final MaterialMapper SIGN_MAPPER;
+   public static final MaterialMapper HANGING_SIGN_MAPPER;
    public static final Material DEFAULT_SHULKER_TEXTURE_LOCATION;
    public static final List<Material> SHULKER_TEXTURE_LOCATION;
    public static final Map<WoodType, Material> SIGN_MATERIALS;
@@ -124,11 +135,7 @@ public class Sheets {
    }
 
    public static Material createBedMaterial(DyeColor var0) {
-      return createBedMaterial(colorToResourceMaterial(var0));
-   }
-
-   public static Material createBedMaterial(ResourceLocation var0) {
-      return new Material(BED_SHEET, var0.withPrefix("entity/bed/"));
+      return BED_MAPPER.apply(colorToResourceMaterial(var0));
    }
 
    public static Material getShulkerBoxMaterial(DyeColor var0) {
@@ -140,27 +147,15 @@ public class Sheets {
    }
 
    public static Material createShulkerMaterial(DyeColor var0) {
-      return createShulkerMaterial(colorToShulkerMaterial(var0));
-   }
-
-   public static Material createShulkerMaterial(ResourceLocation var0) {
-      return new Material(SHULKER_SHEET, var0.withPrefix("entity/shulker/"));
+      return SHULKER_MAPPER.apply(colorToShulkerMaterial(var0));
    }
 
    private static Material createSignMaterial(WoodType var0) {
-      return createSignMaterial(ResourceLocation.withDefaultNamespace(var0.name()));
-   }
-
-   public static Material createSignMaterial(ResourceLocation var0) {
-      return new Material(SIGN_SHEET, var0.withPrefix("entity/signs/"));
+      return SIGN_MAPPER.defaultNamespaceApply(var0.name());
    }
 
    private static Material createHangingSignMaterial(WoodType var0) {
-      return createHangingSignMaterial(ResourceLocation.withDefaultNamespace(var0.name()));
-   }
-
-   public static Material createHangingSignMaterial(ResourceLocation var0) {
-      return new Material(SIGN_SHEET, var0.withPrefix("entity/signs/hanging/"));
+      return HANGING_SIGN_MAPPER.defaultNamespaceApply(var0.name());
    }
 
    public static Material getSignMaterial(WoodType var0) {
@@ -172,29 +167,19 @@ public class Sheets {
    }
 
    public static Material getBannerMaterial(Holder<BannerPattern> var0) {
-      return (Material)BANNER_MATERIALS.computeIfAbsent(((BannerPattern)var0.value()).assetId(), (var0x) -> {
-         ResourceLocation var1 = var0x.withPrefix("entity/banner/");
-         return new Material(BANNER_SHEET, var1);
-      });
+      Map var10000 = BANNER_MATERIALS;
+      ResourceLocation var10001 = ((BannerPattern)var0.value()).assetId();
+      MaterialMapper var10002 = BANNER_MAPPER;
+      Objects.requireNonNull(var10002);
+      return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
    public static Material getShieldMaterial(Holder<BannerPattern> var0) {
-      return (Material)SHIELD_MATERIALS.computeIfAbsent(((BannerPattern)var0.value()).assetId(), (var0x) -> {
-         ResourceLocation var1 = var0x.withPrefix("entity/shield/");
-         return new Material(SHIELD_SHEET, var1);
-      });
-   }
-
-   private static Material chestMaterial(String var0) {
-      return new Material(CHEST_SHEET, ResourceLocation.withDefaultNamespace("entity/chest/" + var0));
-   }
-
-   public static Material chestMaterial(ResourceLocation var0) {
-      return new Material(CHEST_SHEET, var0.withPrefix("entity/chest/"));
-   }
-
-   private static Material createDecoratedPotMaterial(ResourceLocation var0) {
-      return new Material(DECORATED_POT_SHEET, var0.withPrefix("entity/decorated_pot/"));
+      Map var10000 = SHIELD_MATERIALS;
+      ResourceLocation var10001 = ((BannerPattern)var0.value()).assetId();
+      MaterialMapper var10002 = SHIELD_MAPPER;
+      Objects.requireNonNull(var10002);
+      return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
    @Nullable
@@ -236,27 +221,37 @@ public class Sheets {
       SOLID_BLOCK_SHEET = RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_BLOCK_SHEET = RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS);
       TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-      DEFAULT_SHULKER_TEXTURE_LOCATION = createShulkerMaterial(ResourceLocation.withDefaultNamespace("shulker"));
+      ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "item");
+      BLOCKS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "block");
+      BANNER_MAPPER = new MaterialMapper(BANNER_SHEET, "entity/banner");
+      SHIELD_MAPPER = new MaterialMapper(SHIELD_SHEET, "entity/shield");
+      CHEST_MAPPER = new MaterialMapper(CHEST_SHEET, "entity/chest");
+      DECORATED_POT_MAPPER = new MaterialMapper(DECORATED_POT_SHEET, "entity/decorated_pot");
+      BED_MAPPER = new MaterialMapper(BED_SHEET, "entity/bed");
+      SHULKER_MAPPER = new MaterialMapper(SHULKER_SHEET, "entity/shulker");
+      SIGN_MAPPER = new MaterialMapper(SIGN_SHEET, "entity/signs");
+      HANGING_SIGN_MAPPER = new MaterialMapper(SIGN_SHEET, "entity/signs/hanging");
+      DEFAULT_SHULKER_TEXTURE_LOCATION = SHULKER_MAPPER.defaultNamespaceApply("shulker");
       SHULKER_TEXTURE_LOCATION = (List)Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createShulkerMaterial).collect(ImmutableList.toImmutableList());
       SIGN_MATERIALS = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignMaterial));
       HANGING_SIGN_MATERIALS = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignMaterial));
-      BANNER_BASE = new Material(BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner/base"));
-      SHIELD_BASE = new Material(SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield/base"));
+      BANNER_BASE = BANNER_MAPPER.defaultNamespaceApply("base");
+      SHIELD_BASE = SHIELD_MAPPER.defaultNamespaceApply("base");
       BANNER_MATERIALS = new HashMap();
       SHIELD_MATERIALS = new HashMap();
-      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> createDecoratedPotMaterial(((DecoratedPotPattern)var0.value()).assetId())));
-      DECORATED_POT_BASE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_base"));
-      DECORATED_POT_SIDE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_side"));
+      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)var0.value()).assetId())));
+      DECORATED_POT_BASE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_base");
+      DECORATED_POT_SIDE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_side");
       BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((var0) -> new Material[var0]);
-      CHEST_TRAP_LOCATION = chestMaterial("trapped");
-      CHEST_TRAP_LOCATION_LEFT = chestMaterial("trapped_left");
-      CHEST_TRAP_LOCATION_RIGHT = chestMaterial("trapped_right");
-      CHEST_XMAS_LOCATION = chestMaterial("christmas");
-      CHEST_XMAS_LOCATION_LEFT = chestMaterial("christmas_left");
-      CHEST_XMAS_LOCATION_RIGHT = chestMaterial("christmas_right");
-      CHEST_LOCATION = chestMaterial("normal");
-      CHEST_LOCATION_LEFT = chestMaterial("normal_left");
-      CHEST_LOCATION_RIGHT = chestMaterial("normal_right");
-      ENDER_CHEST_LOCATION = chestMaterial("ender");
+      CHEST_TRAP_LOCATION = CHEST_MAPPER.defaultNamespaceApply("trapped");
+      CHEST_TRAP_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("trapped_left");
+      CHEST_TRAP_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("trapped_right");
+      CHEST_XMAS_LOCATION = CHEST_MAPPER.defaultNamespaceApply("christmas");
+      CHEST_XMAS_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("christmas_left");
+      CHEST_XMAS_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("christmas_right");
+      CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("normal");
+      CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("normal_left");
+      CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("normal_right");
+      ENDER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("ender");
    }
 }

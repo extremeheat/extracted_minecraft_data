@@ -36,7 +36,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    public static final BooleanProperty SHRIEKING;
    public static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty CAN_SUMMON;
-   protected static final VoxelShape COLLIDER;
+   private static final VoxelShape SHAPE_COLLISION;
    public static final double TOP_Y;
 
    public MapCodec<SculkShriekerBlock> codec() {
@@ -65,16 +65,6 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       super.stepOn(var1, var2, var3, var4);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (var2 instanceof ServerLevel var6) {
-         if ((Boolean)var1.getValue(SHRIEKING) && !var1.is(var4.getBlock())) {
-            var6.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent((var1x) -> var1x.tryRespond(var6));
-         }
-      }
-
-      super.onRemove(var1, var2, var3, var4, var5);
-   }
-
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if ((Boolean)var1.getValue(SHRIEKING)) {
          var2.setBlock(var3, (BlockState)var1.setValue(SHRIEKING, false), 3);
@@ -84,11 +74,11 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return COLLIDER;
+      return SHAPE_COLLISION;
    }
 
    protected VoxelShape getOcclusionShape(BlockState var1) {
-      return COLLIDER;
+      return SHAPE_COLLISION;
    }
 
    protected boolean useShapeForLightOcclusion(BlockState var1) {
@@ -134,7 +124,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       SHRIEKING = BlockStateProperties.SHRIEKING;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       CAN_SUMMON = BlockStateProperties.CAN_SUMMON;
-      COLLIDER = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
-      TOP_Y = COLLIDER.max(Direction.Axis.Y);
+      SHAPE_COLLISION = Block.column(16.0, 0.0, 8.0);
+      TOP_Y = SHAPE_COLLISION.max(Direction.Axis.Y);
    }
 }

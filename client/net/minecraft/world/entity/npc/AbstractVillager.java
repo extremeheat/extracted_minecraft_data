@@ -1,17 +1,12 @@
 package net.minecraft.world.entity.npc;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
-import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -38,11 +33,9 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public abstract class AbstractVillager extends AgeableMob implements InventoryCarrier, Npc, Merchant {
    private static final EntityDataAccessor<Integer> DATA_UNHAPPY_COUNTER;
-   private static final Logger LOGGER;
    public static final int VILLAGER_SLOT_OFFSET = 300;
    private static final int VILLAGER_INVENTORY_SIZE = 8;
    @Nullable
@@ -155,7 +148,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       if (!this.level().isClientSide) {
          MerchantOffers var2 = this.getOffers();
          if (!var2.isEmpty()) {
-            var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
+            var1.store("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2);
          }
       }
 
@@ -164,13 +157,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("Offers")) {
-         DataResult var10000 = MerchantOffers.CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1.get("Offers"));
-         Logger var10002 = LOGGER;
-         Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Failed to load offers: ", var10002::warn)).ifPresent((var1x) -> this.offers = var1x);
-      }
-
+      this.offers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse((Object)null);
       this.readInventoryFromTag(var1, this.registryAccess());
    }
 
@@ -244,6 +231,5 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    static {
       DATA_UNHAPPY_COUNTER = SynchedEntityData.<Integer>defineId(AbstractVillager.class, EntityDataSerializers.INT);
-      LOGGER = LogUtils.getLogger();
    }
 }

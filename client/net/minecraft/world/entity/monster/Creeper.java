@@ -44,6 +44,10 @@ public class Creeper extends Monster {
    private static final EntityDataAccessor<Integer> DATA_SWELL_DIR;
    private static final EntityDataAccessor<Boolean> DATA_IS_POWERED;
    private static final EntityDataAccessor<Boolean> DATA_IS_IGNITED;
+   private static final boolean DEFAULT_IGNITED = false;
+   private static final boolean DEFAULT_POWERED = false;
+   private static final short DEFAULT_MAX_SWELL = 30;
+   private static final byte DEFAULT_EXPLOSION_RADIUS = 3;
    private int oldSwell;
    private int swell;
    private int maxSwell = 30;
@@ -75,14 +79,14 @@ public class Creeper extends Monster {
       return this.getTarget() == null ? this.getComfortableFallDistance(0.0F) : this.getComfortableFallDistance(this.getHealth() - 1.0F);
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      boolean var4 = super.causeFallDamage(var1, var2, var3);
-      this.swell += (int)(var1 * 1.5F);
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
+      boolean var5 = super.causeFallDamage(var1, var3, var4);
+      this.swell += (int)(var1 * 1.5);
       if (this.swell > this.maxSwell - 5) {
          this.swell = this.maxSwell - 5;
       }
 
-      return var4;
+      return var5;
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -94,10 +98,7 @@ public class Creeper extends Monster {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if ((Boolean)this.entityData.get(DATA_IS_POWERED)) {
-         var1.putBoolean("powered", true);
-      }
-
+      var1.putBoolean("powered", this.isPowered());
       var1.putShort("Fuse", (short)this.maxSwell);
       var1.putByte("ExplosionRadius", (byte)this.explosionRadius);
       var1.putBoolean("ignited", this.isIgnited());
@@ -105,16 +106,10 @@ public class Creeper extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_IS_POWERED, var1.getBoolean("powered"));
-      if (var1.contains("Fuse", 99)) {
-         this.maxSwell = var1.getShort("Fuse");
-      }
-
-      if (var1.contains("ExplosionRadius", 99)) {
-         this.explosionRadius = var1.getByte("ExplosionRadius");
-      }
-
-      if (var1.getBoolean("ignited")) {
+      this.entityData.set(DATA_IS_POWERED, var1.getBooleanOr("powered", false));
+      this.maxSwell = var1.getShortOr("Fuse", (short)30);
+      this.explosionRadius = var1.getByteOr("ExplosionRadius", (byte)3);
+      if (var1.getBooleanOr("ignited", false)) {
          this.ignite();
       }
 
@@ -238,7 +233,8 @@ public class Creeper extends Monster {
          var2.setRadius(2.5F);
          var2.setRadiusOnUse(-0.5F);
          var2.setWaitTime(10);
-         var2.setDuration(var2.getDuration() / 2);
+         var2.setDuration(300);
+         var2.setPotionDurationScale(0.25F);
          var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
 
          for(MobEffectInstance var4 : var1) {

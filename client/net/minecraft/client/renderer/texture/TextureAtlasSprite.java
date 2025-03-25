@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.texture;
 
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SpriteCoordinateExpander;
@@ -51,8 +52,8 @@ public class TextureAtlasSprite {
    public Ticker createTicker() {
       final SpriteTicker var1 = this.contents.createTicker();
       return var1 != null ? new Ticker() {
-         public void tickAndUpload() {
-            var1.tickAndUpload(TextureAtlasSprite.this.x, TextureAtlasSprite.this.y);
+         public void tickAndUpload(GpuTexture var1x) {
+            var1.tickAndUpload(TextureAtlasSprite.this.x, TextureAtlasSprite.this.y, var1x);
          }
 
          public void close() {
@@ -98,8 +99,8 @@ public class TextureAtlasSprite {
       return "TextureAtlasSprite{contents='" + var10000 + "', u0=" + this.u0 + ", u1=" + this.u1 + ", v0=" + this.v0 + ", v1=" + this.v1 + "}";
    }
 
-   public void uploadFirstFrame() {
-      this.contents.uploadFirstFrame(this.x, this.y);
+   public void uploadFirstFrame(GpuTexture var1) {
+      this.contents.uploadFirstFrame(this.x, this.y, var1);
    }
 
    private float atlasSize() {
@@ -117,7 +118,7 @@ public class TextureAtlasSprite {
    }
 
    public interface Ticker extends AutoCloseable {
-      void tickAndUpload();
+      void tickAndUpload(GpuTexture var1);
 
       void close();
    }

@@ -23,7 +23,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,6 +35,7 @@ public class Bat extends AmbientCreature {
    private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
    private static final int FLAG_RESTING = 1;
    private static final TargetingConditions BAT_RESTING_TARGETING;
+   private static final byte DEFAULT_FLAGS = 0;
    public final AnimationState flyAnimationState = new AnimationState();
    public final AnimationState restAnimationState = new AnimationState();
    @Nullable
@@ -133,13 +133,13 @@ public class Bat extends AmbientCreature {
             if (var1.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
                this.setResting(false);
                if (!var4) {
-                  var1.levelEvent((Player)null, 1025, var2, 0);
+                  var1.levelEvent((Entity)null, 1025, var2, 0);
                }
             }
          } else {
             this.setResting(false);
             if (!var4) {
-               var1.levelEvent((Player)null, 1025, var2, 0);
+               var1.levelEvent((Entity)null, 1025, var2, 0);
             }
          }
       } else {
@@ -193,7 +193,7 @@ public class Bat extends AmbientCreature {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_ID_FLAGS, var1.getByte("BatFlags"));
+      this.entityData.set(DATA_ID_FLAGS, var1.getByteOr("BatFlags", (byte)0));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

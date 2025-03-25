@@ -52,32 +52,24 @@ public class WanderingTraderSpawner implements CustomSpawner {
 
    }
 
-   public int tick(ServerLevel var1, boolean var2, boolean var3) {
-      if (!var1.getGameRules().getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
-         return 0;
-      } else if (--this.tickDelay > 0) {
-         return 0;
-      } else {
-         this.tickDelay = 1200;
-         this.spawnDelay -= 1200;
-         this.serverLevelData.setWanderingTraderSpawnDelay(this.spawnDelay);
-         if (this.spawnDelay > 0) {
-            return 0;
-         } else {
-            this.spawnDelay = 24000;
-            if (!var1.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-               return 0;
-            } else {
-               int var4 = this.spawnChance;
-               this.spawnChance = Mth.clamp(this.spawnChance + 25, 25, 75);
-               this.serverLevelData.setWanderingTraderSpawnChance(this.spawnChance);
-               if (this.random.nextInt(100) > var4) {
-                  return 0;
-               } else if (this.spawn(var1)) {
-                  this.spawnChance = 25;
-                  return 1;
-               } else {
-                  return 0;
+   public void tick(ServerLevel var1, boolean var2, boolean var3) {
+      if (var1.getGameRules().getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
+         if (--this.tickDelay <= 0) {
+            this.tickDelay = 1200;
+            this.spawnDelay -= 1200;
+            this.serverLevelData.setWanderingTraderSpawnDelay(this.spawnDelay);
+            if (this.spawnDelay <= 0) {
+               this.spawnDelay = 24000;
+               if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                  int var4 = this.spawnChance;
+                  this.spawnChance = Mth.clamp(this.spawnChance + 25, 25, 75);
+                  this.serverLevelData.setWanderingTraderSpawnChance(this.spawnChance);
+                  if (this.random.nextInt(100) <= var4) {
+                     if (this.spawn(var1)) {
+                        this.spawnChance = 25;
+                     }
+
+                  }
                }
             }
          }

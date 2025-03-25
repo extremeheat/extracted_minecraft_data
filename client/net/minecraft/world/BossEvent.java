@@ -1,8 +1,10 @@
 package net.minecraft.world;
 
+import com.mojang.serialization.Codec;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 
 public abstract class BossEvent {
    private final UUID id;
@@ -86,7 +88,7 @@ public abstract class BossEvent {
       return this.createWorldFog;
    }
 
-   public static enum BossBarColor {
+   public static enum BossBarColor implements StringRepresentable {
       PINK("pink", ChatFormatting.RED),
       BLUE("blue", ChatFormatting.BLUE),
       RED("red", ChatFormatting.DARK_RED),
@@ -95,6 +97,7 @@ public abstract class BossEvent {
       PURPLE("purple", ChatFormatting.DARK_BLUE),
       WHITE("white", ChatFormatting.WHITE);
 
+      public static final Codec<BossBarColor> CODEC = StringRepresentable.<BossBarColor>fromEnum(BossBarColor::values);
       private final String name;
       private final ChatFormatting formatting;
 
@@ -111,14 +114,8 @@ public abstract class BossEvent {
          return this.name;
       }
 
-      public static BossBarColor byName(String var0) {
-         for(BossBarColor var4 : values()) {
-            if (var4.name.equals(var0)) {
-               return var4;
-            }
-         }
-
-         return WHITE;
+      public String getSerializedName() {
+         return this.name;
       }
 
       // $FF: synthetic method
@@ -127,13 +124,14 @@ public abstract class BossEvent {
       }
    }
 
-   public static enum BossBarOverlay {
+   public static enum BossBarOverlay implements StringRepresentable {
       PROGRESS("progress"),
       NOTCHED_6("notched_6"),
       NOTCHED_10("notched_10"),
       NOTCHED_12("notched_12"),
       NOTCHED_20("notched_20");
 
+      public static final Codec<BossBarOverlay> CODEC = StringRepresentable.<BossBarOverlay>fromEnum(BossBarOverlay::values);
       private final String name;
 
       private BossBarOverlay(final String var3) {
@@ -144,14 +142,8 @@ public abstract class BossEvent {
          return this.name;
       }
 
-      public static BossBarOverlay byName(String var0) {
-         for(BossBarOverlay var4 : values()) {
-            if (var4.name.equals(var0)) {
-               return var4;
-            }
-         }
-
-         return PROGRESS;
+      public String getSerializedName() {
+         return this.name;
       }
 
       // $FF: synthetic method

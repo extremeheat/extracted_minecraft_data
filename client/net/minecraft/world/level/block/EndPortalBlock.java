@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -28,7 +29,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class EndPortalBlock extends BaseEntityBlock implements Portal {
    public static final MapCodec<EndPortalBlock> CODEC = simpleCodec(EndPortalBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(0.0, 6.0, 0.0, 16.0, 12.0, 16.0);
+   private static final VoxelShape SHAPE = Block.column(16.0, 6.0, 12.0);
 
    public MapCodec<EndPortalBlock> codec() {
       return CODEC;
@@ -46,16 +47,16 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
       return SHAPE;
    }
 
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
       return var1.getShape(var2, var3);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var4.canUsePortal(false)) {
          if (!var2.isClientSide && var2.dimension() == Level.END && var4 instanceof ServerPlayer) {
-            ServerPlayer var5 = (ServerPlayer)var4;
-            if (!var5.seenCredits) {
-               var5.showEndCredits();
+            ServerPlayer var6 = (ServerPlayer)var4;
+            if (!var6.seenCredits) {
+               var6.showEndCredits();
                return;
             }
          }

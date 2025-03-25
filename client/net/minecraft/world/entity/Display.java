@@ -1,28 +1,25 @@
 package net.minecraft.world.entity;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Brightness;
@@ -61,8 +58,14 @@ public abstract class Display extends Entity {
    private static final EntityDataAccessor<Float> DATA_HEIGHT_ID;
    private static final EntityDataAccessor<Integer> DATA_GLOW_COLOR_OVERRIDE_ID;
    private static final IntSet RENDER_STATE_IDS;
+   private static final int INITIAL_TRANSFORMATION_INTERPOLATION_DURATION = 0;
+   private static final int INITIAL_TRANSFORMATION_START_INTERPOLATION = 0;
+   private static final int INITIAL_POS_ROT_INTERPOLATION_DURATION = 0;
    private static final float INITIAL_SHADOW_RADIUS = 0.0F;
    private static final float INITIAL_SHADOW_STRENGTH = 1.0F;
+   private static final float INITIAL_VIEW_RANGE = 1.0F;
+   private static final float INITIAL_WIDTH = 0.0F;
+   private static final float INITIAL_HEIGHT = 0.0F;
    private static final int NO_GLOW_COLOR_OVERRIDE = -1;
    public static final String TAG_POS_ROT_INTERPOLATION_DURATION = "teleport_duration";
    public static final String TAG_TRANSFORMATION_INTERPOLATION_DURATION = "interpolation_duration";
@@ -86,8 +89,7 @@ public abstract class Display extends Entity {
    private boolean updateInterpolationDuration;
    @Nullable
    private RenderState renderState;
-   @Nullable
-   private PosRotInterpolationTarget posRotInterpolationTarget;
+   private final InterpolationHandler interpolation = new InterpolationHandler(this, 0);
 
    public Display(EntityType<?> var1, Level var2) {
       super(var1, var2);
@@ -103,6 +105,10 @@ public abstract class Display extends Entity {
 
       if (DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID.equals(var1)) {
          this.updateStartTick = true;
+      }
+
+      if (DATA_POS_ROT_INTERPOLATION_DURATION_ID.equals(var1)) {
+         this.interpolation.setInterpolationLength(this.getPosRotInterpolationDuration());
       }
 
       if (DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID.equals(var1)) {
@@ -157,21 +163,13 @@ public abstract class Display extends Entity {
             this.updateRenderSubState(var3, this.lastProgress);
          }
 
-         if (this.posRotInterpolationTarget != null) {
-            if (this.posRotInterpolationTarget.steps == 0) {
-               this.posRotInterpolationTarget.applyTargetPosAndRot(this);
-               this.setOldPosAndRot();
-               this.posRotInterpolationTarget = null;
-            } else {
-               this.posRotInterpolationTarget.applyLerpStep(this);
-               --this.posRotInterpolationTarget.steps;
-               if (this.posRotInterpolationTarget.steps == 0) {
-                  this.posRotInterpolationTarget = null;
-               }
-            }
-         }
+         this.interpolation.interpolate();
       }
 
+   }
+
+   public InterpolationHandler getInterpolation() {
+      return this.interpolation;
    }
 
    protected abstract void updateRenderSubState(boolean var1, float var2);
@@ -195,68 +193,19 @@ public abstract class Display extends Entity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.contains("transformation")) {
-         DataResult var10000 = Transformation.EXTENDED_CODEC.decode(NbtOps.INSTANCE, var1.get("transformation"));
-         Logger var10002 = LOGGER;
-         Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((var1x) -> this.setTransformation((Transformation)var1x.getFirst()));
-      }
-
-      if (var1.contains("interpolation_duration", 99)) {
-         int var2 = var1.getInt("interpolation_duration");
-         this.setTransformationInterpolationDuration(var2);
-      }
-
-      if (var1.contains("start_interpolation", 99)) {
-         int var3 = var1.getInt("start_interpolation");
-         this.setTransformationInterpolationDelay(var3);
-      }
-
-      if (var1.contains("teleport_duration", 99)) {
-         int var4 = var1.getInt("teleport_duration");
-         this.setPosRotInterpolationDuration(Mth.clamp(var4, 0, 59));
-      }
-
-      if (var1.contains("billboard", 8)) {
-         DataResult var5 = Display.BillboardConstraints.CODEC.decode(NbtOps.INSTANCE, var1.get("billboard"));
-         Logger var7 = LOGGER;
-         Objects.requireNonNull(var7);
-         var5.resultOrPartial(Util.prefix("Display entity", var7::error)).ifPresent((var1x) -> this.setBillboardConstraints((BillboardConstraints)var1x.getFirst()));
-      }
-
-      if (var1.contains("view_range", 99)) {
-         this.setViewRange(var1.getFloat("view_range"));
-      }
-
-      if (var1.contains("shadow_radius", 99)) {
-         this.setShadowRadius(var1.getFloat("shadow_radius"));
-      }
-
-      if (var1.contains("shadow_strength", 99)) {
-         this.setShadowStrength(var1.getFloat("shadow_strength"));
-      }
-
-      if (var1.contains("width", 99)) {
-         this.setWidth(var1.getFloat("width"));
-      }
-
-      if (var1.contains("height", 99)) {
-         this.setHeight(var1.getFloat("height"));
-      }
-
-      if (var1.contains("glow_color_override", 99)) {
-         this.setGlowColorOverride(var1.getInt("glow_color_override"));
-      }
-
-      if (var1.contains("brightness", 10)) {
-         DataResult var6 = Brightness.CODEC.decode(NbtOps.INSTANCE, var1.get("brightness"));
-         Logger var8 = LOGGER;
-         Objects.requireNonNull(var8);
-         var6.resultOrPartial(Util.prefix("Display entity", var8::error)).ifPresent((var1x) -> this.setBrightnessOverride((Brightness)var1x.getFirst()));
-      } else {
-         this.setBrightnessOverride((Brightness)null);
-      }
-
+      this.setTransformation((Transformation)var1.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.identity()));
+      this.setTransformationInterpolationDuration(var1.getIntOr("interpolation_duration", 0));
+      this.setTransformationInterpolationDelay(var1.getIntOr("start_interpolation", 0));
+      int var2 = var1.getIntOr("teleport_duration", 0);
+      this.setPosRotInterpolationDuration(Mth.clamp(var2, 0, 59));
+      this.setBillboardConstraints((BillboardConstraints)var1.read("billboard", Display.BillboardConstraints.CODEC).orElse(Display.BillboardConstraints.FIXED));
+      this.setViewRange(var1.getFloatOr("view_range", 1.0F));
+      this.setShadowRadius(var1.getFloatOr("shadow_radius", 0.0F));
+      this.setShadowStrength(var1.getFloatOr("shadow_strength", 1.0F));
+      this.setWidth(var1.getFloatOr("width", 0.0F));
+      this.setHeight(var1.getFloatOr("height", 0.0F));
+      this.setGlowColorOverride(var1.getIntOr("glow_color_override", -1));
+      this.setBrightnessOverride((Brightness)var1.read("brightness", Brightness.CODEC).orElse((Object)null));
    }
 
    private void setTransformation(Transformation var1) {
@@ -267,8 +216,8 @@ public abstract class Display extends Entity {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
-      Transformation.EXTENDED_CODEC.encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData)).ifSuccess((var1x) -> var1.put("transformation", var1x));
-      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).ifSuccess((var1x) -> var1.put("billboard", var1x));
+      var1.store("transformation", Transformation.EXTENDED_CODEC, createTransformation(this.entityData));
+      var1.store("billboard", Display.BillboardConstraints.CODEC, this.getBillboardConstraints());
       var1.putInt("interpolation_duration", this.getTransformationInterpolationDuration());
       var1.putInt("teleport_duration", this.getPosRotInterpolationDuration());
       var1.putFloat("view_range", this.getViewRange());
@@ -277,40 +226,7 @@ public abstract class Display extends Entity {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
       var1.putInt("glow_color_override", this.getGlowColorOverride());
-      Brightness var2 = this.getBrightnessOverride();
-      if (var2 != null) {
-         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).ifSuccess((var1x) -> var1.put("brightness", var1x));
-      }
-
-   }
-
-   public void cancelLerp() {
-      this.posRotInterpolationTarget = null;
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      int var10 = this.getPosRotInterpolationDuration();
-      this.posRotInterpolationTarget = new PosRotInterpolationTarget(var10, var1, var3, var5, (double)var7, (double)var8);
-   }
-
-   public double lerpTargetX() {
-      return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetX : this.getX();
-   }
-
-   public double lerpTargetY() {
-      return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetY : this.getY();
-   }
-
-   public double lerpTargetZ() {
-      return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetZ : this.getZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetXRot : this.getXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetYRot : this.getYRot();
+      var1.storeNullable("brightness", Brightness.CODEC, this.getBrightnessOverride());
    }
 
    public AABB getBoundingBoxForCulling() {
@@ -587,28 +503,18 @@ public abstract class Display extends Entity {
 
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
-         if (var1.contains("item")) {
-            this.setItemStack((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(ItemStack.EMPTY));
-         } else {
-            this.setItemStack(ItemStack.EMPTY);
-         }
-
-         if (var1.contains("item_display", 8)) {
-            DataResult var10000 = ItemDisplayContext.CODEC.decode(NbtOps.INSTANCE, var1.get("item_display"));
-            Logger var10002 = Display.LOGGER;
-            Objects.requireNonNull(var10002);
-            var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((var1x) -> this.setItemTransform((ItemDisplayContext)var1x.getFirst()));
-         }
-
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         this.setItemStack((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
+         this.setItemTransform((ItemDisplayContext)var1.read("item_display", ItemDisplayContext.CODEC).orElse(ItemDisplayContext.NONE));
       }
 
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
          if (!this.getItemStack().isEmpty()) {
-            var1.put("item", this.getItemStack().save(this.registryAccess()));
+            var1.store("item", ItemStack.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getItemStack());
          }
 
-         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).ifSuccess((var1x) -> var1.put("item_display", var1x));
+         var1.store("item_display", ItemDisplayContext.CODEC, this.getItemTransform());
       }
 
       public SlotAccess getSlot(int var1) {
@@ -673,12 +579,14 @@ public abstract class Display extends Entity {
 
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
-         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(Blocks.AIR.defaultBlockState()));
       }
 
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
-         var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("block_state", BlockState.CODEC, var2, this.getBlockState());
       }
 
       @Nullable
@@ -718,6 +626,7 @@ public abstract class Display extends Entity {
       public static final byte FLAG_ALIGN_RIGHT = 16;
       private static final byte INITIAL_TEXT_OPACITY = -1;
       public static final int INITIAL_BACKGROUND = 1073741824;
+      private static final int INITIAL_LINE_WIDTH = 200;
       private static final EntityDataAccessor<Component> DATA_TEXT_ID;
       private static final EntityDataAccessor<Integer> DATA_LINE_WIDTH_ID;
       private static final EntityDataAccessor<Integer> DATA_BACKGROUND_COLOR_ID;
@@ -791,62 +700,51 @@ public abstract class Display extends Entity {
       }
 
       private static byte loadFlag(byte var0, CompoundTag var1, String var2, byte var3) {
-         return var1.getBoolean(var2) ? (byte)(var0 | var3) : var0;
+         return var1.getBooleanOr(var2, false) ? (byte)(var0 | var3) : var0;
       }
 
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
-         if (var1.contains("line_width", 99)) {
-            this.setLineWidth(var1.getInt("line_width"));
-         }
-
-         if (var1.contains("text_opacity", 99)) {
-            this.setTextOpacity(var1.getByte("text_opacity"));
-         }
-
-         if (var1.contains("background", 99)) {
-            this.setBackgroundColor(var1.getInt("background"));
-         }
-
+         this.setLineWidth(var1.getIntOr("line_width", 200));
+         this.setTextOpacity(var1.getByteOr("text_opacity", (byte)-1));
+         this.setBackgroundColor(var1.getIntOr("background", 1073741824));
          byte var2 = loadFlag((byte)0, var1, "shadow", (byte)1);
          var2 = loadFlag(var2, var1, "see_through", (byte)2);
          var2 = loadFlag(var2, var1, "default_background", (byte)4);
-         DataResult var10000 = Display.TextDisplay.Align.CODEC.decode(NbtOps.INSTANCE, var1.get("alignment"));
-         Logger var10002 = Display.LOGGER;
-         Objects.requireNonNull(var10002);
-         Optional var3 = var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).map(Pair::getFirst);
+         Optional var3 = var1.read("alignment", Display.TextDisplay.Align.CODEC);
          if (var3.isPresent()) {
-            byte var13;
+            byte var10000;
             switch (((Align)var3.get()).ordinal()) {
-               case 0 -> var13 = var2;
-               case 1 -> var13 = (byte)(var2 | 8);
-               case 2 -> var13 = (byte)(var2 | 16);
+               case 0 -> var10000 = var2;
+               case 1 -> var10000 = (byte)(var2 | 8);
+               case 2 -> var10000 = (byte)(var2 | 16);
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var2 = var13;
+            var2 = var10000;
          }
 
          this.setFlags(var2);
-         if (var1.contains("text", 8)) {
-            String var4 = var1.getString("text");
+         Tag var4 = var1.get("text");
+         if (var4 != null) {
+            RegistryOps var5 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
 
             try {
-               MutableComponent var5 = Component.Serializer.fromJson((String)var4, this.registryAccess());
-               if (var5 != null) {
-                  Level var7 = this.level();
-                  if (var7 instanceof ServerLevel) {
-                     ServerLevel var6 = (ServerLevel)var7;
-                     CommandSourceStack var12 = this.createCommandSourceStackForNameResolution(var6).withPermission(2);
-                     MutableComponent var8 = ComponentUtils.updateForEntity(var12, var5, this, 0);
-                     this.setText(var8);
+               Component var6 = (Component)ComponentSerialization.CODEC.parse(var5, var4).getOrThrow();
+               if (var6 != null) {
+                  Level var8 = this.level();
+                  if (var8 instanceof ServerLevel) {
+                     ServerLevel var7 = (ServerLevel)var8;
+                     CommandSourceStack var13 = this.createCommandSourceStackForNameResolution(var7).withPermission(2);
+                     MutableComponent var9 = ComponentUtils.updateForEntity(var13, var6, this, 0);
+                     this.setText(var9);
                      return;
                   }
                }
 
                this.setText(Component.empty());
-            } catch (Exception var9) {
-               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var9);
+            } catch (Exception var10) {
+               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var10);
             }
          }
 
@@ -858,15 +756,16 @@ public abstract class Display extends Entity {
 
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
-         var1.putString("text", Component.Serializer.toJson(this.getText(), this.registryAccess()));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.store("text", ComponentSerialization.CODEC, var2, this.getText());
          var1.putInt("line_width", this.getLineWidth());
          var1.putInt("background", this.getBackgroundColor());
          var1.putByte("text_opacity", this.getTextOpacity());
-         byte var2 = this.getFlags();
-         storeFlag(var2, var1, "shadow", (byte)1);
-         storeFlag(var2, var1, "see_through", (byte)2);
-         storeFlag(var2, var1, "default_background", (byte)4);
-         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).ifSuccess((var1x) -> var1.put("alignment", var1x));
+         byte var3 = this.getFlags();
+         storeFlag(var3, var1, "shadow", (byte)1);
+         storeFlag(var3, var1, "see_through", (byte)2);
+         storeFlag(var3, var1, "default_background", (byte)4);
+         var1.store("alignment", Display.TextDisplay.Align.CODEC, getAlign(var3));
       }
 
       protected void updateRenderSubState(boolean var1, float var2) {
@@ -1058,34 +957,6 @@ public abstract class Display extends Entity {
 
       public float get(float var1) {
          return Mth.lerp(var1, this.previous, this.current);
-      }
-   }
-
-   static class PosRotInterpolationTarget {
-      int steps;
-      final double targetX;
-      final double targetY;
-      final double targetZ;
-      final double targetYRot;
-      final double targetXRot;
-
-      PosRotInterpolationTarget(int var1, double var2, double var4, double var6, double var8, double var10) {
-         super();
-         this.steps = var1;
-         this.targetX = var2;
-         this.targetY = var4;
-         this.targetZ = var6;
-         this.targetYRot = var8;
-         this.targetXRot = var10;
-      }
-
-      void applyTargetPosAndRot(Entity var1) {
-         var1.setPos(this.targetX, this.targetY, this.targetZ);
-         var1.setRot((float)this.targetYRot, (float)this.targetXRot);
-      }
-
-      void applyLerpStep(Entity var1) {
-         var1.lerpPositionAndRotationStep(this.steps, this.targetX, this.targetY, this.targetZ, this.targetYRot, this.targetXRot);
       }
    }
 }

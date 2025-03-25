@@ -21,16 +21,12 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.SimpleWeightedRandomList;
-import net.minecraft.util.random.WeightedEntry;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -51,7 +47,7 @@ public class TrialSpawnerData {
    private static final String TAG_NEXT_MOB_SPAWNS_AT = "next_mob_spawns_at";
    private static final int DELAY_BETWEEN_PLAYER_SCANS = 20;
    private static final int TRIAL_OMEN_PER_BAD_OMEN_LEVEL = 18000;
-   public static MapCodec<TrialSpawnerData> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC_SET.lenientOptionalFieldOf("registered_players", Sets.newHashSet()).forGetter((var0x) -> var0x.detectedPlayers), UUIDUtil.CODEC_SET.lenientOptionalFieldOf("current_mobs", Sets.newHashSet()).forGetter((var0x) -> var0x.currentMobs), Codec.LONG.lenientOptionalFieldOf("cooldown_ends_at", 0L).forGetter((var0x) -> var0x.cooldownEndsAt), Codec.LONG.lenientOptionalFieldOf("next_mob_spawns_at", 0L).forGetter((var0x) -> var0x.nextMobSpawnsAt), Codec.intRange(0, 2147483647).lenientOptionalFieldOf("total_mobs_spawned", 0).forGetter((var0x) -> var0x.totalMobsSpawned), SpawnData.CODEC.lenientOptionalFieldOf("spawn_data").forGetter((var0x) -> var0x.nextSpawnData), ResourceKey.codec(Registries.LOOT_TABLE).lenientOptionalFieldOf("ejecting_loot_table").forGetter((var0x) -> var0x.ejectingLootTable)).apply(var0, TrialSpawnerData::new));
+   public static MapCodec<TrialSpawnerData> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC_SET.lenientOptionalFieldOf("registered_players", Sets.newHashSet()).forGetter((var0x) -> var0x.detectedPlayers), UUIDUtil.CODEC_SET.lenientOptionalFieldOf("current_mobs", Sets.newHashSet()).forGetter((var0x) -> var0x.currentMobs), Codec.LONG.lenientOptionalFieldOf("cooldown_ends_at", 0L).forGetter((var0x) -> var0x.cooldownEndsAt), Codec.LONG.lenientOptionalFieldOf("next_mob_spawns_at", 0L).forGetter((var0x) -> var0x.nextMobSpawnsAt), Codec.intRange(0, 2147483647).lenientOptionalFieldOf("total_mobs_spawned", 0).forGetter((var0x) -> var0x.totalMobsSpawned), SpawnData.CODEC.lenientOptionalFieldOf("spawn_data").forGetter((var0x) -> var0x.nextSpawnData), LootTable.KEY_CODEC.lenientOptionalFieldOf("ejecting_loot_table").forGetter((var0x) -> var0x.ejectingLootTable)).apply(var0, TrialSpawnerData::new));
    protected final Set<UUID> detectedPlayers;
    protected final Set<UUID> currentMobs;
    protected long cooldownEndsAt;
@@ -62,7 +58,7 @@ public class TrialSpawnerData {
    @Nullable
    protected Entity displayEntity;
    @Nullable
-   private SimpleWeightedRandomList<ItemStack> dispensing;
+   private WeightedList<ItemStack> dispensing;
    protected double spin;
    protected double oSpin;
 
@@ -97,7 +93,7 @@ public class TrialSpawnerData {
    }
 
    public boolean hasMobToSpawn(TrialSpawner var1, RandomSource var2) {
-      boolean var3 = this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().contains("id", 8);
+      boolean var3 = this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().getString("id").isPresent();
       return var3 || !var1.getConfig().spawnPotentialsDefinition().isEmpty();
    }
 
@@ -232,8 +228,8 @@ public class TrialSpawnerData {
       if (this.nextSpawnData.isPresent()) {
          return (SpawnData)this.nextSpawnData.get();
       } else {
-         SimpleWeightedRandomList var3 = var1.getConfig().spawnPotentialsDefinition();
-         Optional var4 = var3.isEmpty() ? this.nextSpawnData : var3.getRandom(var2).map(WeightedEntry.Wrapper::data);
+         WeightedList var3 = var1.getConfig().spawnPotentialsDefinition();
+         Optional var4 = var3.isEmpty() ? this.nextSpawnData : var3.getRandom(var2);
          this.nextSpawnData = Optional.of((SpawnData)var4.orElseGet(SpawnData::new));
          var1.markUpdated();
          return (SpawnData)this.nextSpawnData.get();
@@ -247,7 +243,7 @@ public class TrialSpawnerData {
       } else {
          if (this.displayEntity == null) {
             CompoundTag var4 = this.getOrCreateNextSpawnData(var1, var2.getRandom()).getEntityToSpawn();
-            if (var4.contains("id", 8)) {
+            if (var4.getString("id").isPresent()) {
                this.displayEntity = EntityType.loadEntityRecursive(var4, var2, EntitySpawnReason.TRIAL_SPAWNER, Function.identity());
             }
          }
@@ -262,7 +258,7 @@ public class TrialSpawnerData {
          var2.putLong("next_mob_spawns_at", this.nextMobSpawnsAt);
       }
 
-      this.nextSpawnData.ifPresent((var1x) -> var2.put("spawn_data", (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, var1x).result().orElseThrow(() -> new IllegalStateException("Invalid SpawnData"))));
+      this.nextSpawnData.ifPresent((var1x) -> var2.store("spawn_data", SpawnData.CODEC, var1x));
       return var2;
    }
 
@@ -274,7 +270,7 @@ public class TrialSpawnerData {
       return this.oSpin;
    }
 
-   SimpleWeightedRandomList<ItemStack> getDispensingItems(ServerLevel var1, TrialSpawnerConfig var2, BlockPos var3) {
+   WeightedList<ItemStack> getDispensingItems(ServerLevel var1, TrialSpawnerConfig var2, BlockPos var3) {
       if (this.dispensing != null) {
          return this.dispensing;
       } else {
@@ -283,9 +279,9 @@ public class TrialSpawnerData {
          long var6 = lowResolutionPosition(var1, var3);
          ObjectArrayList var8 = var4.getRandomItems(var5, var6);
          if (var8.isEmpty()) {
-            return SimpleWeightedRandomList.<ItemStack>empty();
+            return WeightedList.<ItemStack>of();
          } else {
-            SimpleWeightedRandomList.Builder var9 = new SimpleWeightedRandomList.Builder();
+            WeightedList.Builder var9 = WeightedList.builder();
             ObjectListIterator var10 = var8.iterator();
 
             while(var10.hasNext()) {

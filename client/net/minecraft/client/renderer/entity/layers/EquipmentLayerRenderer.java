@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.Model;
@@ -18,17 +17,14 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
-import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 
 public class EquipmentLayerRenderer {
@@ -41,7 +37,7 @@ public class EquipmentLayerRenderer {
       super();
       this.equipmentAssets = var1;
       this.layerTextureLookup = Util.memoize((Function)((var0) -> var0.layer.getTextureLocation(var0.layerType)));
-      this.trimSpriteLookup = Util.memoize((Function)((var1x) -> var2.getSprite(var1x.textureId())));
+      this.trimSpriteLookup = Util.memoize((Function)((var1x) -> var2.getSprite(var1x.spriteId())));
    }
 
    public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7) {
@@ -51,7 +47,7 @@ public class EquipmentLayerRenderer {
    public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7, @Nullable ResourceLocation var8) {
       List var9 = this.equipmentAssets.get(var2).getLayers(var1);
       if (!var9.isEmpty()) {
-         int var10 = var4.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var4, 0) : 0;
+         int var10 = DyedItemColor.getOrDefault(var4, 0);
          boolean var11 = var4.hasFoil();
 
          for(EquipmentClientInfo.Layer var13 : var9) {
@@ -103,15 +99,8 @@ public class EquipmentLayerRenderer {
          this.equipmentAssetId = var3;
       }
 
-      private static String getColorPaletteSuffix(Holder<TrimMaterial> var0, ResourceKey<EquipmentAsset> var1) {
-         String var2 = (String)((TrimMaterial)var0.value()).overrideArmorAssets().get(var1);
-         return var2 != null ? var2 : ((TrimMaterial)var0.value()).assetName();
-      }
-
-      public ResourceLocation textureId() {
-         ResourceLocation var1 = ((TrimPattern)this.trim.pattern().value()).assetId();
-         String var2 = getColorPaletteSuffix(this.trim.material(), this.equipmentAssetId);
-         return var1.withPath((UnaryOperator)((var2x) -> "trims/entity/" + this.layerType.getSerializedName() + "/" + var2x + "_" + var2));
+      public ResourceLocation spriteId() {
+         return this.trim.layerAssetId(this.layerType.trimAssetPrefix(), this.equipmentAssetId);
       }
    }
 }

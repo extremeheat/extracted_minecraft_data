@@ -20,13 +20,15 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
    private final List<AdvancementHolder> added;
    private final Set<ResourceLocation> removed;
    private final Map<ResourceLocation, AdvancementProgress> progress;
+   private final boolean showAdvancements;
 
-   public ClientboundUpdateAdvancementsPacket(boolean var1, Collection<AdvancementHolder> var2, Set<ResourceLocation> var3, Map<ResourceLocation, AdvancementProgress> var4) {
+   public ClientboundUpdateAdvancementsPacket(boolean var1, Collection<AdvancementHolder> var2, Set<ResourceLocation> var3, Map<ResourceLocation, AdvancementProgress> var4, boolean var5) {
       super();
       this.reset = var1;
       this.added = List.copyOf(var2);
       this.removed = Set.copyOf(var3);
       this.progress = Map.copyOf(var4);
+      this.showAdvancements = var5;
    }
 
    private ClientboundUpdateAdvancementsPacket(RegistryFriendlyByteBuf var1) {
@@ -35,6 +37,7 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       this.added = (List)AdvancementHolder.LIST_STREAM_CODEC.decode(var1);
       this.removed = (Set)var1.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readResourceLocation);
       this.progress = var1.readMap(FriendlyByteBuf::readResourceLocation, AdvancementProgress::fromNetwork);
+      this.showAdvancements = var1.readBoolean();
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -42,6 +45,7 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       AdvancementHolder.LIST_STREAM_CODEC.encode(var1, this.added);
       var1.writeCollection(this.removed, FriendlyByteBuf::writeResourceLocation);
       var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> var1x.serializeToNetwork(var0));
+      var1.writeBoolean(this.showAdvancements);
    }
 
    public PacketType<ClientboundUpdateAdvancementsPacket> type() {
@@ -66,5 +70,9 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
 
    public boolean shouldReset() {
       return this.reset;
+   }
+
+   public boolean shouldShowAdvancements() {
+      return this.showAdvancements;
    }
 }

@@ -44,7 +44,7 @@ import net.minecraft.world.phys.Vec3;
 public class Ravager extends Raider {
    private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (var0) -> !(var0 instanceof Ravager) && var0.isAlive();
    private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = (var0) -> ROAR_TARGET_WITH_GRIEFING.test(var0) && !var0.getType().equals(EntityType.ARMOR_STAND);
-   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (var0) -> !(var0 instanceof Ravager) && var0.isAlive() && var0.isControlledByLocalInstance();
+   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (var0) -> !(var0 instanceof Ravager) && var0.isAlive() && var0.isLocalInstanceAuthoritative();
    private static final double BASE_MOVEMENT_SPEED = 0.3;
    private static final double ATTACK_MOVEMENT_SPEED = 0.35;
    private static final int STUNNED_COLOR = 8356754;
@@ -53,9 +53,12 @@ public class Ravager extends Raider {
    private static final float STUNNED_COLOR_RED = 0.49803922F;
    public static final int ATTACK_DURATION = 10;
    public static final int STUN_DURATION = 40;
-   private int attackTick;
-   private int stunnedTick;
-   private int roarTick;
+   private static final int DEFAULT_ATTACK_TICK = 0;
+   private static final int DEFAULT_STUN_TICK = 0;
+   private static final int DEFAULT_ROAR_TICK = 0;
+   private int attackTick = 0;
+   private int stunnedTick = 0;
+   private int roarTick = 0;
 
    public Ravager(EntityType<? extends Ravager> var1, Level var2) {
       super(var1, var2);
@@ -98,9 +101,9 @@ public class Ravager extends Raider {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.attackTick = var1.getInt("AttackTick");
-      this.stunnedTick = var1.getInt("StunTick");
-      this.roarTick = var1.getInt("RoarTick");
+      this.attackTick = var1.getIntOr("AttackTick", 0);
+      this.stunnedTick = var1.getIntOr("StunTick", 0);
+      this.roarTick = var1.getIntOr("RoarTick", 0);
    }
 
    public SoundEvent getCelebrateSound() {
@@ -184,7 +187,7 @@ public class Ravager extends Raider {
       return this.stunnedTick <= 0 && this.roarTick <= 0 ? super.hasLineOfSight(var1) : false;
    }
 
-   protected void blockedByShield(LivingEntity var1) {
+   protected void blockedByItem(LivingEntity var1) {
       if (this.roarTick == 0) {
          if (this.random.nextDouble() < 0.5) {
             this.stunnedTick = 40;

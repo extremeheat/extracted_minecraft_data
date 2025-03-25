@@ -10,7 +10,6 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.SharedConstants;
 import net.minecraft.commands.arguments.AngleArgument;
 import net.minecraft.commands.arguments.ColorArgument;
 import net.minecraft.commands.arguments.ComponentArgument;
@@ -35,6 +34,7 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.ResourceOrTagArgument;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
+import net.minecraft.commands.arguments.ResourceSelectorArgument;
 import net.minecraft.commands.arguments.ScoreHolderArgument;
 import net.minecraft.commands.arguments.ScoreboardSlotArgument;
 import net.minecraft.commands.arguments.SlotArgument;
@@ -62,8 +62,6 @@ import net.minecraft.commands.synchronization.brigadier.IntegerArgumentInfo;
 import net.minecraft.commands.synchronization.brigadier.LongArgumentInfo;
 import net.minecraft.commands.synchronization.brigadier.StringArgumentSerializer;
 import net.minecraft.core.Registry;
-import net.minecraft.gametest.framework.TestClassNameArgument;
-import net.minecraft.gametest.framework.TestFunctionArgument;
 
 public class ArgumentTypeInfos {
    private static final Map<Class<?>, ArgumentTypeInfo<?, ?>> BY_CLASS = Maps.newHashMap();
@@ -125,17 +123,13 @@ public class ArgumentTypeInfos {
       register(var0, "resource_or_tag_key", fixClassType(ResourceOrTagKeyArgument.class), new ResourceOrTagKeyArgument.Info());
       register(var0, "resource", fixClassType(ResourceArgument.class), new ResourceArgument.Info());
       register(var0, "resource_key", fixClassType(ResourceKeyArgument.class), new ResourceKeyArgument.Info());
+      register(var0, "resource_selector", fixClassType(ResourceSelectorArgument.class), new ResourceSelectorArgument.Info());
       register(var0, "template_mirror", TemplateMirrorArgument.class, SingletonArgumentInfo.contextFree(TemplateMirrorArgument::templateMirror));
       register(var0, "template_rotation", TemplateRotationArgument.class, SingletonArgumentInfo.contextFree(TemplateRotationArgument::templateRotation));
       register(var0, "heightmap", HeightmapTypeArgument.class, SingletonArgumentInfo.contextFree(HeightmapTypeArgument::heightmap));
       register(var0, "loot_table", ResourceOrIdArgument.LootTableArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootTable));
       register(var0, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate));
       register(var0, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         register(var0, "test_argument", TestFunctionArgument.class, SingletonArgumentInfo.contextFree(TestFunctionArgument::testFunctionArgument));
-         register(var0, "test_class", TestClassNameArgument.class, SingletonArgumentInfo.contextFree(TestClassNameArgument::testClassName));
-      }
-
       return register(var0, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
    }
 

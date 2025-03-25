@@ -9,12 +9,14 @@ import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ServerboundPaddleBoatPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EntityTypeTags;
@@ -26,6 +28,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -59,15 +62,9 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    public static final double PADDLE_SOUND_TIME = 0.7853981852531433;
    public static final int BUBBLE_TIME = 60;
    private final float[] paddlePositions = new float[2];
-   private float invFriction;
    private float outOfControlTicks;
    private float deltaRotation;
-   private int lerpSteps;
-   private double lerpX;
-   private double lerpY;
-   private double lerpZ;
-   private double lerpYRot;
-   private double lerpXRot;
+   private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
    private boolean inputLeft;
    private boolean inputRight;
    private boolean inputUp;
@@ -150,8 +147,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return (new Vec3(0.0, this.rideHeight(var2), (double)var4)).yRot(-this.getYRot() * 0.017453292F);
    }
 
-   public void onAboveBubbleCol(boolean var1) {
-      if (!this.level().isClientSide) {
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      if (this.level() instanceof ServerLevel) {
          this.isAboveBubbleColumn = true;
          this.bubbleColumnDirectionIsDown = var1;
          if (this.getBubbleTime() == 0) {
@@ -159,9 +156,9 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          }
       }
 
-      this.level().addParticle(ParticleTypes.SPLASH, this.getX() + (double)this.random.nextFloat(), this.getY() + 0.7, this.getZ() + (double)this.random.nextFloat(), 0.0, 0.0, 0.0);
-      if (this.random.nextInt(20) == 0) {
+      if (!this.isUnderWater() && this.random.nextInt(100) == 0) {
          this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getSwimSplashSound(), this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false);
+         this.level().addParticle(ParticleTypes.SPLASH, this.getX() + (double)this.random.nextFloat(), this.getY() + 0.7, this.getZ() + (double)this.random.nextFloat(), 0.0, 0.0, 0.0);
          this.gameEvent(GameEvent.SPLASH, this.getControllingPassenger());
       }
 
@@ -188,37 +185,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return !this.isRemoved();
    }
 
-   public void cancelLerp() {
-      this.lerpSteps = 0;
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.lerpX = var1;
-      this.lerpY = var3;
-      this.lerpZ = var5;
-      this.lerpYRot = (double)var7;
-      this.lerpXRot = (double)var8;
-      this.lerpSteps = var9;
-   }
-
-   public double lerpTargetX() {
-      return this.lerpSteps > 0 ? this.lerpX : this.getX();
-   }
-
-   public double lerpTargetY() {
-      return this.lerpSteps > 0 ? this.lerpY : this.getY();
-   }
-
-   public double lerpTargetZ() {
-      return this.lerpSteps > 0 ? this.lerpZ : this.getZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.lerpSteps > 0 ? (float)this.lerpXRot : this.getXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.lerpSteps > 0 ? (float)this.lerpYRot : this.getYRot();
+   public InterpolationHandler getInterpolation() {
+      return this.interpolation;
    }
 
    public Direction getMotionDirection() {
@@ -247,8 +215,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       }
 
       super.tick();
-      this.tickLerp();
-      if (this.isControlledByLocalInstance()) {
+      this.interpolation.interpolate();
+      if (this.isLocalInstanceAuthoritative()) {
          if (!(this.getFirstPassenger() instanceof Player)) {
             this.setPaddleState(false, false);
          }
@@ -276,7 +244,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
                   Vec3 var3 = this.getViewVector(1.0F);
                   double var4 = var1 == 1 ? -var3.z : var3.z;
                   double var6 = var1 == 1 ? var3.x : -var3.x;
-                  this.level().playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
+                  this.level().playSound((Entity)null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
                }
             }
 
@@ -315,7 +283,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
          this.bubbleMultiplier = Mth.clamp(this.bubbleMultiplier, 0.0F, 1.0F);
          this.bubbleAngleO = this.bubbleAngle;
-         this.bubbleAngle = 10.0F * (float)Math.sin((double)(0.5F * (float)this.level().getGameTime())) * this.bubbleMultiplier;
+         this.bubbleAngle = 10.0F * (float)Math.sin(0.5 * (double)this.tickCount) * this.bubbleMultiplier;
       } else {
          if (!this.isAboveBubbleColumn) {
             this.setBubbleTime(0);
@@ -345,24 +313,21 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    @Nullable
    protected SoundEvent getPaddleSound() {
+      SoundEvent var10000;
       switch (this.getStatus().ordinal()) {
          case 0:
          case 1:
          case 2:
-            return SoundEvents.BOAT_PADDLE_WATER;
+            var10000 = SoundEvents.BOAT_PADDLE_WATER;
+            break;
          case 3:
-            return SoundEvents.BOAT_PADDLE_LAND;
-         case 4:
+            var10000 = SoundEvents.BOAT_PADDLE_LAND;
+            break;
          default:
-            return null;
+            var10000 = null;
       }
-   }
 
-   private void tickLerp() {
-      if (this.lerpSteps > 0) {
-         this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-         --this.lerpSteps;
-      }
+      return var10000;
    }
 
    public void setPaddleState(boolean var1, boolean var2) {
@@ -470,7 +435,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
                   if (var15 <= 0 || var16 != var5 && var16 != var6 - 1) {
                      var12.set(var13, var16, var14);
                      BlockState var17 = this.level().getBlockState(var12);
-                     if (!(var17.getBlock() instanceof WaterlilyBlock) && Shapes.joinIsNotEmpty(var17.getCollisionShape(this.level(), var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND)) {
+                     if (!(var17.getBlock() instanceof WaterlilyBlock) && Shapes.joinIsNotEmpty(var17.getCollisionShape(this.level(), var12).move((Vec3i)var12), var9, BooleanOp.AND)) {
                         var10 += var17.getBlock().getFriction();
                         ++var11;
                      }
@@ -551,12 +516,12 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    private void floatBoat() {
       double var1 = -this.getGravity();
       double var3 = 0.0;
-      this.invFriction = 0.05F;
+      float var5 = 0.05F;
       if (this.oldStatus == AbstractBoat.Status.IN_AIR && this.status != AbstractBoat.Status.IN_AIR && this.status != AbstractBoat.Status.ON_LAND) {
          this.waterLevel = this.getY(1.0);
-         double var7 = (double)(this.getWaterLevelAbove() - this.getBbHeight()) + 0.101;
-         if (this.level().noCollision(this, this.getBoundingBox().move(0.0, var7 - this.getY(), 0.0))) {
-            this.setPos(this.getX(), var7, this.getZ());
+         double var8 = (double)(this.getWaterLevelAbove() - this.getBbHeight()) + 0.101;
+         if (this.level().noCollision(this, this.getBoundingBox().move(0.0, var8 - this.getY(), 0.0))) {
+            this.setPos(this.getX(), var8, this.getZ());
             this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.0, 1.0));
             this.lastYd = 0.0;
          }
@@ -565,28 +530,28 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       } else {
          if (this.status == AbstractBoat.Status.IN_WATER) {
             var3 = (this.waterLevel - this.getY()) / (double)this.getBbHeight();
-            this.invFriction = 0.9F;
+            var5 = 0.9F;
          } else if (this.status == AbstractBoat.Status.UNDER_FLOWING_WATER) {
             var1 = -7.0E-4;
-            this.invFriction = 0.9F;
+            var5 = 0.9F;
          } else if (this.status == AbstractBoat.Status.UNDER_WATER) {
             var3 = 0.009999999776482582;
-            this.invFriction = 0.45F;
+            var5 = 0.45F;
          } else if (this.status == AbstractBoat.Status.IN_AIR) {
-            this.invFriction = 0.9F;
+            var5 = 0.9F;
          } else if (this.status == AbstractBoat.Status.ON_LAND) {
-            this.invFriction = this.landFriction;
+            var5 = this.landFriction;
             if (this.getControllingPassenger() instanceof Player) {
                this.landFriction /= 2.0F;
             }
          }
 
-         Vec3 var5 = this.getDeltaMovement();
-         this.setDeltaMovement(var5.x * (double)this.invFriction, var5.y + var1, var5.z * (double)this.invFriction);
-         this.deltaRotation *= this.invFriction;
+         Vec3 var6 = this.getDeltaMovement();
+         this.setDeltaMovement(var6.x * (double)var5, var6.y + var1, var6.z * (double)var5);
+         this.deltaRotation *= var5;
          if (var3 > 0.0) {
-            Vec3 var6 = this.getDeltaMovement();
-            this.setDeltaMovement(var6.x, (var6.y + var3 * (this.getDefaultGravity() / 0.65)) * 0.75, var6.z);
+            Vec3 var7 = this.getDeltaMovement();
+            this.setDeltaMovement(var7.x, (var7.y + var3 * (this.getDefaultGravity() / 0.65)) * 0.75, var7.z);
          }
       }
 
@@ -723,7 +688,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          if (var3) {
             this.resetFallDistance();
          } else if (!this.level().getFluidState(this.blockPosition().below()).is(FluidTags.WATER) && var1 < 0.0) {
-            this.fallDistance -= (float)var1;
+            this.fallDistance -= (double)((float)var1);
          }
 
       }

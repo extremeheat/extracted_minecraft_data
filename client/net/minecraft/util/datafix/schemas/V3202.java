@@ -12,7 +12,7 @@ public class V3202 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
-      var1.registerSimple(var2, "minecraft:hanging_sign");
+      var2.put("minecraft:hanging_sign", (Supplier)() -> V99.sign(var1));
       return var2;
    }
 }

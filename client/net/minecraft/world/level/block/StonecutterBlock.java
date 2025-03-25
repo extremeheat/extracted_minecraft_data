@@ -28,7 +28,7 @@ public class StonecutterBlock extends Block {
    public static final MapCodec<StonecutterBlock> CODEC = simpleCodec(StonecutterBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.stonecutter");
    public static final EnumProperty<Direction> FACING;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<StonecutterBlock> codec() {
       return CODEC;
@@ -83,6 +83,6 @@ public class StonecutterBlock extends Block {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 9.0, 16.0);
+      SHAPE = Block.column(16.0, 0.0, 9.0);
    }
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> implements BlockEntityRenderer<T> {
@@ -17,9 +18,9 @@ public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> implements 
       super();
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Matrix4f var7 = var3.last().pose();
-      this.renderCube(var1, var7, var4.getBuffer(this.renderType()));
+   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      Matrix4f var8 = var3.last().pose();
+      this.renderCube(var1, var8, var4.getBuffer(this.renderType()));
    }
 
    private void renderCube(T var1, Matrix4f var2, VertexConsumer var3) {

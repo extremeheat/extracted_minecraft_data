@@ -253,7 +253,7 @@ public class LevelStorageSource {
 
    static Dynamic<?> readLevelDataTagFixed(Path var0, DataFixer var1) throws IOException {
       CompoundTag var2 = readLevelDataTagRaw(var0);
-      CompoundTag var3 = var2.getCompound("Data");
+      CompoundTag var3 = var2.getCompoundOrEmpty("Data");
       int var4 = NbtUtils.getDataVersion(var3, -1);
       Dynamic var5 = DataFixTypes.LEVEL.updateToCurrentVersion(var1, new Dynamic(NbtOps.INSTANCE, var3), var4);
       var5 = var5.update("Player", (var2x) -> DataFixTypes.PLAYER.updateToCurrentVersion(var1, var2x, var4));
@@ -276,7 +276,7 @@ public class LevelStorageSource {
             Tag var10 = readLightweightData(var3);
             if (var10 instanceof CompoundTag) {
                CompoundTag var5 = (CompoundTag)var10;
-               CompoundTag var6 = var5.getCompound("Data");
+               CompoundTag var6 = var5.getCompoundOrEmpty("Data");
                int var7 = NbtUtils.getDataVersion(var6, -1);
                Dynamic var8 = DataFixTypes.LEVEL.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, var6), var7);
                return this.makeLevelSummary(var8, var1, var2);
@@ -578,7 +578,7 @@ public class LevelStorageSource {
       private void modifyLevelDataWithoutDatafix(Consumer<CompoundTag> var1) throws IOException {
          this.checkLock();
          CompoundTag var2 = LevelStorageSource.readLevelDataTagRaw(this.levelDirectory.dataFile());
-         var1.accept(var2.getCompound("Data"));
+         var1.accept(var2.getCompoundOrEmpty("Data"));
          this.saveLevelData(var2);
       }
 

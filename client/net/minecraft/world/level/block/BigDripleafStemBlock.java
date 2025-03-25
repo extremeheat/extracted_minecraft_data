@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import java.util.Optional;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
@@ -23,16 +24,13 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements BonemealableBlock, SimpleWaterloggedBlock {
    public static final MapCodec<BigDripleafStemBlock> CODEC = simpleCodec(BigDripleafStemBlock::new);
    private static final BooleanProperty WATERLOGGED;
-   private static final int STEM_WIDTH = 6;
-   protected static final VoxelShape NORTH_SHAPE;
-   protected static final VoxelShape SOUTH_SHAPE;
-   protected static final VoxelShape EAST_SHAPE;
-   protected static final VoxelShape WEST_SHAPE;
+   private static final Map<Direction, VoxelShape> SHAPES;
 
    public MapCodec<BigDripleafStemBlock> codec() {
       return CODEC;
@@ -44,17 +42,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case SOUTH:
-            return SOUTH_SHAPE;
-         case NORTH:
-         default:
-            return NORTH_SHAPE;
-         case WEST:
-            return WEST_SHAPE;
-         case EAST:
-            return EAST_SHAPE;
-      }
+      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
@@ -128,9 +116,6 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      NORTH_SHAPE = Block.box(5.0, 0.0, 9.0, 11.0, 16.0, 15.0);
-      SOUTH_SHAPE = Block.box(5.0, 0.0, 1.0, 11.0, 16.0, 7.0);
-      EAST_SHAPE = Block.box(1.0, 0.0, 5.0, 7.0, 16.0, 11.0);
-      WEST_SHAPE = Block.box(9.0, 0.0, 5.0, 15.0, 16.0, 11.0);
+      SHAPES = Shapes.rotateHorizontal(Block.column(6.0, 0.0, 16.0).move(0.0, 0.0, 0.25).optimize());
    }
 }

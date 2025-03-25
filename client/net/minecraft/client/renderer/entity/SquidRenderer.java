@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.state.SquidRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Squid;
+import org.joml.Quaternionfc;
 
 public class SquidRenderer<T extends Squid> extends AgeableMobRenderer<T, SquidRenderState, SquidModel> {
    private static final ResourceLocation SQUID_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/squid/squid.png");
@@ -34,9 +35,9 @@ public class SquidRenderer<T extends Squid> extends AgeableMobRenderer<T, SquidR
 
    protected void setupRotations(SquidRenderState var1, PoseStack var2, float var3, float var4) {
       var2.translate(0.0F, var1.isBaby ? 0.25F : 0.5F, 0.0F);
-      var2.mulPose(Axis.YP.rotationDegrees(180.0F - var3));
-      var2.mulPose(Axis.XP.rotationDegrees(var1.xBodyRot));
-      var2.mulPose(Axis.YP.rotationDegrees(var1.zBodyRot));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var1.xBodyRot));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.zBodyRot));
       var2.translate(0.0F, var1.isBaby ? -0.6F : -1.2F, 0.0F);
    }
 

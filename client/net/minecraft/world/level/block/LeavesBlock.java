@@ -27,20 +27,19 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<LeavesBlock> CODEC = simpleCodec(LeavesBlock::new);
+public abstract class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    public static final int DECAY_DISTANCE = 7;
    public static final IntegerProperty DISTANCE;
    public static final BooleanProperty PERSISTENT;
    public static final BooleanProperty WATERLOGGED;
+   protected final float leafParticleChance;
    private static final int TICK_DELAY = 1;
 
-   public MapCodec<? extends LeavesBlock> codec() {
-      return CODEC;
-   }
+   public abstract MapCodec<? extends LeavesBlock> codec();
 
-   public LeavesBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public LeavesBlock(float var1, BlockBehaviour.Properties var2) {
+      super(var2);
+      this.leafParticleChance = var1;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(PERSISTENT, false)).setValue(WATERLOGGED, false));
    }
 
@@ -117,16 +116,32 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var2.isRainingAt(var3.above())) {
-         if (var4.nextInt(15) == 1) {
-            BlockPos var5 = var3.below();
-            BlockState var6 = var2.getBlockState(var5);
-            if (!var6.canOcclude() || !var6.isFaceSturdy(var2, var5, Direction.UP)) {
-               ParticleUtils.spawnParticleBelow(var2, var3, var4, ParticleTypes.DRIPPING_WATER);
+      super.animateTick(var1, var2, var3, var4);
+      BlockPos var5 = var3.below();
+      BlockState var6 = var2.getBlockState(var5);
+      makeDrippingWaterParticles(var2, var3, var4, var6, var5);
+      this.makeFallingLeavesParticles(var2, var3, var4, var6, var5);
+   }
+
+   private static void makeDrippingWaterParticles(Level var0, BlockPos var1, RandomSource var2, BlockState var3, BlockPos var4) {
+      if (var0.isRainingAt(var1.above())) {
+         if (var2.nextInt(15) == 1) {
+            if (!var3.canOcclude() || !var3.isFaceSturdy(var0, var4, Direction.UP)) {
+               ParticleUtils.spawnParticleBelow(var0, var1, var2, ParticleTypes.DRIPPING_WATER);
             }
          }
       }
    }
+
+   private void makeFallingLeavesParticles(Level var1, BlockPos var2, RandomSource var3, BlockState var4, BlockPos var5) {
+      if (!(var3.nextFloat() >= this.leafParticleChance)) {
+         if (!isFaceFull(var4.getCollisionShape(var1, var5), Direction.UP)) {
+            this.spawnFallingLeavesParticle(var1, var2, var3);
+         }
+      }
+   }
+
+   protected abstract void spawnFallingLeavesParticle(Level var1, BlockPos var2, RandomSource var3);
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(DISTANCE, PERSISTENT, WATERLOGGED);

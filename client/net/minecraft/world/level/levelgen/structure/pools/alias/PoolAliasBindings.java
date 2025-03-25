@@ -16,9 +16,9 @@ public class PoolAliasBindings {
    }
 
    public static MapCodec<? extends PoolAliasBinding> bootstrap(Registry<MapCodec<? extends PoolAliasBinding>> var0) {
-      Registry.register(var0, (String)"random", Random.CODEC);
-      Registry.register(var0, (String)"random_group", RandomGroup.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"direct", Direct.CODEC);
+      Registry.register(var0, (String)"random", RandomPoolAlias.CODEC);
+      Registry.register(var0, (String)"random_group", RandomGroupPoolAlias.CODEC);
+      return (MapCodec)Registry.register(var0, (String)"direct", DirectPoolAlias.CODEC);
    }
 
    public static void registerTargetsAsPools(BootstrapContext<StructureTemplatePool> var0, Holder<StructureTemplatePool> var1, List<PoolAliasBinding> var2) {

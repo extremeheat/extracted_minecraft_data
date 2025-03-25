@@ -106,7 +106,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
          var2.setAge(6000);
          var3.setAge(6000);
          var4.setAge(-24000);
-         var4.moveTo(var2.getX(), var2.getY(), var2.getZ(), 0.0F, 0.0F);
+         var4.snapTo(var2.getX(), var2.getY(), var2.getZ(), 0.0F, 0.0F);
          var1.addFreshEntityWithPassengers(var4);
          var1.broadcastEntityEvent(var4, (byte)12);
          return Optional.of(var4);

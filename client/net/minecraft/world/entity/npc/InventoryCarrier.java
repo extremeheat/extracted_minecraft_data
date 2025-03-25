@@ -36,10 +36,7 @@ public interface InventoryCarrier {
    }
 
    default void readInventoryFromTag(CompoundTag var1, HolderLookup.Provider var2) {
-      if (var1.contains("Inventory", 9)) {
-         this.getInventory().fromTag(var1.getList("Inventory", 10), var2);
-      }
-
+      var1.getList("Inventory").ifPresent((var2x) -> this.getInventory().fromTag(var2x, var2));
    }
 
    default void writeInventoryToTag(CompoundTag var1, HolderLookup.Provider var2) {

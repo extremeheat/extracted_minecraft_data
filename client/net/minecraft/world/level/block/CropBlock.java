@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,11 +23,11 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class CropBlock extends BushBlock implements BonemealableBlock {
+public class CropBlock extends VegetationBlock implements BonemealableBlock {
    public static final MapCodec<CropBlock> CODEC = simpleCodec(CropBlock::new);
    public static final int MAX_AGE = 7;
    public static final IntegerProperty AGE;
-   private static final VoxelShape[] SHAPE_BY_AGE;
+   private static final VoxelShape[] SHAPES;
 
    public MapCodec<? extends CropBlock> codec() {
       return CODEC;
@@ -38,7 +39,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[this.getAge(var1)];
+      return SHAPES[this.getAge(var1)];
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -83,12 +84,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    public void growCrops(Level var1, BlockPos var2, BlockState var3) {
-      int var4 = this.getAge(var3) + this.getBonemealAgeIncrease(var1);
-      int var5 = this.getMaxAge();
-      if (var4 > var5) {
-         var4 = var5;
-      }
-
+      int var4 = Math.min(this.getMaxAge(), this.getAge(var3) + this.getBonemealAgeIncrease(var1));
       var1.setBlock(var2, this.getStateForAge(var4), 2);
    }
 
@@ -145,14 +141,14 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       return var0.getRawBrightness(var1, 0) >= 8;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var2 instanceof ServerLevel var5) {
-         if (var4 instanceof Ravager && var5.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            var5.destroyBlock(var3, true, var4);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (var2 instanceof ServerLevel var6) {
+         if (var4 instanceof Ravager && var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            var6.destroyBlock(var3, true, var4);
          }
       }
 
-      super.entityInside(var1, var2, var3, var4);
+      super.entityInside(var1, var2, var3, var4, var5);
    }
 
    protected ItemLike getBaseSeedId() {
@@ -181,6 +177,6 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
 
    static {
       AGE = BlockStateProperties.AGE_7;
-      SHAPE_BY_AGE = new VoxelShape[]{Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 4.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 10.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 14.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 16.0)};
+      SHAPES = Block.boxes(7, (var0) -> Block.column(16.0, 0.0, (double)(2 + var0 * 2)));
    }
 }

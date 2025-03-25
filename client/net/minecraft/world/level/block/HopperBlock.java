@@ -1,13 +1,18 @@
 package net.minecraft.world.level.block;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -23,9 +28,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -35,21 +42,8 @@ public class HopperBlock extends BaseEntityBlock {
    public static final MapCodec<HopperBlock> CODEC = simpleCodec(HopperBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty ENABLED;
-   private static final VoxelShape TOP;
-   private static final VoxelShape FUNNEL;
-   private static final VoxelShape CONVEX_BASE;
-   private static final VoxelShape INSIDE;
-   private static final VoxelShape BASE;
-   private static final VoxelShape DOWN_SHAPE;
-   private static final VoxelShape EAST_SHAPE;
-   private static final VoxelShape NORTH_SHAPE;
-   private static final VoxelShape SOUTH_SHAPE;
-   private static final VoxelShape WEST_SHAPE;
-   private static final VoxelShape DOWN_INTERACTION_SHAPE;
-   private static final VoxelShape EAST_INTERACTION_SHAPE;
-   private static final VoxelShape NORTH_INTERACTION_SHAPE;
-   private static final VoxelShape SOUTH_INTERACTION_SHAPE;
-   private static final VoxelShape WEST_INTERACTION_SHAPE;
+   private final Function<BlockState, VoxelShape> shapes;
+   private final Map<Direction, VoxelShape> interactionShapes;
 
    public MapCodec<HopperBlock> codec() {
       return CODEC;
@@ -58,52 +52,24 @@ public class HopperBlock extends BaseEntityBlock {
    public HopperBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.DOWN)).setValue(ENABLED, true));
+      VoxelShape var2 = Block.column(12.0, 11.0, 16.0);
+      this.shapes = this.makeShapes(var2);
+      this.interactionShapes = ImmutableMap.builderWithExpectedSize(5).putAll(Shapes.rotateHorizontal(Shapes.or(var2, Block.boxZ(4.0, 8.0, 10.0, 0.0, 4.0)))).put(Direction.DOWN, var2).build();
+   }
+
+   private Function<BlockState, VoxelShape> makeShapes(VoxelShape var1) {
+      VoxelShape var2 = Shapes.or(Block.column(16.0, 10.0, 16.0), Block.column(8.0, 4.0, 10.0));
+      VoxelShape var3 = Shapes.join(var2, var1, BooleanOp.ONLY_FIRST);
+      Map var4 = Shapes.rotateAll(Block.boxZ(4.0, 4.0, 8.0, 0.0, 8.0), (new Vec3(8.0, 6.0, 8.0)).scale(0.0625));
+      return this.getShapeForEachState((var2x) -> Shapes.or(var3, Shapes.join((VoxelShape)var4.get(var2x.getValue(FACING)), Shapes.block(), BooleanOp.AND)), new Property[]{ENABLED});
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case DOWN -> {
-            return DOWN_SHAPE;
-         }
-         case NORTH -> {
-            return NORTH_SHAPE;
-         }
-         case SOUTH -> {
-            return SOUTH_SHAPE;
-         }
-         case WEST -> {
-            return WEST_SHAPE;
-         }
-         case EAST -> {
-            return EAST_SHAPE;
-         }
-         default -> {
-            return BASE;
-         }
-      }
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case DOWN -> {
-            return DOWN_INTERACTION_SHAPE;
-         }
-         case NORTH -> {
-            return NORTH_INTERACTION_SHAPE;
-         }
-         case SOUTH -> {
-            return SOUTH_INTERACTION_SHAPE;
-         }
-         case WEST -> {
-            return WEST_INTERACTION_SHAPE;
-         }
-         case EAST -> {
-            return EAST_INTERACTION_SHAPE;
-         }
-         default -> {
-            return INSIDE;
-         }
-      }
+      return (VoxelShape)this.interactionShapes.get(var1.getValue(FACING));
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -151,9 +117,8 @@ public class HopperBlock extends BaseEntityBlock {
 
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
-      super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected boolean hasAnalogOutputSignal(BlockState var1) {
@@ -176,10 +141,10 @@ public class HopperBlock extends BaseEntityBlock {
       var1.add(FACING, ENABLED);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof HopperBlockEntity) {
-         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var5);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      BlockEntity var6 = var2.getBlockEntity(var3);
+      if (var6 instanceof HopperBlockEntity) {
+         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var6);
       }
 
    }
@@ -191,20 +156,5 @@ public class HopperBlock extends BaseEntityBlock {
    static {
       FACING = BlockStateProperties.FACING_HOPPER;
       ENABLED = BlockStateProperties.ENABLED;
-      TOP = Block.box(0.0, 10.0, 0.0, 16.0, 16.0, 16.0);
-      FUNNEL = Block.box(4.0, 4.0, 4.0, 12.0, 10.0, 12.0);
-      CONVEX_BASE = Shapes.or(FUNNEL, TOP);
-      INSIDE = box(2.0, 11.0, 2.0, 14.0, 16.0, 14.0);
-      BASE = Shapes.join(CONVEX_BASE, INSIDE, BooleanOp.ONLY_FIRST);
-      DOWN_SHAPE = Shapes.or(BASE, Block.box(6.0, 0.0, 6.0, 10.0, 4.0, 10.0));
-      EAST_SHAPE = Shapes.or(BASE, Block.box(12.0, 4.0, 6.0, 16.0, 8.0, 10.0));
-      NORTH_SHAPE = Shapes.or(BASE, Block.box(6.0, 4.0, 0.0, 10.0, 8.0, 4.0));
-      SOUTH_SHAPE = Shapes.or(BASE, Block.box(6.0, 4.0, 12.0, 10.0, 8.0, 16.0));
-      WEST_SHAPE = Shapes.or(BASE, Block.box(0.0, 4.0, 6.0, 4.0, 8.0, 10.0));
-      DOWN_INTERACTION_SHAPE = INSIDE;
-      EAST_INTERACTION_SHAPE = Shapes.or(INSIDE, Block.box(12.0, 8.0, 6.0, 16.0, 10.0, 10.0));
-      NORTH_INTERACTION_SHAPE = Shapes.or(INSIDE, Block.box(6.0, 8.0, 0.0, 10.0, 10.0, 4.0));
-      SOUTH_INTERACTION_SHAPE = Shapes.or(INSIDE, Block.box(6.0, 8.0, 12.0, 10.0, 10.0, 16.0));
-      WEST_INTERACTION_SHAPE = Shapes.or(INSIDE, Block.box(0.0, 8.0, 6.0, 4.0, 10.0, 10.0));
    }
 }

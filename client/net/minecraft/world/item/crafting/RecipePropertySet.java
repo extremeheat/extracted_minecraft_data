@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -47,7 +46,7 @@ public class RecipePropertySet {
    }
 
    static {
-      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM).apply(ByteBufCodecs.list()).map((var0) -> new RecipePropertySet(Set.copyOf(var0)), (var0) -> List.copyOf(var0.items));
+      STREAM_CODEC = Item.STREAM_CODEC.apply(ByteBufCodecs.list()).map((var0) -> new RecipePropertySet(Set.copyOf(var0)), (var0) -> List.copyOf(var0.items));
       EMPTY = new RecipePropertySet(Set.of());
    }
 }

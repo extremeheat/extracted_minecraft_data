@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -19,14 +18,14 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface CaveVines {
-   VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+   VoxelShape SHAPE = Block.column(14.0, 0.0, 16.0);
    BooleanProperty BERRIES = BlockStateProperties.BERRIES;
 
    static InteractionResult use(@Nullable Entity var0, BlockState var1, Level var2, BlockPos var3) {
       if ((Boolean)var1.getValue(BERRIES)) {
          Block.popResource(var2, var3, new ItemStack(Items.GLOW_BERRIES, 1));
          float var4 = Mth.randomBetween(var2.random, 0.8F, 1.2F);
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.CAVE_VINES_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, var4);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.CAVE_VINES_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, var4);
          BlockState var5 = (BlockState)var1.setValue(BERRIES, false);
          var2.setBlock(var3, var5, 2);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var5));

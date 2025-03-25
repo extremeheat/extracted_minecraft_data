@@ -78,11 +78,13 @@ public class RespawnAnchorBlock extends Block {
 
          return InteractionResult.SUCCESS;
       } else {
-         if (!var2.isClientSide) {
+         if (var4 instanceof ServerPlayer) {
             ServerPlayer var6 = (ServerPlayer)var4;
-            if (var6.getRespawnDimension() != var2.dimension() || !var3.equals(var6.getRespawnPosition())) {
-               var6.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
-               var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+            ServerPlayer.RespawnConfig var7 = var6.getRespawnConfig();
+            ServerPlayer.RespawnConfig var8 = new ServerPlayer.RespawnConfig(var2.dimension(), var3, 0.0F, false);
+            if (var7 == null || !var7.isSamePosition(var8)) {
+               var6.setRespawnPosition(var8, true);
+               var2.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                return InteractionResult.SUCCESS_SERVER;
             }
          }
@@ -139,7 +141,7 @@ public class RespawnAnchorBlock extends Block {
       BlockState var4 = (BlockState)var3.setValue(CHARGE, (Integer)var3.getValue(CHARGE) + 1);
       var1.setBlock(var2, var4, 3);
       var1.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var0, var4));
-      var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var1.playSound((Entity)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {

@@ -22,7 +22,6 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
@@ -45,7 +44,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameType, List<StatMatcher<?>> stats, Object2BooleanMap<ResourceKey<Recipe<?>>> recipes, Map<ResourceLocation, AdvancementPredicate> advancements, Optional<EntityPredicate> lookingAt, Optional<InputPredicate> input) implements EntitySubPredicate {
    public static final int LOOKING_AT_RANGE = 100;
-   public static final MapCodec<PlayerPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level), GameTypePredicate.CODEC.optionalFieldOf("gamemode", GameTypePredicate.ANY).forGetter(PlayerPredicate::gameType), PlayerPredicate.StatMatcher.CODEC.listOf().optionalFieldOf("stats", List.of()).forGetter(PlayerPredicate::stats), ExtraCodecs.object2BooleanMap(ResourceKey.codec(Registries.RECIPE)).optionalFieldOf("recipes", Object2BooleanMaps.emptyMap()).forGetter(PlayerPredicate::recipes), Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC).optionalFieldOf("advancements", Map.of()).forGetter(PlayerPredicate::advancements), EntityPredicate.CODEC.optionalFieldOf("looking_at").forGetter(PlayerPredicate::lookingAt), InputPredicate.CODEC.optionalFieldOf("input").forGetter(PlayerPredicate::input)).apply(var0, PlayerPredicate::new));
+   public static final MapCodec<PlayerPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level), GameTypePredicate.CODEC.optionalFieldOf("gamemode", GameTypePredicate.ANY).forGetter(PlayerPredicate::gameType), PlayerPredicate.StatMatcher.CODEC.listOf().optionalFieldOf("stats", List.of()).forGetter(PlayerPredicate::stats), ExtraCodecs.object2BooleanMap(Recipe.KEY_CODEC).optionalFieldOf("recipes", Object2BooleanMaps.emptyMap()).forGetter(PlayerPredicate::recipes), Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC).optionalFieldOf("advancements", Map.of()).forGetter(PlayerPredicate::advancements), EntityPredicate.CODEC.optionalFieldOf("looking_at").forGetter(PlayerPredicate::lookingAt), InputPredicate.CODEC.optionalFieldOf("input").forGetter(PlayerPredicate::input)).apply(var0, PlayerPredicate::new));
 
    public PlayerPredicate(MinMaxBounds.Ints var1, GameTypePredicate var2, List<StatMatcher<?>> var3, Object2BooleanMap<ResourceKey<Recipe<?>>> var4, Map<ResourceLocation, AdvancementPredicate> var5, Optional<EntityPredicate> var6, Optional<InputPredicate> var7) {
       super();
@@ -63,7 +62,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
          return false;
       } else if (!this.level.matches(var4.experienceLevel)) {
          return false;
-      } else if (!this.gameType.matches(var4.gameMode.getGameModeForPlayer())) {
+      } else if (!this.gameType.matches(var4.gameMode())) {
          return false;
       } else {
          ServerStatsCounter var5 = var4.getStats();

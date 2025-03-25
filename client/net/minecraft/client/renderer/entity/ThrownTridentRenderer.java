@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.ThrownTrident;
+import org.joml.Quaternionfc;
 
 public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownTridentRenderState> {
    public static final ResourceLocation TRIDENT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/trident.png");
@@ -23,8 +24,8 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
 
    public void render(ThrownTridentRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
-      var2.mulPose(Axis.YP.rotationDegrees(var1.yRot - 90.0F));
-      var2.mulPose(Axis.ZP.rotationDegrees(var1.xRot + 90.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
+      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot + 90.0F));
       VertexConsumer var5 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
       this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
       var2.popPose();

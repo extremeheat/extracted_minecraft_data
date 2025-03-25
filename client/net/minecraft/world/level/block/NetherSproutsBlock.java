@@ -9,9 +9,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class NetherSproutsBlock extends BushBlock {
+public class NetherSproutsBlock extends VegetationBlock {
    public static final MapCodec<NetherSproutsBlock> CODEC = simpleCodec(NetherSproutsBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 3.0, 14.0);
+   private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 3.0);
 
    public MapCodec<NetherSproutsBlock> codec() {
       return CODEC;

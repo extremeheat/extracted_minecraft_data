@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.item.properties.select;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -13,6 +14,7 @@ import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 
 public record TrimMaterialProperty() implements SelectItemModelProperty<ResourceKey<TrimMaterial>> {
+   public static final Codec<ResourceKey<TrimMaterial>> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<TrimMaterialProperty, ResourceKey<TrimMaterial>> TYPE;
 
    public TrimMaterialProperty() {
@@ -29,6 +31,10 @@ public record TrimMaterialProperty() implements SelectItemModelProperty<Resource
       return TYPE;
    }
 
+   public Codec<ResourceKey<TrimMaterial>> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -36,6 +42,7 @@ public record TrimMaterialProperty() implements SelectItemModelProperty<Resource
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<TrimMaterialProperty, ResourceKey<TrimMaterial>>create(MapCodec.unit(new TrimMaterialProperty()), ResourceKey.codec(Registries.TRIM_MATERIAL));
+      VALUE_CODEC = ResourceKey.codec(Registries.TRIM_MATERIAL);
+      TYPE = SelectItemModelProperty.Type.<TrimMaterialProperty, ResourceKey<TrimMaterial>>create(MapCodec.unit(new TrimMaterialProperty()), VALUE_CODEC);
    }
 }

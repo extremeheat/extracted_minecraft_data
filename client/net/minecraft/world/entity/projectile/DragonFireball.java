@@ -40,7 +40,8 @@ public class DragonFireball extends AbstractHurtingProjectile {
             var3.setRadius(3.0F);
             var3.setDuration(600);
             var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());
-            var3.addEffect(new MobEffectInstance(MobEffects.HARM, 1, 1));
+            var3.setPotionDurationScale(0.25F);
+            var3.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE, 1, 1));
             if (!var2.isEmpty()) {
                for(LivingEntity var6 : var2) {
                   double var7 = this.distanceToSqr(var6);

@@ -1,15 +1,14 @@
 package net.minecraft.client.renderer.entity.state;
 
-public class StriderRenderState extends LivingEntityRenderState implements SaddleableRenderState {
-   public boolean isSaddled;
+import net.minecraft.world.item.ItemStack;
+
+public class StriderRenderState extends LivingEntityRenderState {
+   public ItemStack saddle;
    public boolean isSuffocating;
    public boolean isRidden;
 
    public StriderRenderState() {
       super();
-   }
-
-   public boolean isSaddled() {
-      return this.isSaddled;
+      this.saddle = ItemStack.EMPTY;
    }
 }

@@ -53,6 +53,7 @@ public class PartNames {
    public static final String MANE = "mane";
    public static final String NECK = "neck";
    public static final String MOUTH = "mouth";
+   public static final String UPPER_MOUTH = "upper_mouth";
    public static final String HEAD = "head";
    public static final String HAT = "hat";
    public static final String BODY = "body";

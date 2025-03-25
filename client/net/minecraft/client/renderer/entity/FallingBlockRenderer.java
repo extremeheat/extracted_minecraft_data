@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -36,7 +37,8 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
       if (var5.getRenderShape() == RenderShape.MODEL) {
          var2.pushPose();
          var2.translate(-0.5, 0.0, -0.5);
-         this.dispatcher.getModelRenderer().tesselateBlock(var1, this.dispatcher.getBlockModel(var5), var5, var1.blockPos, var2, var3.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var5)), false, RandomSource.create(), var5.getSeed(var1.startBlockPos), OverlayTexture.NO_OVERLAY);
+         List var6 = this.dispatcher.getBlockModel(var5).collectParts(RandomSource.create(var5.getSeed(var1.startBlockPos)));
+         this.dispatcher.getModelRenderer().tesselateBlock(var1, var6, var5, var1.blockPos, var2, var3.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var5)), false, OverlayTexture.NO_OVERLAY);
          var2.popPose();
          super.render(var1, var2, var3, var4);
       }

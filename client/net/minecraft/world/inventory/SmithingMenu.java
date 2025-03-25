@@ -70,7 +70,7 @@ public class SmithingMenu extends ItemCombinerMenu {
    }
 
    protected void onTake(Player var1, ItemStack var2) {
-      var2.onCraftedBy(var1.level(), var1, var2.getCount());
+      var2.onCraftedBy(var1, var2.getCount());
       this.resultSlots.awardUsedRecipes(var1, this.getRelevantItems());
       this.shrinkStackInSlot(0);
       this.shrinkStackInSlot(1);

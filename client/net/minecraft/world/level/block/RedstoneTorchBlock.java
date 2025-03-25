@@ -52,10 +52,11 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5) {
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4) {
          this.notifyNeighbors(var2, var3, var1);
       }
+
    }
 
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {

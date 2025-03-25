@@ -2,6 +2,8 @@ package net.minecraft.world.scores;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -15,11 +17,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.world.entity.Entity;
@@ -347,30 +347,59 @@ public class Scoreboard {
       }
    }
 
-   protected ListTag savePlayerScores(HolderLookup.Provider var1) {
-      ListTag var2 = new ListTag();
-      this.playerScores.forEach((var2x, var3) -> var3.listRawScores().forEach((var3x, var4) -> {
-            CompoundTag var5 = var4.write(var1);
-            var5.putString("Name", var2x);
-            var5.putString("Objective", var3x.getName());
-            var2.add(var5);
-         }));
-      return var2;
+   protected List<PackedScore> packPlayerScores() {
+      return this.playerScores.entrySet().stream().flatMap((var0) -> {
+         String var1 = (String)var0.getKey();
+         return ((PlayerScores)var0.getValue()).listRawScores().entrySet().stream().map((var1x) -> new PackedScore(var1, ((Objective)var1x.getKey()).getName(), (Score)var1x.getValue()));
+      }).toList();
    }
 
-   protected void loadPlayerScores(ListTag var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
-         CompoundTag var4 = var1.getCompound(var3);
-         Score var5 = Score.read(var4, var2);
-         String var6 = var4.getString("Name");
-         String var7 = var4.getString("Objective");
-         Objective var8 = this.getObjective(var7);
-         if (var8 == null) {
-            LOGGER.error("Unknown objective {} for name {}, ignoring", var7, var6);
-         } else {
-            this.getOrCreatePlayerInfo(var6).setScore(var8, var5);
-         }
+   protected void loadPlayerScore(PackedScore var1) {
+      Objective var2 = this.getObjective(var1.objective);
+      if (var2 == null) {
+         LOGGER.error("Unknown objective {} for name {}, ignoring", var1.objective, var1.owner);
+      } else {
+         this.getOrCreatePlayerInfo(var1.owner).setScore(var2, var1.score);
+      }
+   }
+
+   protected void loadPlayerTeam(PlayerTeam.Packed var1) {
+      PlayerTeam var2 = this.addPlayerTeam(var1.name());
+      Optional var10000 = var1.displayName();
+      Objects.requireNonNull(var2);
+      var10000.ifPresent(var2::setDisplayName);
+      var10000 = var1.color();
+      Objects.requireNonNull(var2);
+      var10000.ifPresent(var2::setColor);
+      var2.setAllowFriendlyFire(var1.allowFriendlyFire());
+      var2.setSeeFriendlyInvisibles(var1.seeFriendlyInvisibles());
+      var2.setPlayerPrefix(var1.memberNamePrefix());
+      var2.setPlayerSuffix(var1.memberNameSuffix());
+      var2.setNameTagVisibility(var1.nameTagVisibility());
+      var2.setDeathMessageVisibility(var1.deathMessageVisibility());
+      var2.setCollisionRule(var1.collisionRule());
+
+      for(String var4 : var1.players()) {
+         this.addPlayerToTeam(var4, var2);
       }
 
+   }
+
+   protected void loadObjective(Objective.Packed var1) {
+      this.addObjective(var1.name(), var1.criteria(), var1.displayName(), var1.renderType(), var1.displayAutoUpdate(), (NumberFormat)var1.numberFormat().orElse((Object)null));
+   }
+
+   public static record PackedScore(String owner, String objective, Score score) {
+      final String owner;
+      final String objective;
+      final Score score;
+      public static final Codec<PackedScore> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(PackedScore::owner), Codec.STRING.fieldOf("Objective").forGetter(PackedScore::objective), Score.MAP_CODEC.forGetter(PackedScore::score)).apply(var0, PackedScore::new));
+
+      public PackedScore(String var1, String var2, Score var3) {
+         super();
+         this.owner = var1;
+         this.objective = var2;
+         this.score = var3;
+      }
    }
 }

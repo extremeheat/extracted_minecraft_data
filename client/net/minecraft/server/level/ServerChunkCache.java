@@ -3,10 +3,11 @@ package net.minecraft.server.level;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -37,6 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.LocalMobCapCalculator;
 import net.minecraft.world.level.NaturalSpawner;
+import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -49,6 +52,7 @@ import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
@@ -62,6 +66,7 @@ public class ServerChunkCache extends ChunkSource {
    private final MainThreadExecutor mainThreadProcessor;
    public final ChunkMap chunkMap;
    private final DimensionDataStorage dataStorage;
+   private final TicketStorage ticketStorage;
    private long lastInhabitedUpdate;
    private boolean spawnEnemies = true;
    private boolean spawnFriendlies = true;
@@ -69,7 +74,7 @@ public class ServerChunkCache extends ChunkSource {
    private final long[] lastChunkPos = new long[4];
    private final ChunkStatus[] lastChunkStatus = new ChunkStatus[4];
    private final ChunkAccess[] lastChunk = new ChunkAccess[4];
-   private final List<LevelChunk> tickingChunks = new ArrayList();
+   private final List<LevelChunk> spawningChunks = new ObjectArrayList();
    private final Set<ChunkHolder> chunkHoldersToBroadcast = new ReferenceOpenHashSet();
    @Nullable
    @VisibleForDebug
@@ -88,8 +93,9 @@ public class ServerChunkCache extends ChunkSource {
          LOGGER.error("Failed to create dimension data storage directory", var15);
       }
 
-      this.dataStorage = new DimensionDataStorage(var13, var3, var1.registryAccess());
-      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, var7, var9);
+      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var13, var3, var1.registryAccess());
+      this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.TYPE);
+      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, this.ticketStorage, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.distanceManager.updateSimulationDistance(var8);
@@ -214,7 +220,7 @@ public class ServerChunkCache extends ChunkSource {
       int var8 = ChunkLevel.byStatus(var3);
       ChunkHolder var9 = this.getVisibleChunkIfPresent(var6);
       if (var4) {
-         this.distanceManager.addTicket(TicketType.UNKNOWN, var5, var8, var5);
+         this.addTicket(new Ticket(TicketType.UNKNOWN, var8), var5);
          if (this.chunkAbsent(var9, var8)) {
             ProfilerFiller var10 = Profiler.get();
             var10.push("chunkLoad");
@@ -292,7 +298,7 @@ public class ServerChunkCache extends ChunkSource {
       ProfilerFiller var3 = Profiler.get();
       var3.push("purge");
       if (this.level.tickRateManager().runsNormally() || !var2) {
-         this.distanceManager.purgeStaleTickets();
+         this.ticketStorage.purgeStaleTickets();
       }
 
       this.runDistanceManagerUpdates();
@@ -316,18 +322,9 @@ public class ServerChunkCache extends ChunkSource {
          ProfilerFiller var5 = Profiler.get();
          var5.push("pollingChunks");
          if (this.level.tickRateManager().runsNormally()) {
-            List var6 = this.tickingChunks;
-
-            try {
-               var5.push("filteringTickingChunks");
-               this.collectTickingChunks(var6);
-               var5.popPush("shuffleChunks");
-               Util.shuffle(var6, this.level.random);
-               this.tickChunks(var5, var3, var6);
-               var5.pop();
-            } finally {
-               var6.clear();
-            }
+            var5.push("tickingChunks");
+            this.tickChunks(var5, var3);
+            var5.pop();
          }
 
          this.broadcastChangedChunks(var5);
@@ -349,49 +346,61 @@ public class ServerChunkCache extends ChunkSource {
       var1.pop();
    }
 
-   private void collectTickingChunks(List<LevelChunk> var1) {
-      this.chunkMap.forEachSpawnCandidateChunk((var2) -> {
-         LevelChunk var3 = var2.getTickingChunk();
-         if (var3 != null && this.level.isNaturalSpawningAllowed(var2.getPos())) {
-            var1.add(var3);
-         }
-
-      });
-   }
-
-   private void tickChunks(ProfilerFiller var1, long var2, List<LevelChunk> var4) {
+   private void tickChunks(ProfilerFiller var1, long var2) {
       var1.popPush("naturalSpawnCount");
-      int var5 = this.distanceManager.getNaturalSpawnChunkCount();
-      NaturalSpawner.SpawnState var6 = NaturalSpawner.createState(var5, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
-      this.lastSpawnState = var6;
+      int var4 = this.distanceManager.getNaturalSpawnChunkCount();
+      NaturalSpawner.SpawnState var5 = NaturalSpawner.createState(var4, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
+      this.lastSpawnState = var5;
       var1.popPush("spawnAndTick");
-      boolean var7 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
-      int var8 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
-      List var9;
-      if (var7 && (this.spawnEnemies || this.spawnFriendlies)) {
-         boolean var10 = this.level.getLevelData().getGameTime() % 400L == 0L;
-         var9 = NaturalSpawner.getFilteredSpawningCategories(var6, this.spawnFriendlies, this.spawnEnemies, var10);
+      boolean var6 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
+      int var7 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
+      List var8;
+      if (var6 && (this.spawnEnemies || this.spawnFriendlies)) {
+         boolean var9 = this.level.getLevelData().getGameTime() % 400L == 0L;
+         var8 = NaturalSpawner.getFilteredSpawningCategories(var5, this.spawnFriendlies, this.spawnEnemies, var9);
       } else {
-         var9 = List.of();
+         var8 = List.of();
       }
 
-      for(LevelChunk var11 : var4) {
-         ChunkPos var12 = var11.getPos();
-         var11.incrementInhabitedTime(var2);
-         if (!var9.isEmpty() && this.level.getWorldBorder().isWithinBounds(var12)) {
-            NaturalSpawner.spawnForChunk(this.level, var11, var6, var9);
-         }
+      List var15 = this.spawningChunks;
 
-         if (this.level.shouldTickBlocksAt(var12.toLong())) {
-            this.level.tickChunk(var11, var8);
+      try {
+         var1.push("filteringSpawningChunks");
+         this.chunkMap.collectSpawningChunks(var15);
+         var1.popPush("shuffleSpawningChunks");
+         Util.shuffle(var15, this.level.random);
+         var1.popPush("tickSpawningChunks");
+
+         for(LevelChunk var11 : var15) {
+            this.tickSpawningChunk(var11, var2, var8, var5);
          }
+      } finally {
+         var15.clear();
       }
 
+      var1.popPush("tickTickingChunks");
+      this.chunkMap.forEachBlockTickingChunk((var2x) -> this.level.tickChunk(var2x, var7));
+      var1.pop();
       var1.popPush("customSpawners");
-      if (var7) {
+      if (var6) {
          this.level.tickCustomSpawners(this.spawnEnemies, this.spawnFriendlies);
       }
 
+   }
+
+   private void tickSpawningChunk(LevelChunk var1, long var2, List<MobCategory> var4, NaturalSpawner.SpawnState var5) {
+      ChunkPos var6 = var1.getPos();
+      var1.incrementInhabitedTime(var2);
+      if (this.distanceManager.inEntityTickingRange(var6.toLong())) {
+         this.level.tickThunder(var1);
+      }
+
+      if (!var4.isEmpty()) {
+         if (this.level.canSpawnEntitiesInChunk(var6)) {
+            NaturalSpawner.spawnForChunk(this.level, var1, var5, var4);
+         }
+
+      }
    }
 
    private void getFullChunk(long var1, Consumer<LevelChunk> var3) {
@@ -447,16 +456,24 @@ public class ServerChunkCache extends ChunkSource {
       });
    }
 
-   public <T> void addRegionTicket(TicketType<T> var1, ChunkPos var2, int var3, T var4) {
-      this.distanceManager.addRegionTicket(var1, var2, var3, var4);
+   public void addTicket(Ticket var1, ChunkPos var2) {
+      this.ticketStorage.addTicket(var1, var2);
    }
 
-   public <T> void removeRegionTicket(TicketType<T> var1, ChunkPos var2, int var3, T var4) {
-      this.distanceManager.removeRegionTicket(var1, var2, var3, var4);
+   public void addTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
+      this.ticketStorage.addTicketWithRadius(var1, var2, var3);
    }
 
-   public void updateChunkForced(ChunkPos var1, boolean var2) {
-      this.distanceManager.updateChunkForced(var1, var2);
+   public void removeTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
+      this.ticketStorage.removeTicketWithRadius(var1, var2, var3);
+   }
+
+   public boolean updateChunkForced(ChunkPos var1, boolean var2) {
+      return this.ticketStorage.updateChunkForced(var1, var2);
+   }
+
+   public LongSet getForceLoadedChunks() {
+      return this.ticketStorage.getForceLoadedChunks();
    }
 
    public void move(ServerPlayer var1) {
@@ -517,8 +534,8 @@ public class ServerChunkCache extends ChunkSource {
       return this.lastSpawnState;
    }
 
-   public void removeTicketsOnClosing() {
-      this.distanceManager.removeTicketsOnClosing();
+   public void deactivateTicketsOnClosing() {
+      this.ticketStorage.deactivateTicketsOnClosing();
    }
 
    public void onChunkReadyToSend(ChunkHolder var1) {
@@ -575,14 +592,6 @@ public class ServerChunkCache extends ChunkSource {
             ServerChunkCache.this.lightEngine.tryScheduleUpdate();
             return super.pollTask();
          }
-      }
-   }
-
-   static record ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
-      private ChunkAndHolder(LevelChunk var1, ChunkHolder var2) {
-         super();
-         this.chunk = var1;
-         this.holder = var2;
       }
    }
 }

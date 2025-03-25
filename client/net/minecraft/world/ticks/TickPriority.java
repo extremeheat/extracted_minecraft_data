@@ -1,5 +1,7 @@
 package net.minecraft.world.ticks;
 
+import com.mojang.serialization.Codec;
+
 public enum TickPriority {
    EXTREMELY_HIGH(-3),
    VERY_HIGH(-2),
@@ -9,6 +11,7 @@ public enum TickPriority {
    VERY_LOW(2),
    EXTREMELY_LOW(3);
 
+   public static final Codec<TickPriority> CODEC = Codec.INT.xmap(TickPriority::byValue, TickPriority::getValue);
    private final int value;
 
    private TickPriority(final int var3) {

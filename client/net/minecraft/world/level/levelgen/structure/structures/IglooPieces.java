@@ -67,7 +67,7 @@ public class IglooPieces {
       }
 
       public IglooPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.IGLOO, var2, var1, (var1x) -> makeSettings(Rotation.valueOf(var2.getString("Rot")), var1x));
+         super(StructurePieceType.IGLOO, var2, var1, (var1x) -> makeSettings((Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow(), var1x));
       }
 
       private static StructurePlaceSettings makeSettings(Rotation var0, ResourceLocation var1) {
@@ -80,7 +80,7 @@ public class IglooPieces {
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
-         var2.putString("Rot", this.placeSettings.getRotation().name());
+         var2.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
       }
 
       protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, RandomSource var4, BoundingBox var5) {

@@ -31,7 +31,11 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
          try {
             return (V)var3.serializer.decode(var1);
          } catch (Exception var5) {
-            throw new DecoderException("Failed to decode packet '" + String.valueOf(var3.type) + "'", var5);
+            if (var5 instanceof DontDecorateException) {
+               throw var5;
+            } else {
+               throw new DecoderException("Failed to decode packet '" + String.valueOf(var3.type) + "'", var5);
+            }
          }
       } else {
          throw new DecoderException("Received unknown packet id " + var2);
@@ -51,7 +55,11 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
             StreamCodec var6 = var5.serializer;
             var6.encode(var1, var2);
          } catch (Exception var7) {
-            throw new EncoderException("Failed to encode packet '" + String.valueOf(var3) + "'", var7);
+            if (var7 instanceof DontDecorateException) {
+               throw var7;
+            } else {
+               throw new EncoderException("Failed to encode packet '" + String.valueOf(var3) + "'", var7);
+            }
          }
       }
    }
@@ -109,5 +117,8 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
          this.serializer = var1;
          this.type = var2;
       }
+   }
+
+   public interface DontDecorateException {
    }
 }

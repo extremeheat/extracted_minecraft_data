@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
 
 public class SecondaryPoiSensor extends Sensor<Villager> {
    private static final int SCAN_RATE = 40;
@@ -29,7 +30,7 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
          for(int var8 = -2; var8 <= 2; ++var8) {
             for(int var9 = -4; var9 <= 4; ++var9) {
                BlockPos var10 = var4.offset(var7, var8, var9);
-               if (var2.getVillagerData().getProfession().secondaryPoi().contains(var1.getBlockState(var10).getBlock())) {
+               if (((VillagerProfession)var2.getVillagerData().profession().value()).secondaryPoi().contains(var1.getBlockState(var10).getBlock())) {
                   var5.add(GlobalPos.of(var3, var10));
                }
             }

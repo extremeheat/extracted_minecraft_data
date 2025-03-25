@@ -4,6 +4,11 @@ import com.google.common.collect.UnmodifiableIterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -11,9 +16,9 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -28,7 +33,7 @@ import net.minecraft.world.entity.ItemSteerable;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
@@ -41,22 +46,26 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class Pig extends Animal implements ItemSteerable, Saddleable {
-   private static final EntityDataAccessor<Boolean> DATA_SADDLE_ID;
+public class Pig extends Animal implements ItemSteerable {
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
+   private static final EntityDataAccessor<Holder<PigVariant>> DATA_VARIANT_ID;
    private final ItemBasedSteering steering;
 
    public Pig(EntityType<? extends Pig> var1, Level var2) {
       super(var1, var2);
-      this.steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME, DATA_SADDLE_ID);
+      this.steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
    }
 
    protected void registerGoals() {
@@ -100,18 +109,18 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_SADDLE_ID, false);
       var1.define(DATA_BOOST_TIME, 0);
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), PigVariants.DEFAULT));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.steering.addAdditionalSaveData(var1);
+      VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.steering.readAdditionalSaveData(var1);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.PIG_VARIANT).ifPresent(this::setVariant);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -142,35 +151,27 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (!var4.consumesAction()) {
             ItemStack var5 = var1.getItemInHand(var2);
-            return (InteractionResult)(var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
+            return (InteractionResult)(this.isEquippableInSlot(var5, EquipmentSlot.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
          } else {
             return var4;
          }
       }
    }
 
-   public boolean isSaddleable() {
-      return this.isAlive() && !this.isBaby();
-   }
-
-   protected void dropEquipment(ServerLevel var1) {
-      super.dropEquipment(var1);
-      if (this.isSaddled()) {
-         this.spawnAtLocation(var1, Items.SADDLE);
+   public boolean canUseSlot(EquipmentSlot var1) {
+      if (var1 != EquipmentSlot.SADDLE) {
+         return super.canUseSlot(var1);
+      } else {
+         return this.isAlive() && !this.isBaby();
       }
-
    }
 
-   public boolean isSaddled() {
-      return this.steering.hasSaddle();
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(var1);
    }
 
-   public void equipSaddle(ItemStack var1, @Nullable SoundSource var2) {
-      this.steering.setSaddle(true);
-      if (var2 != null) {
-         this.level().playSound((Player)null, (Entity)this, SoundEvents.PIG_SADDLE, var2, 0.5F, 1.0F);
-      }
-
+   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
+      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.PIG_SADDLE : super.getEquipSound(var1, var2, var3));
    }
 
    public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
@@ -243,7 +244,12 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    public Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.PIG.create(var1, EntitySpawnReason.BREEDING);
+      Pig var3 = EntityType.PIG.create(var1, EntitySpawnReason.BREEDING);
+      if (var3 != null && var2 instanceof Pig var4) {
+         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
+      }
+
+      return var3;
    }
 
    public boolean isFood(ItemStack var1) {
@@ -254,6 +260,38 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       return new Vec3(0.0, (double)(0.6F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
    }
 
+   private void setVariant(Holder<PigVariant> var1) {
+      this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   public Holder<PigVariant> getVariant() {
+      return (Holder)this.entityData.get(DATA_VARIANT_ID);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.PIG_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.PIG_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.PIG_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.PIG_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
+   }
+
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      PigVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
    // $FF: synthetic method
    @Nullable
    public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
@@ -261,7 +299,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    }
 
    static {
-      DATA_SADDLE_ID = SynchedEntityData.<Boolean>defineId(Pig.class, EntityDataSerializers.BOOLEAN);
       DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Pig.class, EntityDataSerializers.INT);
+      DATA_VARIANT_ID = SynchedEntityData.<Holder<PigVariant>>defineId(Pig.class, EntityDataSerializers.PIG_VARIANT);
    }
 }

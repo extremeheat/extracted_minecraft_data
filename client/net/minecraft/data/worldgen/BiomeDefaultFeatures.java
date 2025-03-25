@@ -112,6 +112,10 @@ public class BiomeDefaultFeatures {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_LARGE_FERN);
    }
 
+   public static void addBushes(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_BUSH);
+   }
+
    public static void addRareBerryBushes(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_BERRY_RARE);
    }
@@ -146,11 +150,15 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addOtherBirchTrees(BiomeGenerationSettings.Builder var0) {
-      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_BIRCH_AND_OAK);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_BIRCH_AND_OAK_LEAF_LITTER);
    }
 
    public static void addTallBirchTrees(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.BIRCH_TALL);
+   }
+
+   public static void addBirchForestFlowers(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.WILDFLOWERS_BIRCH_FOREST);
    }
 
    public static void addSavannaTrees(BiomeGenerationSettings.Builder var0) {
@@ -217,6 +225,7 @@ public class BiomeDefaultFeatures {
 
    public static void addBadlandGrass(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_GRASS_BADLANDS);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DRY_GRASS_BADLANDS);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DEAD_BUSH_BADLANDS);
    }
 
@@ -258,6 +267,7 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addDesertVegetation(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DRY_GRASS_DESERT);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DEAD_BUSH_2);
    }
 
@@ -279,9 +289,10 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addMeadowVegetation(BiomeGenerationSettings.Builder var0) {
-      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_GRASS_PLAIN);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_GRASS_MEADOW);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.FLOWER_MEADOW);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_MEADOW);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.WILDFLOWERS_MEADOW);
    }
 
    public static void addWarmFlowers(BiomeGenerationSettings.Builder var0) {
@@ -307,15 +318,24 @@ public class BiomeDefaultFeatures {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.RED_MUSHROOM_NORMAL);
    }
 
-   public static void addDefaultExtraVegetation(BiomeGenerationSettings.Builder var0) {
-      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
+   public static void addDefaultExtraVegetation(BiomeGenerationSettings.Builder var0, boolean var1) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
+      if (var1) {
+         var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
+         var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_NEAR_WATER);
+      }
+
+   }
+
+   public static void addLeafLitterPatch(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_LEAF_LITTER);
    }
 
    public static void addBadlandExtraVegetation(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE_BADLANDS);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_CACTUS_DECORATED);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_NEAR_WATER);
    }
 
    public static void addJungleMelons(BiomeGenerationSettings.Builder var0) {
@@ -339,6 +359,13 @@ public class BiomeDefaultFeatures {
    public static void addSwampExtraVegetation(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE_SWAMP);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_SWAMP);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_NEAR_WATER_SWAMP);
+   }
+
+   public static void addMangroveSwampExtraVegetation(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_NEAR_WATER);
    }
 
    public static void addDesertExtraDecoration(BiomeGenerationSettings.Builder var0) {
@@ -398,15 +425,15 @@ public class BiomeDefaultFeatures {
    }
 
    public static void farmAnimals(MobSpawnSettings.Builder var0) {
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SHEEP, 12, 4, 4));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PIG, 10, 4, 4));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.CHICKEN, 10, 4, 4));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.COW, 8, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 12, new MobSpawnSettings.SpawnerData(EntityType.SHEEP, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.PIG, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.CHICKEN, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityType.COW, 4, 4));
    }
 
    public static void caveSpawns(MobSpawnSettings.Builder var0) {
-      var0.addSpawn(MobCategory.AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.BAT, 10, 8, 8));
-      var0.addSpawn(MobCategory.UNDERGROUND_WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GLOW_SQUID, 10, 4, 6));
+      var0.addSpawn(MobCategory.AMBIENT, 10, new MobSpawnSettings.SpawnerData(EntityType.BAT, 8, 8));
+      var0.addSpawn(MobCategory.UNDERGROUND_WATER_CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.GLOW_SQUID, 4, 6));
    }
 
    public static void commonSpawns(MobSpawnSettings.Builder var0) {
@@ -419,72 +446,73 @@ public class BiomeDefaultFeatures {
    }
 
    public static void oceanSpawns(MobSpawnSettings.Builder var0, int var1, int var2, int var3) {
-      var0.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SQUID, var1, 1, var2));
-      var0.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.COD, var3, 3, 6));
+      var0.addSpawn(MobCategory.WATER_CREATURE, var1, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 1, var2));
+      var0.addSpawn(MobCategory.WATER_AMBIENT, var3, new MobSpawnSettings.SpawnerData(EntityType.COD, 3, 6));
       commonSpawns(var0);
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 5, 1, 1));
+      var0.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 1, 1));
    }
 
    public static void warmOceanSpawns(MobSpawnSettings.Builder var0, int var1, int var2) {
-      var0.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SQUID, var1, var2, 4));
-      var0.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
-      var0.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 2, 1, 2));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 5, 1, 1));
+      var0.addSpawn(MobCategory.WATER_CREATURE, var1, new MobSpawnSettings.SpawnerData(EntityType.SQUID, var2, 4));
+      var0.addSpawn(MobCategory.WATER_AMBIENT, 25, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 8, 8));
+      var0.addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 2));
+      var0.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 1, 1));
       commonSpawns(var0);
    }
 
    public static void plainsSpawns(MobSpawnSettings.Builder var0) {
       farmAnimals(var0);
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 5, 2, 6));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 3));
+      var0.addSpawn(MobCategory.CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 2, 6));
+      var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 3));
       commonSpawns(var0);
    }
 
    public static void snowySpawns(MobSpawnSettings.Builder var0) {
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 10, 2, 3));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.POLAR_BEAR, 1, 1, 2));
+      var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 3));
+      var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.POLAR_BEAR, 1, 2));
       caveSpawns(var0);
       monsters(var0, 95, 5, 20, false);
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.STRAY, 80, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityType.STRAY, 4, 4));
    }
 
    public static void desertSpawns(MobSpawnSettings.Builder var0) {
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+      var0.addSpawn(MobCategory.CREATURE, 12, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 3));
+      var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.CAMEL, 1, 1));
       caveSpawns(var0);
       monsters(var0, 19, 1, 100, false);
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.HUSK, 80, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityType.HUSK, 4, 4));
    }
 
    public static void dripstoneCavesSpawns(MobSpawnSettings.Builder var0) {
       caveSpawns(var0);
       boolean var1 = true;
       monsters(var0, 95, 5, 100, false);
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 95, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 95, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 4, 4));
    }
 
    public static void monsters(MobSpawnSettings.Builder var0, int var1, int var2, int var3, boolean var4) {
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SPIDER, 100, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(var4 ? EntityType.DROWNED : EntityType.ZOMBIE, var1, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE_VILLAGER, var2, 1, 1));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, var3, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.CREEPER, 100, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 100, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 10, 1, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.WITCH, 5, 1, 1));
+      var0.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.SPIDER, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, var1, new MobSpawnSettings.SpawnerData(var4 ? EntityType.DROWNED : EntityType.ZOMBIE, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, var2, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE_VILLAGER, 1, 1));
+      var0.addSpawn(MobCategory.MONSTER, var3, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.CREEPER, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 100, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 10, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 1, 4));
+      var0.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityType.WITCH, 1, 1));
    }
 
    public static void mooshroomSpawns(MobSpawnSettings.Builder var0) {
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.MOOSHROOM, 8, 4, 8));
+      var0.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityType.MOOSHROOM, 4, 8));
       caveSpawns(var0);
    }
 
    public static void baseJungleSpawns(MobSpawnSettings.Builder var0) {
       farmAnimals(var0);
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.CHICKEN, 10, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.CHICKEN, 4, 4));
       commonSpawns(var0);
    }
 
    public static void endSpawns(MobSpawnSettings.Builder var0) {
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 10, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 10, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 4, 4));
    }
 }

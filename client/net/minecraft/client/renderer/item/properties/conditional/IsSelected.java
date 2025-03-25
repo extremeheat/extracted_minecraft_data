@@ -18,7 +18,7 @@ public record IsSelected() implements ConditionalItemModelProperty {
    public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
       boolean var10000;
       if (var3 instanceof LocalPlayer var6) {
-         if (var6.getInventory().getSelected() == var1) {
+         if (var6.getInventory().getSelectedItem() == var1) {
             var10000 = true;
             return var10000;
          }

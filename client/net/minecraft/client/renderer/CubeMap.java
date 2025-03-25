@@ -1,14 +1,25 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.stream.IntStream;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +28,8 @@ import org.joml.Matrix4fStack;
 
 public class CubeMap {
    private static final int SIDES = 6;
+   @Nullable
+   private GpuBuffer cubeMapBuffer = null;
    private final List<ResourceLocation> sides;
 
    public CubeMap(ResourceLocation var1) {
@@ -28,87 +41,89 @@ public class CubeMap {
    }
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
-      Tesselator var5 = Tesselator.getInstance();
-      Matrix4f var6 = (new Matrix4f()).setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
-      RenderSystem.backupProjectionMatrix();
-      RenderSystem.setProjectionMatrix(var6, ProjectionType.PERSPECTIVE);
-      Matrix4fStack var7 = RenderSystem.getModelViewStack();
-      var7.pushMatrix();
-      var7.rotationX(3.1415927F);
-      RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-      RenderSystem.enableBlend();
-      RenderSystem.disableCull();
-      RenderSystem.depthMask(false);
-      boolean var8 = true;
-
-      for(int var9 = 0; var9 < 4; ++var9) {
-         var7.pushMatrix();
-         float var10 = ((float)(var9 % 2) / 2.0F - 0.5F) / 256.0F;
-         float var11 = ((float)(var9 / 2) / 2.0F - 0.5F) / 256.0F;
-         float var12 = 0.0F;
-         var7.translate(var10, var11, 0.0F);
-         var7.rotateX(var2 * 0.017453292F);
-         var7.rotateY(var3 * 0.017453292F);
-
-         for(int var13 = 0; var13 < 6; ++var13) {
-            RenderSystem.setShaderTexture(0, (ResourceLocation)this.sides.get(var13));
-            BufferBuilder var14 = var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            int var15 = Math.round(255.0F * var4) / (var9 + 1);
-            if (var13 == 0) {
-               var14.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
-            }
-
-            if (var13 == 1) {
-               var14.addVertex(1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
-            }
-
-            if (var13 == 2) {
-               var14.addVertex(1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
-            }
-
-            if (var13 == 3) {
-               var14.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
-            }
-
-            if (var13 == 4) {
-               var14.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
-            }
-
-            if (var13 == 5) {
-               var14.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
-               var14.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
-               var14.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
-            }
-
-            BufferUploader.drawWithShader(var14.buildOrThrow());
-         }
-
-         var7.popMatrix();
-         RenderSystem.colorMask(true, true, true, false);
+      if (this.cubeMapBuffer == null) {
+         this.initializeVertices();
       }
 
-      RenderSystem.colorMask(true, true, true, true);
+      Matrix4f var5 = (new Matrix4f()).setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
+      RenderSystem.backupProjectionMatrix();
+      RenderSystem.setProjectionMatrix(var5, ProjectionType.PERSPECTIVE);
+      Matrix4fStack var6 = RenderSystem.getModelViewStack();
+      var6.pushMatrix();
+      var6.rotationX(3.1415927F);
+      boolean var7 = true;
+      RenderPipeline var8 = RenderPipelines.PANORAMA;
+      RenderTarget var9 = Minecraft.getInstance().getMainRenderTarget();
+      GpuTexture var10 = var9.getColorTexture();
+      GpuTexture var11 = var9.getDepthTexture();
+      RenderSystem.AutoStorageIndexBuffer var12 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      GpuBuffer var13 = var12.getBuffer(36);
+
+      try (RenderPass var14 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var10, OptionalInt.empty(), var11, OptionalDouble.empty())) {
+         var14.setPipeline(var8);
+         var14.setVertexBuffer(0, this.cubeMapBuffer);
+         var14.setIndexBuffer(var13, var12.type());
+
+         for(int var15 = 0; var15 < 4; ++var15) {
+            var6.pushMatrix();
+            float var16 = ((float)(var15 % 2) / 2.0F - 0.5F) / 256.0F;
+            float var17 = ((float)(var15 / 2) / 2.0F - 0.5F) / 256.0F;
+            float var18 = 0.0F;
+            var6.translate(var16, var17, 0.0F);
+            var6.rotateX(var2 * 0.017453292F);
+            var6.rotateY(var3 * 0.017453292F);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var4 / (float)(var15 + 1));
+
+            for(int var19 = 0; var19 < 6; ++var19) {
+               var14.bindSampler("Sampler0", var1.getTextureManager().getTexture((ResourceLocation)this.sides.get(var19)).getTexture());
+               var14.drawIndexed(6 * var19, 6);
+            }
+
+            var6.popMatrix();
+         }
+      }
+
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.restoreProjectionMatrix();
-      var7.popMatrix();
-      RenderSystem.depthMask(true);
-      RenderSystem.enableCull();
-      RenderSystem.enableDepthTest();
+      var6.popMatrix();
+   }
+
+   private void initializeVertices() {
+      this.cubeMapBuffer = RenderSystem.getDevice().createBuffer(() -> "Cube map vertex buffer", BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, 24 * DefaultVertexFormat.POSITION_TEX.getVertexSize());
+
+      try (ByteBufferBuilder var1 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4)) {
+         BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+         var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(-1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(-1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(-1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 0.0F);
+         var2.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F);
+         var2.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 0.0F);
+
+         try (MeshData var3 = var2.buildOrThrow()) {
+            CommandEncoder var4 = RenderSystem.getDevice().createCommandEncoder();
+            var4.writeToBuffer(this.cubeMapBuffer, var3.vertexBuffer(), 0);
+         }
+      }
+
    }
 
    public void registerTextures(TextureManager var1) {

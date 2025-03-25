@@ -84,6 +84,11 @@ public record ShaderDefines(Map<String, String> values, Set<String> flags) {
          return this;
       }
 
+      public Builder define(String var1, int var2) {
+         this.values.put(var1, String.valueOf(var2));
+         return this;
+      }
+
       public Builder define(String var1) {
          this.flags.add(var1);
          return this;

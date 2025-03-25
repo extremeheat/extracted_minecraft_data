@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,7 +14,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
@@ -35,7 +34,6 @@ import net.minecraft.world.entity.ItemSteerable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -56,6 +54,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -72,21 +71,20 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-public class Strider extends Animal implements ItemSteerable, Saddleable {
+public class Strider extends Animal implements ItemSteerable {
    private static final ResourceLocation SUFFOCATING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("suffocating");
    private static final AttributeModifier SUFFOCATING_MODIFIER;
    private static final float SUFFOCATE_STEERING_MODIFIER = 0.35F;
    private static final float STEERING_MODIFIER = 0.55F;
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
    private static final EntityDataAccessor<Boolean> DATA_SUFFOCATING;
-   private static final EntityDataAccessor<Boolean> DATA_SADDLE_ID;
    private final ItemBasedSteering steering;
    @Nullable
    private TemptGoal temptGoal;
 
    public Strider(EntityType<? extends Strider> var1, Level var2) {
       super(var1, var2);
-      this.steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME, DATA_SADDLE_ID);
+      this.steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
       this.blocksBuilding = true;
       this.setPathfindingMalus(PathType.WATER, -1.0F);
       this.setPathfindingMalus(PathType.LAVA, 0.0F);
@@ -116,33 +114,22 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       super.defineSynchedData(var1);
       var1.define(DATA_BOOST_TIME, 0);
       var1.define(DATA_SUFFOCATING, false);
-      var1.define(DATA_SADDLE_ID, false);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
-      super.addAdditionalSaveData(var1);
-      this.steering.addAdditionalSaveData(var1);
-   }
-
-   public void readAdditionalSaveData(CompoundTag var1) {
-      super.readAdditionalSaveData(var1);
-      this.steering.readAdditionalSaveData(var1);
-   }
-
-   public boolean isSaddled() {
-      return this.steering.hasSaddle();
-   }
-
-   public boolean isSaddleable() {
-      return this.isAlive() && !this.isBaby();
-   }
-
-   public void equipSaddle(ItemStack var1, @Nullable SoundSource var2) {
-      this.steering.setSaddle(true);
-      if (var2 != null) {
-         this.level().playSound((Player)null, (Entity)this, SoundEvents.STRIDER_SADDLE, var2, 0.5F, 1.0F);
+   public boolean canUseSlot(EquipmentSlot var1) {
+      if (var1 != EquipmentSlot.SADDLE) {
+         return super.canUseSlot(var1);
+      } else {
+         return this.isAlive() && !this.isBaby();
       }
+   }
 
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(var1);
+   }
+
+   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
+      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.STRIDER_SADDLE : super.getEquipSound(var1, var2, var3));
    }
 
    protected void registerGoals() {
@@ -180,10 +167,14 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      float var4 = Math.min(0.25F, this.walkAnimation.speed());
-      float var5 = this.walkAnimation.position();
-      float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
-      return super.getPassengerAttachmentPoint(var1, var2, var3).add(0.0, (double)(var6 * var3), 0.0);
+      if (!this.level().isClientSide()) {
+         return super.getPassengerAttachmentPoint(var1, var2, var3);
+      } else {
+         float var4 = Math.min(0.25F, this.walkAnimation.speed());
+         float var5 = this.walkAnimation.position();
+         float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
+         return super.getPassengerAttachmentPoint(var1, var2, var3).add(0.0, (double)(var6 * var3), 0.0);
+      }
    }
 
    public boolean checkSpawnObstruction(LevelReader var1) {
@@ -323,7 +314,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    private void floatStrider() {
       if (this.isInLava()) {
          CollisionContext var1 = CollisionContext.of(this);
-         if (var1.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)) {
+         if (var1.isAbove(LiquidBlock.SHAPE_STABLE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)) {
             this.setOnGround(true);
          } else {
             this.setDeltaMovement(this.getDeltaMovement().scale(0.5).add(0.0, 0.05, 0.0));
@@ -381,14 +372,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       return var1.is(ItemTags.STRIDER_FOOD);
    }
 
-   protected void dropEquipment(ServerLevel var1) {
-      super.dropEquipment(var1);
-      if (this.isSaddled()) {
-         this.spawnAtLocation(var1, Items.SADDLE);
-      }
-
-   }
-
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       boolean var3 = this.isFood(var1.getItemInHand(var2));
       if (!var3 && this.isSaddled() && !this.isVehicle() && !var1.isSecondaryUseActive()) {
@@ -401,10 +384,10 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (!var4.consumesAction()) {
             ItemStack var5 = var1.getItemInHand(var2);
-            return (InteractionResult)(var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
+            return (InteractionResult)(this.isEquippableInSlot(var5, EquipmentSlot.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
          } else {
             if (var3 && !this.isSilent()) {
-               this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+               this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
             }
 
             return var4;
@@ -427,7 +410,8 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             if (var6 != null) {
                var4 = this.spawnJockey(var1, var2, var6, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var5), false));
                var6.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
-               this.equipSaddle(new ItemStack(Items.SADDLE), (SoundSource)null);
+               this.setItemSlot(EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
+               this.setGuaranteedDrop(EquipmentSlot.SADDLE);
             }
          } else if (var5.nextInt(10) == 0) {
             AgeableMob var7 = EntityType.STRIDER.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
@@ -444,7 +428,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    private SpawnGroupData spawnJockey(ServerLevelAccessor var1, DifficultyInstance var2, Mob var3, @Nullable SpawnGroupData var4) {
-      var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+      var3.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
       var3.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, var4);
       var3.startRiding(this, true);
       return new AgeableMob.AgeableMobGroupData(0.0F);
@@ -460,7 +444,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       SUFFOCATING_MODIFIER = new AttributeModifier(SUFFOCATING_MODIFIER_ID, -0.3400000035762787, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
       DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Strider.class, EntityDataSerializers.INT);
       DATA_SUFFOCATING = SynchedEntityData.<Boolean>defineId(Strider.class, EntityDataSerializers.BOOLEAN);
-      DATA_SADDLE_ID = SynchedEntityData.<Boolean>defineId(Strider.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class StriderPathNavigation extends GroundPathNavigation {

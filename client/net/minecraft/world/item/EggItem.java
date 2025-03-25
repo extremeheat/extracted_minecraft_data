@@ -8,13 +8,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.level.Level;
 
 public class EggItem extends Item implements ProjectileItem {
-   public static float PROJECTILE_SHOOT_POWER = 1.5F;
+   public static final float PROJECTILE_SHOOT_POWER = 1.5F;
 
    public EggItem(Item.Properties var1) {
       super(var1);
@@ -22,9 +23,9 @@ public class EggItem extends Item implements ProjectileItem {
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.EGG_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.EGG_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(ThrownEgg::new, var5, var4, var2, 0.0F, PROJECTILE_SHOOT_POWER, 1.0F);
+         Projectile.spawnProjectileFromRotation(ThrownEgg::new, var5, var4, var2, 0.0F, 1.5F, 1.0F);
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));

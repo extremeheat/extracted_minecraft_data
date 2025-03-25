@@ -7,6 +7,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -30,7 +31,7 @@ public interface CollisionGetter extends BlockGetter {
 
    default boolean isUnobstructed(BlockState var1, BlockPos var2, CollisionContext var3) {
       VoxelShape var4 = var1.getCollisionShape(this, var2, var3);
-      return var4.isEmpty() || this.isUnobstructed((Entity)null, var4.move((double)var2.getX(), (double)var2.getY(), (double)var2.getZ()));
+      return var4.isEmpty() || this.isUnobstructed((Entity)null, var4.move((Vec3i)var2));
    }
 
    default boolean isUnobstructed(Entity var1) {

@@ -1,15 +1,22 @@
 package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,18 +32,19 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 
-public class TropicalFish extends AbstractSchoolingFish implements VariantHolder<Pattern> {
-   public static final String BUCKET_VARIANT_TAG = "BucketVariantTag";
+public class TropicalFish extends AbstractSchoolingFish {
+   public static final Variant DEFAULT_VARIANT;
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT;
    public static final List<Variant> COMMON_VARIANTS;
    private boolean isSchool = true;
@@ -67,17 +75,18 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_ID_TYPE_VARIANT, 0);
+      var1.define(DATA_ID_TYPE_VARIANT, DEFAULT_VARIANT.getPackedId());
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getPackedVariant());
+      var1.store("Variant", TropicalFish.Variant.CODEC, new Variant(this.getPackedVariant()));
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setPackedVariant(var1.getInt("Variant"));
+      Variant var2 = (Variant)var1.read("Variant", TropicalFish.Variant.CODEC).orElse(DEFAULT_VARIANT);
+      this.setPackedVariant(var2.getPackedId());
    }
 
    private void setPackedVariant(int var1) {
@@ -100,20 +109,69 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       return getPatternColor(this.getPackedVariant());
    }
 
-   public Pattern getVariant() {
+   public Pattern getPattern() {
       return getPattern(this.getPackedVariant());
    }
 
-   public void setVariant(Pattern var1) {
+   private void setPattern(Pattern var1) {
       int var2 = this.getPackedVariant();
       DyeColor var3 = getBaseColor(var2);
       DyeColor var4 = getPatternColor(var2);
       this.setPackedVariant(packVariant(var1, var3, var4));
    }
 
+   private void setBaseColor(DyeColor var1) {
+      int var2 = this.getPackedVariant();
+      Pattern var3 = getPattern(var2);
+      DyeColor var4 = getPatternColor(var2);
+      this.setPackedVariant(packVariant(var3, var1, var4));
+   }
+
+   private void setPatternColor(DyeColor var1) {
+      int var2 = this.getPackedVariant();
+      Pattern var3 = getPattern(var2);
+      DyeColor var4 = getBaseColor(var2);
+      this.setPackedVariant(packVariant(var3, var4, var1));
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      if (var1 == DataComponents.TROPICAL_FISH_PATTERN) {
+         return (T)castComponentValue(var1, this.getPattern());
+      } else if (var1 == DataComponents.TROPICAL_FISH_BASE_COLOR) {
+         return (T)castComponentValue(var1, this.getBaseColor());
+      } else {
+         return (T)(var1 == DataComponents.TROPICAL_FISH_PATTERN_COLOR ? castComponentValue(var1, this.getPatternColor()) : super.get(var1));
+      }
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.TROPICAL_FISH_PATTERN);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.TROPICAL_FISH_BASE_COLOR);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.TROPICAL_FISH_PATTERN_COLOR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.TROPICAL_FISH_PATTERN) {
+         this.setPattern((Pattern)castComponentValue(DataComponents.TROPICAL_FISH_PATTERN, var2));
+         return true;
+      } else if (var1 == DataComponents.TROPICAL_FISH_BASE_COLOR) {
+         this.setBaseColor((DyeColor)castComponentValue(DataComponents.TROPICAL_FISH_BASE_COLOR, var2));
+         return true;
+      } else if (var1 == DataComponents.TROPICAL_FISH_PATTERN_COLOR) {
+         this.setPatternColor((DyeColor)castComponentValue(DataComponents.TROPICAL_FISH_PATTERN_COLOR, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
+   }
+
    public void saveToBucketTag(ItemStack var1) {
       super.saveToBucketTag(var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> var1x.putInt("BucketVariantTag", this.getPackedVariant())));
+      var1.copyFrom(DataComponents.TROPICAL_FISH_PATTERN, this);
+      var1.copyFrom(DataComponents.TROPICAL_FISH_BASE_COLOR, this);
+      var1.copyFrom(DataComponents.TROPICAL_FISH_PATTERN_COLOR, this);
    }
 
    public ItemStack getBucketItemStack() {
@@ -134,14 +192,6 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
    protected SoundEvent getFlopSound() {
       return SoundEvents.TROPICAL_FISH_FLOP;
-   }
-
-   public void loadFromBucketTag(CompoundTag var1) {
-      super.loadFromBucketTag(var1);
-      if (var1.contains("BucketVariantTag", 3)) {
-         this.setPackedVariant(var1.getInt("BucketVariantTag"));
-      }
-
    }
 
    @Nullable
@@ -172,12 +222,8 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       return var1.getFluidState(var3.below()).is(FluidTags.WATER) && var1.getBlockState(var3.above()).is(Blocks.WATER) && (var1.getBiome(var3).is(BiomeTags.ALLOWS_TROPICAL_FISH_SPAWNS_AT_ANY_HEIGHT) || WaterAnimal.checkSurfaceWaterAnimalSpawnRules(var0, var1, var2, var3, var4));
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
    static {
+      DEFAULT_VARIANT = new Variant(TropicalFish.Pattern.KOB, DyeColor.WHITE, DyeColor.WHITE);
       DATA_ID_TYPE_VARIANT = SynchedEntityData.<Integer>defineId(TropicalFish.class, EntityDataSerializers.INT);
       COMMON_VARIANTS = List.of(new Variant(TropicalFish.Pattern.STRIPEY, DyeColor.ORANGE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.GRAY), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.BLUE), new Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.SUNSTREAK, DyeColor.BLUE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.KOB, DyeColor.ORANGE, DyeColor.WHITE), new Variant(TropicalFish.Pattern.SPOTTY, DyeColor.PINK, DyeColor.LIGHT_BLUE), new Variant(TropicalFish.Pattern.BLOCKFISH, DyeColor.PURPLE, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.RED), new Variant(TropicalFish.Pattern.SPOTTY, DyeColor.WHITE, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.GLITTER, DyeColor.WHITE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.ORANGE), new Variant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.PINK), new Variant(TropicalFish.Pattern.BRINELY, DyeColor.LIME, DyeColor.LIGHT_BLUE), new Variant(TropicalFish.Pattern.BETTY, DyeColor.RED, DyeColor.WHITE), new Variant(TropicalFish.Pattern.SNOOPER, DyeColor.GRAY, DyeColor.RED), new Variant(TropicalFish.Pattern.BLOCKFISH, DyeColor.RED, DyeColor.WHITE), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.WHITE, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.KOB, DyeColor.RED, DyeColor.WHITE), new Variant(TropicalFish.Pattern.SUNSTREAK, DyeColor.GRAY, DyeColor.WHITE), new Variant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.YELLOW, DyeColor.YELLOW));
    }
@@ -221,7 +267,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       }
    }
 
-   public static enum Pattern implements StringRepresentable {
+   public static enum Pattern implements StringRepresentable, TooltipProvider {
       KOB("kob", TropicalFish.Base.SMALL, 0),
       SUNSTREAK("sunstreak", TropicalFish.Base.SMALL, 1),
       SNOOPER("snooper", TropicalFish.Base.SMALL, 2),
@@ -237,6 +283,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
       public static final Codec<Pattern> CODEC = StringRepresentable.<Pattern>fromEnum(Pattern::values);
       private static final IntFunction<Pattern> BY_ID = ByIdMap.<Pattern>sparse(Pattern::getPackedId, values(), KOB);
+      public static final StreamCodec<ByteBuf, Pattern> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Pattern::getPackedId);
       private final String name;
       private final Component displayName;
       private final Base base;
@@ -267,6 +314,25 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
       public Component displayName() {
          return this.displayName;
+      }
+
+      public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+         DyeColor var5 = (DyeColor)var4.getOrDefault(DataComponents.TROPICAL_FISH_BASE_COLOR, TropicalFish.DEFAULT_VARIANT.baseColor());
+         DyeColor var6 = (DyeColor)var4.getOrDefault(DataComponents.TROPICAL_FISH_PATTERN_COLOR, TropicalFish.DEFAULT_VARIANT.patternColor());
+         ChatFormatting[] var7 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
+         int var8 = TropicalFish.COMMON_VARIANTS.indexOf(new Variant(this, var5, var6));
+         if (var8 != -1) {
+            var2.accept(Component.translatable(TropicalFish.getPredefinedName(var8)).withStyle(var7));
+         } else {
+            var2.accept(this.displayName.plainCopy().withStyle(var7));
+            MutableComponent var9 = Component.translatable("color.minecraft." + var5.getName());
+            if (var5 != var6) {
+               var9.append(", ").append((Component)Component.translatable("color.minecraft." + var6.getName()));
+            }
+
+            var9.withStyle(var7);
+            var2.accept(var9);
+         }
       }
 
       // $FF: synthetic method

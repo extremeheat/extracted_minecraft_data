@@ -1,101 +1,88 @@
 package net.minecraft.world.entity.animal;
 
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.BreedGoal;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.FollowParentGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.ServerLevelAccessor;
 
-public class Cow extends Animal {
-   private static final EntityDimensions BABY_DIMENSIONS;
+public class Cow extends AbstractCow {
+   private static final EntityDataAccessor<Holder<CowVariant>> DATA_VARIANT_ID;
 
    public Cow(EntityType<? extends Cow> var1, Level var2) {
       super(var1, var2);
    }
 
-   protected void registerGoals() {
-      this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
-      this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.COW_FOOD), false));
-      this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25));
-      this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
-      this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
-      this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), CowVariants.TEMPERATE));
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.COW_FOOD);
+   public void addAdditionalSaveData(CompoundTag var1) {
+      super.addAdditionalSaveData(var1);
+      VariantUtils.writeVariant(var1, this.getVariant());
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
-   }
-
-   protected SoundEvent getAmbientSound() {
-      return SoundEvents.COW_AMBIENT;
-   }
-
-   protected SoundEvent getHurtSound(DamageSource var1) {
-      return SoundEvents.COW_HURT;
-   }
-
-   protected SoundEvent getDeathSound() {
-      return SoundEvents.COW_DEATH;
-   }
-
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-      this.playSound(SoundEvents.COW_STEP, 0.15F, 1.0F);
-   }
-
-   protected float getSoundVolume() {
-      return 0.4F;
-   }
-
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.BUCKET) && !this.isBaby()) {
-         var1.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
-         ItemStack var4 = ItemUtils.createFilledResult(var3, var1, Items.MILK_BUCKET.getDefaultInstance());
-         var1.setItemInHand(var2, var4);
-         return InteractionResult.SUCCESS;
-      } else {
-         return super.mobInteract(var1, var2);
-      }
+   public void readAdditionalSaveData(CompoundTag var1) {
+      super.readAdditionalSaveData(var1);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.COW_VARIANT).ifPresent(this::setVariant);
    }
 
    @Nullable
    public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
+      Cow var3 = EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
+      if (var3 != null && var2 instanceof Cow var4) {
+         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
+      }
+
+      return var3;
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      CowVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
+   public void setVariant(Holder<CowVariant> var1) {
+      this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   public Holder<CowVariant> getVariant() {
+      return (Holder)this.entityData.get(DATA_VARIANT_ID);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.COW_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.COW_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.COW_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.COW_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    // $FF: synthetic method
@@ -105,6 +92,6 @@ public class Cow extends Animal {
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.COW.getDimensions().scale(0.5F).withEyeHeight(0.665F);
+      DATA_VARIANT_ID = SynchedEntityData.<Holder<CowVariant>>defineId(Cow.class, EntityDataSerializers.COW_VARIANT);
    }
 }

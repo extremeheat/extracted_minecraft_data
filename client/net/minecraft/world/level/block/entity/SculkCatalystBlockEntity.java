@@ -17,7 +17,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SculkCatalystBlock;
 import net.minecraft.world.level.block.SculkSpreader;
@@ -117,7 +116,7 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
          var1.setBlock(var2, (BlockState)var3.setValue(SculkCatalystBlock.PULSE, true), 3);
          var1.scheduleTick(var2, var3.getBlock(), 8);
          var1.sendParticles(ParticleTypes.SCULK_SOUL, (double)var2.getX() + 0.5, (double)var2.getY() + 1.15, (double)var2.getZ() + 0.5, 2, 0.2, 0.0, 0.2, 0.0);
-         var1.playSound((Player)null, var2, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.BLOCKS, 2.0F, 0.6F + var4.nextFloat() * 0.4F);
+         var1.playSound((Entity)null, var2, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.BLOCKS, 2.0F, 0.6F + var4.nextFloat() * 0.4F);
       }
 
       private void tryAwardItSpreadsAdvancement(Level var1, LivingEntity var2) {

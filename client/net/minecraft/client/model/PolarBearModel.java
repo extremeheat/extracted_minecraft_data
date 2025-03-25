@@ -12,25 +12,25 @@ import net.minecraft.client.renderer.entity.state.PolarBearRenderState;
 
 public class PolarBearModel extends QuadrupedModel<PolarBearRenderState> {
    private static final float BABY_HEAD_SCALE = 2.25F;
-   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.0F, 4.0F, 2.25F, 2.0F, 24.0F, Set.of("head"));
+   private static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.0F, 4.0F, 2.25F, 2.0F, 24.0F, Set.of("head"));
 
    public PolarBearModel(ModelPart var1) {
       super(var1);
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -3.0F, -3.0F, 7.0F, 7.0F, 7.0F).texOffs(0, 44).addBox("mouth", -2.5F, 1.0F, -6.0F, 5.0F, 3.0F, 3.0F).texOffs(26, 0).addBox("right_ear", -4.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F).texOffs(26, 0).mirror().addBox("left_ear", 2.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F), PartPose.offset(0.0F, 10.0F, -16.0F));
-      var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 19).addBox(-5.0F, -13.0F, -7.0F, 14.0F, 14.0F, 11.0F).texOffs(39, 0).addBox(-4.0F, -25.0F, -7.0F, 12.0F, 12.0F, 10.0F), PartPose.offsetAndRotation(-2.0F, 9.0F, 12.0F, 1.5707964F, 0.0F, 0.0F));
-      boolean var2 = true;
-      CubeListBuilder var3 = CubeListBuilder.create().texOffs(50, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 8.0F);
-      var1.addOrReplaceChild("right_hind_leg", var3, PartPose.offset(-4.5F, 14.0F, 6.0F));
-      var1.addOrReplaceChild("left_hind_leg", var3, PartPose.offset(4.5F, 14.0F, 6.0F));
-      CubeListBuilder var4 = CubeListBuilder.create().texOffs(50, 40).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 6.0F);
-      var1.addOrReplaceChild("right_front_leg", var4, PartPose.offset(-3.5F, 14.0F, -8.0F));
-      var1.addOrReplaceChild("left_front_leg", var4, PartPose.offset(3.5F, 14.0F, -8.0F));
-      return LayerDefinition.create(var0, 128, 64).apply(MeshTransformer.scaling(1.2F));
+   public static LayerDefinition createBodyLayer(boolean var0) {
+      MeshDefinition var1 = new MeshDefinition();
+      PartDefinition var2 = var1.getRoot();
+      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -3.0F, -3.0F, 7.0F, 7.0F, 7.0F).texOffs(0, 44).addBox("mouth", -2.5F, 1.0F, -6.0F, 5.0F, 3.0F, 3.0F).texOffs(26, 0).addBox("right_ear", -4.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F).texOffs(26, 0).mirror().addBox("left_ear", 2.5F, -4.0F, -1.0F, 2.0F, 2.0F, 1.0F), PartPose.offset(0.0F, 10.0F, -16.0F));
+      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 19).addBox(-5.0F, -13.0F, -7.0F, 14.0F, 14.0F, 11.0F).texOffs(39, 0).addBox(-4.0F, -25.0F, -7.0F, 12.0F, 12.0F, 10.0F), PartPose.offsetAndRotation(-2.0F, 9.0F, 12.0F, 1.5707964F, 0.0F, 0.0F));
+      boolean var3 = true;
+      CubeListBuilder var4 = CubeListBuilder.create().texOffs(50, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 8.0F);
+      var2.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-4.5F, 14.0F, 6.0F));
+      var2.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(4.5F, 14.0F, 6.0F));
+      CubeListBuilder var5 = CubeListBuilder.create().texOffs(50, 40).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 6.0F);
+      var2.addOrReplaceChild("right_front_leg", var5, PartPose.offset(-3.5F, 14.0F, -8.0F));
+      var2.addOrReplaceChild("left_front_leg", var5, PartPose.offset(3.5F, 14.0F, -8.0F));
+      return LayerDefinition.create(var1, 128, 64).apply(var0 ? BABY_TRANSFORMER : MeshTransformer.IDENTITY).apply(MeshTransformer.scaling(1.2F));
    }
 
    public void setupAnim(PolarBearRenderState var1) {

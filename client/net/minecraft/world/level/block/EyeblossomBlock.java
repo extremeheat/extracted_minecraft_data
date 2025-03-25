@@ -16,8 +16,8 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.animal.Bee;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,7 +48,7 @@ public class EyeblossomBlock extends FlowerBlock {
       if (this.type.emitSounds() && var4.nextInt(700) == 0) {
          BlockState var5 = var2.getBlockState(var3.below());
          if (var5.is(Blocks.PALE_MOSS_BLOCK)) {
-            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.EYEBLOSSOM_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.EYEBLOSSOM_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
       }
 
@@ -56,7 +56,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.tryChangingState(var1, var2, var3, var4)) {
-         var2.playSound((Player)null, var3, this.type.transform().longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Entity)null, var3, this.type.transform().longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       super.randomTick(var1, var2, var3, var4);
@@ -64,7 +64,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.tryChangingState(var1, var2, var3, var4)) {
-         var2.playSound((Player)null, var3, this.type.transform().shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Entity)null, var3, this.type.transform().shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       super.tick(var1, var2, var3, var4);
@@ -73,7 +73,7 @@ public class EyeblossomBlock extends FlowerBlock {
    private boolean tryChangingState(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var2.dimensionType().natural()) {
          return false;
-      } else if (var2.isDay() != this.type.open) {
+      } else if (CreakingHeartBlock.isNaturalNight(var2) == this.type.open) {
          return false;
       } else {
          Type var5 = this.type.transform();
@@ -93,10 +93,10 @@ public class EyeblossomBlock extends FlowerBlock {
       }
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (!var2.isClientSide() && var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof Bee var5) {
-         if (Bee.attractsBees(var1) && !var5.hasEffect(MobEffects.POISON)) {
-            var5.addEffect(this.getBeeInteractionEffect());
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+      if (!var2.isClientSide() && var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof Bee var6) {
+         if (Bee.attractsBees(var1) && !var6.hasEffect(MobEffects.POISON)) {
+            var6.addEffect(this.getBeeInteractionEffect());
          }
       }
 
@@ -108,7 +108,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    public static enum Type {
       OPEN(true, MobEffects.BLINDNESS, 11.0F, SoundEvents.EYEBLOSSOM_OPEN_LONG, SoundEvents.EYEBLOSSOM_OPEN, 16545810),
-      CLOSED(false, MobEffects.CONFUSION, 7.0F, SoundEvents.EYEBLOSSOM_CLOSE_LONG, SoundEvents.EYEBLOSSOM_CLOSE, 6250335);
+      CLOSED(false, MobEffects.NAUSEA, 7.0F, SoundEvents.EYEBLOSSOM_CLOSE_LONG, SoundEvents.EYEBLOSSOM_CLOSE, 6250335);
 
       final boolean open;
       final Holder<MobEffect> effect;

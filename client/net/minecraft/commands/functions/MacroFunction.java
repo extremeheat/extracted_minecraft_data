@@ -11,6 +11,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -23,6 +24,7 @@ import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.ShortTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -80,19 +82,100 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
    }
 
    private static String stringify(Tag var0) {
-      if (var0 instanceof FloatTag var1) {
-         return DECIMAL_FORMAT.format((double)var1.getAsFloat());
-      } else if (var0 instanceof DoubleTag var2) {
-         return DECIMAL_FORMAT.format(var2.getAsDouble());
-      } else if (var0 instanceof ByteTag var3) {
-         return String.valueOf(var3.getAsByte());
-      } else if (var0 instanceof ShortTag var4) {
-         return String.valueOf(var4.getAsShort());
-      } else if (var0 instanceof LongTag var5) {
-         return String.valueOf(var5.getAsLong());
-      } else {
-         return var0.getAsString();
+      Objects.requireNonNull(var0);
+      byte var2 = 0;
+      String var30;
+      //$FF: var2->value
+      //0->net/minecraft/nbt/FloatTag
+      //1->net/minecraft/nbt/DoubleTag
+      //2->net/minecraft/nbt/ByteTag
+      //3->net/minecraft/nbt/ShortTag
+      //4->net/minecraft/nbt/LongTag
+      //5->net/minecraft/nbt/StringTag
+      switch (var0.typeSwitch<invokedynamic>(var0, var2)) {
+         case 0:
+            FloatTag var3 = (FloatTag)var0;
+            FloatTag var39 = var3;
+
+            try {
+               var40 = var39.value();
+            } catch (Throwable var23) {
+               throw new MatchException(var23.toString(), var23);
+            }
+
+            float var24 = var40;
+            var30 = DECIMAL_FORMAT.format((double)var24);
+            break;
+         case 1:
+            DoubleTag var5 = (DoubleTag)var0;
+            DoubleTag var37 = var5;
+
+            try {
+               var38 = var37.value();
+            } catch (Throwable var22) {
+               throw new MatchException(var22.toString(), var22);
+            }
+
+            double var25 = var38;
+            var30 = DECIMAL_FORMAT.format(var25);
+            break;
+         case 2:
+            ByteTag var8 = (ByteTag)var0;
+            ByteTag var35 = var8;
+
+            try {
+               var36 = var35.value();
+            } catch (Throwable var21) {
+               throw new MatchException(var21.toString(), var21);
+            }
+
+            byte var26 = var36;
+            var30 = String.valueOf(var26);
+            break;
+         case 3:
+            ShortTag var10 = (ShortTag)var0;
+            ShortTag var33 = var10;
+
+            try {
+               var34 = var33.value();
+            } catch (Throwable var20) {
+               throw new MatchException(var20.toString(), var20);
+            }
+
+            short var27 = var34;
+            var30 = String.valueOf(var27);
+            break;
+         case 4:
+            LongTag var12 = (LongTag)var0;
+            LongTag var31 = var12;
+
+            try {
+               var32 = var31.value();
+            } catch (Throwable var19) {
+               throw new MatchException(var19.toString(), var19);
+            }
+
+            long var28 = var32;
+            var30 = String.valueOf(var28);
+            break;
+         case 5:
+            StringTag var15 = (StringTag)var0;
+            StringTag var10000 = var15;
+
+            try {
+               var29 = var10000.value();
+            } catch (Throwable var18) {
+               throw new MatchException(var18.toString(), var18);
+            }
+
+            String var17 = var29;
+            var30 = var17;
+            break;
+         default:
+            var30 = var0.toString();
       }
+
+      return var30;
    }
 
    private static void lookupValues(List<String> var0, IntList var1, List<String> var2) {

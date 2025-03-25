@@ -33,7 +33,7 @@ public class EquipmentDispenseItemBehavior extends DefaultDispenseItemBehavior {
          var4.setItemSlot(var5, var6);
          if (var4 instanceof Mob) {
             Mob var7 = (Mob)var4;
-            var7.setDropChance(var5, 2.0F);
+            var7.setGuaranteedDrop(var5);
             var7.setPersistenceRequired();
          }
 

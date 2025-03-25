@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
@@ -21,13 +19,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallTorchBlock extends TorchBlock {
    public static final MapCodec<WallTorchBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PARTICLE_OPTIONS_FIELD.forGetter((var0x) -> var0x.flameParticle), propertiesCodec()).apply(var0, WallTorchBlock::new));
    public static final EnumProperty<Direction> FACING;
-   protected static final float AABB_OFFSET = 2.5F;
-   private static final Map<Direction, VoxelShape> AABBS;
+   private static final Map<Direction, VoxelShape> SHAPES;
 
    public MapCodec<WallTorchBlock> codec() {
       return CODEC;
@@ -43,7 +41,7 @@ public class WallTorchBlock extends TorchBlock {
    }
 
    public static VoxelShape getShape(BlockState var0) {
-      return (VoxelShape)AABBS.get(var0.getValue(FACING));
+      return (VoxelShape)SHAPES.get(var0.getValue(FACING));
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -106,6 +104,6 @@ public class WallTorchBlock extends TorchBlock {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      AABBS = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Block.box(5.5, 3.0, 11.0, 10.5, 13.0, 16.0), Direction.SOUTH, Block.box(5.5, 3.0, 0.0, 10.5, 13.0, 5.0), Direction.WEST, Block.box(11.0, 3.0, 5.5, 16.0, 13.0, 10.5), Direction.EAST, Block.box(0.0, 3.0, 5.5, 5.0, 13.0, 10.5)));
+      SHAPES = Shapes.rotateHorizontal(Block.boxZ(5.0, 3.0, 13.0, 11.0, 16.0));
    }
 }

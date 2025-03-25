@@ -20,7 +20,7 @@ public record ServerboundMoveVehiclePacket(Vec3 position, float yRot, float xRot
    }
 
    public static ServerboundMoveVehiclePacket fromEntity(Entity var0) {
-      return new ServerboundMoveVehiclePacket(new Vec3(var0.lerpTargetX(), var0.lerpTargetY(), var0.lerpTargetZ()), var0.getYRot(), var0.getXRot(), var0.onGround());
+      return var0.isInterpolating() ? new ServerboundMoveVehiclePacket(var0.getInterpolation().position(), var0.getInterpolation().yRot(), var0.getInterpolation().xRot(), var0.onGround()) : new ServerboundMoveVehiclePacket(var0.position(), var0.getYRot(), var0.getXRot(), var0.onGround());
    }
 
    public PacketType<ServerboundMoveVehiclePacket> type() {

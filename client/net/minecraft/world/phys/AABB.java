@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class AABB {
    private static final double EPSILON = 1.0E-7;
@@ -406,5 +407,31 @@ public class AABB {
 
    public static AABB ofSize(Vec3 var0, double var1, double var3, double var5) {
       return new AABB(var0.x - var1 / 2.0, var0.y - var3 / 2.0, var0.z - var5 / 2.0, var0.x + var1 / 2.0, var0.y + var3 / 2.0, var0.z + var5 / 2.0);
+   }
+
+   public static class Builder {
+      private float minX = 1.0F / 0.0F;
+      private float minY = 1.0F / 0.0F;
+      private float minZ = 1.0F / 0.0F;
+      private float maxX = -1.0F / 0.0F;
+      private float maxY = -1.0F / 0.0F;
+      private float maxZ = -1.0F / 0.0F;
+
+      public Builder() {
+         super();
+      }
+
+      public void include(Vector3fc var1) {
+         this.minX = Math.min(this.minX, var1.x());
+         this.minY = Math.min(this.minY, var1.y());
+         this.minZ = Math.min(this.minZ, var1.z());
+         this.maxX = Math.max(this.maxX, var1.x());
+         this.maxY = Math.max(this.maxY, var1.y());
+         this.maxZ = Math.max(this.maxZ, var1.z());
+      }
+
+      public AABB build() {
+         return new AABB((double)this.minX, (double)this.minY, (double)this.minZ, (double)this.maxX, (double)this.maxY, (double)this.maxZ);
+      }
    }
 }

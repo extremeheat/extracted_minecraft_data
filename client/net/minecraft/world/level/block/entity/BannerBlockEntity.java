@@ -1,27 +1,26 @@
 package net.minecraft.world.level.block.entity;
 
-import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 public class BannerBlockEntity extends BlockEntity implements Nameable {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MAX_PATTERNS = 6;
    private static final String TAG_PATTERNS = "patterns";
    @Nullable
@@ -50,26 +49,19 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
-         var1.put("patterns", (Tag)BannerPatternLayers.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.patterns).getOrThrow());
+         var1.store("patterns", BannerPatternLayers.CODEC, var3, this.patterns);
       }
 
-      if (this.name != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
-      }
-
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var3, this.name);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("CustomName", 8)) {
-         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
-      }
-
-      if (var1.contains("patterns")) {
-         BannerPatternLayers.CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns")).resultOrPartial((var0) -> LOGGER.error("Failed to parse banner patterns: '{}'", var0)).ifPresent((var1x) -> this.patterns = var1x);
-      }
-
+      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      this.patterns = (BannerPatternLayers)var1.read("patterns", BannerPatternLayers.CODEC, var3).orElse(BannerPatternLayers.EMPTY);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -94,7 +86,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       return this.baseColor;
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       this.patterns = (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
       this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);

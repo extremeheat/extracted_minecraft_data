@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Quaternionfc;
 
 public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityRenderer<T, ThrownItemRenderState> {
    private final ItemModelResolver itemModelResolver;
@@ -34,7 +35,7 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
    public void render(ThrownItemRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       var2.pushPose();
       var2.scale(this.scale, this.scale, this.scale);
-      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
       var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);
       var2.popPose();
       super.render(var1, var2, var3, var4);

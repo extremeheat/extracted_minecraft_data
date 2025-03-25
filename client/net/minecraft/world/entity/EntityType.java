@@ -2,15 +2,14 @@ package net.minecraft.world.entity;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -51,12 +50,10 @@ import net.minecraft.world.entity.animal.PolarBear;
 import net.minecraft.world.entity.animal.Pufferfish;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.Salmon;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.animal.SnowGolem;
 import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.animal.Turtle;
-import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
@@ -71,7 +68,9 @@ import net.minecraft.world.entity.animal.horse.Mule;
 import net.minecraft.world.entity.animal.horse.SkeletonHorse;
 import net.minecraft.world.entity.animal.horse.TraderLlama;
 import net.minecraft.world.entity.animal.horse.ZombieHorse;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
@@ -140,7 +139,8 @@ import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.ThrownLingeringPotion;
+import net.minecraft.world.entity.projectile.ThrownSplashPotion;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.entity.projectile.WitherSkull;
 import net.minecraft.world.entity.projectile.windcharge.BreezeWindCharge;
@@ -180,6 +180,7 @@ import org.slf4j.Logger;
 public class EntityType<T extends Entity> implements FeatureElement, EntityTypeTest<Entity, T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<EntityType<?>> builtInRegistryHolder;
+   public static final Codec<EntityType<?>> CODEC;
    private static final float MAGIC_HORSE_WIDTH = 1.3964844F;
    private static final int DISPLAY_TRACKING_RANGE = 10;
    public static final EntityType<Boat> ACACIA_BOAT;
@@ -281,7 +282,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<PiglinBrute> PIGLIN_BRUTE;
    public static final EntityType<Pillager> PILLAGER;
    public static final EntityType<PolarBear> POLAR_BEAR;
-   public static final EntityType<ThrownPotion> POTION;
+   public static final EntityType<ThrownSplashPotion> SPLASH_POTION;
+   public static final EntityType<ThrownLingeringPotion> LINGERING_POTION;
    public static final EntityType<Pufferfish> PUFFERFISH;
    public static final EntityType<Rabbit> RABBIT;
    public static final EntityType<Ravager> RAVAGER;
@@ -389,7 +391,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable Player var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
+   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
       Consumer var8;
       if (var2 != null) {
          var8 = createDefaultStackConfig(var1, var2, var3);
@@ -401,21 +403,20 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (T)this.spawn(var1, var8, var4, var5, var6, var7);
    }
 
-   public static <T extends Entity> Consumer<T> createDefaultStackConfig(Level var0, ItemStack var1, @Nullable Player var2) {
+   public static <T extends Entity> Consumer<T> createDefaultStackConfig(Level var0, ItemStack var1, @Nullable LivingEntity var2) {
       return appendDefaultStackConfig((var0x) -> {
       }, var0, var1, var2);
    }
 
-   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable Player var3) {
-      return appendCustomEntityStackConfig(appendCustomNameConfig(var0, var2), var1, var2, var3);
+   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
+      return appendCustomEntityStackConfig(appendComponentsConfig(var0, var2), var1, var2, var3);
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomNameConfig(Consumer<T> var0, ItemStack var1) {
-      Component var2 = (Component)var1.get(DataComponents.CUSTOM_NAME);
-      return var2 != null ? var0.andThen((var1x) -> var1x.setCustomName(var2)) : var0;
+   public static <T extends Entity> Consumer<T> appendComponentsConfig(Consumer<T> var0, ItemStack var1) {
+      return var0.andThen((var1x) -> var1x.applyComponentsFromItemStack(var1));
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable Player var3) {
+   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
       CustomData var4 = (CustomData)var2.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
       return !var4.isEmpty() ? var0.andThen((var3x) -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
    }
@@ -453,7 +454,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
             var8 = 0.0;
          }
 
-         var7.moveTo((double)var3.getX() + 0.5, (double)var3.getY() + var8, (double)var3.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F);
+         var7.snapTo((double)var3.getX() + 0.5, (double)var3.getY() + var8, (double)var3.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F);
          if (var7 instanceof Mob) {
             Mob var10 = (Mob)var7;
             var10.yHeadRot = var10.getYRot();
@@ -479,14 +480,23 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return 1.0 + Shapes.collide(Direction.Axis.Y, var3, var5, var2 ? -2.0 : -1.0);
    }
 
-   public static void updateCustomEntityTag(Level var0, @Nullable Player var1, @Nullable Entity var2, CustomData var3) {
+   public static void updateCustomEntityTag(Level var0, @Nullable LivingEntity var1, @Nullable Entity var2, CustomData var3) {
       MinecraftServer var4 = var0.getServer();
       if (var4 != null && var2 != null) {
          EntityType var5 = (EntityType)var3.parseEntityType(var4.registryAccess(), Registries.ENTITY_TYPE);
          if (var2.getType() == var5) {
-            if (var0.isClientSide || !var2.getType().onlyOpCanSetNbt() || var1 != null && var4.getPlayerList().isOp(var1.getGameProfile())) {
-               var3.loadInto(var2);
+            if (!var0.isClientSide && var2.getType().onlyOpCanSetNbt()) {
+               if (!(var1 instanceof Player)) {
+                  return;
+               }
+
+               Player var6 = (Player)var1;
+               if (!var4.getPlayerList().isOp(var6.getGameProfile())) {
+                  return;
+               }
             }
+
+            var3.loadInto(var2);
          }
       }
    }
@@ -554,7 +564,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Optional<Entity> create(CompoundTag var0, Level var1, EntitySpawnReason var2) {
-      return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getString("id")));
+      return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getStringOr("id", "[invalid]")));
    }
 
    public AABB getSpawnAABB(double var1, double var3, double var5) {
@@ -578,20 +588,18 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.parse(var0.getString("id")));
+      return var0.read("id", CODEC);
    }
 
    @Nullable
    public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
       return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> {
-         if (var0.contains("Passengers", 9)) {
-            ListTag var5 = var0.getList("Passengers", 10);
+         ListTag var5 = var0.getListOrEmpty("Passengers");
 
-            for(int var6 = 0; var6 < var5.size(); ++var6) {
-               Entity var7 = loadEntityRecursive(var5.getCompound(var6), var1, var2, var3);
-               if (var7 != null) {
-                  var7.startRiding(var4, true);
-               }
+         for(int var6 = 0; var6 < var5.size(); ++var6) {
+            Entity var7 = loadEntityRecursive(var5.getCompoundOrEmpty(var6), var1, var2, var3);
+            if (var7 != null) {
+               var7.startRiding(var4, true);
             }
          }
 
@@ -599,28 +607,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       }).orElse((Object)null);
    }
 
-   public static Stream<Entity> loadEntitiesRecursive(final List<? extends Tag> var0, final Level var1, final EntitySpawnReason var2) {
-      final Spliterator var3 = var0.spliterator();
-      return StreamSupport.stream(new Spliterator<Entity>() {
-         public boolean tryAdvance(Consumer<? super Entity> var1x) {
-            return var3.tryAdvance((var3x) -> EntityType.loadEntityRecursive((CompoundTag)var3x, var1, var2, (var1xx) -> {
-                  var1x.accept(var1xx);
-                  return var1xx;
-               }));
-         }
-
-         public Spliterator<Entity> trySplit() {
-            return null;
-         }
-
-         public long estimateSize() {
-            return (long)var0.size();
-         }
-
-         public int characteristics() {
-            return 1297;
-         }
-      }, false);
+   public static Stream<Entity> loadEntitiesRecursive(List<? extends Tag> var0, Level var1, EntitySpawnReason var2) {
+      return var0.stream().flatMap((var0x) -> var0x.asCompound().stream()).mapMulti((var2x, var3) -> loadEntityRecursive(var2x, var1, var2, (var1x) -> {
+            var3.accept(var1x);
+            return var1x;
+         }));
    }
 
    private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1, EntitySpawnReason var2) {
@@ -688,6 +679,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    static {
+      CODEC = BuiltInRegistries.ENTITY_TYPE.byNameCodec();
       ACACIA_BOAT = register("acacia_boat", EntityType.Builder.of(boatFactory(() -> Items.ACACIA_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       ACACIA_CHEST_BOAT = register("acacia_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.ACACIA_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       ALLAY = register("allay", EntityType.Builder.of(Allay::new, MobCategory.CREATURE).sized(0.35F, 0.6F).eyeHeight(0.36F).ridingOffset(0.04F).clientTrackingRange(8).updateInterval(2));
@@ -787,7 +779,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       PIGLIN_BRUTE = register("piglin_brute", EntityType.Builder.of(PiglinBrute::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8));
       PILLAGER = register("pillager", EntityType.Builder.of(Pillager::new, MobCategory.MONSTER).canSpawnFarFromPlayer().sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8));
       POLAR_BEAR = register("polar_bear", EntityType.Builder.of(PolarBear::new, MobCategory.CREATURE).immuneTo(Blocks.POWDER_SNOW).sized(1.4F, 1.4F).clientTrackingRange(10));
-      POTION = register("potion", EntityType.Builder.of(ThrownPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
+      SPLASH_POTION = register("splash_potion", EntityType.Builder.of(ThrownSplashPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
+      LINGERING_POTION = register("lingering_potion", EntityType.Builder.of(ThrownLingeringPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       PUFFERFISH = register("pufferfish", EntityType.Builder.of(Pufferfish::new, MobCategory.WATER_AMBIENT).sized(0.7F, 0.7F).eyeHeight(0.455F).clientTrackingRange(4));
       RABBIT = register("rabbit", EntityType.Builder.of(Rabbit::new, MobCategory.CREATURE).sized(0.4F, 0.5F).clientTrackingRange(8));
       RAVAGER = register("ravager", EntityType.Builder.of(Ravager::new, MobCategory.MONSTER).sized(1.95F, 2.2F).passengerAttachments(new Vec3(0.0, 2.2625, -0.0625)).clientTrackingRange(10));
@@ -855,7 +848,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private EntityAttachments.Builder attachments = EntityAttachments.builder();
       private FeatureFlagSet requiredFeatures;
       private DependantName<EntityType<?>, Optional<ResourceKey<LootTable>>> lootTable;
-      private DependantName<EntityType<?>, String> descriptionId;
+      private final DependantName<EntityType<?>, String> descriptionId;
 
       private Builder(EntityFactory<T> var1, MobCategory var2) {
          super();
@@ -984,6 +977,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
    @FunctionalInterface
    public interface EntityFactory<T extends Entity> {
+      @Nullable
       T create(EntityType<T> var1, Level var2);
    }
 }

@@ -20,7 +20,6 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -36,6 +35,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.BeehiveBlock;
@@ -74,6 +74,8 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerProjectileBehavior(Items.TIPPED_ARROW);
       DispenserBlock.registerProjectileBehavior(Items.SPECTRAL_ARROW);
       DispenserBlock.registerProjectileBehavior(Items.EGG);
+      DispenserBlock.registerProjectileBehavior(Items.BLUE_EGG);
+      DispenserBlock.registerProjectileBehavior(Items.BROWN_EGG);
       DispenserBlock.registerProjectileBehavior(Items.SNOWBALL);
       DispenserBlock.registerProjectileBehavior(Items.EXPERIENCE_BOTTLE);
       DispenserBlock.registerProjectileBehavior(Items.SPLASH_POTION);
@@ -87,7 +89,7 @@ public interface DispenseItemBehavior {
             EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var1.level().registryAccess(), var2);
 
             try {
-               var4.spawn(var1.level(), var2, (Player)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
+               var4.spawn(var1.level(), var2, (LivingEntity)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
             } catch (Exception var6) {
                LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
                return ItemStack.EMPTY;
@@ -108,32 +110,13 @@ public interface DispenseItemBehavior {
             Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
             BlockPos var4 = var1.pos().relative(var3);
             ServerLevel var5 = var1.level();
-            Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> var1x.setYRot(var3.toYRot()), var5, var2, (Player)null);
+            Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> var1x.setYRot(var3.toYRot()), var5, var2, (LivingEntity)null);
             ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var6, var4, EntitySpawnReason.DISPENSER, false, false);
             if (var7 != null) {
                var2.shrink(1);
             }
 
             return var2;
-         }
-      });
-      DispenserBlock.registerBehavior(Items.SADDLE, new OptionalDispenseItemBehavior() {
-         public ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-            List var4 = var1.level().getEntitiesOfClass(LivingEntity.class, new AABB(var3), (var0) -> {
-               if (!(var0 instanceof Saddleable var1)) {
-                  return false;
-               } else {
-                  return !var1.isSaddled() && var1.isSaddleable();
-               }
-            });
-            if (!var4.isEmpty()) {
-               ((Saddleable)var4.get(0)).equipSaddle(var2.split(1), SoundSource.BLOCKS);
-               this.setSuccess(true);
-               return var2;
-            } else {
-               return super.execute(var1, var2);
-            }
          }
       });
       DispenserBlock.registerBehavior(Items.CHEST, new OptionalDispenseItemBehavior() {
@@ -178,8 +161,8 @@ public interface DispenseItemBehavior {
             DispensibleContainerItem var3 = (DispensibleContainerItem)var2.getItem();
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             ServerLevel var5 = var1.level();
-            if (var3.emptyContents((Player)null, var5, var4, (BlockHitResult)null)) {
-               var3.checkExtraContent((Player)null, var5, var2, var4);
+            if (var3.emptyContents((LivingEntity)null, var5, var4, (BlockHitResult)null)) {
+               var3.checkExtraContent((LivingEntity)null, var5, var2, var4);
                return this.consumeWithRemainder(var1, var2, new ItemStack(Items.BUCKET));
             } else {
                return this.defaultDispenseItemBehavior.dispense(var1, var2);
@@ -202,7 +185,7 @@ public interface DispenseItemBehavior {
             BlockState var5 = var3.getBlockState(var4);
             Block var6 = var5.getBlock();
             if (var6 instanceof BucketPickup var8) {
-               ItemStack var9 = var8.pickupBlock((Player)null, var3, var4, var5);
+               ItemStack var9 = var8.pickupBlock((LivingEntity)null, var3, var4, var5);
                if (var9.isEmpty()) {
                   return super.execute(var1, var2);
                } else {
@@ -227,8 +210,11 @@ public interface DispenseItemBehavior {
                var3.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, var5);
             } else if (!CampfireBlock.canLight(var6) && !CandleBlock.canLight(var6) && !CandleCakeBlock.canLight(var6)) {
                if (var6.getBlock() instanceof TntBlock) {
-                  TntBlock.explode(var3, var5);
-                  var3.removeBlock(var5, false);
+                  if (TntBlock.prime(var3, var5)) {
+                     var3.removeBlock(var5, false);
+                  } else {
+                     this.setSuccess(false);
+                  }
                } else {
                   this.setSuccess(false);
                }
@@ -259,16 +245,22 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      DispenserBlock.registerBehavior(Blocks.TNT, new DefaultDispenseItemBehavior() {
+      DispenserBlock.registerBehavior(Blocks.TNT, new OptionalDispenseItemBehavior() {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
-            BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-            PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, (LivingEntity)null);
-            ((Level)var3).addFreshEntity(var5);
-            ((Level)var3).playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
-            ((Level)var3).gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var4);
-            var2.shrink(1);
-            return var2;
+            if (!var3.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+               this.setSuccess(false);
+               return var2;
+            } else {
+               BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
+               PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, (LivingEntity)null);
+               var3.addFreshEntity(var5);
+               var3.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var3.gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var4);
+               var2.shrink(1);
+               this.setSuccess(true);
+               return var2;
+            }
          }
       });
       DispenserBlock.registerBehavior(Items.WITHER_SKELETON_SKULL, new OptionalDispenseItemBehavior() {
@@ -423,7 +415,7 @@ public interface DispenseItemBehavior {
                      }
                   }
 
-                  var4.playSound((Player)null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var4.playSound((Entity)null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                   var4.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var5);
                   var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());
                   return this.consumeWithRemainder(var1, var2, new ItemStack(Items.GLASS_BOTTLE));

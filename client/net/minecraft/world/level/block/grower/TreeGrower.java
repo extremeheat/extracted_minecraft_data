@@ -92,18 +92,18 @@ public final class TreeGrower {
                   if (isTwoByTwoSapling(var4, var1, var3, var8, var9)) {
                      ConfiguredFeature var10 = (ConfiguredFeature)var7.value();
                      BlockState var11 = Blocks.AIR.defaultBlockState();
-                     var1.setBlock(var3.offset(var8, 0, var9), var11, 4);
-                     var1.setBlock(var3.offset(var8 + 1, 0, var9), var11, 4);
-                     var1.setBlock(var3.offset(var8, 0, var9 + 1), var11, 4);
-                     var1.setBlock(var3.offset(var8 + 1, 0, var9 + 1), var11, 4);
+                     var1.setBlock(var3.offset(var8, 0, var9), var11, 260);
+                     var1.setBlock(var3.offset(var8 + 1, 0, var9), var11, 260);
+                     var1.setBlock(var3.offset(var8, 0, var9 + 1), var11, 260);
+                     var1.setBlock(var3.offset(var8 + 1, 0, var9 + 1), var11, 260);
                      if (var10.place(var1, var2, var5, var3.offset(var8, 0, var9))) {
                         return true;
                      }
 
-                     var1.setBlock(var3.offset(var8, 0, var9), var4, 4);
-                     var1.setBlock(var3.offset(var8 + 1, 0, var9), var4, 4);
-                     var1.setBlock(var3.offset(var8, 0, var9 + 1), var4, 4);
-                     var1.setBlock(var3.offset(var8 + 1, 0, var9 + 1), var4, 4);
+                     var1.setBlock(var3.offset(var8, 0, var9), var4, 260);
+                     var1.setBlock(var3.offset(var8 + 1, 0, var9), var4, 260);
+                     var1.setBlock(var3.offset(var8, 0, var9 + 1), var4, 260);
+                     var1.setBlock(var3.offset(var8 + 1, 0, var9 + 1), var4, 260);
                      return false;
                   }
                }
@@ -121,7 +121,7 @@ public final class TreeGrower {
          } else {
             ConfiguredFeature var14 = (ConfiguredFeature)var13.value();
             BlockState var15 = var1.getFluidState(var3).createLegacyBlock();
-            var1.setBlock(var3, var15, 4);
+            var1.setBlock(var3, var15, 260);
             if (var14.place(var1, var2, var5, var3)) {
                if (var1.getBlockState(var3) == var15) {
                   var1.sendBlockUpdated(var3, var4, var15, 2);
@@ -129,7 +129,7 @@ public final class TreeGrower {
 
                return true;
             } else {
-               var1.setBlock(var3, var4, 4);
+               var1.setBlock(var3, var4, 260);
                return false;
             }
          }

@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -44,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
 public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackMob {
    private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID;
    private static final byte PUMPKIN_FLAG = 16;
+   private static final boolean DEFAULT_PUMPKIN = true;
 
    public SnowGolem(EntityType<? extends SnowGolem> var1, Level var2) {
       super(var1, var2);
@@ -73,10 +75,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("Pumpkin")) {
-         this.setPumpkin(var1.getBoolean("Pumpkin"));
-      }
-
+      this.setPumpkin(var1.getBooleanOr("Pumpkin", true));
    }
 
    public boolean isSensitiveToWater() {
@@ -143,7 +142,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Player)null, this, SoundEvents.SNOW_GOLEM_SHEAR, var2, 1.0F, 1.0F);
+      var1.playSound((Entity)null, this, SoundEvents.SNOW_GOLEM_SHEAR, var2, 1.0F, 1.0F);
       this.setPumpkin(false);
       this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_SNOW_GOLEM, var3, (var1x, var2x) -> this.spawnAtLocation(var1x, var2x, this.getEyeHeight()));
    }

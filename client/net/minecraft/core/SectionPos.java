@@ -188,6 +188,10 @@ public class SectionPos extends Vec3i {
       return var0 & -1048576L;
    }
 
+   public static long sectionToChunk(long var0) {
+      return ChunkPos.asLong(x(var0), z(var0));
+   }
+
    public BlockPos origin() {
       return new BlockPos(sectionToBlockCoord(this.x()), sectionToBlockCoord(this.y()), sectionToBlockCoord(this.z()));
    }

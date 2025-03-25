@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class HangingSignRenderer extends AbstractSignRenderer {
    private static final String PLANK = "plank";
@@ -61,7 +62,7 @@ public class HangingSignRenderer extends AbstractSignRenderer {
 
    private static void translateBase(PoseStack var0, float var1) {
       var0.translate(0.5, 0.9375, 0.5);
-      var0.mulPose(Axis.YP.rotationDegrees(var1));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1));
       var0.translate(0.0F, -0.3125F, 0.0F);
    }
 

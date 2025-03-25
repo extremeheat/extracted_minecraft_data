@@ -1,17 +1,17 @@
 package net.minecraft.client.renderer.entity.state;
 
+import javax.annotation.Nullable;
 import net.minecraft.world.entity.npc.VillagerData;
-import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.world.entity.npc.VillagerType;
 
 public class ZombieVillagerRenderState extends ZombieRenderState implements VillagerDataHolderRenderState {
+   @Nullable
    public VillagerData villagerData;
 
    public ZombieVillagerRenderState() {
       super();
-      this.villagerData = new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1);
    }
 
+   @Nullable
    public VillagerData getVillagerData() {
       return this.villagerData;
    }

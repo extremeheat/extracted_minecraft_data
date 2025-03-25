@@ -9,6 +9,6 @@ public class RabbitRenderState extends LivingEntityRenderState {
 
    public RabbitRenderState() {
       super();
-      this.variant = Rabbit.Variant.BROWN;
+      this.variant = Rabbit.Variant.DEFAULT;
    }
 }

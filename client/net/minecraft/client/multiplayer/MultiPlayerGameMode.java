@@ -1,6 +1,8 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Shorts;
+import com.google.common.primitives.SignedBytes;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.HashedStack;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
@@ -110,7 +113,7 @@ public class MultiPlayerGameMode {
       } else {
          ClientLevel var2 = this.minecraft.level;
          BlockState var3 = ((Level)var2).getBlockState(var1);
-         if (!this.minecraft.player.getMainHandItem().getItem().canAttackBlock(var3, var2, var1, this.minecraft.player)) {
+         if (!this.minecraft.player.getMainHandItem().canDestroyBlock(var3, var2, var1, this.minecraft.player)) {
             return false;
          } else {
             Block var4 = var3.getBlock();
@@ -138,7 +141,7 @@ public class MultiPlayerGameMode {
       } else if (!this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
          return false;
       } else {
-         if (this.localPlayerMode.isCreative()) {
+         if (this.minecraft.player.getAbilities().instabuild) {
             BlockState var3 = this.minecraft.level.getBlockState(var1);
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, 1.0F);
             this.startPrediction(this.minecraft.level, (var3x) -> {
@@ -196,7 +199,7 @@ public class MultiPlayerGameMode {
       if (this.destroyDelay > 0) {
          --this.destroyDelay;
          return true;
-      } else if (this.localPlayerMode.isCreative() && this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
+      } else if (this.minecraft.player.getAbilities().instabuild && this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
          this.destroyDelay = 5;
          BlockState var5 = this.minecraft.level.getBlockState(var1);
          this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var5, 1.0F);
@@ -263,7 +266,7 @@ public class MultiPlayerGameMode {
    }
 
    private void ensureHasSentCarriedItem() {
-      int var1 = this.minecraft.player.getInventory().selected;
+      int var1 = this.minecraft.player.getInventory().getSelectedSlot();
       if (var1 != this.carriedIndex) {
          this.carriedIndex = var1;
          this.connection.send(new ServerboundSetCarriedItemPacket(this.carriedIndex));
@@ -315,7 +318,7 @@ public class MultiPlayerGameMode {
          if (!var5.isEmpty() && !var1.getCooldowns().isOnCooldown(var5)) {
             UseOnContext var12 = new UseOnContext(var1, var2, var3);
             InteractionResult var11;
-            if (this.localPlayerMode.isCreative()) {
+            if (var1.hasInfiniteMaterials()) {
                int var13 = var5.getCount();
                var11 = var5.useOn(var12);
                var5.setCount(var13);
@@ -415,11 +418,12 @@ public class MultiPlayerGameMode {
             ItemStack var12 = (ItemStack)var9.get(var15);
             ItemStack var13 = ((Slot)var7.get(var15)).getItem();
             if (!ItemStack.matches(var12, var13)) {
-               var14.put(var15, var13.copy());
+               var14.put(var15, HashedStack.create(var13, this.connection.decoratedHashOpsGenenerator()));
             }
          }
 
-         this.connection.send(new ServerboundContainerClickPacket(var1, var6.getStateId(), var2, var3, var4, var6.getCarried().copy(), var14));
+         HashedStack var16 = HashedStack.create(var6.getCarried(), this.connection.decoratedHashOpsGenenerator());
+         this.connection.send(new ServerboundContainerClickPacket(var1, var6.getStateId(), Shorts.checkedCast((long)var2), SignedBytes.checkedCast((long)var3), var4, var14, var16));
       }
    }
 
@@ -432,7 +436,7 @@ public class MultiPlayerGameMode {
    }
 
    public void handleCreativeModeItemAdd(ItemStack var1, int var2) {
-      if (this.localPlayerMode.isCreative() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
+      if (this.minecraft.player.hasInfiniteMaterials() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
          this.connection.send(new ServerboundSetCreativeModeSlotPacket(var2, var1));
       }
 
@@ -440,7 +444,7 @@ public class MultiPlayerGameMode {
 
    public void handleCreativeModeItemDrop(ItemStack var1) {
       boolean var2 = this.minecraft.screen instanceof AbstractContainerScreen && !(this.minecraft.screen instanceof CreativeModeInventoryScreen);
-      if (this.localPlayerMode.isCreative() && !var2 && !var1.isEmpty() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
+      if (this.minecraft.player.hasInfiniteMaterials() && !var2 && !var1.isEmpty() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
          this.connection.send(new ServerboundSetCreativeModeSlotPacket(-1, var1));
          this.minecraft.player.getDropSpamThrottler().increment();
       }
@@ -459,10 +463,6 @@ public class MultiPlayerGameMode {
 
    public boolean hasMissTime() {
       return !this.localPlayerMode.isCreative();
-   }
-
-   public boolean hasInfiniteItems() {
-      return this.localPlayerMode.isCreative();
    }
 
    public boolean isServerControlledInventory() {

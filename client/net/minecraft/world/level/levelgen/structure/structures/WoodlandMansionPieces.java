@@ -54,7 +54,7 @@ public class WoodlandMansionPieces {
       }
 
       public WoodlandMansionPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.WOODLAND_MANSION_PIECE, var2, var1, (var1x) -> makeSettings(Mirror.valueOf(var2.getString("Mi")), Rotation.valueOf(var2.getString("Rot"))));
+         super(StructurePieceType.WOODLAND_MANSION_PIECE, var2, var1, (var1x) -> makeSettings((Mirror)var2.read("Mi", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
       }
 
       protected ResourceLocation makeTemplateLocation() {
@@ -71,8 +71,8 @@ public class WoodlandMansionPieces {
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
-         var2.putString("Rot", this.placeSettings.getRotation().name());
-         var2.putString("Mi", this.placeSettings.getMirror().name());
+         var2.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
+         var2.store("Mi", Mirror.LEGACY_CODEC, this.placeSettings.getMirror());
       }
 
       protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, RandomSource var4, BoundingBox var5) {
@@ -113,7 +113,7 @@ public class WoodlandMansionPieces {
             for(Mob var13 : var6) {
                if (var13 != null) {
                   var13.setPersistenceRequired();
-                  var13.moveTo(var2, 0.0F, 0.0F);
+                  var13.snapTo(var2, 0.0F, 0.0F);
                   var13.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var13.blockPosition()), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                   var3.addFreshEntityWithPassengers(var13);
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);

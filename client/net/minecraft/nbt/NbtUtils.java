@@ -3,10 +3,13 @@ package net.minecraft.nbt;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,21 +19,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,16 +40,17 @@ import net.minecraft.world.level.material.FluidState;
 import org.slf4j.Logger;
 
 public final class NbtUtils {
-   private static final Comparator<ListTag> YXZ_LISTTAG_INT_COMPARATOR = Comparator.comparingInt((var0) -> var0.getInt(1)).thenComparingInt((var0) -> var0.getInt(0)).thenComparingInt((var0) -> var0.getInt(2));
-   private static final Comparator<ListTag> YXZ_LISTTAG_DOUBLE_COMPARATOR = Comparator.comparingDouble((var0) -> var0.getDouble(1)).thenComparingDouble((var0) -> var0.getDouble(0)).thenComparingDouble((var0) -> var0.getDouble(2));
+   private static final Comparator<ListTag> YXZ_LISTTAG_INT_COMPARATOR = Comparator.comparingInt((var0) -> var0.getIntOr(1, 0)).thenComparingInt((var0) -> var0.getIntOr(0, 0)).thenComparingInt((var0) -> var0.getIntOr(2, 0));
+   private static final Comparator<ListTag> YXZ_LISTTAG_DOUBLE_COMPARATOR = Comparator.comparingDouble((var0) -> var0.getDoubleOr(1, 0.0)).thenComparingDouble((var0) -> var0.getDoubleOr(0, 0.0)).thenComparingDouble((var0) -> var0.getDoubleOr(2, 0.0));
+   private static final Codec<ResourceKey<Block>> BLOCK_NAME_CODEC;
    public static final String SNBT_DATA_TAG = "data";
    private static final char PROPERTIES_START = '{';
    private static final char PROPERTIES_END = '}';
    private static final String ELEMENT_SEPARATOR = ",";
    private static final char KEY_VALUE_SEPARATOR = ':';
-   private static final Splitter COMMA_SPLITTER = Splitter.on(",");
-   private static final Splitter COLON_SPLITTER = Splitter.on(':').limit(2);
-   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Splitter COMMA_SPLITTER;
+   private static final Splitter COLON_SPLITTER;
+   private static final Logger LOGGER;
    private static final int INDENT = 2;
    private static final int NOT_FOUND = -1;
 
@@ -74,9 +74,9 @@ public final class NbtUtils {
          if (var11.size() < var3.size()) {
             return false;
          } else {
-            for(String var13 : var3.getAllKeys()) {
-               Tag var14 = var3.get(var13);
-               if (!compareNbt(var14, var11.get(var13), var2)) {
+            for(Map.Entry var13 : var3.entrySet()) {
+               Tag var14 = (Tag)var13.getValue();
+               if (!compareNbt(var14, var11.get((String)var13.getKey()), var2)) {
                   return false;
                }
             }
@@ -119,67 +119,39 @@ public final class NbtUtils {
       }
    }
 
-   public static IntArrayTag createUUID(UUID var0) {
-      return new IntArrayTag(UUIDUtil.uuidToIntArray(var0));
-   }
-
-   public static UUID loadUUID(Tag var0) {
-      if (var0.getType() != IntArrayTag.TYPE) {
-         String var10002 = IntArrayTag.TYPE.getName();
-         throw new IllegalArgumentException("Expected UUID-Tag to be of type " + var10002 + ", but found " + var0.getType().getName() + ".");
-      } else {
-         int[] var1 = ((IntArrayTag)var0).getAsIntArray();
-         if (var1.length != 4) {
-            throw new IllegalArgumentException("Expected UUID-Array to be of length 4, but found " + var1.length + ".");
-         } else {
-            return UUIDUtil.uuidFromIntArray(var1);
-         }
-      }
-   }
-
-   public static Optional<BlockPos> readBlockPos(CompoundTag var0, String var1) {
-      int[] var2 = var0.getIntArray(var1);
-      return var2.length == 3 ? Optional.of(new BlockPos(var2[0], var2[1], var2[2])) : Optional.empty();
-   }
-
-   public static Tag writeBlockPos(BlockPos var0) {
-      return new IntArrayTag(new int[]{var0.getX(), var0.getY(), var0.getZ()});
-   }
-
    public static BlockState readBlockState(HolderGetter<Block> var0, CompoundTag var1) {
-      if (!var1.contains("Name", 8)) {
+      Optional var10000 = var1.read("Name", BLOCK_NAME_CODEC);
+      Objects.requireNonNull(var0);
+      Optional var2 = var10000.flatMap(var0::get);
+      if (var2.isEmpty()) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         ResourceLocation var2 = ResourceLocation.parse(var1.getString("Name"));
-         Optional var3 = var0.get(ResourceKey.create(Registries.BLOCK, var2));
-         if (var3.isEmpty()) {
-            return Blocks.AIR.defaultBlockState();
-         } else {
-            Block var4 = (Block)((Holder)var3.get()).value();
-            BlockState var5 = var4.defaultBlockState();
-            if (var1.contains("Properties", 10)) {
-               CompoundTag var6 = var1.getCompound("Properties");
-               StateDefinition var7 = var4.getStateDefinition();
+         Block var3 = (Block)((Holder)var2.get()).value();
+         BlockState var4 = var3.defaultBlockState();
+         Optional var5 = var1.getCompound("Properties");
+         if (var5.isPresent()) {
+            StateDefinition var6 = var3.getStateDefinition();
 
-               for(String var9 : var6.getAllKeys()) {
-                  Property var10 = var7.getProperty(var9);
-                  if (var10 != null) {
-                     var5 = (BlockState)setValueHelper(var5, var10, var9, var6, var1);
-                  }
+            for(String var8 : ((CompoundTag)var5.get()).keySet()) {
+               Property var9 = var6.getProperty(var8);
+               if (var9 != null) {
+                  var4 = (BlockState)setValueHelper(var4, var9, var8, (CompoundTag)var5.get(), var1);
                }
             }
-
-            return var5;
          }
+
+         return var4;
       }
    }
 
    private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(S var0, Property<T> var1, String var2, CompoundTag var3, CompoundTag var4) {
-      Optional var5 = var1.getValue(var3.getString(var2));
+      Optional var10000 = var3.getString(var2);
+      Objects.requireNonNull(var1);
+      Optional var5 = var10000.flatMap(var1::getValue);
       if (var5.isPresent()) {
          return (S)(var0.setValue(var1, (Comparable)var5.get()));
       } else {
-         LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", new Object[]{var2, var3.getString(var2), var4});
+         LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", new Object[]{var2, var3.get(var2), var4});
          return (S)var0;
       }
    }
@@ -233,182 +205,193 @@ public final class NbtUtils {
    }
 
    public static StringBuilder prettyPrint(StringBuilder var0, Tag var1, int var2, boolean var3) {
-      switch (var1.getId()) {
+      Objects.requireNonNull(var1);
+      byte var5 = 0;
+      StringBuilder var10000;
+      //$FF: var5->value
+      //0->net/minecraft/nbt/PrimitiveTag
+      //1->net/minecraft/nbt/EndTag
+      //2->net/minecraft/nbt/ByteArrayTag
+      //3->net/minecraft/nbt/ListTag
+      //4->net/minecraft/nbt/IntArrayTag
+      //5->net/minecraft/nbt/CompoundTag
+      //6->net/minecraft/nbt/LongArrayTag
+      switch (var1.typeSwitch<invokedynamic>(var1, var5)) {
          case 0:
+            PrimitiveTag var6 = (PrimitiveTag)var1;
+            var10000 = var0.append(var6);
             break;
          case 1:
-         case 2:
-         case 3:
-         case 4:
-         case 5:
-         case 6:
-         case 8:
-            var0.append(var1);
+            EndTag var7 = (EndTag)var1;
+            var10000 = var0;
             break;
-         case 7:
-            ByteArrayTag var16 = (ByteArrayTag)var1;
-            byte[] var20 = var16.getAsByteArray();
-            int var24 = var20.length;
-            indent(var2, var0).append("byte[").append(var24).append("] {\n");
+         case 2:
+            ByteArrayTag var8 = (ByteArrayTag)var1;
+            byte[] var21 = var8.getAsByteArray();
+            int var23 = var21.length;
+            indent(var2, var0).append("byte[").append(var23).append("] {\n");
             if (!var3) {
                indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
             } else {
                indent(var2 + 1, var0);
 
-               for(int var28 = 0; var28 < var20.length; ++var28) {
-                  if (var28 != 0) {
+               for(int var26 = 0; var26 < var21.length; ++var26) {
+                  if (var26 != 0) {
                      var0.append(',');
                   }
 
-                  if (var28 % 16 == 0 && var28 / 16 > 0) {
+                  if (var26 % 16 == 0 && var26 / 16 > 0) {
                      var0.append('\n');
-                     if (var28 < var20.length) {
+                     if (var26 < var21.length) {
                         indent(var2 + 1, var0);
                      }
-                  } else if (var28 != 0) {
+                  } else if (var26 != 0) {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format(Locale.ROOT, "0x%02X", var20[var28] & 255));
+                  var0.append(String.format(Locale.ROOT, "0x%02X", var21[var26] & 255));
                }
             }
 
             var0.append('\n');
             indent(var2, var0).append('}');
+            var10000 = var0;
             break;
-         case 9:
-            ListTag var15 = (ListTag)var1;
-            int var19 = var15.size();
-            byte var23 = var15.getElementType();
-            String var27 = var23 == 0 ? "undefined" : TagTypes.getType(var23).getPrettyName();
-            indent(var2, var0).append("list<").append(var27).append(">[").append(var19).append("] [");
-            if (var19 != 0) {
+         case 3:
+            ListTag var9 = (ListTag)var1;
+            int var22 = var9.size();
+            indent(var2, var0).append("list").append("[").append(var22).append("] [");
+            if (var22 != 0) {
                var0.append('\n');
             }
 
-            for(int var33 = 0; var33 < var19; ++var33) {
-               if (var33 != 0) {
+            for(int var25 = 0; var25 < var22; ++var25) {
+               if (var25 != 0) {
                   var0.append(",\n");
                }
 
                indent(var2 + 1, var0);
-               prettyPrint(var0, var15.get(var33), var2 + 1, var3);
+               prettyPrint(var0, var9.get(var25), var2 + 1, var3);
             }
 
-            if (var19 != 0) {
+            if (var22 != 0) {
                var0.append('\n');
             }
 
             indent(var2, var0).append(']');
+            var10000 = var0;
             break;
-         case 10:
-            CompoundTag var14 = (CompoundTag)var1;
-            ArrayList var18 = Lists.newArrayList(var14.getAllKeys());
-            Collections.sort(var18);
+         case 4:
+            IntArrayTag var10 = (IntArrayTag)var1;
+            int[] var24 = var10.getAsIntArray();
+            int var28 = 0;
+
+            for(int var38 : var24) {
+               var28 = Math.max(var28, String.format(Locale.ROOT, "%X", var38).length());
+            }
+
+            int var31 = var24.length;
+            indent(var2, var0).append("int[").append(var31).append("] {\n");
+            if (!var3) {
+               indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
+            } else {
+               indent(var2 + 1, var0);
+
+               for(int var34 = 0; var34 < var24.length; ++var34) {
+                  if (var34 != 0) {
+                     var0.append(',');
+                  }
+
+                  if (var34 % 16 == 0 && var34 / 16 > 0) {
+                     var0.append('\n');
+                     if (var34 < var24.length) {
+                        indent(var2 + 1, var0);
+                     }
+                  } else if (var34 != 0) {
+                     var0.append(' ');
+                  }
+
+                  var0.append(String.format(Locale.ROOT, "0x%0" + var28 + "X", var24[var34]));
+               }
+            }
+
+            var0.append('\n');
+            indent(var2, var0).append('}');
+            var10000 = var0;
+            break;
+         case 5:
+            CompoundTag var11 = (CompoundTag)var1;
+            ArrayList var27 = Lists.newArrayList(var11.keySet());
+            Collections.sort(var27);
             indent(var2, var0).append('{');
             if (var0.length() - var0.lastIndexOf("\n") > 2 * (var2 + 1)) {
                var0.append('\n');
                indent(var2 + 1, var0);
             }
 
-            int var22 = var18.stream().mapToInt(String::length).max().orElse(0);
-            String var26 = Strings.repeat(" ", var22);
+            int var29 = var27.stream().mapToInt(String::length).max().orElse(0);
+            String var32 = Strings.repeat(" ", var29);
 
-            for(int var32 = 0; var32 < var18.size(); ++var32) {
-               if (var32 != 0) {
+            for(int var15 = 0; var15 < var27.size(); ++var15) {
+               if (var15 != 0) {
                   var0.append(",\n");
                }
 
-               String var35 = (String)var18.get(var32);
-               indent(var2 + 1, var0).append('"').append(var35).append('"').append(var26, 0, var26.length() - var35.length()).append(": ");
-               prettyPrint(var0, var14.get(var35), var2 + 1, var3);
+               String var37 = (String)var27.get(var15);
+               indent(var2 + 1, var0).append('"').append(var37).append('"').append(var32, 0, var32.length() - var37.length()).append(": ");
+               prettyPrint(var0, var11.get(var37), var2 + 1, var3);
             }
 
-            if (!var18.isEmpty()) {
+            if (!var27.isEmpty()) {
                var0.append('\n');
             }
 
             indent(var2, var0).append('}');
+            var10000 = var0;
             break;
-         case 11:
-            IntArrayTag var13 = (IntArrayTag)var1;
-            int[] var17 = var13.getAsIntArray();
-            int var21 = 0;
+         case 6:
+            LongArrayTag var12 = (LongArrayTag)var1;
+            long[] var13 = var12.getAsLongArray();
+            long var14 = 0L;
 
-            for(int var37 : var17) {
-               var21 = Math.max(var21, String.format(Locale.ROOT, "%X", var37).length());
+            for(long var19 : var13) {
+               var14 = Math.max(var14, (long)String.format(Locale.ROOT, "%X", var19).length());
             }
 
-            int var25 = var17.length;
-            indent(var2, var0).append("int[").append(var25).append("] {\n");
+            long var36 = (long)var13.length;
+            indent(var2, var0).append("long[").append(var36).append("] {\n");
             if (!var3) {
                indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
             } else {
                indent(var2 + 1, var0);
 
-               for(int var31 = 0; var31 < var17.length; ++var31) {
-                  if (var31 != 0) {
+               for(int var39 = 0; var39 < var13.length; ++var39) {
+                  if (var39 != 0) {
                      var0.append(',');
                   }
 
-                  if (var31 % 16 == 0 && var31 / 16 > 0) {
+                  if (var39 % 16 == 0 && var39 / 16 > 0) {
                      var0.append('\n');
-                     if (var31 < var17.length) {
+                     if (var39 < var13.length) {
                         indent(var2 + 1, var0);
                      }
-                  } else if (var31 != 0) {
+                  } else if (var39 != 0) {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format(Locale.ROOT, "0x%0" + var21 + "X", var17[var31]));
+                  var0.append(String.format(Locale.ROOT, "0x%0" + var14 + "X", var13[var39]));
                }
             }
 
             var0.append('\n');
             indent(var2, var0).append('}');
-            break;
-         case 12:
-            LongArrayTag var4 = (LongArrayTag)var1;
-            long[] var5 = var4.getAsLongArray();
-            long var6 = 0L;
-
-            for(long var11 : var5) {
-               var6 = Math.max(var6, (long)String.format(Locale.ROOT, "%X", var11).length());
-            }
-
-            long var29 = (long)var5.length;
-            indent(var2, var0).append("long[").append(var29).append("] {\n");
-            if (!var3) {
-               indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
-            } else {
-               indent(var2 + 1, var0);
-
-               for(int var36 = 0; var36 < var5.length; ++var36) {
-                  if (var36 != 0) {
-                     var0.append(',');
-                  }
-
-                  if (var36 % 16 == 0 && var36 / 16 > 0) {
-                     var0.append('\n');
-                     if (var36 < var5.length) {
-                        indent(var2 + 1, var0);
-                     }
-                  } else if (var36 != 0) {
-                     var0.append(' ');
-                  }
-
-                  var0.append(String.format(Locale.ROOT, "0x%0" + var6 + "X", var5[var36]));
-               }
-            }
-
-            var0.append('\n');
-            indent(var2, var0).append('}');
+            var10000 = var0;
             break;
          default:
-            var0.append("<UNKNOWN :(>");
+            throw new MatchException((String)null, (Throwable)null);
       }
 
-      return var0;
+      return var10000;
    }
 
    private static StringBuilder indent(int var0, StringBuilder var1) {
@@ -431,33 +414,28 @@ public final class NbtUtils {
    }
 
    public static CompoundTag snbtToStructure(String var0) throws CommandSyntaxException {
-      return unpackStructureTemplate(TagParser.parseTag(var0));
+      return unpackStructureTemplate(TagParser.parseCompoundFully(var0));
    }
 
    @VisibleForTesting
    static CompoundTag packStructureTemplate(CompoundTag var0) {
-      boolean var2 = var0.contains("palettes", 9);
+      Optional var2 = var0.getList("palettes");
       ListTag var1;
-      if (var2) {
-         var1 = var0.getList("palettes", 9).getList(0);
+      if (var2.isPresent()) {
+         var1 = ((ListTag)var2.get()).getListOrEmpty(0);
       } else {
-         var1 = var0.getList("palette", 10);
+         var1 = var0.getListOrEmpty("palette");
       }
 
-      Stream var10000 = var1.stream();
-      Objects.requireNonNull(CompoundTag.class);
-      ListTag var3 = (ListTag)var10000.map(CompoundTag.class::cast).map(NbtUtils::packBlockState).map(StringTag::valueOf).collect(Collectors.toCollection(ListTag::new));
+      ListTag var3 = (ListTag)var1.compoundStream().map(NbtUtils::packBlockState).map(StringTag::valueOf).collect(Collectors.toCollection(ListTag::new));
       var0.put("palette", var3);
-      if (var2) {
+      if (var2.isPresent()) {
          ListTag var4 = new ListTag();
-         ListTag var5 = var0.getList("palettes", 9);
-         var10000 = var5.stream();
-         Objects.requireNonNull(ListTag.class);
-         var10000.map(ListTag.class::cast).forEach((var2x) -> {
+         ((ListTag)var2.get()).stream().flatMap((var0x) -> var0x.asList().stream()).forEach((var2x) -> {
             CompoundTag var3x = new CompoundTag();
 
             for(int var4x = 0; var4x < var2x.size(); ++var4x) {
-               var3x.putString(var3.getString(var4x), packBlockState(var2x.getCompound(var4x)));
+               var3x.putString((String)var3.getString(var4x).orElseThrow(), packBlockState((CompoundTag)var2x.getCompound(var4x).orElseThrow()));
             }
 
             var4.add(var3x);
@@ -465,17 +443,13 @@ public final class NbtUtils {
          var0.put("palettes", var4);
       }
 
-      if (var0.contains("entities", 9)) {
-         ListTag var6 = var0.getList("entities", 10);
-         var10000 = var6.stream();
-         Objects.requireNonNull(CompoundTag.class);
-         ListTag var8 = (ListTag)var10000.map(CompoundTag.class::cast).sorted(Comparator.comparing((var0x) -> var0x.getList("pos", 6), YXZ_LISTTAG_DOUBLE_COMPARATOR)).collect(Collectors.toCollection(ListTag::new));
-         var0.put("entities", var8);
+      Optional var6 = var0.getList("entities");
+      if (var6.isPresent()) {
+         ListTag var5 = (ListTag)((ListTag)var6.get()).compoundStream().sorted(Comparator.comparing((var0x) -> var0x.getList("pos"), Comparators.emptiesLast(YXZ_LISTTAG_DOUBLE_COMPARATOR))).collect(Collectors.toCollection(ListTag::new));
+         var0.put("entities", var5);
       }
 
-      var10000 = var0.getList("blocks", 10).stream();
-      Objects.requireNonNull(CompoundTag.class);
-      ListTag var7 = (ListTag)var10000.map(CompoundTag.class::cast).sorted(Comparator.comparing((var0x) -> var0x.getList("pos", 3), YXZ_LISTTAG_INT_COMPARATOR)).peek((var1x) -> var1x.putString("state", var3.getString(var1x.getInt("state")))).collect(Collectors.toCollection(ListTag::new));
+      ListTag var7 = (ListTag)var0.getList("blocks").stream().flatMap(ListTag::compoundStream).sorted(Comparator.comparing((var0x) -> var0x.getList("pos"), Comparators.emptiesLast(YXZ_LISTTAG_INT_COMPARATOR))).peek((var1x) -> var1x.putString("state", (String)var3.getString(var1x.getIntOr("state", 0)).orElseThrow())).collect(Collectors.toCollection(ListTag::new));
       var0.put("data", var7);
       var0.remove("blocks");
       return var0;
@@ -483,45 +457,39 @@ public final class NbtUtils {
 
    @VisibleForTesting
    static CompoundTag unpackStructureTemplate(CompoundTag var0) {
-      ListTag var1 = var0.getList("palette", 8);
-      Stream var10000 = var1.stream();
-      Objects.requireNonNull(StringTag.class);
-      Map var2 = (Map)var10000.map(StringTag.class::cast).map(StringTag::getAsString).collect(ImmutableMap.toImmutableMap(Function.identity(), NbtUtils::unpackBlockState));
-      if (var0.contains("palettes", 9)) {
-         Stream var10002 = var0.getList("palettes", 10).stream();
-         Objects.requireNonNull(CompoundTag.class);
-         var0.put("palettes", (Tag)var10002.map(CompoundTag.class::cast).map((var1x) -> {
-            Stream var10000 = var2.keySet().stream();
-            Objects.requireNonNull(var1x);
-            return (ListTag)var10000.map(var1x::getString).map(NbtUtils::unpackBlockState).collect(Collectors.toCollection(ListTag::new));
-         }).collect(Collectors.toCollection(ListTag::new)));
+      ListTag var1 = var0.getListOrEmpty("palette");
+      Map var2 = (Map)var1.stream().flatMap((var0x) -> var0x.asString().stream()).collect(ImmutableMap.toImmutableMap(Function.identity(), NbtUtils::unpackBlockState));
+      Optional var3 = var0.getList("palettes");
+      if (var3.isPresent()) {
+         var0.put("palettes", (Tag)((ListTag)var3.get()).compoundStream().map((var1x) -> (ListTag)var2.keySet().stream().map((var1) -> (String)var1x.getString(var1).orElseThrow()).map(NbtUtils::unpackBlockState).collect(Collectors.toCollection(ListTag::new))).collect(Collectors.toCollection(ListTag::new)));
          var0.remove("palette");
       } else {
          var0.put("palette", (Tag)var2.values().stream().collect(Collectors.toCollection(ListTag::new)));
       }
 
-      if (var0.contains("data", 9)) {
-         Object2IntOpenHashMap var3 = new Object2IntOpenHashMap();
-         var3.defaultReturnValue(-1);
+      Optional var4 = var0.getList("data");
+      if (var4.isPresent()) {
+         Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
+         var5.defaultReturnValue(-1);
 
-         for(int var4 = 0; var4 < var1.size(); ++var4) {
-            var3.put(var1.getString(var4), var4);
+         for(int var6 = 0; var6 < var1.size(); ++var6) {
+            var5.put((String)var1.getString(var6).orElseThrow(), var6);
          }
 
-         ListTag var9 = var0.getList("data", 10);
+         ListTag var11 = (ListTag)var4.get();
 
-         for(int var5 = 0; var5 < var9.size(); ++var5) {
-            CompoundTag var6 = var9.getCompound(var5);
-            String var7 = var6.getString("state");
-            int var8 = var3.getInt(var7);
-            if (var8 == -1) {
-               throw new IllegalStateException("Entry " + var7 + " missing from palette");
+         for(int var7 = 0; var7 < var11.size(); ++var7) {
+            CompoundTag var8 = (CompoundTag)var11.getCompound(var7).orElseThrow();
+            String var9 = (String)var8.getString("state").orElseThrow();
+            int var10 = var5.getInt(var9);
+            if (var10 == -1) {
+               throw new IllegalStateException("Entry " + var9 + " missing from palette");
             }
 
-            var6.putInt("state", var8);
+            var8.putInt("state", var10);
          }
 
-         var0.put("blocks", var9);
+         var0.put("blocks", var11);
          var0.remove("data");
       }
 
@@ -530,13 +498,14 @@ public final class NbtUtils {
 
    @VisibleForTesting
    static String packBlockState(CompoundTag var0) {
-      StringBuilder var1 = new StringBuilder(var0.getString("Name"));
-      if (var0.contains("Properties", 10)) {
-         CompoundTag var2 = var0.getCompound("Properties");
-         String var3 = (String)var2.getAllKeys().stream().sorted().map((var1x) -> var1x + ":" + var2.get(var1x).getAsString()).collect(Collectors.joining(","));
-         var1.append('{').append(var3).append('}');
-      }
-
+      StringBuilder var1 = new StringBuilder((String)var0.getString("Name").orElseThrow());
+      var0.getCompound("Properties").ifPresent((var1x) -> {
+         String var2 = (String)var1x.entrySet().stream().sorted(Entry.comparingByKey()).map((var0) -> {
+            String var10000 = (String)var0.getKey();
+            return var10000 + ":" + (String)((Tag)var0.getValue()).asString().orElseThrow();
+         }).collect(Collectors.joining(","));
+         var1.append('{').append(var2).append('}');
+      });
       return var1.toString();
    }
 
@@ -580,6 +549,17 @@ public final class NbtUtils {
    }
 
    public static int getDataVersion(CompoundTag var0, int var1) {
-      return var0.contains("DataVersion", 99) ? var0.getInt("DataVersion") : var1;
+      return var0.getIntOr("DataVersion", var1);
+   }
+
+   public static int getDataVersion(Dynamic<?> var0, int var1) {
+      return var0.get("DataVersion").asInt(var1);
+   }
+
+   static {
+      BLOCK_NAME_CODEC = ResourceKey.codec(Registries.BLOCK);
+      COMMA_SPLITTER = Splitter.on(",");
+      COLON_SPLITTER = Splitter.on(':').limit(2);
+      LOGGER = LogUtils.getLogger();
    }
 }

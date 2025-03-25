@@ -14,31 +14,29 @@ public abstract class FlyingMob extends Mob {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance()) {
-         if (this.isInWater()) {
-            this.moveRelative(0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
-         } else if (this.isInLava()) {
-            this.moveRelative(0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
-         } else {
-            float var2 = 0.91F;
-            if (this.onGround()) {
-               var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.91F;
-            }
-
-            float var3 = 0.16277137F / (var2 * var2 * var2);
-            var2 = 0.91F;
-            if (this.onGround()) {
-               var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.91F;
-            }
-
-            this.moveRelative(this.onGround() ? 0.1F * var3 : 0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale((double)var2));
+      if (this.isInWater()) {
+         this.moveRelative(0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
+      } else if (this.isInLava()) {
+         this.moveRelative(0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
+      } else {
+         float var2 = 0.91F;
+         if (this.onGround()) {
+            var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.91F;
          }
+
+         float var3 = 0.16277137F / (var2 * var2 * var2);
+         var2 = 0.91F;
+         if (this.onGround()) {
+            var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.91F;
+         }
+
+         this.moveRelative(this.onGround() ? 0.1F * var3 : 0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale((double)var2));
       }
 
    }

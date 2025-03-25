@@ -23,11 +23,11 @@ public class V1451_3 extends NamespacedSchema {
       var1.registerSimple(var2, "minecraft:wither_skull");
       var1.registerSimple(var2, "minecraft:xp_bottle");
       var1.register(var2, "minecraft:arrow", () -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1)));
-      var1.register(var2, "minecraft:enderman", () -> DSL.optionalFields("carriedBlockState", References.BLOCK_STATE.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:enderman", () -> DSL.optionalFields("carriedBlockState", References.BLOCK_STATE.in(var1)));
       var1.register(var2, "minecraft:falling_block", () -> DSL.optionalFields("BlockState", References.BLOCK_STATE.in(var1), "TileEntityData", References.BLOCK_ENTITY.in(var1)));
       var1.register(var2, "minecraft:spectral_arrow", () -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1)));
       var1.register(var2, "minecraft:chest_minecart", () -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), "Items", DSL.list(References.ITEM_STACK.in(var1))));
-      var1.register(var2, "minecraft:commandblock_minecart", () -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1)));
+      var1.register(var2, "minecraft:commandblock_minecart", () -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), "LastOutput", References.TEXT_COMPONENT.in(var1)));
       var1.register(var2, "minecraft:furnace_minecart", () -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1)));
       var1.register(var2, "minecraft:hopper_minecart", () -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), "Items", DSL.list(References.ITEM_STACK.in(var1))));
       var1.register(var2, "minecraft:minecart", () -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1)));

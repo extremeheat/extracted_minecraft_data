@@ -52,10 +52,11 @@ public class Slime extends Mob implements Enemy {
    public static final int MIN_SIZE = 1;
    public static final int MAX_SIZE = 127;
    public static final int MAX_NATURAL_SIZE = 4;
+   private static final boolean DEFAULT_WAS_ON_GROUND = false;
    public float targetSquish;
    public float squish;
    public float oSquish;
-   private boolean wasOnGround;
+   private boolean wasOnGround = false;
 
    public Slime(EntityType<? extends Slime> var1, Level var2) {
       super(var1, var2);
@@ -108,9 +109,9 @@ public class Slime extends Mob implements Enemy {
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.setSize(var1.getInt("Size") + 1, false);
+      this.setSize(var1.getIntOr("Size", 0) + 1, false);
       super.readAdditionalSaveData(var1);
-      this.wasOnGround = var1.getBoolean("wasOnGround");
+      this.wasOnGround = var1.getBooleanOr("wasOnGround", false);
    }
 
    public boolean isTiny() {
@@ -198,7 +199,7 @@ public class Slime extends Mob implements Enemy {
             float var10 = ((float)(var8 / 2) - 0.5F) * var4;
             this.convertTo(this.getType(), new ConversionParams(ConversionType.SPLIT_ON_DEATH, false, false, var7), EntitySpawnReason.TRIGGERED, (var4x) -> {
                var4x.setSize(var5, true);
-               var4x.moveTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
+               var4x.snapTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
             });
          }
       }

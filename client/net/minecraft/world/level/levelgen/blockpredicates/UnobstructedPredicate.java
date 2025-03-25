@@ -21,7 +21,7 @@ record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
    }
 
    public boolean test(WorldGenLevel var1, BlockPos var2) {
-      return var1.isUnobstructed((Entity)null, Shapes.block().move((double)var2.getX(), (double)var2.getY(), (double)var2.getZ()));
+      return var1.isUnobstructed((Entity)null, Shapes.block().move((Vec3i)var2));
    }
 
    // $FF: synthetic method

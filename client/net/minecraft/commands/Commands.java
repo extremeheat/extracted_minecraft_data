@@ -209,6 +209,7 @@ public class Commands {
       TeamMsgCommand.register(this.dispatcher);
       TeleportCommand.register(this.dispatcher);
       TellRawCommand.register(this.dispatcher, var2);
+      TestCommand.register(this.dispatcher, var2);
       TickCommand.register(this.dispatcher);
       TimeCommand.register(this.dispatcher);
       TitleCommand.register(this.dispatcher, var2);
@@ -220,7 +221,6 @@ public class Commands {
       }
 
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         TestCommand.register(this.dispatcher);
          RaidCommand.register(this.dispatcher, var2);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);
@@ -288,7 +288,7 @@ public class Commands {
             }
          }
 
-         var3.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var6)))));
+         var3.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(var6)))));
          if (SharedConstants.IS_RUNNING_IN_IDE) {
             var3.sendFailure(Component.literal(Util.describeError(var12)));
             LOGGER.error("'/{}' threw an exception", var2, var12);
@@ -308,7 +308,7 @@ public class Commands {
          var2.sendFailure(ComponentUtils.fromMessage(var7.getRawMessage()));
          if (var7.getInput() != null && var7.getCursor() >= 0) {
             int var4 = Math.min(var7.getInput().length(), var7.getCursor());
-            MutableComponent var5 = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + var1))));
+            MutableComponent var5 = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.SuggestCommand("/" + var1))));
             if (var4 > 10) {
                var5.append(CommonComponents.ELLIPSIS);
             }

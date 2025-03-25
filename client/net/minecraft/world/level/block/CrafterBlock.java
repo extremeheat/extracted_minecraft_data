@@ -139,9 +139,8 @@ public class CrafterBlock extends BaseEntityBlock {
 
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
-      super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {

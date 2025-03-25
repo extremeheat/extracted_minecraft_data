@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePacketListener> {
    private static final int FLAG_ON_GROUND = 1;
@@ -97,6 +98,10 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
    public static class PosRot extends ServerboundMovePlayerPacket {
       public static final StreamCodec<FriendlyByteBuf, PosRot> STREAM_CODEC = Packet.<FriendlyByteBuf, PosRot>codec(PosRot::write, PosRot::read);
 
+      public PosRot(Vec3 var1, float var2, float var3, boolean var4, boolean var5) {
+         super(var1.x, var1.y, var1.z, var2, var3, var4, var5, true, true);
+      }
+
       public PosRot(double var1, double var3, double var5, float var7, float var8, boolean var9, boolean var10) {
          super(var1, var3, var5, var7, var8, var9, var10, true, true);
       }
@@ -129,6 +134,10 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
 
    public static class Pos extends ServerboundMovePlayerPacket {
       public static final StreamCodec<FriendlyByteBuf, Pos> STREAM_CODEC = Packet.<FriendlyByteBuf, Pos>codec(Pos::write, Pos::read);
+
+      public Pos(Vec3 var1, boolean var2, boolean var3) {
+         super(var1.x, var1.y, var1.z, 0.0F, 0.0F, var2, var3, true, false);
+      }
 
       public Pos(double var1, double var3, double var5, boolean var7, boolean var8) {
          super(var1, var3, var5, 0.0F, 0.0F, var7, var8, true, false);

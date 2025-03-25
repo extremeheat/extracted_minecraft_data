@@ -1,15 +1,14 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.mojang.datafixers.DSL;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
+import com.mojang.serialization.Dynamic;
 
-public class FilteredSignsFix extends NamedEntityFix {
+public class FilteredSignsFix extends NamedEntityWriteReadFix {
    public FilteredSignsFix(Schema var1) {
       super(var1, false, "Remove filtered text from signs", References.BLOCK_ENTITY, "minecraft:sign");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> var0.remove("FilteredText1").remove("FilteredText2").remove("FilteredText3").remove("FilteredText4"));
+   protected <T> Dynamic<T> fix(Dynamic<T> var1) {
+      return var1.remove("FilteredText1").remove("FilteredText2").remove("FilteredText3").remove("FilteredText4");
    }
 }

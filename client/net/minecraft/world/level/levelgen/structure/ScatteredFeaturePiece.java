@@ -24,10 +24,10 @@ public abstract class ScatteredFeaturePiece extends StructurePiece {
 
    protected ScatteredFeaturePiece(StructurePieceType var1, CompoundTag var2) {
       super(var1, var2);
-      this.width = var2.getInt("Width");
-      this.height = var2.getInt("Height");
-      this.depth = var2.getInt("Depth");
-      this.heightPosition = var2.getInt("HPos");
+      this.width = var2.getIntOr("Width", 0);
+      this.height = var2.getIntOr("Height", 0);
+      this.depth = var2.getIntOr("Depth", 0);
+      this.heightPosition = var2.getIntOr("HPos", 0);
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

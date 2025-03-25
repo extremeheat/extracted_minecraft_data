@@ -52,5 +52,6 @@ public class Main {
       DataGenerator.PackGenerator var2 = var0.getVanillaPack(var1);
       var2.addProvider(ModelProvider::new);
       var2.addProvider(EquipmentAssetProvider::new);
+      var2.addProvider(AtlasProvider::new);
    }
 }

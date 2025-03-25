@@ -7,7 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -23,10 +23,9 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class SeagrassBlock extends BushBlock implements BonemealableBlock, LiquidBlockContainer {
+public class SeagrassBlock extends VegetationBlock implements BonemealableBlock, LiquidBlockContainer {
    public static final MapCodec<SeagrassBlock> CODEC = simpleCodec(SeagrassBlock::new);
-   protected static final float AABB_OFFSET = 6.0F;
-   protected static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 12.0, 14.0);
+   private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 12.0);
 
    public MapCodec<SeagrassBlock> codec() {
       return CODEC;
@@ -79,7 +78,7 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
       var1.setBlock(var7, var6, 2);
    }
 
-   public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return false;
    }
 

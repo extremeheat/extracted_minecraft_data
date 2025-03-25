@@ -23,6 +23,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -227,7 +228,8 @@ public class BundleItem extends Item {
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
-      return !var1.has(DataComponents.HIDE_TOOLTIP) && !var1.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP) ? Optional.ofNullable((BundleContents)var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new) : Optional.empty();
+      TooltipDisplay var2 = (TooltipDisplay)var1.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+      return !var2.shows(DataComponents.BUNDLE_CONTENTS) ? Optional.empty() : Optional.ofNullable((BundleContents)var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new);
    }
 
    public void onDestroyed(ItemEntity var1) {
@@ -280,7 +282,7 @@ public class BundleItem extends Item {
    }
 
    private static void playDropContentsSound(Level var0, Entity var1) {
-      var0.playSound((Player)null, (BlockPos)var1.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
+      var0.playSound((Entity)null, (BlockPos)var1.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
    }
 
    private void broadcastChangesOnContainerMenu(Player var1) {

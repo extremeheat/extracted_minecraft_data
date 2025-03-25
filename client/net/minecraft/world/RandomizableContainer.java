@@ -3,10 +3,8 @@ package net.minecraft.world;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -52,18 +50,10 @@ public interface RandomizableContainer extends Container {
    }
 
    default boolean tryLoadLootTable(CompoundTag var1) {
-      if (var1.contains("LootTable", 8)) {
-         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("LootTable"))));
-         if (var1.contains("LootTableSeed", 4)) {
-            this.setLootTableSeed(var1.getLong("LootTableSeed"));
-         } else {
-            this.setLootTableSeed(0L);
-         }
-
-         return true;
-      } else {
-         return false;
-      }
+      ResourceKey var2 = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
+      this.setLootTable(var2);
+      this.setLootTableSeed(var1.getLongOr("LootTableSeed", 0L));
+      return var2 != null;
    }
 
    default boolean trySaveLootTable(CompoundTag var1) {
@@ -71,7 +61,7 @@ public interface RandomizableContainer extends Container {
       if (var2 == null) {
          return false;
       } else {
-         var1.putString("LootTable", var2.location().toString());
+         var1.store("LootTable", LootTable.KEY_CODEC, var2);
          long var3 = this.getLootTableSeed();
          if (var3 != 0L) {
             var1.putLong("LootTableSeed", var3);

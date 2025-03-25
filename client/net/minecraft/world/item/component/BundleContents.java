@@ -63,7 +63,7 @@ public final class BundleContents implements TooltipComponent {
       if (var1 != null) {
          return BUNDLE_IN_BUNDLE_WEIGHT.add(var1.weight());
       } else {
-         List var2 = (List)var0.getOrDefault(DataComponents.BEES, List.of());
+         List var2 = ((Bees)var0.getOrDefault(DataComponents.BEES, Bees.EMPTY)).bees();
          return !var2.isEmpty() ? Fraction.ONE : Fraction.getFraction(1, var0.getMaxStackSize());
       }
    }
@@ -210,7 +210,11 @@ public final class BundleContents implements TooltipComponent {
       }
 
       public void toggleSelectedItem(int var1) {
-         this.selectedItem = this.selectedItem != var1 && var1 < this.items.size() ? var1 : -1;
+         this.selectedItem = this.selectedItem != var1 && !this.indexIsOutsideAllowedBounds(var1) ? var1 : -1;
+      }
+
+      private boolean indexIsOutsideAllowedBounds(int var1) {
+         return var1 < 0 || var1 >= this.items.size();
       }
 
       @Nullable
@@ -218,7 +222,7 @@ public final class BundleContents implements TooltipComponent {
          if (this.items.isEmpty()) {
             return null;
          } else {
-            int var1 = this.selectedItem != -1 && this.selectedItem < this.items.size() ? this.selectedItem : 0;
+            int var1 = this.indexIsOutsideAllowedBounds(this.selectedItem) ? 0 : this.selectedItem;
             ItemStack var2 = ((ItemStack)this.items.remove(var1)).copy();
             this.weight = this.weight.subtract(BundleContents.getWeight(var2).multiplyBy(Fraction.getFraction(var2.getCount(), 1)));
             this.toggleSelectedItem(-1);

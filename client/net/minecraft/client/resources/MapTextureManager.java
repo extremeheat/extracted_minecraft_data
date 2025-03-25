@@ -65,7 +65,7 @@ public class MapTextureManager implements AutoCloseable {
       MapInstance(final int var2, final MapItemSavedData var3) {
          super();
          this.data = var3;
-         this.texture = new DynamicTexture(128, 128, true);
+         this.texture = new DynamicTexture(() -> "Map " + var2, 128, 128, true);
          this.location = ResourceLocation.withDefaultNamespace("map/" + var2);
          MapTextureManager.this.textureManager.register(this.location, this.texture);
       }

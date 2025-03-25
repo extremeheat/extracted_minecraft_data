@@ -164,6 +164,9 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
       var0.updateNeighborsAt(var1, var2.getBlock());
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+   }
+
    public void startOpen(Player var1) {
       if (!this.remove && !var1.isSpectator()) {
          if (this.openCount < 0) {
@@ -174,7 +177,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount == 1) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_OPEN, this.worldPosition);
-            this.level.playSound((Player)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+            this.level.playSound((Entity)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
 
@@ -186,7 +189,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount <= 0) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_CLOSE, this.worldPosition);
-            this.level.playSound((Player)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_CLOSE, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+            this.level.playSound((Entity)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_CLOSE, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
 
@@ -211,7 +214,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    public void loadFromTag(CompoundTag var1, HolderLookup.Provider var2) {
       this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var1) && var1.contains("Items", 9)) {
+      if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.itemStacks, var2);
       }
 

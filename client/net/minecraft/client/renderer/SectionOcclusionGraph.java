@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ChunkTrackingView;
 import net.minecraft.util.Mth;
@@ -34,12 +35,14 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 import org.slf4j.Logger;
 
 public class SectionOcclusionGraph {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Direction[] DIRECTIONS = Direction.values();
    private static final int MINIMUM_ADVANCED_CULLING_DISTANCE = 60;
+   private static final int MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE = SectionPos.blockToSectionCoord(60);
    private static final double CEILED_SECTION_DIAGONAL = Math.ceil(Math.sqrt(3.0) * 16.0);
    private boolean needsFullUpdate = true;
    @Nullable
@@ -237,7 +240,7 @@ public class SectionOcclusionGraph {
             }
          }
 
-         var12.sort(Comparator.comparingDouble((var1x) -> var3.distSqr(var1x.section.getOrigin().offset(8, 8, 8))));
+         var12.sort(Comparator.comparingDouble((var1x) -> var3.distSqr(SectionPos.of(var1x.section.getSectionNode()).center())));
          var2.addAll(var12);
       } else {
          var2.add(new Node(var7, (Direction)null, 0));
@@ -246,136 +249,86 @@ public class SectionOcclusionGraph {
    }
 
    private void runUpdates(GraphStorage var1, Vec3 var2, Queue<Node> var3, boolean var4, Consumer<SectionRenderDispatcher.RenderSection> var5, LongOpenHashSet var6) {
-      boolean var7 = true;
-      BlockPos var8 = new BlockPos(Mth.floor(var2.x / 16.0) * 16, Mth.floor(var2.y / 16.0) * 16, Mth.floor(var2.z / 16.0) * 16);
-      long var9 = SectionPos.asLong(var8);
-      BlockPos var11 = var8.offset(8, 8, 8);
+      SectionPos var7 = SectionPos.of((Position)var2);
+      long var8 = var7.asLong();
+      BlockPos var10 = var7.center();
 
       while(!var3.isEmpty()) {
-         Node var12 = (Node)var3.poll();
-         SectionRenderDispatcher.RenderSection var13 = var12.section;
-         if (!var6.contains(var12.section.getSectionNode())) {
-            if (var1.sectionTree.add(var12.section)) {
-               var5.accept(var12.section);
+         Node var11 = (Node)var3.poll();
+         SectionRenderDispatcher.RenderSection var12 = var11.section;
+         if (!var6.contains(var11.section.getSectionNode())) {
+            if (var1.sectionTree.add(var11.section)) {
+               var5.accept(var11.section);
             }
          } else {
-            var12.section.compiled.compareAndSet(SectionRenderDispatcher.CompiledSection.UNCOMPILED, SectionRenderDispatcher.CompiledSection.EMPTY);
+            var11.section.compiled.compareAndSet(SectionRenderDispatcher.CompiledSection.UNCOMPILED, SectionRenderDispatcher.CompiledSection.EMPTY);
          }
 
-         boolean var14 = Math.abs(var13.getOrigin().getX() - var8.getX()) > 60 || Math.abs(var13.getOrigin().getY() - var8.getY()) > 60 || Math.abs(var13.getOrigin().getZ() - var8.getZ()) > 60;
+         long var13 = var12.getSectionNode();
+         boolean var15 = Math.abs(SectionPos.x(var13) - var7.x()) > MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE || Math.abs(SectionPos.y(var13) - var7.y()) > MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE || Math.abs(SectionPos.z(var13) - var7.z()) > MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE;
 
-         for(Direction var18 : DIRECTIONS) {
-            SectionRenderDispatcher.RenderSection var19 = this.getRelativeFrom(var9, var13, var18);
-            if (var19 != null && (!var4 || !var12.hasDirection(var18.getOpposite()))) {
-               if (var4 && var12.hasSourceDirections()) {
-                  SectionRenderDispatcher.CompiledSection var20 = var13.getCompiled();
-                  boolean var21 = false;
+         for(Direction var19 : DIRECTIONS) {
+            SectionRenderDispatcher.RenderSection var20 = this.getRelativeFrom(var8, var12, var19);
+            if (var20 != null && (!var4 || !var11.hasDirection(var19.getOpposite()))) {
+               if (var4 && var11.hasSourceDirections()) {
+                  SectionRenderDispatcher.CompiledSection var21 = var12.getCompiled();
+                  boolean var22 = false;
 
-                  for(int var22 = 0; var22 < DIRECTIONS.length; ++var22) {
-                     if (var12.hasSourceDirection(var22) && var20.facesCanSeeEachother(DIRECTIONS[var22].getOpposite(), var18)) {
-                        var21 = true;
+                  for(int var23 = 0; var23 < DIRECTIONS.length; ++var23) {
+                     if (var11.hasSourceDirection(var23) && var21.facesCanSeeEachother(DIRECTIONS[var23].getOpposite(), var19)) {
+                        var22 = true;
                         break;
                      }
                   }
 
-                  if (!var21) {
+                  if (!var22) {
                      continue;
                   }
                }
 
-               if (var4 && var14) {
-                  BlockPos var27;
-                  byte var10001;
-                  label133: {
-                     label132: {
-                        var27 = var19.getOrigin();
-                        if (var18.getAxis() == Direction.Axis.X) {
-                           if (var11.getX() > var27.getX()) {
-                              break label132;
-                           }
-                        } else if (var11.getX() < var27.getX()) {
-                           break label132;
-                        }
+               if (var4 && var15) {
+                  int var32 = SectionPos.sectionToBlockCoord(SectionPos.x(var13));
+                  int var34 = SectionPos.sectionToBlockCoord(SectionPos.y(var13));
+                  int var36 = SectionPos.sectionToBlockCoord(SectionPos.z(var13));
+                  boolean var24 = var19.getAxis() == Direction.Axis.X ? var10.getX() > var32 : var10.getX() < var32;
+                  boolean var25 = var19.getAxis() == Direction.Axis.Y ? var10.getY() > var34 : var10.getY() < var34;
+                  boolean var26 = var19.getAxis() == Direction.Axis.Z ? var10.getZ() > var36 : var10.getZ() < var36;
+                  Vector3d var27 = new Vector3d((double)(var32 + (var24 ? 16 : 0)), (double)(var34 + (var25 ? 16 : 0)), (double)(var36 + (var26 ? 16 : 0)));
+                  Vector3d var28 = (new Vector3d(var2.x, var2.y, var2.z)).sub(var27).normalize().mul(CEILED_SECTION_DIAGONAL);
+                  boolean var29 = true;
 
-                        var10001 = 0;
-                        break label133;
-                     }
-
-                     var10001 = 16;
-                  }
-
-                  byte var10002;
-                  label125: {
-                     label124: {
-                        if (var18.getAxis() == Direction.Axis.Y) {
-                           if (var11.getY() > var27.getY()) {
-                              break label124;
-                           }
-                        } else if (var11.getY() < var27.getY()) {
-                           break label124;
-                        }
-
-                        var10002 = 0;
-                        break label125;
-                     }
-
-                     var10002 = 16;
-                  }
-
-                  byte var10003;
-                  label117: {
-                     label116: {
-                        if (var18.getAxis() == Direction.Axis.Z) {
-                           if (var11.getZ() > var27.getZ()) {
-                              break label116;
-                           }
-                        } else if (var11.getZ() < var27.getZ()) {
-                           break label116;
-                        }
-
-                        var10003 = 0;
-                        break label117;
-                     }
-
-                     var10003 = 16;
-                  }
-
-                  BlockPos var29 = var27.offset(var10001, var10002, var10003);
-                  Vec3 var31 = new Vec3((double)var29.getX(), (double)var29.getY(), (double)var29.getZ());
-                  Vec3 var23 = var2.subtract(var31).normalize().scale(CEILED_SECTION_DIAGONAL);
-                  boolean var24 = true;
-
-                  while(var2.subtract(var31).lengthSqr() > 3600.0) {
-                     var31 = var31.add(var23);
-                     LevelHeightAccessor var25 = this.viewArea.getLevelHeightAccessor();
-                     if (var31.y > (double)var25.getMaxY() || var31.y < (double)var25.getMinY()) {
+                  while(var27.distanceSquared(var2.x, var2.y, var2.z) > 3600.0) {
+                     var27.add(var28);
+                     LevelHeightAccessor var30 = this.viewArea.getLevelHeightAccessor();
+                     if (var27.y > (double)var30.getMaxY() || var27.y < (double)var30.getMinY()) {
                         break;
                      }
 
-                     SectionRenderDispatcher.RenderSection var26 = this.viewArea.getRenderSectionAt(BlockPos.containing(var31.x, var31.y, var31.z));
-                     if (var26 == null || var1.sectionToNodeMap.get(var26) == null) {
-                        var24 = false;
+                     SectionRenderDispatcher.RenderSection var31 = this.viewArea.getRenderSectionAt(BlockPos.containing(var27.x, var27.y, var27.z));
+                     if (var31 == null || var1.sectionToNodeMap.get(var31) == null) {
+                        var29 = false;
                         break;
                      }
                   }
 
-                  if (!var24) {
+                  if (!var29) {
                      continue;
                   }
                }
 
-               Node var28 = var1.sectionToNodeMap.get(var19);
-               if (var28 != null) {
-                  var28.addSourceDirection(var18);
+               Node var33 = var1.sectionToNodeMap.get(var20);
+               if (var33 != null) {
+                  var33.addSourceDirection(var19);
                } else {
-                  Node var30 = new Node(var19, var18, var12.step + 1);
-                  var30.setDirections(var12.directions, var18);
-                  if (var19.hasAllNeighbors()) {
-                     var3.add(var30);
-                     var1.sectionToNodeMap.put(var19, var30);
-                  } else if (this.isInViewDistance(var9, var19.getSectionNode())) {
-                     var1.sectionToNodeMap.put(var19, var30);
-                     ((List)var1.chunksWaitingForNeighbors.computeIfAbsent(ChunkPos.asLong(var19.getOrigin()), (var0) -> new ArrayList())).add(var19);
+                  Node var35 = new Node(var20, var19, var11.step + 1);
+                  var35.setDirections(var11.directions, var19);
+                  if (var20.hasAllNeighbors()) {
+                     var3.add(var35);
+                     var1.sectionToNodeMap.put(var20, var35);
+                  } else if (this.isInViewDistance(var8, var20.getSectionNode())) {
+                     var1.sectionToNodeMap.put(var20, var35);
+                     long var37 = SectionPos.sectionToChunk(var20.getSectionNode());
+                     ((List)var1.chunksWaitingForNeighbors.computeIfAbsent(var37, (var0) -> new ArrayList())).add(var20);
                   }
                }
             }

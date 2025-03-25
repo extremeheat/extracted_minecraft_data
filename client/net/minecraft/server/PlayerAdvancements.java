@@ -285,27 +285,27 @@ public class PlayerAdvancements {
       var3.trigger().removePlayerListener(this, new CriterionTrigger.Listener(var3.triggerInstance(), var1, var2));
    }
 
-   public void flushDirty(ServerPlayer var1) {
+   public void flushDirty(ServerPlayer var1, boolean var2) {
       if (this.isFirstPacket || !this.rootsToUpdate.isEmpty() || !this.progressChanged.isEmpty()) {
-         HashMap var2 = new HashMap();
-         HashSet var3 = new HashSet();
+         HashMap var3 = new HashMap();
          HashSet var4 = new HashSet();
+         HashSet var5 = new HashSet();
 
-         for(AdvancementNode var6 : this.rootsToUpdate) {
-            this.updateTreeVisibility(var6, var3, var4);
+         for(AdvancementNode var7 : this.rootsToUpdate) {
+            this.updateTreeVisibility(var7, var4, var5);
          }
 
          this.rootsToUpdate.clear();
 
-         for(AdvancementHolder var8 : this.progressChanged) {
-            if (this.visible.contains(var8)) {
-               var2.put(var8.id(), (AdvancementProgress)this.progress.get(var8));
+         for(AdvancementHolder var9 : this.progressChanged) {
+            if (this.visible.contains(var9)) {
+               var3.put(var9.id(), (AdvancementProgress)this.progress.get(var9));
             }
          }
 
          this.progressChanged.clear();
-         if (!var2.isEmpty() || !var3.isEmpty() || !var4.isEmpty()) {
-            var1.connection.send(new ClientboundUpdateAdvancementsPacket(this.isFirstPacket, var3, var4, var2));
+         if (!var3.isEmpty() || !var4.isEmpty() || !var5.isEmpty()) {
+            var1.connection.send(new ClientboundUpdateAdvancementsPacket(this.isFirstPacket, var4, var5, var3, var2));
          }
       }
 

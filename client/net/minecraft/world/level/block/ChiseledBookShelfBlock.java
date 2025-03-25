@@ -8,6 +8,7 @@ import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -16,6 +17,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -153,7 +155,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
          var2.awardStat(Stats.ITEM_USED.get(var4.getItem()));
          SoundEvent var6 = var4.is(Items.ENCHANTED_BOOK) ? SoundEvents.CHISELED_BOOKSHELF_INSERT_ENCHANTED : SoundEvents.CHISELED_BOOKSHELF_INSERT;
          var3.setItem(var5, var4.consumeAndReturn(1, var2));
-         var0.playSound((Player)null, (BlockPos)var1, var6, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Entity)null, (BlockPos)var1, var6, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
    }
 
@@ -161,7 +163,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       if (!var0.isClientSide) {
          ItemStack var5 = var3.removeItem(var4, 1);
          SoundEvent var6 = var5.is(Items.ENCHANTED_BOOK) ? SoundEvents.CHISELED_BOOKSHELF_PICKUP_ENCHANTED : SoundEvents.CHISELED_BOOKSHELF_PICKUP;
-         var0.playSound((Player)null, (BlockPos)var1, var6, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Entity)null, (BlockPos)var1, var6, SoundSource.BLOCKS, 1.0F, 1.0F);
          if (!var2.getInventory().add(var5)) {
             var2.drop(var5, false);
          }
@@ -182,36 +184,8 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       var10000.forEach((var1x) -> var1.add(var1x));
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         boolean var6;
-         label32: {
-            BlockEntity var7 = var2.getBlockEntity(var3);
-            if (var7 instanceof ChiseledBookShelfBlockEntity) {
-               ChiseledBookShelfBlockEntity var8 = (ChiseledBookShelfBlockEntity)var7;
-               if (!var8.isEmpty()) {
-                  for(int var9 = 0; var9 < 6; ++var9) {
-                     ItemStack var10 = var8.getItem(var9);
-                     if (!var10.isEmpty()) {
-                        Containers.dropItemStack(var2, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var10);
-                     }
-                  }
-
-                  var8.clearContent();
-                  var6 = true;
-                  break label32;
-               }
-            }
-
-            var6 = false;
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-         if (var6) {
-            var2.updateNeighbourForOutputSignal(var3, this);
-         }
-
-      }
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {

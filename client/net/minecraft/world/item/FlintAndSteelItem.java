@@ -31,7 +31,7 @@ public class FlintAndSteelItem extends Item {
       if (!CampfireBlock.canLight(var5) && !CandleBlock.canLight(var5) && !CandleCakeBlock.canLight(var5)) {
          BlockPos var6 = var4.relative(var1.getClickedFace());
          if (BaseFireBlock.canBePlacedAt(var3, var6, var1.getHorizontalDirection())) {
-            var3.playSound(var2, var6, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
+            var3.playSound(var2, (BlockPos)var6, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
             BlockState var7 = BaseFireBlock.getState(var3, var6);
             var3.setBlock(var6, var7, 11);
             var3.gameEvent(var2, GameEvent.BLOCK_PLACE, var4);
@@ -46,7 +46,7 @@ public class FlintAndSteelItem extends Item {
             return InteractionResult.FAIL;
          }
       } else {
-         var3.playSound(var2, var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
+         var3.playSound(var2, (BlockPos)var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
          var3.setBlock(var4, (BlockState)var5.setValue(BlockStateProperties.LIT, true), 11);
          var3.gameEvent(var2, GameEvent.BLOCK_CHANGE, var4);
          if (var2 != null) {

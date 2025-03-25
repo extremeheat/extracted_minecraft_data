@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
@@ -118,6 +119,26 @@ public class FallingLeavesParticle extends TextureSheetParticle {
       // $FF: synthetic method
       public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class TintedLeavesProvider implements ParticleProvider<ColorParticleOption> {
+      private final SpriteSet sprites;
+
+      public TintedLeavesProvider(SpriteSet var1) {
+         super();
+         this.sprites = var1;
+      }
+
+      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         FallingLeavesParticle var15 = new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
+         ((Particle)var15).setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
+         return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((ColorParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,10 +33,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class CandleCakeBlock extends AbstractCandleBlock {
    public static final MapCodec<CandleCakeBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("candle").forGetter((var0x) -> var0x.candleBlock), propertiesCodec()).apply(var0, CandleCakeBlock::new));
    public static final BooleanProperty LIT;
-   protected static final float AABB_OFFSET = 1.0F;
-   protected static final VoxelShape CAKE_SHAPE;
-   protected static final VoxelShape CANDLE_SHAPE;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    private static final Map<CandleBlock, CandleCakeBlock> BY_CANDLE;
    private static final Iterable<Vec3> PARTICLE_OFFSETS;
    private final CandleBlock candleBlock;
@@ -129,10 +126,8 @@ public class CandleCakeBlock extends AbstractCandleBlock {
 
    static {
       LIT = AbstractCandleBlock.LIT;
-      CAKE_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 8.0, 15.0);
-      CANDLE_SHAPE = Block.box(7.0, 8.0, 7.0, 9.0, 14.0, 9.0);
-      SHAPE = Shapes.or(CAKE_SHAPE, CANDLE_SHAPE);
+      SHAPE = Shapes.or(Block.column(2.0, 8.0, 14.0), Block.column(14.0, 0.0, 8.0));
       BY_CANDLE = Maps.newHashMap();
-      PARTICLE_OFFSETS = ImmutableList.of(new Vec3(0.5, 1.0, 0.5));
+      PARTICLE_OFFSETS = List.of((new Vec3(8.0, 16.0, 8.0)).scale(0.0625));
    }
 }

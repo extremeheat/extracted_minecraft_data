@@ -2,6 +2,7 @@ package net.minecraft.world.entity.projectile;
 
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +20,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    public static final int ATTACK_DURATION = 20;
    public static final int LIFE_OFFSET = 2;
    public static final int ATTACK_TRIGGER_TICKS = 14;
+   private static final int DEFAULT_WARMUP_DELAY = 0;
    private int warmupDelayTicks;
    private boolean sentSpikeEvent;
    private int lifeTicks;
@@ -30,6 +32,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
 
    public EvokerFangs(EntityType<? extends EvokerFangs> var1, Level var2) {
       super(var1, var2);
+      this.warmupDelayTicks = 0;
       this.lifeTicks = 22;
    }
 
@@ -62,19 +65,13 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.warmupDelayTicks = var1.getInt("Warmup");
-      if (var1.hasUUID("Owner")) {
-         this.ownerUUID = var1.getUUID("Owner");
-      }
-
+      this.warmupDelayTicks = var1.getIntOr("Warmup", 0);
+      this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putInt("Warmup", this.warmupDelayTicks);
-      if (this.ownerUUID != null) {
-         var1.putUUID("Owner", this.ownerUUID);
-      }
-
+      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
    }
 
    public void tick() {

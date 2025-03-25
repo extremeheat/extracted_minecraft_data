@@ -37,27 +37,7 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
    }
 
    protected void renderBackground(GuiGraphics var1) {
-      if (this.scrollbarVisible()) {
-         super.renderBackground(var1);
-      } else if (this.isFocused()) {
-         this.renderBorder(var1, this.getX() - this.innerPadding(), this.getY() - this.innerPadding(), this.getWidth() + this.totalInnerPadding(), this.getHeight() + this.totalInnerPadding());
-      }
-
-   }
-
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      if (this.visible) {
-         if (!this.scrollbarVisible()) {
-            this.renderBackground(var1);
-            var1.pose().pushPose();
-            var1.pose().translate((float)this.getX(), (float)this.getY(), 0.0F);
-            this.multilineWidget.render(var1, var2, var3, var4);
-            var1.pose().popPose();
-         } else {
-            super.renderWidget(var1, var2, var3, var4);
-         }
-
-      }
+      super.renderBackground(var1);
    }
 
    public boolean showingScrollBar() {
@@ -73,5 +53,10 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.getMessage());
+   }
+
+   public void setMessage(Component var1) {
+      super.setMessage(var1);
+      this.multilineWidget.setMessage(var1);
    }
 }

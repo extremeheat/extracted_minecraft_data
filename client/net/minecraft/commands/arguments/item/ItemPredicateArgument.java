@@ -1,28 +1,23 @@
 package net.minecraft.commands.arguments.item;
 
 import com.mojang.brigadier.ImmutableStringReader;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
+import com.mojang.serialization.Dynamic;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.Util;
-import net.minecraft.advancements.critereon.ItemSubPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -30,19 +25,18 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.parsing.packrat.commands.Grammar;
+import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public class ItemPredicateArgument implements ArgumentType<Result> {
+public class ItemPredicateArgument extends ParserBasedArgument<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "#stick", "#stick{foo:'bar'}");
    static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.item.id.invalid", var0));
    static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.item.tag.unknown", var0));
@@ -53,39 +47,25 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
    private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
    static final Map<ResourceLocation, ComponentWrapper> PSEUDO_COMPONENTS;
    static final Map<ResourceLocation, PredicateWrapper> PSEUDO_PREDICATES;
-   private final Grammar<List<Predicate<ItemStack>>> grammarWithContext;
 
    public ItemPredicateArgument(CommandBuildContext var1) {
-      super();
-      Context var2 = new Context(var1);
-      this.grammarWithContext = ComponentPredicateParser.createGrammar(var2);
+      super(ComponentPredicateParser.createGrammar(new Context(var1)).mapResult((var0) -> {
+         Predicate var10000 = Util.allOf(var0);
+         Objects.requireNonNull(var10000);
+         return var10000::test;
+      }));
    }
 
    public static ItemPredicateArgument itemPredicate(CommandBuildContext var0) {
       return new ItemPredicateArgument(var0);
    }
 
-   public Result parse(StringReader var1) throws CommandSyntaxException {
-      Predicate var10000 = Util.allOf(this.grammarWithContext.parseForCommands(var1));
-      Objects.requireNonNull(var10000);
-      return var10000::test;
-   }
-
    public static Result getItemPredicate(CommandContext<CommandSourceStack> var0, String var1) {
       return (Result)var0.getArgument(var1, Result.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return this.grammarWithContext.parseForSuggestions(var2);
-   }
-
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 
    static {
@@ -115,15 +95,15 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
          }
       }
 
-      public Predicate<ItemStack> decode(ImmutableStringReader var1, RegistryOps<Tag> var2, Tag var3) throws CommandSyntaxException {
-         DataResult var4 = this.valueChecker.parse(var2, var3);
-         return (Predicate)var4.getOrThrow((var2x) -> ItemPredicateArgument.ERROR_MALFORMED_COMPONENT.createWithContext(var1, this.id.toString(), var2x));
+      public Predicate<ItemStack> decode(ImmutableStringReader var1, Dynamic<?> var2) throws CommandSyntaxException {
+         DataResult var3 = this.valueChecker.parse(var2);
+         return (Predicate)var3.getOrThrow((var2x) -> ItemPredicateArgument.ERROR_MALFORMED_COMPONENT.createWithContext(var1, this.id.toString(), var2x));
       }
    }
 
    static record PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
-      public PredicateWrapper(Holder.Reference<ItemSubPredicate.Type<?>> var1) {
-         this(var1.key().location(), ((ItemSubPredicate.Type)var1.value()).codec().map((var0) -> {
+      public PredicateWrapper(Holder.Reference<DataComponentPredicate.Type<?>> var1) {
+         this(var1.key().location(), ((DataComponentPredicate.Type)var1.value()).codec().map((var0) -> {
             Objects.requireNonNull(var0);
             return var0::matches;
          }));
@@ -135,24 +115,24 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
          this.type = var2;
       }
 
-      public Predicate<ItemStack> decode(ImmutableStringReader var1, RegistryOps<Tag> var2, Tag var3) throws CommandSyntaxException {
-         DataResult var4 = this.type.parse(var2, var3);
-         return (Predicate)var4.getOrThrow((var2x) -> ItemPredicateArgument.ERROR_MALFORMED_PREDICATE.createWithContext(var1, this.id.toString(), var2x));
+      public Predicate<ItemStack> decode(ImmutableStringReader var1, Dynamic<?> var2) throws CommandSyntaxException {
+         DataResult var3 = this.type.parse(var2);
+         return (Predicate)var3.getOrThrow((var2x) -> ItemPredicateArgument.ERROR_MALFORMED_PREDICATE.createWithContext(var1, this.id.toString(), var2x));
       }
    }
 
    static class Context implements ComponentPredicateParser.Context<Predicate<ItemStack>, ComponentWrapper, PredicateWrapper> {
+      private final HolderLookup.Provider registries;
       private final HolderLookup.RegistryLookup<Item> items;
       private final HolderLookup.RegistryLookup<DataComponentType<?>> components;
-      private final HolderLookup.RegistryLookup<ItemSubPredicate.Type<?>> predicates;
-      private final RegistryOps<Tag> registryOps;
+      private final HolderLookup.RegistryLookup<DataComponentPredicate.Type<?>> predicates;
 
       Context(HolderLookup.Provider var1) {
          super();
+         this.registries = var1;
          this.items = var1.lookupOrThrow(Registries.ITEM);
          this.components = var1.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
-         this.predicates = var1.lookupOrThrow(Registries.ITEM_SUB_PREDICATE_TYPE);
-         this.registryOps = var1.<Tag>createSerializationContext(NbtOps.INSTANCE);
+         this.predicates = var1.lookupOrThrow(Registries.DATA_COMPONENT_PREDICATE_TYPE);
       }
 
       public Predicate<ItemStack> forElementType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
@@ -175,8 +155,8 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
          }
       }
 
-      public Predicate<ItemStack> createComponentTest(ImmutableStringReader var1, ComponentWrapper var2, Tag var3) throws CommandSyntaxException {
-         return var2.decode(var1, this.registryOps, var3);
+      public Predicate<ItemStack> createComponentTest(ImmutableStringReader var1, ComponentWrapper var2, Dynamic<?> var3) throws CommandSyntaxException {
+         return var2.decode(var1, RegistryOps.injectRegistryContext(var3, this.registries));
       }
 
       public Predicate<ItemStack> createComponentTest(ImmutableStringReader var1, ComponentWrapper var2) {
@@ -185,11 +165,11 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
 
       public PredicateWrapper lookupPredicateType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
          PredicateWrapper var3 = (PredicateWrapper)ItemPredicateArgument.PSEUDO_PREDICATES.get(var2);
-         return var3 != null ? var3 : (PredicateWrapper)this.predicates.get(ResourceKey.create(Registries.ITEM_SUB_PREDICATE_TYPE, var2)).map(PredicateWrapper::new).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_PREDICATE.createWithContext(var1, var2));
+         return var3 != null ? var3 : (PredicateWrapper)this.predicates.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, var2)).map(PredicateWrapper::new).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_PREDICATE.createWithContext(var1, var2));
       }
 
-      public Predicate<ItemStack> createPredicateTest(ImmutableStringReader var1, PredicateWrapper var2, Tag var3) throws CommandSyntaxException {
-         return var2.decode(var1, this.registryOps, var3);
+      public Predicate<ItemStack> createPredicateTest(ImmutableStringReader var1, PredicateWrapper var2, Dynamic<?> var3) throws CommandSyntaxException {
+         return var2.decode(var1, RegistryOps.injectRegistryContext(var3, this.registries));
       }
 
       public Stream<ResourceLocation> listElementTypes() {
@@ -222,7 +202,7 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
       }
 
       // $FF: synthetic method
-      public Object createPredicateTest(final ImmutableStringReader var1, final Object var2, final Tag var3) throws CommandSyntaxException {
+      public Object createPredicateTest(final ImmutableStringReader var1, final Object var2, final Dynamic var3) throws CommandSyntaxException {
          return this.createPredicateTest(var1, (PredicateWrapper)var2, var3);
       }
 

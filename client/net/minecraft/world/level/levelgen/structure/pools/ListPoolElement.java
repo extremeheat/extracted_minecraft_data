@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -84,5 +85,10 @@ public class ListPoolElement extends StructurePoolElement {
 
    private void setProjectionOnEachElement(StructureTemplatePool.Projection var1) {
       this.elements.forEach((var1x) -> var1x.setProjection(var1));
+   }
+
+   @VisibleForTesting
+   public List<StructurePoolElement> getElements() {
+      return this.elements;
    }
 }

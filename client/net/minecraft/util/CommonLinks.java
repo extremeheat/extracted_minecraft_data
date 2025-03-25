@@ -27,6 +27,8 @@ public class CommonLinks {
    public static final URI REALMS_TERMS = URI.create("https://aka.ms/MinecraftRealmsTerms");
    public static final URI REALMS_CONTENT_CREATION = URI.create("https://aka.ms/MinecraftRealmsContentCreator");
    public static final String EXTEND_REALMS_LINK = "https://aka.ms/ExtendJavaRealms";
+   public static final String INTENTIONAL_GAME_DESIGN_BUG_ID = "MCPE-28723";
+   public static final URI INTENTIONAL_GAME_DESIGN_BUG = URI.create("https://bugs.mojang.com/browse/MCPE-28723");
 
    public CommonLinks() {
       super();

@@ -1,14 +1,13 @@
 package net.minecraft.nbt;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.ArrayUtils;
 
-public class LongArrayTag extends CollectionTag<LongTag> {
+public final class LongArrayTag implements CollectionTag {
    private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<LongArrayTag> TYPE = new TagType.VariableSize<LongArrayTag>() {
       public LongArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
@@ -56,26 +55,6 @@ public class LongArrayTag extends CollectionTag<LongTag> {
       this.data = var1;
    }
 
-   public LongArrayTag(LongSet var1) {
-      super();
-      this.data = var1.toLongArray();
-   }
-
-   public LongArrayTag(List<Long> var1) {
-      this(toArray(var1));
-   }
-
-   private static long[] toArray(List<Long> var0) {
-      long[] var1 = new long[var0.size()];
-
-      for(int var2 = 0; var2 < var0.size(); ++var2) {
-         Long var3 = (Long)var0.get(var2);
-         var1[var2] = var3 == null ? 0L : var3;
-      }
-
-      return var1;
-   }
-
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
 
@@ -98,7 +77,9 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    }
 
    public String toString() {
-      return this.getAsString();
+      StringTagVisitor var1 = new StringTagVisitor();
+      var1.visitLongArray(this);
+      return var1.build();
    }
 
    public LongArrayTag copy() {
@@ -135,19 +116,9 @@ public class LongArrayTag extends CollectionTag<LongTag> {
       return LongTag.valueOf(this.data[var1]);
    }
 
-   public LongTag set(int var1, LongTag var2) {
-      long var3 = this.data[var1];
-      this.data[var1] = var2.getAsLong();
-      return LongTag.valueOf(var3);
-   }
-
-   public void add(int var1, LongTag var2) {
-      this.data = ArrayUtils.add(this.data, var1, var2.getAsLong());
-   }
-
    public boolean setTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag) {
-         this.data[var1] = ((NumericTag)var2).getAsLong();
+      if (var2 instanceof NumericTag var3) {
+         this.data[var1] = var3.longValue();
          return true;
       } else {
          return false;
@@ -155,8 +126,8 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    }
 
    public boolean addTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag) {
-         this.data = ArrayUtils.add(this.data, var1, ((NumericTag)var2).getAsLong());
+      if (var2 instanceof NumericTag var3) {
+         this.data = ArrayUtils.add(this.data, var1, var3.longValue());
          return true;
       } else {
          return false;
@@ -169,16 +140,21 @@ public class LongArrayTag extends CollectionTag<LongTag> {
       return LongTag.valueOf(var2);
    }
 
-   public byte getElementType() {
-      return 4;
-   }
-
    public void clear() {
       this.data = new long[0];
    }
 
+   public Optional<long[]> asLongArray() {
+      return Optional.of(this.data);
+   }
+
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
       return var1.visit(this.data);
+   }
+
+   // $FF: synthetic method
+   public Tag get(final int var1) {
+      return this.get(var1);
    }
 
    // $FF: synthetic method
@@ -187,37 +163,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    }
 
    // $FF: synthetic method
-   public void add(final int var1, final Tag var2) {
-      this.add(var1, (LongTag)var2);
-   }
-
-   // $FF: synthetic method
-   public Tag set(final int var1, final Tag var2) {
-      return this.set(var1, (LongTag)var2);
-   }
-
-   // $FF: synthetic method
    public Tag copy() {
       return this.copy();
-   }
-
-   // $FF: synthetic method
-   public Object remove(final int var1) {
-      return this.remove(var1);
-   }
-
-   // $FF: synthetic method
-   public void add(final int var1, final Object var2) {
-      this.add(var1, (LongTag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object set(final int var1, final Object var2) {
-      return this.set(var1, (LongTag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object get(final int var1) {
-      return this.get(var1);
    }
 }

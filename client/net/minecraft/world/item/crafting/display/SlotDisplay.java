@@ -21,6 +21,7 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.level.block.entity.FuelValues;
 
 public interface SlotDisplay {
@@ -135,12 +136,12 @@ public interface SlotDisplay {
       }
    }
 
-   public static record SmithingTrimDemoSlotDisplay(SlotDisplay base, SlotDisplay material, SlotDisplay pattern) implements SlotDisplay {
-      public static final MapCodec<SmithingTrimDemoSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.fieldOf("base").forGetter(SmithingTrimDemoSlotDisplay::base), SlotDisplay.CODEC.fieldOf("material").forGetter(SmithingTrimDemoSlotDisplay::material), SlotDisplay.CODEC.fieldOf("pattern").forGetter(SmithingTrimDemoSlotDisplay::pattern)).apply(var0, SmithingTrimDemoSlotDisplay::new));
+   public static record SmithingTrimDemoSlotDisplay(SlotDisplay base, SlotDisplay material, Holder<TrimPattern> pattern) implements SlotDisplay {
+      public static final MapCodec<SmithingTrimDemoSlotDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.fieldOf("base").forGetter(SmithingTrimDemoSlotDisplay::base), SlotDisplay.CODEC.fieldOf("material").forGetter(SmithingTrimDemoSlotDisplay::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(SmithingTrimDemoSlotDisplay::pattern)).apply(var0, SmithingTrimDemoSlotDisplay::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTrimDemoSlotDisplay> STREAM_CODEC;
       public static final Type<SmithingTrimDemoSlotDisplay> TYPE;
 
-      public SmithingTrimDemoSlotDisplay(SlotDisplay var1, SlotDisplay var2, SlotDisplay var3) {
+      public SmithingTrimDemoSlotDisplay(SlotDisplay var1, SlotDisplay var2, Holder<TrimPattern> var3) {
          super();
          this.base = var1;
          this.material = var2;
@@ -166,16 +167,10 @@ public interface SlotDisplay {
                   return Stream.empty();
                }
 
-               List var8 = this.pattern.resolveForStacks(var1);
-               if (var8.isEmpty()) {
-                  return Stream.empty();
-               }
-
                Stream var10000 = Stream.generate(() -> {
                   ItemStack var5x = (ItemStack)Util.getRandom(var6, var5);
                   ItemStack var6x = (ItemStack)Util.getRandom(var7, var5);
-                  ItemStack var7x = (ItemStack)Util.getRandom(var8, var5);
-                  return SmithingTrimRecipe.applyTrim(var4, var5x, var6x, var7x);
+                  return SmithingTrimRecipe.applyTrim(var4, var5x, var6x, this.pattern);
                }).limit(256L).filter((var0) -> !var0.isEmpty()).limit(16L);
                Objects.requireNonNull(var3);
                return var10000.map(var3::forStack);
@@ -186,7 +181,7 @@ public interface SlotDisplay {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC, SmithingTrimDemoSlotDisplay::base, SlotDisplay.STREAM_CODEC, SmithingTrimDemoSlotDisplay::material, SlotDisplay.STREAM_CODEC, SmithingTrimDemoSlotDisplay::pattern, SmithingTrimDemoSlotDisplay::new);
+         STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC, SmithingTrimDemoSlotDisplay::base, SlotDisplay.STREAM_CODEC, SmithingTrimDemoSlotDisplay::material, TrimPattern.STREAM_CODEC, SmithingTrimDemoSlotDisplay::pattern, SmithingTrimDemoSlotDisplay::new);
          TYPE = new Type<SmithingTrimDemoSlotDisplay>(MAP_CODEC, STREAM_CODEC);
       }
    }
@@ -222,7 +217,7 @@ public interface SlotDisplay {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.ITEM), ItemSlotDisplay::item, ItemSlotDisplay::new);
+         STREAM_CODEC = StreamCodec.composite(Item.STREAM_CODEC, ItemSlotDisplay::item, ItemSlotDisplay::new);
          TYPE = new Type<ItemSlotDisplay>(MAP_CODEC, STREAM_CODEC);
       }
    }

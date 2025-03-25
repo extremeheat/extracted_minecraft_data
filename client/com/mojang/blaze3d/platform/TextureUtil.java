@@ -1,20 +1,22 @@
 package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -26,57 +28,6 @@ public class TextureUtil {
 
    public TextureUtil() {
       super();
-   }
-
-   public static int generateTextureId() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         int[] var0 = new int[ThreadLocalRandom.current().nextInt(15) + 1];
-         GlStateManager._genTextures(var0);
-         int var1 = GlStateManager._genTexture();
-         GlStateManager._deleteTextures(var0);
-         return var1;
-      } else {
-         return GlStateManager._genTexture();
-      }
-   }
-
-   public static void releaseTextureId(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._deleteTexture(var0);
-   }
-
-   public static void prepareImage(int var0, int var1, int var2) {
-      prepareImage(NativeImage.InternalGlFormat.RGBA, var0, 0, var1, var2);
-   }
-
-   public static void prepareImage(NativeImage.InternalGlFormat var0, int var1, int var2, int var3) {
-      prepareImage(var0, var1, 0, var2, var3);
-   }
-
-   public static void prepareImage(int var0, int var1, int var2, int var3) {
-      prepareImage(NativeImage.InternalGlFormat.RGBA, var0, var1, var2, var3);
-   }
-
-   public static void prepareImage(NativeImage.InternalGlFormat var0, int var1, int var2, int var3, int var4) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      bind(var1);
-      if (var2 >= 0) {
-         GlStateManager._texParameter(3553, 33085, var2);
-         GlStateManager._texParameter(3553, 33082, 0);
-         GlStateManager._texParameter(3553, 33083, var2);
-         GlStateManager._texParameter(3553, 34049, 0.0F);
-      }
-
-      for(int var5 = 0; var5 <= var2; ++var5) {
-         GlStateManager._texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, (IntBuffer)null);
-      }
-
-   }
-
-   private static void bind(int var0) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      GlStateManager._bindTexture(var0);
    }
 
    public static ByteBuffer readResource(InputStream var0) throws IOException {
@@ -105,30 +56,56 @@ public class TextureUtil {
       }
    }
 
-   public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5) {
-      writeAsPNG(var0, var1, var2, var3, var4, var5, (IntUnaryOperator)null);
-   }
-
-   public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5, @Nullable IntUnaryOperator var6) {
+   public static void writeAsPNG(Path var0, String var1, GpuTexture var2, int var3, IntUnaryOperator var4) {
       RenderSystem.assertOnRenderThread();
-      bind(var2);
+      int var5 = 0;
 
-      for(int var7 = 0; var7 <= var3; ++var7) {
-         int var8 = var4 >> var7;
-         int var9 = var5 >> var7;
+      for(int var6 = 0; var6 <= var3; ++var6) {
+         var5 += var2.getFormat().pixelSize() * var2.getWidth(var6) * var2.getHeight(var6);
+      }
 
-         try (NativeImage var10 = new NativeImage(var8, var9, false)) {
-            var10.downloadTexture(var7, false);
-            if (var6 != null) {
-               var10.applyToAllPixels(var6);
+      GpuBuffer var12 = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var5);
+      CommandEncoder var7 = RenderSystem.getDevice().createCommandEncoder();
+      Runnable var8 = () -> {
+         try (GpuBuffer.ReadView var7x = var7.readBuffer(var12)) {
+            int var8 = 0;
+
+            for(int var9 = 0; var9 <= var3; ++var9) {
+               int var10 = var2.getWidth(var9);
+               int var11 = var2.getHeight(var9);
+
+               try (NativeImage var12x = new NativeImage(var10, var11, false)) {
+                  for(int var13 = 0; var13 < var11; ++var13) {
+                     for(int var14 = 0; var14 < var10; ++var14) {
+                        int var15 = var7x.data().getInt(var8 + (var14 + var13 * var10) * var2.getFormat().pixelSize());
+                        var12x.setPixelABGR(var14, var13, var4.applyAsInt(var15));
+                     }
+                  }
+
+                  Path var21 = var0.resolve(var1 + "_" + var9 + ".png");
+                  var12x.writeToFile(var21);
+                  LOGGER.debug("Exported png to: {}", var21.toAbsolutePath());
+               } catch (IOException var19) {
+                  LOGGER.debug("Unable to write: ", var19);
+               }
+
+               var8 += var2.getFormat().pixelSize() * var10 * var11;
+            }
+         }
+
+         var12.close();
+      };
+      AtomicInteger var9 = new AtomicInteger();
+      int var10 = 0;
+
+      for(int var11 = 0; var11 <= var3; ++var11) {
+         var7.copyTextureToBuffer(var2, var12, var10, () -> {
+            if (var9.getAndIncrement() == var3) {
+               var8.run();
             }
 
-            Path var11 = var0.resolve(var1 + "_" + var7 + ".png");
-            var10.writeToFile(var11);
-            LOGGER.debug("Exported png to: {}", var11.toAbsolutePath());
-         } catch (IOException var15) {
-            LOGGER.debug("Unable to write: ", var15);
-         }
+         }, var11);
+         var10 += var2.getFormat().pixelSize() * var2.getWidth(var11) * var2.getHeight(var11);
       }
 
    }

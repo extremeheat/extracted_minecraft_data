@@ -9,7 +9,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -45,6 +44,7 @@ import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CreakingHeartBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -112,7 +112,7 @@ public class Creaking extends Monster {
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return CreakingAi.makeBrain(this.brainProvider().makeBrain(var1));
+      return CreakingAi.makeBrain(this, this.brainProvider().makeBrain(var1));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -152,6 +152,7 @@ public class Creaking extends Monster {
             } else {
                this.invulnerabilityAnimationRemainingTicks = 8;
                this.level().broadcastEntityEvent(this, (byte)66);
+               this.gameEvent(GameEvent.ENTITY_ACTION);
                BlockEntity var8 = this.level().getBlockEntity(var4);
                if (var8 instanceof CreakingHeartBlockEntity) {
                   CreakingHeartBlockEntity var7 = (CreakingHeartBlockEntity)var8;
@@ -294,7 +295,7 @@ public class Creaking extends Monster {
          double var6 = var10.getYsize() * 0.3;
          double var8 = var10.getZsize() * 0.3;
          var1.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_CRUMBLE, Blocks.PALE_OAK_WOOD.defaultBlockState()), var3.x, var3.y, var3.z, 100, var4, var6, var8, 0.0);
-         var1.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_CRUMBLE, (BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.ACTIVE, true)), var3.x, var3.y, var3.z, 10, var4, var6, var8, 0.0);
+         var1.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_CRUMBLE, (BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.STATE, CreakingHeartState.AWAKE)), var3.x, var3.y, var3.z, 10, var4, var6, var8, 0.0);
       }
 
       this.makeSound(this.getDeathSound());
@@ -322,10 +323,6 @@ public class Creaking extends Monster {
 
    public boolean fireImmune() {
       return this.isHeartBound() || super.fireImmune();
-   }
-
-   public boolean canBeNameTagged() {
-      return !this.isHeartBound() && super.canBeNameTagged();
    }
 
    protected boolean canAddPassenger(Entity var1) {
@@ -372,19 +369,12 @@ public class Creaking extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("home_pos")) {
-         this.setTransient((BlockPos)NbtUtils.readBlockPos(var1, "home_pos").orElseThrow());
-      }
-
+      var1.read("home_pos", BlockPos.CODEC).ifPresent(this::setTransient);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      BlockPos var2 = this.getHomePos();
-      if (var2 != null) {
-         var1.put("home_pos", NbtUtils.writeBlockPos(var2));
-      }
-
+      var1.storeNullable("home_pos", BlockPos.CODEC, this.getHomePos());
    }
 
    public void setHomePos(BlockPos var1) {

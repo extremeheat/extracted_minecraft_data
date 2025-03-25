@@ -63,6 +63,7 @@ public class Zoglin extends Monster implements HoglinBase {
    private static final int ATTACK_DURATION = 200;
    private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.3F;
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.4F;
+   private static final boolean DEFAULT_BABY = false;
    private int attackAnimationRemainingTicks;
    protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Zoglin>>> SENSOR_TYPES;
    protected static final ImmutableList<? extends MemoryModuleType<?>> MEMORY_TYPES;
@@ -153,7 +154,7 @@ public class Zoglin extends Monster implements HoglinBase {
       return true;
    }
 
-   protected void blockedByShield(LivingEntity var1) {
+   protected void blockedByItem(LivingEntity var1) {
       if (!this.isBaby()) {
          HoglinBase.throwTarget(this, var1);
       }
@@ -275,18 +276,12 @@ public class Zoglin extends Monster implements HoglinBase {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.isBaby()) {
-         var1.putBoolean("IsBaby", true);
-      }
-
+      var1.putBoolean("IsBaby", this.isBaby());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.getBoolean("IsBaby")) {
-         this.setBaby(true);
-      }
-
+      this.setBaby(var1.getBooleanOr("IsBaby", false));
    }
 
    static {

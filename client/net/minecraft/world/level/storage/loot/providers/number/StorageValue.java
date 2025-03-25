@@ -4,7 +4,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Optional;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NumericTag;
@@ -24,29 +23,29 @@ public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath pat
       return NumberProviders.STORAGE;
    }
 
-   private Optional<NumericTag> getNumericTag(LootContext var1) {
-      CompoundTag var2 = var1.getLevel().getServer().getCommandStorage().get(this.storage);
+   private Number getNumericTag(LootContext var1, Number var2) {
+      CompoundTag var3 = var1.getLevel().getServer().getCommandStorage().get(this.storage);
 
       try {
-         List var3 = this.path.get(var2);
-         if (var3.size() == 1) {
-            Object var5 = var3.get(0);
-            if (var5 instanceof NumericTag) {
-               NumericTag var4 = (NumericTag)var5;
-               return Optional.of(var4);
+         List var4 = this.path.get(var3);
+         if (var4.size() == 1) {
+            Object var6 = var4.getFirst();
+            if (var6 instanceof NumericTag) {
+               NumericTag var5 = (NumericTag)var6;
+               return var5.box();
             }
          }
-      } catch (CommandSyntaxException var6) {
+      } catch (CommandSyntaxException var7) {
       }
 
-      return Optional.empty();
+      return var2;
    }
 
    public float getFloat(LootContext var1) {
-      return (Float)this.getNumericTag(var1).map(NumericTag::getAsFloat).orElse(0.0F);
+      return this.getNumericTag(var1, 0.0F).floatValue();
    }
 
    public int getInt(LootContext var1) {
-      return (Integer)this.getNumericTag(var1).map(NumericTag::getAsInt).orElse(0);
+      return this.getNumericTag(var1, 0).intValue();
    }
 }

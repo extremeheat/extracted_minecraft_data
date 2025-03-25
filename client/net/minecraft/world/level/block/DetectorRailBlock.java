@@ -10,6 +10,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -45,7 +46,7 @@ public class DetectorRailBlock extends BaseRailBlock {
       return true;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!var2.isClientSide) {
          if (!(Boolean)var1.getValue(POWERED)) {
             this.checkPressed(var2, var3, var1);

@@ -3,9 +3,8 @@ package net.minecraft.world.item.crafting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 
@@ -24,14 +23,14 @@ public class BookCloningRecipe extends CustomRecipe {
          for(int var5 = 0; var5 < var1.size(); ++var5) {
             ItemStack var6 = var1.getItem(var5);
             if (!var6.isEmpty()) {
-               if (var6.is(Items.WRITTEN_BOOK)) {
+               if (var6.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
                   if (var4) {
                      return false;
                   }
 
                   var4 = true;
                } else {
-                  if (!var6.is(Items.WRITABLE_BOOK)) {
+                  if (!var6.is(ItemTags.BOOK_CLONING_TARGET)) {
                      return false;
                   }
 
@@ -51,14 +50,14 @@ public class BookCloningRecipe extends CustomRecipe {
       for(int var5 = 0; var5 < var1.size(); ++var5) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
-            if (var6.is(Items.WRITTEN_BOOK)) {
+            if (var6.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
                if (!var4.isEmpty()) {
                   return ItemStack.EMPTY;
                }
 
                var4 = var6;
             } else {
-               if (!var6.is(Items.WRITABLE_BOOK)) {
+               if (!var6.is(ItemTags.BOOK_CLONING_TARGET)) {
                   return ItemStack.EMPTY;
                }
 
@@ -90,7 +89,7 @@ public class BookCloningRecipe extends CustomRecipe {
          ItemStack var5 = var4.getItem().getCraftingRemainder();
          if (!var5.isEmpty()) {
             var2.set(var3, var5);
-         } else if (var4.getItem() instanceof WrittenBookItem) {
+         } else if (var4.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
             var2.set(var3, var4.copyWithCount(1));
             break;
          }

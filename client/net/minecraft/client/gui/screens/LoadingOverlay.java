@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -88,23 +88,19 @@ public class LoadingOverlay extends Overlay {
          var11 = Mth.clamp(var10, 0.0F, 1.0F);
       } else {
          int var26 = BRAND_BACKGROUND.getAsInt();
-         float var13 = (float)(var26 >> 16 & 255) / 255.0F;
-         float var14 = (float)(var26 >> 8 & 255) / 255.0F;
-         float var15 = (float)(var26 & 255) / 255.0F;
-         GlStateManager._clearColor(var13, var14, var15, 1.0F);
-         GlStateManager._clear(16384);
+         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(this.minecraft.getMainRenderTarget().getColorTexture(), var26);
          var11 = 1.0F;
       }
 
       int var27 = (int)((double)var1.guiWidth() * 0.5);
-      int var28 = (int)((double)var1.guiHeight() * 0.5);
-      double var29 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
-      int var16 = (int)(var29 * 0.5);
-      double var17 = var29 * 4.0;
+      int var13 = (int)((double)var1.guiHeight() * 0.5);
+      double var14 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
+      int var16 = (int)(var14 * 0.5);
+      double var17 = var14 * 4.0;
       int var19 = (int)(var17 * 0.5);
       int var20 = ARGB.white(var11);
-      var1.blit((var0) -> RenderType.mojangLogo(), MOJANG_STUDIOS_LOGO_LOCATION, var27 - var19, var28 - var16, -0.0625F, 0.0F, var19, (int)var29, 120, 60, 120, 120, var20);
-      var1.blit((var0) -> RenderType.mojangLogo(), MOJANG_STUDIOS_LOGO_LOCATION, var27, var28 - var16, 0.0625F, 60.0F, var19, (int)var29, 120, 60, 120, 120, var20);
+      var1.blit((var0) -> RenderType.mojangLogo(), MOJANG_STUDIOS_LOGO_LOCATION, var27 - var19, var13 - var16, -0.0625F, 0.0F, var19, (int)var14, 120, 60, 120, 120, var20);
+      var1.blit((var0) -> RenderType.mojangLogo(), MOJANG_STUDIOS_LOGO_LOCATION, var27, var13 - var16, 0.0625F, 60.0F, var19, (int)var14, 120, 60, 120, 120, var20);
       int var21 = (int)((double)var1.guiHeight() * 0.8325);
       float var22 = this.reload.getActualProgress();
       this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);

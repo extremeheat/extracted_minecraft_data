@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -34,10 +35,7 @@ public class AtlasSet implements AutoCloseable {
    }
 
    public Map<ResourceLocation, CompletableFuture<StitchResult>> scheduleLoad(ResourceManager var1, int var2, Executor var3) {
-      return (Map)this.atlases.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var3x) -> {
-         AtlasEntry var4 = (AtlasEntry)var3x.getValue();
-         return SpriteLoader.create(var4.atlas).loadAndStitch(var1, var4.atlasInfoLocation, var2, var3).thenApply((var1x) -> new StitchResult(var4.atlas, var1x));
-      }));
+      return Util.mapValues(this.atlases, (var3x) -> SpriteLoader.create(var3x.atlas).loadAndStitch(var1, var3x.atlasInfoLocation, var2, var3).thenApply((var1x) -> new StitchResult(var3x.atlas, var1x)));
    }
 
    public static class StitchResult {

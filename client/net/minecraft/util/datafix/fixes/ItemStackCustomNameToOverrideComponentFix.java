@@ -4,16 +4,17 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.util.datafix.ComponentDataFixUtils;
+import net.minecraft.Util;
+import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemStackCustomNameToOverrideComponentFix extends DataFix {
@@ -31,26 +32,28 @@ public class ItemStackCustomNameToOverrideComponentFix extends DataFix {
          Optional var3x = var2x.getOptional(var2);
          Optional var4 = var3x.map(Pair::getSecond);
          if (var4.filter((var0) -> var0.equals("minecraft:white_banner")).isPresent()) {
-            return var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), ItemStackCustomNameToOverrideComponentFix::fixBanner));
+            return var2x.updateTyped(var3, ItemStackCustomNameToOverrideComponentFix::fixBanner);
          } else {
-            return var4.filter((var0) -> var0.equals("minecraft:filled_map")).isPresent() ? var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), ItemStackCustomNameToOverrideComponentFix::fixMap)) : var2x;
+            return var4.filter((var0) -> var0.equals("minecraft:filled_map")).isPresent() ? var2x.updateTyped(var3, ItemStackCustomNameToOverrideComponentFix::fixMap) : var2x;
          }
       });
    }
 
-   private static <T> Dynamic<T> fixMap(Dynamic<T> var0) {
+   private static <T> Typed<T> fixMap(Typed<T> var0) {
       Set var10001 = MAP_NAMES;
       Objects.requireNonNull(var10001);
       return fixCustomName(var0, var10001::contains);
    }
 
-   private static <T> Dynamic<T> fixBanner(Dynamic<T> var0) {
+   private static <T> Typed<T> fixBanner(Typed<T> var0) {
       return fixCustomName(var0, (var0x) -> var0x.equals("block.minecraft.ominous_banner"));
    }
 
-   private static <T> Dynamic<T> fixCustomName(Dynamic<T> var0, Predicate<String> var1) {
-      OptionalDynamic var2 = var0.get("minecraft:custom_name");
-      Optional var3 = var2.asString().result().flatMap(ComponentDataFixUtils::extractTranslationString).filter(var1);
-      return var3.isPresent() ? var0.renameField("minecraft:custom_name", "minecraft:item_name") : var0;
+   private static <T> Typed<T> fixCustomName(Typed<T> var0, Predicate<String> var1) {
+      return Util.writeAndReadTypedOrThrow(var0, var0.getType(), (var1x) -> {
+         OptionalDynamic var2 = var1x.get("minecraft:custom_name");
+         Optional var3 = var2.asString().result().flatMap(LegacyComponentDataFixUtils::extractTranslationString).filter(var1);
+         return var3.isPresent() ? var1x.renameField("minecraft:custom_name", "minecraft:item_name") : var1x;
+      });
    }
 }

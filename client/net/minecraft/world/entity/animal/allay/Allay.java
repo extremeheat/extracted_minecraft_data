@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.allay;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
@@ -70,14 +69,13 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class Allay extends PathfinderMob implements InventoryCarrier, VibrationSystem {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Vec3i ITEM_PICKUP_REACH = new Vec3i(1, 1, 1);
    private static final int LIFTING_ITEM_ANIMATION_DURATION = 5;
    private static final float DANCING_LOOP_DURATION = 55.0F;
    private static final float SPINNING_ANIMATION_DURATION = 15.0F;
+   private static final int DEFAULT_DUPLICATION_COOLDOWN = 0;
    private static final int DUPLICATION_COOLDOWN_TICKS = 6000;
    private static final int NUM_OF_DUPLICATION_HEARTS = 3;
    public static final int MAX_NOTEBLOCK_DISTANCE = 1024;
@@ -93,7 +91,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private final SimpleContainer inventory = new SimpleContainer(1);
    @Nullable
    private BlockPos jukeboxPos;
-   private long duplicationCooldown;
+   private long duplicationCooldown = 0L;
    private float holdingItemAnimationTicks;
    private float holdingItemAnimationTicks0;
    private float dancingAnimationTicks;
@@ -141,20 +139,18 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance()) {
-         if (this.isInWater()) {
-            this.moveRelative(0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
-         } else if (this.isInLava()) {
-            this.moveRelative(0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
-         } else {
-            this.moveRelative(this.getSpeed(), var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
-         }
+      if (this.isInWater()) {
+         this.moveRelative(0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
+      } else if (this.isInLava()) {
+         this.moveRelative(0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
+      } else {
+         this.moveRelative(this.getSpeed(), var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
       }
 
    }
@@ -279,19 +275,19 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       if (this.isDancing() && var3.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
          this.duplicateAllay();
          this.level().broadcastEntityEvent(this, (byte)18);
-         this.level().playSound((Player)var1, (Entity)this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         this.level().playSound(var1, (Entity)this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
          this.removeInteractionItem(var1, var3);
          return InteractionResult.SUCCESS;
       } else if (var4.isEmpty() && !var3.isEmpty()) {
          ItemStack var7 = var3.copyWithCount(1);
          this.setItemInHand(InteractionHand.MAIN_HAND, var7);
          this.removeInteractionItem(var1, var3);
-         this.level().playSound((Player)var1, (Entity)this, SoundEvents.ALLAY_ITEM_GIVEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         this.level().playSound(var1, (Entity)this, SoundEvents.ALLAY_ITEM_GIVEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
          this.getBrain().setMemory(MemoryModuleType.LIKED_PLAYER, var1.getUUID());
          return InteractionResult.SUCCESS;
       } else if (!var4.isEmpty() && var2 == InteractionHand.MAIN_HAND && var3.isEmpty()) {
          this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-         this.level().playSound((Player)var1, (Entity)this, SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         this.level().playSound(var1, (Entity)this, SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
          this.swing(InteractionHand.MAIN_HAND);
 
          for(ItemStack var6 : this.getInventory().removeAllItems()) {
@@ -414,21 +410,16 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       super.addAdditionalSaveData(var1);
       this.writeInventoryToTag(var1, this.registryAccess());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Allay: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
+      var1.store("listener", VibrationSystem.Data.CODEC, var2, this.vibrationData);
       var1.putLong("DuplicationCooldown", this.duplicationCooldown);
-      var1.putBoolean("CanDuplicate", this.canDuplicate());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.readInventoryFromTag(var1, this.registryAccess());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Allay: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
-      }
-
-      this.duplicationCooldown = (long)var1.getInt("DuplicationCooldown");
-      this.entityData.set(DATA_CAN_DUPLICATE, var1.getBoolean("CanDuplicate"));
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var2).orElseGet(VibrationSystem.Data::new);
+      this.setDuplicationCooldown((long)var1.getIntOr("DuplicationCooldown", 0));
    }
 
    protected boolean shouldStayCloseToLeashHolder() {
@@ -436,20 +427,21 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void updateDuplicationCooldown() {
-      if (this.duplicationCooldown > 0L) {
-         --this.duplicationCooldown;
+      if (!this.level().isClientSide() && this.duplicationCooldown > 0L) {
+         this.setDuplicationCooldown(this.duplicationCooldown - 1L);
       }
 
-      if (!this.level().isClientSide() && this.duplicationCooldown == 0L && !this.canDuplicate()) {
-         this.entityData.set(DATA_CAN_DUPLICATE, true);
-      }
+   }
 
+   private void setDuplicationCooldown(long var1) {
+      this.duplicationCooldown = var1;
+      this.entityData.set(DATA_CAN_DUPLICATE, var1 == 0L);
    }
 
    private void duplicateAllay() {
       Allay var1 = EntityType.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
       if (var1 != null) {
-         var1.moveTo(this.position());
+         var1.snapTo(this.position());
          var1.setPersistenceRequired();
          var1.resetDuplicationCooldown();
          this.resetDuplicationCooldown();
@@ -459,8 +451,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void resetDuplicationCooldown() {
-      this.duplicationCooldown = 6000L;
-      this.entityData.set(DATA_CAN_DUPLICATE, false);
+      this.setDuplicationCooldown(6000L);
    }
 
    private boolean canDuplicate() {

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.chunk;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
@@ -51,6 +52,11 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
    public void setSpawnSettings(boolean var1) {
    }
 
-   public void updateChunkForced(ChunkPos var1, boolean var2) {
+   public boolean updateChunkForced(ChunkPos var1, boolean var2) {
+      return false;
+   }
+
+   public LongSet getForceLoadedChunks() {
+      return LongSet.of();
    }
 }

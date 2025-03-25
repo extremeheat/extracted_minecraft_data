@@ -34,6 +34,7 @@ import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    private static final EntityDataAccessor<Boolean> FROM_BUCKET;
+   private static final boolean DEFAULT_FROM_BUCKET = false;
 
    public AbstractFish(EntityType<? extends AbstractFish> var1, Level var2) {
       super(var1, var2);
@@ -76,7 +77,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setFromBucket(var1.getBoolean("FromBucket"));
+      this.setFromBucket(var1.getBooleanOr("FromBucket", false));
    }
 
    protected void registerGoals() {
@@ -94,7 +95,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater()) {
+      if (this.isInWater()) {
          this.moveRelative(0.01F, var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

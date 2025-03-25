@@ -15,7 +15,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.monster.Endermite;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -43,7 +42,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       return Items.ENDER_PEARL;
    }
 
-   protected void setOwnerThroughUUID(UUID var1) {
+   protected void setOwnerThroughUUID(@Nullable UUID var1) {
       this.deregisterFromCurrentOwner();
       super.setOwnerThroughUUID(var1);
       this.registerToCurrentOwner();
@@ -112,10 +111,6 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          if (!this.isRemoved()) {
             Entity var8 = this.getOwner();
             if (var8 != null && isAllowedToTeleportOwner(var8, var7)) {
-               if (var8.isPassenger()) {
-                  var8.unRide();
-               }
-
                Vec3 var4 = this.oldPosition();
                if (var8 instanceof ServerPlayer) {
                   ServerPlayer var5 = (ServerPlayer)var8;
@@ -123,7 +118,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                      if (this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
                         Endermite var6 = EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
                         if (var6 != null) {
-                           var6.moveTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());
+                           var6.snapTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());
                            var7.addFreshEntity(var6);
                         }
                      }
@@ -203,7 +198,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    private void playSound(Level var1, Vec3 var2) {
-      var1.playSound((Player)null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
+      var1.playSound((Entity)null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
    }
 
    @Nullable
@@ -246,5 +241,13 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       }
 
       super.onRemoval(var1);
+   }
+
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      Entity.handleOnAboveBubbleColumn(this, var1, var2);
+   }
+
+   public void onInsideBubbleColumn(boolean var1) {
+      Entity.handleOnInsideBubbleColumn(this, var1);
    }
 }

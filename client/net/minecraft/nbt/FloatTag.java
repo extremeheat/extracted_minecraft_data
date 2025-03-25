@@ -5,7 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import net.minecraft.util.Mth;
 
-public class FloatTag extends NumericTag {
+public record FloatTag(float value) implements NumericTag {
    private static final int SELF_SIZE_IN_BYTES = 12;
    public static final FloatTag ZERO = new FloatTag(0.0F);
    public static final TagType<FloatTag> TYPE = new TagType.StaticSize<FloatTag>() {
@@ -34,20 +34,19 @@ public class FloatTag extends NumericTag {
          return "TAG_Float";
       }
 
-      public boolean isValue() {
-         return true;
-      }
-
       // $FF: synthetic method
       public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
          return this.load(var1, var2);
       }
    };
-   private final float data;
 
-   private FloatTag(float var1) {
+   /** @deprecated */
+   @Deprecated(
+      forRemoval = true
+   )
+   public FloatTag(float var1) {
       super();
-      this.data = var1;
+      this.value = var1;
    }
 
    public static FloatTag valueOf(float var0) {
@@ -55,7 +54,7 @@ public class FloatTag extends NumericTag {
    }
 
    public void write(DataOutput var1) throws IOException {
-      var1.writeFloat(this.data);
+      var1.writeFloat(this.value);
    }
 
    public int sizeInBytes() {
@@ -74,52 +73,46 @@ public class FloatTag extends NumericTag {
       return this;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof FloatTag && this.data == ((FloatTag)var1).data;
-      }
-   }
-
-   public int hashCode() {
-      return Float.floatToIntBits(this.data);
-   }
-
    public void accept(TagVisitor var1) {
       var1.visitFloat(this);
    }
 
-   public long getAsLong() {
-      return (long)this.data;
+   public long longValue() {
+      return (long)this.value;
    }
 
-   public int getAsInt() {
-      return Mth.floor(this.data);
+   public int intValue() {
+      return Mth.floor(this.value);
    }
 
-   public short getAsShort() {
-      return (short)(Mth.floor(this.data) & '\uffff');
+   public short shortValue() {
+      return (short)(Mth.floor(this.value) & '\uffff');
    }
 
-   public byte getAsByte() {
-      return (byte)(Mth.floor(this.data) & 255);
+   public byte byteValue() {
+      return (byte)(Mth.floor(this.value) & 255);
    }
 
-   public double getAsDouble() {
-      return (double)this.data;
+   public double doubleValue() {
+      return (double)this.value;
    }
 
-   public float getAsFloat() {
-      return this.data;
+   public float floatValue() {
+      return this.value;
    }
 
-   public Number getAsNumber() {
-      return this.data;
+   public Number box() {
+      return this.value;
    }
 
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.data);
+      return var1.visit(this.value);
+   }
+
+   public String toString() {
+      StringTagVisitor var1 = new StringTagVisitor();
+      var1.visitFloat(this);
+      return var1.build();
    }
 
    // $FF: synthetic method

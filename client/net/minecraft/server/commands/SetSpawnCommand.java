@@ -28,7 +28,7 @@ public class SetSpawnCommand {
       ResourceKey var4 = var0.getLevel().dimension();
 
       for(ServerPlayer var6 : var1) {
-         var6.setRespawnPosition(var4, var2, var3, true, false);
+         var6.setRespawnPosition(new ServerPlayer.RespawnConfig(var4, var2, var3, true), false);
       }
 
       String var7 = var4.location().toString();

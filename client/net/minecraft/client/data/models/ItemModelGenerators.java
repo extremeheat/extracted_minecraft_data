@@ -3,7 +3,6 @@ package net.minecraft.client.data.models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.client.color.item.Dye;
 import net.minecraft.client.color.item.Firework;
@@ -44,18 +43,23 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
 
 public class ItemModelGenerators {
    private static final ItemTintSource BLANK_LAYER = ItemModelUtils.constantTint(-1);
-   private static final String SLOT_HELMET = "helmet";
-   private static final String SLOT_CHESTPLATE = "chestplate";
-   private static final String SLOT_LEGGINS = "leggings";
-   private static final String SLOT_BOOTS = "boots";
-   private static final List<TrimMaterialData> TRIM_MATERIAL_MODELS;
+   public static final ResourceLocation TRIM_PREFIX_HELMET = prefixForSlotTrim("helmet");
+   public static final ResourceLocation TRIM_PREFIX_CHESTPLATE = prefixForSlotTrim("chestplate");
+   public static final ResourceLocation TRIM_PREFIX_LEGGINGS = prefixForSlotTrim("leggings");
+   public static final ResourceLocation TRIM_PREFIX_BOOTS = prefixForSlotTrim("boots");
+   public static final List<TrimMaterialData> TRIM_MATERIAL_MODELS;
    private final ItemModelOutput itemModelOutput;
    private final BiConsumer<ResourceLocation, ModelInstance> modelOutput;
+
+   public static ResourceLocation prefixForSlotTrim(String var0) {
+      return ResourceLocation.withDefaultNamespace("trims/items/" + var0 + "_trim");
+   }
 
    public ItemModelGenerators(ItemModelOutput var1, BiConsumer<ResourceLocation, ModelInstance> var2) {
       super();
@@ -146,15 +150,16 @@ public class ItemModelGenerators {
       ModelTemplates.THREE_LAYERED_ITEM.create(var1, TextureMapping.layered(var2, var3, var4), this.modelOutput);
    }
 
-   private void generateTrimmableItem(Item var1, ResourceKey<EquipmentAsset> var2, String var3, boolean var4) {
+   private void generateTrimmableItem(Item var1, ResourceKey<EquipmentAsset> var2, ResourceLocation var3, boolean var4) {
       ResourceLocation var5 = ModelLocationUtils.getModelLocation(var1);
       ResourceLocation var6 = TextureMapping.getItemTexture(var1);
       ResourceLocation var7 = TextureMapping.getItemTexture(var1, "_overlay");
       ArrayList var8 = new ArrayList(TRIM_MATERIAL_MODELS.size());
 
       for(TrimMaterialData var10 : TRIM_MATERIAL_MODELS) {
-         ResourceLocation var11 = var5.withSuffix("_" + var10.name() + "_trim");
-         ResourceLocation var12 = ResourceLocation.withDefaultNamespace("trims/items/" + var3 + "_trim_" + var10.textureName(var2));
+         ResourceLocation var11 = var5.withSuffix("_" + var10.assets().base().suffix() + "_trim");
+         String var10001 = var10.assets().assetId(var2).suffix();
+         ResourceLocation var12 = var3.withSuffix("_" + var10001);
          ItemModel.Unbaked var13;
          if (var4) {
             this.generateLayeredItem(var11, var6, var7, var12);
@@ -208,7 +213,7 @@ public class ItemModelGenerators {
       ItemModel.Unbaked var5 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_pulling_2", ModelTemplates.CROSSBOW));
       ItemModel.Unbaked var6 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_arrow", ModelTemplates.CROSSBOW));
       ItemModel.Unbaked var7 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_firework", ModelTemplates.CROSSBOW));
-      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), ItemModelUtils.rangeSelect(new CrossbowPull(), var3, ItemModelUtils.override(var4, 0.58F), ItemModelUtils.override(var5, 1.0F)), ItemModelUtils.select(new Charge(), var2, ItemModelUtils.when(CrossbowItem.ChargeType.ARROW, var6), ItemModelUtils.when(CrossbowItem.ChargeType.ROCKET, var7))));
+      this.itemModelOutput.accept(var1, ItemModelUtils.select(new Charge(), ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), ItemModelUtils.rangeSelect(new CrossbowPull(), var3, ItemModelUtils.override(var4, 0.58F), ItemModelUtils.override(var5, 1.0F)), var2), ItemModelUtils.when(CrossbowItem.ChargeType.ARROW, var6), ItemModelUtils.when(CrossbowItem.ChargeType.ROCKET, var7)));
    }
 
    private void generateBooleanDispatch(Item var1, ConditionalItemModelProperty var2, ItemModel.Unbaked var3, ItemModel.Unbaked var4) {
@@ -282,11 +287,6 @@ public class ItemModelGenerators {
    private void generateDyedItem(Item var1, int var2) {
       ResourceLocation var3 = this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM);
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var3, new Dye(var2)));
-   }
-
-   private void generateSpawnEgg(Item var1, int var2, int var3) {
-      ResourceLocation var4 = ModelLocationUtils.decorateItemModelLocation("template_spawn_egg");
-      this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var4, ItemModelUtils.constantTint(var2), ItemModelUtils.constantTint(var3)));
    }
 
    private void generateWolfArmor(Item var1) {
@@ -365,6 +365,8 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.DRAGON_BREATH, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DRIED_KELP, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLUE_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BROWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EMERALD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ENCHANTED_BOOK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ENDER_EYE, ModelTemplates.FLAT_ITEM);
@@ -561,31 +563,31 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DEBUG_STICK, Items.STICK, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE, ModelTemplates.FLAT_ITEM);
-      this.generateTrimmableItem(Items.TURTLE_HELMET, EquipmentAssets.TURTLE_SCUTE, "helmet", false);
-      this.generateTrimmableItem(Items.LEATHER_HELMET, EquipmentAssets.LEATHER, "helmet", true);
-      this.generateTrimmableItem(Items.LEATHER_CHESTPLATE, EquipmentAssets.LEATHER, "chestplate", true);
-      this.generateTrimmableItem(Items.LEATHER_LEGGINGS, EquipmentAssets.LEATHER, "leggings", true);
-      this.generateTrimmableItem(Items.LEATHER_BOOTS, EquipmentAssets.LEATHER, "boots", true);
-      this.generateTrimmableItem(Items.CHAINMAIL_HELMET, EquipmentAssets.CHAINMAIL, "helmet", false);
-      this.generateTrimmableItem(Items.CHAINMAIL_CHESTPLATE, EquipmentAssets.CHAINMAIL, "chestplate", false);
-      this.generateTrimmableItem(Items.CHAINMAIL_LEGGINGS, EquipmentAssets.CHAINMAIL, "leggings", false);
-      this.generateTrimmableItem(Items.CHAINMAIL_BOOTS, EquipmentAssets.CHAINMAIL, "boots", false);
-      this.generateTrimmableItem(Items.IRON_HELMET, EquipmentAssets.IRON, "helmet", false);
-      this.generateTrimmableItem(Items.IRON_CHESTPLATE, EquipmentAssets.IRON, "chestplate", false);
-      this.generateTrimmableItem(Items.IRON_LEGGINGS, EquipmentAssets.IRON, "leggings", false);
-      this.generateTrimmableItem(Items.IRON_BOOTS, EquipmentAssets.IRON, "boots", false);
-      this.generateTrimmableItem(Items.DIAMOND_HELMET, EquipmentAssets.DIAMOND, "helmet", false);
-      this.generateTrimmableItem(Items.DIAMOND_CHESTPLATE, EquipmentAssets.DIAMOND, "chestplate", false);
-      this.generateTrimmableItem(Items.DIAMOND_LEGGINGS, EquipmentAssets.DIAMOND, "leggings", false);
-      this.generateTrimmableItem(Items.DIAMOND_BOOTS, EquipmentAssets.DIAMOND, "boots", false);
-      this.generateTrimmableItem(Items.GOLDEN_HELMET, EquipmentAssets.GOLD, "helmet", false);
-      this.generateTrimmableItem(Items.GOLDEN_CHESTPLATE, EquipmentAssets.GOLD, "chestplate", false);
-      this.generateTrimmableItem(Items.GOLDEN_LEGGINGS, EquipmentAssets.GOLD, "leggings", false);
-      this.generateTrimmableItem(Items.GOLDEN_BOOTS, EquipmentAssets.GOLD, "boots", false);
-      this.generateTrimmableItem(Items.NETHERITE_HELMET, EquipmentAssets.NETHERITE, "helmet", false);
-      this.generateTrimmableItem(Items.NETHERITE_CHESTPLATE, EquipmentAssets.NETHERITE, "chestplate", false);
-      this.generateTrimmableItem(Items.NETHERITE_LEGGINGS, EquipmentAssets.NETHERITE, "leggings", false);
-      this.generateTrimmableItem(Items.NETHERITE_BOOTS, EquipmentAssets.NETHERITE, "boots", false);
+      this.generateTrimmableItem(Items.TURTLE_HELMET, EquipmentAssets.TURTLE_SCUTE, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.LEATHER_HELMET, EquipmentAssets.LEATHER, TRIM_PREFIX_HELMET, true);
+      this.generateTrimmableItem(Items.LEATHER_CHESTPLATE, EquipmentAssets.LEATHER, TRIM_PREFIX_CHESTPLATE, true);
+      this.generateTrimmableItem(Items.LEATHER_LEGGINGS, EquipmentAssets.LEATHER, TRIM_PREFIX_LEGGINGS, true);
+      this.generateTrimmableItem(Items.LEATHER_BOOTS, EquipmentAssets.LEATHER, TRIM_PREFIX_BOOTS, true);
+      this.generateTrimmableItem(Items.CHAINMAIL_HELMET, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.CHAINMAIL_CHESTPLATE, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.CHAINMAIL_LEGGINGS, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.CHAINMAIL_BOOTS, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.IRON_HELMET, EquipmentAssets.IRON, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.IRON_CHESTPLATE, EquipmentAssets.IRON, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.IRON_LEGGINGS, EquipmentAssets.IRON, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.IRON_BOOTS, EquipmentAssets.IRON, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.DIAMOND_HELMET, EquipmentAssets.DIAMOND, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.DIAMOND_CHESTPLATE, EquipmentAssets.DIAMOND, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.DIAMOND_LEGGINGS, EquipmentAssets.DIAMOND, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.DIAMOND_BOOTS, EquipmentAssets.DIAMOND, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.GOLDEN_HELMET, EquipmentAssets.GOLD, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.GOLDEN_CHESTPLATE, EquipmentAssets.GOLD, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.GOLDEN_LEGGINGS, EquipmentAssets.GOLD, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.GOLDEN_BOOTS, EquipmentAssets.GOLD, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.NETHERITE_HELMET, EquipmentAssets.NETHERITE, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.NETHERITE_CHESTPLATE, EquipmentAssets.NETHERITE, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.NETHERITE_LEGGINGS, EquipmentAssets.NETHERITE, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.NETHERITE_BOOTS, EquipmentAssets.NETHERITE, TRIM_PREFIX_BOOTS, false);
       this.generateDyedItem(Items.LEATHER_HORSE_ARMOR, -6265536);
       this.generateFlatItem(Items.ANGLER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARCHER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
@@ -646,87 +648,87 @@ public class ItemModelGenerators {
       this.generatePotion(Items.POTION);
       this.generatePotion(Items.SPLASH_POTION);
       this.generatePotion(Items.LINGERING_POTION);
-      this.generateSpawnEgg(Items.ARMADILLO_SPAWN_EGG, 11366765, 8538184);
-      this.generateSpawnEgg(Items.ALLAY_SPAWN_EGG, 56063, 44543);
-      this.generateSpawnEgg(Items.AXOLOTL_SPAWN_EGG, 16499171, 10890612);
-      this.generateSpawnEgg(Items.BAT_SPAWN_EGG, 4996656, 986895);
-      this.generateSpawnEgg(Items.BEE_SPAWN_EGG, 15582019, 4400155);
-      this.generateSpawnEgg(Items.BLAZE_SPAWN_EGG, 16167425, 16775294);
-      this.generateSpawnEgg(Items.BOGGED_SPAWN_EGG, 9084018, 3231003);
-      this.generateSpawnEgg(Items.BREEZE_SPAWN_EGG, 11506911, 9529055);
-      this.generateSpawnEgg(Items.CAT_SPAWN_EGG, 15714446, 9794134);
-      this.generateSpawnEgg(Items.CAMEL_SPAWN_EGG, 16565097, 13341495);
-      this.generateSpawnEgg(Items.CAVE_SPIDER_SPAWN_EGG, 803406, 11013646);
-      this.generateSpawnEgg(Items.CHICKEN_SPAWN_EGG, 10592673, 16711680);
-      this.generateSpawnEgg(Items.COD_SPAWN_EGG, 12691306, 15058059);
-      this.generateSpawnEgg(Items.COW_SPAWN_EGG, 4470310, 10592673);
-      this.generateSpawnEgg(Items.CREEPER_SPAWN_EGG, 894731, 0);
-      this.generateSpawnEgg(Items.DOLPHIN_SPAWN_EGG, 2243405, 16382457);
-      this.generateSpawnEgg(Items.DONKEY_SPAWN_EGG, 5457209, 8811878);
-      this.generateSpawnEgg(Items.DROWNED_SPAWN_EGG, 9433559, 7969893);
-      this.generateSpawnEgg(Items.ELDER_GUARDIAN_SPAWN_EGG, 13552826, 7632531);
-      this.generateSpawnEgg(Items.ENDER_DRAGON_SPAWN_EGG, 1842204, 14711290);
-      this.generateSpawnEgg(Items.ENDERMAN_SPAWN_EGG, 1447446, 0);
-      this.generateSpawnEgg(Items.ENDERMITE_SPAWN_EGG, 1447446, 7237230);
-      this.generateSpawnEgg(Items.EVOKER_SPAWN_EGG, 9804699, 1973274);
-      this.generateSpawnEgg(Items.FOX_SPAWN_EGG, 14005919, 13396256);
-      this.generateSpawnEgg(Items.FROG_SPAWN_EGG, 13661252, 16762748);
-      this.generateSpawnEgg(Items.GHAST_SPAWN_EGG, 16382457, 12369084);
-      this.generateSpawnEgg(Items.GLOW_SQUID_SPAWN_EGG, 611926, 8778172);
-      this.generateSpawnEgg(Items.GOAT_SPAWN_EGG, 10851452, 5589310);
-      this.generateSpawnEgg(Items.GUARDIAN_SPAWN_EGG, 5931634, 15826224);
-      this.generateSpawnEgg(Items.HOGLIN_SPAWN_EGG, 13004373, 6251620);
-      this.generateSpawnEgg(Items.HORSE_SPAWN_EGG, 12623485, 15656192);
-      this.generateSpawnEgg(Items.HUSK_SPAWN_EGG, 7958625, 15125652);
-      this.generateSpawnEgg(Items.IRON_GOLEM_SPAWN_EGG, 14405058, 7643954);
-      this.generateSpawnEgg(Items.LLAMA_SPAWN_EGG, 12623485, 10051392);
-      this.generateSpawnEgg(Items.MAGMA_CUBE_SPAWN_EGG, 3407872, 16579584);
-      this.generateSpawnEgg(Items.MOOSHROOM_SPAWN_EGG, 10489616, 12040119);
-      this.generateSpawnEgg(Items.MULE_SPAWN_EGG, 1769984, 5321501);
-      this.generateSpawnEgg(Items.OCELOT_SPAWN_EGG, 15720061, 5653556);
-      this.generateSpawnEgg(Items.PANDA_SPAWN_EGG, 15198183, 1776418);
-      this.generateSpawnEgg(Items.PARROT_SPAWN_EGG, 894731, 16711680);
-      this.generateSpawnEgg(Items.PHANTOM_SPAWN_EGG, 4411786, 8978176);
-      this.generateSpawnEgg(Items.PIG_SPAWN_EGG, 15771042, 14377823);
-      this.generateSpawnEgg(Items.PIGLIN_SPAWN_EGG, 10051392, 16380836);
-      this.generateSpawnEgg(Items.PIGLIN_BRUTE_SPAWN_EGG, 5843472, 16380836);
-      this.generateSpawnEgg(Items.PILLAGER_SPAWN_EGG, 5451574, 9804699);
-      this.generateSpawnEgg(Items.POLAR_BEAR_SPAWN_EGG, 15658718, 14014157);
-      this.generateSpawnEgg(Items.PUFFERFISH_SPAWN_EGG, 16167425, 3654642);
-      this.generateSpawnEgg(Items.RABBIT_SPAWN_EGG, 10051392, 7555121);
-      this.generateSpawnEgg(Items.RAVAGER_SPAWN_EGG, 7697520, 5984329);
-      this.generateSpawnEgg(Items.SALMON_SPAWN_EGG, 10489616, 951412);
-      this.generateSpawnEgg(Items.SHEEP_SPAWN_EGG, 15198183, 16758197);
-      this.generateSpawnEgg(Items.SHULKER_SPAWN_EGG, 9725844, 5060690);
-      this.generateSpawnEgg(Items.SILVERFISH_SPAWN_EGG, 7237230, 3158064);
-      this.generateSpawnEgg(Items.SKELETON_SPAWN_EGG, 12698049, 4802889);
-      this.generateSpawnEgg(Items.SKELETON_HORSE_SPAWN_EGG, 6842447, 15066584);
-      this.generateSpawnEgg(Items.SLIME_SPAWN_EGG, 5349438, 8306542);
-      this.generateSpawnEgg(Items.SNIFFER_SPAWN_EGG, 8855049, 2468720);
-      this.generateSpawnEgg(Items.SNOW_GOLEM_SPAWN_EGG, 14283506, 8496292);
-      this.generateSpawnEgg(Items.SPIDER_SPAWN_EGG, 3419431, 11013646);
-      this.generateSpawnEgg(Items.SQUID_SPAWN_EGG, 2243405, 7375001);
-      this.generateSpawnEgg(Items.STRAY_SPAWN_EGG, 6387319, 14543594);
-      this.generateSpawnEgg(Items.STRIDER_SPAWN_EGG, 10236982, 5065037);
-      this.generateSpawnEgg(Items.TADPOLE_SPAWN_EGG, 7164733, 1444352);
-      this.generateSpawnEgg(Items.TRADER_LLAMA_SPAWN_EGG, 15377456, 4547222);
-      this.generateSpawnEgg(Items.TROPICAL_FISH_SPAWN_EGG, 15690005, 16775663);
-      this.generateSpawnEgg(Items.TURTLE_SPAWN_EGG, 15198183, 44975);
-      this.generateSpawnEgg(Items.VEX_SPAWN_EGG, 8032420, 15265265);
-      this.generateSpawnEgg(Items.VILLAGER_SPAWN_EGG, 5651507, 12422002);
-      this.generateSpawnEgg(Items.VINDICATOR_SPAWN_EGG, 9804699, 2580065);
-      this.generateSpawnEgg(Items.WANDERING_TRADER_SPAWN_EGG, 4547222, 15377456);
-      this.generateSpawnEgg(Items.WARDEN_SPAWN_EGG, 1001033, 3790560);
-      this.generateSpawnEgg(Items.WITCH_SPAWN_EGG, 3407872, 5349438);
-      this.generateSpawnEgg(Items.WITHER_SPAWN_EGG, 1315860, 5075616);
-      this.generateSpawnEgg(Items.WITHER_SKELETON_SPAWN_EGG, 1315860, 4672845);
-      this.generateSpawnEgg(Items.WOLF_SPAWN_EGG, 14144467, 13545366);
-      this.generateSpawnEgg(Items.ZOGLIN_SPAWN_EGG, 13004373, 15132390);
-      this.generateSpawnEgg(Items.CREAKING_SPAWN_EGG, 6250335, 16545810);
-      this.generateSpawnEgg(Items.ZOMBIE_SPAWN_EGG, 44975, 7969893);
-      this.generateSpawnEgg(Items.ZOMBIE_HORSE_SPAWN_EGG, 3232308, 9945732);
-      this.generateSpawnEgg(Items.ZOMBIE_VILLAGER_SPAWN_EGG, 5651507, 7969893);
-      this.generateSpawnEgg(Items.ZOMBIFIED_PIGLIN_SPAWN_EGG, 15373203, 5009705);
+      this.generateFlatItem(Items.ARMADILLO_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ALLAY_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.AXOLOTL_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BAT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BEE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLAZE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BOGGED_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BREEZE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CAT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CAMEL_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CAVE_SPIDER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CHICKEN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.COD_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.COW_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CREEPER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.DOLPHIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.DONKEY_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.DROWNED_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ELDER_GUARDIAN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ENDER_DRAGON_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ENDERMAN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ENDERMITE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.EVOKER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.FOX_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.FROG_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GHAST_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GLOW_SQUID_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GOAT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GUARDIAN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.HOGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.HORSE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.HUSK_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.IRON_GOLEM_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LLAMA_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.MAGMA_CUBE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.MOOSHROOM_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.MULE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OCELOT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PANDA_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PARROT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PHANTOM_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PIG_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PIGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PIGLIN_BRUTE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PILLAGER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.POLAR_BEAR_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PUFFERFISH_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.RABBIT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.RAVAGER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SALMON_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SHEEP_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SHULKER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SILVERFISH_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SKELETON_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SKELETON_HORSE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SLIME_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SNIFFER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SNOW_GOLEM_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SPIDER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SQUID_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.STRAY_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.STRIDER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TADPOLE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TRADER_LLAMA_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TROPICAL_FISH_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TURTLE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.VEX_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.VILLAGER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.VINDICATOR_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WANDERING_TRADER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WARDEN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WITCH_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WITHER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WITHER_SKELETON_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WOLF_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ZOGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CREAKING_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ZOMBIE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ZOMBIE_HORSE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ZOMBIE_VILLAGER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ZOMBIFIED_PIGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.declareCustomModelItem(Items.AIR);
       this.declareCustomModelItem(Items.AMETHYST_CLUSTER);
       this.declareCustomModelItem(Items.SMALL_AMETHYST_BUD);
@@ -743,21 +745,16 @@ public class ItemModelGenerators {
    }
 
    static {
-      TRIM_MATERIAL_MODELS = List.of(new TrimMaterialData("quartz", TrimMaterials.QUARTZ, Map.of()), new TrimMaterialData("iron", TrimMaterials.IRON, Map.of(EquipmentAssets.IRON, "iron_darker")), new TrimMaterialData("netherite", TrimMaterials.NETHERITE, Map.of(EquipmentAssets.NETHERITE, "netherite_darker")), new TrimMaterialData("redstone", TrimMaterials.REDSTONE, Map.of()), new TrimMaterialData("copper", TrimMaterials.COPPER, Map.of()), new TrimMaterialData("gold", TrimMaterials.GOLD, Map.of(EquipmentAssets.GOLD, "gold_darker")), new TrimMaterialData("emerald", TrimMaterials.EMERALD, Map.of()), new TrimMaterialData("diamond", TrimMaterials.DIAMOND, Map.of(EquipmentAssets.DIAMOND, "diamond_darker")), new TrimMaterialData("lapis", TrimMaterials.LAPIS, Map.of()), new TrimMaterialData("amethyst", TrimMaterials.AMETHYST, Map.of()), new TrimMaterialData("resin", TrimMaterials.RESIN, Map.of()));
+      TRIM_MATERIAL_MODELS = List.of(new TrimMaterialData(MaterialAssetGroup.QUARTZ, TrimMaterials.QUARTZ), new TrimMaterialData(MaterialAssetGroup.IRON, TrimMaterials.IRON), new TrimMaterialData(MaterialAssetGroup.NETHERITE, TrimMaterials.NETHERITE), new TrimMaterialData(MaterialAssetGroup.REDSTONE, TrimMaterials.REDSTONE), new TrimMaterialData(MaterialAssetGroup.COPPER, TrimMaterials.COPPER), new TrimMaterialData(MaterialAssetGroup.GOLD, TrimMaterials.GOLD), new TrimMaterialData(MaterialAssetGroup.EMERALD, TrimMaterials.EMERALD), new TrimMaterialData(MaterialAssetGroup.DIAMOND, TrimMaterials.DIAMOND), new TrimMaterialData(MaterialAssetGroup.LAPIS, TrimMaterials.LAPIS), new TrimMaterialData(MaterialAssetGroup.AMETHYST, TrimMaterials.AMETHYST), new TrimMaterialData(MaterialAssetGroup.RESIN, TrimMaterials.RESIN));
    }
 
-   static record TrimMaterialData(String name, ResourceKey<TrimMaterial> materialKey, Map<ResourceKey<EquipmentAsset>, String> overrideArmorMaterials) {
+   public static record TrimMaterialData(MaterialAssetGroup assets, ResourceKey<TrimMaterial> materialKey) {
       final ResourceKey<TrimMaterial> materialKey;
 
-      TrimMaterialData(String var1, ResourceKey<TrimMaterial> var2, Map<ResourceKey<EquipmentAsset>, String> var3) {
+      public TrimMaterialData(MaterialAssetGroup var1, ResourceKey<TrimMaterial> var2) {
          super();
-         this.name = var1;
+         this.assets = var1;
          this.materialKey = var2;
-         this.overrideArmorMaterials = var3;
-      }
-
-      public String textureName(ResourceKey<EquipmentAsset> var1) {
-         return (String)this.overrideArmorMaterials.getOrDefault(var1, this.name);
       }
    }
 }

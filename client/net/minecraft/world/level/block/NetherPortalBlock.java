@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -36,16 +38,15 @@ import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.slf4j.Logger;
 
 public class NetherPortalBlock extends Block implements Portal {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<NetherPortalBlock> CODEC = simpleCodec(NetherPortalBlock::new);
    public static final EnumProperty<Direction.Axis> AXIS;
-   private static final Logger LOGGER;
-   protected static final int AABB_OFFSET = 2;
-   protected static final VoxelShape X_AXIS_AABB;
-   protected static final VoxelShape Z_AXIS_AABB;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES;
 
    public MapCodec<NetherPortalBlock> codec() {
       return CODEC;
@@ -57,17 +58,15 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction.Axis)var1.getValue(AXIS)) {
-         case Z:
-            return Z_AXIS_AABB;
-         case X:
-         default:
-            return X_AXIS_AABB;
-      }
+      return (VoxelShape)SHAPES.get(var1.getValue(AXIS));
+   }
+
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      return var1.getShape(var2, var3);
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.dimensionType().natural() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && var4.nextInt(2000) < var2.getDifficulty().getId()) {
+      if (var2.dimensionType().natural() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
          while(var2.getBlockState(var3).is(this)) {
             var3 = var3.below();
          }
@@ -93,7 +92,7 @@ public class NetherPortalBlock extends Block implements Portal {
       return !var11 && !var7.is(this) && !PortalShape.findAnyShape(var2, var4, var10).isComplete() ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var4.canUsePortal(false)) {
          var4.setAsInsidePortal(this, var3);
       }
@@ -220,11 +219,11 @@ public class NetherPortalBlock extends Block implements Portal {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
             switch ((Direction.Axis)var1.getValue(AXIS)) {
-               case Z -> {
-                  return (BlockState)var1.setValue(AXIS, Direction.Axis.X);
-               }
                case X -> {
                   return (BlockState)var1.setValue(AXIS, Direction.Axis.Z);
+               }
+               case Z -> {
+                  return (BlockState)var1.setValue(AXIS, Direction.Axis.X);
                }
                default -> {
                   return var1;
@@ -241,8 +240,6 @@ public class NetherPortalBlock extends Block implements Portal {
 
    static {
       AXIS = BlockStateProperties.HORIZONTAL_AXIS;
-      LOGGER = LogUtils.getLogger();
-      X_AXIS_AABB = Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
-      Z_AXIS_AABB = Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
+      SHAPES = Shapes.rotateHorizontalAxis(Block.column(4.0, 16.0, 0.0, 16.0));
    }
 }

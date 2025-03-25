@@ -10,6 +10,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicLike;
 import java.util.Comparator;
@@ -37,6 +38,7 @@ public class GameRules {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<Key<?>, Type<?>> GAME_RULE_TYPES = Maps.newTreeMap(Comparator.comparing((var0) -> var0.id));
    public static final Key<BooleanValue> RULE_DOFIRETICK;
+   public static final Key<BooleanValue> RULE_ALLOWFIRETICKAWAYFROMPLAYERS;
    public static final Key<BooleanValue> RULE_MOBGRIEFING;
    public static final Key<BooleanValue> RULE_KEEPINVENTORY;
    public static final Key<BooleanValue> RULE_DOMOBSPAWNING;
@@ -89,8 +91,17 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH;
    public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
    public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
+   public static final Key<BooleanValue> RULE_TNT_EXPLODES;
    private final Map<Key<?>, Value<?>> rules;
    private final FeatureFlagSet enabledFeatures;
+
+   public static <T extends Value<T>> Type<T> getType(Key<T> var0) {
+      return (Type)GAME_RULE_TYPES.get(var0);
+   }
+
+   public static <T extends Value<T>> Codec<Key<T>> keyCodec(Class<T> var0) {
+      return Codec.STRING.comapFlatMap((var1) -> (DataResult)GAME_RULE_TYPES.entrySet().stream().filter((var1x) -> ((Type)var1x.getValue()).valueClass == var0).map(Map.Entry::getKey).filter((var1x) -> var1x.getId().equals(var1)).map((var0x) -> var0x).findFirst().map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Invalid game rule ID for type: " + var1)), Key::getId);
+   }
 
    private static <T extends Value<T>> Key<T> register(String var0, Category var1, Type<T> var2) {
       Key var3 = new Key(var0, var1);
@@ -179,6 +190,7 @@ public class GameRules {
 
    static {
       RULE_DOFIRETICK = register("doFireTick", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
+      RULE_ALLOWFIRETICKAWAYFROMPLAYERS = register("allowFireTicksAwayFromPlayer", GameRules.Category.UPDATES, GameRules.BooleanValue.create(false));
       RULE_MOBGRIEFING = register("mobGriefing", GameRules.Category.MOBS, GameRules.BooleanValue.create(true));
       RULE_KEEPINVENTORY = register("keepInventory", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
       RULE_DOMOBSPAWNING = register("doMobSpawning", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true));
@@ -252,6 +264,7 @@ public class GameRules {
          ServerLevel var2 = var0.overworld();
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
+      RULE_TNT_EXPLODES = register("tntExplodes", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
    }
 
    public static enum Category {
@@ -334,15 +347,17 @@ public class GameRules {
       private final Function<Type<T>, T> constructor;
       final BiConsumer<MinecraftServer, T> callback;
       private final VisitorCaller<T> visitorCaller;
+      final Class<T> valueClass;
       final FeatureFlagSet requiredFeatures;
 
-      Type(Supplier<ArgumentType<?>> var1, Function<Type<T>, T> var2, BiConsumer<MinecraftServer, T> var3, VisitorCaller<T> var4, FeatureFlagSet var5) {
+      Type(Supplier<ArgumentType<?>> var1, Function<Type<T>, T> var2, BiConsumer<MinecraftServer, T> var3, VisitorCaller<T> var4, Class<T> var5, FeatureFlagSet var6) {
          super();
          this.argument = var1;
          this.constructor = var2;
          this.callback = var3;
          this.visitorCaller = var4;
-         this.requiredFeatures = var5;
+         this.valueClass = var5;
+         this.requiredFeatures = var6;
       }
 
       public RequiredArgumentBuilder<CommandSourceStack, ?> createArgument(String var1) {
@@ -405,11 +420,11 @@ public class GameRules {
       private int value;
 
       private static Type<IntegerValue> create(int var0, BiConsumer<MinecraftServer, IntegerValue> var1) {
-         return new Type<IntegerValue>(IntegerArgumentType::integer, (var1x) -> new IntegerValue(var1x, var0), var1, GameRuleTypeVisitor::visitInteger, FeatureFlagSet.of());
+         return new Type<IntegerValue>(IntegerArgumentType::integer, (var1x) -> new IntegerValue(var1x, var0), var1, GameRuleTypeVisitor::visitInteger, IntegerValue.class, FeatureFlagSet.of());
       }
 
       static Type<IntegerValue> create(int var0, int var1, int var2, FeatureFlagSet var3, BiConsumer<MinecraftServer, IntegerValue> var4) {
-         return new Type<IntegerValue>(() -> IntegerArgumentType.integer(var1, var2), (var1x) -> new IntegerValue(var1x, var0), var4, GameRuleTypeVisitor::visitInteger, var3);
+         return new Type<IntegerValue>(() -> IntegerArgumentType.integer(var1, var2), (var1x) -> new IntegerValue(var1x, var0), var4, GameRuleTypeVisitor::visitInteger, IntegerValue.class, var3);
       }
 
       static Type<IntegerValue> create(int var0) {
@@ -497,7 +512,7 @@ public class GameRules {
       private boolean value;
 
       static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1) {
-         return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, FeatureFlagSet.of());
+         return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, BooleanValue.class, FeatureFlagSet.of());
       }
 
       static Type<BooleanValue> create(boolean var0) {

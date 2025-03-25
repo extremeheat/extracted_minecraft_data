@@ -1,24 +1,33 @@
 package com.mojang.blaze3d.buffers;
 
-public enum BufferUsage {
-   DYNAMIC_WRITE(35048, false, true),
-   STATIC_WRITE(35044, false, true),
-   STREAM_WRITE(35040, false, true),
-   STATIC_READ(35045, true, false),
-   DYNAMIC_READ(35049, true, false),
-   STREAM_READ(35041, true, false),
-   DYNAMIC_COPY(35050, false, false),
-   STATIC_COPY(35046, false, false),
-   STREAM_COPY(35042, false, false);
+import com.mojang.blaze3d.DontObfuscate;
 
-   final int id;
+@DontObfuscate
+public enum BufferUsage {
+   DYNAMIC_WRITE(false, true),
+   STATIC_WRITE(false, true),
+   STREAM_WRITE(false, true),
+   STATIC_READ(true, false),
+   DYNAMIC_READ(true, false),
+   STREAM_READ(true, false),
+   DYNAMIC_COPY(false, false),
+   STATIC_COPY(false, false),
+   STREAM_COPY(false, false);
+
    final boolean readable;
    final boolean writable;
 
-   private BufferUsage(final int var3, final boolean var4, final boolean var5) {
-      this.id = var3;
-      this.readable = var4;
-      this.writable = var5;
+   private BufferUsage(final boolean var3, final boolean var4) {
+      this.readable = var3;
+      this.writable = var4;
+   }
+
+   public boolean isReadable() {
+      return this.readable;
+   }
+
+   public boolean isWritable() {
+      return this.writable;
    }
 
    // $FF: synthetic method

@@ -42,7 +42,7 @@ import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -394,7 +394,7 @@ public abstract class ChunkGenerator {
 
    public abstract int getGenDepth();
 
-   public WeightedRandomList<MobSpawnSettings.SpawnerData> getMobsAt(Holder<Biome> var1, StructureManager var2, MobCategory var3, BlockPos var4) {
+   public WeightedList<MobSpawnSettings.SpawnerData> getMobsAt(Holder<Biome> var1, StructureManager var2, MobCategory var3, BlockPos var4) {
       Map var5 = var2.getAllStructuresAt(var4);
 
       for(Map.Entry var7 : var5.entrySet()) {

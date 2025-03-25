@@ -41,7 +41,7 @@ public class RealmsAvailability {
    private static CompletableFuture<Result> check() {
       User var0 = Minecraft.getInstance().getUser();
       return var0.getType() != User.Type.MSA ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)) : CompletableFuture.supplyAsync(() -> {
-         RealmsClient var0 = RealmsClient.create();
+         RealmsClient var0 = RealmsClient.getOrCreate();
 
          try {
             if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {

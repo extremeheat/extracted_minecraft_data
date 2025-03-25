@@ -1,10 +1,8 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -20,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -32,13 +31,7 @@ public class VineBlock extends Block {
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
    public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
-   protected static final float AABB_OFFSET = 1.0F;
-   private static final VoxelShape UP_AABB;
-   private static final VoxelShape WEST_AABB;
-   private static final VoxelShape EAST_AABB;
-   private static final VoxelShape NORTH_AABB;
-   private static final VoxelShape SOUTH_AABB;
-   private final Map<BlockState, VoxelShape> shapesCache;
+   private final Function<BlockState, VoxelShape> shapes;
 
    public MapCodec<VineBlock> codec() {
       return CODEC;
@@ -47,36 +40,26 @@ public class VineBlock extends Block {
    public VineBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(UP, false)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false));
-      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().collect(Collectors.toMap(Function.identity(), VineBlock::calculateShape)));
+      this.shapes = this.makeShapes();
    }
 
-   private static VoxelShape calculateShape(BlockState var0) {
-      VoxelShape var1 = Shapes.empty();
-      if ((Boolean)var0.getValue(UP)) {
-         var1 = UP_AABB;
-      }
+   private Function<BlockState, VoxelShape> makeShapes() {
+      Map var1 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
+      return this.getShapeForEachState((var1x) -> {
+         VoxelShape var2 = Shapes.empty();
 
-      if ((Boolean)var0.getValue(NORTH)) {
-         var1 = Shapes.or(var1, NORTH_AABB);
-      }
+         for(Map.Entry var4 : PROPERTY_BY_DIRECTION.entrySet()) {
+            if ((Boolean)var1x.getValue((Property)var4.getValue())) {
+               var2 = Shapes.or(var2, (VoxelShape)var1.get(var4.getKey()));
+            }
+         }
 
-      if ((Boolean)var0.getValue(SOUTH)) {
-         var1 = Shapes.or(var1, SOUTH_AABB);
-      }
-
-      if ((Boolean)var0.getValue(EAST)) {
-         var1 = Shapes.or(var1, EAST_AABB);
-      }
-
-      if ((Boolean)var0.getValue(WEST)) {
-         var1 = Shapes.or(var1, WEST_AABB);
-      }
-
-      return var1.isEmpty() ? Shapes.block() : var1;
+         return var2.isEmpty() ? Shapes.block() : var2;
+      });
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapesCache.get(var1);
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected boolean propagatesSkylightDown(BlockState var1) {
@@ -348,10 +331,5 @@ public class VineBlock extends Block {
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
       PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> var0.getKey() != Direction.DOWN).collect(Util.toMap());
-      UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
-      WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
-      EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
-      SOUTH_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
    }
 }

@@ -16,24 +16,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
-public class BlockElement {
+public record BlockElement(Vector3fc from, Vector3fc to, Map<Direction, BlockElementFace> faces, @Nullable BlockElementRotation rotation, boolean shade, int lightEmission) {
    private static final boolean DEFAULT_RESCALE = false;
    private static final float MIN_EXTENT = -16.0F;
    private static final float MAX_EXTENT = 32.0F;
-   public final Vector3f from;
-   public final Vector3f to;
-   public final Map<Direction, BlockElementFace> faces;
-   @Nullable
-   public final BlockElementRotation rotation;
-   public final boolean shade;
-   public final int lightEmission;
 
-   public BlockElement(Vector3f var1, Vector3f var2, Map<Direction, BlockElementFace> var3) {
+   public BlockElement(Vector3fc var1, Vector3fc var2, Map<Direction, BlockElementFace> var3) {
       this(var1, var2, var3, (BlockElementRotation)null, true, 0);
    }
 
-   public BlockElement(Vector3f var1, Vector3f var2, Map<Direction, BlockElementFace> var3, @Nullable BlockElementRotation var4, boolean var5, int var6) {
+   public BlockElement(Vector3fc var1, Vector3fc var2, Map<Direction, BlockElementFace> var3, @Nullable BlockElementRotation var4, boolean var5, int var6) {
       super();
       this.from = var1;
       this.to = var2;
@@ -41,30 +35,6 @@ public class BlockElement {
       this.rotation = var4;
       this.shade = var5;
       this.lightEmission = var6;
-      this.fillUvs();
-   }
-
-   private void fillUvs() {
-      for(Map.Entry var2 : this.faces.entrySet()) {
-         float[] var3 = this.uvsByFace((Direction)var2.getKey());
-         ((BlockElementFace)var2.getValue()).uv().setMissingUv(var3);
-      }
-
-   }
-
-   private float[] uvsByFace(Direction var1) {
-      float[] var10000;
-      switch (var1) {
-         case DOWN -> var10000 = new float[]{this.from.x(), 16.0F - this.to.z(), this.to.x(), 16.0F - this.from.z()};
-         case UP -> var10000 = new float[]{this.from.x(), this.from.z(), this.to.x(), this.to.z()};
-         case NORTH -> var10000 = new float[]{16.0F - this.to.x(), 16.0F - this.to.y(), 16.0F - this.from.x(), 16.0F - this.from.y()};
-         case SOUTH -> var10000 = new float[]{this.from.x(), 16.0F - this.to.y(), this.to.x(), 16.0F - this.from.y()};
-         case WEST -> var10000 = new float[]{this.from.z(), 16.0F - this.to.y(), this.to.z(), 16.0F - this.from.y()};
-         case EAST -> var10000 = new float[]{16.0F - this.to.z(), 16.0F - this.to.y(), 16.0F - this.from.z(), 16.0F - this.from.y()};
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
    }
 
    protected static class Deserializer implements JsonDeserializer<BlockElement> {

@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -52,7 +51,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                return emptyChunk(var1);
             } else {
                try {
-                  ChunkPos var3 = readChunkPos((CompoundTag)var2x.get());
+                  ChunkPos var3 = (ChunkPos)((CompoundTag)var2x.get()).read("Position", ChunkPos.CODEC).orElseThrow();
                   if (!Objects.equals(var1, var3)) {
                      LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{var1, var1, var3});
                      this.level.getServer().reportMisplacedChunk(var3, var1, this.simpleRegionStorage.storageInfo());
@@ -63,7 +62,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                }
 
                CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
-               ListTag var4 = var7.getList("Entities", 10);
+               ListTag var4 = var7.getListOrEmpty("Entities");
                List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
                return new ChunkEntities(var1, var5);
             }
@@ -72,15 +71,6 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
          Objects.requireNonNull(var10002);
          return var2.thenApplyAsync(var10001, var10002::schedule);
       }
-   }
-
-   private static ChunkPos readChunkPos(CompoundTag var0) {
-      int[] var1 = var0.getIntArray("Position");
-      return new ChunkPos(var1[0], var1[1]);
-   }
-
-   private static void writeChunkPos(CompoundTag var0, ChunkPos var1) {
-      var0.put("Position", new IntArrayTag(new int[]{var1.x, var1.z}));
    }
 
    private static ChunkEntities<Entity> emptyChunk(ChunkPos var0) {
@@ -105,7 +95,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
          });
          CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());
          var4.put("Entities", var3);
-         writeChunkPos(var4, var2);
+         var4.store("Position", ChunkPos.CODEC, var2);
          this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, var4), var2);
          this.emptyChunks.remove(var2.toLong());
       }

@@ -11,6 +11,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AreaEffectCloud;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -32,7 +33,7 @@ public class BottleItem extends Item {
       if (!var4.isEmpty()) {
          AreaEffectCloud var8 = (AreaEffectCloud)var4.get(0);
          var8.setRadius(var8.getRadius() - 0.5F);
-         var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
          var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var2.position());
          if (var2 instanceof ServerPlayer) {
             ServerPlayer var9 = (ServerPlayer)var2;

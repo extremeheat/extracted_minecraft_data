@@ -12,6 +12,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.CommonLinks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +37,7 @@ public class CombatTracker {
    public void recordDamage(DamageSource var1, float var2) {
       this.recheckStatus();
       FallLocation var3 = FallLocation.getCurrentFallLocation(this.mob);
-      CombatEntry var4 = new CombatEntry(var1, var2, var3, this.mob.fallDistance);
+      CombatEntry var4 = new CombatEntry(var1, var2, var3, (float)this.mob.fallDistance);
       this.entries.add(var4);
       this.lastDamageTime = this.mob.tickCount;
       this.takingDamage = true;
@@ -166,6 +167,6 @@ public class CombatTracker {
    }
 
    static {
-      INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://bugs.mojang.com/browse/MCPE-28723")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("MCPE-28723")));
+      INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY.withClickEvent(new ClickEvent.OpenUrl(CommonLinks.INTENTIONAL_GAME_DESIGN_BUG)).withHoverEvent(new HoverEvent.ShowText(Component.literal("MCPE-28723")));
    }
 }

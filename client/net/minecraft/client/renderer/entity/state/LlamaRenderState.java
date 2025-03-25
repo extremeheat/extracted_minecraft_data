@@ -11,7 +11,7 @@ public class LlamaRenderState extends LivingEntityRenderState {
 
    public LlamaRenderState() {
       super();
-      this.variant = Llama.Variant.CREAMY;
+      this.variant = Llama.Variant.DEFAULT;
       this.bodyItem = ItemStack.EMPTY;
    }
 }

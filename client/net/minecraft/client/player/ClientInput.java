@@ -5,23 +5,23 @@ import net.minecraft.world.phys.Vec2;
 
 public class ClientInput {
    public Input keyPresses;
-   public float leftImpulse;
-   public float forwardImpulse;
+   protected Vec2 moveVector;
 
    public ClientInput() {
       super();
       this.keyPresses = Input.EMPTY;
+      this.moveVector = Vec2.ZERO;
    }
 
    public void tick() {
    }
 
    public Vec2 getMoveVector() {
-      return new Vec2(this.leftImpulse, this.forwardImpulse);
+      return this.moveVector;
    }
 
    public boolean hasForwardImpulse() {
-      return this.forwardImpulse > 1.0E-5F;
+      return this.moveVector.y > 1.0E-5F;
    }
 
    public void makeJump() {

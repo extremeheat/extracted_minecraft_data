@@ -22,6 +22,7 @@ public class SelectItemModelProperties {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("local_time"), LocalTime.TYPE);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("context_entity_type"), ContextEntityType.TYPE);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("context_dimension"), ContextDimension.TYPE);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("component"), ComponentContents.castType());
    }
 
    static {

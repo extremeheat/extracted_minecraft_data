@@ -12,6 +12,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -46,7 +49,7 @@ public abstract class WaterFluid extends FlowingFluid {
    public void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
       if (!var3.isSource() && !(Boolean)var3.getValue(FALLING)) {
          if (var4.nextInt(64) == 0) {
-            var1.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
+            var1.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.AMBIENT, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
          }
       } else if (var4.nextInt(10) == 0) {
          var1.addParticle(ParticleTypes.UNDERWATER, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + var4.nextDouble(), (double)var2.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
@@ -66,6 +69,10 @@ public abstract class WaterFluid extends FlowingFluid {
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
       BlockEntity var4 = var3.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
       Block.dropResources(var3, var1, var2, var4);
+   }
+
+   protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+      var4.apply(InsideBlockEffectType.EXTINGUISH);
    }
 
    public int getSlopeFindDistance(LevelReader var1) {

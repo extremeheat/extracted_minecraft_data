@@ -1,37 +1,42 @@
 package net.minecraft.world;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 import net.minecraft.world.level.saveddata.SavedData;
-import org.slf4j.Logger;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 public class RandomSequences extends SavedData {
-   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final SavedDataType<RandomSequences> TYPE;
    private final long worldSeed;
    private int salt;
    private boolean includeWorldSeed = true;
    private boolean includeSequenceId = true;
    private final Map<ResourceLocation, RandomSequence> sequences = new Object2ObjectOpenHashMap();
 
-   public static SavedData.Factory<RandomSequences> factory(long var0) {
-      return new SavedData.Factory<RandomSequences>(() -> new RandomSequences(var0), (var2, var3) -> load(var0, var2), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
-   }
-
    public RandomSequences(long var1) {
       super();
       this.worldSeed = var1;
+   }
+
+   private RandomSequences(long var1, int var3, boolean var4, boolean var5, Map<ResourceLocation, RandomSequence> var6) {
+      super();
+      this.worldSeed = var1;
+      this.salt = var3;
+      this.includeWorldSeed = var4;
+      this.includeSequenceId = var5;
+      this.sequences.putAll(var6);
+   }
+
+   public static Codec<RandomSequences> codec(long var0) {
+      return RecordCodecBuilder.create((var2) -> var2.group(RecordCodecBuilder.point(var0), Codec.INT.fieldOf("salt").forGetter((var0x) -> var0x.salt), Codec.BOOL.optionalFieldOf("include_world_seed", true).forGetter((var0x) -> var0x.includeWorldSeed), Codec.BOOL.optionalFieldOf("include_sequence_id", true).forGetter((var0x) -> var0x.includeSequenceId), Codec.unboundedMap(ResourceLocation.CODEC, RandomSequence.CODEC).fieldOf("sequences").forGetter((var0x) -> var0x.sequences)).apply(var2, RandomSequences::new));
    }
 
    public RandomSource get(ResourceLocation var1) {
@@ -58,37 +63,6 @@ public class RandomSequences extends SavedData {
       this.includeSequenceId = var3;
    }
 
-   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
-      var1.putInt("salt", this.salt);
-      var1.putBoolean("include_world_seed", this.includeWorldSeed);
-      var1.putBoolean("include_sequence_id", this.includeSequenceId);
-      CompoundTag var3 = new CompoundTag();
-      this.sequences.forEach((var1x, var2x) -> var3.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow()));
-      var1.put("sequences", var3);
-      return var1;
-   }
-
-   private static boolean getBooleanWithDefault(CompoundTag var0, String var1, boolean var2) {
-      return var0.contains(var1, 1) ? var0.getBoolean(var1) : var2;
-   }
-
-   public static RandomSequences load(long var0, CompoundTag var2) {
-      RandomSequences var3 = new RandomSequences(var0);
-      var3.setSeedDefaults(var2.getInt("salt"), getBooleanWithDefault(var2, "include_world_seed", true), getBooleanWithDefault(var2, "include_sequence_id", true));
-      CompoundTag var4 = var2.getCompound("sequences");
-
-      for(String var7 : var4.getAllKeys()) {
-         try {
-            RandomSequence var8 = (RandomSequence)((Pair)RandomSequence.CODEC.decode(NbtOps.INSTANCE, var4.get(var7)).result().get()).getFirst();
-            var3.sequences.put(ResourceLocation.parse(var7), var8);
-         } catch (Exception var9) {
-            LOGGER.error("Failed to load random sequence {}", var7, var9);
-         }
-      }
-
-      return var3;
-   }
-
    public int clear() {
       int var1 = this.sequences.size();
       this.sequences.clear();
@@ -101,6 +75,10 @@ public class RandomSequences extends SavedData {
 
    public void reset(ResourceLocation var1, int var2, boolean var3, boolean var4) {
       this.sequences.put(var1, this.createSequence(var1, var2, var3, var4));
+   }
+
+   static {
+      TYPE = new SavedDataType<RandomSequences>("random_sequences", (var0) -> new RandomSequences(var0.worldSeed()), (var0) -> codec(var0.worldSeed()), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
    }
 
    class DirtyMarkingRandomSource implements RandomSource {

@@ -7,7 +7,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WeepingVinesPlantBlock extends GrowingPlantBodyBlock {
    public static final MapCodec<WeepingVinesPlantBlock> CODEC = simpleCodec(WeepingVinesPlantBlock::new);
-   public static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+   private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 16.0);
 
    public MapCodec<WeepingVinesPlantBlock> codec() {
       return CODEC;

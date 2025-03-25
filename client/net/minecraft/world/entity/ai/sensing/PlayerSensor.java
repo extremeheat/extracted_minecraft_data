@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,7 +21,7 @@ public class PlayerSensor extends Sensor<LivingEntity> {
    }
 
    public Set<MemoryModuleType<?>> requires() {
-      return ImmutableSet.of(MemoryModuleType.NEAREST_PLAYERS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
+      return ImmutableSet.of(MemoryModuleType.NEAREST_PLAYERS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYERS);
    }
 
    protected void doTick(ServerLevel var1, LivingEntity var2) {
@@ -33,8 +32,9 @@ public class PlayerSensor extends Sensor<LivingEntity> {
       var4.setMemory(MemoryModuleType.NEAREST_PLAYERS, var3);
       List var5 = (List)var3.stream().filter((var2x) -> isEntityTargetable(var1, var2, var2x)).collect(Collectors.toList());
       var4.setMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER, var5.isEmpty() ? null : (Player)var5.get(0));
-      Optional var6 = var5.stream().filter((var2x) -> isEntityAttackable(var1, var2, var2x)).findFirst();
-      var4.setMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, var6);
+      List var6 = var5.stream().filter((var2x) -> isEntityAttackable(var1, var2, var2x)).toList();
+      var4.setMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYERS, var6);
+      var4.setMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, var6.isEmpty() ? null : (Player)var6.get(0));
    }
 
    protected double getFollowDistance(LivingEntity var1) {

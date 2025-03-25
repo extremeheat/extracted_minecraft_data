@@ -6,7 +6,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ComparatorBlockEntity extends BlockEntity {
-   private int output;
+   private static final int DEFAULT_OUTPUT = 0;
+   private int output = 0;
 
    public ComparatorBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.COMPARATOR, var1, var2);
@@ -19,7 +20,7 @@ public class ComparatorBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.output = var1.getInt("OutputSignal");
+      this.output = var1.getIntOr("OutputSignal", 0);
    }
 
    public int getOutputSignal() {

@@ -251,7 +251,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       }, RecipePropertySet.SMITHING_BASE, (IngredientExtractor)(var0) -> {
          Optional var10000;
          if (var0 instanceof SmithingRecipe var1) {
-            var10000 = var1.baseIngredient();
+            var10000 = Optional.of(var1.baseIngredient());
          } else {
             var10000 = Optional.empty();
          }

@@ -11,12 +11,12 @@ public interface SmithingRecipe extends Recipe<SmithingRecipeInput> {
    RecipeSerializer<? extends SmithingRecipe> getSerializer();
 
    default boolean matches(SmithingRecipeInput var1, Level var2) {
-      return Ingredient.testOptionalIngredient(this.templateIngredient(), var1.template()) && Ingredient.testOptionalIngredient(this.baseIngredient(), var1.base()) && Ingredient.testOptionalIngredient(this.additionIngredient(), var1.addition());
+      return Ingredient.testOptionalIngredient(this.templateIngredient(), var1.template()) && this.baseIngredient().test(var1.base()) && Ingredient.testOptionalIngredient(this.additionIngredient(), var1.addition());
    }
 
    Optional<Ingredient> templateIngredient();
 
-   Optional<Ingredient> baseIngredient();
+   Ingredient baseIngredient();
 
    Optional<Ingredient> additionIngredient();
 

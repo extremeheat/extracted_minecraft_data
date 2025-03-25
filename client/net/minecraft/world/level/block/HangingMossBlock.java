@@ -22,9 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HangingMossBlock extends Block implements BonemealableBlock {
    public static final MapCodec<HangingMossBlock> CODEC = simpleCodec(HangingMossBlock::new);
-   private static final int SIDE_PADDING = 1;
-   private static final VoxelShape TIP_SHAPE = Block.box(1.0, 2.0, 1.0, 15.0, 16.0, 15.0);
-   private static final VoxelShape BASE_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+   private static final VoxelShape SHAPE_BASE = Block.column(14.0, 0.0, 16.0);
+   private static final VoxelShape SHAPE_TIP = Block.column(14.0, 2.0, 16.0);
    public static final BooleanProperty TIP;
 
    public MapCodec<HangingMossBlock> codec() {
@@ -37,14 +36,14 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(TIP) ? TIP_SHAPE : BASE_SHAPE;
+      return (Boolean)var1.getValue(TIP) ? SHAPE_TIP : SHAPE_BASE;
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(500) == 0) {
          BlockState var5 = var2.getBlockState(var3.above());
          if (var5.is(BlockTags.PALE_OAK_LOGS) || var5.is(Blocks.PALE_OAK_LEAVES)) {
-            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.PALE_HANGING_MOSS_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.PALE_HANGING_MOSS_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
       }
 

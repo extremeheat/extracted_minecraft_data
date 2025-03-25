@@ -1,23 +1,25 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class MangroveLeavesBlock extends LeavesBlock implements BonemealableBlock {
-   public static final MapCodec<MangroveLeavesBlock> CODEC = simpleCodec(MangroveLeavesBlock::new);
+public class MangroveLeavesBlock extends TintedParticleLeavesBlock implements BonemealableBlock {
+   public static final MapCodec<MangroveLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((var0x) -> var0x.leafParticleChance), propertiesCodec()).apply(var0, MangroveLeavesBlock::new));
 
    public MapCodec<MangroveLeavesBlock> codec() {
       return CODEC;
    }
 
-   public MangroveLeavesBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public MangroveLeavesBlock(float var1, BlockBehaviour.Properties var2) {
+      super(var1, var2);
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {

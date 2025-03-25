@@ -26,23 +26,23 @@ public class ArmorStandArmorModel extends HumanoidModel<ArmorStandRenderState> {
 
    public void setupAnim(ArmorStandRenderState var1) {
       super.setupAnim(var1);
-      this.head.xRot = 0.017453292F * var1.headPose.getX();
-      this.head.yRot = 0.017453292F * var1.headPose.getY();
-      this.head.zRot = 0.017453292F * var1.headPose.getZ();
-      this.body.xRot = 0.017453292F * var1.bodyPose.getX();
-      this.body.yRot = 0.017453292F * var1.bodyPose.getY();
-      this.body.zRot = 0.017453292F * var1.bodyPose.getZ();
-      this.leftArm.xRot = 0.017453292F * var1.leftArmPose.getX();
-      this.leftArm.yRot = 0.017453292F * var1.leftArmPose.getY();
-      this.leftArm.zRot = 0.017453292F * var1.leftArmPose.getZ();
-      this.rightArm.xRot = 0.017453292F * var1.rightArmPose.getX();
-      this.rightArm.yRot = 0.017453292F * var1.rightArmPose.getY();
-      this.rightArm.zRot = 0.017453292F * var1.rightArmPose.getZ();
-      this.leftLeg.xRot = 0.017453292F * var1.leftLegPose.getX();
-      this.leftLeg.yRot = 0.017453292F * var1.leftLegPose.getY();
-      this.leftLeg.zRot = 0.017453292F * var1.leftLegPose.getZ();
-      this.rightLeg.xRot = 0.017453292F * var1.rightLegPose.getX();
-      this.rightLeg.yRot = 0.017453292F * var1.rightLegPose.getY();
-      this.rightLeg.zRot = 0.017453292F * var1.rightLegPose.getZ();
+      this.head.xRot = 0.017453292F * var1.headPose.x();
+      this.head.yRot = 0.017453292F * var1.headPose.y();
+      this.head.zRot = 0.017453292F * var1.headPose.z();
+      this.body.xRot = 0.017453292F * var1.bodyPose.x();
+      this.body.yRot = 0.017453292F * var1.bodyPose.y();
+      this.body.zRot = 0.017453292F * var1.bodyPose.z();
+      this.leftArm.xRot = 0.017453292F * var1.leftArmPose.x();
+      this.leftArm.yRot = 0.017453292F * var1.leftArmPose.y();
+      this.leftArm.zRot = 0.017453292F * var1.leftArmPose.z();
+      this.rightArm.xRot = 0.017453292F * var1.rightArmPose.x();
+      this.rightArm.yRot = 0.017453292F * var1.rightArmPose.y();
+      this.rightArm.zRot = 0.017453292F * var1.rightArmPose.z();
+      this.leftLeg.xRot = 0.017453292F * var1.leftLegPose.x();
+      this.leftLeg.yRot = 0.017453292F * var1.leftLegPose.y();
+      this.leftLeg.zRot = 0.017453292F * var1.leftLegPose.z();
+      this.rightLeg.xRot = 0.017453292F * var1.rightLegPose.x();
+      this.rightLeg.yRot = 0.017453292F * var1.rightLegPose.y();
+      this.rightLeg.zRot = 0.017453292F * var1.rightLegPose.z();
    }
 }

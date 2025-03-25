@@ -30,9 +30,11 @@ import net.minecraft.world.level.LevelAccessor;
 public class SkeletonHorse extends AbstractHorse {
    private final SkeletonTrapGoal skeletonTrapGoal = new SkeletonTrapGoal(this);
    private static final int TRAP_MAX_LIFE = 18000;
+   private static final boolean DEFAULT_IS_TRAP = false;
+   private static final int DEFAULT_TRAP_TIME = 0;
    private static final EntityDimensions BABY_DIMENSIONS;
-   private boolean isTrap;
-   private int trapTime;
+   private boolean isTrap = false;
+   private int trapTime = 0;
 
    public SkeletonHorse(EntityType<? extends SkeletonHorse> var1, Level var2) {
       super(var1, var2);
@@ -128,8 +130,8 @@ public class SkeletonHorse extends AbstractHorse {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setTrap(var1.getBoolean("SkeletonTrap"));
-      this.trapTime = var1.getInt("SkeletonTrapTime");
+      this.setTrap(var1.getBooleanOr("SkeletonTrap", false));
+      this.trapTime = var1.getIntOr("SkeletonTrapTime", 0);
    }
 
    protected float getWaterSlowDown() {

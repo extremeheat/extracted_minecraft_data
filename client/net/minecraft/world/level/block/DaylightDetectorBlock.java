@@ -29,7 +29,7 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
    public static final MapCodec<DaylightDetectorBlock> CODEC = simpleCodec(DaylightDetectorBlock::new);
    public static final IntegerProperty POWER;
    public static final BooleanProperty INVERTED;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<DaylightDetectorBlock> codec() {
       return CODEC;
@@ -113,6 +113,6 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
    static {
       POWER = BlockStateProperties.POWER;
       INVERTED = BlockStateProperties.INVERTED;
-      SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0);
+      SHAPE = Block.column(16.0, 0.0, 6.0);
    }
 }

@@ -2,6 +2,8 @@ package net.minecraft.world.scores.criteria;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,11 +17,12 @@ import net.minecraft.util.StringRepresentable;
 public class ObjectiveCriteria {
    private static final Map<String, ObjectiveCriteria> CUSTOM_CRITERIA = Maps.newHashMap();
    private static final Map<String, ObjectiveCriteria> CRITERIA_CACHE = Maps.newHashMap();
-   public static final ObjectiveCriteria DUMMY = registerCustom("dummy");
-   public static final ObjectiveCriteria TRIGGER = registerCustom("trigger");
-   public static final ObjectiveCriteria DEATH_COUNT = registerCustom("deathCount");
-   public static final ObjectiveCriteria KILL_COUNT_PLAYERS = registerCustom("playerKillCount");
-   public static final ObjectiveCriteria KILL_COUNT_ALL = registerCustom("totalKillCount");
+   public static final Codec<ObjectiveCriteria> CODEC;
+   public static final ObjectiveCriteria DUMMY;
+   public static final ObjectiveCriteria TRIGGER;
+   public static final ObjectiveCriteria DEATH_COUNT;
+   public static final ObjectiveCriteria KILL_COUNT_PLAYERS;
+   public static final ObjectiveCriteria KILL_COUNT_ALL;
    public static final ObjectiveCriteria HEALTH;
    public static final ObjectiveCriteria FOOD;
    public static final ObjectiveCriteria AIR;
@@ -87,6 +90,12 @@ public class ObjectiveCriteria {
    }
 
    static {
+      CODEC = Codec.STRING.comapFlatMap((var0) -> (DataResult)byName(var0).map(DataResult::success).orElse(DataResult.error(() -> "No scoreboard criteria with name: " + var0)), ObjectiveCriteria::getName);
+      DUMMY = registerCustom("dummy");
+      TRIGGER = registerCustom("trigger");
+      DEATH_COUNT = registerCustom("deathCount");
+      KILL_COUNT_PLAYERS = registerCustom("playerKillCount");
+      KILL_COUNT_ALL = registerCustom("totalKillCount");
       HEALTH = registerCustom("health", true, ObjectiveCriteria.RenderType.HEARTS);
       FOOD = registerCustom("food", true, ObjectiveCriteria.RenderType.INTEGER);
       AIR = registerCustom("air", true, ObjectiveCriteria.RenderType.INTEGER);

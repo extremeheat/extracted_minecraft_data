@@ -7,6 +7,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -72,26 +74,21 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("RecordItem", 10)) {
-         this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("RecordItem")).orElse(ItemStack.EMPTY);
-      } else {
-         if (!this.item.isEmpty()) {
-            this.jukeboxSongPlayer.stop(this.level, this.getBlockState());
-         }
-
-         this.item = ItemStack.EMPTY;
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      ItemStack var4 = (ItemStack)var1.read("RecordItem", ItemStack.CODEC, var3).orElse(ItemStack.EMPTY);
+      if (!this.item.isEmpty() && !ItemStack.isSameItemSameComponents(var4, this.item)) {
+         this.jukeboxSongPlayer.stop(this.level, this.getBlockState());
       }
 
-      if (var1.contains("ticks_since_song_started", 4)) {
-         JukeboxSong.fromStack(var2, this.item).ifPresent((var2x) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2x, var1.getLong("ticks_since_song_started")));
-      }
-
+      this.item = var4;
+      var1.getLong("ticks_since_song_started").ifPresent((var2x) -> JukeboxSong.fromStack(var2, this.item).ifPresent((var2xx) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2xx, var2x)));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.getTheItem().isEmpty()) {
-         var1.put("RecordItem", this.getTheItem().save(var2));
+         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+         var1.store("RecordItem", ItemStack.CODEC, var3, this.getTheItem());
       }
 
       if (this.jukeboxSongPlayer.getSong() != null) {
@@ -137,6 +134,10 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
 
    public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
       return var1.hasAnyMatching(ItemStack::isEmpty);
+   }
+
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+      this.popOutTheItem();
    }
 
    @VisibleForTesting

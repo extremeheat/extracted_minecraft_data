@@ -24,6 +24,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
    private static final String NECK = "neck";
@@ -93,27 +95,27 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return Sheets.DECORATED_POT_SIDE;
    }
 
-   public void render(DecoratedPotBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void render(DecoratedPotBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
       var3.pushPose();
-      Direction var7 = var1.getDirection();
+      Direction var8 = var1.getDirection();
       var3.translate(0.5, 0.0, 0.5);
-      var3.mulPose(Axis.YP.rotationDegrees(180.0F - var7.toYRot()));
+      var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var8.toYRot()));
       var3.translate(-0.5, 0.0, -0.5);
-      DecoratedPotBlockEntity.WobbleStyle var8 = var1.lastWobbleStyle;
-      if (var8 != null && var1.getLevel() != null) {
-         float var9 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var8.duration;
-         if (var9 >= 0.0F && var9 <= 1.0F) {
-            if (var8 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-               float var10 = 0.015625F;
-               float var11 = var9 * 6.2831855F;
-               float var12 = -1.5F * (Mth.cos(var11) + 0.5F) * Mth.sin(var11 / 2.0F);
-               var3.rotateAround(Axis.XP.rotation(var12 * 0.015625F), 0.5F, 0.0F, 0.5F);
-               float var13 = Mth.sin(var11);
-               var3.rotateAround(Axis.ZP.rotation(var13 * 0.015625F), 0.5F, 0.0F, 0.5F);
+      DecoratedPotBlockEntity.WobbleStyle var9 = var1.lastWobbleStyle;
+      if (var9 != null && var1.getLevel() != null) {
+         float var10 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var9.duration;
+         if (var10 >= 0.0F && var10 <= 1.0F) {
+            if (var9 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
+               float var11 = 0.015625F;
+               float var12 = var10 * 6.2831855F;
+               float var13 = -1.5F * (Mth.cos(var12) + 0.5F) * Mth.sin(var12 / 2.0F);
+               var3.rotateAround(Axis.XP.rotation(var13 * 0.015625F), 0.5F, 0.0F, 0.5F);
+               float var14 = Mth.sin(var12);
+               var3.rotateAround(Axis.ZP.rotation(var14 * 0.015625F), 0.5F, 0.0F, 0.5F);
             } else {
-               float var14 = Mth.sin(-var9 * 3.0F * 3.1415927F) * 0.125F;
-               float var15 = 1.0F - var9;
-               var3.rotateAround(Axis.YP.rotation(var14 * var15), 0.5F, 0.0F, 0.5F);
+               float var15 = Mth.sin(-var10 * 3.0F * 3.1415927F) * 0.125F;
+               float var16 = 1.0F - var10;
+               var3.rotateAround(Axis.YP.rotation(var15 * var16), 0.5F, 0.0F, 0.5F);
             }
          }
       }

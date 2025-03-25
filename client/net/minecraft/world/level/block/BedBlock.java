@@ -1,10 +1,14 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.math.OctahedralGroup;
+import com.mojang.math.Quadrant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -48,17 +52,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(var0, BedBlock::new));
    public static final EnumProperty<BedPart> PART;
    public static final BooleanProperty OCCUPIED;
-   protected static final int HEIGHT = 9;
-   protected static final VoxelShape BASE;
-   private static final int LEG_WIDTH = 3;
-   protected static final VoxelShape LEG_NORTH_WEST;
-   protected static final VoxelShape LEG_SOUTH_WEST;
-   protected static final VoxelShape LEG_NORTH_EAST;
-   protected static final VoxelShape LEG_SOUTH_EAST;
-   protected static final VoxelShape NORTH_SHAPE;
-   protected static final VoxelShape SOUTH_SHAPE;
-   protected static final VoxelShape WEST_SHAPE;
-   protected static final VoxelShape EAST_SHAPE;
+   private static final Map<Direction, VoxelShape> SHAPES;
    private final DyeColor color;
 
    public MapCodec<BedBlock> codec() {
@@ -131,8 +125,8 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       }
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      super.fallOn(var1, var2, var3, var4, var5 * 0.5F);
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
+      super.fallOn(var1, var2, var3, var4, var5 * 0.5);
    }
 
    public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
@@ -166,7 +160,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.isCreative()) {
+      if (!var1.isClientSide && var4.preventsBlockDrops()) {
          BedPart var5 = (BedPart)var3.getValue(PART);
          if (var5 == BedPart.FOOT) {
             BlockPos var6 = var2.relative(getNeighbourDirection(var5, (Direction)var3.getValue(FACING)));
@@ -191,21 +185,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Direction var5 = getConnectedDirection(var1).getOpposite();
-      switch (var5) {
-         case NORTH -> {
-            return NORTH_SHAPE;
-         }
-         case SOUTH -> {
-            return SOUTH_SHAPE;
-         }
-         case WEST -> {
-            return WEST_SHAPE;
-         }
-         default -> {
-            return EAST_SHAPE;
-         }
-      }
+      return (VoxelShape)SHAPES.get(getConnectedDirection(var1).getOpposite());
    }
 
    public static Direction getConnectedDirection(BlockState var0) {
@@ -289,7 +269,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       if (!var1.isClientSide) {
          BlockPos var6 = var2.relative((Direction)var3.getValue(FACING));
          var1.setBlock(var6, (BlockState)var3.setValue(PART, BedPart.HEAD), 3);
-         var1.blockUpdated(var2, Blocks.AIR);
+         var1.updateNeighborsAt(var2, Blocks.AIR);
          var3.updateNeighbourShapes(var1, var2, 3);
       }
 
@@ -323,14 +303,10 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    static {
       PART = BlockStateProperties.BED_PART;
       OCCUPIED = BlockStateProperties.OCCUPIED;
-      BASE = Block.box(0.0, 3.0, 0.0, 16.0, 9.0, 16.0);
-      LEG_NORTH_WEST = Block.box(0.0, 0.0, 0.0, 3.0, 3.0, 3.0);
-      LEG_SOUTH_WEST = Block.box(0.0, 0.0, 13.0, 3.0, 3.0, 16.0);
-      LEG_NORTH_EAST = Block.box(13.0, 0.0, 0.0, 16.0, 3.0, 3.0);
-      LEG_SOUTH_EAST = Block.box(13.0, 0.0, 13.0, 16.0, 3.0, 16.0);
-      NORTH_SHAPE = Shapes.or(BASE, LEG_NORTH_WEST, LEG_NORTH_EAST);
-      SOUTH_SHAPE = Shapes.or(BASE, LEG_SOUTH_WEST, LEG_SOUTH_EAST);
-      WEST_SHAPE = Shapes.or(BASE, LEG_NORTH_WEST, LEG_SOUTH_WEST);
-      EAST_SHAPE = Shapes.or(BASE, LEG_NORTH_EAST, LEG_SOUTH_EAST);
+      SHAPES = (Map)Util.make(() -> {
+         VoxelShape var0 = Block.box(0.0, 0.0, 0.0, 3.0, 3.0, 3.0);
+         VoxelShape var1 = Shapes.rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90));
+         return Shapes.rotateHorizontal(Shapes.or(Block.column(16.0, 3.0, 9.0), var0, var1));
+      });
    }
 }

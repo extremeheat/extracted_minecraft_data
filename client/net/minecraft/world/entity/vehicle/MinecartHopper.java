@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 
 public class MinecartHopper extends AbstractMinecartContainer implements Hopper {
+   private static final boolean DEFAULT_ENABLED = true;
    private boolean enabled = true;
    private boolean consumedItemThisFrame = false;
 
@@ -119,7 +120,7 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.enabled = var1.contains("Enabled") ? var1.getBoolean("Enabled") : true;
+      this.enabled = var1.getBooleanOr("Enabled", true);
    }
 
    public AbstractContainerMenu createMenu(int var1, Inventory var2) {

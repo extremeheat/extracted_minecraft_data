@@ -1,8 +1,6 @@
 package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -12,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -37,10 +34,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootTable;
-import org.slf4j.Logger;
 
 public abstract class StructurePiece {
-   private static final Logger LOGGER = LogUtils.getLogger();
    protected static final BlockState CAVE_AIR;
    protected BoundingBox boundingBox;
    @Nullable
@@ -59,8 +54,8 @@ public abstract class StructurePiece {
    }
 
    public StructurePiece(StructurePieceType var1, CompoundTag var2) {
-      this(var1, var2.getInt("GD"), (BoundingBox)BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB")).getOrThrow((var0) -> new IllegalArgumentException("Invalid boundingbox: " + var0)));
-      int var3 = var2.getInt("O");
+      this(var1, var2.getIntOr("GD", 0), (BoundingBox)var2.read("BB", BoundingBox.CODEC).orElseThrow());
+      int var3 = var2.getIntOr("O", 0);
       this.setOrientation(var3 == -1 ? null : Direction.from2DDataValue(var3));
    }
 
@@ -75,10 +70,7 @@ public abstract class StructurePiece {
    public final CompoundTag createTag(StructurePieceSerializationContext var1) {
       CompoundTag var2 = new CompoundTag();
       var2.putString("id", BuiltInRegistries.STRUCTURE_PIECE.getKey(this.getType()).toString());
-      DataResult var10000 = BoundingBox.CODEC.encodeStart(NbtOps.INSTANCE, this.boundingBox);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("BB", var1x));
+      var2.store("BB", BoundingBox.CODEC, this.boundingBox);
       Direction var3 = this.getOrientation();
       var2.putInt("O", var3 == null ? -1 : var3.get2DDataValue());
       var2.putInt("GD", this.genDepth);

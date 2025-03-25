@@ -1,6 +1,7 @@
 package net.minecraft.util.datafix;
 
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.RewriteResult;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
@@ -9,6 +10,7 @@ import com.mojang.datafixers.functions.PointFreeRule;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +19,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 
@@ -29,11 +32,26 @@ public class ExtraDataFixUtils {
       Optional var1 = var0.get("X").asNumber().result();
       Optional var2 = var0.get("Y").asNumber().result();
       Optional var3 = var0.get("Z").asNumber().result();
-      return !var1.isEmpty() && !var2.isEmpty() && !var3.isEmpty() ? var0.createIntList(IntStream.of(new int[]{((Number)var1.get()).intValue(), ((Number)var2.get()).intValue(), ((Number)var3.get()).intValue()})) : var0;
+      return !var1.isEmpty() && !var2.isEmpty() && !var3.isEmpty() ? createBlockPos(var0, ((Number)var1.get()).intValue(), ((Number)var2.get()).intValue(), ((Number)var3.get()).intValue()) : var0;
+   }
+
+   public static Dynamic<?> fixInlineBlockPos(Dynamic<?> var0, String var1, String var2, String var3, String var4) {
+      Optional var5 = var0.get(var1).asNumber().result();
+      Optional var6 = var0.get(var2).asNumber().result();
+      Optional var7 = var0.get(var3).asNumber().result();
+      return !var5.isEmpty() && !var6.isEmpty() && !var7.isEmpty() ? var0.remove(var1).remove(var2).remove(var3).set(var4, createBlockPos(var0, ((Number)var5.get()).intValue(), ((Number)var6.get()).intValue(), ((Number)var7.get()).intValue())) : var0;
+   }
+
+   public static Dynamic<?> createBlockPos(Dynamic<?> var0, int var1, int var2, int var3) {
+      return var0.createIntList(IntStream.of(new int[]{var1, var2, var3}));
    }
 
    public static <T, R> Typed<R> cast(Type<R> var0, Typed<T> var1) {
       return new Typed(var0, var1.getOps(), var1.getValue());
+   }
+
+   public static <T> Typed<T> cast(Type<T> var0, Object var1, DynamicOps<?> var2) {
+      return new Typed(var0, var2, var1);
    }
 
    public static Type<?> patchSubType(Type<?> var0, Type<?> var1, Type<?> var2) {
@@ -78,5 +96,33 @@ public class ExtraDataFixUtils {
          Objects.requireNonNull(var0);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createString).result(), var2x);
       });
+   }
+
+   public static String dyeColorIdToName(int var0) {
+      String var10000;
+      switch (var0) {
+         case 1 -> var10000 = "orange";
+         case 2 -> var10000 = "magenta";
+         case 3 -> var10000 = "light_blue";
+         case 4 -> var10000 = "yellow";
+         case 5 -> var10000 = "lime";
+         case 6 -> var10000 = "pink";
+         case 7 -> var10000 = "gray";
+         case 8 -> var10000 = "light_gray";
+         case 9 -> var10000 = "cyan";
+         case 10 -> var10000 = "purple";
+         case 11 -> var10000 = "blue";
+         case 12 -> var10000 = "brown";
+         case 13 -> var10000 = "green";
+         case 14 -> var10000 = "red";
+         case 15 -> var10000 = "black";
+         default -> var10000 = "white";
+      }
+
+      return var10000;
+   }
+
+   public static <T> Typed<?> readAndSet(Typed<?> var0, OpticFinder<T> var1, Dynamic<?> var2) {
+      return var0.set(var1, Util.readTypedOrThrow(var1.type(), var2, true));
    }
 }

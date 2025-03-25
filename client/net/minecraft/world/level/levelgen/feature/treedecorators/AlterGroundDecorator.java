@@ -1,11 +1,10 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
@@ -22,21 +21,10 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    public void place(TreeDecorator.Context var1) {
-      ArrayList var2 = Lists.newArrayList();
-      ObjectArrayList var3 = var1.roots();
-      ObjectArrayList var4 = var1.logs();
-      if (var3.isEmpty()) {
-         var2.addAll(var4);
-      } else if (!var4.isEmpty() && ((BlockPos)var3.get(0)).getY() == ((BlockPos)var4.get(0)).getY()) {
-         var2.addAll(var4);
-         var2.addAll(var3);
-      } else {
-         var2.addAll(var3);
-      }
-
+      List var2 = TreeFeature.getLowestTrunkOrRootOfTree(var1);
       if (!var2.isEmpty()) {
-         int var5 = ((BlockPos)var2.get(0)).getY();
-         var2.stream().filter((var1x) -> var1x.getY() == var5).forEach((var2x) -> {
+         int var3 = ((BlockPos)var2.get(0)).getY();
+         var2.stream().filter((var1x) -> var1x.getY() == var3).forEach((var2x) -> {
             this.placeCircle(var1, var2x.west().north());
             this.placeCircle(var1, var2x.east(2).north());
             this.placeCircle(var1, var2x.west().south(2));

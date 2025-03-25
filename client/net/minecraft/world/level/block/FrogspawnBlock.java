@@ -12,8 +12,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.animal.frog.Tadpole;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -31,7 +31,7 @@ public class FrogspawnBlock extends Block {
    private static final int MAX_TADPOLES_SPAWN = 5;
    private static final int DEFAULT_MIN_HATCH_TICK_DELAY = 3600;
    private static final int DEFAULT_MAX_HATCH_TICK_DELAY = 12000;
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 1.5, 16.0);
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 1.5);
    private static int minHatchTickDelay = 3600;
    private static int maxHatchTickDelay = 12000;
 
@@ -71,7 +71,7 @@ public class FrogspawnBlock extends Block {
       }
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var4.getType().equals(EntityType.FALLING_BLOCK)) {
          this.destroyBlock(var2, var3);
       }
@@ -86,7 +86,7 @@ public class FrogspawnBlock extends Block {
 
    private void hatchFrogspawn(ServerLevel var1, BlockPos var2, RandomSource var3) {
       this.destroyBlock(var1, var2);
-      var1.playSound((Player)null, var2, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var1.playSound((Entity)null, var2, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 1.0F, 1.0F);
       this.spawnTadpoles(var1, var2, var3);
    }
 
@@ -103,7 +103,7 @@ public class FrogspawnBlock extends Block {
             double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);
             double var9 = (double)var2.getZ() + this.getRandomTadpolePositionOffset(var3);
             int var11 = var3.nextInt(1, 361);
-            var6.moveTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
+            var6.snapTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
             var6.setPersistenceRequired();
             var1.addFreshEntity(var6);
          }
