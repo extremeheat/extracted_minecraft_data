@@ -129,7 +129,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       super.fallOn(var1, var2, var3, var4, var5 * 0.5);
    }
 
-   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
+   public void updateEntityMovementAfterFallOn(Level var1, Entity var2) {
       if (var2.isSuppressingBounce()) {
          super.updateEntityMovementAfterFallOn(var1, var2);
       } else {

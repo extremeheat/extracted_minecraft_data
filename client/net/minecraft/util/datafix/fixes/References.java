@@ -12,6 +12,7 @@ public class References {
    public static final DSL.TypeReference STATS = reference("stats");
    public static final DSL.TypeReference SAVED_DATA_COMMAND_STORAGE = reference("saved_data/command_storage");
    public static final DSL.TypeReference SAVED_DATA_TICKETS = reference("saved_data/tickets");
+   public static final DSL.TypeReference SAVED_DATA_MINE_PROGRESS = reference("saved_data/mine_progress");
    public static final DSL.TypeReference SAVED_DATA_MAP_DATA = reference("saved_data/map_data");
    public static final DSL.TypeReference SAVED_DATA_MAP_INDEX = reference("saved_data/idcounts");
    public static final DSL.TypeReference SAVED_DATA_RAIDS = reference("saved_data/raids");

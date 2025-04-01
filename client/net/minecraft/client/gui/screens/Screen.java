@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   protected static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
+   public static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
    protected static final PanoramaRenderer PANORAMA;
    public static final ResourceLocation MENU_BACKGROUND;
    public static final ResourceLocation HEADER_SEPARATOR;
@@ -63,7 +63,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private static final ResourceLocation INWORLD_MENU_BACKGROUND;
    public static final ResourceLocation INWORLD_HEADER_SEPARATOR;
    public static final ResourceLocation INWORLD_FOOTER_SEPARATOR;
-   protected final Component title;
+   protected Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
    private final List<NarratableEntry> narratables = Lists.newArrayList();
    @Nullable
@@ -425,7 +425,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
+      var1.fill(0, 0, var1.guiWidth(), var1.guiHeight(), -16777216);
+      var1.flush();
+      this.minecraft.levelRenderer.getSkyRenderer().renderCodeSkyForTitle(this.minecraft, 1.0F, var2);
+      var1.flush();
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {

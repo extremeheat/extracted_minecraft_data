@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -29,21 +30,22 @@ public class KnowledgeBookItem extends Item {
       if (var5.isEmpty()) {
          return InteractionResult.FAIL;
       } else {
-         if (!var1.isClientSide) {
-            RecipeManager var6 = var1.getServer().getRecipeManager();
-            ArrayList var7 = new ArrayList(var5.size());
+         if (var1 instanceof ServerLevel) {
+            ServerLevel var6 = (ServerLevel)var1;
+            RecipeManager var7 = var6.theGame().getRecipeManager();
+            ArrayList var8 = new ArrayList(var5.size());
 
-            for(ResourceKey var9 : var5) {
-               Optional var10 = var6.byKey(var9);
-               if (!var10.isPresent()) {
-                  LOGGER.error("Invalid recipe: {}", var9);
+            for(ResourceKey var10 : var5) {
+               Optional var11 = var7.byKey(var10);
+               if (!var11.isPresent()) {
+                  LOGGER.error("Invalid recipe: {}", var10);
                   return InteractionResult.FAIL;
                }
 
-               var7.add((RecipeHolder)var10.get());
+               var8.add((RecipeHolder)var11.get());
             }
 
-            var2.awardRecipes(var7);
+            var2.awardRecipes(var8);
             var2.awardStat(Stats.ITEM_USED.get(this));
          }
 

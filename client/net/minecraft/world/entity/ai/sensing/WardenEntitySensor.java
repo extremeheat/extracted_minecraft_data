@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.schedule.Activity;
 
 public class WardenEntitySensor extends NearestLivingEntitySensor<Warden> {
    public WardenEntitySensor() {
@@ -26,7 +27,9 @@ public class WardenEntitySensor extends NearestLivingEntitySensor<Warden> {
 
    protected void doTick(ServerLevel var1, Warden var2) {
       super.doTick(var1, var2);
-      getClosest(var2, (var0) -> var0.getType() == EntityType.PLAYER).or(() -> getClosest(var2, (var0) -> var0.getType() != EntityType.PLAYER)).ifPresentOrElse((var1x) -> var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, var1x), () -> var2.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
+      if (!var2.getBrain().isActive(Activity.ACTING)) {
+         getClosest(var2, (var0) -> var0.getType() == EntityType.PLAYER).or(() -> getClosest(var2, (var0) -> var0.getType() != EntityType.PLAYER)).ifPresentOrElse((var1x) -> var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, var1x), () -> var2.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
+      }
    }
 
    private static Optional<LivingEntity> getClosest(Warden var0, Predicate<LivingEntity> var1) {

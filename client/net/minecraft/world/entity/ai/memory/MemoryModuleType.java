@@ -109,6 +109,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Unit> RECENT_PROJECTILE;
    public static final MemoryModuleType<Unit> IS_SNIFFING;
    public static final MemoryModuleType<Unit> IS_EMERGING;
+   public static final MemoryModuleType<Integer> ACTING_STAGE;
    public static final MemoryModuleType<Unit> ROAR_SOUND_DELAY;
    public static final MemoryModuleType<Unit> DIG_COOLDOWN;
    public static final MemoryModuleType<Unit> ROAR_SOUND_COOLDOWN;
@@ -240,6 +241,7 @@ public class MemoryModuleType<U> {
       RECENT_PROJECTILE = register("recent_projectile", Unit.CODEC);
       IS_SNIFFING = register("is_sniffing", Unit.CODEC);
       IS_EMERGING = register("is_emerging", Unit.CODEC);
+      ACTING_STAGE = register("acting_stage", Codec.INT);
       ROAR_SOUND_DELAY = register("roar_sound_delay", Unit.CODEC);
       DIG_COOLDOWN = register("dig_cooldown", Unit.CODEC);
       ROAR_SOUND_COOLDOWN = register("roar_sound_cooldown", Unit.CODEC);

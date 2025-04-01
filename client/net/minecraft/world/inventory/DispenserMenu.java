@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.List;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,7 +15,7 @@ public class DispenserMenu extends AbstractContainerMenu {
    private static final int USE_ROW_SLOT_END = 45;
    private final Container dispenser;
 
-   public DispenserMenu(int var1, Inventory var2) {
+   public DispenserMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, new SimpleContainer(9));
    }
 
@@ -22,7 +23,7 @@ public class DispenserMenu extends AbstractContainerMenu {
       super(MenuType.GENERIC_3x3, var1);
       checkContainerSize(var3, 9);
       this.dispenser = var3;
-      var3.startOpen(var2.player);
+      var3.startOpen(var2.getPlayer());
       this.add3x3GridSlots(var3, 62, 17);
       this.addStandardInventorySlots(var2, 8, 84);
    }

@@ -27,7 +27,7 @@ public class Foods {
    public static final FoodProperties MELON_SLICE = (new FoodProperties.Builder()).nutrition(2).saturationModifier(0.3F).build();
    public static final FoodProperties MUSHROOM_STEW = stew(6).build();
    public static final FoodProperties MUTTON = (new FoodProperties.Builder()).nutrition(2).saturationModifier(0.3F).build();
-   public static final FoodProperties POISONOUS_POTATO = (new FoodProperties.Builder()).nutrition(2).saturationModifier(0.3F).build();
+   public static final FoodProperties POISONOUS_POTATO = (new FoodProperties.Builder()).nutrition(2).alwaysEdible().saturationModifier(0.3F).build();
    public static final FoodProperties PORKCHOP = (new FoodProperties.Builder()).nutrition(3).saturationModifier(0.3F).build();
    public static final FoodProperties POTATO = (new FoodProperties.Builder()).nutrition(1).saturationModifier(0.3F).build();
    public static final FoodProperties PUFFERFISH = (new FoodProperties.Builder()).nutrition(1).saturationModifier(0.1F).build();

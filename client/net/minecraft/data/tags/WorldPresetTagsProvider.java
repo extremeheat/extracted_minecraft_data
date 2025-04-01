@@ -14,7 +14,7 @@ public class WorldPresetTagsProvider extends TagsProvider<WorldPreset> {
    }
 
    protected void addTags(HolderLookup.Provider var1) {
-      this.tag(WorldPresetTags.NORMAL).add(WorldPresets.NORMAL).add(WorldPresets.FLAT).add(WorldPresets.LARGE_BIOMES).add(WorldPresets.AMPLIFIED).add(WorldPresets.SINGLE_BIOME_SURFACE);
-      this.tag(WorldPresetTags.EXTENDED).addTag(WorldPresetTags.NORMAL).add(WorldPresets.DEBUG);
+      this.tag(WorldPresetTags.NORMAL).add(WorldPresets.NORMAL).add(WorldPresets.FLAT);
+      this.tag(WorldPresetTags.EXTENDED).addTag(WorldPresetTags.NORMAL);
    }
 }

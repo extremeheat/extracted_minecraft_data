@@ -1,14 +1,18 @@
 package net.minecraft.world.level.storage;
 
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.mines.SpecialMine;
+import net.minecraft.world.level.mines.WorldEffect;
 import net.minecraft.world.level.timers.TimerQueue;
 
 public class DerivedLevelData implements ServerLevelData {
@@ -111,6 +115,14 @@ public class DerivedLevelData implements ServerLevelData {
       return this.worldData.getGameRules();
    }
 
+   public int getLevelCount() {
+      return this.wrapped.getLevelCount();
+   }
+
+   public int incrementAndGetLevelCount() {
+      return this.wrapped.incrementAndGetLevelCount();
+   }
+
    public WorldBorder.Settings getWorldBorder() {
       return this.wrapped.getWorldBorder();
    }
@@ -126,7 +138,43 @@ public class DerivedLevelData implements ServerLevelData {
       return this.worldData.isDifficultyLocked();
    }
 
-   public TimerQueue<MinecraftServer> getScheduledEvents() {
+   public void unlockEffect(WorldEffect var1) {
+      this.worldData.unlockEffect(var1);
+   }
+
+   public boolean isEffectUnlocked(WorldEffect var1) {
+      return this.worldData.isEffectUnlocked(var1);
+   }
+
+   public boolean isSpecialMineUnlocked(SpecialMine var1) {
+      return this.worldData.isSpecialMineUnlocked(var1);
+   }
+
+   public void unlockSpecialMine(SpecialMine var1) {
+      this.worldData.unlockSpecialMine(var1);
+   }
+
+   public void mineCompleted(Optional<SpecialMine> var1, boolean var2) {
+      this.worldData.mineCompleted(var1, var2);
+   }
+
+   public Optional<SpecialMine> getNextSpecialMine(RandomSource var1) {
+      return this.worldData.getNextSpecialMine(var1);
+   }
+
+   public int getMineCrafterLevel() {
+      return this.worldData.getMineCrafterLevel();
+   }
+
+   public int getMineCrafterExp() {
+      return this.worldData.getMineCrafterExp();
+   }
+
+   public void addExperienceToMineCrafter(int var1) {
+      this.worldData.addExperienceToMineCrafter(var1);
+   }
+
+   public TimerQueue<TheGame> getScheduledEvents() {
       return this.wrapped.getScheduledEvents();
    }
 

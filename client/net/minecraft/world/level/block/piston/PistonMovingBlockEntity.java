@@ -177,10 +177,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    private static void moveEntityByPiston(Direction var0, Entity var1, double var2, Direction var4) {
       NOCLIP.set(var0);
-      Vec3 var5 = var1.position();
       var1.move(MoverType.PISTON, new Vec3(var2 * (double)var4.getStepX(), var2 * (double)var4.getStepY(), var2 * (double)var4.getStepZ()));
-      var1.applyEffectsFromBlocks(var5, var1.position());
-      var1.removeLatestMovementRecordingBatch();
       NOCLIP.set((Object)null);
    }
 

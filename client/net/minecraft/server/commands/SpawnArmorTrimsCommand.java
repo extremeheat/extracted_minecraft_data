@@ -50,11 +50,11 @@ public class SpawnArmorTrimsCommand {
    }
 
    private static int spawnAllArmorTrims(CommandSourceStack var0, Player var1) {
-      return spawnArmorTrims(var0, var1, var0.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).listElements());
+      return spawnArmorTrims(var0, var1, var0.theGame().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).listElements());
    }
 
    private static int spawnArmorTrim(CommandSourceStack var0, Player var1, ResourceKey<TrimPattern> var2) {
-      return spawnArmorTrims(var0, var1, Stream.of((Holder.Reference)var0.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).get(var2).orElseThrow()));
+      return spawnArmorTrims(var0, var1, Stream.of((Holder.Reference)var0.theGame().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).get(var2).orElseThrow()));
    }
 
    private static int spawnArmorTrims(CommandSourceStack var0, Player var1, Stream<Holder.Reference<TrimPattern>> var2) {

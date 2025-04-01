@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.pieces;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -15,7 +15,7 @@ public record StructurePieceSerializationContext(ResourceManager resourceManager
    }
 
    public static StructurePieceSerializationContext fromLevel(ServerLevel var0) {
-      MinecraftServer var1 = var0.getServer();
+      TheGame var1 = var0.theGame();
       return new StructurePieceSerializationContext(var1.getResourceManager(), var1.registryAccess(), var1.getStructureManager());
    }
 }

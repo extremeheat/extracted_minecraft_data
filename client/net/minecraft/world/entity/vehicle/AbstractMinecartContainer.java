@@ -113,7 +113,7 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
       if (this.lootTable != null && var3.isSpectator()) {
          return null;
       } else {
-         this.unpackChestVehicleLootTable(var2.player);
+         this.unpackChestVehicleLootTable(var2.getPlayer());
          return this.createMenu(var1, var2);
       }
    }

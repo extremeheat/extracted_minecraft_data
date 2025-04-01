@@ -267,7 +267,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       }
 
       static {
-         LEGACY_PRESET_NAMES = Map.of("default", WorldPresets.NORMAL, "largebiomes", WorldPresets.LARGE_BIOMES);
+         LEGACY_PRESET_NAMES = Map.of("default", WorldPresets.NORMAL);
       }
    }
 }

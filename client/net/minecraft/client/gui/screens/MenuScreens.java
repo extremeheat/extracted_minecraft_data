@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -13,6 +14,7 @@ import net.minecraft.client.gui.screens.inventory.CartographyTableScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CrafterScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
+import net.minecraft.client.gui.screens.inventory.DimensionControlScreen;
 import net.minecraft.client.gui.screens.inventory.DispenserScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.client.gui.screens.inventory.FurnaceScreen;
@@ -22,6 +24,7 @@ import net.minecraft.client.gui.screens.inventory.LecternScreen;
 import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
+import net.minecraft.client.gui.screens.inventory.MineCraftingScreen;
 import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.client.gui.screens.inventory.SmokerScreen;
@@ -41,12 +44,12 @@ public class MenuScreens {
       super();
    }
 
-   public static <T extends AbstractContainerMenu> void create(MenuType<T> var0, Minecraft var1, int var2, Component var3) {
-      ScreenConstructor var4 = getConstructor(var0);
-      if (var4 == null) {
+   public static <T extends AbstractContainerMenu> void create(MenuType<T> var0, Minecraft var1, int var2, Component var3, List<Integer> var4) {
+      ScreenConstructor var5 = getConstructor(var0);
+      if (var5 == null) {
          LOGGER.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(var0));
       } else {
-         var4.fromPacket(var3, var0, var1, var2);
+         var5.fromPacket(var3, var0, var1, var2, var4);
       }
    }
 
@@ -95,19 +98,21 @@ public class MenuScreens {
       register(MenuType.HOPPER, HopperScreen::new);
       register(MenuType.LECTERN, LecternScreen::new);
       register(MenuType.LOOM, LoomScreen::new);
+      register(MenuType.MAP_MAKING, MineCraftingScreen::new);
       register(MenuType.MERCHANT, MerchantScreen::new);
       register(MenuType.SHULKER_BOX, ShulkerBoxScreen::new);
       register(MenuType.SMITHING, SmithingScreen::new);
       register(MenuType.SMOKER, SmokerScreen::new);
       register(MenuType.CARTOGRAPHY_TABLE, CartographyTableScreen::new);
       register(MenuType.STONECUTTER, StonecutterScreen::new);
+      register(MenuType.DIMENSION_CONTROL, DimensionControlScreen::new);
    }
 
    interface ScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {
-      default void fromPacket(Component var1, MenuType<T> var2, Minecraft var3, int var4) {
-         Screen var5 = this.create(var2.create(var4, var3.player.getInventory()), var3.player.getInventory(), var1);
-         var3.player.containerMenu = ((MenuAccess)var5).getMenu();
-         var3.setScreen(var5);
+      default void fromPacket(Component var1, MenuType<T> var2, Minecraft var3, int var4, List<Integer> var5) {
+         Screen var6 = this.create(var2.create(var4, var3.player.getInventory(), var5), var3.player.getInventory(), var1);
+         var3.player.containerMenu = ((MenuAccess)var6).getMenu();
+         var3.setScreen(var6);
       }
 
       U create(T var1, Inventory var2, Component var3);

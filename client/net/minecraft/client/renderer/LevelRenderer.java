@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -59,6 +60,7 @@ import net.minecraft.client.renderer.chunk.RenderRegionCache;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
@@ -83,12 +85,15 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.DimensionSpecialEffects;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -436,6 +441,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       int var27 = this.minecraft.getMainRenderTarget().width;
       int var28 = this.minecraft.getMainRenderTarget().height;
       RenderTargetDescriptor var29 = new RenderTargetDescriptor(var27, var28, true, 0);
+      this.targets.sky = var26.<RenderTarget>createInternal("sky", var29);
       PostChain var30 = this.getTransparencyChain();
       if (var30 != null) {
          this.targets.translucent = var26.<RenderTarget>createInternal("translucent", var29);
@@ -451,28 +457,30 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       FramePass var31 = var26.addPass("clear");
       this.targets.main = var31.<RenderTarget>readsAndWrites(this.targets.main);
+      ResourceHandle var32 = this.targets.main;
       var31.executes(() -> {
-         RenderTarget var2 = this.minecraft.getMainRenderTarget();
+         RenderTarget var2 = (RenderTarget)var32.get();
          RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var2.getColorTexture(), ARGB.colorFromFloat(0.0F, var21.x, var21.y, var21.z), var2.getDepthTexture(), 1.0);
       });
+      this.addSkyPass(var26, var4, var8, var23, var21);
       if (!var20) {
-         this.addSkyPass(var26, var4, var8, var23);
+         this.addSkyBlitPass(var26);
       }
 
       this.addMainPass(var26, var18, var4, var6, var7, var22, var3, var24, var2, var9);
-      PostChain var32 = this.minecraft.getShaderManager().getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
-      if (var24 && var32 != null) {
-         var32.addToFrame(var26, var27, var28, this.targets, (Consumer)null);
+      PostChain var33 = this.minecraft.getShaderManager().getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
+      if (var24 && var33 != null) {
+         var33.addToFrame(var26, var27, var28, this.targets, (Consumer)null);
       }
 
       this.addParticlesPass(var26, var4, var8, var22);
-      CloudStatus var33 = this.minecraft.options.getCloudsType();
-      if (var33 != CloudStatus.OFF) {
-         float var34 = this.level.effects().getCloudHeight();
-         if (!Float.isNaN(var34)) {
-            float var35 = (float)this.ticks + var8;
-            int var36 = this.level.getCloudColor(var8);
-            this.addCloudsPass(var26, var33, var4.getPosition(), var35, var36, var34 + 0.33F);
+      CloudStatus var34 = this.minecraft.options.getCloudsType();
+      if (var34 != CloudStatus.OFF) {
+         float var35 = this.level.effects().getCloudHeight();
+         if (!Float.isNaN(var35)) {
+            float var36 = (float)this.ticks + var8;
+            int var37 = this.level.getCloudColor(var8);
+            this.addCloudsPass(var26, var34, var4.getPosition(), var36, var37, var35 + 0.33F);
          }
       }
 
@@ -521,6 +529,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       ResourceHandle var13 = this.targets.translucent;
       ResourceHandle var14 = this.targets.itemEntity;
       ResourceHandle var15 = this.targets.entityOutline;
+      var11.reads(this.targets.sky);
       var11.executes(() -> {
          RenderSystem.setShaderFog(var6);
          float var13x = var9.getGameTimeDeltaPartialTick(false);
@@ -529,6 +538,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          double var17 = var14x.y();
          double var19 = var14x.z();
          var10.push("terrain");
+         this.renderSectionLayer(RenderType.skyBlock(), var15x, var17, var19, var4, var5);
          this.renderSectionLayer(RenderType.solid(), var15x, var17, var19, var4, var5);
          this.renderSectionLayer(RenderType.cutoutMipped(), var15x, var17, var19, var4, var5);
          this.renderSectionLayer(RenderType.cutout(), var15x, var17, var19, var4, var5);
@@ -561,6 +571,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var22.endBatch(RenderType.solid());
          var22.endBatch(RenderType.endPortal());
          var22.endBatch(RenderType.endGateway());
+         var22.endBatch(RenderType.skyBlock());
          var22.endBatch(Sheets.solidBlockSheet());
          var22.endBatch(Sheets.cutoutBlockSheet());
          var22.endBatch(Sheets.bedSheet());
@@ -581,9 +592,15 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var22.endBatch(Sheets.bannerSheet());
          var22.endBatch(Sheets.shieldSheet());
          var22.endBatch(RenderType.armorEntityGlint());
-         var22.endBatch(RenderType.glint());
-         var22.endBatch(RenderType.glintTranslucent());
-         var22.endBatch(RenderType.entityGlint());
+         var22.endBatch(RenderType.glint(ItemStackRenderState.FoilType.WON));
+         var22.endBatch(RenderType.glint(ItemStackRenderState.FoilType.LOST));
+         var22.endBatch(RenderType.glint(ItemStackRenderState.FoilType.STANDARD));
+         var22.endBatch(RenderType.glintTranslucent(ItemStackRenderState.FoilType.WON));
+         var22.endBatch(RenderType.glintTranslucent(ItemStackRenderState.FoilType.LOST));
+         var22.endBatch(RenderType.glintTranslucent(ItemStackRenderState.FoilType.STANDARD));
+         var22.endBatch(RenderType.entityGlint(ItemStackRenderState.FoilType.WON));
+         var22.endBatch(RenderType.entityGlint(ItemStackRenderState.FoilType.LOST));
+         var22.endBatch(RenderType.entityGlint(ItemStackRenderState.FoilType.STANDARD));
          var10.popPush("destroyProgress");
          this.renderBlockDestroyAnimation(var24, var3, var23);
          var23.endBatch();
@@ -984,43 +1001,88 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void addSkyPass(FrameGraphBuilder var1, Camera var2, float var3, FogParameters var4) {
-      FogType var5 = var2.getFluidInCamera();
-      if (var5 != FogType.POWDER_SNOW && var5 != FogType.LAVA && !this.doesMobEffectBlockSky(var2)) {
-         DimensionSpecialEffects var6 = this.level.effects();
-         DimensionSpecialEffects.SkyType var7 = var6.skyType();
-         if (var7 != DimensionSpecialEffects.SkyType.NONE) {
-            FramePass var8 = var1.addPass("sky");
-            this.targets.main = var8.<RenderTarget>readsAndWrites(this.targets.main);
-            var8.executes(() -> {
+   private void addSkyBlitPass(FrameGraphBuilder var1) {
+      FramePass var2 = var1.addPass("sky_blit");
+      this.targets.main = var2.<RenderTarget>readsAndWrites(this.targets.main);
+      var2.reads(this.targets.sky);
+      ResourceHandle var3 = this.targets.sky;
+      ResourceHandle var4 = this.targets.main;
+      var2.executes(() -> ((RenderTarget)var4.get()).copyColorAndDepthFrom((RenderTarget)var3.get()));
+   }
+
+   private void addSkyPass(FrameGraphBuilder var1, Camera var2, float var3, FogParameters var4, Vector4f var5) {
+      FogType var6 = var2.getFluidInCamera();
+      if (var6 != FogType.POWDER_SNOW && var6 != FogType.LAVA && !this.doesMobEffectBlockSky(var2)) {
+         DimensionSpecialEffects var7 = this.level.effects();
+         Optional var8 = var7.sky();
+         if (!var8.isEmpty()) {
+            FramePass var9 = var1.addPass("sky");
+            this.targets.sky = var9.<RenderTarget>readsAndWrites(this.targets.sky);
+            ResourceHandle var10 = this.targets.sky;
+            var9.executes(() -> {
                RenderSystem.setShaderFog(var4);
-               if (var7 == DimensionSpecialEffects.SkyType.END) {
-                  this.skyRenderer.renderEndSky();
-               } else {
-                  PoseStack var5 = new PoseStack();
-                  float var6x = this.level.getSunAngle(var3);
-                  float var7x = this.level.getTimeOfDay(var3);
-                  float var8 = 1.0F - this.level.getRainLevel(var3);
-                  float var9 = this.level.getStarBrightness(var3) * var8;
-                  int var10 = var6.getSunriseOrSunsetColor(var7x);
-                  int var11 = this.level.getMoonPhase();
-                  int var12 = this.level.getSkyColor(this.minecraft.gameRenderer.getMainCamera().getPosition(), var3);
-                  float var13 = ARGB.redFloat(var12);
-                  float var14 = ARGB.greenFloat(var12);
-                  float var15 = ARGB.blueFloat(var12);
-                  this.skyRenderer.renderSkyDisc(var13, var14, var15);
-                  MultiBufferSource.BufferSource var16 = this.renderBuffers.bufferSource();
-                  if (var6.isSunriseOrSunset(var7x)) {
-                     this.skyRenderer.renderSunriseAndSunset(var5, var16, var6x, var10);
-                  }
+               RenderTarget var7x = (RenderTarget)var10.get();
+               DimensionSpecialEffects.Sky var10000 = (DimensionSpecialEffects.Sky)var8.orElse((Object)null);
+               Objects.requireNonNull(var10000);
+               DimensionSpecialEffects.Sky var8x = var10000;
+               byte var9 = 0;
+               //$FF: var9->value
+               //0->net/minecraft/world/level/dimension/DimensionSpecialEffects$Panorama
+               //1->net/minecraft/world/level/dimension/DimensionSpecialEffects$EndSky
+               //2->net/minecraft/world/level/dimension/DimensionSpecialEffects$CodeSky
+               //3->net/minecraft/world/level/dimension/DimensionSpecialEffects$OverworldSky
+               //4->net/minecraft/world/level/dimension/DimensionSpecialEffects$CubeSky
+               switch (var8x.typeSwitch<invokedynamic>(var8x, var9)) {
+                  case 0:
+                     DimensionSpecialEffects.Panorama var10x = (DimensionSpecialEffects.Panorama)var8x;
+                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7x.getColorTexture(), 0, var7x.getDepthTexture(), 1.0);
+                     this.skyRenderer.renderPanorama(var7x);
+                     break;
+                  case 1:
+                     DimensionSpecialEffects.EndSky var11 = (DimensionSpecialEffects.EndSky)var8x;
+                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7x.getColorTexture(), ARGB.colorFromFloat(0.0F, var5.x, var5.y, var5.z), var7x.getDepthTexture(), 1.0);
+                     this.skyRenderer.renderEndSky(var7x);
+                     break;
+                  case 2:
+                     DimensionSpecialEffects.CodeSky var12 = (DimensionSpecialEffects.CodeSky)var8x;
+                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7x.getColorTexture(), 0, var7x.getDepthTexture(), 1.0);
+                     this.skyRenderer.renderCodeSky(var7x);
+                     break;
+                  case 3:
+                     DimensionSpecialEffects.OverworldSky var13 = (DimensionSpecialEffects.OverworldSky)var8x;
+                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7x.getColorTexture(), ARGB.colorFromFloat(0.0F, var5.x, var5.y, var5.z), var7x.getDepthTexture(), 1.0);
+                     PoseStack var26 = new PoseStack();
+                     float var15 = this.level.getSunAngle(var3);
+                     float var16 = this.level.getTimeOfDay(var3);
+                     float var17 = 1.0F - this.level.getRainLevel(var3);
+                     float var18 = this.level.getStarBrightness(var3) * var17;
+                     int var19 = var7.getSunriseOrSunsetColor(var16);
+                     int var20 = this.level.getMoonPhase();
+                     int var21 = this.level.getSkyColor(this.minecraft.gameRenderer.getMainCamera().getPosition(), var3);
+                     float var22 = ARGB.redFloat(var21);
+                     float var23 = ARGB.greenFloat(var21);
+                     float var24 = ARGB.blueFloat(var21);
+                     this.skyRenderer.renderSkyDisc(var7x, var22, var23, var24);
+                     MultiBufferSource.BufferSource var25 = this.renderBuffers.bufferSource();
+                     if (var7.isSunriseOrSunset(var16)) {
+                        this.skyRenderer.renderSunriseAndSunset(var26, var25, var15, var19);
+                     }
 
-                  this.skyRenderer.renderSunMoonAndStars(var5, var16, var7x, var11, var8, var9, var4);
-                  var16.endBatch();
-                  if (this.shouldRenderDarkDisc(var3)) {
-                     this.skyRenderer.renderDarkDisc();
-                  }
-
+                     this.skyRenderer.renderSunMoonAndStars(var7x, var26, var25, var16, var20, var17, var18, var4);
+                     var25.endBatch();
+                     if (this.shouldRenderDarkDisc(var3)) {
+                        this.skyRenderer.renderDarkDisc(var7x);
+                     }
+                     break;
+                  case 4:
+                     DimensionSpecialEffects.CubeSky var14 = (DimensionSpecialEffects.CubeSky)var8x;
+                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7x.getColorTexture(), 0, var7x.getDepthTexture(), 1.0);
+                     this.skyRenderer.renderCubeSky(var14, var7x);
+                     break;
+                  default:
+                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7x.getColorTexture(), ARGB.colorFromFloat(0.0F, var5.x, var5.y, var5.z), var7x.getDepthTexture(), 1.0);
                }
+
             });
          }
       }
@@ -1083,6 +1145,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    private void renderHitOutline(PoseStack var1, VertexConsumer var2, Entity var3, double var4, double var6, double var8, BlockPos var10, BlockState var11, int var12) {
+      if (var11.is(Blocks.SKY) && var3 instanceof Player var13) {
+         if (!var13.isCreative()) {
+            return;
+         }
+      }
+
       ShapeRenderer.renderShape(var1, var2, var11.getShape(this.level, var10, CollisionContext.of(var3)), (double)var10.getX() - var4, (double)var10.getY() - var6, (double)var10.getZ() - var8, var12);
    }
 
@@ -1301,6 +1369,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return this.targets.clouds != null ? (RenderTarget)this.targets.clouds.get() : null;
    }
 
+   public RenderTarget getSkyTarget() {
+      return this.targets.sky.get();
+   }
+
    @VisibleForDebug
    public ObjectArrayList<SectionRenderDispatcher.RenderSection> getVisibleSections() {
       return this.visibleSections;
@@ -1318,6 +1390,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public CloudRenderer getCloudRenderer() {
       return this.cloudRenderer;
+   }
+
+   public SkyRenderer getSkyRenderer() {
+      return this.skyRenderer;
    }
 
    @FunctionalInterface

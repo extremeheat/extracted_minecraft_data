@@ -41,7 +41,7 @@ public class BossBarCommands {
    private static final SimpleCommandExceptionType ERROR_NO_MAX_CHANGE = new SimpleCommandExceptionType(Component.translatable("commands.bossbar.set.max.unchanged"));
    private static final SimpleCommandExceptionType ERROR_ALREADY_HIDDEN = new SimpleCommandExceptionType(Component.translatable("commands.bossbar.set.visibility.unchanged.hidden"));
    private static final SimpleCommandExceptionType ERROR_ALREADY_VISIBLE = new SimpleCommandExceptionType(Component.translatable("commands.bossbar.set.visibility.unchanged.visible"));
-   public static final SuggestionProvider<CommandSourceStack> SUGGEST_BOSS_BAR = (var0, var1) -> SharedSuggestionProvider.suggestResource(((CommandSourceStack)var0.getSource()).getServer().getCustomBossEvents().getIds(), var1);
+   public static final SuggestionProvider<CommandSourceStack> SUGGEST_BOSS_BAR = (var0, var1) -> SharedSuggestionProvider.suggestResource(((CommandSourceStack)var0.getSource()).theGame().getCustomBossEvents().getIds(), var1);
 
    public BossBarCommands() {
       super();
@@ -167,7 +167,7 @@ public class BossBarCommands {
    }
 
    private static int listBars(CommandSourceStack var0) {
-      Collection var1 = var0.getServer().getCustomBossEvents().getEvents();
+      Collection var1 = var0.theGame().getCustomBossEvents().getEvents();
       if (var1.isEmpty()) {
          var0.sendSuccess(() -> Component.translatable("commands.bossbar.list.bars.none"), false);
       } else {
@@ -178,7 +178,7 @@ public class BossBarCommands {
    }
 
    private static int createBar(CommandSourceStack var0, ResourceLocation var1, Component var2) throws CommandSyntaxException {
-      CustomBossEvents var3 = var0.getServer().getCustomBossEvents();
+      CustomBossEvents var3 = var0.theGame().getCustomBossEvents();
       if (var3.get(var1) != null) {
          throw ERROR_ALREADY_EXISTS.create(var1.toString());
       } else {
@@ -189,8 +189,7 @@ public class BossBarCommands {
    }
 
    private static int removeBar(CommandSourceStack var0, CustomBossEvent var1) {
-      CustomBossEvents var2 = var0.getServer().getCustomBossEvents();
-      var1.removeAllPlayers();
+      CustomBossEvents var2 = var0.theGame().getCustomBossEvents();
       var2.remove(var1);
       var0.sendSuccess(() -> Component.translatable("commands.bossbar.remove.success", var1.getDisplayName()), true);
       return var2.getEvents().size();
@@ -198,7 +197,7 @@ public class BossBarCommands {
 
    public static CustomBossEvent getBossBar(CommandContext<CommandSourceStack> var0) throws CommandSyntaxException {
       ResourceLocation var1 = ResourceLocationArgument.getId(var0, "id");
-      CustomBossEvent var2 = ((CommandSourceStack)var0.getSource()).getServer().getCustomBossEvents().get(var1);
+      CustomBossEvent var2 = ((CommandSourceStack)var0.getSource()).theGame().getCustomBossEvents().get(var1);
       if (var2 == null) {
          throw ERROR_DOESNT_EXIST.create(var1.toString());
       } else {

@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -31,8 +32,8 @@ public class MerchantMenu extends AbstractContainerMenu {
    private boolean showProgressBar;
    private boolean canRestock;
 
-   public MerchantMenu(int var1, Inventory var2) {
-      this(var1, var2, new ClientSideMerchant(var2.player));
+   public MerchantMenu(int var1, Inventory var2, List<Integer> var3) {
+      this(var1, var2, new ClientSideMerchant(var2.getPlayer()));
    }
 
    public MerchantMenu(int var1, Inventory var2, Merchant var3) {
@@ -41,7 +42,7 @@ public class MerchantMenu extends AbstractContainerMenu {
       this.tradeContainer = new MerchantContainer(var3);
       this.addSlot(new Slot(this.tradeContainer, 0, 136, 37));
       this.addSlot(new Slot(this.tradeContainer, 1, 162, 37));
-      this.addSlot(new MerchantResultSlot(var2.player, var3, this.tradeContainer, 2, 220, 37));
+      this.addSlot(new MerchantResultSlot(var2.getPlayer(), var3, this.tradeContainer, 2, 220, 37));
       this.addStandardInventorySlots(var2, 108, 84);
    }
 

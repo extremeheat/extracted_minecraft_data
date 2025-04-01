@@ -40,8 +40,8 @@ public class BlockEntityRenderers {
       register(BlockEntityType.TRAPPED_CHEST, ChestRenderer::new);
       register(BlockEntityType.ENCHANTING_TABLE, EnchantTableRenderer::new);
       register(BlockEntityType.LECTERN, LecternRenderer::new);
-      register(BlockEntityType.END_PORTAL, TheEndPortalRenderer::new);
       register(BlockEntityType.END_GATEWAY, TheEndGatewayRenderer::new);
+      register(BlockEntityType.MINE_TRAVELLING_BLOCK_ENTITY, MineTravellingBlockEntityRenderer::new);
       register(BlockEntityType.BEACON, BeaconRenderer::new);
       register(BlockEntityType.SKULL, SkullBlockRenderer::new);
       register(BlockEntityType.BANNER, BannerRenderer::new);
@@ -56,5 +56,6 @@ public class BlockEntityRenderers {
       register(BlockEntityType.DECORATED_POT, DecoratedPotRenderer::new);
       register(BlockEntityType.TRIAL_SPAWNER, TrialSpawnerRenderer::new);
       register(BlockEntityType.VAULT, VaultRenderer::new);
+      register(BlockEntityType.MOB_TROPHY, MobTrophyRenderer::new);
    }
 }

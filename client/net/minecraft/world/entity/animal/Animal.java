@@ -12,6 +12,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -19,6 +20,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -33,6 +35,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.UnlockCondition;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
 
@@ -94,6 +97,20 @@ public abstract class Animal extends AgeableMob {
       var1.storeNullable("LoveCause", UUIDUtil.CODEC, this.loveCause);
    }
 
+   protected void dropFromLootTable(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropFromLootTable(var1, var2, var3);
+      if (var3) {
+         Entity var5 = var2.getEntity();
+         if (var5 instanceof Player) {
+            Player var4 = (Player)var5;
+            if (var4.isActive(PlayerUnlocks.HUNTER)) {
+               super.dropFromLootTable(var1, var2, true);
+            }
+         }
+      }
+
+   }
+
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.inLove = var1.getIntOr("InLove", 0);
@@ -131,6 +148,11 @@ public abstract class Animal extends AgeableMob {
             this.usePlayerItem(var1, var2, var3);
             this.setInLove(var1);
             this.playEatingSound();
+            if (var1 instanceof ServerPlayer) {
+               ServerPlayer var6 = (ServerPlayer)var1;
+               UnlockCondition.onFedAnimal(var1.level(), var6, this, var3);
+            }
+
             return InteractionResult.SUCCESS_SERVER;
          }
 
@@ -138,6 +160,11 @@ public abstract class Animal extends AgeableMob {
             this.usePlayerItem(var1, var2, var3);
             this.ageUp(getSpeedUpSecondsWhenFeeding(-var4), true);
             this.playEatingSound();
+            if (var1 instanceof ServerPlayer) {
+               ServerPlayer var5 = (ServerPlayer)var1;
+               UnlockCondition.onFedAnimal(var1.level(), var5, this, var3);
+            }
+
             return InteractionResult.SUCCESS;
          }
 

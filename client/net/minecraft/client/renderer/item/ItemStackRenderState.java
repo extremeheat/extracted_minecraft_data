@@ -105,14 +105,16 @@ public class ItemStackRenderState {
    public static enum FoilType {
       NONE,
       STANDARD,
-      SPECIAL;
+      SPECIAL,
+      WON,
+      LOST;
 
       private FoilType() {
       }
 
       // $FF: synthetic method
       private static FoilType[] $values() {
-         return new FoilType[]{NONE, STANDARD, SPECIAL};
+         return new FoilType[]{NONE, STANDARD, SPECIAL, WON, LOST};
       }
    }
 

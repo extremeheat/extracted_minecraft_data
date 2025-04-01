@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -76,7 +77,12 @@ public class ShootTongue extends Behavior<Frog> {
       if (var3.isPresent()) {
          Entity var4 = (Entity)var3.get();
          if (var4.isAlive()) {
-            var2.doHurtTarget(var1, var4);
+            if (var1.isActive(WorldEffects.WEDNESDAY_FROGS)) {
+               var4.hurtServer(var1, var2.damageSources().devour(var2), 9001.0F);
+            } else {
+               var2.doHurtTarget(var1, var4);
+            }
+
             if (!var4.isAlive()) {
                var4.remove(Entity.RemovalReason.KILLED);
             }

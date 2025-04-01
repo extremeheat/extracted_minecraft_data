@@ -70,6 +70,14 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
          return CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.createCriterion(itemUsedOnLocation(var0, var1));
       }
 
+      public static Criterion<TriggerInstance> cashedInItems(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
+         return CriteriaTriggers.INVENTORY_CASHED_IN.createCriterion(itemUsedOnLocation(var0, var1));
+      }
+
+      public static Criterion<TriggerInstance> cashedInItems(ItemPredicate.Builder var0) {
+         return cashedInItems(LocationPredicate.Builder.location(), var0);
+      }
+
       public boolean matches(LootContext var1) {
          return this.location.isEmpty() || ((ContextAwarePredicate)this.location.get()).matches(var1);
       }

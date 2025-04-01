@@ -51,7 +51,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class LootCommand {
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_LOOT_TABLE = (var0, var1) -> {
-      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
+      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).theGame().reloadableRegistries();
       return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.LOOT_TABLE), var1);
    };
    private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_held_items", var0));
@@ -261,7 +261,7 @@ public class LootCommand {
          var5.withParameter(LootContextParams.THIS_ENTITY, var1);
          var5.withParameter(LootContextParams.ORIGIN, var4.getPosition());
          LootParams var10 = var5.create(LootContextParamSets.ENTITY);
-         LootTable var8 = var4.getServer().reloadableRegistries().getLootTable((ResourceKey)var3.get());
+         LootTable var8 = var4.theGame().reloadableRegistries().getLootTable((ResourceKey)var3.get());
          ObjectArrayList var9 = var8.getRandomItems(var10);
          return var2.accept(var0, var9, (var2x) -> callback(var4, var2x, (ResourceKey)var3.get()));
       }

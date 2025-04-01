@@ -38,7 +38,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
    public final int[] enchantClue;
    public final int[] levelClue;
 
-   public EnchantmentMenu(int var1, Inventory var2) {
+   public EnchantmentMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 
@@ -74,7 +74,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       this.addDataSlot(DataSlot.shared(this.costs, 0));
       this.addDataSlot(DataSlot.shared(this.costs, 1));
       this.addDataSlot(DataSlot.shared(this.costs, 2));
-      this.addDataSlot(this.enchantmentSeed).set(var2.player.getEnchantmentSeed());
+      this.addDataSlot(this.enchantmentSeed).set(var2.getPlayer().getEnchantmentSeed());
       this.addDataSlot(DataSlot.shared(this.enchantClue, 0));
       this.addDataSlot(DataSlot.shared(this.enchantClue, 1));
       this.addDataSlot(DataSlot.shared(this.enchantClue, 2));

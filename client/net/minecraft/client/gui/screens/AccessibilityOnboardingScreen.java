@@ -104,10 +104,6 @@ public class AccessibilityOnboardingScreen extends Screen {
       this.logoRenderer.renderLogo(var1, this.width, 1.0F);
    }
 
-   protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, 0.0F);
-   }
-
    private void handleInitialNarrationDelay() {
       if (!this.hasNarrated && this.narratorAvailable) {
          if (this.timer < 40.0F) {

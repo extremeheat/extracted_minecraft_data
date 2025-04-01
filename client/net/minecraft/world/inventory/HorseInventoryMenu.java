@@ -25,7 +25,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       super((MenuType)null, var1);
       this.horseContainer = var3;
       this.horse = var4;
-      var3.startOpen(var2.player);
+      var3.startOpen(var2.getPlayer());
       Container var6 = var4.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
       this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE) {
          public boolean isActive() {

@@ -31,6 +31,7 @@ import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
@@ -60,8 +61,9 @@ public abstract class Structure {
       this.settings = var1;
    }
 
-   public HolderSet<Biome> biomes() {
-      return this.settings.biomes;
+   public HolderSet<Biome> filteredBiomes(HolderSet<Biome> var1) {
+      HolderSet var2 = (HolderSet)this.settings.biomes.orElse(var1);
+      return (HolderSet<Biome>)(this.settings.requiredExitType != BiomeSpecialEffects.ExitType.NONE ? HolderSet.direct(var2.stream().filter((var1x) -> this.settings.requiredExitType == ((Biome)var1x.value()).getSpecialEffects().getExitType()).toList()) : var2);
    }
 
    public Map<MobCategory, StructureSpawnOverride> spawnOverrides() {
@@ -176,8 +178,9 @@ public abstract class Structure {
       CODEC = RegistryFileCodec.<Holder<Structure>>create(Registries.STRUCTURE, DIRECT_CODEC);
    }
 
-   public static record StructureSettings(HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation) {
-      final HolderSet<Biome> biomes;
+   public static record StructureSettings(Optional<HolderSet<Biome>> biomes, BiomeSpecialEffects.ExitType requiredExitType, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation) {
+      final Optional<HolderSet<Biome>> biomes;
+      final BiomeSpecialEffects.ExitType requiredExitType;
       final Map<MobCategory, StructureSpawnOverride> spawnOverrides;
       final GenerationStep.Decoration step;
       final TerrainAdjustment terrainAdaptation;
@@ -185,24 +188,29 @@ public abstract class Structure {
       public static final MapCodec<StructureSettings> CODEC;
 
       public StructureSettings(HolderSet<Biome> var1) {
-         this(var1, DEFAULT.spawnOverrides, DEFAULT.step, DEFAULT.terrainAdaptation);
+         this(Optional.of(var1), DEFAULT.requiredExitType, DEFAULT.spawnOverrides, DEFAULT.step, DEFAULT.terrainAdaptation);
       }
 
-      public StructureSettings(HolderSet<Biome> var1, Map<MobCategory, StructureSpawnOverride> var2, GenerationStep.Decoration var3, TerrainAdjustment var4) {
+      public StructureSettings(BiomeSpecialEffects.ExitType var1) {
+         this(Optional.empty(), var1, DEFAULT.spawnOverrides, DEFAULT.step, DEFAULT.terrainAdaptation);
+      }
+
+      public StructureSettings(Optional<HolderSet<Biome>> var1, BiomeSpecialEffects.ExitType var2, Map<MobCategory, StructureSpawnOverride> var3, GenerationStep.Decoration var4, TerrainAdjustment var5) {
          super();
          this.biomes = var1;
-         this.spawnOverrides = var2;
-         this.step = var3;
-         this.terrainAdaptation = var4;
+         this.requiredExitType = var2;
+         this.spawnOverrides = var3;
+         this.step = var4;
+         this.terrainAdaptation = var5;
       }
 
       static {
-         DEFAULT = new StructureSettings(HolderSet.direct(), Map.of(), GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE);
-         CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new));
+         DEFAULT = new StructureSettings(Optional.of(HolderSet.direct()), BiomeSpecialEffects.ExitType.NONE, Map.of(), GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE);
+         CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(StructureSettings::biomes), BiomeSpecialEffects.ExitType.CODEC.fieldOf("required_exit_type").orElse(BiomeSpecialEffects.ExitType.NONE).forGetter(StructureSettings::requiredExitType), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new));
       }
 
       public static class Builder {
-         private final HolderSet<Biome> biomes;
+         private final Optional<HolderSet<Biome>> biomes;
          private Map<MobCategory, StructureSpawnOverride> spawnOverrides;
          private GenerationStep.Decoration step;
          private TerrainAdjustment terrainAdaption;
@@ -212,7 +220,15 @@ public abstract class Structure {
             this.spawnOverrides = Structure.StructureSettings.DEFAULT.spawnOverrides;
             this.step = Structure.StructureSettings.DEFAULT.step;
             this.terrainAdaption = Structure.StructureSettings.DEFAULT.terrainAdaptation;
-            this.biomes = var1;
+            this.biomes = Optional.of(var1);
+         }
+
+         public Builder() {
+            super();
+            this.spawnOverrides = Structure.StructureSettings.DEFAULT.spawnOverrides;
+            this.step = Structure.StructureSettings.DEFAULT.step;
+            this.terrainAdaption = Structure.StructureSettings.DEFAULT.terrainAdaptation;
+            this.biomes = Optional.empty();
          }
 
          public Builder spawnOverrides(Map<MobCategory, StructureSpawnOverride> var1) {
@@ -231,7 +247,7 @@ public abstract class Structure {
          }
 
          public StructureSettings build() {
-            return new StructureSettings(this.biomes, this.spawnOverrides, this.step, this.terrainAdaption);
+            return new StructureSettings(this.biomes, Structure.StructureSettings.DEFAULT.requiredExitType, this.spawnOverrides, this.step, this.terrainAdaption);
          }
       }
    }

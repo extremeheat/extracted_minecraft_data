@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DecoratedPotBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
+import net.minecraft.world.level.block.MobTrophyBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
 import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.PotatoBlock;
@@ -35,6 +36,8 @@ import net.minecraft.world.level.block.SeaPickleBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.TntBlock;
+import net.minecraft.world.level.block.TrophyBlock;
+import net.minecraft.world.level.block.TrophyType;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.IntRange;
@@ -47,8 +50,10 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
+import net.minecraft.world.level.storage.loot.functions.CopyBlockState;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.LimitCount;
+import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
@@ -203,6 +208,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.REDSTONE_WIRE);
       this.dropSelf(Blocks.DIAMOND_BLOCK);
       this.dropSelf(Blocks.CRAFTING_TABLE);
+      this.dropSelf(Blocks.DIMENSION_CONTROL);
       this.dropSelf(Blocks.OAK_SIGN);
       this.dropSelf(Blocks.SPRUCE_SIGN);
       this.dropSelf(Blocks.BIRCH_SIGN);
@@ -870,6 +876,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.SMOKER, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.BLAST_FURNACE, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.BARREL, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.dropSelf(Blocks.MINE_CRAFTER);
+      this.dropSelf(Blocks.MINE_REVISITOR);
       this.dropSelf(Blocks.CARTOGRAPHY_TABLE);
       this.dropSelf(Blocks.FLETCHING_TABLE);
       this.dropSelf(Blocks.GRINDSTONE);
@@ -915,6 +923,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.PLAYER_HEAD, (var1x) -> LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1x, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1x).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.PROFILE).include(DataComponents.NOTE_BLOCK_SOUND).include(DataComponents.CUSTOM_NAME))))));
       this.add(Blocks.BEE_NEST, (var1x) -> this.createBeeNestDrop(var1x));
       this.add(Blocks.BEEHIVE, (var1x) -> this.createBeeHiveDrop(var1x));
+      this.add(Blocks.MOB_TROPHY, (var0) -> LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var0).apply(CopyBlockState.copyState(var0).copy(MobTrophyBlock.GRADE)).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.MOB_TROPHY_TYPE)))));
       this.add(Blocks.OAK_LEAVES, (var1x) -> this.createOakLeavesDrops(var1x, Blocks.OAK_SAPLING, NORMAL_LEAVES_SAPLING_CHANCES));
       this.add(Blocks.SPRUCE_LEAVES, (var1x) -> this.createLeavesDrops(var1x, Blocks.SPRUCE_SAPLING, NORMAL_LEAVES_SAPLING_CHANCES));
       this.add(Blocks.BIRCH_LEAVES, (var1x) -> this.createLeavesDrops(var1x, Blocks.BIRCH_SAPLING, NORMAL_LEAVES_SAPLING_CHANCES));
@@ -1097,6 +1106,17 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.REINFORCED_DEEPSLATE, noDrop());
       this.add(Blocks.SUSPICIOUS_SAND, noDrop());
       this.add(Blocks.SUSPICIOUS_GRAVEL, noDrop());
+      this.addTrophies();
+   }
+
+   private void addTrophies() {
+      LootPool.Builder var1 = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F));
+
+      for(TrophyType var5 : TrophyType.values()) {
+         var1.add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.TROPHY).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.TROPHY).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(TrophyBlock.TYPE, (Comparable)var5)))).apply(SetComponentsFunction.setComponent(DataComponents.TROPHY_TYPE, var5)));
+      }
+
+      this.add(Blocks.TROPHY, LootTable.lootTable().withPool(var1));
    }
 
    private LootTable.Builder createDecoratedPotTable(Block var1) {

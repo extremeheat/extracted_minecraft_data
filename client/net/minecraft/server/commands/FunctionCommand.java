@@ -44,7 +44,7 @@ public class FunctionCommand {
    @VisibleForTesting
    public static final Dynamic2CommandExceptionType ERROR_FUNCTION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.function.instantiationFailure", var0, var1));
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_FUNCTION = (var0, var1) -> {
-      ServerFunctionManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getFunctions();
+      ServerFunctionManager var2 = ((CommandSourceStack)var0.getSource()).theGame().getFunctions();
       SharedSuggestionProvider.suggestResource(var2.getTagNames(), var1, "#");
       return SharedSuggestionProvider.suggestResource(var2.getFunctionNames(), var1);
    };

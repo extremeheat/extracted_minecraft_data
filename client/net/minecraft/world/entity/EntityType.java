@@ -27,7 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -82,6 +82,7 @@ import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.AngryGhast;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Bogged;
 import net.minecraft.world.entity.monster.CaveSpider;
@@ -123,6 +124,20 @@ import net.minecraft.world.entity.monster.piglin.PiglinBrute;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.pets.PetArmadillo;
+import net.minecraft.world.entity.pets.PetAxolotl;
+import net.minecraft.world.entity.pets.PetBee;
+import net.minecraft.world.entity.pets.PetCat;
+import net.minecraft.world.entity.pets.PetChicken;
+import net.minecraft.world.entity.pets.PetCow;
+import net.minecraft.world.entity.pets.PetCreeper;
+import net.minecraft.world.entity.pets.PetFox;
+import net.minecraft.world.entity.pets.PetFrog;
+import net.minecraft.world.entity.pets.PetMushroomCow;
+import net.minecraft.world.entity.pets.PetPolarBear;
+import net.minecraft.world.entity.pets.PetSlime;
+import net.minecraft.world.entity.pets.PetTurtle;
+import net.minecraft.world.entity.pets.PetWolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.DragonFireball;
@@ -188,13 +203,16 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Allay> ALLAY;
    public static final EntityType<AreaEffectCloud> AREA_EFFECT_CLOUD;
    public static final EntityType<Armadillo> ARMADILLO;
+   public static final EntityType<PetArmadillo> PET_ARMADILLO;
    public static final EntityType<ArmorStand> ARMOR_STAND;
    public static final EntityType<Arrow> ARROW;
    public static final EntityType<Axolotl> AXOLOTL;
+   public static final EntityType<PetAxolotl> PET_AXOLOTL;
    public static final EntityType<ChestRaft> BAMBOO_CHEST_RAFT;
    public static final EntityType<Raft> BAMBOO_RAFT;
    public static final EntityType<Bat> BAT;
    public static final EntityType<Bee> BEE;
+   public static final EntityType<PetBee> PET_BEE;
    public static final EntityType<Boat> BIRCH_BOAT;
    public static final EntityType<ChestBoat> BIRCH_CHEST_BOAT;
    public static final EntityType<Blaze> BLAZE;
@@ -204,6 +222,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<BreezeWindCharge> BREEZE_WIND_CHARGE;
    public static final EntityType<Camel> CAMEL;
    public static final EntityType<Cat> CAT;
+   public static final EntityType<PetCat> PET_CAT;
    public static final EntityType<CaveSpider> CAVE_SPIDER;
    public static final EntityType<Boat> CHERRY_BOAT;
    public static final EntityType<ChestBoat> CHERRY_CHEST_BOAT;
@@ -236,9 +255,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<LargeFireball> FIREBALL;
    public static final EntityType<FireworkRocketEntity> FIREWORK_ROCKET;
    public static final EntityType<Fox> FOX;
+   public static final EntityType<PetFox> PET_FOX;
    public static final EntityType<Frog> FROG;
    public static final EntityType<MinecartFurnace> FURNACE_MINECART;
    public static final EntityType<Ghast> GHAST;
+   public static final EntityType<AngryGhast> ANGRY_GHAST;
    public static final EntityType<Giant> GIANT;
    public static final EntityType<GlowItemFrame> GLOW_ITEM_FRAME;
    public static final EntityType<GlowSquid> GLOW_SQUID;
@@ -276,12 +297,14 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<ChestBoat> PALE_OAK_CHEST_BOAT;
    public static final EntityType<Panda> PANDA;
    public static final EntityType<Parrot> PARROT;
+   public static final EntityType<PetTurtle> PET_TURTLE;
    public static final EntityType<Phantom> PHANTOM;
    public static final EntityType<Pig> PIG;
    public static final EntityType<Piglin> PIGLIN;
    public static final EntityType<PiglinBrute> PIGLIN_BRUTE;
    public static final EntityType<Pillager> PILLAGER;
    public static final EntityType<PolarBear> POLAR_BEAR;
+   public static final EntityType<PetPolarBear> PET_POLAR_BEAR;
    public static final EntityType<ThrownSplashPotion> SPLASH_POTION;
    public static final EntityType<ThrownLingeringPotion> LINGERING_POTION;
    public static final EntityType<Pufferfish> PUFFERFISH;
@@ -295,6 +318,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Skeleton> SKELETON;
    public static final EntityType<SkeletonHorse> SKELETON_HORSE;
    public static final EntityType<Slime> SLIME;
+   public static final EntityType<PetSlime> PET_SLIME;
    public static final EntityType<SmallFireball> SMALL_FIREBALL;
    public static final EntityType<Sniffer> SNIFFER;
    public static final EntityType<Snowball> SNOWBALL;
@@ -326,11 +350,17 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<WitherSkeleton> WITHER_SKELETON;
    public static final EntityType<WitherSkull> WITHER_SKULL;
    public static final EntityType<Wolf> WOLF;
+   public static final EntityType<PetWolf> PET_WOLF;
    public static final EntityType<Zoglin> ZOGLIN;
    public static final EntityType<Zombie> ZOMBIE;
    public static final EntityType<ZombieHorse> ZOMBIE_HORSE;
    public static final EntityType<ZombieVillager> ZOMBIE_VILLAGER;
    public static final EntityType<ZombifiedPiglin> ZOMBIFIED_PIGLIN;
+   public static final EntityType<PetCreeper> PET_CREEPER;
+   public static final EntityType<PetChicken> PET_CHICKEN;
+   public static final EntityType<PetFrog> PET_FROG;
+   public static final EntityType<PetCow> PET_COW;
+   public static final EntityType<PetMushroomCow> PET_MOOSHROOM;
    public static final EntityType<Player> PLAYER;
    public static final EntityType<FishingHook> FISHING_BOBBER;
    private static final Set<EntityType<?>> OP_ONLY_CUSTOM_DATA;
@@ -481,7 +511,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static void updateCustomEntityTag(Level var0, @Nullable LivingEntity var1, @Nullable Entity var2, CustomData var3) {
-      MinecraftServer var4 = var0.getServer();
+      TheGame var4 = var0.theGame();
       if (var4 != null && var2 != null) {
          EntityType var5 = (EntityType)var3.parseEntityType(var4.registryAccess(), Registries.ENTITY_TYPE);
          if (var2.getType() == var5) {
@@ -491,7 +521,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
                }
 
                Player var6 = (Player)var1;
-               if (!var4.getPlayerList().isOp(var6.getGameProfile())) {
+               if (!var4.playerList().isOp(var6.getGameProfile())) {
                   return;
                }
             }
@@ -685,13 +715,16 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       ALLAY = register("allay", EntityType.Builder.of(Allay::new, MobCategory.CREATURE).sized(0.35F, 0.6F).eyeHeight(0.36F).ridingOffset(0.04F).clientTrackingRange(8).updateInterval(2));
       AREA_EFFECT_CLOUD = register("area_effect_cloud", EntityType.Builder.of(AreaEffectCloud::new, MobCategory.MISC).noLootTable().fireImmune().sized(6.0F, 0.5F).clientTrackingRange(10).updateInterval(2147483647));
       ARMADILLO = register("armadillo", EntityType.Builder.of(Armadillo::new, MobCategory.CREATURE).sized(0.7F, 0.65F).eyeHeight(0.26F).clientTrackingRange(10));
+      PET_ARMADILLO = register("pet_armadillo", EntityType.Builder.of(PetArmadillo::new, MobCategory.CREATURE).sized(0.7F, 0.65F).eyeHeight(0.26F).clientTrackingRange(10));
       ARMOR_STAND = register("armor_stand", EntityType.Builder.of(ArmorStand::new, MobCategory.MISC).sized(0.5F, 1.975F).eyeHeight(1.7775F).clientTrackingRange(10));
       ARROW = register("arrow", EntityType.Builder.of(Arrow::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20));
       AXOLOTL = register("axolotl", EntityType.Builder.of(Axolotl::new, MobCategory.AXOLOTLS).sized(0.75F, 0.42F).eyeHeight(0.2751F).clientTrackingRange(10));
+      PET_AXOLOTL = register("pet_axolotl", EntityType.Builder.of(PetAxolotl::new, MobCategory.AXOLOTLS).sized(0.75F, 0.42F).eyeHeight(0.2751F).clientTrackingRange(10));
       BAMBOO_CHEST_RAFT = register("bamboo_chest_raft", EntityType.Builder.of(chestRaftFactory(() -> Items.BAMBOO_CHEST_RAFT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BAMBOO_RAFT = register("bamboo_raft", EntityType.Builder.of(raftFactory(() -> Items.BAMBOO_RAFT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BAT = register("bat", EntityType.Builder.of(Bat::new, MobCategory.AMBIENT).sized(0.5F, 0.9F).eyeHeight(0.45F).clientTrackingRange(5));
       BEE = register("bee", EntityType.Builder.of(Bee::new, MobCategory.CREATURE).sized(0.7F, 0.6F).eyeHeight(0.3F).clientTrackingRange(8));
+      PET_BEE = register("pet_bee", EntityType.Builder.of(PetBee::new, MobCategory.CREATURE).sized(0.7F, 0.6F).eyeHeight(0.3F).clientTrackingRange(8));
       BIRCH_BOAT = register("birch_boat", EntityType.Builder.of(boatFactory(() -> Items.BIRCH_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BIRCH_CHEST_BOAT = register("birch_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.BIRCH_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BLAZE = register("blaze", EntityType.Builder.of(Blaze::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.8F).clientTrackingRange(8));
@@ -700,7 +733,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       BREEZE = register("breeze", EntityType.Builder.of(Breeze::new, MobCategory.MONSTER).sized(0.6F, 1.77F).eyeHeight(1.3452F).clientTrackingRange(10));
       BREEZE_WIND_CHARGE = register("breeze_wind_charge", EntityType.Builder.of(BreezeWindCharge::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10));
       CAMEL = register("camel", EntityType.Builder.of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).eyeHeight(2.275F).clientTrackingRange(10));
-      CAT = register("cat", EntityType.Builder.of(Cat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.35F).passengerAttachments(0.5125F).clientTrackingRange(8));
+      CAT = register("pet_cat", EntityType.Builder.of(Cat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.35F).passengerAttachments(0.5125F).clientTrackingRange(8));
+      PET_CAT = register("cat", EntityType.Builder.of(PetCat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.35F).passengerAttachments(0.5125F).clientTrackingRange(8));
       CAVE_SPIDER = register("cave_spider", EntityType.Builder.of(CaveSpider::new, MobCategory.MONSTER).sized(0.7F, 0.5F).eyeHeight(0.45F).clientTrackingRange(8));
       CHERRY_BOAT = register("cherry_boat", EntityType.Builder.of(boatFactory(() -> Items.CHERRY_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       CHERRY_CHEST_BOAT = register("cherry_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.CHERRY_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
@@ -733,9 +767,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       FIREBALL = register("fireball", EntityType.Builder.of(LargeFireball::new, MobCategory.MISC).noLootTable().sized(1.0F, 1.0F).clientTrackingRange(4).updateInterval(10));
       FIREWORK_ROCKET = register("firework_rocket", EntityType.Builder.of(FireworkRocketEntity::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       FOX = register("fox", EntityType.Builder.of(Fox::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.4F).passengerAttachments(new Vec3(0.0, 0.6375, -0.25)).clientTrackingRange(8).immuneTo(Blocks.SWEET_BERRY_BUSH));
+      PET_FOX = register("pet_fox", EntityType.Builder.of(PetFox::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.4F).passengerAttachments(new Vec3(0.0, 0.6375, -0.25)).clientTrackingRange(8).immuneTo(Blocks.SWEET_BERRY_BUSH));
       FROG = register("frog", EntityType.Builder.of(Frog::new, MobCategory.CREATURE).sized(0.5F, 0.5F).passengerAttachments(new Vec3(0.0, 0.375, -0.25)).clientTrackingRange(10));
       FURNACE_MINECART = register("furnace_minecart", EntityType.Builder.of(MinecartFurnace::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       GHAST = register("ghast", EntityType.Builder.of(Ghast::new, MobCategory.MONSTER).fireImmune().sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(4.0625F).ridingOffset(0.5F).clientTrackingRange(10));
+      ANGRY_GHAST = register("angry_ghast", EntityType.Builder.of(AngryGhast::new, MobCategory.MONSTER).fireImmune().sized(9.0F, 9.0F).eyeHeight(2.6F).passengerAttachments(4.0625F).ridingOffset(0.5F).clientTrackingRange(10));
       GIANT = register("giant", EntityType.Builder.of(Giant::new, MobCategory.MONSTER).sized(3.6F, 12.0F).eyeHeight(10.44F).ridingOffset(-3.75F).clientTrackingRange(10));
       GLOW_ITEM_FRAME = register("glow_item_frame", EntityType.Builder.of(GlowItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647));
       GLOW_SQUID = register("glow_squid", EntityType.Builder.of(GlowSquid::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(0.8F, 0.8F).eyeHeight(0.4F).clientTrackingRange(10));
@@ -773,12 +809,14 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       PALE_OAK_CHEST_BOAT = register("pale_oak_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.PALE_OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PANDA = register("panda", EntityType.Builder.of(Panda::new, MobCategory.CREATURE).sized(1.3F, 1.25F).clientTrackingRange(10));
       PARROT = register("parrot", EntityType.Builder.of(Parrot::new, MobCategory.CREATURE).sized(0.5F, 0.9F).eyeHeight(0.54F).passengerAttachments(0.4625F).clientTrackingRange(8));
+      PET_TURTLE = register("pet_turtle", EntityType.Builder.of(PetTurtle::new, MobCategory.CREATURE).sized(1.2F, 0.4F).passengerAttachments(new Vec3(0.0, 0.55625, -0.25)).clientTrackingRange(10));
       PHANTOM = register("phantom", EntityType.Builder.of(Phantom::new, MobCategory.MONSTER).sized(0.9F, 0.5F).eyeHeight(0.175F).passengerAttachments(0.3375F).ridingOffset(-0.125F).clientTrackingRange(8));
       PIG = register("pig", EntityType.Builder.of(Pig::new, MobCategory.CREATURE).sized(0.9F, 0.9F).passengerAttachments(0.86875F).clientTrackingRange(10));
       PIGLIN = register("piglin", EntityType.Builder.of(Piglin::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8));
       PIGLIN_BRUTE = register("piglin_brute", EntityType.Builder.of(PiglinBrute::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8));
       PILLAGER = register("pillager", EntityType.Builder.of(Pillager::new, MobCategory.MONSTER).canSpawnFarFromPlayer().sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8));
       POLAR_BEAR = register("polar_bear", EntityType.Builder.of(PolarBear::new, MobCategory.CREATURE).immuneTo(Blocks.POWDER_SNOW).sized(1.4F, 1.4F).clientTrackingRange(10));
+      PET_POLAR_BEAR = register("pet_polar_bear", EntityType.Builder.of(PetPolarBear::new, MobCategory.CREATURE).immuneTo(Blocks.POWDER_SNOW).sized(1.4F, 1.4F).clientTrackingRange(10));
       SPLASH_POTION = register("splash_potion", EntityType.Builder.of(ThrownSplashPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       LINGERING_POTION = register("lingering_potion", EntityType.Builder.of(ThrownLingeringPotion::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       PUFFERFISH = register("pufferfish", EntityType.Builder.of(Pufferfish::new, MobCategory.WATER_AMBIENT).sized(0.7F, 0.7F).eyeHeight(0.455F).clientTrackingRange(4));
@@ -792,6 +830,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       SKELETON = register("skeleton", EntityType.Builder.of(Skeleton::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).clientTrackingRange(8));
       SKELETON_HORSE = register("skeleton_horse", EntityType.Builder.of(SkeletonHorse::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.31875F).clientTrackingRange(10));
       SLIME = register("slime", EntityType.Builder.of(Slime::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).spawnDimensionsScale(4.0F).clientTrackingRange(10));
+      PET_SLIME = register("pet_slime", EntityType.Builder.of(PetSlime::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).spawnDimensionsScale(1.0F).clientTrackingRange(10));
       SMALL_FIREBALL = register("small_fireball", EntityType.Builder.of(SmallFireball::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).clientTrackingRange(4).updateInterval(10));
       SNIFFER = register("sniffer", EntityType.Builder.of(Sniffer::new, MobCategory.CREATURE).sized(1.9F, 1.75F).eyeHeight(1.05F).passengerAttachments(2.09375F).nameTagOffset(2.05F).clientTrackingRange(10));
       SNOWBALL = register("snowball", EntityType.Builder.of(Snowball::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
@@ -823,11 +862,17 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       WITHER_SKELETON = register("wither_skeleton", EntityType.Builder.of(WitherSkeleton::new, MobCategory.MONSTER).fireImmune().immuneTo(Blocks.WITHER_ROSE).sized(0.7F, 2.4F).eyeHeight(2.1F).ridingOffset(-0.875F).clientTrackingRange(8));
       WITHER_SKULL = register("wither_skull", EntityType.Builder.of(WitherSkull::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).clientTrackingRange(4).updateInterval(10));
       WOLF = register("wolf", EntityType.Builder.of(Wolf::new, MobCategory.CREATURE).sized(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3(0.0, 0.81875, -0.0625)).clientTrackingRange(10));
+      PET_WOLF = register("pet_wolf", EntityType.Builder.of(PetWolf::new, MobCategory.CREATURE).sized(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3(0.0, 0.81875, -0.0625)).clientTrackingRange(10));
       ZOGLIN = register("zoglin", EntityType.Builder.of(Zoglin::new, MobCategory.MONSTER).fireImmune().sized(1.3964844F, 1.4F).passengerAttachments(1.49375F).clientTrackingRange(8));
       ZOMBIE = register("zombie", EntityType.Builder.of(Zombie::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8));
       ZOMBIE_HORSE = register("zombie_horse", EntityType.Builder.of(ZombieHorse::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.31875F).clientTrackingRange(10));
       ZOMBIE_VILLAGER = register("zombie_villager", EntityType.Builder.of(ZombieVillager::new, MobCategory.MONSTER).sized(0.6F, 1.95F).passengerAttachments(2.125F).ridingOffset(-0.7F).eyeHeight(1.74F).clientTrackingRange(8));
       ZOMBIFIED_PIGLIN = register("zombified_piglin", EntityType.Builder.of(ZombifiedPiglin::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0F).ridingOffset(-0.7F).clientTrackingRange(8));
+      PET_CREEPER = register("pet_creeper", EntityType.Builder.of(PetCreeper::new, MobCategory.CREATURE).fireImmune().sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0F).ridingOffset(-0.7F).clientTrackingRange(8));
+      PET_CHICKEN = register("pet_chicken", EntityType.Builder.of(PetChicken::new, MobCategory.CREATURE).fireImmune().sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0F).ridingOffset(-0.7F).clientTrackingRange(8));
+      PET_FROG = register("pet_frog", EntityType.Builder.of(PetFrog::new, MobCategory.CREATURE).sized(0.5F, 0.5F).passengerAttachments(new Vec3(0.0, 0.375, -0.25)).clientTrackingRange(10));
+      PET_COW = register("pet_cow", EntityType.Builder.of(PetCow::new, MobCategory.CREATURE).sized(0.9F, 1.4F).eyeHeight(1.3F).passengerAttachments(1.36875F).clientTrackingRange(10));
+      PET_MOOSHROOM = register("pet_mooshroom", EntityType.Builder.of(PetMushroomCow::new, MobCategory.CREATURE).sized(0.9F, 1.4F).eyeHeight(1.3F).passengerAttachments(1.36875F).clientTrackingRange(10));
       PLAYER = register("player", EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Player.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(32).updateInterval(2));
       FISHING_BOBBER = register("fishing_bobber", EntityType.Builder.of(FishingHook::new, MobCategory.MISC).noLootTable().noSave().noSummon().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5));
       OP_ONLY_CUSTOM_DATA = Set.of(FALLING_BLOCK, COMMAND_BLOCK_MINECART, SPAWNER_MINECART);

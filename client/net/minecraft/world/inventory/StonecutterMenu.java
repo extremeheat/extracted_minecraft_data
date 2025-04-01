@@ -38,7 +38,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
    public final Container container;
    final ResultContainer resultContainer;
 
-   public StonecutterMenu(int var1, Inventory var2) {
+   public StonecutterMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 
@@ -58,7 +58,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
       };
       this.resultContainer = new ResultContainer();
       this.access = var3;
-      this.level = var2.player.level();
+      this.level = var2.getPlayer().level();
       this.inputSlot = this.addSlot(new Slot(this.container, 0, 20, 33));
       this.resultSlot = this.addSlot(new Slot(this.resultContainer, 1, 143, 33) {
          public boolean mayPlace(ItemStack var1) {

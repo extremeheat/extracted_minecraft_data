@@ -53,9 +53,9 @@ public class ChunkGeneratorStructureState {
    }
 
    private static boolean hasBiomesForStructureSet(StructureSet var0, BiomeSource var1) {
-      Stream var2 = var0.structures().stream().flatMap((var0x) -> {
-         Structure var1 = (Structure)var0x.structure().value();
-         return var1.biomes().stream();
+      Stream var2 = var0.structures().stream().flatMap((var1x) -> {
+         Structure var2 = (Structure)var1x.structure().value();
+         return var2.filteredBiomes(HolderSet.direct(var1.possibleBiomes())).stream();
       });
       Set var10001 = var1.possibleBiomes();
       Objects.requireNonNull(var10001);
@@ -83,7 +83,7 @@ public class ChunkGeneratorStructureState {
 
          for(StructureSet.StructureSelectionEntry var6 : var3.structures()) {
             Structure var7 = (Structure)var6.structure().value();
-            Stream var10000 = var7.biomes().stream();
+            Stream var10000 = var7.filteredBiomes(HolderSet.direct(var1)).stream();
             Objects.requireNonNull(var1);
             if (var10000.anyMatch(var1::contains)) {
                ((List)this.placementsForStructure.computeIfAbsent(var7, (var0) -> new ArrayList())).add(var3.placement());

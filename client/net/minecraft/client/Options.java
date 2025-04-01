@@ -217,6 +217,7 @@ public class Options {
    public final KeyMapping keyFullscreen;
    public final KeyMapping keySpectatorOutlines;
    public final KeyMapping keyAdvancements;
+   public final KeyMapping keyUnlocks;
    public final KeyMapping[] keyHotbarSlots;
    public final KeyMapping keySaveHotbarActivator;
    public final KeyMapping keyLoadHotbarActivator;
@@ -814,6 +815,7 @@ public class Options {
       this.keyFullscreen = new KeyMapping("key.fullscreen", 300, "key.categories.misc");
       this.keySpectatorOutlines = new KeyMapping("key.spectatorOutlines", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
       this.keyAdvancements = new KeyMapping("key.advancements", 76, "key.categories.misc");
+      this.keyUnlocks = new KeyMapping("key.unlocks", 85, "key.categories.misc");
       this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, "key.categories.inventory"), new KeyMapping("key.hotbar.2", 50, "key.categories.inventory"), new KeyMapping("key.hotbar.3", 51, "key.categories.inventory"), new KeyMapping("key.hotbar.4", 52, "key.categories.inventory"), new KeyMapping("key.hotbar.5", 53, "key.categories.inventory"), new KeyMapping("key.hotbar.6", 54, "key.categories.inventory"), new KeyMapping("key.hotbar.7", 55, "key.categories.inventory"), new KeyMapping("key.hotbar.8", 56, "key.categories.inventory"), new KeyMapping("key.hotbar.9", 57, "key.categories.inventory")};
       this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, "key.categories.creative");
       this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, "key.categories.creative");

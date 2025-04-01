@@ -357,6 +357,7 @@ import net.minecraft.util.datafix.schemas.V4302;
 import net.minecraft.util.datafix.schemas.V4306;
 import net.minecraft.util.datafix.schemas.V4307;
 import net.minecraft.util.datafix.schemas.V4312;
+import net.minecraft.util.datafix.schemas.V4317;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -852,9 +853,9 @@ public class DataFixers {
       Map var174 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var173, "Rename british shorthair", References.ENTITY, "minecraft:cat", var174));
       var0.addFixer(new CriteriaRenameFix(var173, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var174.getOrDefault(var1x, var1x)));
-      Set var273 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var273);
-      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var273::contains));
+      Set var274 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var274);
+      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var274::contains));
       Schema var175 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var175));
       Schema var176 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1076,6 +1077,8 @@ public class DataFixers {
       var0.addFixer(new PlayerEquipmentFix(var270));
       Schema var271 = var0.addSchema(4314, SAME_NAMESPACED);
       var0.addFixer(new InlineBlockPosFormatFix(var271));
+      Schema var272 = var0.addSchema(4317, V4317::new);
+      var0.addFixer(new AddNewChoices(var272, "Add roguelike block entities", References.BLOCK_ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

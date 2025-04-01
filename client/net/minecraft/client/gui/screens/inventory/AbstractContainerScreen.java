@@ -27,6 +27,9 @@ import net.minecraft.world.item.ItemStack;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
    public static final ResourceLocation INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory.png");
+   public static final ResourceLocation INVENTORY_LOCATION_3x3 = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory_3x3.png");
+   public static final ResourceLocation INVENTORY_LOCATION_NO_CRAFTING = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory_no_crafting.png");
+   public static final ResourceLocation DISABLED_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/crafter/disabled_slot");
    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
    protected static final int BACKGROUND_TEXTURE_WIDTH = 256;
@@ -155,6 +158,8 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       for(Slot var3 : this.menu.slots) {
          if (var3.isActive()) {
             this.renderSlot(var1, var3);
+         } else if (!(this instanceof MineCraftingScreen)) {
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_SLOT_SPRITE, var3.x - 1, var3.y - 1, 18, 18);
          }
       }
 

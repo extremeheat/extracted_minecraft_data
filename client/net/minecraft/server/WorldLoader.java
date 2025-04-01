@@ -87,7 +87,7 @@ public class WorldLoader {
       }
 
       public Pair<WorldDataConfiguration, CloseableResourceManager> createResourceManager() {
-         WorldDataConfiguration var1 = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig, this.initMode, this.safeMode);
+         WorldDataConfiguration var1 = PackStuff.configurePackRepository(this.packRepository, this.initialDataConfig, this.initMode, this.safeMode);
          List var2 = this.packRepository.openAllSelected();
          MultiPackResourceManager var3 = new MultiPackResourceManager(PackType.SERVER_DATA, var2);
          return Pair.of(var1, var3);

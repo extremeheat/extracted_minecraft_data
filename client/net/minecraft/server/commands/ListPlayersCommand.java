@@ -30,7 +30,7 @@ public class ListPlayersCommand {
    }
 
    private static int format(CommandSourceStack var0, Function<ServerPlayer, Component> var1) {
-      PlayerList var2 = var0.getServer().getPlayerList();
+      PlayerList var2 = var0.playerList();
       List var3 = var2.getPlayers();
       Component var4 = ComponentUtils.formatList(var3, var1);
       var0.sendSuccess(() -> Component.translatable("commands.list.players", var3.size(), var2.getMaxPlayers(), var4), false);

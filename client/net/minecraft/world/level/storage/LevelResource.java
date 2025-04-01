@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage;
 
 public class LevelResource {
    public static final LevelResource PLAYER_ADVANCEMENTS_DIR = new LevelResource("advancements");
+   public static final LevelResource PLAYER_UNLOCKS_DIR = new LevelResource("unlocks");
    public static final LevelResource PLAYER_STATS_DIR = new LevelResource("stats");
    public static final LevelResource PLAYER_DATA_DIR = new LevelResource("playerdata");
    public static final LevelResource PLAYER_OLD_DATA_DIR = new LevelResource("players");

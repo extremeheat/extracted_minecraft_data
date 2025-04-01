@@ -16,7 +16,6 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.EndPortalFrameBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LadderBlock;
@@ -1259,67 +1258,42 @@ public class StrongholdPieces {
             this.generateBox(var1, var5, 10, 3, var11, 10, 4, var11, var9, var9, false);
          }
 
-         for(int var21 = 2; var21 < 9; var21 += 2) {
-            this.generateBox(var1, var5, var21, 3, 15, var21, 4, 15, var10, var10, false);
+         for(int var15 = 2; var15 < 9; var15 += 2) {
+            this.generateBox(var1, var5, var15, 3, 15, var15, 4, 15, var10, var10, false);
          }
 
-         BlockState var22 = (BlockState)Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+         BlockState var16 = (BlockState)Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
          this.generateBox(var1, var5, 4, 1, 5, 6, 1, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 2, 6, 6, 2, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 3, 7, 6, 3, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
 
          for(int var12 = 4; var12 <= 6; ++var12) {
-            this.placeBlock(var1, var22, var12, 1, 4, var5);
-            this.placeBlock(var1, var22, var12, 2, 5, var5);
-            this.placeBlock(var1, var22, var12, 3, 6, var5);
+            this.placeBlock(var1, var16, var12, 1, 4, var5);
+            this.placeBlock(var1, var16, var12, 2, 5, var5);
+            this.placeBlock(var1, var16, var12, 3, 6, var5);
          }
 
-         BlockState var23 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.NORTH);
-         BlockState var13 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.SOUTH);
-         BlockState var14 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.EAST);
-         BlockState var15 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.WEST);
-         boolean var16 = true;
-         boolean[] var17 = new boolean[12];
-
-         for(int var18 = 0; var18 < var17.length; ++var18) {
-            var17[var18] = var4.nextFloat() > 0.9F;
-            var16 &= var17[var18];
-         }
-
-         this.placeBlock(var1, (BlockState)var23.setValue(EndPortalFrameBlock.HAS_EYE, var17[0]), 4, 3, 8, var5);
-         this.placeBlock(var1, (BlockState)var23.setValue(EndPortalFrameBlock.HAS_EYE, var17[1]), 5, 3, 8, var5);
-         this.placeBlock(var1, (BlockState)var23.setValue(EndPortalFrameBlock.HAS_EYE, var17[2]), 6, 3, 8, var5);
-         this.placeBlock(var1, (BlockState)var13.setValue(EndPortalFrameBlock.HAS_EYE, var17[3]), 4, 3, 12, var5);
-         this.placeBlock(var1, (BlockState)var13.setValue(EndPortalFrameBlock.HAS_EYE, var17[4]), 5, 3, 12, var5);
-         this.placeBlock(var1, (BlockState)var13.setValue(EndPortalFrameBlock.HAS_EYE, var17[5]), 6, 3, 12, var5);
-         this.placeBlock(var1, (BlockState)var14.setValue(EndPortalFrameBlock.HAS_EYE, var17[6]), 3, 3, 9, var5);
-         this.placeBlock(var1, (BlockState)var14.setValue(EndPortalFrameBlock.HAS_EYE, var17[7]), 3, 3, 10, var5);
-         this.placeBlock(var1, (BlockState)var14.setValue(EndPortalFrameBlock.HAS_EYE, var17[8]), 3, 3, 11, var5);
-         this.placeBlock(var1, (BlockState)var15.setValue(EndPortalFrameBlock.HAS_EYE, var17[9]), 7, 3, 9, var5);
-         this.placeBlock(var1, (BlockState)var15.setValue(EndPortalFrameBlock.HAS_EYE, var17[10]), 7, 3, 10, var5);
-         this.placeBlock(var1, (BlockState)var15.setValue(EndPortalFrameBlock.HAS_EYE, var17[11]), 7, 3, 11, var5);
-         if (var16) {
-            BlockState var24 = Blocks.END_PORTAL.defaultBlockState();
-            this.placeBlock(var1, var24, 4, 3, 9, var5);
-            this.placeBlock(var1, var24, 5, 3, 9, var5);
-            this.placeBlock(var1, var24, 6, 3, 9, var5);
-            this.placeBlock(var1, var24, 4, 3, 10, var5);
-            this.placeBlock(var1, var24, 5, 3, 10, var5);
-            this.placeBlock(var1, var24, 6, 3, 10, var5);
-            this.placeBlock(var1, var24, 4, 3, 11, var5);
-            this.placeBlock(var1, var24, 5, 3, 11, var5);
-            this.placeBlock(var1, var24, 6, 3, 11, var5);
-         }
-
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 4, 3, 8, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 5, 3, 8, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 6, 3, 8, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 4, 3, 12, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 5, 3, 12, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 6, 3, 12, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 3, 3, 9, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 3, 3, 10, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 3, 3, 11, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 7, 3, 9, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 7, 3, 10, var5);
+         this.placeBlock(var1, Blocks.DIAMOND_BLOCK.defaultBlockState(), 7, 3, 11, var5);
          if (!this.hasPlacedSpawner) {
-            BlockPos.MutableBlockPos var25 = this.getWorldPos(5, 3, 6);
-            if (var5.isInside(var25)) {
+            BlockPos.MutableBlockPos var17 = this.getWorldPos(5, 3, 6);
+            if (var5.isInside(var17)) {
                this.hasPlacedSpawner = true;
-               var1.setBlock(var25, Blocks.SPAWNER.defaultBlockState(), 2);
-               BlockEntity var19 = var1.getBlockEntity(var25);
-               if (var19 instanceof SpawnerBlockEntity) {
-                  SpawnerBlockEntity var20 = (SpawnerBlockEntity)var19;
-                  var20.setEntityId(EntityType.SILVERFISH, var4);
+               var1.setBlock(var17, Blocks.SPAWNER.defaultBlockState(), 2);
+               BlockEntity var13 = var1.getBlockEntity(var17);
+               if (var13 instanceof SpawnerBlockEntity) {
+                  SpawnerBlockEntity var14 = (SpawnerBlockEntity)var13;
+                  var14.setEntityId(EntityType.SILVERFISH, var4);
                }
             }
          }

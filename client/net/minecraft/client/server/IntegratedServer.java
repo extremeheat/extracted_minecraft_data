@@ -19,10 +19,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.debugchart.LocalSampleLogger;
@@ -49,78 +51,79 @@ public class IntegratedServer extends MinecraftServer {
    private UUID uuid;
    private int previousSimulationDistance = 0;
 
-   public IntegratedServer(Thread var1, Minecraft var2, LevelStorageSource.LevelStorageAccess var3, PackRepository var4, WorldStem var5, Services var6, ChunkProgressListenerFactory var7) {
-      super(var1, var3, var4, var5, var2.getProxy(), var2.getFixerUpper(), var6, var7);
+   public IntegratedServer(Thread var1, Minecraft var2, LevelStorageSource.LevelStorageAccess var3, Services var4) {
+      super(var1, var3, var2.getProxy(), var2.getFixerUpper(), var4);
       this.setSingleplayerProfile(var2.getGameProfile());
       this.setDemo(var2.isDemo());
-      this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));
       this.minecraft = var2;
    }
 
-   public boolean initServer() {
+   public boolean initServer() throws IOException {
       LOGGER.info("Starting integrated minecraft server version {}", SharedConstants.getCurrentVersion().getName());
       this.setUsesAuthentication(true);
       this.setPvpAllowed(true);
       this.setFlightAllowed(true);
       this.initializeKeyPair();
-      this.loadLevel();
-      GameProfile var1 = this.getSingleplayerProfile();
-      String var2 = this.getWorldData().getLevelName();
-      this.setMotd(var1 != null ? var1.getName() + " - " + var2 : var2);
       return true;
+   }
+
+   public TheGame initGame(PackRepository var1, WorldStem var2, ChunkProgressListenerFactory var3) {
+      TheGame var4 = TheGame.create(this, var1, var2, this.storageSource, var3, (var1x) -> new IntegratedPlayerList(var1x, this.playerDataStorage));
+      GameProfile var5 = this.getSingleplayerProfile();
+      String var6 = var4.getWorldData().getLevelName();
+      this.setMotd(var5 != null ? var5.getName() + " - " + var6 : var6);
+      this.previousSimulationDistance = 0;
+      return var4;
    }
 
    public boolean isPaused() {
       return this.paused;
    }
 
-   public void tickServer(BooleanSupplier var1) {
-      boolean var2 = this.paused;
+   public void tickServer(TheGame var1, BooleanSupplier var2) {
+      boolean var3 = this.paused;
       this.paused = Minecraft.getInstance().isPaused();
-      ProfilerFiller var3 = Profiler.get();
-      if (!var2 && this.paused) {
-         var3.push("autoSave");
+      ProfilerFiller var4 = Profiler.get();
+      if (!var3 && this.paused) {
+         var4.push("autoSave");
          LOGGER.info("Saving and pausing game...");
-         this.saveEverything(false, false, false);
-         var3.pop();
+         this.saveEverything(var1, false, false, false);
+         var4.pop();
       }
 
-      boolean var4 = Minecraft.getInstance().getConnection() != null;
-      if (var4 && this.paused) {
-         this.tickPaused();
+      boolean var5 = Minecraft.getInstance().getConnection() != null;
+      if (var5 && this.paused) {
+         this.tickPaused(var1);
       } else {
-         if (var2 && !this.paused) {
-            this.forceTimeSynchronization();
+         if (var3 && !this.paused) {
+            var1.forceTimeSynchronization();
          }
 
-         super.tickServer(var1);
-         int var5 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
-         if (var5 != this.getPlayerList().getViewDistance()) {
-            LOGGER.info("Changing view distance to {}, from {}", var5, this.getPlayerList().getViewDistance());
-            this.getPlayerList().setViewDistance(var5);
+         super.tickServer(var1, var2);
+         int var6 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
+         PlayerList var7 = var1.playerList();
+         if (var6 != var7.getViewDistance()) {
+            LOGGER.info("Changing view distance to {}, from {}", var6, var7.getViewDistance());
+            var7.setViewDistance(var6);
          }
 
-         int var6 = Math.max(2, (Integer)this.minecraft.options.simulationDistance().get());
-         if (var6 != this.previousSimulationDistance) {
-            LOGGER.info("Changing simulation distance to {}, from {}", var6, this.previousSimulationDistance);
-            this.getPlayerList().setSimulationDistance(var6);
-            this.previousSimulationDistance = var6;
+         int var8 = Math.max(2, (Integer)this.minecraft.options.simulationDistance().get());
+         if (var8 != this.previousSimulationDistance) {
+            LOGGER.info("Changing simulation distance to {}, from {}", var8, this.previousSimulationDistance);
+            var7.setSimulationDistance(var8);
+            this.previousSimulationDistance = var8;
          }
 
       }
    }
 
-   protected LocalSampleLogger getTickTimeLogger() {
+   protected LocalSampleLogger getTickTimeLoggerIfEnabled() {
       return this.minecraft.getDebugOverlay().getTickTimeLogger();
    }
 
-   public boolean isTickTimeLoggingEnabled() {
-      return true;
-   }
-
-   private void tickPaused() {
-      for(ServerPlayer var2 : this.getPlayerList().getPlayers()) {
-         var2.awardStat(Stats.TOTAL_WORLD_TIME);
+   private void tickPaused(TheGame var1) {
+      for(ServerPlayer var3 : var1.playerList().getPlayers()) {
+         var3.awardStat(Stats.TOTAL_WORLD_TIME);
       }
 
    }
@@ -166,32 +169,33 @@ public class IntegratedServer extends MinecraftServer {
       return Minecraft.checkModStatus().merge(super.getModdedStatus());
    }
 
-   public boolean publishServer(@Nullable GameType var1, boolean var2, int var3) {
+   public boolean publishServer(TheGame var1, @Nullable GameType var2, boolean var3, int var4) {
       try {
          this.minecraft.prepareForMultiplayer();
          this.minecraft.getConnection().prepareKeyPair();
-         this.getConnection().startTcpServerListener((InetAddress)null, var3);
-         LOGGER.info("Started serving on {}", var3);
-         this.publishedPort = var3;
-         this.lanPinger = new LanServerPinger(this.getMotd(), "" + var3);
+         this.getConnection().startTcpServerListener((InetAddress)null, var4);
+         LOGGER.info("Started serving on {}", var4);
+         this.publishedPort = var4;
+         this.lanPinger = new LanServerPinger(this.getMotd(), "" + var4);
          this.lanPinger.start();
-         this.publishedGameType = var1;
-         this.getPlayerList().setAllowCommandsForAllPlayers(var2);
-         int var4 = this.getProfilePermissions(this.minecraft.player.getGameProfile());
-         this.minecraft.player.setPermissionLevel(var4);
+         this.publishedGameType = var2;
+         PlayerList var5 = var1.playerList();
+         var5.setAllowCommandsForAllPlayers(var3);
+         int var6 = this.getProfilePermissions(this.minecraft.player.getGameProfile());
+         this.minecraft.player.setPermissionLevel(var6);
 
-         for(ServerPlayer var6 : this.getPlayerList().getPlayers()) {
-            this.getCommands().sendCommands(var6);
+         for(ServerPlayer var8 : var5.getPlayers()) {
+            var1.getCommands().sendCommands(var8);
          }
 
          return true;
-      } catch (IOException var7) {
+      } catch (IOException var9) {
          return false;
       }
    }
 
-   public void stopServer() {
-      super.stopServer();
+   public void stopServer(TheGame var1) {
+      super.stopServer(var1);
       if (this.lanPinger != null) {
          this.lanPinger.interrupt();
          this.lanPinger = null;
@@ -201,9 +205,14 @@ public class IntegratedServer extends MinecraftServer {
 
    public void halt(boolean var1) {
       this.executeBlocking(() -> {
-         for(ServerPlayer var3 : Lists.newArrayList(this.getPlayerList().getPlayers())) {
-            if (!var3.getUUID().equals(this.uuid)) {
-               this.getPlayerList().remove(var3);
+         TheGame var1 = this.theGame();
+         if (var1 != null) {
+            PlayerList var2 = var1.playerList();
+
+            for(ServerPlayer var5 : Lists.newArrayList(var2.getPlayers())) {
+               if (!var5.getUUID().equals(this.uuid)) {
+                  var2.remove(var5);
+               }
             }
          }
 
@@ -224,8 +233,8 @@ public class IntegratedServer extends MinecraftServer {
       return this.publishedPort;
    }
 
-   public void setDefaultGameType(GameType var1) {
-      super.setDefaultGameType(var1);
+   public void setDefaultGameType(TheGame var1, GameType var2) {
+      super.setDefaultGameType(var1, var2);
       this.publishedGameType = null;
    }
 
@@ -258,14 +267,14 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    @Nullable
-   public GameType getForcedGameType() {
-      return this.isPublished() && !this.isHardcore() ? (GameType)MoreObjects.firstNonNull(this.publishedGameType, this.worldData.getGameType()) : null;
+   public GameType getForcedGameType(TheGame var1) {
+      return this.isPublished() && !this.isHardcore(var1) ? (GameType)MoreObjects.firstNonNull(this.publishedGameType, var1.getWorldData().getGameType()) : null;
    }
 
-   public boolean saveEverything(boolean var1, boolean var2, boolean var3) {
-      boolean var4 = super.saveEverything(var1, var2, var3);
+   public boolean saveEverything(TheGame var1, boolean var2, boolean var3, boolean var4) {
+      boolean var5 = super.saveEverything(var1, var2, var3, var4);
       this.warnOnLowDiskSpace();
-      return var4;
+      return var5;
    }
 
    private void warnOnLowDiskSpace() {
@@ -288,7 +297,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    // $FF: synthetic method
-   public SampleLogger getTickTimeLogger() {
-      return this.getTickTimeLogger();
+   public SampleLogger getTickTimeLoggerIfEnabled() {
+      return this.getTickTimeLoggerIfEnabled();
    }
 }

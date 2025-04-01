@@ -21,6 +21,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -63,6 +64,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.pathfinder.AmphibiousNodeEvaluator;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
@@ -304,8 +306,14 @@ public class Frog extends Animal {
    }
 
    public static boolean canEat(LivingEntity var0) {
-      if (var0 instanceof Slime var1) {
-         if (var1.getSize() != 1) {
+      if (var0 instanceof ServerPlayer var1) {
+         if (var1.serverLevel().isActive(WorldEffects.WEDNESDAY_FROGS)) {
+            return true;
+         }
+      }
+
+      if (var0 instanceof Slime var2) {
+         if (var2.getSize() != 1) {
             return false;
          }
       }

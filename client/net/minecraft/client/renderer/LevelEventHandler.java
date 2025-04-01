@@ -70,7 +70,7 @@ public class LevelEventHandler {
                if (var1 == 1023) {
                   this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
                } else if (var1 == 1038) {
-                  this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
+                  this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 0.2F, 1.0F, false);
                } else {
                   this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.ENDER_DRAGON_DEATH, SoundSource.HOSTILE, 5.0F, 1.0F, false);
                }
@@ -287,7 +287,7 @@ public class LevelEventHandler {
             double var46 = (double)var2.getZ() + 0.5;
 
             for(int var59 = 0; var59 < 8; ++var59) {
-               this.levelRenderer.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+               this.levelRenderer.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.EXIT_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
             }
 
             for(double var60 = 0.0; var60 < 6.283185307179586; var60 += 0.15707963267948966) {

@@ -71,7 +71,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -830,7 +830,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    }
 
-   public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
+   protected void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
       this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
    }
 
@@ -2301,7 +2301,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
                if (var3 != null) {
                   ServerLevel var4 = var3.newLevel();
-                  if (var1.getServer().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
+                  if (var1.theGame().server().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
                      this.teleport(var3);
                   }
                }
@@ -2746,26 +2746,38 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
       }
 
-      ProfilerFiller var9 = Profiler.get();
-      var9.push("teleportCrossDimension");
-      Entity var10 = this.getType().create(var1, EntitySpawnReason.DIMENSION_TRAVEL);
-      if (var10 == null) {
-         var9.pop();
+      ProfilerFiller var11 = Profiler.get();
+      var11.push("teleportCrossDimension");
+      Entity var12 = this.getType().create(var1, EntitySpawnReason.DIMENSION_TRAVEL);
+      if (var12 == null) {
+         var11.pop();
          return null;
       } else {
-         var10.restoreFrom(this);
+         var12.restoreFrom(this);
          this.removeAfterChangingDimensions();
-         var10.teleportSetPosition(PositionMoveRotation.of(var2), var2.relatives());
-         var1.addDuringTeleport(var10);
+         var12.teleportSetPosition(PositionMoveRotation.of(var2), var2.relatives());
+         var1.addDuringTeleport(var12);
 
          for(Entity var8 : var4) {
-            var8.startRiding(var10, true);
+            var8.startRiding(var12, true);
          }
 
          var1.resetEmptyTime();
-         var2.postTeleportTransition().onTransition(var10);
-         var9.pop();
-         return var10;
+         var2.postTeleportTransition().onTransition(var12);
+         var11.pop();
+         Level var15 = this.level();
+         if (var15 instanceof ServerLevel) {
+            ServerLevel var14 = (ServerLevel)var15;
+
+            for(ServerPlayer var10 : new ArrayList(var14.players())) {
+               if (var10.getCamera() == this) {
+                  var10.teleport(var2);
+                  var10.setCamera((Entity)null);
+               }
+            }
+         }
+
+         return var12;
       }
    }
 
@@ -3082,8 +3094,16 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    @Nullable
-   public MinecraftServer getServer() {
-      return this.level().getServer();
+   public TheGame theGame() {
+      Level var2 = this.level();
+      TheGame var10000;
+      if (var2 instanceof ServerLevel var1) {
+         var10000 = var1.theGame();
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
    public InteractionResult interactAt(Player var1, Vec3 var2, InteractionHand var3) {
@@ -3278,7 +3298,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getName().getString(), this.getDisplayName(), var1.getServer(), this);
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getName().getString(), this.getDisplayName(), var1.theGame(), this);
    }
 
    public void lookAt(EntityAnchorArgument.Anchor var1, Vec3 var2) {

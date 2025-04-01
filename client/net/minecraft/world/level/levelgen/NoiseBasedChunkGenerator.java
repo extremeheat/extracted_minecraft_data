@@ -59,6 +59,10 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       this.globalFluidPicker = Suppliers.memoize(() -> createFluidPicker((NoiseGeneratorSettings)var2.value()));
    }
 
+   public NoiseGeneratorSettings getNoiseGeneratorSettings() {
+      return this.settings.value();
+   }
+
    private static Aquifer.FluidPicker createFluidPicker(NoiseGeneratorSettings var0) {
       Aquifer.FluidStatus var1 = new Aquifer.FluidStatus(-54, Blocks.LAVA.defaultBlockState());
       int var2 = var0.seaLevel();
@@ -86,10 +90,6 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
 
    protected MapCodec<? extends ChunkGenerator> codec() {
       return CODEC;
-   }
-
-   public Holder<NoiseGeneratorSettings> generatorSettings() {
-      return this.settings;
    }
 
    public boolean stable(ResourceKey<NoiseGeneratorSettings> var1) {

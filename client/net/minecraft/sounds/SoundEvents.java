@@ -918,6 +918,7 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_5 = registerForHolder("music_disc.5");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_11 = registerForHolder("music_disc.11");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_13 = registerForHolder("music_disc.13");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_AND_ACTION = registerForHolder(new ResourceLocation("nothingtoseehere", "and_action"));
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_BLOCKS = registerForHolder("music_disc.blocks");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CAT = registerForHolder("music_disc.cat");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CHIRP = registerForHolder("music_disc.chirp");
@@ -1499,6 +1500,8 @@ public class SoundEvents {
    public static final SoundEvent UI_TOAST_CHALLENGE_COMPLETE = register("ui.toast.challenge_complete");
    public static final SoundEvent UI_TOAST_IN = register("ui.toast.in");
    public static final SoundEvent UI_TOAST_OUT = register("ui.toast.out");
+   public static final SoundEvent UI_PLAYER_UNLOCK_SUCCESS = register(new ResourceLocation("nothingtoseehere", "ui.player_unlock_success"));
+   public static final SoundEvent UI_PLAYER_UNLOCK_FAIL = register(new ResourceLocation("nothingtoseehere", "ui.player_unlock_fail"));
    public static final SoundEvent VAULT_ACTIVATE = register("block.vault.activate");
    public static final SoundEvent VAULT_AMBIENT = register("block.vault.ambient");
    public static final SoundEvent VAULT_BREAK = register("block.vault.break");
@@ -1668,6 +1671,9 @@ public class SoundEvents {
    public static final SoundEvent APPLY_EFFECT_BAD_OMEN = register("event.mob_effect.bad_omen");
    public static final SoundEvent APPLY_EFFECT_TRIAL_OMEN = register("event.mob_effect.trial_omen");
    public static final SoundEvent APPLY_EFFECT_RAID_OMEN = register("event.mob_effect.raid_omen");
+   public static final SoundEvent VILLAGER_CROWD_START = register(new ResourceLocation("nothingtoseehere", "crowd_start"));
+   public static final SoundEvent VILLAGER_CROWD_CHEER = register(new ResourceLocation("nothingtoseehere", "crowd_cheer"));
+   public static final SoundEvent VILLAGER_CROWD_WAITING = register(new ResourceLocation("nothingtoseehere", "crowd_waiting"));
 
    public SoundEvents() {
       super();

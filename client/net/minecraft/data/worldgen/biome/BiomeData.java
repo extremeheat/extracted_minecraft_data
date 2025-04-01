@@ -15,6 +15,7 @@ public abstract class BiomeData {
       HolderGetter var1 = var0.lookup(Registries.PLACED_FEATURE);
       HolderGetter var2 = var0.lookup(Registries.CONFIGURED_CARVER);
       var0.register(Biomes.THE_VOID, OverworldBiomes.theVoid(var1, var2));
+      var0.register(Biomes.HUB, OverworldBiomes.hub(var1, var2));
       var0.register(Biomes.PLAINS, OverworldBiomes.plains(var1, var2, false, false, false));
       var0.register(Biomes.SUNFLOWER_PLAINS, OverworldBiomes.plains(var1, var2, true, false, false));
       var0.register(Biomes.SNOWY_PLAINS, OverworldBiomes.plains(var1, var2, false, true, false));

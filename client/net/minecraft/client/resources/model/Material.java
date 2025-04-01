@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 
@@ -49,7 +50,7 @@ public class Material {
       return this.sprite().wrap(var1.getBuffer(this.renderType(var2)));
    }
 
-   public VertexConsumer buffer(MultiBufferSource var1, Function<ResourceLocation, RenderType> var2, boolean var3, boolean var4) {
+   public VertexConsumer buffer(MultiBufferSource var1, Function<ResourceLocation, RenderType> var2, boolean var3, ItemStackRenderState.FoilType var4) {
       return this.sprite().wrap(ItemRenderer.getFoilBuffer(var1, this.renderType(var2), var3, var4));
    }
 

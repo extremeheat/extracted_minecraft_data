@@ -17,7 +17,7 @@ public record StorageDataSource(ResourceLocation id) implements DataSource {
    }
 
    public Stream<CompoundTag> getData(CommandSourceStack var1) {
-      CompoundTag var2 = var1.getServer().getCommandStorage().get(this.id);
+      CompoundTag var2 = var1.theGame().getCommandStorage().get(this.id);
       return Stream.of(var2);
    }
 

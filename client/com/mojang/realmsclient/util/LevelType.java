@@ -8,8 +8,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 public enum LevelType {
    DEFAULT(0, WorldPresets.NORMAL),
    FLAT(1, WorldPresets.FLAT),
-   LARGE_BIOMES(2, WorldPresets.LARGE_BIOMES),
-   AMPLIFIED(3, WorldPresets.AMPLIFIED);
+   AMPLIFIED(2, WorldPresets.AMPLIFIED);
 
    private final int index;
    private final Component name;
@@ -29,6 +28,6 @@ public enum LevelType {
 
    // $FF: synthetic method
    private static LevelType[] $values() {
-      return new LevelType[]{DEFAULT, FLAT, LARGE_BIOMES, AMPLIFIED};
+      return new LevelType[]{DEFAULT, FLAT, AMPLIFIED};
    }
 }

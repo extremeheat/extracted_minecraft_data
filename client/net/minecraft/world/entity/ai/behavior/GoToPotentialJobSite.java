@@ -38,7 +38,7 @@ public class GoToPotentialJobSite extends Behavior<Villager> {
       Optional var5 = var2.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE);
       var5.ifPresent((var1x) -> {
          BlockPos var2 = var1x.pos();
-         ServerLevel var3 = var1.getServer().getLevel(var1x.dimension());
+         ServerLevel var3 = var1.theGame().getLevel(var1x.dimension());
          if (var3 != null) {
             PoiManager var4 = var3.getPoiManager();
             if (var4.exists(var2, (var0) -> true)) {

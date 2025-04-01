@@ -33,6 +33,10 @@ public class ConsumeItemTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          this.item = var2;
       }
 
+      public static Criterion<TriggerInstance> hasEatenOneHundredPotatoes() {
+         return CriteriaTriggers.CONSUMED_HUNDRED_POISONOUS_POTATOES.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty()));
+      }
+
       public static Criterion<TriggerInstance> usedItem() {
          return CriteriaTriggers.CONSUME_ITEM.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty()));
       }

@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 
 public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
@@ -21,7 +22,7 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
    public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
       var2.pushPose();
       var2.scale(1.0F, -1.0F, -1.0F);
-      VertexConsumer var7 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TridentModel.TEXTURE), false, var6);
+      VertexConsumer var7 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TridentModel.TEXTURE), false, var6 ? ItemStackRenderState.FoilType.STANDARD : ItemStackRenderState.FoilType.NONE);
       this.model.renderToBuffer(var2, var7, var4, var5);
       var2.popPose();
    }

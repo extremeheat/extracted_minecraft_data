@@ -12,9 +12,11 @@ import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.StatusProtocols;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 
 public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
    private static final Component IGNORE_STATUS_REASON = Component.translatable("disconnect.ignoring_status_request");
+   private static final Component NO_GAME = Component.literal("We are not playing any games here");
    private final MinecraftServer server;
    private final Connection connection;
 
@@ -67,7 +69,13 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
          this.connection.send(new ClientboundLoginDisconnectPacket(var3));
          this.connection.disconnect((Component)var3);
       } else {
-         this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, var2));
+         TheGame var4 = this.server.theGame();
+         if (var4 == null) {
+            this.connection.send(new ClientboundLoginDisconnectPacket(NO_GAME));
+            this.connection.disconnect(NO_GAME);
+         } else {
+            this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(var4, this.connection, var2));
+         }
       }
 
    }

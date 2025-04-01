@@ -32,7 +32,7 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
       Rotation var5 = Rotation.getRandom(var2);
       FossilFeatureConfiguration var6 = (FossilFeatureConfiguration)var1.config();
       int var7 = var2.nextInt(var6.fossilStructures.size());
-      StructureTemplateManager var8 = var3.getLevel().getServer().getStructureManager();
+      StructureTemplateManager var8 = var3.getLevel().theGame().getStructureManager();
       StructureTemplate var9 = var8.getOrCreate((ResourceLocation)var6.fossilStructures.get(var7));
       StructureTemplate var10 = var8.getOrCreate((ResourceLocation)var6.overlayStructures.get(var7));
       ChunkPos var11 = new ChunkPos(var4);

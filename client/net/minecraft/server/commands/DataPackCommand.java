@@ -32,9 +32,9 @@ public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_DISABLED = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.disable.failed", var0));
    private static final DynamicCommandExceptionType ERROR_CANNOT_DISABLE_FEATURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.disable.failed.feature", var0));
    private static final Dynamic2CommandExceptionType ERROR_PACK_FEATURES_NOT_ENABLED = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.datapack.enable.failed.no_flags", var0, var1));
-   private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = (var0, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getServer().getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), var1);
+   private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = (var0, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).theGame().getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), var1);
    private static final SuggestionProvider<CommandSourceStack> UNSELECTED_PACKS = (var0, var1) -> {
-      PackRepository var2 = ((CommandSourceStack)var0.getSource()).getServer().getPackRepository();
+      PackRepository var2 = ((CommandSourceStack)var0.getSource()).theGame().getPackRepository();
       Collection var3 = var2.getSelectedIds();
       FeatureFlagSet var4 = ((CommandSourceStack)var0.getSource()).enabledFeatures();
       return SharedSuggestionProvider.suggest(var2.getAvailablePacks().stream().filter((var1x) -> var1x.getRequestedFeatures().isSubsetOf(var4)).map(Pack::getId).filter((var1x) -> !var3.contains(var1x)).map(StringArgumentType::escapeIfRequired), var1);
@@ -49,7 +49,7 @@ public class DataPackCommand {
    }
 
    private static int enablePack(CommandSourceStack var0, Pack var1, Inserter var2) throws CommandSyntaxException {
-      PackRepository var3 = var0.getServer().getPackRepository();
+      PackRepository var3 = var0.theGame().getPackRepository();
       ArrayList var4 = Lists.newArrayList(var3.getSelectedPacks());
       var2.apply(var4, var1);
       var0.sendSuccess(() -> Component.translatable("commands.datapack.modify.enable", var1.getChatLink(true)), true);
@@ -58,7 +58,7 @@ public class DataPackCommand {
    }
 
    private static int disablePack(CommandSourceStack var0, Pack var1) {
-      PackRepository var2 = var0.getServer().getPackRepository();
+      PackRepository var2 = var0.theGame().getPackRepository();
       ArrayList var3 = Lists.newArrayList(var2.getSelectedPacks());
       var3.remove(var1);
       var0.sendSuccess(() -> Component.translatable("commands.datapack.modify.disable", var1.getChatLink(true)), true);
@@ -71,7 +71,7 @@ public class DataPackCommand {
    }
 
    private static int listAvailablePacks(CommandSourceStack var0) {
-      PackRepository var1 = var0.getServer().getPackRepository();
+      PackRepository var1 = var0.theGame().getPackRepository();
       var1.reload();
       Collection var2 = var1.getSelectedPacks();
       Collection var3 = var1.getAvailablePacks();
@@ -87,7 +87,7 @@ public class DataPackCommand {
    }
 
    private static int listEnabledPacks(CommandSourceStack var0) {
-      PackRepository var1 = var0.getServer().getPackRepository();
+      PackRepository var1 = var0.theGame().getPackRepository();
       var1.reload();
       Collection var2 = var1.getSelectedPacks();
       if (var2.isEmpty()) {
@@ -101,7 +101,7 @@ public class DataPackCommand {
 
    private static Pack getPack(CommandContext<CommandSourceStack> var0, String var1, boolean var2) throws CommandSyntaxException {
       String var3 = StringArgumentType.getString(var0, var1);
-      PackRepository var4 = ((CommandSourceStack)var0.getSource()).getServer().getPackRepository();
+      PackRepository var4 = ((CommandSourceStack)var0.getSource()).theGame().getPackRepository();
       Pack var5 = var4.getPack(var3);
       if (var5 == null) {
          throw ERROR_UNKNOWN_PACK.create(var3);

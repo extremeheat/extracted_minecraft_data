@@ -11,8 +11,11 @@ public class Slot {
    private final int slot;
    public final Container container;
    public int index;
-   public final int x;
-   public final int y;
+   public int x;
+   public int y;
+   public float x0;
+   public float y0;
+   private boolean active = true;
 
    public Slot(Container var1, int var2, int var3, int var4) {
       super();
@@ -20,6 +23,8 @@ public class Slot {
       this.slot = var2;
       this.x = var3;
       this.y = var4;
+      this.x0 = (float)var3;
+      this.y0 = (float)var4;
    }
 
    public void onQuickCraft(ItemStack var1, ItemStack var2) {
@@ -28,6 +33,10 @@ public class Slot {
          this.onQuickCraft(var2, var3);
       }
 
+   }
+
+   public boolean shouldMove() {
+      return false;
    }
 
    protected void onQuickCraft(ItemStack var1, int var2) {
@@ -94,7 +103,11 @@ public class Slot {
    }
 
    public boolean isActive() {
-      return true;
+      return this.active;
+   }
+
+   public void setActive(boolean var1) {
+      this.active = var1;
    }
 
    public Optional<ItemStack> tryRemove(int var1, int var2, Player var3) {
@@ -162,6 +175,10 @@ public class Slot {
    }
 
    public boolean isFake() {
+      return false;
+   }
+
+   public boolean shouldRotate() {
       return false;
    }
 }

@@ -24,8 +24,8 @@ import net.minecraft.network.protocol.configuration.ServerConfigurationPacketLis
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.config.JoinWorldTask;
@@ -47,7 +47,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    @Nullable
    private SynchronizeRegistriesTask synchronizeRegistriesTask;
 
-   public ServerConfigurationPacketListenerImpl(MinecraftServer var1, Connection var2, CommonListenerCookie var3) {
+   public ServerConfigurationPacketListenerImpl(TheGame var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
       this.gameProfile = var3.gameProfile();
       this.clientInformation = var3.clientInformation();
@@ -66,30 +66,35 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       return this.connection.isConnected();
    }
 
+   private void queueRegistrySynchronizationTask() {
+      LayeredRegistryAccess var1 = this.theGame.registries();
+      List var2 = this.theGame.getResourceManager().listPacks().flatMap((var0) -> var0.location().knownPackInfo().stream()).toList();
+      this.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(this.theGame.getWorldData().enabledFeatures())));
+      this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var2, var1);
+      this.configurationTasks.add(this.synchronizeRegistriesTask);
+   }
+
    public void startConfiguration() {
-      this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
-      ServerLinks var1 = this.server.serverLinks();
+      this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.theGame.server().getServerModName())));
+      ServerLinks var1 = this.theGame.server().serverLinks();
       if (!var1.isEmpty()) {
          this.send(new ClientboundServerLinksPacket(var1.untrust()));
       }
 
-      LayeredRegistryAccess var2 = this.server.registries();
-      List var3 = this.server.getResourceManager().listPacks().flatMap((var0) -> var0.location().knownPackInfo().stream()).toList();
-      this.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(this.server.getWorldData().enabledFeatures())));
-      this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var3, var2);
-      this.configurationTasks.add(this.synchronizeRegistriesTask);
+      this.queueRegistrySynchronizationTask();
       this.addOptionalTasks();
       this.configurationTasks.add(new JoinWorldTask());
       this.startNextTask();
    }
 
    public void returnToWorld() {
+      this.queueRegistrySynchronizationTask();
       this.configurationTasks.add(new JoinWorldTask());
       this.startNextTask();
    }
 
    private void addOptionalTasks() {
-      this.server.getServerResourcePack().ifPresent((var1) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1)));
+      this.theGame.server().getServerResourcePack().ifPresent((var1) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1)));
    }
 
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
@@ -105,7 +110,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void handleSelectKnownPacks(ServerboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.theGame.eventLoop());
       if (this.synchronizeRegistriesTask == null) {
          throw new IllegalStateException("Unexpected response from client: received pack selection, but no negotiation ongoing");
       } else {
@@ -115,12 +120,12 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.theGame.eventLoop());
       this.finishCurrentTask(JoinWorldTask.TYPE);
-      this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
+      this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.theGame.registryAccess())));
 
       try {
-         PlayerList var2 = this.server.getPlayerList();
+         PlayerList var2 = this.theGame.playerList();
          if (var2.getPlayer(this.gameProfile.getId()) != null) {
             this.disconnect(PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
             return;
@@ -132,7 +137,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
             return;
          }
 
-         ServerPlayer var4 = var2.getPlayerForLogin(this.gameProfile, this.clientInformation);
+         ServerPlayer var4 = new ServerPlayer(this.theGame, this.theGame.overworld(), this.gameProfile, this.clientInformation);
          var2.placeNewPlayer(this.connection, var4, this.createCookie(this.clientInformation));
       } catch (Exception var5) {
          LOGGER.error("Couldn't place player in world", var5);

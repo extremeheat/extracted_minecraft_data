@@ -16,7 +16,7 @@ public class WolfModel extends EntityModel<WolfRenderState> {
    private static final String REAL_HEAD = "real_head";
    private static final String UPPER_BODY = "upper_body";
    private static final String REAL_TAIL = "real_tail";
-   private final ModelPart head;
+   public final ModelPart head;
    private final ModelPart realHead;
    private final ModelPart body;
    private final ModelPart rightHindLeg;

@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -44,7 +45,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    private static final int RESULT_SLOT_X_PLACEMENT = 134;
    private static final int SLOT_Y_PLACEMENT = 47;
 
-   public AnvilMenu(int var1, Inventory var2) {
+   public AnvilMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 

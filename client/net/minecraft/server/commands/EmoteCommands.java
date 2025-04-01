@@ -17,7 +17,7 @@ public class EmoteCommands {
       var0.register((LiteralArgumentBuilder)Commands.literal("me").then(Commands.argument("action", MessageArgument.message()).executes((var0x) -> {
          MessageArgument.resolveChatMessage(var0x, "action", (var1) -> {
             CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
-            PlayerList var3 = var2.getServer().getPlayerList();
+            PlayerList var3 = var2.playerList();
             var3.broadcastChatMessage(var1, var2, ChatType.bind(ChatType.EMOTE_COMMAND, var2));
          });
          return 1;

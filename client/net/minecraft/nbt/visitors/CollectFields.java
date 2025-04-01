@@ -38,7 +38,7 @@ public class CollectFields extends CollectToTag {
       if (this.depth() > var2.depth()) {
          return super.visitEntry(var1);
       } else if (this.fieldsToGetCount <= 0) {
-         return StreamTagVisitor.EntryResult.BREAK;
+         return StreamTagVisitor.EntryResult.HALT;
       } else {
          return !this.wantedTypes.contains(var1) ? StreamTagVisitor.EntryResult.SKIP : super.visitEntry(var1);
       }

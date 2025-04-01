@@ -42,7 +42,7 @@ public class SlotRanges {
       addSingleSlot(var0, "saddle", EquipmentSlot.SADDLE.getIndex(106));
       addSingleSlot(var0, "horse.chest", 499);
       addSingleSlot(var0, "player.cursor", 499);
-      addSlotRange(var0, "player.crafting.", 500, 4);
+      addSlotRange(var0, "player.crafting.", 500, 9);
    });
    public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray(new SlotRange[0]));
    private static final Function<String, SlotRange> NAME_LOOKUP;

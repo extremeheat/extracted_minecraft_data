@@ -15,8 +15,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
@@ -125,7 +125,7 @@ public interface TestEnvironmentDefinition {
 
       public void setup(ServerLevel var1) {
          GameRules var2 = var1.getGameRules();
-         MinecraftServer var3 = var1.getServer();
+         TheGame var3 = var1.theGame();
 
          for(Entry var5 : this.boolRules) {
             ((GameRules.BooleanValue)var2.getRule(var5.key())).set((Boolean)var5.value(), var3);
@@ -139,7 +139,7 @@ public interface TestEnvironmentDefinition {
 
       public void teardown(ServerLevel var1) {
          GameRules var2 = var1.getGameRules();
-         MinecraftServer var3 = var1.getServer();
+         TheGame var3 = var1.theGame();
 
          for(Entry var5 : this.boolRules) {
             ((GameRules.BooleanValue)var2.getRule(var5.key())).setFrom((GameRules.BooleanValue)GameRules.getType(var5.key()).createRule(), var3);
@@ -191,8 +191,8 @@ public interface TestEnvironmentDefinition {
       }
 
       private static void run(ServerLevel var0, ResourceLocation var1) {
-         MinecraftServer var2 = var0.getServer();
-         ServerFunctionManager var3 = var2.getFunctions();
+         TheGame var2 = var0.theGame();
+         ServerFunctionManager var3 = var0.theGame().getFunctions();
          Optional var4 = var3.get(var1);
          if (var4.isPresent()) {
             CommandSourceStack var5 = var2.createCommandSourceStack().withPermission(2).withSuppressedOutput().withLevel(var0);

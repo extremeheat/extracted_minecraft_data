@@ -14,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.mines.WorldEffects;
 
 public class Skeleton extends AbstractSkeleton {
    private static final int TOTAL_CONVERSION_TIME = 300;
@@ -119,15 +120,18 @@ public class Skeleton extends AbstractSkeleton {
    }
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var2.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var1, Items.SKELETON_SKULL);
+      if (!var1.isActive(WorldEffects.NO_DROPS)) {
+         super.dropCustomDeathLoot(var1, var2, var3);
+         Entity var4 = var2.getEntity();
+         if (var4 instanceof Creeper) {
+            Creeper var5 = (Creeper)var4;
+            if (var5.canDropMobsSkull()) {
+               var5.increaseDroppedSkulls();
+               this.spawnAtLocation(var1, Items.SKELETON_SKULL);
+            }
          }
-      }
 
+      }
    }
 
    static {

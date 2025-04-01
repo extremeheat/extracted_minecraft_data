@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.google.common.io.MoreFiles;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
@@ -20,6 +21,8 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +32,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.SharedConstants;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.gametest.framework.StructureUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -63,6 +69,30 @@ public class StructureTemplateManager {
    private final HolderGetter<Block> blockLookup;
    private static final FileToIdConverter RESOURCE_LISTER = new FileToIdConverter("structure", ".nbt");
 
+   public void copyToFinal(CommandSourceStack var1, ResourceLocation var2) {
+      Path var3 = this.createAndValidatePathToGeneratedStructure(var2, ".nbt");
+      if (!Files.isRegularFile(var3, new LinkOption[0])) {
+         var1.sendFailure(Component.literal("No such file: " + String.valueOf(var3.toAbsolutePath())));
+      } else {
+         Path var4 = createAndValidatePathToDatapackStructure(var2, ".nbt");
+
+         try {
+            MoreFiles.createParentDirectories(var4, new FileAttribute[0]);
+            Files.copy(var3, var4, StandardCopyOption.REPLACE_EXISTING);
+         } catch (IOException var6) {
+            String var10001 = String.valueOf(var3.toAbsolutePath());
+            var1.sendFailure(Component.literal("Failed to copy " + var10001 + " to " + String.valueOf(var4.toAbsolutePath())));
+            return;
+         }
+
+         var1.sendSuccess(() -> {
+            String var10000 = String.valueOf(var3.toAbsolutePath());
+            return Component.literal("Copied " + var10000 + " to " + String.valueOf(var4.toAbsolutePath()) + ")");
+         }, false);
+         var1.sendSuccess(() -> Component.literal("Don't forget to commit!").withStyle(ChatFormatting.YELLOW), false);
+      }
+   }
+
    public StructureTemplateManager(ResourceManager var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, HolderGetter<Block> var4) {
       super();
       this.resourceManager = var1;
@@ -70,12 +100,12 @@ public class StructureTemplateManager {
       this.generatedDir = var2.getLevelPath(LevelResource.GENERATED_DIR).normalize();
       this.blockLookup = var4;
       ImmutableList.Builder var5 = ImmutableList.builder();
-      var5.add(new Source(this::loadFromGenerated, this::listGenerated));
+      var5.add(new Source(StructureTemplateManager.SourceType.WORLD, this::loadFromGenerated, this::listGenerated));
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         var5.add(new Source(this::loadFromTestStructures, this::listTestStructures));
+         var5.add(new Source(StructureTemplateManager.SourceType.TEST, this::loadFromTestStructures, this::listTestStructures));
       }
 
-      var5.add(new Source(this::loadFromResource, this::listResources));
+      var5.add(new Source(StructureTemplateManager.SourceType.PACK, this::loadFromResource, this::listResources));
       this.sources = var5.build();
    }
 
@@ -96,6 +126,10 @@ public class StructureTemplateManager {
 
    public Stream<ResourceLocation> listTemplates() {
       return this.sources.stream().flatMap((var0) -> (Stream)var0.lister().get()).distinct();
+   }
+
+   public Stream<ResourceLocation> listTemplates(SourceType var1) {
+      return this.sources.stream().filter((var1x) -> var1x.type == var1).flatMap((var0) -> (Stream)var0.lister().get()).distinct();
    }
 
    private Optional<StructureTemplate> tryLoad(ResourceLocation var1) {
@@ -393,15 +427,51 @@ public class StructureTemplateManager {
       }
    }
 
+   public static Path createAndValidatePathToDatapackStructure(ResourceLocation var0, String var1) {
+      if (var0.getPath().contains("//")) {
+         throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var0));
+      } else {
+         try {
+            Path var2 = StructureUtils.plainStructuresDir.resolve(var0.getNamespace());
+            Path var3 = var2.resolve("structure");
+            Path var4 = FileUtil.createPathToResource(var3, var0.getPath(), var1);
+            if (var4.startsWith(StructureUtils.plainStructuresDir) && FileUtil.isPathNormalized(var4) && FileUtil.isPathPortable(var4)) {
+               return var4;
+            } else {
+               throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var4));
+            }
+         } catch (InvalidPathException var5) {
+            throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var0), var5);
+         }
+      }
+   }
+
    public void remove(ResourceLocation var1) {
       this.structureRepository.remove(var1);
    }
 
-   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
-      Source(Function<ResourceLocation, Optional<StructureTemplate>> var1, Supplier<Stream<ResourceLocation>> var2) {
+   public static enum SourceType {
+      WORLD,
+      TEST,
+      PACK;
+
+      private SourceType() {
+      }
+
+      // $FF: synthetic method
+      private static SourceType[] $values() {
+         return new SourceType[]{WORLD, TEST, PACK};
+      }
+   }
+
+   static record Source(SourceType type, Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
+      final SourceType type;
+
+      Source(SourceType var1, Function<ResourceLocation, Optional<StructureTemplate>> var2, Supplier<Stream<ResourceLocation>> var3) {
          super();
-         this.loader = var1;
-         this.lister = var2;
+         this.type = var1;
+         this.loader = var2;
+         this.lister = var3;
       }
    }
 

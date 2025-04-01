@@ -53,7 +53,7 @@ public class TeamCommand {
    }
 
    private static int leaveTeam(CommandSourceStack var0, Collection<ScoreHolder> var1) {
-      ServerScoreboard var2 = var0.getServer().getScoreboard();
+      ServerScoreboard var2 = var0.theGame().getScoreboard();
 
       for(ScoreHolder var4 : var1) {
          ((Scoreboard)var2).removePlayerFromTeam(var4.getScoreboardName());
@@ -69,7 +69,7 @@ public class TeamCommand {
    }
 
    private static int joinTeam(CommandSourceStack var0, PlayerTeam var1, Collection<ScoreHolder> var2) {
-      ServerScoreboard var3 = var0.getServer().getScoreboard();
+      ServerScoreboard var3 = var0.theGame().getScoreboard();
 
       for(ScoreHolder var5 : var2) {
          ((Scoreboard)var3).addPlayerToTeam(var5.getScoreboardName(), var1);
@@ -163,7 +163,7 @@ public class TeamCommand {
    }
 
    private static int emptyTeam(CommandSourceStack var0, PlayerTeam var1) throws CommandSyntaxException {
-      ServerScoreboard var2 = var0.getServer().getScoreboard();
+      ServerScoreboard var2 = var0.theGame().getScoreboard();
       ArrayList var3 = Lists.newArrayList(var1.getPlayers());
       if (var3.isEmpty()) {
          throw ERROR_TEAM_ALREADY_EMPTY.create();
@@ -178,7 +178,7 @@ public class TeamCommand {
    }
 
    private static int deleteTeam(CommandSourceStack var0, PlayerTeam var1) {
-      ServerScoreboard var2 = var0.getServer().getScoreboard();
+      ServerScoreboard var2 = var0.theGame().getScoreboard();
       ((Scoreboard)var2).removePlayerTeam(var1);
       var0.sendSuccess(() -> Component.translatable("commands.team.remove.success", var1.getFormattedDisplayName()), true);
       return ((Scoreboard)var2).getPlayerTeams().size();
@@ -189,7 +189,7 @@ public class TeamCommand {
    }
 
    private static int createTeam(CommandSourceStack var0, String var1, Component var2) throws CommandSyntaxException {
-      ServerScoreboard var3 = var0.getServer().getScoreboard();
+      ServerScoreboard var3 = var0.theGame().getScoreboard();
       if (((Scoreboard)var3).getPlayerTeam(var1) != null) {
          throw ERROR_TEAM_ALREADY_EXISTS.create();
       } else {
@@ -212,7 +212,7 @@ public class TeamCommand {
    }
 
    private static int listTeams(CommandSourceStack var0) {
-      Collection var1 = var0.getServer().getScoreboard().getPlayerTeams();
+      Collection var1 = var0.theGame().getScoreboard().getPlayerTeams();
       if (var1.isEmpty()) {
          var0.sendSuccess(() -> Component.translatable("commands.team.list.teams.empty"), false);
       } else {

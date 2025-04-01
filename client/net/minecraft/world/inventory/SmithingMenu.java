@@ -34,12 +34,12 @@ public class SmithingMenu extends ItemCombinerMenu {
    private final RecipePropertySet additionItemTest;
    private final DataSlot hasRecipeError;
 
-   public SmithingMenu(int var1, Inventory var2) {
+   public SmithingMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 
    public SmithingMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
-      this(var1, var2, var3, var2.player.level());
+      this(var1, var2, var3, var2.getPlayer().level());
    }
 
    private SmithingMenu(int var1, Inventory var2, ContainerLevelAccess var3, Level var4) {

@@ -33,6 +33,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.Services;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.gui.MinecraftServerGui;
 import net.minecraft.server.level.ServerLevel;
@@ -43,11 +44,10 @@ import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.server.players.OldUsersConverter;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.rcon.RconConsoleSource;
 import net.minecraft.server.rcon.thread.QueryThreadGs4;
 import net.minecraft.server.rcon.thread.RconThread;
-import net.minecraft.util.Mth;
+import net.minecraft.util.TimeUtil;
 import net.minecraft.util.debugchart.DebugSampleSubscriptionTracker;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.RemoteSampleLogger;
@@ -79,16 +79,14 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private final ServerTextFilter serverTextFilter;
    @Nullable
    private RemoteSampleLogger tickTimeLogger;
-   @Nullable
-   private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
    private final ServerLinks serverLinks;
 
-   public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7, ChunkProgressListenerFactory var8) {
-      super(var1, var2, var3, var4, Proxy.NO_PROXY, var6, var7, var8);
-      this.settings = var5;
+   public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, DedicatedServerSettings var3, DataFixer var4, Services var5) {
+      super(var1, var2, Proxy.NO_PROXY, var4, var5);
+      this.settings = var3;
       this.rconConsoleSource = new RconConsoleSource(this);
-      this.serverTextFilter = ServerTextFilter.createFromConfig(var5.getProperties());
-      this.serverLinks = createServerLinks(var5);
+      this.serverTextFilter = ServerTextFilter.createFromConfig(var3.getProperties());
+      this.serverLinks = createServerLinks(var3);
    }
 
    public boolean initServer() throws IOException {
@@ -99,7 +97,12 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
             String var2;
             try {
                while(!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning() && (var2 = var1.readLine()) != null) {
-                  DedicatedServer.this.handleConsoleInput(var2, DedicatedServer.this.createCommandSourceStack());
+                  TheGame var3 = DedicatedServer.this.theGame();
+                  if (var3 != null) {
+                     DedicatedServer.this.handleConsoleInput(var2, var3.createCommandSourceStack());
+                  } else {
+                     DedicatedServer.LOGGER.error("Whoops, can't really run your command right now, terribly sorry");
+                  }
                }
             } catch (IOException var4) {
                DedicatedServer.LOGGER.error("Exception handling console input", var4);
@@ -128,10 +131,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.setPvpAllowed(var2.pvp);
       this.setFlightAllowed(var2.allowFlight);
       this.setMotd(var2.motd);
-      super.setPlayerIdleTimeout((Integer)var2.playerIdleTimeout.get());
       this.setEnforceWhitelist(var2.enforceWhitelist);
-      this.worldData.setGameType(var2.gamemode);
-      LOGGER.info("Default game type: {}", var2.gamemode);
       InetAddress var3 = null;
       if (!this.getLocalIp().isEmpty()) {
          var3 = InetAddress.getByName(this.getLocalIp());
@@ -146,9 +146,9 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       try {
          this.getConnection().startTcpServerListener(var3, this.getPort());
-      } catch (IOException var10) {
+      } catch (IOException var5) {
          LOGGER.warn("**** FAILED TO BIND TO PORT!");
-         LOGGER.warn("The exception was: {}", var10.toString());
+         LOGGER.warn("The exception was: {}", var5.toString());
          LOGGER.warn("Perhaps a server is already running on that port?");
          return false;
       }
@@ -167,21 +167,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
          return false;
       } else {
-         this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
-         this.debugSampleSubscriptionTracker = new DebugSampleSubscriptionTracker(this.getPlayerList());
-         this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSampleSubscriptionTracker, RemoteDebugSampleType.TICK_TIME);
-         long var4 = Util.getNanos();
          SkullBlockEntity.setup(this.services, this);
          GameProfileCache.setUsesAuthentication(this.usesAuthentication());
-         LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
-         this.loadLevel();
-         long var6 = Util.getNanos() - var4;
-         String var8 = String.format(Locale.ROOT, "%.3fs", (double)var6 / 1.0E9);
-         LOGGER.info("Done ({})! For help, type \"help\"", var8);
-         if (var2.announcePlayerAchievements != null) {
-            ((GameRules.BooleanValue)this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var2.announcePlayerAchievements, this);
-         }
-
          if (var2.enableQuery) {
             LOGGER.info("Starting GS4 status listener");
             this.queryThreadGs4 = QueryThreadGs4.create(this);
@@ -190,14 +177,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          if (var2.enableRcon) {
             LOGGER.info("Starting remote control listener");
             this.rconThread = RconThread.create(this);
-         }
-
-         if (this.getMaxTickLength() > 0L) {
-            Thread var9 = new Thread(new ServerWatchdog(this));
-            var9.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER));
-            var9.setName("Server Watchdog");
-            var9.setDaemon(true);
-            var9.start();
          }
 
          if (var2.enableJmxMonitoring) {
@@ -209,16 +188,44 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       }
    }
 
-   public boolean isSpawningMonsters() {
-      return this.settings.getProperties().spawnMonsters && super.isSpawningMonsters();
+   public TheGame initGame(PackRepository var1, WorldStem var2, ChunkProgressListenerFactory var3) throws IOException {
+      DedicatedServerProperties var4 = this.settings.getProperties();
+      long var5 = Util.getNanos();
+      LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
+      TheGame var7 = TheGame.create(this, var1, var2, this.storageSource, var3, (var1x) -> new DedicatedPlayerList(this, var1x, this.playerDataStorage));
+      this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, new DebugSampleSubscriptionTracker(var7.playerList()), RemoteDebugSampleType.TICK_TIME);
+      super.setPlayerIdleTimeout(var7, (Integer)var4.playerIdleTimeout.get());
+      var7.getWorldData().setGameType(var4.gamemode);
+      LOGGER.info("Default game type: {}", var4.gamemode);
+      long var8 = Util.getNanos() - var5;
+      String var10 = String.format(Locale.ROOT, "%.3fs", (double)var8 / 1.0E9);
+      LOGGER.info("Done ({})! For help, type \"help\"", var10);
+      if (var4.announcePlayerAchievements != null) {
+         ((GameRules.BooleanValue)var7.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var4.announcePlayerAchievements, var7);
+      }
+
+      long var11 = this.getMaxTickLength();
+      if (var11 > 0L) {
+         Thread var13 = new Thread(new ServerWatchdog(var7, var11 * TimeUtil.NANOSECONDS_PER_MILLISECOND));
+         var13.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER));
+         var13.setName("Server Watchdog");
+         var13.setDaemon(true);
+         var13.start();
+      }
+
+      return var7;
+   }
+
+   public boolean isSpawningMonsters(TheGame var1) {
+      return this.settings.getProperties().spawnMonsters && super.isSpawningMonsters(var1);
    }
 
    public DedicatedServerProperties getProperties() {
       return this.settings.getProperties();
    }
 
-   public void forceDifficulty() {
-      this.setDifficulty(this.getProperties().difficulty, true);
+   public void forceDifficulty(TheGame var1) {
+      var1.setDifficulty(this.getProperties().difficulty, true);
    }
 
    public SystemReport fillServerSystemReport(SystemReport var1) {
@@ -295,7 +302,10 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    public void handleConsoleInputs() {
       while(!this.consoleInput.isEmpty()) {
          ConsoleInput var1 = (ConsoleInput)this.consoleInput.remove(0);
-         this.getCommands().performPrefixedCommand(var1.source, var1.msg);
+         TheGame var2 = this.theGame();
+         if (var2 != null) {
+            var2.getCommands().performPrefixedCommand(var1.source, var1.msg);
+         }
       }
 
    }
@@ -310,10 +320,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public boolean isEpollEnabled() {
       return this.getProperties().useNativeTransport;
-   }
-
-   public DedicatedPlayerList getPlayerList() {
-      return (DedicatedPlayerList)super.getPlayerList();
    }
 
    public boolean isPublished() {
@@ -332,6 +338,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.getMotd();
    }
 
+   public String[] getPlayerNames() {
+      TheGame var1 = this.theGame();
+      return var1 != null ? var1.playerList().getPlayerNamesArray() : new String[0];
+   }
+
    public void showGui() {
       if (this.gui == null) {
          this.gui = MinecraftServerGui.showFrameFor(this);
@@ -348,25 +359,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public int getSpawnProtectionRadius() {
-      return this.getProperties().spawnProtection;
+      return 0;
    }
 
    public boolean isUnderSpawnProtection(ServerLevel var1, BlockPos var2, Player var3) {
-      if (var1.dimension() != Level.OVERWORLD) {
-         return false;
-      } else if (this.getPlayerList().getOps().isEmpty()) {
-         return false;
-      } else if (this.getPlayerList().isOp(var3.getGameProfile())) {
-         return false;
-      } else if (this.getSpawnProtectionRadius() <= 0) {
-         return false;
-      } else {
-         BlockPos var4 = var1.getSharedSpawnPos();
-         int var5 = Mth.abs(var2.getX() - var4.getX());
-         int var6 = Mth.abs(var2.getZ() - var4.getZ());
-         int var7 = Math.max(var5, var6);
-         return var7 <= this.getSpawnProtectionRadius();
-      }
+      return false;
    }
 
    public boolean repliesToStatus() {
@@ -385,9 +382,9 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.getProperties().functionPermissionLevel;
    }
 
-   public void setPlayerIdleTimeout(int var1) {
-      super.setPlayerIdleTimeout(var1);
-      this.settings.update((var2) -> (DedicatedServerProperties)var2.playerIdleTimeout.update(this.registryAccess(), var1));
+   public void setPlayerIdleTimeout(TheGame var1, int var2) {
+      super.setPlayerIdleTimeout(var1, var2);
+      this.settings.update((var2x) -> (DedicatedServerProperties)var2x.playerIdleTimeout.update(var1.registryAccess(), var2));
    }
 
    public boolean shouldRconBroadcast() {
@@ -495,16 +492,22 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public String runCommand(String var1) {
       this.rconConsoleSource.prepareForCommand();
-      this.executeBlocking(() -> this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), var1));
+      this.executeBlocking(() -> {
+         TheGame var2 = this.theGame();
+         if (var2 != null) {
+            var2.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(var2), var1);
+         }
+
+      });
       return this.rconConsoleSource.getCommandResponse();
    }
 
-   public void storeUsingWhiteList(boolean var1) {
-      this.settings.update((var2) -> (DedicatedServerProperties)var2.whiteList.update(this.registryAccess(), var1));
+   public void storeUsingWhiteList(TheGame var1, boolean var2) {
+      this.settings.update((var2x) -> (DedicatedServerProperties)var2x.whiteList.update(var1.registryAccess(), var2));
    }
 
-   public void stopServer() {
-      super.stopServer();
+   public void stopServer(TheGame var1) {
+      super.stopServer(var1);
       Util.shutdownExecutors();
       SkullBlockEntity.clear();
    }
@@ -530,8 +533,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    @Nullable
-   public GameType getForcedGameType() {
-      return this.settings.getProperties().forceGameMode ? this.worldData.getGameType() : null;
+   public GameType getForcedGameType(TheGame var1) {
+      return this.settings.getProperties().forceGameMode ? var1.getWorldData().getGameType() : null;
    }
 
    public Optional<MinecraftServer.ServerResourcePackInfo> getServerResourcePack() {
@@ -540,19 +543,21 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public void endMetricsRecordingTick() {
       super.endMetricsRecordingTick();
-      this.debugSampleSubscriptionTracker.tick(this.getTickCount());
+      if (this.tickTimeLogger != null) {
+         this.tickTimeLogger.tick(this.getTickCount());
+      }
+
    }
 
-   public SampleLogger getTickTimeLogger() {
-      return this.tickTimeLogger;
-   }
-
-   public boolean isTickTimeLoggingEnabled() {
-      return this.debugSampleSubscriptionTracker.shouldLogSamples(RemoteDebugSampleType.TICK_TIME);
+   public SampleLogger getTickTimeLoggerIfEnabled() {
+      return this.tickTimeLogger != null && this.tickTimeLogger.isEnabled() ? this.tickTimeLogger : null;
    }
 
    public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
-      this.debugSampleSubscriptionTracker.subscribe(var1, var2);
+      if (this.tickTimeLogger != null) {
+         this.tickTimeLogger.subscribe(var1, var2);
+      }
+
    }
 
    public boolean acceptsTransfers() {
@@ -584,10 +589,5 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
             return Optional.empty();
          }
       }
-   }
-
-   // $FF: synthetic method
-   public PlayerList getPlayerList() {
-      return this.getPlayerList();
    }
 }

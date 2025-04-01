@@ -24,7 +24,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 
    public CrafterScreen(CrafterMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
-      this.player = var2.player;
+      this.player = var2.getPlayer();
    }
 
    protected void init() {

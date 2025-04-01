@@ -298,6 +298,16 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.SCULK_SHRIEKER, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.SCULK_SHRIEKER, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.SCULK_SHRIEKER, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.SCULK_SHRIEKER, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.SCULK_SHRIEKER, "_bottom"));
    }
 
+   public static TextureMapping mineCrafter(boolean var0) {
+      String var1 = var0 ? "_active" : "";
+      return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.MINE_CRAFTER, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.MINE_CRAFTER, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.MINE_CRAFTER, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.MINE_CRAFTER, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.MINE_CRAFTER, "_bottom"));
+   }
+
+   public static TextureMapping mineRevisitor(boolean var0) {
+      String var1 = var0 ? "_active" : "";
+      return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.MINE_REVISITOR, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.MINE_REVISITOR, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.MINE_REVISITOR, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.MINE_REVISITOR, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.MINE_REVISITOR, "_bottom"));
+   }
+
    public static TextureMapping layer0(Item var0) {
       return (new TextureMapping()).put(TextureSlot.LAYER0, getItemTexture(var0));
    }

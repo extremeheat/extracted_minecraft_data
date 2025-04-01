@@ -53,7 +53,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    public static final int DATA_LIT_DURATION = 1;
    public static final int DATA_COOKING_PROGRESS = 2;
    public static final int DATA_COOKING_TOTAL_TIME = 3;
-   public static final int NUM_DATA_VALUES = 4;
+   public static final int DATA_SUPER_CHARGE_LEVEL = 4;
+   public static final int NUM_DATA_VALUES = 5;
    public static final int BURN_TIME_STANDARD = 200;
    public static final int BURN_COOL_SPEED = 2;
    private static final Codec<Map<ResourceKey<Recipe<?>>, Integer>> RECIPES_USED_CODEC;
@@ -66,6 +67,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    int litTotalTime;
    int cookingTimer;
    int cookingTotalTime;
+   int superChargeLevel;
    protected final ContainerData dataAccess;
    private final Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipesUsed;
    private final RecipeManager.CachedCheck<SingleRecipeInput, ? extends AbstractCookingRecipe> quickCheck;
@@ -88,6 +90,9 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
                case 3 -> {
                   return AbstractFurnaceBlockEntity.this.cookingTotalTime;
                }
+               case 4 -> {
+                  return AbstractFurnaceBlockEntity.this.superChargeLevel;
+               }
                default -> {
                   return 0;
                }
@@ -100,12 +105,13 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
                case 1 -> AbstractFurnaceBlockEntity.this.litTotalTime = var2;
                case 2 -> AbstractFurnaceBlockEntity.this.cookingTimer = var2;
                case 3 -> AbstractFurnaceBlockEntity.this.cookingTotalTime = var2;
+               case 4 -> AbstractFurnaceBlockEntity.this.superChargeLevel = var2;
             }
 
          }
 
          public int getCount() {
-            return 4;
+            return 5;
          }
       };
       this.recipesUsed = new Reference2IntOpenHashMap();
@@ -124,6 +130,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       this.cookingTotalTime = var1.getShortOr("cooking_total_time", (short)0);
       this.litTimeRemaining = var1.getShortOr("lit_time_remaining", (short)0);
       this.litTotalTime = var1.getShortOr("lit_total_time", (short)0);
+      this.superChargeLevel = var1.getShortOr("super_charge_level", (short)0);
       this.recipesUsed.clear();
       this.recipesUsed.putAll((Map)var1.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
    }
@@ -134,6 +141,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       var1.putShort("cooking_total_time", (short)this.cookingTotalTime);
       var1.putShort("lit_time_remaining", (short)this.litTimeRemaining);
       var1.putShort("lit_total_time", (short)this.litTotalTime);
+      var1.putShort("super_charge_level", (short)this.superChargeLevel);
       ContainerHelper.saveAllItems(var1, this.items, var2);
       var1.store("RecipesUsed", RECIPES_USED_CODEC, this.recipesUsed);
    }
@@ -254,7 +262,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    private static int getTotalCookTime(ServerLevel var0, AbstractFurnaceBlockEntity var1) {
       SingleRecipeInput var2 = new SingleRecipeInput(var1.getItem(0));
-      return (Integer)var1.quickCheck.getRecipeFor(var2, var0).map((var0x) -> ((AbstractCookingRecipe)var0x.value()).cookingTime()).orElse(200);
+      Integer var3 = (Integer)var1.quickCheck.getRecipeFor(var2, var0).map((var0x) -> ((AbstractCookingRecipe)var0x.value()).cookingTime()).orElse(200);
+      return var1.superChargeLevel > 0 ? (int)((float)var3 / (1.0F + (float)var1.superChargeLevel)) : var3;
    }
 
    public int[] getSlotsForFace(Direction var1) {

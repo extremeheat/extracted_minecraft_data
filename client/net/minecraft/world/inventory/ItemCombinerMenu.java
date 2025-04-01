@@ -33,7 +33,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    public ItemCombinerMenu(@Nullable MenuType<?> var1, int var2, Inventory var3, ContainerLevelAccess var4, ItemCombinerMenuSlotDefinition var5) {
       super(var1, var2);
       this.access = var4;
-      this.player = var3.player;
+      this.player = var3.getPlayer();
       this.inputSlots = this.createContainer(var5.getNumOfInputSlots());
       this.resultSlotIndex = var5.getResultSlotIndex();
       this.createInputSlots(var5);

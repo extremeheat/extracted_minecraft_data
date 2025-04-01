@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.model.BreezeModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -19,7 +20,10 @@ public class BreezeRenderer extends MobRenderer<Breeze, BreezeRenderState, Breez
    public BreezeRenderer(EntityRendererProvider.Context var1) {
       super(var1, new BreezeModel(var1.bakeLayer(ModelLayers.BREEZE)), 0.5F);
       this.addLayer(new BreezeWindLayer(var1, this));
-      this.addLayer(new BreezeEyesLayer(this));
+      if (!SharedConstants.IS_RUNNING_IN_IDE) {
+         this.addLayer(new BreezeEyesLayer(this));
+      }
+
    }
 
    public void render(BreezeRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {

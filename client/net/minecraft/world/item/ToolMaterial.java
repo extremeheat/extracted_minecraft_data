@@ -12,12 +12,13 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.ItemExchangeValue;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
-public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability, float speed, float attackDamageBonus, int enchantmentValue, TagKey<Item> repairItems) {
+public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability, float speed, float attackDamageBonus, int enchantmentValue, TagKey<Item> repairItems, float exchangeValue) {
    public static final ToolMaterial WOOD;
    public static final ToolMaterial STONE;
    public static final ToolMaterial IRON;
@@ -25,7 +26,7 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
    public static final ToolMaterial GOLD;
    public static final ToolMaterial NETHERITE;
 
-   public ToolMaterial(TagKey<Block> var1, int var2, float var3, float var4, int var5, TagKey<Item> var6) {
+   public ToolMaterial(TagKey<Block> var1, int var2, float var3, float var4, int var5, TagKey<Item> var6, float var7) {
       super();
       this.incorrectBlocksForDrops = var1;
       this.durability = var2;
@@ -33,6 +34,7 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
       this.attackDamageBonus = var4;
       this.enchantmentValue = var5;
       this.repairItems = var6;
+      this.exchangeValue = var7;
    }
 
    private Item.Properties applyCommonProperties(Item.Properties var1) {
@@ -41,7 +43,7 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
 
    public Item.Properties applyToolProperties(Item.Properties var1, TagKey<Block> var2, float var3, float var4, float var5) {
       HolderGetter var6 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(var6.getOrThrow(this.incorrectBlocksForDrops)), Tool.Rule.minesAndDrops(var6.getOrThrow(var2), this.speed)), 1.0F, 1, true)).attributes(this.createToolAttributes(var3, var4)).component(DataComponents.WEAPON, new Weapon(2, var5));
+      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(var6.getOrThrow(this.incorrectBlocksForDrops)), Tool.Rule.minesAndDrops(var6.getOrThrow(var2), this.speed)), 1.0F, 1, true)).attributes(this.createToolAttributes(var3, var4)).component(DataComponents.EXCHANGE_VALUE, new ItemExchangeValue(this.exchangeValue)).component(DataComponents.WEAPON, new Weapon(2, var5));
    }
 
    private ItemAttributeModifiers createToolAttributes(float var1, float var2) {
@@ -50,7 +52,7 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
 
    public Item.Properties applySwordProperties(Item.Properties var1, float var2, float var3) {
       HolderGetter var4 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_INSTANTLY_MINES), 3.4028235E38F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_EFFICIENT), 1.5F)), 1.0F, 2, false)).attributes(this.createSwordAttributes(var2, var3)).component(DataComponents.WEAPON, new Weapon(1));
+      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_INSTANTLY_MINES), 3.4028235E38F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_EFFICIENT), 1.5F)), 1.0F, 2, false)).attributes(this.createSwordAttributes(var2, var3)).experienceExchangeValue(this.exchangeValue * var2).component(DataComponents.WEAPON, new Weapon(1));
    }
 
    private ItemAttributeModifiers createSwordAttributes(float var1, float var2) {
@@ -58,11 +60,11 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
    }
 
    static {
-      WOOD = new ToolMaterial(BlockTags.INCORRECT_FOR_WOODEN_TOOL, 59, 2.0F, 0.0F, 15, ItemTags.WOODEN_TOOL_MATERIALS);
-      STONE = new ToolMaterial(BlockTags.INCORRECT_FOR_STONE_TOOL, 131, 4.0F, 1.0F, 5, ItemTags.STONE_TOOL_MATERIALS);
-      IRON = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 250, 6.0F, 2.0F, 14, ItemTags.IRON_TOOL_MATERIALS);
-      DIAMOND = new ToolMaterial(BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 1561, 8.0F, 3.0F, 10, ItemTags.DIAMOND_TOOL_MATERIALS);
-      GOLD = new ToolMaterial(BlockTags.INCORRECT_FOR_GOLD_TOOL, 32, 12.0F, 0.0F, 22, ItemTags.GOLD_TOOL_MATERIALS);
-      NETHERITE = new ToolMaterial(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 2031, 9.0F, 4.0F, 15, ItemTags.NETHERITE_TOOL_MATERIALS);
+      WOOD = new ToolMaterial(BlockTags.INCORRECT_FOR_WOODEN_TOOL, 59, 2.0F, 0.0F, 15, ItemTags.WOODEN_TOOL_MATERIALS, 0.1F);
+      STONE = new ToolMaterial(BlockTags.INCORRECT_FOR_STONE_TOOL, 131, 4.0F, 1.0F, 5, ItemTags.STONE_TOOL_MATERIALS, 0.5F);
+      IRON = new ToolMaterial(BlockTags.INCORRECT_FOR_IRON_TOOL, 250, 6.0F, 2.0F, 14, ItemTags.IRON_TOOL_MATERIALS, 1.0F);
+      DIAMOND = new ToolMaterial(BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 1561, 8.0F, 3.0F, 10, ItemTags.DIAMOND_TOOL_MATERIALS, 1.5F);
+      GOLD = new ToolMaterial(BlockTags.INCORRECT_FOR_GOLD_TOOL, 32, 12.0F, 0.0F, 22, ItemTags.GOLD_TOOL_MATERIALS, 1.0F);
+      NETHERITE = new ToolMaterial(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 2031, 9.0F, 4.0F, 15, ItemTags.NETHERITE_TOOL_MATERIALS, 2.0F);
    }
 }

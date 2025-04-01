@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -133,7 +132,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
       return new WrittenBookContent(this.title, this.author, this.generation, var1, false);
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
       if (!StringUtil.isBlank(this.author)) {
          var2.accept(Component.translatable("book.byAuthor", this.author).withStyle(ChatFormatting.GRAY));
       }

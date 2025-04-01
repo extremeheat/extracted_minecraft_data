@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -154,20 +155,20 @@ public final class ItemContainerContents implements TooltipProvider {
       return this.hashCode;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      int var5 = 0;
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
       int var6 = 0;
+      int var7 = 0;
 
-      for(ItemStack var8 : this.nonEmptyItems()) {
-         ++var6;
-         if (var5 <= 4) {
-            ++var5;
-            var2.accept(Component.translatable("item.container.item_count", var8.getHoverName(), var8.getCount()));
+      for(ItemStack var9 : this.nonEmptyItems()) {
+         ++var7;
+         if (var6 <= 4) {
+            ++var6;
+            var2.accept(Component.translatable("item.container.item_count", var9.getHoverName(), var9.getCount()));
          }
       }
 
-      if (var6 - var5 > 0) {
-         var2.accept(Component.translatable("item.container.more_items", var6 - var5).withStyle(ChatFormatting.ITALIC));
+      if (var7 - var6 > 0) {
+         var2.accept(Component.translatable("item.container.more_items", var7 - var6).withStyle(ChatFormatting.ITALIC));
       }
 
    }

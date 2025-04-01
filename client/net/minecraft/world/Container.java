@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -94,6 +95,11 @@ public interface Container extends Clearable, Iterable<ItemStack> {
 
    default Iterator<ItemStack> iterator() {
       return new ContainerIterator(this);
+   }
+
+   @Nullable
+   default Player getPlayer() {
+      return null;
    }
 
    public static class ContainerIterator implements Iterator<ItemStack> {

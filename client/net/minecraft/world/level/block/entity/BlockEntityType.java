@@ -34,7 +34,6 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<PistonMovingBlockEntity> PISTON;
    public static final BlockEntityType<BrewingStandBlockEntity> BREWING_STAND;
    public static final BlockEntityType<EnchantingTableBlockEntity> ENCHANTING_TABLE;
-   public static final BlockEntityType<TheEndPortalBlockEntity> END_PORTAL;
    public static final BlockEntityType<BeaconBlockEntity> BEACON;
    public static final BlockEntityType<SkullBlockEntity> SKULL;
    public static final BlockEntityType<DaylightDetectorBlockEntity> DAYLIGHT_DETECTOR;
@@ -43,6 +42,8 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<BannerBlockEntity> BANNER;
    public static final BlockEntityType<StructureBlockEntity> STRUCTURE_BLOCK;
    public static final BlockEntityType<TheEndGatewayBlockEntity> END_GATEWAY;
+   public static final BlockEntityType<MineTravellingBlockEntity> MINE_TRAVELLING_BLOCK_ENTITY;
+   public static final BlockEntityType<MineCrafterBlockEntity> MINE_CRAFTER;
    public static final BlockEntityType<CommandBlockEntity> COMMAND_BLOCK;
    public static final BlockEntityType<ShulkerBoxBlockEntity> SHULKER_BOX;
    public static final BlockEntityType<BedBlockEntity> BED;
@@ -65,6 +66,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<CrafterBlockEntity> CRAFTER;
    public static final BlockEntityType<TrialSpawnerBlockEntity> TRIAL_SPAWNER;
    public static final BlockEntityType<VaultBlockEntity> VAULT;
+   public static final BlockEntityType<MobTrophyBlockEntity> MOB_TROPHY;
    public static final BlockEntityType<TestBlockEntity> TEST_BLOCK;
    public static final BlockEntityType<TestInstanceBlockEntity> TEST_INSTANCE_BLOCK;
    private static final Set<BlockEntityType<?>> OP_ONLY_CUSTOM_DATA;
@@ -132,7 +134,6 @@ public class BlockEntityType<T extends BlockEntity> {
       PISTON = register("piston", PistonMovingBlockEntity::new, Blocks.MOVING_PISTON);
       BREWING_STAND = register("brewing_stand", BrewingStandBlockEntity::new, Blocks.BREWING_STAND);
       ENCHANTING_TABLE = register("enchanting_table", EnchantingTableBlockEntity::new, Blocks.ENCHANTING_TABLE);
-      END_PORTAL = register("end_portal", TheEndPortalBlockEntity::new, Blocks.END_PORTAL);
       BEACON = register("beacon", BeaconBlockEntity::new, Blocks.BEACON);
       SKULL = register("skull", SkullBlockEntity::new, Blocks.SKELETON_SKULL, Blocks.SKELETON_WALL_SKULL, Blocks.CREEPER_HEAD, Blocks.CREEPER_WALL_HEAD, Blocks.DRAGON_HEAD, Blocks.DRAGON_WALL_HEAD, Blocks.ZOMBIE_HEAD, Blocks.ZOMBIE_WALL_HEAD, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL, Blocks.PLAYER_HEAD, Blocks.PLAYER_WALL_HEAD, Blocks.PIGLIN_HEAD, Blocks.PIGLIN_WALL_HEAD);
       DAYLIGHT_DETECTOR = register("daylight_detector", DaylightDetectorBlockEntity::new, Blocks.DAYLIGHT_DETECTOR);
@@ -141,6 +142,8 @@ public class BlockEntityType<T extends BlockEntity> {
       BANNER = register("banner", BannerBlockEntity::new, Blocks.WHITE_BANNER, Blocks.ORANGE_BANNER, Blocks.MAGENTA_BANNER, Blocks.LIGHT_BLUE_BANNER, Blocks.YELLOW_BANNER, Blocks.LIME_BANNER, Blocks.PINK_BANNER, Blocks.GRAY_BANNER, Blocks.LIGHT_GRAY_BANNER, Blocks.CYAN_BANNER, Blocks.PURPLE_BANNER, Blocks.BLUE_BANNER, Blocks.BROWN_BANNER, Blocks.GREEN_BANNER, Blocks.RED_BANNER, Blocks.BLACK_BANNER, Blocks.WHITE_WALL_BANNER, Blocks.ORANGE_WALL_BANNER, Blocks.MAGENTA_WALL_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER, Blocks.YELLOW_WALL_BANNER, Blocks.LIME_WALL_BANNER, Blocks.PINK_WALL_BANNER, Blocks.GRAY_WALL_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER, Blocks.CYAN_WALL_BANNER, Blocks.PURPLE_WALL_BANNER, Blocks.BLUE_WALL_BANNER, Blocks.BROWN_WALL_BANNER, Blocks.GREEN_WALL_BANNER, Blocks.RED_WALL_BANNER, Blocks.BLACK_WALL_BANNER);
       STRUCTURE_BLOCK = register("structure_block", StructureBlockEntity::new, Blocks.STRUCTURE_BLOCK);
       END_GATEWAY = register("end_gateway", TheEndGatewayBlockEntity::new, Blocks.END_GATEWAY);
+      MINE_TRAVELLING_BLOCK_ENTITY = register("mine_travelling_block", MineTravellingBlockEntity::new, Blocks.MINE_TRAVELLING_BLOCK);
+      MINE_CRAFTER = register("mine_crafter", MineCrafterBlockEntity::new, Blocks.MINE_CRAFTER);
       COMMAND_BLOCK = register("command_block", CommandBlockEntity::new, Blocks.COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK);
       SHULKER_BOX = register("shulker_box", ShulkerBoxBlockEntity::new, Blocks.SHULKER_BOX, Blocks.BLACK_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX, Blocks.BROWN_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX, Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.WHITE_SHULKER_BOX, Blocks.YELLOW_SHULKER_BOX);
       BED = register("bed", BedBlockEntity::new, Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED);
@@ -163,6 +166,7 @@ public class BlockEntityType<T extends BlockEntity> {
       CRAFTER = register("crafter", CrafterBlockEntity::new, Blocks.CRAFTER);
       TRIAL_SPAWNER = register("trial_spawner", TrialSpawnerBlockEntity::new, Blocks.TRIAL_SPAWNER);
       VAULT = register("vault", VaultBlockEntity::new, Blocks.VAULT);
+      MOB_TROPHY = register("mob_trophy", MobTrophyBlockEntity::new, Blocks.MOB_TROPHY);
       TEST_BLOCK = register("test_block", TestBlockEntity::new, Blocks.TEST_BLOCK);
       TEST_INSTANCE_BLOCK = register("test_instance_block", TestInstanceBlockEntity::new, Blocks.TEST_INSTANCE_BLOCK);
       OP_ONLY_CUSTOM_DATA = Set.of(COMMAND_BLOCK, LECTERN, SIGN, HANGING_SIGN, MOB_SPAWNER, TRIAL_SPAWNER);

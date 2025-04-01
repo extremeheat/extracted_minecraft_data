@@ -12,6 +12,6 @@ public class VanillaAdvancementProvider {
    }
 
    public static AdvancementProvider create(PackOutput var0, CompletableFuture<HolderLookup.Provider> var1) {
-      return new AdvancementProvider(var0, var1, List.of(new VanillaTheEndAdvancements(), new VanillaHusbandryAdvancements(), new VanillaAdventureAdvancements(), new VanillaNetherAdvancements(), new VanillaStoryAdvancements()));
+      return new AdvancementProvider(var0, var1, List.of(new VanillaMineAdvancements(), new VanillaUnlockAdvancements(), new VanillaFeatsAdvancements(), new VanillaStoryAdvancements()));
    }
 }

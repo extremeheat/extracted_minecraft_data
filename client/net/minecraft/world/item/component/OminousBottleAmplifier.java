@@ -3,7 +3,7 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.core.component.DataComponentGetter;
+import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -12,6 +12,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -34,9 +35,9 @@ public record OminousBottleAmplifier(int value) implements ConsumableListener, T
       var2.addEffect(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      List var5 = List.of(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
-      PotionContents.addPotionTooltip(var5, var2, 1.0F, var1.tickRate());
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
+      List var6 = List.of(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
+      PotionContents.addPotionTooltip(var6, var2, 1.0F, var1.tickRate());
    }
 
    static {

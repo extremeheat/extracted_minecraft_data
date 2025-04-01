@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.List;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -10,7 +11,7 @@ public class ShulkerBoxMenu extends AbstractContainerMenu {
    private static final int CONTAINER_SIZE = 27;
    private final Container container;
 
-   public ShulkerBoxMenu(int var1, Inventory var2) {
+   public ShulkerBoxMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, new SimpleContainer(27));
    }
 
@@ -18,7 +19,7 @@ public class ShulkerBoxMenu extends AbstractContainerMenu {
       super(MenuType.SHULKER_BOX, var1);
       checkContainerSize(var3, 27);
       this.container = var3;
-      var3.startOpen(var2.player);
+      var3.startOpen(var2.getPlayer());
       boolean var4 = true;
       boolean var5 = true;
 

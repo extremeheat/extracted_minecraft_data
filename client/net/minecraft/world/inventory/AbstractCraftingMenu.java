@@ -3,9 +3,11 @@ package net.minecraft.world.inventory;
 import java.util.List;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedItemContents;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
@@ -22,14 +24,36 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
       this.craftSlots = new TransientCraftingContainer(this, var3, var4);
    }
 
-   protected Slot addResultSlot(Player var1, int var2, int var3) {
-      return this.addSlot(new ResultSlot(var1, this.craftSlots, this.resultSlots, 0, var2, var3));
+   protected Slot addResultSlot(final Player var1, int var2, int var3) {
+      return this.addSlot(new ResultSlot(var1, this.craftSlots, this.resultSlots, 0, var2, var3) {
+         public boolean isActive() {
+            return var1.isActive(PlayerUnlocks.CRAFTING) && super.isActive();
+         }
+      });
    }
 
-   protected void addCraftingGridSlots(int var1, int var2) {
-      for(int var3 = 0; var3 < this.width; ++var3) {
-         for(int var4 = 0; var4 < this.height; ++var4) {
-            this.addSlot(new Slot(this.craftSlots, var4 + var3 * this.width, var1 + var4 * 18, var2 + var3 * 18));
+   protected void addCraftingGridSlots(final Player var1, int var2, int var3) {
+      for(int var4 = 0; var4 < this.width; ++var4) {
+         for(int var5 = 0; var5 < this.height; ++var5) {
+            this.addSlot(new Slot(this.craftSlots, var5 + var4 * this.width, var2 + var5 * 18, var3 + var4 * 18) {
+               public boolean mayPlace(ItemStack var1x) {
+                  return var1.isActive(PlayerUnlocks.CRAFTING);
+               }
+
+               public boolean isActive() {
+                  return var1.isActive(PlayerUnlocks.CRAFTING) && super.isActive();
+               }
+            });
+         }
+      }
+
+   }
+
+   protected void adjustCraftingGridSlotsPosition(int var1, int var2, int var3) {
+      for(int var4 = 0; var4 < this.width; ++var4) {
+         for(int var5 = 0; var5 < this.height; ++var5) {
+            this.getSlot(var1 + var5 + var4 * this.height).x = var2 + var5 * 18;
+            this.getSlot(var1 + var5 + var4 * this.height).y = var3 + var4 * 18;
          }
       }
 
@@ -73,11 +97,11 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
 
    public abstract List<Slot> getInputGridSlots();
 
-   public int getGridWidth() {
+   public int getGridWidth(Player var1) {
       return this.width;
    }
 
-   public int getGridHeight() {
+   public int getGridHeight(Player var1) {
       return this.height;
    }
 

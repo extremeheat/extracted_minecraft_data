@@ -30,7 +30,7 @@ public class FeatureFlags {
    }
 
    public static boolean isExperimental(FeatureFlagSet var0) {
-      return !var0.isSubsetOf(VANILLA_SET);
+      return false;
    }
 
    static {
@@ -42,6 +42,6 @@ public class FeatureFlags {
       REGISTRY = var0.build();
       CODEC = REGISTRY.codec();
       VANILLA_SET = FeatureFlagSet.of(VANILLA);
-      DEFAULT_FLAGS = VANILLA_SET;
+      DEFAULT_FLAGS = FeatureFlagSet.of(VANILLA, REDSTONE_EXPERIMENTS, MINECART_IMPROVEMENTS);
    }
 }

@@ -12,10 +12,6 @@ public class Noises {
    public static final ResourceKey<NormalNoise.NoiseParameters> VEGETATION = createKey("vegetation");
    public static final ResourceKey<NormalNoise.NoiseParameters> CONTINENTALNESS = createKey("continentalness");
    public static final ResourceKey<NormalNoise.NoiseParameters> EROSION = createKey("erosion");
-   public static final ResourceKey<NormalNoise.NoiseParameters> TEMPERATURE_LARGE = createKey("temperature_large");
-   public static final ResourceKey<NormalNoise.NoiseParameters> VEGETATION_LARGE = createKey("vegetation_large");
-   public static final ResourceKey<NormalNoise.NoiseParameters> CONTINENTALNESS_LARGE = createKey("continentalness_large");
-   public static final ResourceKey<NormalNoise.NoiseParameters> EROSION_LARGE = createKey("erosion_large");
    public static final ResourceKey<NormalNoise.NoiseParameters> RIDGE = createKey("ridge");
    public static final ResourceKey<NormalNoise.NoiseParameters> SHIFT = createKey("offset");
    public static final ResourceKey<NormalNoise.NoiseParameters> AQUIFER_BARRIER = createKey("aquifer_barrier");

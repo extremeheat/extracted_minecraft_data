@@ -27,7 +27,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
 
    public AnvilScreen(AnvilMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3, ANVIL_LOCATION);
-      this.player = var2.player;
+      this.player = var2.getPlayer();
       this.titleLabelX = 60;
    }
 

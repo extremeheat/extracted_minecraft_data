@@ -178,7 +178,7 @@ public class VaultBlockEntity extends BlockEntity {
       }
 
       private static ItemStack getRandomDisplayItemFromLootTable(ServerLevel var0, BlockPos var1, ResourceKey<LootTable> var2) {
-         LootTable var3 = var0.getServer().reloadableRegistries().getLootTable(var2);
+         LootTable var3 = var0.theGame().reloadableRegistries().getLootTable(var2);
          LootParams var4 = (new LootParams.Builder(var0)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).create(LootContextParamSets.VAULT);
          ObjectArrayList var5 = var3.getRandomItems(var4, var0.getRandom());
          return var5.isEmpty() ? ItemStack.EMPTY : (ItemStack)Util.getRandom(var5, var0.getRandom());
@@ -192,7 +192,7 @@ public class VaultBlockEntity extends BlockEntity {
       }
 
       private static List<ItemStack> resolveItemsToEject(ServerLevel var0, VaultConfig var1, BlockPos var2, Player var3, ItemStack var4) {
-         LootTable var5 = var0.getServer().reloadableRegistries().getLootTable(var1.lootTable());
+         LootTable var5 = var0.theGame().reloadableRegistries().getLootTable(var1.lootTable());
          LootParams var6 = (new LootParams.Builder(var0)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2)).withLuck(var3.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var3).withParameter(LootContextParams.TOOL, var4).create(LootContextParamSets.VAULT);
          return var5.getRandomItems(var6);
       }

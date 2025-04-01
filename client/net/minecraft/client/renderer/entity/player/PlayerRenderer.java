@@ -35,6 +35,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -166,6 +167,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.stingerCount = var1.getStingerCount();
       var2.useItemRemainingTicks = var1.getUseItemRemainingTicks();
       var2.swinging = var1.swinging;
+      var2.isCampfirePlayer = var1.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE);
       var2.isSpectator = var1.isSpectator();
       var2.showHat = var1.isModelPartShown(PlayerModelPart.HAT);
       var2.showJacket = var1.isModelPartShown(PlayerModelPart.JACKET);

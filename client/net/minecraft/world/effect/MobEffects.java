@@ -20,6 +20,7 @@ public class MobEffects {
    public static final Holder<MobEffect> INSTANT_HEALTH;
    public static final Holder<MobEffect> INSTANT_DAMAGE;
    public static final Holder<MobEffect> JUMP_BOOST;
+   public static final Holder<MobEffect> SHAZBOOTS;
    public static final Holder<MobEffect> NAUSEA;
    public static final Holder<MobEffect> REGENERATION;
    public static final Holder<MobEffect> RESISTANCE;
@@ -73,6 +74,7 @@ public class MobEffects {
       INSTANT_HEALTH = register("instant_health", new HealOrHarmMobEffect(MobEffectCategory.BENEFICIAL, 16262179, false));
       INSTANT_DAMAGE = register("instant_damage", new HealOrHarmMobEffect(MobEffectCategory.HARMFUL, 11101546, true));
       JUMP_BOOST = register("jump_boost", (new MobEffect(MobEffectCategory.BENEFICIAL, 16646020)).addAttributeModifier(Attributes.SAFE_FALL_DISTANCE, ResourceLocation.withDefaultNamespace("effect.jump_boost"), 1.0, AttributeModifier.Operation.ADD_VALUE));
+      SHAZBOOTS = register("shazboots", (new MobEffect(MobEffectCategory.BENEFICIAL, 43724)).addAttributeModifier(Attributes.SAFE_FALL_DISTANCE, ResourceLocation.withDefaultNamespace("effect.shazboots"), 100.0, AttributeModifier.Operation.ADD_VALUE));
       NAUSEA = register("nausea", (new MobEffect(MobEffectCategory.HARMFUL, 5578058)).setBlendDuration(150, 20, 60));
       REGENERATION = register("regeneration", new RegenerationMobEffect(MobEffectCategory.BENEFICIAL, 13458603));
       RESISTANCE = register("resistance", new MobEffect(MobEffectCategory.BENEFICIAL, 9520880));

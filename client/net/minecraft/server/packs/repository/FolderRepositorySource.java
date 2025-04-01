@@ -108,8 +108,8 @@ public class FolderRepositorySource implements RepositorySource {
       DISCOVERED_PACK_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
    }
 
-   static class FolderPackDetector extends PackDetector<Pack.ResourcesSupplier> {
-      protected FolderPackDetector(DirectoryValidator var1) {
+   public static class FolderPackDetector extends PackDetector<Pack.ResourcesSupplier> {
+      public FolderPackDetector(DirectoryValidator var1) {
          super(var1);
       }
 

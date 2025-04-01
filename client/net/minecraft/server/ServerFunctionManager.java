@@ -25,24 +25,24 @@ public class ServerFunctionManager {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final ResourceLocation TICK_FUNCTION_TAG = ResourceLocation.withDefaultNamespace("tick");
    private static final ResourceLocation LOAD_FUNCTION_TAG = ResourceLocation.withDefaultNamespace("load");
-   private final MinecraftServer server;
+   private final TheGame theGame;
    private List<CommandFunction<CommandSourceStack>> ticking = ImmutableList.of();
    private boolean postReload;
    private ServerFunctionLibrary library;
 
-   public ServerFunctionManager(MinecraftServer var1, ServerFunctionLibrary var2) {
+   public ServerFunctionManager(TheGame var1, ServerFunctionLibrary var2) {
       super();
-      this.server = var1;
+      this.theGame = var1;
       this.library = var2;
       this.postReload(var2);
    }
 
    public CommandDispatcher<CommandSourceStack> getDispatcher() {
-      return this.server.getCommands().getDispatcher();
+      return this.theGame.getCommands().getDispatcher();
    }
 
    public void tick() {
-      if (this.server.tickRateManager().runsNormally()) {
+      if (this.theGame.tickRateManager().runsNormally()) {
          if (this.postReload) {
             this.postReload = false;
             List var1 = this.library.getTag(LOAD_FUNCTION_TAG);
@@ -92,7 +92,7 @@ public class ServerFunctionManager {
    }
 
    public CommandSourceStack getGameLoopSender() {
-      return this.server.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+      return this.theGame.createCommandSourceStack().withPermission(2).withSuppressedOutput();
    }
 
    public Optional<CommandFunction<CommandSourceStack>> get(ResourceLocation var1) {

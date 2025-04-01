@@ -405,45 +405,48 @@ public class FishingHook extends Projectile {
 
    public int retrieve(ItemStack var1) {
       Player var2 = this.getPlayerOwner();
-      if (!this.level().isClientSide && var2 != null && !this.shouldStopFishing(var2)) {
-         int var3 = 0;
-         if (this.hookedIn != null) {
-            this.pullEntity(this.hookedIn);
-            CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)var2, var1, this, Collections.emptyList());
-            this.level().broadcastEntityEvent(this, (byte)31);
-            var3 = this.hookedIn instanceof ItemEntity ? 3 : 5;
-         } else if (this.nibble > 0) {
-            LootParams var4 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var1).withParameter(LootContextParams.THIS_ENTITY, this).withLuck((float)this.luck + var2.getLuck()).create(LootContextParamSets.FISHING);
-            LootTable var5 = this.level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
-            ObjectArrayList var6 = var5.getRandomItems(var4);
-            CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)var2, var1, this, var6);
+      Level var4 = this.level();
+      if (var4 instanceof ServerLevel var3) {
+         if (var2 != null && !this.shouldStopFishing(var2)) {
+            int var19 = 0;
+            if (this.hookedIn != null) {
+               this.pullEntity(this.hookedIn);
+               CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)var2, var1, this, Collections.emptyList());
+               this.level().broadcastEntityEvent(this, (byte)31);
+               var19 = this.hookedIn instanceof ItemEntity ? 3 : 5;
+            } else if (this.nibble > 0) {
+               LootParams var5 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var1).withParameter(LootContextParams.THIS_ENTITY, this).withLuck((float)this.luck + var2.getLuck()).create(LootContextParamSets.FISHING);
+               LootTable var6 = var3.theGame().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
+               ObjectArrayList var7 = var6.getRandomItems(var5);
+               CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)var2, var1, this, var7);
 
-            for(ItemStack var8 : var6) {
-               ItemEntity var9 = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), var8);
-               double var10 = var2.getX() - this.getX();
-               double var12 = var2.getY() - this.getY();
-               double var14 = var2.getZ() - this.getZ();
-               double var16 = 0.1;
-               var9.setDeltaMovement(var10 * 0.1, var12 * 0.1 + Math.sqrt(Math.sqrt(var10 * var10 + var12 * var12 + var14 * var14)) * 0.08, var14 * 0.1);
-               this.level().addFreshEntity(var9);
-               var2.level().addFreshEntity(new ExperienceOrb(var2.level(), var2.getX(), var2.getY() + 0.5, var2.getZ() + 0.5, this.random.nextInt(6) + 1));
-               if (var8.is(ItemTags.FISHES)) {
-                  var2.awardStat(Stats.FISH_CAUGHT, 1);
+               for(ItemStack var9 : var7) {
+                  ItemEntity var10 = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), var9);
+                  double var11 = var2.getX() - this.getX();
+                  double var13 = var2.getY() - this.getY();
+                  double var15 = var2.getZ() - this.getZ();
+                  double var17 = 0.1;
+                  var10.setDeltaMovement(var11 * 0.1, var13 * 0.1 + Math.sqrt(Math.sqrt(var11 * var11 + var13 * var13 + var15 * var15)) * 0.08, var15 * 0.1);
+                  this.level().addFreshEntity(var10);
+                  var2.level().addFreshEntity(new ExperienceOrb(var2.level(), var2.getX(), var2.getY() + 0.5, var2.getZ() + 0.5, this.random.nextInt(6) + 1));
+                  if (var9.is(ItemTags.FISHES)) {
+                     var2.awardStat(Stats.FISH_CAUGHT, 1);
+                  }
                }
+
+               var19 = 1;
             }
 
-            var3 = 1;
-         }
+            if (this.onGround()) {
+               var19 = 2;
+            }
 
-         if (this.onGround()) {
-            var3 = 2;
+            this.discard();
+            return var19;
          }
-
-         this.discard();
-         return var3;
-      } else {
-         return 0;
       }
+
+      return 0;
    }
 
    public void handleEntityEvent(byte var1) {

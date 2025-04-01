@@ -64,6 +64,19 @@ public abstract class RenderTarget {
       }
    }
 
+   public void copyColorAndDepthFrom(RenderTarget var1) {
+      RenderSystem.assertOnRenderThread();
+      if (this.depthTexture != null && this.colorTexture != null) {
+         if (var1.depthTexture != null && var1.colorTexture != null) {
+            RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(var1.colorTexture, this.colorTexture, 0, 0, 0, 0, 0, this.width, this.height);
+         } else {
+            throw new IllegalStateException("Trying to copy depth texture from a RenderTarget without a depth texture");
+         }
+      } else {
+         throw new IllegalStateException("Trying to copy depth texture to a RenderTarget without a depth texture");
+      }
+   }
+
    public void createBuffers(int var1, int var2) {
       RenderSystem.assertOnRenderThread();
       int var3 = RenderSystem.getDevice().getMaxTextureSize();

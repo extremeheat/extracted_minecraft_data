@@ -31,9 +31,9 @@ public class PublishCommand {
    }
 
    private static int publish(CommandSourceStack var0, int var1, boolean var2, @Nullable GameType var3) throws CommandSyntaxException {
-      if (var0.getServer().isPublished()) {
-         throw ERROR_ALREADY_PUBLISHED.create(var0.getServer().getPort());
-      } else if (!var0.getServer().publishServer(var3, var2, var1)) {
+      if (var0.theGame().server().isPublished()) {
+         throw ERROR_ALREADY_PUBLISHED.create(var0.theGame().server().getPort());
+      } else if (!var0.theGame().server().publishServer(var0.theGame(), var3, var2, var1)) {
          throw ERROR_FAILED.create();
       } else {
          var0.sendSuccess(() -> getSuccessMessage(var1), true);

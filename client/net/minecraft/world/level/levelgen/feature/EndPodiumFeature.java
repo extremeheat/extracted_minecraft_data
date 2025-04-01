@@ -52,9 +52,7 @@ public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
                }
             } else if (!var6) {
                this.setBlock(var3, var5, Blocks.BEDROCK.defaultBlockState());
-            } else if (this.active) {
-               this.dropPreviousAndSetBlock(var3, new BlockPos(var5), Blocks.END_PORTAL);
-            } else {
+            } else if (!this.active) {
                this.setBlock(var3, new BlockPos(var5), Blocks.AIR.defaultBlockState());
             }
          }

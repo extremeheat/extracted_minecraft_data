@@ -14,6 +14,7 @@ import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -56,6 +57,37 @@ public class MobSpawnSettings {
       return this.creatureGenerationProbability;
    }
 
+   Builder asBuilder() {
+      Builder var1 = (new Builder()).creatureGenerationProbability(this.creatureGenerationProbability);
+
+      for(Map.Entry var3 : this.spawners.entrySet()) {
+         for(Weighted var5 : ((WeightedList)var3.getValue()).unwrap()) {
+            var1.addSpawn((MobCategory)var3.getKey(), var5.weight(), (SpawnerData)var5.value());
+         }
+      }
+
+      for(Map.Entry var7 : this.mobSpawnCosts.entrySet()) {
+         var1.addMobCharge((EntityType)var7.getKey(), ((MobSpawnCost)var7.getValue()).charge(), ((MobSpawnCost)var7.getValue()).energyBudget());
+      }
+
+      return var1;
+   }
+
+   public boolean equals(Object var1) {
+      if (this == var1) {
+         return true;
+      } else if (var1 != null && this.getClass() == var1.getClass()) {
+         MobSpawnSettings var2 = (MobSpawnSettings)var1;
+         return Float.compare(this.creatureGenerationProbability, var2.creatureGenerationProbability) == 0 && Objects.equals(this.spawners, var2.spawners) && Objects.equals(this.mobSpawnCosts, var2.mobSpawnCosts);
+      } else {
+         return false;
+      }
+   }
+
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.creatureGenerationProbability, this.spawners, this.mobSpawnCosts});
+   }
+
    public static record SpawnerData(EntityType<?> type, int minCount, int maxCount) {
       public static final MapCodec<SpawnerData> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter((var0x) -> var0x.type), ExtraCodecs.POSITIVE_INT.fieldOf("minCount").forGetter((var0x) -> var0x.minCount), ExtraCodecs.POSITIVE_INT.fieldOf("maxCount").forGetter((var0x) -> var0x.maxCount)).apply(var0, SpawnerData::new)).validate((var0) -> var0.minCount > var0.maxCount ? DataResult.error(() -> "minCount needs to be smaller or equal to maxCount") : DataResult.success(var0));
 
@@ -94,6 +126,11 @@ public class MobSpawnSettings {
 
       public Builder addSpawn(MobCategory var1, int var2, SpawnerData var3) {
          ((WeightedList.Builder)this.spawners.get(var1)).add(var3, var2);
+         return this;
+      }
+
+      public Builder clearSpawns(MobCategory var1) {
+         ((WeightedList.Builder)this.spawners.get(var1)).clear();
          return this;
       }
 

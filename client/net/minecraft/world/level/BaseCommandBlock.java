@@ -16,7 +16,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionResult;
@@ -109,23 +108,22 @@ public abstract class BaseCommandBlock implements CommandSource {
             return true;
          } else {
             this.successCount = 0;
-            MinecraftServer var2 = this.getLevel().getServer();
-            if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
+            if (this.getLevel().theGame().server().isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
                try {
                   this.lastOutput = null;
-                  CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
+                  CommandSourceStack var2 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
                      if (var1x) {
                         ++this.successCount;
                      }
 
                   });
-                  var2.getCommands().performPrefixedCommand(var3, this.command);
-               } catch (Throwable var6) {
-                  CrashReport var4 = CrashReport.forThrowable(var6, "Executing command block");
-                  CrashReportCategory var5 = var4.addCategory("Command to be executed");
-                  var5.setDetail("Command", this::getCommand);
-                  var5.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
-                  throw new ReportedException(var4);
+                  this.getLevel().theGame().getCommands().performPrefixedCommand(var2, this.command);
+               } catch (Throwable var5) {
+                  CrashReport var3 = CrashReport.forThrowable(var5, "Executing command block");
+                  CrashReportCategory var4 = var3.addCategory("Command to be executed");
+                  var4.setDetail("Command", this::getCommand);
+                  var4.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
+                  throw new ReportedException(var3);
                }
             }
 

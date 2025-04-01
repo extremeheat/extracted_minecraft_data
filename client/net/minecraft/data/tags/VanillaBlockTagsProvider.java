@@ -83,9 +83,9 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.ALL_SIGNS).addTag(BlockTags.SIGNS).addTag(BlockTags.ALL_HANGING_SIGNS);
       this.tag(BlockTags.BEDS).add(Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED);
       this.tag(BlockTags.FENCES).addTag(BlockTags.WOODEN_FENCES).add(Blocks.NETHER_BRICK_FENCE);
-      this.tag(BlockTags.DRAGON_IMMUNE).add(Blocks.BARRIER, Blocks.BEDROCK, Blocks.END_PORTAL, Blocks.END_PORTAL_FRAME, Blocks.END_GATEWAY, Blocks.COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.STRUCTURE_BLOCK, Blocks.JIGSAW, Blocks.MOVING_PISTON, Blocks.OBSIDIAN, Blocks.CRYING_OBSIDIAN, Blocks.END_STONE, Blocks.IRON_BARS, Blocks.RESPAWN_ANCHOR, Blocks.REINFORCED_DEEPSLATE, Blocks.TEST_BLOCK, Blocks.TEST_INSTANCE_BLOCK);
+      this.tag(BlockTags.DRAGON_IMMUNE).add(Blocks.BARRIER, Blocks.BEDROCK, Blocks.END_GATEWAY, Blocks.COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.STRUCTURE_BLOCK, Blocks.JIGSAW, Blocks.MOVING_PISTON, Blocks.OBSIDIAN, Blocks.CRYING_OBSIDIAN, Blocks.END_STONE, Blocks.IRON_BARS, Blocks.RESPAWN_ANCHOR, Blocks.REINFORCED_DEEPSLATE, Blocks.TEST_BLOCK, Blocks.TEST_INSTANCE_BLOCK);
       this.tag(BlockTags.DRAGON_TRANSPARENT).add(Blocks.LIGHT).addTag(BlockTags.FIRE);
-      this.tag(BlockTags.WITHER_IMMUNE).add(Blocks.BARRIER, Blocks.BEDROCK, Blocks.END_PORTAL, Blocks.END_PORTAL_FRAME, Blocks.END_GATEWAY, Blocks.COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.STRUCTURE_BLOCK, Blocks.JIGSAW, Blocks.MOVING_PISTON, Blocks.LIGHT, Blocks.REINFORCED_DEEPSLATE, Blocks.TEST_BLOCK, Blocks.TEST_INSTANCE_BLOCK);
+      this.tag(BlockTags.WITHER_IMMUNE).add(Blocks.BARRIER, Blocks.BEDROCK, Blocks.END_GATEWAY, Blocks.COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.STRUCTURE_BLOCK, Blocks.JIGSAW, Blocks.MOVING_PISTON, Blocks.LIGHT, Blocks.REINFORCED_DEEPSLATE, Blocks.TEST_BLOCK, Blocks.TEST_INSTANCE_BLOCK);
       this.tag(BlockTags.WITHER_SUMMON_BASE_BLOCKS).add(Blocks.SOUL_SAND, Blocks.SOUL_SOIL);
       this.tag(BlockTags.FLOWERS).addTag(BlockTags.SMALL_FLOWERS).add(var3);
       this.tag(BlockTags.BEE_ATTRACTIVE).add(var2).add(var3);
@@ -93,7 +93,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.CROPS).add(Blocks.BEETROOTS, Blocks.CARROTS, Blocks.POTATOES, Blocks.WHEAT, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM, Blocks.TORCHFLOWER_CROP, Blocks.PITCHER_CROP);
       this.tag(BlockTags.BEE_GROWABLES).addTag(BlockTags.CROPS).add(Blocks.SWEET_BERRY_BUSH).add(Blocks.CAVE_VINES).add(Blocks.CAVE_VINES_PLANT);
       this.tag(BlockTags.SHULKER_BOXES).add(Blocks.SHULKER_BOX, Blocks.BLACK_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX, Blocks.BROWN_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX, Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.WHITE_SHULKER_BOX, Blocks.YELLOW_SHULKER_BOX);
-      this.tag(BlockTags.PORTALS).add(Blocks.NETHER_PORTAL, Blocks.END_PORTAL, Blocks.END_GATEWAY);
+      this.tag(BlockTags.PORTALS).add(Blocks.NETHER_PORTAL, Blocks.END_GATEWAY, Blocks.MINE_TRAVELLING_BLOCK);
       this.tag(BlockTags.FIRE).add(Blocks.FIRE, Blocks.SOUL_FIRE);
       this.tag(BlockTags.NYLIUM).add(Blocks.CRIMSON_NYLIUM, Blocks.WARPED_NYLIUM);
       this.tag(BlockTags.WART_BLOCKS).add(Blocks.NETHER_WART_BLOCK, Blocks.WARPED_WART_BLOCK);
@@ -126,7 +126,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.INFINIBURN_END).addTag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.BEDROCK);
       this.tag(BlockTags.STONE_ORE_REPLACEABLES).add(Blocks.STONE).add(Blocks.GRANITE).add(Blocks.DIORITE).add(Blocks.ANDESITE);
       this.tag(BlockTags.DEEPSLATE_ORE_REPLACEABLES).add(Blocks.DEEPSLATE).add(Blocks.TUFF);
-      this.tag(BlockTags.BASE_STONE_OVERWORLD).add(Blocks.STONE).add(Blocks.GRANITE).add(Blocks.DIORITE).add(Blocks.ANDESITE).add(Blocks.TUFF).add(Blocks.DEEPSLATE);
+      this.tag(BlockTags.BASE_STONE_OVERWORLD).add(Blocks.STONE).add(Blocks.GRANITE).add(Blocks.DIORITE).add(Blocks.ANDESITE).add(Blocks.TUFF).add(Blocks.DEEPSLATE).add(Blocks.NETHERRACK).add(Blocks.BASALT).add(Blocks.BLACKSTONE).add(Blocks.END_STONE);
       this.tag(BlockTags.BASE_STONE_NETHER).add(Blocks.NETHERRACK).add(Blocks.BASALT).add(Blocks.BLACKSTONE);
       this.tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.DIRT).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.IRON_ORES).addTag(BlockTags.COPPER_ORES).addTag(BlockTags.SNOW).add(Blocks.WATER, Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.CALCITE, Blocks.PACKED_ICE, Blocks.RAW_IRON_BLOCK, Blocks.RAW_COPPER_BLOCK);
       this.tag(BlockTags.NETHER_CARVER_REPLACEABLES).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.BASE_STONE_NETHER).addTag(BlockTags.DIRT).addTag(BlockTags.NYLIUM).addTag(BlockTags.WART_BLOCKS).add(Blocks.SOUL_SAND, Blocks.SOUL_SOIL);
@@ -161,12 +161,12 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(BlockTags.NEEDS_IRON_TOOL);
       this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(BlockTags.NEEDS_IRON_TOOL).addTag(BlockTags.NEEDS_STONE_TOOL);
       this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(BlockTags.NEEDS_IRON_TOOL).addTag(BlockTags.NEEDS_STONE_TOOL);
-      this.tag(BlockTags.FEATURES_CANNOT_REPLACE).add(Blocks.BEDROCK, Blocks.SPAWNER, Blocks.CHEST, Blocks.END_PORTAL_FRAME, Blocks.REINFORCED_DEEPSLATE, Blocks.TRIAL_SPAWNER, Blocks.VAULT);
+      this.tag(BlockTags.FEATURES_CANNOT_REPLACE).add(Blocks.BEDROCK, Blocks.SPAWNER, Blocks.CHEST, Blocks.REINFORCED_DEEPSLATE, Blocks.TRIAL_SPAWNER, Blocks.VAULT);
       this.tag(BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE).addTag(BlockTags.FEATURES_CANNOT_REPLACE).addTag(BlockTags.LEAVES).addTag(BlockTags.LOGS);
       this.tag(BlockTags.GEODE_INVALID_BLOCKS).add(Blocks.BEDROCK, Blocks.WATER, Blocks.LAVA, Blocks.ICE, Blocks.PACKED_ICE, Blocks.BLUE_ICE);
       this.tag(BlockTags.ANIMALS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK);
       this.tag(BlockTags.ARMADILLO_SPAWNABLE_ON).addTag(BlockTags.ANIMALS_SPAWNABLE_ON).addTag(BlockTags.BADLANDS_TERRACOTTA).add(Blocks.RED_SAND, Blocks.COARSE_DIRT);
-      this.tag(BlockTags.AXOLOTLS_SPAWNABLE_ON).add(Blocks.CLAY);
+      this.tag(BlockTags.AXOLOTLS_SPAWNABLE_ON).add(Blocks.CLAY, Blocks.MOSS_BLOCK, Blocks.DIRT);
       this.tag(BlockTags.GOATS_SPAWNABLE_ON).addTag(BlockTags.ANIMALS_SPAWNABLE_ON).add(Blocks.STONE, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.PACKED_ICE, Blocks.GRAVEL);
       this.tag(BlockTags.MOOSHROOMS_SPAWNABLE_ON).add(Blocks.MYCELIUM);
       this.tag(BlockTags.PARROTS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.AIR).addTag(BlockTags.LEAVES).addTag(BlockTags.LOGS);
@@ -196,7 +196,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.REPLACEABLE_BY_MUSHROOMS).addTag(BlockTags.LEAVES).addTag(BlockTags.SMALL_FLOWERS).add(Blocks.PALE_MOSS_CARPET).add(Blocks.SHORT_GRASS, Blocks.FERN, Blocks.DEAD_BUSH, Blocks.VINE, Blocks.GLOW_LICHEN, Blocks.SUNFLOWER, Blocks.LILAC, Blocks.ROSE_BUSH, Blocks.PEONY, Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.HANGING_ROOTS, Blocks.PITCHER_PLANT).add(Blocks.WATER, Blocks.SEAGRASS, Blocks.TALL_SEAGRASS).add(Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK, Blocks.RED_MUSHROOM_BLOCK).add(Blocks.WARPED_ROOTS, Blocks.NETHER_SPROUTS, Blocks.CRIMSON_ROOTS, Blocks.LEAF_LITTER, Blocks.SHORT_DRY_GRASS, Blocks.TALL_DRY_GRASS, Blocks.BUSH, Blocks.FIREFLY_BUSH);
       this.tag(BlockTags.COMPLETES_FIND_TREE_TUTORIAL).addTag(BlockTags.LOGS).addTag(BlockTags.LEAVES).addTag(BlockTags.WART_BLOCKS);
       this.tag(BlockTags.SNAPS_GOAT_HORN).addTag(BlockTags.OVERWORLD_NATURAL_LOGS).add(Blocks.STONE).add(Blocks.PACKED_ICE).add(Blocks.IRON_ORE).add(Blocks.COAL_ORE).add(Blocks.COPPER_ORE).add(Blocks.EMERALD_ORE);
-      this.tag(BlockTags.INVALID_SPAWN_INSIDE).add(Blocks.END_PORTAL, Blocks.END_GATEWAY);
+      this.tag(BlockTags.INVALID_SPAWN_INSIDE).add(Blocks.END_GATEWAY, Blocks.MINE_TRAVELLING_BLOCK);
       this.tag(BlockTags.SAND).add(Blocks.SUSPICIOUS_SAND);
       this.tag(BlockTags.TRAIL_RUINS_REPLACEABLE).add(Blocks.GRAVEL);
       this.tag(BlockTags.SNIFFER_DIGGABLE_BLOCK).add(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT, Blocks.MOSS_BLOCK, Blocks.PALE_MOSS_BLOCK, Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS);

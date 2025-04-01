@@ -21,7 +21,7 @@ public record StorageNbtProvider(ResourceLocation id) implements NbtProvider {
    }
 
    public Tag get(LootContext var1) {
-      return var1.getLevel().getServer().getCommandStorage().get(this.id);
+      return var1.getLevel().theGame().getCommandStorage().get(this.id);
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {

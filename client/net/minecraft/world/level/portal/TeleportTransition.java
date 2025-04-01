@@ -24,7 +24,7 @@ public record TeleportTransition(ServerLevel newLevel, Vec3 position, Vec3 delta
    }
 
    public TeleportTransition(ServerLevel var1, Entity var2, PostTeleportTransition var3) {
-      this(var1, findAdjustedSharedSpawnPos(var1, var2), Vec3.ZERO, 0.0F, 0.0F, false, false, Set.of(), var3);
+      this(var1, findAdjustedSharedSpawnPos(var1, var2), Vec3.ZERO, 90.0F, 0.0F, false, false, Set.of(), var3);
    }
 
    public TeleportTransition(ServerLevel var1, Vec3 var2, Vec3 var3, float var4, float var5, boolean var6, boolean var7, Set<Relative> var8, PostTeleportTransition var9) {

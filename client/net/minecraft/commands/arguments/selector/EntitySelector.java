@@ -113,10 +113,10 @@ public class EntitySelector {
       if (!this.includesEntities) {
          return this.findPlayers(var1);
       } else if (this.playerName != null) {
-         ServerPlayer var9 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
+         ServerPlayer var9 = var1.playerList().getPlayerByName(this.playerName);
          return var9 == null ? List.of() : List.of(var9);
       } else if (this.entityUUID != null) {
-         for(ServerLevel var10 : var1.getServer().getAllLevels()) {
+         for(ServerLevel var10 : var1.theGame().getAllLevels()) {
             Entity var12 = var10.getEntity(this.entityUUID);
             if (var12 != null) {
                if (var12.getType().isEnabled(var1.enabledFeatures())) {
@@ -139,7 +139,7 @@ public class EntitySelector {
             if (this.isWorldLimited()) {
                this.addEntities(var5, var1.getLevel(), var3, var4);
             } else {
-               for(ServerLevel var7 : var1.getServer().getAllLevels()) {
+               for(ServerLevel var7 : var1.theGame().getAllLevels()) {
                   this.addEntities(var5, var7, var3, var4);
                }
             }
@@ -178,10 +178,10 @@ public class EntitySelector {
    public List<ServerPlayer> findPlayers(CommandSourceStack var1) throws CommandSyntaxException {
       this.checkPermissions(var1);
       if (this.playerName != null) {
-         ServerPlayer var10 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
+         ServerPlayer var10 = var1.playerList().getPlayerByName(this.playerName);
          return var10 == null ? List.of() : List.of(var10);
       } else if (this.entityUUID != null) {
-         ServerPlayer var9 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
+         ServerPlayer var9 = var1.playerList().getPlayer(this.entityUUID);
          return var9 == null ? List.of() : List.of(var9);
       } else {
          Vec3 var2 = (Vec3)this.position.apply(var1.getPosition());
@@ -205,7 +205,7 @@ public class EntitySelector {
             } else {
                var5 = new ObjectArrayList();
 
-               for(ServerPlayer var8 : var1.getServer().getPlayerList().getPlayers()) {
+               for(ServerPlayer var8 : var1.playerList().getPlayers()) {
                   if (var4.test(var8)) {
                      ((List)var5).add(var8);
                      if (((List)var5).size() >= var6) {

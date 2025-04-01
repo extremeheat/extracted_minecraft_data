@@ -186,7 +186,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       }
 
       Vec3 var5 = Vec3.atCenterOf(this.worldPosition);
-      return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, 2, var3, (Component)var4, var2.getServer(), var1);
+      return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, 2, var3, (Component)var4, var2.theGame(), var1);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {

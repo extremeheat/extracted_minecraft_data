@@ -12,6 +12,7 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -22,8 +23,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.GameEventTags;
 import net.minecraft.tags.TagKey;
@@ -55,6 +58,7 @@ import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -66,6 +70,7 @@ import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -101,6 +106,12 @@ public class Warden extends Monster implements VibrationSystem {
    private int tendrilAnimationO;
    private int heartAnimation;
    private int heartAnimationO;
+   public int crowdWaitingSoundTimeLeft = 0;
+   public int timeUntilGoathornHint = 1000;
+   public int timeUntilDiscShouldPlay = 400;
+   public int timeUntilLightShouldTurnOn = 200;
+   public int timeUntilMobHead = 200;
+   public int timeUntilRockets = 200;
    public AnimationState roarAnimationState = new AnimationState();
    public AnimationState sniffAnimationState = new AnimationState();
    public AnimationState emergeAnimationState = new AnimationState();
@@ -178,7 +189,16 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Nullable
    protected SoundEvent getAmbientSound() {
-      return !this.hasPose(Pose.ROARING) && !this.isDiggingOrEmerging() ? this.getAngerLevel().getAmbientSound() : null;
+      if (!this.hasPose(Pose.ROARING) && !this.isDiggingOrEmerging()) {
+         if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(-1) && this.crowdWaitingSoundTimeLeft == 0) {
+            BlockPos var1 = (new BlockPos((int)this.position().x, (int)this.position().y, (int)this.position().z)).offset(-8, 0, 0);
+            this.level().playSound((Entity)null, (BlockPos)var1, SoundEvents.VILLAGER_CROWD_WAITING, SoundSource.MASTER, 100.0F, 1.0F);
+         }
+
+         return this.getAngerLevel().getAmbientSound();
+      } else {
+         return null;
+      }
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
@@ -216,34 +236,91 @@ public class Warden extends Monster implements VibrationSystem {
    public void tick() {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
-         VibrationSystem.Ticker.tick(var1, this.vibrationData, this.vibrationUser);
-         if (this.isPersistenceRequired() || this.requiresCustomPersistence()) {
-            WardenAi.setDigCooldown(this);
+         if (this.level().isActive(WorldEffects.WARDEN_BOSS_FIGHT)) {
+            if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(-1)) {
+               --this.timeUntilGoathornHint;
+            }
+
+            if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(-1)) {
+               ++this.crowdWaitingSoundTimeLeft;
+            }
+
+            if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(0)) {
+               --this.timeUntilDiscShouldPlay;
+            }
+
+            if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(1)) {
+               --this.timeUntilLightShouldTurnOn;
+            }
+
+            if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(2)) {
+               --this.timeUntilMobHead;
+            }
+
+            if (this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).isPresent() && ((Integer)this.getBrain().getMemory(MemoryModuleType.ACTING_STAGE).get()).equals(3)) {
+               this.timeUntilMobHead = this.timeUntilRockets - 1;
+            }
+
+            if (this.timeUntilGoathornHint == 0 && var1.players().size() > 0) {
+               this.timeUntilGoathornHint = -1;
+               ((ServerPlayer)var1.players().get(0)).sendSystemMessage(Component.literal("I wonder when they will \"Go-at\" (horn) the start of the fight?"), true);
+            }
+
+            if (this.timeUntilDiscShouldPlay == 0 && var1.players().size() > 0) {
+               this.timeUntilDiscShouldPlay = -1;
+               ((ServerPlayer)var1.players().get(0)).sendSystemMessage(Component.literal("Where is the music? Isn't it supposed to start?"), true);
+            }
+
+            if (this.timeUntilLightShouldTurnOn == 0 && var1.players().size() > 0) {
+               this.timeUntilLightShouldTurnOn = -1;
+               ((ServerPlayer)var1.players().get(0)).sendSystemMessage(Component.literal("The Warden is so ready to act, when does the lightshow start?"), true);
+            }
+
+            if (this.timeUntilMobHead == 0 && var1.players().size() > 0) {
+               this.timeUntilMobHead = -1;
+               ((ServerPlayer)var1.players().get(0)).sendSystemMessage(Component.literal("We need another mob on stage! (Or a player who looks like a mob)"), true);
+            }
+
+            if (this.timeUntilRockets == 0 && var1.players().size() > 0) {
+               this.timeUntilRockets = -1;
+               ((ServerPlayer)var1.players().get(0)).sendSystemMessage(Component.literal("It looks like the Warden is done, where is the finale?"), true);
+            }
+         }
+
+         if (!this.getBrain().isActive(Activity.ACTING)) {
+            VibrationSystem.Ticker.tick(var1, this.vibrationData, this.vibrationUser);
+            if (this.isPersistenceRequired() || this.requiresCustomPersistence()) {
+               WardenAi.setDigCooldown(this);
+            }
          }
       }
 
       super.tick();
       if (this.level().isClientSide()) {
-         if (this.tickCount % this.getHeartBeatDelay() == 0) {
-            this.heartAnimation = 10;
-            if (!this.isSilent()) {
-               this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.WARDEN_HEARTBEAT, this.getSoundSource(), 5.0F, this.getVoicePitch(), false);
+         if (this.level().isActive(WorldEffects.WARDEN_BOSS_FIGHT)) {
+            ++this.crowdWaitingSoundTimeLeft;
+         } else {
+            if (this.tickCount % this.getHeartBeatDelay() == 0) {
+               this.heartAnimation = 10;
+               if (!this.isSilent()) {
+                  this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.WARDEN_HEARTBEAT, this.getSoundSource(), 5.0F, this.getVoicePitch(), false);
+               }
             }
-         }
 
-         this.tendrilAnimationO = this.tendrilAnimation;
-         if (this.tendrilAnimation > 0) {
-            --this.tendrilAnimation;
-         }
+            this.tendrilAnimationO = this.tendrilAnimation;
+            if (this.tendrilAnimation > 0) {
+               --this.tendrilAnimation;
+            }
 
-         this.heartAnimationO = this.heartAnimation;
-         if (this.heartAnimation > 0) {
-            --this.heartAnimation;
-         }
+            this.heartAnimationO = this.heartAnimation;
+            if (this.heartAnimation > 0) {
+               --this.heartAnimation;
+            }
 
-         switch (this.getPose()) {
-            case EMERGING -> this.clientDiggingParticles(this.emergeAnimationState);
-            case DIGGING -> this.clientDiggingParticles(this.diggingAnimationState);
+            switch (this.getPose()) {
+               case EMERGING -> this.clientDiggingParticles(this.emergeAnimationState);
+               case DIGGING -> this.clientDiggingParticles(this.diggingAnimationState);
+            }
          }
       }
 
@@ -255,13 +332,15 @@ public class Warden extends Monster implements VibrationSystem {
       this.getBrain().tick(var1, this);
       var2.pop();
       super.customServerAiStep(var1);
-      if ((this.tickCount + this.getId()) % 120 == 0) {
-         applyDarknessAround(var1, this.position(), this, 20);
-      }
+      if (!this.getBrain().isActive(Activity.ACTING)) {
+         if ((this.tickCount + this.getId()) % 120 == 0) {
+            applyDarknessAround(var1, this.position(), this, 20);
+         }
 
-      if (this.tickCount % 20 == 0) {
-         this.angerManagement.tick(var1, this::canTargetEntity);
-         this.syncClientAngerLevel();
+         if (this.tickCount % 20 == 0) {
+            this.angerManagement.tick(var1, this::canTargetEntity);
+            this.syncClientAngerLevel();
+         }
       }
 
       WardenAi.updateActivity(this);
@@ -438,7 +517,9 @@ public class Warden extends Monster implements VibrationSystem {
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.getBrain().setMemoryWithExpiry(MemoryModuleType.DIG_COOLDOWN, Unit.INSTANCE, 1200L);
-      if (var3 == EntitySpawnReason.TRIGGERED) {
+      if (var1.getLevel().isActive(WorldEffects.WARDEN_BOSS_FIGHT)) {
+         this.getBrain().setMemory(MemoryModuleType.ACTING_STAGE, -1);
+      } else if (var3 == EntitySpawnReason.TRIGGERED) {
          this.setPose(Pose.EMERGING);
          this.getBrain().setMemoryWithExpiry(MemoryModuleType.IS_EMERGING, Unit.INSTANCE, (long)WardenAi.EMERGE_DURATION);
          this.playSound(SoundEvents.WARDEN_AGITATED, 5.0F, 1.0F);
@@ -448,6 +529,10 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.getBrain().isActive(Activity.ACTING)) {
+         this.stopActing();
+      }
+
       boolean var4 = super.hurtServer(var1, var2, var3);
       if (!this.isNoAi() && !this.isDiggingOrEmerging()) {
          Entity var5 = var2.getEntity();
@@ -515,6 +600,18 @@ public class Warden extends Monster implements VibrationSystem {
       return this.vibrationUser;
    }
 
+   public void stopActing() {
+      this.setPose(Pose.STANDING);
+      this.getBrain().eraseMemory(MemoryModuleType.ACTING_STAGE);
+      this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+      this.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+      this.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER).ifPresent((var1) -> {
+         this.getAngerManagement().increaseAnger(var1, 150);
+         this.setAttackTarget(var1);
+      });
+      this.getBrain().setActiveActivityIfPossible(Activity.FIGHT);
+   }
+
    static {
       CLIENT_ANGER_LEVEL = SynchedEntityData.<Integer>defineId(Warden.class, EntityDataSerializers.INT);
    }
@@ -544,7 +641,7 @@ public class Warden extends Monster implements VibrationSystem {
       }
 
       public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4) {
-         if (!Warden.this.isNoAi() && !Warden.this.isDeadOrDying() && !Warden.this.getBrain().hasMemoryValue(MemoryModuleType.VIBRATION_COOLDOWN) && !Warden.this.isDiggingOrEmerging() && var1.getWorldBorder().isWithinBounds(var2)) {
+         if (!Warden.this.isNoAi() && !Warden.this.isDeadOrDying() && !Warden.this.getBrain().hasMemoryValue(MemoryModuleType.VIBRATION_COOLDOWN) && !Warden.this.isDiggingOrEmerging() && var1.getWorldBorder().isWithinBounds(var2) && Warden.this.getBrain().isActive(Activity.ACTING)) {
             Entity var6 = var4.sourceEntity();
             boolean var10000;
             if (var6 instanceof LivingEntity) {

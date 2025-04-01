@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -106,10 +107,18 @@ public class SweetBerryBushBlock extends VegetationBlock implements Bonemealable
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       int var6 = (Integer)var1.getValue(AGE);
-      boolean var7 = var6 == 3;
+      int var7 = 0;
       if (var6 > 1) {
+         if (var6 == 3) {
+            ++var7;
+         }
+
+         if (var4.isActive(PlayerUnlocks.GATHERER)) {
+            var7 += 2;
+         }
+
          int var8 = 1 + var2.random.nextInt(2);
-         popResource(var2, var3, new ItemStack(Items.SWEET_BERRIES, var8 + (var7 ? 1 : 0)));
+         popResource(var2, var3, new ItemStack(Items.SWEET_BERRIES, var8 + var7));
          var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + var2.random.nextFloat() * 0.4F);
          BlockState var9 = (BlockState)var1.setValue(AGE, 1);
          var2.setBlock(var3, var9, 2);

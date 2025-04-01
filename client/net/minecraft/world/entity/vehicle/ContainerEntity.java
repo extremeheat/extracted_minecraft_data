@@ -6,7 +6,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -96,20 +95,23 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default void unpackChestVehicleLootTable(@Nullable Player var1) {
-      MinecraftServer var2 = this.level().getServer();
-      if (this.getContainerLootTable() != null && var2 != null) {
-         LootTable var3 = var2.reloadableRegistries().getLootTable(this.getContainerLootTable());
-         if (var1 != null) {
-            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, this.getContainerLootTable());
-         }
+      if (this.getContainerLootTable() != null) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            LootTable var5 = var2.theGame().reloadableRegistries().getLootTable(this.getContainerLootTable());
+            if (var1 != null) {
+               CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, this.getContainerLootTable());
+            }
 
-         this.setContainerLootTable((ResourceKey)null);
-         LootParams.Builder var4 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position());
-         if (var1 != null) {
-            var4.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
-         }
+            this.setContainerLootTable((ResourceKey)null);
+            LootParams.Builder var4 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position());
+            if (var1 != null) {
+               var4.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
+            }
 
-         var3.fill(this, var4.create(LootContextParamSets.CHEST), this.getContainerLootTableSeed());
+            var5.fill(this, var4.create(LootContextParamSets.CHEST), this.getContainerLootTableSeed());
+         }
       }
 
    }

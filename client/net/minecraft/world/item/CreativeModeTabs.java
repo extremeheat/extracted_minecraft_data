@@ -937,6 +937,9 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.BEDROCK);
       }).build());
       Registry.register(var0, (ResourceKey)FUNCTIONAL_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 3).title(Component.translatable("itemGroup.functional")).icon(() -> new ItemStack(Items.OAK_SIGN)).displayItems((var0x, var1) -> {
+         var1.accept((ItemLike)Items.SHIMMERING_DOOR);
+         var1.accept((ItemLike)Items.SHIMMERING_KEY);
+         var1.accept((ItemLike)Items.SKY);
          var1.accept((ItemLike)Items.TORCH);
          var1.accept((ItemLike)Items.SOUL_TORCH);
          var1.accept((ItemLike)Items.REDSTONE_TORCH);
@@ -965,6 +968,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CRAFTING_TABLE);
          var1.accept((ItemLike)Items.STONECUTTER);
          var1.accept((ItemLike)Items.CARTOGRAPHY_TABLE);
+         var1.accept((ItemLike)Items.MINE_CRAFTER);
+         var1.accept((ItemLike)Items.MINE_REVISITOR);
          var1.accept((ItemLike)Items.FLETCHING_TABLE);
          var1.accept((ItemLike)Items.SMITHING_TABLE);
          var1.accept((ItemLike)Items.GRINDSTONE);
@@ -1109,8 +1114,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.PIGLIN_HEAD);
          var1.accept((ItemLike)Items.DRAGON_HEAD);
          var1.accept((ItemLike)Items.DRAGON_EGG);
-         var1.accept((ItemLike)Items.END_PORTAL_FRAME);
-         var1.accept((ItemLike)Items.ENDER_EYE);
+         var1.accept((ItemLike)Items.EXIT_EYE);
          var1.accept((ItemLike)Items.VAULT);
          var1.accept((ItemLike)Items.INFESTED_STONE);
          var1.accept((ItemLike)Items.INFESTED_COBBLESTONE);
@@ -1119,6 +1123,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.INFESTED_CRACKED_STONE_BRICKS);
          var1.accept((ItemLike)Items.INFESTED_CHISELED_STONE_BRICKS);
          var1.accept((ItemLike)Items.INFESTED_DEEPSLATE);
+         var1.accept((ItemLike)Items.DIMENSION_CONTROL);
+         var1.accept((ItemLike)Items.SKY_BOX);
       }).build());
       Registry.register(var0, (ResourceKey)REDSTONE_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 4).title(Component.translatable("itemGroup.redstone")).icon(() -> new ItemStack(Items.REDSTONE)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.REDSTONE);
@@ -1271,7 +1277,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.WRITABLE_BOOK);
          var1.accept((ItemLike)Items.WIND_CHARGE);
          var1.accept((ItemLike)Items.ENDER_PEARL);
-         var1.accept((ItemLike)Items.ENDER_EYE);
+         var1.accept((ItemLike)Items.EXIT_EYE);
          var1.accept((ItemLike)Items.ELYTRA);
          generateFireworksAllDurations(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
          var1.accept((ItemLike)Items.SADDLE);
@@ -1308,6 +1314,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.TNT_MINECART);
          var0x.holders().lookup(Registries.INSTRUMENT).ifPresent((var1x) -> generateInstrumentTypes(var1, var1x, Items.GOAT_HORN, InstrumentTags.GOAT_HORNS, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          var1.accept((ItemLike)Items.MUSIC_DISC_13);
+         var1.accept((ItemLike)Items.MUSIC_DISC_AND_ACTION);
          var1.accept((ItemLike)Items.MUSIC_DISC_CAT);
          var1.accept((ItemLike)Items.MUSIC_DISC_BLOCKS);
          var1.accept((ItemLike)Items.MUSIC_DISC_CHIRP);
@@ -1488,7 +1495,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.HEAVY_CORE);
          var1.accept((ItemLike)Items.NETHER_STAR);
          var1.accept((ItemLike)Items.ENDER_PEARL);
-         var1.accept((ItemLike)Items.ENDER_EYE);
+         var1.accept((ItemLike)Items.EXIT_EYE);
          var1.accept((ItemLike)Items.SHULKER_SHELL);
          var1.accept((ItemLike)Items.POPPED_CHORUS_FRUIT);
          var1.accept((ItemLike)Items.ECHO_SHARD);

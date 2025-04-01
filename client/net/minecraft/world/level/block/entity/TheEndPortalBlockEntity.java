@@ -9,10 +9,6 @@ public class TheEndPortalBlockEntity extends BlockEntity {
       super(var1, var2, var3);
    }
 
-   public TheEndPortalBlockEntity(BlockPos var1, BlockState var2) {
-      this(BlockEntityType.END_PORTAL, var1, var2);
-   }
-
    public boolean shouldRenderFace(Direction var1) {
       return var1.getAxis() == Direction.Axis.Y;
    }

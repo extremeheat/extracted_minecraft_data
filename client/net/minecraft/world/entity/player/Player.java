@@ -21,6 +21,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -37,6 +38,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerUnlock;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -48,6 +51,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
@@ -72,6 +76,8 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Parrot;
@@ -84,6 +90,7 @@ import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.food.FoodData;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -94,8 +101,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.equipment.Equippable;
@@ -113,6 +125,7 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
@@ -193,8 +206,11 @@ public abstract class Player extends LivingEntity {
    public Vec3 currentImpulseImpactPos;
    @Nullable
    public Entity currentExplosionCause;
+   final RecipeManager.CachedCheck<SingleRecipeInput, CampfireCookingRecipe> campfireRecipeCache;
    private boolean ignoreFallDamageFromCurrentImpulse;
    private int currentImpulseContextResetGraceTime;
+   private int nextArrowRegen;
+   public static final int ARROW_REGEN_COOLDOWN = 600;
 
    public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
       super(EntityType.PLAYER, var1);
@@ -203,12 +219,47 @@ public abstract class Player extends LivingEntity {
       this.lastDeathLocation = Optional.empty();
       this.ignoreFallDamageFromCurrentImpulse = false;
       this.currentImpulseContextResetGraceTime = 0;
+      this.nextArrowRegen = 0;
       this.setUUID(var4.getId());
       this.gameProfile = var4;
       this.inventory = new Inventory(this, this.equipment);
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
+      this.campfireRecipeCache = RecipeManager.<SingleRecipeInput, CampfireCookingRecipe>createCheck(RecipeType.CAMPFIRE_COOKING);
       this.snapTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
+   }
+
+   public boolean isActive(Holder<PlayerUnlock> var1) {
+      return false;
+   }
+
+   public boolean isUnlocked(Holder<PlayerUnlock> var1) {
+      return false;
+   }
+
+   public boolean buyUnlock(Holder<PlayerUnlock> var1) {
+      if (this.experienceLevel >= ((PlayerUnlock)var1.value()).unlockPrice() && !this.isUnlocked(var1)) {
+         if (((PlayerUnlock)var1.value()).parent().isPresent()) {
+            Holder var2 = (Holder)((PlayerUnlock)var1.value()).parent().get();
+            return this.isUnlocked(var2);
+         } else {
+            return true;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   public void reactivateUnlock(Holder<PlayerUnlock> var1) {
+   }
+
+   public boolean canDonateExperienceToMineCrafter() {
+      int var1 = this.getTotalExperienceBasedOnLevels();
+      return var1 >= 20;
+   }
+
+   public boolean donateExperienceToMineCrafter() {
+      return this.canDonateExperienceToMineCrafter();
    }
 
    protected EntityEquipment createEquipment() {
@@ -229,7 +280,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0).add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.ATTACK_SPEED).add(Attributes.LUCK).add(Attributes.BLOCK_INTERACTION_RANGE, 4.5).add(Attributes.ENTITY_INTERACTION_RANGE, 3.0).add(Attributes.BLOCK_BREAK_SPEED).add(Attributes.SUBMERGED_MINING_SPEED).add(Attributes.SNEAKING_SPEED).add(Attributes.MINING_EFFICIENCY).add(Attributes.SWEEPING_DAMAGE_RATIO);
+      return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0).add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.ATTACK_SPEED).add(Attributes.LUCK).add(Attributes.BLOCK_INTERACTION_RANGE, 4.5).add(Attributes.ENTITY_INTERACTION_RANGE, 3.0).add(Attributes.BLOCK_BREAK_SPEED).add(Attributes.SUBMERGED_MINING_SPEED).add(Attributes.SNEAKING_SPEED).add(Attributes.MINING_EFFICIENCY).add(Attributes.SWEEPING_DAMAGE_RATIO).add(Attributes.EXPERIENCE_GAIN_MODIFIER).add(Attributes.PICKUP_AREA_SIZE).add(Attributes.MAX_JUMPS);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -243,6 +294,82 @@ public abstract class Player extends LivingEntity {
    }
 
    public void tick() {
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         if (var1.isMine()) {
+            if (this.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE)) {
+               boolean var10 = this.cookInHand(var1, this.getMainHandItem());
+               var10 |= this.cookInHand(var1, this.getOffhandItem());
+               if (!var10 && this.random.nextInt(10) == 0) {
+                  Vec3 var3 = this.getEyePosition();
+                  var1.playSound((Entity)null, var3.x, var3.y, var3.z, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.1F + this.random.nextFloat() * 0.5F, this.random.nextFloat() * 0.7F + 0.6F);
+               }
+            }
+
+            if (this.isActive(PlayerUnlocks.DIRT_CONNOISSEUR) && this.getMainHandItem().is(ItemTags.DIRT) && !this.getMainHandItem().has(DataComponents.FOOD)) {
+               this.getMainHandItem().set(DataComponents.FOOD, (new FoodProperties.Builder()).nutrition(4).saturationModifier(0.3F).build());
+               this.getMainHandItem().set(DataComponents.CONSUMABLE, Consumables.defaultFood().build());
+            }
+
+            int var12 = 0;
+            var12 += this.isActive(PlayerUnlocks.DIRT_ENJOYER_1) ? 1 : 0;
+            var12 += this.isActive(PlayerUnlocks.DIRT_ENJOYER_2) ? 1 : 0;
+            var12 += this.isActive(PlayerUnlocks.DIRT_ENJOYER_3) ? 1 : 0;
+            var12 += this.isActive(PlayerUnlocks.DIRT_DESTROYER_1) ? 1 : 0;
+            var12 += this.isActive(PlayerUnlocks.DIRT_DESTROYER_2) ? 1 : 0;
+            var12 += this.isActive(PlayerUnlocks.DIRT_CONNOISSEUR) ? 1 : 0;
+            if (var12 > 0 && this.random.nextInt(600 / var12) == 0) {
+               for(ItemStack var4 : this.getInventory().getNonEquipmentItems()) {
+                  if (var4.is(ItemTags.DIRT)) {
+                     this.drop(var4.copyWithCount(1), true, false, false);
+                     var4.setCount(var4.getCount() - 1);
+                     break;
+                  }
+               }
+            }
+
+            if (this.isActive(PlayerUnlocks.DIRT_CONNOISSEUR) && this.random.nextInt(1200) == 0) {
+               this.drop(Items.DIRT.getDefaultInstance().copyWithCount(1), true, false, false);
+            }
+
+            AttributeInstance var23 = this.getAttribute(Attributes.MAX_HEALTH);
+            if (this.isAlive() && this.getHealth() > 1.0F && !this.isSpectator() && var1.isActive(WorldEffects.ONE_HP)) {
+               var23.addPermanentModifier(new AttributeModifier(ResourceLocation.withDefaultNamespace("one_hp"), -19.0, AttributeModifier.Operation.ADD_VALUE));
+               this.setHealth(1.0F);
+            } else if (!var1.isActive(WorldEffects.ONE_HP)) {
+               var23.removeModifier(ResourceLocation.withDefaultNamespace("one_hp"));
+            }
+         }
+      }
+
+      if (this.isActive(PlayerUnlocks.ARROWVERSE) && this.isHolding(Items.BOW)) {
+         var2 = this.level();
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var7 = (ServerLevel)var2;
+            if (var7.isMine() && this instanceof ServerPlayer) {
+               ServerPlayer var20 = (ServerPlayer)this;
+               --this.nextArrowRegen;
+               if (this.nextArrowRegen < 0) {
+                  ItemStack var24 = Items.ARROW.getDefaultInstance();
+                  int var25 = var20.getInventory().findSlotMatchingItem(var24);
+                  if (var25 == -1) {
+                     if (var20.getInventory().getFreeSlot() != -1) {
+                        this.nextArrowRegen = 600;
+                        var20.getInventory().add(var24.copyWithCount(16));
+                     }
+                  } else {
+                     ItemStack var5 = var20.getInventory().getItem(var25);
+                     int var6 = Math.min(var24.getMaxStackSize() - var5.getCount(), 16);
+                     if (var6 > 0) {
+                        this.nextArrowRegen = 600;
+                        var20.getInventory().add(var24.copyWithCount(var6));
+                     }
+                  }
+               }
+            }
+         }
+      }
+
       this.noPhysics = this.isSpectator();
       if (this.isSpectator() || this.isPassenger()) {
          this.setOnGround(false);
@@ -276,8 +403,8 @@ public abstract class Player extends LivingEntity {
       }
 
       this.moveCloak();
-      if (this instanceof ServerPlayer var1) {
-         this.foodData.tick(var1);
+      if (this instanceof ServerPlayer var8) {
+         this.foodData.tick(var8);
          this.awardStat(Stats.PLAY_TIME);
          this.awardStat(Stats.TOTAL_WORLD_TIME);
          if (this.isAlive()) {
@@ -293,25 +420,29 @@ public abstract class Player extends LivingEntity {
          }
       }
 
-      int var7 = 29999999;
-      double var2 = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
-      double var4 = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
-      if (var2 != this.getX() || var4 != this.getZ()) {
-         this.setPos(var2, this.getY(), var4);
+      int var9 = 29999999;
+      double var21 = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
+      double var26 = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
+      if (var21 != this.getX() || var26 != this.getZ()) {
+         this.setPos(var21, this.getY(), var26);
       }
 
       ++this.attackStrengthTicker;
-      ItemStack var6 = this.getMainHandItem();
-      if (!ItemStack.matches(this.lastItemInMainHand, var6)) {
-         if (!ItemStack.isSameItem(this.lastItemInMainHand, var6)) {
+      ItemStack var27 = this.getMainHandItem();
+      if (!ItemStack.matches(this.lastItemInMainHand, var27)) {
+         if (!ItemStack.isSameItem(this.lastItemInMainHand, var27)) {
             this.resetAttackStrengthTicker();
          }
 
-         this.lastItemInMainHand = var6.copy();
+         this.lastItemInMainHand = var27.copy();
       }
 
       if (!this.isEyeInFluid(FluidTags.WATER) && this.isEquipped(Items.TURTLE_HELMET)) {
          this.turtleHelmetTick();
+      }
+
+      if (this.isEquipped(Items.SHAZBOOTS)) {
+         this.shazbootsTick();
       }
 
       this.cooldowns.tick();
@@ -320,6 +451,47 @@ public abstract class Player extends LivingEntity {
          --this.currentImpulseContextResetGraceTime;
       }
 
+   }
+
+   public void cookParticleTick(ServerLevel var1, ItemStack var2) {
+      RandomSource var3 = var1.random;
+      Vec3 var4 = this.getHandHoldingItemAngle(var2.getItem());
+      Vec3 var5 = this.getEyePosition().add(var4.scale(0.8)).add(this.getLookAngle().scale(0.2));
+      if (var3.nextFloat() < 0.15F) {
+         var1.sendParticles(ParticleTypes.SMOKE, var5.x, var5.y - 0.5, var5.z, 1, 0.1, 0.0, 0.1, 0.02);
+      }
+
+      if (var3.nextFloat() < 0.05F) {
+         var1.sendParticles(ParticleTypes.LARGE_SMOKE, var5.x, var5.y - 0.5, var5.z, 1, 0.1, 0.0, 0.1, 0.02);
+      }
+
+      if (var3.nextFloat() < 0.03F) {
+         var1.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, var5.x, var5.y - 0.5, var5.z, 1, 0.1, 0.0, 0.1, 0.02);
+      }
+
+   }
+
+   private boolean cookInHand(ServerLevel var1, ItemStack var2) {
+      SingleRecipeInput var3 = new SingleRecipeInput(var2);
+      ItemStack var4 = (ItemStack)this.campfireRecipeCache.getRecipeFor(var3, var1).map((var2x) -> ((CampfireCookingRecipe)var2x.value()).assemble(var3, var1.registryAccess())).orElse(var2);
+      if (var4.isItemEnabled(this.level().enabledFeatures()) && var4 != var2) {
+         this.cookParticleTick(var1, var2);
+         Vec3 var5 = this.getEyePosition();
+         if (this.random.nextInt(10) == 0) {
+            var1.playSound((Entity)null, var5.x, var5.y, var5.z, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.5F + this.random.nextFloat() * 0.5F, this.random.nextFloat() * 0.7F + 0.6F);
+         }
+
+         if (this.random.nextInt(100) != 0) {
+            return true;
+         } else {
+            this.drop(var4.copyWithCount(1), false, true, true);
+            var1.playSound((Entity)null, var5.x, var5.y, var5.z, SoundEvents.GENERIC_BURN, SoundSource.BLOCKS, 1.5F, this.random.nextFloat() * 0.7F + 1.0F);
+            var2.setCount(var2.getCount() - 1);
+            return true;
+         }
+      } else {
+         return false;
+      }
    }
 
    protected float getMaxHeadRotationRelativeToBody() {
@@ -361,7 +533,11 @@ public abstract class Player extends LivingEntity {
       this.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 200, 0, false, false, true));
    }
 
-   private boolean isEquipped(Item var1) {
+   private void shazbootsTick() {
+      this.addEffect(new MobEffectInstance(MobEffects.SHAZBOOTS, 20, 0, false, false, true));
+   }
+
+   public boolean isEquipped(Item var1) {
       for(EquipmentSlot var3 : EquipmentSlot.VALUES) {
          ItemStack var4 = this.getItemBySlot(var3);
          Equippable var5 = (Equippable)var4.get(DataComponents.EQUIPPABLE);
@@ -500,7 +676,7 @@ public abstract class Player extends LivingEntity {
 
    }
 
-   protected void closeContainer() {
+   public void closeContainer() {
       this.containerMenu = this.inventoryMenu;
    }
 
@@ -543,26 +719,27 @@ public abstract class Player extends LivingEntity {
 
       this.bob += (var1 - this.bob) * 0.4F;
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
+         double var3 = this.getAttributeValue(Attributes.PICKUP_AREA_SIZE);
          AABB var2;
          if (this.isPassenger() && !this.getVehicle().isRemoved()) {
-            var2 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0, 0.0, 1.0);
+            var2 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0 * var3, 0.0 * var3, 1.0 * var3);
          } else {
-            var2 = this.getBoundingBox().inflate(1.0, 0.5, 1.0);
+            var2 = this.getBoundingBox().inflate(1.0 * var3, 0.5 * var3, 1.0 * var3);
          }
 
-         List var3 = this.level().getEntities(this, var2);
-         ArrayList var4 = Lists.newArrayList();
+         List var5 = this.level().getEntities(this, var2);
+         ArrayList var6 = Lists.newArrayList();
 
-         for(Entity var6 : var3) {
-            if (var6.getType() == EntityType.EXPERIENCE_ORB) {
-               var4.add(var6);
-            } else if (!var6.isRemoved()) {
-               this.touch(var6);
+         for(Entity var8 : var5) {
+            if (var8.getType() == EntityType.EXPERIENCE_ORB) {
+               var6.add(var8);
+            } else if (!var8.isRemoved()) {
+               this.touch(var8);
             }
          }
 
-         if (!var4.isEmpty()) {
-            this.touch((Entity)Util.getRandom(var4, this.random));
+         if (!var6.isEmpty()) {
+            this.touch((Entity)Util.getRandom(var6, this.random));
          }
       }
 
@@ -679,13 +856,28 @@ public abstract class Player extends LivingEntity {
 
    @Nullable
    public ItemEntity drop(ItemStack var1, boolean var2) {
-      return this.drop(var1, false, var2);
+      if (var1.is(ItemTags.DIRT)) {
+         var1.remove(DataComponents.FOOD);
+         var1.remove(DataComponents.CONSUMABLE);
+      }
+
+      return this.drop(var1, false, var2, true);
    }
 
    public float getDestroySpeed(BlockState var1) {
       float var2 = this.inventory.getSelectedItem().getDestroySpeed(var1);
       if (var2 > 1.0F) {
          var2 += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
+      }
+
+      if (var1.is(BlockTags.DIRT) && (this.getMainHandItem().isEmpty() || this.getMainHandItem().is(ItemTags.DIRT))) {
+         if (this.isActive(PlayerUnlocks.DIRT_DESTROYER_1)) {
+            var2 += 10.0F;
+         }
+
+         if (this.isActive(PlayerUnlocks.DIRT_DESTROYER_2)) {
+            var2 += 10.0F;
+         }
       }
 
       if (MobEffectUtil.hasDigSpeed(this)) {
@@ -1031,6 +1223,14 @@ public abstract class Player extends LivingEntity {
             float var2 = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
             ItemStack var3 = this.getWeaponItem();
             DamageSource var4 = (DamageSource)Optional.ofNullable(var3.getItem().getDamageSource(this)).orElse(this.damageSources().playerAttack(this));
+            if (var3.isEmpty() && this.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE)) {
+               var1.igniteForSeconds(5.0F);
+            }
+
+            if (this.isActive(PlayerUnlocks.SHIELD_BASH) && var3.is(Items.SHIELD)) {
+               var2 += 3.0F;
+            }
+
             float var5 = this.getEnchantedDamage(var1, var2, var4) - var2;
             float var6 = this.getAttackStrengthScale(0.5F);
             var2 *= 0.2F + var6 * var6 * 0.8F;
@@ -1178,11 +1378,18 @@ public abstract class Player extends LivingEntity {
                   }
 
                   if (var1 instanceof LivingEntity) {
-                     float var34 = var27 - ((LivingEntity)var1).getHealth();
-                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var34 * 10.0F));
-                     if (this.level() instanceof ServerLevel && var34 > 2.0F) {
-                        int var37 = (int)((double)var34 * 0.5);
-                        ((ServerLevel)this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var37, 0.1, 0.0, 0.1, 0.2);
+                     LivingEntity var34 = (LivingEntity)var1;
+                     float var37 = var27 - var34.getHealth();
+                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var37 * 10.0F));
+                     if (this.level() instanceof ServerLevel && var37 > 2.0F) {
+                        int var39 = (int)((double)var37 * 0.5);
+                        ((ServerLevel)this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var39, 0.1, 0.0, 0.1, 0.2);
+                     }
+
+                     if (this.isActive(PlayerUnlocks.SHIELD_BASH) && var3.is(Items.SHIELD)) {
+                        var34.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 126), this);
+                        var34.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 126), this);
+                        this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), (Holder)SoundEvents.SHIELD_BLOCK, this.getSoundSource(), 1.0F, 1.0F);
                      }
                   }
 
@@ -1507,14 +1714,17 @@ public abstract class Player extends LivingEntity {
    }
 
    public void onEnchantmentPerformed(ItemStack var1, int var2) {
-      this.experienceLevel -= var2;
-      if (this.experienceLevel < 0) {
-         this.experienceLevel = 0;
-         this.experienceProgress = 0.0F;
-         this.totalExperience = 0;
+      if (!this.isActive(PlayerUnlocks.EFFICIENT_ENCHANTING) || this.random.nextBoolean()) {
+         this.experienceLevel -= var2;
+         if (this.experienceLevel < 0) {
+            this.experienceLevel = 0;
+            this.experienceProgress = 0.0F;
+            this.totalExperience = 0;
+         }
+
+         this.enchantmentSeed = this.random.nextInt();
       }
 
-      this.enchantmentSeed = this.random.nextInt();
    }
 
    public void giveExperienceLevels(int var1) {
@@ -1534,10 +1744,25 @@ public abstract class Player extends LivingEntity {
    }
 
    public int getXpNeededForNextLevel() {
-      if (this.experienceLevel >= 30) {
-         return 112 + (this.experienceLevel - 30) * 9;
+      return getXpNeededForLevel(this.experienceLevel);
+   }
+
+   public int getTotalExperienceBasedOnLevels() {
+      int var1 = (int)((float)this.getXpNeededForNextLevel() * this.experienceProgress);
+      int var2 = 0;
+
+      for(int var3 = 0; var3 < this.experienceLevel; ++var3) {
+         var2 += getXpNeededForLevel(var3);
+      }
+
+      return var2 + var1;
+   }
+
+   public static int getXpNeededForLevel(int var0) {
+      if (var0 >= 30) {
+         return 112 + (var0 - 30) * 9;
       } else {
-         return this.experienceLevel >= 15 ? 37 + (this.experienceLevel - 15) * 5 : 7 + this.experienceLevel * 2;
+         return var0 >= 15 ? 37 + (var0 - 15) * 5 : 7 + Math.max(0, var0) * 2;
       }
    }
 
@@ -1611,8 +1836,31 @@ public abstract class Player extends LivingEntity {
       return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR;
    }
 
+   public void addOrDropItem(ItemStack var1) {
+      if (!this.addItem(var1)) {
+         ItemEntity var2 = this.drop(var1, false);
+         if (var2 != null) {
+            var2.setNoPickUpDelay();
+            var2.setTarget(this.getUUID());
+         }
+
+      }
+   }
+
    public boolean addItem(ItemStack var1) {
-      return this.inventory.add(var1);
+      if (this.isActive(PlayerUnlocks.DIRT_CONNOISSEUR) && var1.is(ItemTags.DIRT)) {
+         var1.set(DataComponents.FOOD, (new FoodProperties.Builder()).nutrition(4).saturationModifier(0.3F).build());
+         var1.set(DataComponents.CONSUMABLE, Consumables.defaultFood().build());
+         if (!this.inventory.add(var1)) {
+            var1.remove(DataComponents.FOOD);
+            var1.remove(DataComponents.CONSUMABLE);
+            return false;
+         } else {
+            return true;
+         }
+      } else {
+         return this.inventory.add(var1);
+      }
    }
 
    public boolean setEntityOnShoulder(CompoundTag var1) {
@@ -1724,7 +1972,7 @@ public abstract class Player extends LivingEntity {
          };
       } else {
          final int var2 = var1 - 500;
-         if (var2 >= 0 && var2 < 4) {
+         if (var2 >= 0 && var2 < 9) {
             return new SlotAccess() {
                public ItemStack get() {
                   return Player.this.inventoryMenu.getCraftSlots().getItem(var2);
@@ -2019,7 +2267,8 @@ public abstract class Player extends LivingEntity {
       TOO_FAR_AWAY(Component.translatable("block.minecraft.bed.too_far_away")),
       OBSTRUCTED(Component.translatable("block.minecraft.bed.obstructed")),
       OTHER_PROBLEM,
-      NOT_SAFE(Component.translatable("block.minecraft.bed.not_safe"));
+      NOT_SAFE(Component.translatable("block.minecraft.bed.not_safe")),
+      NO_SLEEP_FOR_YOU(Component.translatable("block.minecraft.bed.no_sleep_for_you"));
 
       @Nullable
       private final Component message;
@@ -2039,7 +2288,7 @@ public abstract class Player extends LivingEntity {
 
       // $FF: synthetic method
       private static BedSleepingProblem[] $values() {
-         return new BedSleepingProblem[]{NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OBSTRUCTED, OTHER_PROBLEM, NOT_SAFE};
+         return new BedSleepingProblem[]{NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OBSTRUCTED, OTHER_PROBLEM, NOT_SAFE, NO_SLEEP_FOR_YOU};
       }
    }
 }

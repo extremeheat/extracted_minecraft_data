@@ -37,6 +37,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
@@ -52,6 +53,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.util.MemoryReserve;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -123,13 +125,13 @@ public class WorldOpenFlows {
       this.minecraft.doWorldLoad(var1, var5, new WorldStem(var6, var2, var3, var4), true);
    }
 
-   public WorldStem loadWorldStem(Dynamic<?> var1, boolean var2, PackRepository var3) throws Exception {
-      WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var1, var3, var2);
-      return (WorldStem)this.loadWorldDataBlocking(var4, (var1x) -> {
+   public static WorldStem loadWorldStem(Dynamic<?> var0, boolean var1, PackRepository var2, BlockableEventLoop<?> var3) throws Exception {
+      WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var0, var2, var1);
+      return (WorldStem)loadWorldDataBlocking(var4, (var1x) -> {
          Registry var2 = var1x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
-         LevelDataAndDimensions var3 = LevelStorageSource.getLevelDataAndDimensions(var1, var1x.dataConfiguration(), var2, var1x.datapackWorldgen());
+         LevelDataAndDimensions var3 = LevelStorageSource.getLevelDataAndDimensions(var0, var1x.dataConfiguration(), var2, var1x.datapackWorldgen());
          return new WorldLoader.DataLoadOutput(var3.worldData(), var3.dimensions().dimensionsRegistryAccess());
-      }, WorldStem::new);
+      }, WorldStem::new, var3);
    }
 
    public Pair<LevelSettings, WorldCreationContext> recreateWorldData(LevelStorageSource.LevelStorageAccess var1) throws Exception {
@@ -138,7 +140,7 @@ public class WorldOpenFlows {
       WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var3, var2, false);
       return (Pair)this.loadWorldDataBlocking(var4, (var1x) -> {
          Registry var2 = (new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-         LevelDataAndDimensions var3x = LevelStorageSource.getLevelDataAndDimensions(var3, var1x.dataConfiguration(), var2, var1x.datapackWorldgen());
+         LevelDataAndDimensions var3x = LevelStorageSource.getLevelDataAndDimensions(var3, var1x.dataConfiguration(), var2, var1x.datapackWorldgen(), true);
 
          record 1Data(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
             final LevelSettings levelSettings;
@@ -162,11 +164,14 @@ public class WorldOpenFlows {
    }
 
    private <D, R> R loadWorldDataBlocking(WorldLoader.PackConfig var1, WorldLoader.WorldDataSupplier<D> var2, WorldLoader.ResultFactory<D, R> var3) throws Exception {
-      WorldLoader.InitConfig var4 = new WorldLoader.InitConfig(var1, Commands.CommandSelection.INTEGRATED, 2);
-      CompletableFuture var5 = WorldLoader.load(var4, var2, var3, Util.backgroundExecutor(), this.minecraft);
-      Minecraft var10000 = this.minecraft;
+      return (R)loadWorldDataBlocking(var1, var2, var3, this.minecraft);
+   }
+
+   private static <D, R> R loadWorldDataBlocking(WorldLoader.PackConfig var0, WorldLoader.WorldDataSupplier<D> var1, WorldLoader.ResultFactory<D, R> var2, BlockableEventLoop<?> var3) throws Exception {
+      WorldLoader.InitConfig var4 = new WorldLoader.InitConfig(var0, Commands.CommandSelection.INTEGRATED, 2);
+      CompletableFuture var5 = WorldLoader.load(var4, var1, var2, Util.backgroundExecutor(), var3);
       Objects.requireNonNull(var5);
-      var10000.managedBlock(var5::isDone);
+      var3.managedBlock(var5::isDone);
       return (R)var5.get();
    }
 
@@ -291,13 +296,11 @@ public class WorldOpenFlows {
 
       WorldStem var6;
       try {
-         var6 = this.loadWorldStem(var2, var3, var5);
-
-         for(LevelStem var8 : var6.registries().compositeAccess().lookupOrThrow(Registries.LEVEL_STEM)) {
-            var8.generator().validate();
-         }
-      } catch (Exception var9) {
-         LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var9);
+         var6 = loadWorldStem(var2, var3, var5, this.minecraft);
+         RegistryAccess.Frozen var7 = var6.registries().compositeAccess();
+         var7.lookupOrThrow(Registries.LEVEL_STEM).listElements().forEach((var1x) -> LevelStem.generator(var7, var1x).validate());
+      } catch (Exception var8) {
+         LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var8);
          if (!var3) {
             this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> {
                var1.safeClose();
@@ -317,15 +320,14 @@ public class WorldOpenFlows {
    private void openWorldCheckWorldStemCompatibility(LevelStorageSource.LevelStorageAccess var1, WorldStem var2, PackRepository var3, Runnable var4) {
       WorldData var5 = var2.worldData();
       boolean var6 = var5.worldGenOptions().isOldCustomizedWorld();
-      boolean var7 = var5.worldGenSettingsLifecycle() != Lifecycle.stable();
-      if (!var6 && !var7) {
-         this.openWorldLoadBundledResourcePack(var1, var2, var3, var4);
-      } else {
+      if (var6) {
          this.askForBackup(var1, var6, () -> this.openWorldLoadBundledResourcePack(var1, var2, var3, var4), () -> {
             var2.close();
             var1.safeClose();
             var4.run();
          });
+      } else {
+         this.openWorldLoadBundledResourcePack(var1, var2, var3, var4);
       }
    }
 

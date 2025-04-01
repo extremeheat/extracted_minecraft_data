@@ -17,7 +17,7 @@ public class SayCommand {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("say").requires((var0x) -> var0x.hasPermission(2))).then(Commands.argument("message", MessageArgument.message()).executes((var0x) -> {
          MessageArgument.resolveChatMessage(var0x, "message", (var1) -> {
             CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
-            PlayerList var3 = var2.getServer().getPlayerList();
+            PlayerList var3 = var2.playerList();
             var3.broadcastChatMessage(var1, var2, ChatType.bind(ChatType.SAY_COMMAND, var2));
          });
          return 1;

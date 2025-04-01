@@ -12,12 +12,13 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,18 +33,20 @@ public class ChaseClient {
    private static final int RECONNECT_INTERVAL_SECONDS = 5;
    private final String serverHost;
    private final int serverPort;
-   private final MinecraftServer server;
+   private final TheGame theGame;
+   private final Executor mainThreadExecutor;
    private volatile boolean wantsToRun;
    @Nullable
    private Socket socket;
    @Nullable
    private Thread thread;
 
-   public ChaseClient(String var1, int var2, MinecraftServer var3) {
+   public ChaseClient(String var1, int var2, TheGame var3, Executor var4) {
       super();
       this.serverHost = var1;
       this.serverPort = var2;
-      this.server = var3;
+      this.theGame = var3;
+      this.mainThreadExecutor = var4;
    }
 
    public void start() {
@@ -162,14 +165,15 @@ public class ChaseClient {
    }
 
    private void executeCommand(String var1) {
-      this.server.execute(() -> {
-         List var2 = this.server.getPlayerList().getPlayers();
+      this.mainThreadExecutor.execute(() -> {
+         List var2 = this.theGame.playerList().getPlayers();
          if (!var2.isEmpty()) {
             ServerPlayer var3 = (ServerPlayer)var2.get(0);
-            ServerLevel var4 = this.server.overworld();
-            CommandSourceStack var5 = new CommandSourceStack(var3.commandSource(), Vec3.atLowerCornerOf(var4.getSharedSpawnPos()), Vec2.ZERO, var4, 4, "", CommonComponents.EMPTY, this.server, var3);
-            Commands var6 = this.server.getCommands();
-            var6.performPrefixedCommand(var5, var1);
+            TheGame var4 = var3.theGame();
+            ServerLevel var5 = var4.overworld();
+            CommandSourceStack var6 = new CommandSourceStack(var3.commandSource(), Vec3.atLowerCornerOf(var5.getSharedSpawnPos()), Vec2.ZERO, var5, 4, "", CommonComponents.EMPTY, var4, var3);
+            Commands var7 = var4.getCommands();
+            var7.performPrefixedCommand(var6, var1);
          }
       });
    }

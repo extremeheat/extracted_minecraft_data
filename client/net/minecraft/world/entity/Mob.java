@@ -24,6 +24,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -396,6 +397,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected void dropFromLootTable(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropFromLootTable(var1, var2, var3);
+      if (var3) {
+         Entity var5 = var2.getEntity();
+         if (var5 instanceof Player) {
+            Player var4 = (Player)var5;
+            if (var4.isActive(PlayerUnlocks.HUNTER)) {
+            }
+         }
+      }
+
       this.lootTable = Optional.empty();
    }
 

@@ -23,6 +23,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"anvil", AnvilBlock.CODEC);
       Registry.register(var0, (String)"attached_stem", AttachedStemBlock.CODEC);
       Registry.register(var0, (String)"azalea", AzaleaBlock.CODEC);
+      Registry.register(var0, (String)"mob_trophy", MobTrophyBlock.CODEC);
       Registry.register(var0, (String)"bamboo_sapling", BambooSaplingBlock.CODEC);
       Registry.register(var0, (String)"bamboo_stalk", BambooStalkBlock.CODEC);
       Registry.register(var0, (String)"banner", BannerBlock.CODEC);
@@ -55,6 +56,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"carpet", CarpetBlock.CODEC);
       Registry.register(var0, (String)"carrot", CarrotBlock.CODEC);
       Registry.register(var0, (String)"cartography_table", CartographyTableBlock.CODEC);
+      Registry.register(var0, (String)"mine_crafter", MineCrafterBlock.CODEC);
       Registry.register(var0, (String)"cauldron", CauldronBlock.CODEC);
       Registry.register(var0, (String)"cave_vines", CaveVinesBlock.CODEC);
       Registry.register(var0, (String)"cave_vines_plant", CaveVinesPlantBlock.CODEC);
@@ -87,6 +89,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"dirt_path", DirtPathBlock.CODEC);
       Registry.register(var0, (String)"dispenser", DispenserBlock.CODEC);
       Registry.register(var0, (String)"door", DoorBlock.CODEC);
+      Registry.register(var0, (String)"shimmering_door", ShimmeringDoorBlock.CODEC);
       Registry.register(var0, (String)"double_plant", DoublePlantBlock.CODEC);
       Registry.register(var0, (String)"dragon_egg", DragonEggBlock.CODEC);
       Registry.register(var0, (String)"drop_experience", DropExperienceBlock.CODEC);
@@ -94,8 +97,8 @@ public class BlockTypes {
       Registry.register(var0, (String)"enchantment_table", EnchantingTableBlock.CODEC);
       Registry.register(var0, (String)"ender_chest", EnderChestBlock.CODEC);
       Registry.register(var0, (String)"end_gateway", EndGatewayBlock.CODEC);
-      Registry.register(var0, (String)"end_portal", EndPortalBlock.CODEC);
-      Registry.register(var0, (String)"end_portal_frame", EndPortalFrameBlock.CODEC);
+      Registry.register(var0, (String)"mine_travelling_block", MineTravellingBlock.CODEC);
+      Registry.register(var0, (String)"mine_revisitor_block", MineRevisitorBlock.CODEC);
       Registry.register(var0, (String)"end_rod", EndRodBlock.CODEC);
       Registry.register(var0, (String)"eyeblossom", EyeblossomBlock.CODEC);
       Registry.register(var0, (String)"farm", FarmBlock.CODEC);
@@ -270,6 +273,8 @@ public class BlockTypes {
       Registry.register(var0, (String)"wither_rose", WitherRoseBlock.CODEC);
       Registry.register(var0, (String)"wither_skull", WitherSkullBlock.CODEC);
       Registry.register(var0, (String)"wither_wall_skull", WitherWallSkullBlock.CODEC);
+      Registry.register(var0, (String)"trophy", TrophyBlock.CODEC);
+      Registry.register(var0, (String)"dimension_control", DimensionControlBlock.CODEC);
       return (MapCodec)Registry.register(var0, (String)"wool_carpet", WoolCarpetBlock.CODEC);
    }
 

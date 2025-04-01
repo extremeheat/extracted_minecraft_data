@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.List;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
@@ -25,9 +26,11 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
    public static final MenuType<EnchantmentMenu> ENCHANTMENT = register("enchantment", EnchantmentMenu::new);
    public static final MenuType<FurnaceMenu> FURNACE = register("furnace", FurnaceMenu::new);
    public static final MenuType<GrindstoneMenu> GRINDSTONE = register("grindstone", GrindstoneMenu::new);
+   public static final MenuType<DimensionControlMenu> DIMENSION_CONTROL = register("dimension_control", DimensionControlMenu::new);
    public static final MenuType<HopperMenu> HOPPER = register("hopper", HopperMenu::new);
-   public static final MenuType<LecternMenu> LECTERN = register("lectern", (var0, var1) -> new LecternMenu(var0));
+   public static final MenuType<LecternMenu> LECTERN = register("lectern", (var0, var1, var2) -> new LecternMenu(var0));
    public static final MenuType<LoomMenu> LOOM = register("loom", LoomMenu::new);
+   public static final MenuType<MineCraftingMenu> MAP_MAKING = register("map_making", MineCraftingMenu::new);
    public static final MenuType<MerchantMenu> MERCHANT = register("merchant", MerchantMenu::new);
    public static final MenuType<ShulkerBoxMenu> SHULKER_BOX = register("shulker_box", ShulkerBoxMenu::new);
    public static final MenuType<SmithingMenu> SMITHING = register("smithing", SmithingMenu::new);
@@ -51,8 +54,8 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
       this.requiredFeatures = var2;
    }
 
-   public T create(int var1, Inventory var2) {
-      return this.constructor.create(var1, var2);
+   public T create(int var1, Inventory var2, List<Integer> var3) {
+      return this.constructor.create(var1, var2, var3);
    }
 
    public FeatureFlagSet requiredFeatures() {
@@ -60,6 +63,6 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
    }
 
    interface MenuSupplier<T extends AbstractContainerMenu> {
-      T create(int var1, Inventory var2);
+      T create(int var1, Inventory var2, List<Integer> var3);
    }
 }

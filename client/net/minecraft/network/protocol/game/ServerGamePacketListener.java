@@ -61,6 +61,10 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1);
 
+   void handleBuyUnlock(ServerboundPlayerBuyUnlockPacket var1);
+
+   void handleReactivateUnlock(ServerboundPlayerReactivateUnlockPacket var1);
+
    void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1);
 
    void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket var1);
@@ -116,4 +120,6 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
    void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1);
 
    void handleClientTickEnd(ServerboundClientTickEndPacket var1);
+
+   void handlePlayerDonateExperience(ServerboundPlayerDonateExperiencePacket var1);
 }

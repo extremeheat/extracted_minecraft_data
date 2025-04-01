@@ -47,6 +47,8 @@ public class MiscOverworldPlacements {
    public static final ResourceKey<PlacedFeature> SPRING_LAVA = PlacementUtils.createKey("spring_lava");
    public static final ResourceKey<PlacedFeature> SPRING_LAVA_FROZEN = PlacementUtils.createKey("spring_lava_frozen");
    public static final ResourceKey<PlacedFeature> SPRING_WATER = PlacementUtils.createKey("spring_water");
+   public static final ResourceKey<PlacedFeature> SURFACE_MINE_EXIT = PlacementUtils.createKey("surface_mine_exit");
+   public static final ResourceKey<PlacedFeature> CAVE_MINE_EXIT = PlacementUtils.createKey("cave_mine_exit");
 
    public MiscOverworldPlacements() {
       super();

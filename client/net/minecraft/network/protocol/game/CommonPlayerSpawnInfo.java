@@ -1,5 +1,6 @@
 package net.minecraft.network.protocol.game;
 
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.GlobalPos;
@@ -7,17 +8,19 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.mines.WorldEffect;
 
-public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, ResourceKey<Level> dimension, long seed, GameType gameType, @Nullable GameType previousGameType, boolean isDebug, boolean isFlat, Optional<GlobalPos> lastDeathLocation, int portalCooldown, int seaLevel) {
+public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, ResourceKey<Level> dimension, long seed, GameType gameType, @Nullable GameType previousGameType, boolean isDebug, boolean isFlat, Optional<GlobalPos> lastDeathLocation, int portalCooldown, int seaLevel, boolean isMap, List<WorldEffect> unlockedEffects, List<WorldEffect> activeEffects) {
    public CommonPlayerSpawnInfo(RegistryFriendlyByteBuf var1) {
-      this((Holder)DimensionType.STREAM_CODEC.decode(var1), var1.readResourceKey(Registries.DIMENSION), var1.readLong(), GameType.byId(var1.readByte()), GameType.byNullableId(var1.readByte()), var1.readBoolean(), var1.readBoolean(), var1.readOptional(FriendlyByteBuf::readGlobalPos), var1.readVarInt(), var1.readVarInt());
+      this((Holder)DimensionType.STREAM_CODEC.decode(var1), var1.readResourceKey(Registries.DIMENSION), var1.readLong(), GameType.byId(var1.readByte()), GameType.byNullableId(var1.readByte()), var1.readBoolean(), var1.readBoolean(), var1.readOptional(FriendlyByteBuf::readGlobalPos), var1.readVarInt(), var1.readVarInt(), var1.readBoolean(), (List)WorldEffect.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(var1), (List)WorldEffect.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(var1));
    }
 
-   public CommonPlayerSpawnInfo(Holder<DimensionType> var1, ResourceKey<Level> var2, long var3, GameType var5, @Nullable GameType var6, boolean var7, boolean var8, Optional<GlobalPos> var9, int var10, int var11) {
+   public CommonPlayerSpawnInfo(Holder<DimensionType> var1, ResourceKey<Level> var2, long var3, GameType var5, @Nullable GameType var6, boolean var7, boolean var8, Optional<GlobalPos> var9, int var10, int var11, boolean var12, List<WorldEffect> var13, List<WorldEffect> var14) {
       super();
       this.dimensionType = var1;
       this.dimension = var2;
@@ -29,6 +32,9 @@ public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, Resourc
       this.lastDeathLocation = var9;
       this.portalCooldown = var10;
       this.seaLevel = var11;
+      this.isMap = var12;
+      this.unlockedEffects = var13;
+      this.activeEffects = var14;
    }
 
    public void write(RegistryFriendlyByteBuf var1) {
@@ -42,5 +48,8 @@ public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, Resourc
       var1.writeOptional(this.lastDeathLocation, FriendlyByteBuf::writeGlobalPos);
       var1.writeVarInt(this.portalCooldown);
       var1.writeVarInt(this.seaLevel);
+      var1.writeBoolean(this.isMap);
+      WorldEffect.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(var1, this.unlockedEffects);
+      WorldEffect.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(var1, this.activeEffects);
    }
 }

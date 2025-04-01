@@ -26,13 +26,13 @@ public class KickCommand {
    }
 
    private static int kickPlayers(CommandSourceStack var0, Collection<ServerPlayer> var1, Component var2) throws CommandSyntaxException {
-      if (!var0.getServer().isPublished()) {
+      if (!var0.theGame().server().isPublished()) {
          throw ERROR_SINGLEPLAYER.create();
       } else {
          int var3 = 0;
 
          for(ServerPlayer var5 : var1) {
-            if (!var0.getServer().isSingleplayerOwner(var5.getGameProfile())) {
+            if (!var0.theGame().server().isSingleplayerOwner(var5.getGameProfile())) {
                var5.connection.disconnect(var2);
                var0.sendSuccess(() -> Component.translatable("commands.kick.success", var5.getDisplayName(), var2), true);
                ++var3;

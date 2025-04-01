@@ -101,6 +101,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> PANDA_SNEEZE;
    public static final ResourceKey<LootTable> CHICKEN_LAY;
    public static final ResourceKey<LootTable> ARMADILLO_SHED;
+   public static final ResourceKey<LootTable> ROOM_REWARD;
    public static final ResourceKey<LootTable> PIGLIN_BARTERING;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_KEY;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_CONSUMABLES;
@@ -120,6 +121,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> TRAIL_RUINS_ARCHAEOLOGY_RARE;
    public static final ResourceKey<LootTable> OCEAN_RUIN_WARM_ARCHAEOLOGY;
    public static final ResourceKey<LootTable> OCEAN_RUIN_COLD_ARCHAEOLOGY;
+   public static final ResourceKey<LootTable> EAT_YOUR_VEGGIES;
 
    public BuiltInLootTables() {
       super();
@@ -235,6 +237,7 @@ public class BuiltInLootTables {
       PANDA_SNEEZE = register("gameplay/panda_sneeze");
       CHICKEN_LAY = register("gameplay/chicken_lay");
       ARMADILLO_SHED = register("gameplay/armadillo_shed");
+      ROOM_REWARD = register("gameplay/room_rewards");
       PIGLIN_BARTERING = register("gameplay/piglin_bartering");
       SPAWNER_TRIAL_CHAMBER_KEY = register("spawners/trial_chamber/key");
       SPAWNER_TRIAL_CHAMBER_CONSUMABLES = register("spawners/trial_chamber/consumables");
@@ -254,5 +257,6 @@ public class BuiltInLootTables {
       TRAIL_RUINS_ARCHAEOLOGY_RARE = register("archaeology/trail_ruins_rare");
       OCEAN_RUIN_WARM_ARCHAEOLOGY = register("archaeology/ocean_ruin_warm");
       OCEAN_RUIN_COLD_ARCHAEOLOGY = register("archaeology/ocean_ruin_cold");
+      EAT_YOUR_VEGGIES = register("mines/eat_your_veggies");
    }
 }

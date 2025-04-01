@@ -30,15 +30,15 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.progress.LoggerChunkProgressListener;
+import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.datafix.DataFixers;
-import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -62,58 +62,64 @@ public class GameTestServer extends MinecraftServer {
    private static final int PROGRESS_REPORT_INTERVAL = 20;
    private static final int TEST_POSITION_RANGE = 14999992;
    private static final Services NO_SERVICES;
-   private static final FeatureFlagSet ENABLED_FEATURES;
-   private final LocalSampleLogger sampleLogger = new LocalSampleLogger(4);
+   public static final FeatureFlagSet ENABLED_FEATURES;
    private final Optional<String> testSelection;
    private final boolean verify;
    private List<GameTestBatch> testBatches = new ArrayList();
    private final Stopwatch stopwatch = Stopwatch.createUnstarted();
-   private static final WorldOptions WORLD_OPTIONS;
+   public static final WorldOptions WORLD_OPTIONS;
    @Nullable
    private MultipleTestTracker testTracker;
 
-   public static GameTestServer create(Thread var0, LevelStorageSource.LevelStorageAccess var1, PackRepository var2, Optional<String> var3, boolean var4) {
-      var2.reload();
-      ArrayList var5 = new ArrayList(var2.getAvailableIds());
-      var5.remove("vanilla");
-      var5.addFirst("vanilla");
-      WorldDataConfiguration var6 = new WorldDataConfiguration(new DataPackConfig(var5, List.of()), ENABLED_FEATURES);
-      LevelSettings var7 = new LevelSettings("Test Level", GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(ENABLED_FEATURES), var6);
-      WorldLoader.PackConfig var8 = new WorldLoader.PackConfig(var2, var6, false, true);
-      WorldLoader.InitConfig var9 = new WorldLoader.InitConfig(var8, Commands.CommandSelection.DEDICATED, 4);
+   public static WorldStem createWorldStem(PackRepository var0) {
+      var0.reload();
+      ArrayList var1 = new ArrayList(var0.getAvailableIds());
+      var1.remove("vanilla");
+      var1.addFirst("vanilla");
+      WorldDataConfiguration var2 = new WorldDataConfiguration(new DataPackConfig(var1, List.of()), ENABLED_FEATURES);
+      LevelSettings var3 = new LevelSettings("Test Level", GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(ENABLED_FEATURES), var2);
+      WorldLoader.PackConfig var4 = new WorldLoader.PackConfig(var0, var2, false, true);
+      WorldLoader.InitConfig var5 = new WorldLoader.InitConfig(var4, Commands.CommandSelection.DEDICATED, 4);
 
       try {
          LOGGER.debug("Starting resource loading");
-         Stopwatch var10 = Stopwatch.createStarted();
-         WorldStem var11 = (WorldStem)Util.blockUntilDone((var2x) -> WorldLoader.load(var9, (var1) -> {
+         Stopwatch var6 = Stopwatch.createStarted();
+         WorldStem var7 = (WorldStem)Util.blockUntilDone((var2x) -> WorldLoader.load(var5, (var1) -> {
                Registry var2 = (new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-               WorldDimensions.Complete var3 = ((WorldPreset)var1.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions().bake(var2);
-               return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var7, WORLD_OPTIONS, var3.specialWorldProperty(), var3.lifecycle()), var3.dimensionsRegistryAccess());
+               WorldDimensions.Complete var3x = ((WorldPreset)var1.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions().bake(var2);
+               return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var3, WORLD_OPTIONS, var3x.specialWorldProperty(), var3x.lifecycle()), var3x.dimensionsRegistryAccess());
             }, WorldStem::new, Util.backgroundExecutor(), var2x)).get();
-         var10.stop();
-         LOGGER.debug("Finished resource loading after {} ms", var10.elapsed(TimeUnit.MILLISECONDS));
-         return new GameTestServer(var0, var1, var2, var11, var3, var4);
-      } catch (Exception var12) {
-         LOGGER.warn("Failed to load vanilla datapack, bit oops", var12);
+         var6.stop();
+         LOGGER.debug("Finished resource loading after {} ms", var6.elapsed(TimeUnit.MILLISECONDS));
+         return var7;
+      } catch (Exception var8) {
+         LOGGER.warn("Failed to load vanilla datapack, bit oops", var8);
          System.exit(-1);
          throw new IllegalStateException();
       }
    }
 
-   private GameTestServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Optional<String> var5, boolean var6) {
-      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggerChunkProgressListener::createFromGameruleRadius);
-      this.testSelection = var5;
-      this.verify = var6;
+   public static GameTestServer create(Thread var0, LevelStorageSource.LevelStorageAccess var1, Optional<String> var2, boolean var3) {
+      return new GameTestServer(var0, var1, var2, var3);
+   }
+
+   private GameTestServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, Optional<String> var3, boolean var4) {
+      super(var1, var2, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES);
+      this.testSelection = var3;
+      this.verify = var4;
    }
 
    public boolean initServer() {
-      this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, 1) {
-      });
-      this.loadLevel();
-      ServerLevel var1 = this.overworld();
-      this.testBatches = this.evaluateTestsToRun(var1);
-      LOGGER.info("Started game test server");
       return true;
+   }
+
+   public TheGame initGame(PackRepository var1, WorldStem var2, ChunkProgressListenerFactory var3) {
+      TheGame var4 = TheGame.create(this, var1, var2, this.storageSource, var3, (var1x) -> new PlayerList(var1x, this.playerDataStorage, 1) {
+         });
+      ServerLevel var5 = var4.overworld();
+      this.testBatches = this.evaluateTestsToRun(var5);
+      LOGGER.info("Started game test server");
+      return var4;
    }
 
    private List<GameTestBatch> evaluateTestsToRun(ServerLevel var1) {
@@ -153,14 +159,14 @@ public class GameTestServer extends MinecraftServer {
       return ResourceSelectorArgument.parse(new StringReader(var1), var0.lookupOrThrow(Registries.TEST_INSTANCE)).stream();
    }
 
-   public void tickServer(BooleanSupplier var1) {
-      super.tickServer(var1);
-      ServerLevel var2 = this.overworld();
+   public void tickServer(TheGame var1, BooleanSupplier var2) {
+      super.tickServer(var1, var2);
+      ServerLevel var3 = var1.overworld();
       if (!this.haveTestsStarted()) {
-         this.startTests(var2);
+         this.startTests(var3);
       }
 
-      if (var2.getGameTime() % 20L == 0L) {
+      if (var3.getGameTime() % 20L == 0L) {
          LOGGER.info(this.testTracker.getProgressBar());
       }
 
@@ -195,12 +201,8 @@ public class GameTestServer extends MinecraftServer {
 
    }
 
-   public SampleLogger getTickTimeLogger() {
-      return this.sampleLogger;
-   }
-
-   public boolean isTickTimeLoggingEnabled() {
-      return false;
+   public SampleLogger getTickTimeLoggerIfEnabled() {
+      return null;
    }
 
    public void waitUntilNextTick() {
@@ -240,7 +242,7 @@ public class GameTestServer extends MinecraftServer {
       return this.testTracker != null;
    }
 
-   public boolean isHardcore() {
+   public boolean isHardcore(TheGame var1) {
       return false;
    }
 

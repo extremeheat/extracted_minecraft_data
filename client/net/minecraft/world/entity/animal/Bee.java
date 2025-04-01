@@ -87,6 +87,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
@@ -476,6 +477,14 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    }
 
+   public boolean isAngryAt(LivingEntity var1, ServerLevel var2) {
+      return var2.isActive(WorldEffects.BEES) ? true : NeutralMob.super.isAngryAt(var1, var2);
+   }
+
+   public boolean isAngryAtAllPlayers(ServerLevel var1) {
+      return var1.isActive(WorldEffects.BEES) ? true : NeutralMob.super.isAngryAtAllPlayers(var1);
+   }
+
    @Nullable
    BeehiveBlockEntity getBeehiveBlockEntity() {
       if (this.hivePos == null) {
@@ -714,8 +723,24 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
 
       private boolean beeCanTarget() {
-         Bee var1 = (Bee)this.mob;
-         return var1.isAngry() && !var1.hasStung();
+         boolean var10000;
+         label21: {
+            Bee var1 = (Bee)this.mob;
+            Level var3 = var1.level();
+            if (var3 instanceof ServerLevel var2) {
+               if (var2.isActive(WorldEffects.BEES)) {
+                  break label21;
+               }
+            }
+
+            if (!var1.isAngry() || var1.hasStung()) {
+               var10000 = false;
+               return var10000;
+            }
+         }
+
+         var10000 = true;
+         return var10000;
       }
    }
 
@@ -783,9 +808,9 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    @VisibleForDebug
    public class BeeGoToHiveGoal extends BaseBeeGoal {
       public static final int MAX_TRAVELLING_TICKS = 2400;
-      int travellingTicks;
+      int travellingTicks = 0;
       private static final int MAX_BLACKLISTED_TARGETS = 3;
-      final List<BlockPos> blacklistedTargets;
+      final List<BlockPos> blacklistedTargets = Lists.newArrayList();
       @Nullable
       private Path lastPath;
       private static final int TICKS_BEFORE_HIVE_DROP = 60;
@@ -793,8 +818,6 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
       BeeGoToHiveGoal() {
          super();
-         this.travellingTicks = Bee.this.level().random.nextInt(10);
-         this.blacklistedTargets = Lists.newArrayList();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
@@ -894,11 +917,10 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public class BeeGoToKnownFlowerGoal extends BaseBeeGoal {
       private static final int MAX_TRAVELLING_TICKS = 2400;
-      int travellingTicks;
+      int travellingTicks = 0;
 
       BeeGoToKnownFlowerGoal() {
          super();
-         this.travellingTicks = Bee.this.level().random.nextInt(10);
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 

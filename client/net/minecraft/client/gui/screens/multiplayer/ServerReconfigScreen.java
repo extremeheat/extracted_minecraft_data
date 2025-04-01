@@ -50,10 +50,14 @@ public class ServerReconfigScreen extends Screen {
          this.disconnectButton.active = true;
       }
 
-      if (this.connection.isConnected()) {
-         this.connection.tick();
+      tickTheConnectionPls(this.connection);
+   }
+
+   public static void tickTheConnectionPls(Connection var0) {
+      if (var0.isConnected()) {
+         var0.tick();
       } else {
-         this.connection.handleDisconnection();
+         var0.handleDisconnection();
       }
 
    }

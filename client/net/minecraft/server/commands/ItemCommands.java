@@ -51,7 +51,7 @@ public class ItemCommands {
    private static final DynamicCommandExceptionType ERROR_TARGET_NO_CHANGES = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.item.target.no_changes", var0));
    private static final Dynamic2CommandExceptionType ERROR_TARGET_NO_CHANGES_KNOWN_ITEM = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.item.target.no_changed.known_item", var0, var1));
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_MODIFIER = (var0, var1) -> {
-      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
+      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).theGame().reloadableRegistries();
       return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.ITEM_MODIFIER), var1);
    };
 

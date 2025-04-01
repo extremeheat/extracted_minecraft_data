@@ -30,7 +30,7 @@ public class ScheduleCommand {
    private static final SimpleCommandExceptionType ERROR_SAME_TICK = new SimpleCommandExceptionType(Component.translatable("commands.schedule.same_tick"));
    private static final DynamicCommandExceptionType ERROR_CANT_REMOVE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.schedule.cleared.failure", var0));
    private static final SimpleCommandExceptionType ERROR_MACRO = new SimpleCommandExceptionType(Component.translatableEscape("commands.schedule.macro"));
-   private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (var0, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getServer().getWorldData().overworldData().getScheduledEvents().getEventsIds(), var1);
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (var0, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).theGame().getWorldData().overworldData().getScheduledEvents().getEventsIds(), var1);
 
    public ScheduleCommand() {
       super();
@@ -46,7 +46,7 @@ public class ScheduleCommand {
       } else {
          long var4 = var0.getLevel().getGameTime() + (long)var2;
          ResourceLocation var6 = (ResourceLocation)var1.getFirst();
-         TimerQueue var7 = var0.getServer().getWorldData().overworldData().getScheduledEvents();
+         TimerQueue var7 = var0.theGame().getWorldData().overworldData().getScheduledEvents();
          Optional var8 = ((Either)var1.getSecond()).left();
          if (var8.isPresent()) {
             if (var8.get() instanceof MacroFunction) {
@@ -75,7 +75,7 @@ public class ScheduleCommand {
    }
 
    private static int remove(CommandSourceStack var0, String var1) throws CommandSyntaxException {
-      int var2 = var0.getServer().getWorldData().overworldData().getScheduledEvents().remove(var1);
+      int var2 = var0.theGame().getWorldData().overworldData().getScheduledEvents().remove(var1);
       if (var2 == 0) {
          throw ERROR_CANT_REMOVE.create(var1);
       } else {

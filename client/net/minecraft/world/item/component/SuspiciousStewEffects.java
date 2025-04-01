@@ -5,9 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -15,6 +15,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -43,15 +44,15 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
 
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
       if (var3.isCreative()) {
-         ArrayList var5 = new ArrayList();
+         ArrayList var6 = new ArrayList();
 
-         for(Entry var7 : this.effects) {
-            var5.add(var7.createEffectInstance());
+         for(Entry var8 : this.effects) {
+            var6.add(var8.createEffectInstance());
          }
 
-         PotionContents.addPotionTooltip(var5, var2, 1.0F, var1.tickRate());
+         PotionContents.addPotionTooltip(var6, var2, 1.0F, var1.tickRate());
       }
 
    }

@@ -81,11 +81,15 @@ public class TntBlock extends Block {
    }
 
    private static boolean prime(Level var0, BlockPos var1, @Nullable LivingEntity var2) {
-      if (var0 instanceof ServerLevel var3) {
-         if (var3.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
-            PrimedTnt var4 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
-            var0.addFreshEntity(var4);
-            var0.playSound((Entity)null, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+      return prime(var0, var1, var2, 80);
+   }
+
+   public static boolean prime(Level var0, BlockPos var1, @Nullable LivingEntity var2, int var3) {
+      if (var0 instanceof ServerLevel var4) {
+         if (var4.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            PrimedTnt var5 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2, var3);
+            var0.addFreshEntity(var5);
+            var0.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
             var0.gameEvent(var2, GameEvent.PRIME_FUSE, var1);
             return true;
          }

@@ -205,7 +205,7 @@ public class SignBlockEntity extends BlockEntity {
             }
 
             String var14 = var16;
-            var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var14);
+            var1.theGame().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var14);
             var5 = true;
          }
       }
@@ -216,7 +216,8 @@ public class SignBlockEntity extends BlockEntity {
    private static CommandSourceStack createCommandSourceStack(@Nullable Player var0, Level var1, BlockPos var2) {
       String var3 = var0 == null ? "Sign" : var0.getName().getString();
       Object var4 = var0 == null ? Component.literal("Sign") : var0.getDisplayName();
-      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, (ServerLevel)var1, 2, var3, (Component)var4, var1.getServer(), var0);
+      ServerLevel var5 = (ServerLevel)var1;
+      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var5, 2, var3, (Component)var4, var5.theGame(), var0);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

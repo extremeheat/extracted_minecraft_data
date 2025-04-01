@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.npc.Villager;
@@ -27,8 +26,7 @@ public class AssignProfessionFromJobSite {
                   if (!var4.getVillagerData().profession().is(VillagerProfession.NONE)) {
                      return true;
                   } else {
-                     MinecraftServer var8 = var3.getServer();
-                     Optional.ofNullable(var8.getLevel(var7.dimension())).flatMap((var1x) -> var1x.getPoiManager().getType(var7.pos())).flatMap((var0x) -> BuiltInRegistries.VILLAGER_PROFESSION.listElements().filter((var1) -> ((VillagerProfession)var1.value()).heldJobSite().test(var0x)).findFirst()).ifPresent((var2x) -> {
+                     Optional.ofNullable(var3.theGame().getLevel(var7.dimension())).flatMap((var1x) -> var1x.getPoiManager().getType(var7.pos())).flatMap((var0x) -> BuiltInRegistries.VILLAGER_PROFESSION.listElements().filter((var1) -> ((VillagerProfession)var1.value()).heldJobSite().test(var0x)).findFirst()).ifPresent((var2x) -> {
                         var4.setVillagerData(var4.getVillagerData().withProfession(var2x));
                         var4.refreshBrain(var3);
                      });

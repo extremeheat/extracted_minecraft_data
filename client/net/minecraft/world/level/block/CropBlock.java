@@ -1,13 +1,16 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.monster.Ravager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -15,6 +18,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -149,6 +153,14 @@ public class CropBlock extends VegetationBlock implements BonemealableBlock {
       }
 
       super.entityInside(var1, var2, var3, var4, var5);
+   }
+
+   public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
+      super.playerDestroy(var1, var2, var3, var4, var5, var6);
+      if (var2.isActive(PlayerUnlocks.GATHERER)) {
+         dropResources(var4, var1, var3, var5, var2, var6);
+      }
+
    }
 
    protected ItemLike getBaseSeedId() {

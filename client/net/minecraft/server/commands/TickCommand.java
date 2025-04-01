@@ -31,7 +31,7 @@ public class TickCommand {
    }
 
    private static int setTickingRate(CommandSourceStack var0, float var1) {
-      ServerTickRateManager var2 = var0.getServer().tickRateManager();
+      ServerTickRateManager var2 = var0.theGame().tickRateManager();
       var2.setTickRate(var1);
       String var3 = String.format(Locale.ROOT, "%.1f", var1);
       var0.sendSuccess(() -> Component.translatable("commands.tick.rate.success", var3), true);
@@ -39,8 +39,8 @@ public class TickCommand {
    }
 
    private static int tickQuery(CommandSourceStack var0) {
-      ServerTickRateManager var1 = var0.getServer().tickRateManager();
-      String var2 = nanosToMilisString(var0.getServer().getAverageTickTimeNanos());
+      ServerTickRateManager var1 = var0.theGame().tickRateManager();
+      String var2 = nanosToMilisString(var0.theGame().server().getAverageTickTimeNanos());
       float var3 = var1.tickrate();
       String var4 = String.format(Locale.ROOT, "%.1f", var3);
       if (var1.isSprinting()) {
@@ -49,7 +49,7 @@ public class TickCommand {
       } else {
          if (var1.isFrozen()) {
             var0.sendSuccess(() -> Component.translatable("commands.tick.status.frozen"), false);
-         } else if (var1.nanosecondsPerTick() < var0.getServer().getAverageTickTimeNanos()) {
+         } else if (var1.nanosecondsPerTick() < var0.theGame().server().getAverageTickTimeNanos()) {
             var0.sendSuccess(() -> Component.translatable("commands.tick.status.lagging"), false);
          } else {
             var0.sendSuccess(() -> Component.translatable("commands.tick.status.running"), false);
@@ -59,7 +59,7 @@ public class TickCommand {
          var0.sendSuccess(() -> Component.translatable("commands.tick.query.rate.running", var4, var2, var5), false);
       }
 
-      long[] var9 = Arrays.copyOf(var0.getServer().getTickTimesNanos(), var0.getServer().getTickTimesNanos().length);
+      long[] var9 = Arrays.copyOf(var0.theGame().server().getTickTimesNanos(), var0.theGame().server().getTickTimesNanos().length);
       Arrays.sort(var9);
       String var6 = nanosToMilisString(var9[var9.length / 2]);
       String var7 = nanosToMilisString(var9[(int)((double)var9.length * 0.95)]);
@@ -69,7 +69,7 @@ public class TickCommand {
    }
 
    private static int sprint(CommandSourceStack var0, int var1) {
-      boolean var2 = var0.getServer().tickRateManager().requestGameToSprint(var1);
+      boolean var2 = var0.theGame().tickRateManager().requestGameToSprint(var1);
       if (var2) {
          var0.sendSuccess(() -> Component.translatable("commands.tick.sprint.stop.success"), true);
       }
@@ -79,7 +79,7 @@ public class TickCommand {
    }
 
    private static int setFreeze(CommandSourceStack var0, boolean var1) {
-      ServerTickRateManager var2 = var0.getServer().tickRateManager();
+      ServerTickRateManager var2 = var0.theGame().tickRateManager();
       if (var1) {
          if (var2.isSprinting()) {
             var2.stopSprinting();
@@ -101,7 +101,7 @@ public class TickCommand {
    }
 
    private static int step(CommandSourceStack var0, int var1) {
-      ServerTickRateManager var2 = var0.getServer().tickRateManager();
+      ServerTickRateManager var2 = var0.theGame().tickRateManager();
       boolean var3 = var2.stepGameIfPaused(var1);
       if (var3) {
          var0.sendSuccess(() -> Component.translatable("commands.tick.step.success", var1), true);
@@ -113,7 +113,7 @@ public class TickCommand {
    }
 
    private static int stopStepping(CommandSourceStack var0) {
-      ServerTickRateManager var1 = var0.getServer().tickRateManager();
+      ServerTickRateManager var1 = var0.theGame().tickRateManager();
       boolean var2 = var1.stopStepping();
       if (var2) {
          var0.sendSuccess(() -> Component.translatable("commands.tick.step.stop.success"), true);
@@ -125,7 +125,7 @@ public class TickCommand {
    }
 
    private static int stopSprinting(CommandSourceStack var0) {
-      ServerTickRateManager var1 = var0.getServer().tickRateManager();
+      ServerTickRateManager var1 = var0.theGame().tickRateManager();
       boolean var2 = var1.stopSprinting();
       if (var2) {
          var0.sendSuccess(() -> Component.translatable("commands.tick.sprint.stop.success"), true);

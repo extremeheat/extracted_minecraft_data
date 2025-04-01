@@ -54,7 +54,7 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
          int var5;
          if (var4 != null) {
             Vec3 var6 = (new Vec3(var4.getX(), 0.0, var4.getZ())).normalize();
-            var5 = this.dragon.findClosestNode(-var6.x * 40.0, 105.0, -var6.z * 40.0);
+            var5 = this.dragon.findClosestNode(-var6.x * 40.0, (double)(var3.getY() + 16), -var6.z * 40.0);
          } else {
             var5 = this.dragon.findClosestNode(40.0, (double)var3.getY(), 0.0);
          }

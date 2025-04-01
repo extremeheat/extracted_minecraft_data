@@ -9,6 +9,9 @@ public interface BuiltinStructureSets {
    ResourceKey<StructureSet> DESERT_PYRAMIDS = register("desert_pyramids");
    ResourceKey<StructureSet> IGLOOS = register("igloos");
    ResourceKey<StructureSet> JUNGLE_TEMPLES = register("jungle_temples");
+   ResourceKey<StructureSet> SURFACE_MINE_EXITS = register("surface_mine_exits");
+   ResourceKey<StructureSet> RARE_SURFACE_MINE_EXITS = register("rare_surface_mine_exits");
+   ResourceKey<StructureSet> CAVE_MINE_EXITS = register("cave_mine_exits");
    ResourceKey<StructureSet> SWAMP_HUTS = register("swamp_huts");
    ResourceKey<StructureSet> PILLAGER_OUTPOSTS = register("pillager_outposts");
    ResourceKey<StructureSet> OCEAN_MONUMENTS = register("ocean_monuments");

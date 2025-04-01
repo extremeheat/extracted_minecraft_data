@@ -24,7 +24,7 @@ public class ServerPackCommand {
    }
 
    private static void sendToAllConnections(CommandSourceStack var0, Packet<?> var1) {
-      var0.getServer().getConnection().getConnections().forEach((var1x) -> var1x.send(var1));
+      var0.theGame().server().getConnection().getConnections().forEach((var1x) -> var1x.send(var1));
    }
 
    private static int pushPack(CommandSourceStack var0, String var1, Optional<UUID> var2, Optional<String> var3) {

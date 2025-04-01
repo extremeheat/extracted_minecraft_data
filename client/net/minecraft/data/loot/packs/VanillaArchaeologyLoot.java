@@ -2,14 +2,17 @@ package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.TrophyType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetStewEffectFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
@@ -21,6 +24,7 @@ public record VanillaArchaeologyLoot(HolderLookup.Provider registries) implement
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      var1.accept(BuiltInLootTables.EAT_YOUR_VEGGIES, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.TROPHY).apply(SetComponentsFunction.setComponent(DataComponents.TROPHY_TYPE, TrophyType.MEGA_SPUD)))));
       var1.accept(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ARMS_UP_POTTERY_SHERD).setWeight(2)).add(LootItem.lootTableItem(Items.BREWER_POTTERY_SHERD).setWeight(2)).add(LootItem.lootTableItem(Items.BRICK)).add(LootItem.lootTableItem(Items.EMERALD)).add(LootItem.lootTableItem(Items.STICK)).add(LootItem.lootTableItem(Items.SUSPICIOUS_STEW).apply(SetStewEffectFunction.stewEffect().withEffect(MobEffects.NIGHT_VISION, UniformGenerator.between(7.0F, 10.0F)).withEffect(MobEffects.JUMP_BOOST, UniformGenerator.between(7.0F, 10.0F)).withEffect(MobEffects.WEAKNESS, UniformGenerator.between(6.0F, 8.0F)).withEffect(MobEffects.BLINDNESS, UniformGenerator.between(5.0F, 7.0F)).withEffect(MobEffects.POISON, UniformGenerator.between(10.0F, 20.0F)).withEffect(MobEffects.SATURATION, UniformGenerator.between(7.0F, 10.0F))))));
       var1.accept(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ARCHER_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.MINER_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.PRIZE_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.SKULL_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.DIAMOND)).add(LootItem.lootTableItem(Items.TNT)).add(LootItem.lootTableItem(Items.GUNPOWDER)).add(LootItem.lootTableItem(Items.EMERALD))));
       var1.accept(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.EMERALD).setWeight(2)).add(LootItem.lootTableItem(Items.WHEAT).setWeight(2)).add(LootItem.lootTableItem(Items.WOODEN_HOE).setWeight(2)).add(LootItem.lootTableItem(Items.CLAY).setWeight(2)).add(LootItem.lootTableItem(Items.BRICK).setWeight(2)).add(LootItem.lootTableItem(Items.YELLOW_DYE).setWeight(2)).add(LootItem.lootTableItem(Items.BLUE_DYE).setWeight(2)).add(LootItem.lootTableItem(Items.LIGHT_BLUE_DYE).setWeight(2)).add(LootItem.lootTableItem(Items.WHITE_DYE).setWeight(2)).add(LootItem.lootTableItem(Items.ORANGE_DYE).setWeight(2)).add(LootItem.lootTableItem(Items.RED_CANDLE).setWeight(2)).add(LootItem.lootTableItem(Items.GREEN_CANDLE).setWeight(2)).add(LootItem.lootTableItem(Items.PURPLE_CANDLE).setWeight(2)).add(LootItem.lootTableItem(Items.BROWN_CANDLE).setWeight(2)).add(LootItem.lootTableItem(Items.MAGENTA_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.PINK_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.BLUE_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.LIGHT_BLUE_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.RED_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.YELLOW_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.PURPLE_STAINED_GLASS_PANE)).add(LootItem.lootTableItem(Items.SPRUCE_HANGING_SIGN)).add(LootItem.lootTableItem(Items.OAK_HANGING_SIGN)).add(LootItem.lootTableItem(Items.GOLD_NUGGET)).add(LootItem.lootTableItem(Items.COAL)).add(LootItem.lootTableItem(Items.WHEAT_SEEDS)).add(LootItem.lootTableItem(Items.BEETROOT_SEEDS)).add(LootItem.lootTableItem(Items.DEAD_BUSH)).add(LootItem.lootTableItem(Items.FLOWER_POT)).add(LootItem.lootTableItem(Items.STRING)).add(LootItem.lootTableItem(Items.LEAD))));

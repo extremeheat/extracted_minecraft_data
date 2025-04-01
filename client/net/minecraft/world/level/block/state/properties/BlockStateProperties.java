@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.state.properties;
 import java.util.function.Predicate;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
+import net.minecraft.world.level.block.TrophyType;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.entity.vault.VaultState;
 
@@ -144,6 +145,7 @@ public class BlockStateProperties {
    public static final BooleanProperty OMINOUS;
    public static final EnumProperty<TestBlockMode> TEST_BLOCK_MODE;
    public static final BooleanProperty MAP;
+   public static final EnumProperty<TrophyType> TROPHY_TYPE;
 
    public BlockStateProperties() {
       super();
@@ -235,5 +237,6 @@ public class BlockStateProperties {
       OMINOUS = BooleanProperty.create("ominous");
       TEST_BLOCK_MODE = EnumProperty.<TestBlockMode>create("mode", TestBlockMode.class);
       MAP = BooleanProperty.create("map");
+      TROPHY_TYPE = EnumProperty.create("type", TrophyType.class, TrophyType.values());
    }
 }

@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.MobTrophyBlock;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -61,6 +62,8 @@ public class BlockColors {
       }, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
       var0.addColoringState(StemBlock.AGE, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? -14647248 : -9321636, Blocks.LILY_PAD);
+      var0.register((var0x, var1, var2, var3) -> 0, Blocks.SKY);
+      var0.register((var0x, var1, var2, var3) -> ((MobTrophyBlock.Grade)var0x.getValueOrElse(MobTrophyBlock.GRADE, MobTrophyBlock.Grade.GRASS)).color(), Blocks.MOB_TROPHY);
       return var0;
    }
 

@@ -32,7 +32,7 @@ public class StorageDataAccessor implements DataAccessor {
    private final ResourceLocation id;
 
    static CommandStorage getGlobalTags(CommandContext<CommandSourceStack> var0) {
-      return ((CommandSourceStack)var0.getSource()).getServer().getCommandStorage();
+      return ((CommandSourceStack)var0.getSource()).theGame().getCommandStorage();
    }
 
    StorageDataAccessor(CommandStorage var1, ResourceLocation var2) {

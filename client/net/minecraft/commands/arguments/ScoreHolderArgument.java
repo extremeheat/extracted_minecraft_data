@@ -23,7 +23,6 @@ import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,7 +60,7 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
    }
 
    public static Collection<ScoreHolder> getNamesWithDefaultWildcard(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      ServerScoreboard var10002 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
+      ServerScoreboard var10002 = ((CommandSourceStack)var0.getSource()).theGame().getScoreboard();
       Objects.requireNonNull(var10002);
       return getNames(var0, var1, var10002::getTrackedPlayers);
    }
@@ -125,39 +124,37 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
                try {
                   UUID var6 = UUID.fromString(var4);
                   return (var2x, var3x) -> {
-                     MinecraftServer var4 = var2x.getServer();
-                     Entity var5x = null;
-                     ArrayList var6x = null;
+                     Entity var4 = null;
+                     ArrayList var5x = null;
 
-                     for(ServerLevel var8 : var4.getAllLevels()) {
-                        Entity var9 = var8.getEntity(var6);
-                        if (var9 != null) {
-                           if (var5x == null) {
-                              var5x = var9;
+                     for(ServerLevel var7 : var2x.theGame().getAllLevels()) {
+                        Entity var8 = var7.getEntity(var6);
+                        if (var8 != null) {
+                           if (var4 == null) {
+                              var4 = var8;
                            } else {
-                              if (var6x == null) {
-                                 var6x = new ArrayList();
-                                 var6x.add(var5x);
+                              if (var5x == null) {
+                                 var5x = new ArrayList();
+                                 var5x.add(var4);
                               }
 
-                              var6x.add(var9);
+                              var5x.add(var8);
                            }
                         }
                      }
 
-                     if (var6x != null) {
-                        return var6x;
-                     } else if (var5x != null) {
-                        return List.of(var5x);
+                     if (var5x != null) {
+                        return var5x;
+                     } else if (var4 != null) {
+                        return List.of(var4);
                      } else {
                         return var5;
                      }
                   };
                } catch (IllegalArgumentException var7) {
                   return (var2x, var3x) -> {
-                     MinecraftServer var4x = var2x.getServer();
-                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var4);
-                     return var5x != null ? List.of(var5x) : var5;
+                     ServerPlayer var4x = var2x.playerList().getPlayerByName(var4);
+                     return var4x != null ? List.of(var4x) : var5;
                   };
                }
             }

@@ -15,7 +15,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.WorldPresetTags;
 import net.minecraft.world.Difficulty;
@@ -63,7 +63,7 @@ public class WorldCreationUiState {
       this.targetFolder = this.findResultFolder(this.name);
       this.gameMode = var2.initialWorldCreationOptions().selectedGameMode();
       this.gameRules = new GameRules(var2.dataConfiguration().enabledFeatures());
-      var2.initialWorldCreationOptions().disabledGameRules().forEach((var1x) -> ((GameRules.BooleanValue)this.gameRules.getRule(var1x)).set(false, (MinecraftServer)null));
+      var2.initialWorldCreationOptions().disabledGameRules().forEach((var1x) -> ((GameRules.BooleanValue)this.gameRules.getRule(var1x)).set(false, (TheGame)null));
       Optional.ofNullable(var2.initialWorldCreationOptions().flatLevelPreset()).flatMap((var1x) -> var2.worldgenLoadContext().lookup(Registries.FLAT_LEVEL_GENERATOR_PRESET).flatMap((var1) -> var1.get(var1x))).map((var0) -> ((FlatLevelGeneratorPreset)var0.value()).settings()).ifPresent((var1x) -> this.updateDimensions(PresetEditor.flatWorldConfigurator(var1x)));
    }
 

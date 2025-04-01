@@ -7,6 +7,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerLevel;
 
 public class TimeCommand {
@@ -28,23 +29,27 @@ public class TimeCommand {
    }
 
    public static int setTime(CommandSourceStack var0, int var1) {
-      for(ServerLevel var3 : var0.getServer().getAllLevels()) {
-         var3.setDayTime((long)var1);
+      TheGame var2 = var0.theGame();
+
+      for(ServerLevel var4 : var2.getAllLevels()) {
+         var4.setDayTime((long)var1);
       }
 
-      var0.getServer().forceTimeSynchronization();
+      var2.forceTimeSynchronization();
       var0.sendSuccess(() -> Component.translatable("commands.time.set", var1), true);
       return getDayTime(var0.getLevel());
    }
 
    public static int addTime(CommandSourceStack var0, int var1) {
-      for(ServerLevel var3 : var0.getServer().getAllLevels()) {
-         var3.setDayTime(var3.getDayTime() + (long)var1);
+      TheGame var2 = var0.theGame();
+
+      for(ServerLevel var4 : var2.getAllLevels()) {
+         var4.setDayTime(var4.getDayTime() + (long)var1);
       }
 
-      var0.getServer().forceTimeSynchronization();
-      int var4 = getDayTime(var0.getLevel());
-      var0.sendSuccess(() -> Component.translatable("commands.time.set", var4), true);
-      return var4;
+      var2.forceTimeSynchronization();
+      int var5 = getDayTime(var0.getLevel());
+      var0.sendSuccess(() -> Component.translatable("commands.time.set", var5), true);
+      return var5;
    }
 }

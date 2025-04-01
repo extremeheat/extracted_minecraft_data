@@ -99,6 +99,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleRespawn(ClientboundRespawnPacket var1);
 
+   void handleUpdateUnlockedEffects(ClientboundUpdateUnlockedEffectsPacket var1);
+
    void handleRotateMob(ClientboundRotateHeadPacket var1);
 
    void handleSetHeldSlot(ClientboundSetHeldSlotPacket var1);
@@ -173,6 +175,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleMoveVehicle(ClientboundMoveVehiclePacket var1);
 
+   void handleUpdatePlayerUnlocksPacket(ClientboundUpdatePlayerUnlocksPacket var1);
+
    void handleUpdateAdvancementsPacket(ClientboundUpdateAdvancementsPacket var1);
 
    void handleSelectAdvancementsTab(ClientboundSelectAdvancementsTabPacket var1);
@@ -195,7 +199,9 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleOpenBook(ClientboundOpenBookPacket var1);
 
-   void handleOpenScreen(ClientboundOpenScreenPacket var1);
+   void handleWindowScreen(ClientboundOpenWindowPacket var1);
+
+   void handleUpdateScreen(ClientboundUpdateScreenPacket var1);
 
    void handleMerchantOffers(ClientboundMerchantOffersPacket var1);
 
@@ -240,4 +246,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleSetPlayerInventory(ClientboundSetPlayerInventoryPacket var1);
 
    void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus var1);
+
+   void handleOpenDoorPacket(ClientboundOpenDoorPacket var1);
+
+   void handleChangeDimensionType(ClientboundChangeDimensionTypePacket var1);
 }

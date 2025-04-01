@@ -14,6 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -28,9 +29,11 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    private double tz;
    private int life;
    private boolean surviveAfterDeath;
+   protected InterpolationHandler interpolation;
 
    public EyeOfEnder(EntityType<? extends EyeOfEnder> var1, Level var2) {
       super(var1, var2);
+      this.interpolation = new InterpolationHandler(this);
    }
 
    public EyeOfEnder(Level var1, double var2, double var4, double var6) {
@@ -45,6 +48,10 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
          this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
 
+   }
+
+   public InterpolationHandler getInterpolation() {
+      return this.interpolation;
    }
 
    public ItemStack getItem() {
@@ -166,7 +173,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    private ItemStack getDefaultItem() {
-      return new ItemStack(Items.ENDER_EYE);
+      return new ItemStack(Items.EXIT_EYE);
    }
 
    public float getLightLevelDependentMagicValue() {

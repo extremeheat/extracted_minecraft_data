@@ -12,6 +12,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -131,9 +132,14 @@ public class BeehiveBlock extends BaseEntityBlock {
       boolean var9 = false;
       if (var8 >= 5) {
          Item var10 = var1.getItem();
+         boolean var11 = var5.isActive(PlayerUnlocks.GATHERER);
          if (var1.is(Items.SHEARS)) {
             var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
             dropHoneycomb(var3, var4);
+            if (var11) {
+               dropHoneycomb(var3, var4);
+            }
+
             var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
             var9 = true;
             var3.gameEvent(var5, GameEvent.SHEAR, var4);
@@ -142,6 +148,9 @@ public class BeehiveBlock extends BaseEntityBlock {
             var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
             if (var1.isEmpty()) {
                var5.setItemInHand(var6, new ItemStack(Items.HONEY_BOTTLE));
+               if (var11) {
+                  var5.addItem(new ItemStack(Items.HONEY_BOTTLE));
+               }
             } else if (!var5.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
                var5.drop(new ItemStack(Items.HONEY_BOTTLE), false);
             }

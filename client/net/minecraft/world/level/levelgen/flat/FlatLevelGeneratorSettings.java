@@ -27,7 +27,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.LayerConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import org.slf4j.Logger;
 
@@ -119,7 +118,7 @@ public class FlatLevelGeneratorSettings {
             }
          }
 
-         boolean var10 = (!this.voidGen || var1.is(Biomes.THE_VOID)) && this.decoration;
+         boolean var10 = (!this.voidGen || var1.is(Biomes.THE_VOID) || var1.is(Biomes.HUB)) && this.decoration;
          if (var10) {
             List var11 = var2.features();
 
@@ -175,17 +174,16 @@ public class FlatLevelGeneratorSettings {
    }
 
    public static FlatLevelGeneratorSettings getDefault(HolderGetter<Biome> var0, HolderGetter<StructureSet> var1, HolderGetter<PlacedFeature> var2) {
-      HolderSet.Direct var3 = HolderSet.direct(var1.getOrThrow(BuiltinStructureSets.STRONGHOLDS), var1.getOrThrow(BuiltinStructureSets.VILLAGES));
-      FlatLevelGeneratorSettings var4 = new FlatLevelGeneratorSettings(Optional.of(var3), getDefaultBiome(var0), createLakesList(var2));
-      var4.getLayersInfo().add(new FlatLayerInfo(1, Blocks.BEDROCK));
-      var4.getLayersInfo().add(new FlatLayerInfo(2, Blocks.DIRT));
-      var4.getLayersInfo().add(new FlatLayerInfo(1, Blocks.GRASS_BLOCK));
+      HolderSet.Direct var3 = HolderSet.direct();
+      FlatLevelGeneratorSettings var4 = new FlatLevelGeneratorSettings(Optional.of(var3), getDefaultBiome(var0), List.of());
+      var4.getLayersInfo().add(new FlatLayerInfo(1, Blocks.AIR));
+      var4.setDecoration();
       var4.updateLayers();
       return var4;
    }
 
    public static Holder<Biome> getDefaultBiome(HolderGetter<Biome> var0) {
-      return var0.getOrThrow(Biomes.PLAINS);
+      return var0.getOrThrow(Biomes.HUB);
    }
 
    public static List<Holder<PlacedFeature>> createLakesList(HolderGetter<PlacedFeature> var0) {

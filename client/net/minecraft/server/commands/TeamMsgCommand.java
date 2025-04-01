@@ -37,7 +37,7 @@ public class TeamMsgCommand {
          if (var3 == null) {
             throw ERROR_NOT_ON_TEAM.create();
          } else {
-            List var4 = var1.getServer().getPlayerList().getPlayers().stream().filter((var2x) -> var2x == var2 || var2x.getTeam() == var3).toList();
+            List var4 = var1.playerList().getPlayers().stream().filter((var2x) -> var2x == var2 || var2x.getTeam() == var3).toList();
             if (!var4.isEmpty()) {
                MessageArgument.resolveChatMessage(var0x, "message", (var4x) -> sendMessage(var1, var2, var3, var4, var4x));
             }

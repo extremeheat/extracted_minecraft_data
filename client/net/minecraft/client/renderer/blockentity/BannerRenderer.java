@@ -10,6 +10,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
@@ -85,7 +86,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    }
 
    public static void renderPatterns(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, boolean var6, DyeColor var7, BannerPatternLayers var8, boolean var9, boolean var10) {
-      var4.render(var0, var5.buffer(var1, RenderType::entitySolid, var10, var9), var2, var3);
+      var4.render(var0, var5.buffer(var1, RenderType::entitySolid, var10, var9 ? ItemStackRenderState.FoilType.STANDARD : ItemStackRenderState.FoilType.NONE), var2, var3);
       renderPatternLayer(var0, var1, var2, var3, var4, var6 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var7);
 
       for(int var11 = 0; var11 < 16 && var11 < var8.layers().size(); ++var11) {

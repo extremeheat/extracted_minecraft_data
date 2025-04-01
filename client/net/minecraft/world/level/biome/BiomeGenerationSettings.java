@@ -67,6 +67,36 @@ public class BiomeGenerationSettings {
       return ((Set)this.featureSet.get()).contains(var1);
    }
 
+   public boolean equals(Object var1) {
+      if (this == var1) {
+         return true;
+      } else if (var1 != null && this.getClass() == var1.getClass()) {
+         BiomeGenerationSettings var2 = (BiomeGenerationSettings)var1;
+         return Objects.equals(this.carvers, var2.carvers) && Objects.equals(this.features, var2.features);
+      } else {
+         return false;
+      }
+   }
+
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.carvers, this.features});
+   }
+
+   public PlainBuilder asBuilder() {
+      PlainBuilder var1 = new PlainBuilder();
+
+      for(int var2 = 0; var2 < this.features.size(); ++var2) {
+         for(Holder var5 : (HolderSet)this.features.get(var2)) {
+            var1.addFeature(var2, var5);
+         }
+      }
+
+      HolderSet var10000 = this.carvers;
+      Objects.requireNonNull(var1);
+      var10000.forEach(var1::addCarver);
+      return var1;
+   }
+
    public static class PlainBuilder {
       private final List<Holder<ConfiguredWorldCarver<?>>> carvers = new ArrayList();
       private final List<List<Holder<PlacedFeature>>> features = new ArrayList();

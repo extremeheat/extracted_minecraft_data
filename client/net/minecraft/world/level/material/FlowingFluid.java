@@ -377,7 +377,7 @@ public abstract class FlowingFluid extends Fluid {
       } else if (var0.blocksMotion()) {
          return false;
       } else {
-         return !(var1 instanceof DoorBlock) && !var0.is(BlockTags.SIGNS) && !var0.is(Blocks.LADDER) && !var0.is(Blocks.SUGAR_CANE) && !var0.is(Blocks.BUBBLE_COLUMN) && !var0.is(Blocks.NETHER_PORTAL) && !var0.is(Blocks.END_PORTAL) && !var0.is(Blocks.END_GATEWAY) && !var0.is(Blocks.STRUCTURE_VOID);
+         return !(var1 instanceof DoorBlock) && !var0.is(BlockTags.SIGNS) && !var0.is(Blocks.LADDER) && !var0.is(Blocks.SUGAR_CANE) && !var0.is(Blocks.BUBBLE_COLUMN) && !var0.is(Blocks.NETHER_PORTAL) && !var0.is(Blocks.END_GATEWAY) && !var0.is(Blocks.MINE_TRAVELLING_BLOCK) && !var0.is(Blocks.STRUCTURE_VOID);
       }
    }
 

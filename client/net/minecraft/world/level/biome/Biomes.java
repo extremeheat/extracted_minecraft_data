@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public abstract class Biomes {
    public static final ResourceKey<Biome> THE_VOID = register("the_void");
+   public static final ResourceKey<Biome> HUB = register("hub");
    public static final ResourceKey<Biome> PLAINS = register("plains");
    public static final ResourceKey<Biome> SUNFLOWER_PLAINS = register("sunflower_plains");
    public static final ResourceKey<Biome> SNOWY_PLAINS = register("snowy_plains");

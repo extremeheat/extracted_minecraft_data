@@ -24,36 +24,40 @@ public class FlintAndSteelItem extends Item {
    }
 
    public InteractionResult useOn(UseOnContext var1) {
-      Player var2 = var1.getPlayer();
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
-      BlockState var5 = var3.getBlockState(var4);
-      if (!CampfireBlock.canLight(var5) && !CandleBlock.canLight(var5) && !CandleCakeBlock.canLight(var5)) {
-         BlockPos var6 = var4.relative(var1.getClickedFace());
-         if (BaseFireBlock.canBePlacedAt(var3, var6, var1.getHorizontalDirection())) {
-            var3.playSound(var2, (BlockPos)var6, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
-            BlockState var7 = BaseFireBlock.getState(var3, var6);
-            var3.setBlock(var6, var7, 11);
-            var3.gameEvent(var2, GameEvent.BLOCK_PLACE, var4);
-            ItemStack var8 = var1.getItemInHand();
-            if (var2 instanceof ServerPlayer) {
-               CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var2, var6, var8);
-               var8.hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));
+      return (InteractionResult)(ignite(var1) ? InteractionResult.SUCCESS : InteractionResult.FAIL);
+   }
+
+   public static boolean ignite(UseOnContext var0) {
+      Player var1 = var0.getPlayer();
+      Level var2 = var0.getLevel();
+      BlockPos var3 = var0.getClickedPos();
+      BlockState var4 = var2.getBlockState(var3);
+      if (!CampfireBlock.canLight(var4) && !CandleBlock.canLight(var4) && !CandleCakeBlock.canLight(var4)) {
+         BlockPos var5 = var3.relative(var0.getClickedFace());
+         if (BaseFireBlock.canBePlacedAt(var2, var5, var0.getHorizontalDirection())) {
+            var2.playSound(var1, (BlockPos)var5, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.4F + 0.8F);
+            BlockState var6 = BaseFireBlock.getState(var2, var5);
+            var2.setBlock(var5, var6, 11);
+            var2.gameEvent(var1, GameEvent.BLOCK_PLACE, var3);
+            ItemStack var7 = var0.getItemInHand();
+            if (var1 instanceof ServerPlayer) {
+               CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var1, var5, var7);
+               var7.hurtAndBreak(1, var1, LivingEntity.getSlotForHand(var0.getHand()));
             }
 
-            return InteractionResult.SUCCESS;
+            return true;
          } else {
-            return InteractionResult.FAIL;
+            return false;
          }
       } else {
-         var3.playSound(var2, (BlockPos)var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
-         var3.setBlock(var4, (BlockState)var5.setValue(BlockStateProperties.LIT, true), 11);
-         var3.gameEvent(var2, GameEvent.BLOCK_CHANGE, var4);
-         if (var2 != null) {
-            var1.getItemInHand().hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));
+         var2.playSound(var1, (BlockPos)var3, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.4F + 0.8F);
+         var2.setBlock(var3, (BlockState)var4.setValue(BlockStateProperties.LIT, true), 11);
+         var2.gameEvent(var1, GameEvent.BLOCK_CHANGE, var3);
+         if (var1 != null && !var0.getItemInHand().isEmpty()) {
+            var0.getItemInHand().hurtAndBreak(1, var1, LivingEntity.getSlotForHand(var0.getHand()));
          }
 
-         return InteractionResult.SUCCESS;
+         return true;
       }
    }
 }

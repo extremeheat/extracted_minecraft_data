@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -8,6 +9,7 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.AABB;
 
 public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends Goal {
@@ -23,7 +25,8 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
    }
 
    public boolean canUse() {
-      return getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && this.wasHurtByPlayer();
+      ServerLevel var1 = getServerLevel(this.mob);
+      return (var1.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) || var1.isActive(WorldEffects.UNIVERSAL_ANGER)) && this.wasHurtByPlayer();
    }
 
    private boolean wasHurtByPlayer() {

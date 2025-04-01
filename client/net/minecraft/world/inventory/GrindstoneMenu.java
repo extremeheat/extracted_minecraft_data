@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -32,7 +33,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    final Container repairSlots;
    private final ContainerLevelAccess access;
 
-   public GrindstoneMenu(int var1, Inventory var2) {
+   public GrindstoneMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 

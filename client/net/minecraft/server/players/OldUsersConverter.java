@@ -23,6 +23,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.storage.LevelResource;
@@ -239,32 +240,33 @@ public class OldUsersConverter {
    }
 
    @Nullable
-   public static UUID convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
+   public static UUID convertMobOwnerIfNecessary(TheGame var0, String var1) {
+      final MinecraftServer var2 = var0.server();
       if (!StringUtil.isNullOrEmpty(var1) && var1.length() <= 16) {
-         Optional var2 = var0.getProfileCache().get(var1).map(GameProfile::getId);
-         if (var2.isPresent()) {
-            return (UUID)var2.get();
-         } else if (!var0.isSingleplayer() && var0.usesAuthentication()) {
-            final ArrayList var3 = Lists.newArrayList();
-            ProfileLookupCallback var4 = new ProfileLookupCallback() {
+         Optional var3 = var2.getProfileCache().get(var1).map(GameProfile::getId);
+         if (var3.isPresent()) {
+            return (UUID)var3.get();
+         } else if (!var2.isSingleplayer() && var2.usesAuthentication()) {
+            final ArrayList var4 = Lists.newArrayList();
+            ProfileLookupCallback var5 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1) {
-                  var0.getProfileCache().add(var1);
-                  var3.add(var1);
+                  var2.getProfileCache().add(var1);
+                  var4.add(var1);
                }
 
-               public void onProfileLookupFailed(String var1, Exception var2) {
-                  OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", var1, var2);
+               public void onProfileLookupFailed(String var1, Exception var2x) {
+                  OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", var1, var2x);
                }
             };
-            lookupPlayers(var0, Lists.newArrayList(new String[]{var1}), var4);
-            return !var3.isEmpty() ? ((GameProfile)var3.get(0)).getId() : null;
+            lookupPlayers(var2, Lists.newArrayList(new String[]{var1}), var5);
+            return !var4.isEmpty() ? ((GameProfile)var4.get(0)).getId() : null;
          } else {
             return UUIDUtil.createOfflinePlayerUUID(var1);
          }
       } else {
          try {
             return UUID.fromString(var1);
-         } catch (IllegalArgumentException var5) {
+         } catch (IllegalArgumentException var6) {
             return null;
          }
       }

@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.List;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -21,9 +22,9 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
    private final Player player;
    private final CraftingContainer container;
 
-   public CrafterMenu(int var1, Inventory var2) {
+   public CrafterMenu(int var1, Inventory var2, List<Integer> var3) {
       super(MenuType.CRAFTER_3x3, var1);
-      this.player = var2.player;
+      this.player = var2.getPlayer();
       this.containerData = new SimpleContainerData(10);
       this.container = new TransientCraftingContainer(this, 3, 3);
       this.addSlots(var2);
@@ -31,11 +32,11 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
 
    public CrafterMenu(int var1, Inventory var2, CraftingContainer var3, ContainerData var4) {
       super(MenuType.CRAFTER_3x3, var1);
-      this.player = var2.player;
+      this.player = var2.getPlayer();
       this.containerData = var4;
       this.container = var3;
       checkContainerSize(var3, 9);
-      var3.startOpen(var2.player);
+      var3.startOpen(var2.getPlayer());
       this.addSlots(var2);
       this.addSlotListener(this);
    }

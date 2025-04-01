@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -31,6 +32,14 @@ public class SpecialModelWrapper<T> implements ItemModel {
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
          var8.setFoilType(ItemStackRenderState.FoilType.STANDARD);
+      }
+
+      if (var2.has(DataComponents.MINE_COMPLETED)) {
+         if ((Boolean)var2.get(DataComponents.MINE_COMPLETED)) {
+            var8.setFoilType(ItemStackRenderState.FoilType.WON);
+         } else {
+            var8.setFoilType(ItemStackRenderState.FoilType.LOST);
+         }
       }
 
       var8.setExtents(() -> EXTENTS);

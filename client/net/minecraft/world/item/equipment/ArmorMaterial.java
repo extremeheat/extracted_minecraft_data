@@ -12,8 +12,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
-public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int enchantmentValue, Holder<SoundEvent> equipSound, float toughness, float knockbackResistance, TagKey<Item> repairIngredient, ResourceKey<EquipmentAsset> assetId) {
-   public ArmorMaterial(int var1, Map<ArmorType, Integer> var2, int var3, Holder<SoundEvent> var4, float var5, float var6, TagKey<Item> var7, ResourceKey<EquipmentAsset> var8) {
+public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int enchantmentValue, Holder<SoundEvent> equipSound, float toughness, float knockbackResistance, TagKey<Item> repairIngredient, ResourceKey<EquipmentAsset> assetId, float experienceExchangeValue) {
+   public ArmorMaterial(int var1, Map<ArmorType, Integer> var2, int var3, Holder<SoundEvent> var4, float var5, float var6, TagKey<Item> var7, ResourceKey<EquipmentAsset> var8, float var9) {
       super();
       this.durability = var1;
       this.defense = var2;
@@ -23,6 +23,7 @@ public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int
       this.knockbackResistance = var6;
       this.repairIngredient = var7;
       this.assetId = var8;
+      this.experienceExchangeValue = var9;
    }
 
    public ItemAttributeModifiers createAttributes(ArmorType var1) {

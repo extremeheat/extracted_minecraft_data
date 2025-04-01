@@ -45,9 +45,9 @@ import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.DoorScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
-import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.particle.ItemPickupParticle;
 import net.minecraft.client.player.KeyboardInput;
@@ -126,6 +126,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
+import net.minecraft.network.protocol.game.ClientboundChangeDimensionTypePacket;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchFinishedPacket;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchStartPacket;
 import net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket;
@@ -163,8 +164,9 @@ import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveMinecartPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ClientboundOpenBookPacket;
-import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenDoorPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenWindowPacket;
 import net.minecraft.network.protocol.game.ClientboundPlaceGhostRecipePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
@@ -232,7 +234,10 @@ import net.minecraft.network.protocol.game.ClientboundTickingStepPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdatePlayerUnlocksPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateScreenPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateUnlockedEffectsPacket;
 import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
@@ -347,6 +352,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final Map<UUID, PlayerInfo> playerInfoMap = Maps.newHashMap();
    private final Set<PlayerInfo> listedPlayers = new ReferenceOpenHashSet();
    private final ClientAdvancements advancements;
+   private final ClientPlayerUnlocks unlocks;
    private final ClientSuggestionProvider suggestionsProvider;
    private final DebugQueryHandler debugQueryHandler = new DebugQueryHandler(this);
    private int serverChunkRadius = 3;
@@ -403,6 +409,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          })).asInt();
       this.enabledFeatures = var3.enabledFeatures();
       this.advancements = new ClientAdvancements(var1, this.telemetryManager);
+      this.unlocks = new ClientPlayerUnlocks();
       this.suggestionsProvider = new ClientSuggestionProvider(this, var1);
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
       this.debugSampleSubscriber = new DebugSampleSubscriber(this, var1.getDebugOverlay());
@@ -459,10 +466,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       boolean var6 = var2.isDebug();
       boolean var7 = var2.isFlat();
       int var8 = var2.seaLevel();
-      ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(Difficulty.NORMAL, var1.hardcore(), var7);
+      ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(Difficulty.NORMAL, var1.hardcore(), var7, var2.isMap());
       this.levelData = var9;
-      this.level = new ClientLevel(this, var9, var4, var5, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var6, var2.seed(), var8);
-      this.minecraft.setLevel(this.level, ReceivingLevelScreen.Reason.OTHER);
+      this.level = new ClientLevel(this, var9, var4, var5, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var6, var2.seed(), var8, var2.unlockedEffects(), var2.activeEffects());
+      ReceivingLevelScreen.Reason var10 = var2.isMap() ? ReceivingLevelScreen.Reason.ENTERING_MAP : ReceivingLevelScreen.Reason.OTHER;
+      boolean var11 = false;
+      Screen var13 = this.minecraft.screen;
+      if (var13 instanceof ReceivingLevelScreen var12) {
+         if (var12.getReason().equals(ReceivingLevelScreen.Reason.RECONFIGURING)) {
+            var11 = true;
+            var10 = ReceivingLevelScreen.Reason.RECONFIGURING;
+         }
+      }
+
+      this.minecraft.setLevel(this.level, var10);
       if (this.minecraft.player == null) {
          this.minecraft.player = this.minecraft.gameMode.createPlayer(this.level, new StatsCounter(), new ClientRecipeBook());
          this.minecraft.player.setYRot(-180.0F);
@@ -478,7 +495,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.player.input = new KeyboardInput(this.minecraft.options);
       this.minecraft.gameMode.adjustPlayer(this.minecraft.player);
       this.minecraft.cameraEntity = this.minecraft.player;
-      this.startWaitingForNewLevel(this.minecraft.player, this.level, ReceivingLevelScreen.Reason.OTHER);
+      this.startWaitingForNewLevel(this.minecraft.player, this.level, var10, var11);
       this.minecraft.player.setReducedDebugInfo(var1.reducedDebugInfo());
       this.minecraft.player.setShowDeathScreen(var1.showDeathScreen());
       this.minecraft.player.setDoLimitedCrafting(var1.doLimitedCrafting());
@@ -498,8 +515,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.quickPlayLog().log(this.minecraft);
       this.serverEnforcesSecureChat = var1.enforcesSecureChat();
       if (this.serverData != null && !this.seenInsecureChatWarning && !this.enforcesSecureChat()) {
-         SystemToast var10 = SystemToast.multiline(this.minecraft, SystemToast.SystemToastId.UNSECURE_SERVER_WARNING, UNSECURE_SERVER_TOAST_TITLE, UNSERURE_SERVER_TOAST);
-         this.minecraft.getToastManager().addToast(var10);
+         SystemToast var14 = SystemToast.multiline(this.minecraft, SystemToast.SystemToastId.UNSECURE_SERVER_WARNING, UNSECURE_SERVER_TOAST_TITLE, UNSERURE_SERVER_TOAST);
+         this.minecraft.getToastManager().addToast(var14);
          this.seenInsecureChatWarning = true;
       }
 
@@ -849,7 +866,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.getChatListener().clearQueue();
       this.sendChatAcknowledgement();
       ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
-      this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
+      this.minecraft.clearClientLevel(new ReceivingLevelScreen(() -> false, ReceivingLevelScreen.Reason.RECONFIGURING, this.random, this.connection));
       this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.customReportDetails, this.serverLinks)));
       this.send(ServerboundConfigurationAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
@@ -1100,15 +1117,15 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       LocalPlayer var5 = this.minecraft.player;
       ResourceKey var6 = var5.level().dimension();
       boolean var7 = var3 != var6;
-      ReceivingLevelScreen.Reason var8 = this.determineLevelLoadingReason(var5.isDeadOrDying(), var3, var6);
+      ReceivingLevelScreen.Reason var8 = this.determineLevelLoadingReason(var5.isDeadOrDying(), var2, var6);
       if (var7) {
          Map var9 = this.level.getAllMapData();
          boolean var10 = var2.isDebug();
          boolean var11 = var2.isFlat();
          int var12 = var2.seaLevel();
-         ClientLevel.ClientLevelData var13 = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), var11);
+         ClientLevel.ClientLevelData var13 = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), var11, var2.isMap());
          this.levelData = var13;
-         this.level = new ClientLevel(this, var13, var3, var4, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var10, var2.seed(), var12);
+         this.level = new ClientLevel(this, var13, var3, var4, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var10, var2.seed(), var12, var2.unlockedEffects(), var2.activeEffects());
          this.level.addMapData(var9);
          this.minecraft.setLevel(this.level, var8);
       }
@@ -1125,7 +1142,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var14 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
       }
 
-      this.startWaitingForNewLevel(var14, this.level, var8);
+      this.startWaitingForNewLevel(var14, this.level, var8, false);
       var14.setId(var5.getId());
       this.minecraft.player = var14;
       if (var7) {
@@ -1169,11 +1186,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
    }
 
-   private ReceivingLevelScreen.Reason determineLevelLoadingReason(boolean var1, ResourceKey<Level> var2, ResourceKey<Level> var3) {
+   private ReceivingLevelScreen.Reason determineLevelLoadingReason(boolean var1, CommonPlayerSpawnInfo var2, ResourceKey<Level> var3) {
       ReceivingLevelScreen.Reason var4 = ReceivingLevelScreen.Reason.OTHER;
       if (!var1) {
-         if (var2 != Level.NETHER && var3 != Level.NETHER) {
-            if (var2 == Level.END || var3 == Level.END) {
+         if (var2.isMap()) {
+            var4 = ReceivingLevelScreen.Reason.ENTERING_MAP;
+         } else if (var2.dimension() != Level.NETHER && var3 != Level.NETHER) {
+            if (var2.dimension() == Level.END || var3 == Level.END) {
                var4 = ReceivingLevelScreen.Reason.END_PORTAL;
             }
          } else {
@@ -1182,6 +1201,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       return var4;
+   }
+
+   public void handleUpdateUnlockedEffects(ClientboundUpdateUnlockedEffectsPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      this.minecraft.level.setUnlockedWorldEffects(var1.unlockedEffects());
    }
 
    public void handleExplosion(ClientboundExplodePacket var1) {
@@ -1209,9 +1233,25 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    }
 
-   public void handleOpenScreen(ClientboundOpenScreenPacket var1) {
+   public void handleWindowScreen(ClientboundOpenWindowPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      MenuScreens.create(var1.getType(), this.minecraft, var1.getContainerId(), var1.getTitle());
+      MenuScreens.create(var1.getType(), this.minecraft, var1.getContainerId(), var1.getTitle(), var1.getAdditionalData());
+   }
+
+   public void handleOpenDoorPacket(ClientboundOpenDoorPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      DoorScreen var2 = new DoorScreen(var1.containerId(), this.minecraft.player.getInventory(), var1.options());
+      this.minecraft.player.containerMenu = var2.getMenu();
+      this.minecraft.setScreen(var2);
+   }
+
+   public void handleUpdateScreen(ClientboundUpdateScreenPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      AbstractContainerMenu var2 = this.minecraft.player.containerMenu;
+      if (var2.getType() == var1.getType()) {
+         var2.updateData(var1.getAdditionalData());
+      }
+
    }
 
    public void handleContainerSetSlot(ClientboundContainerSetSlotPacket var1) {
@@ -1388,12 +1428,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    }
 
-   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2, ReceivingLevelScreen.Reason var3) {
-      this.levelLoadStatusManager = new LevelLoadStatusManager(var1, var2, this.minecraft.levelRenderer);
-      Minecraft var10000 = this.minecraft;
-      LevelLoadStatusManager var10003 = this.levelLoadStatusManager;
-      Objects.requireNonNull(var10003);
-      var10000.setScreen(new ReceivingLevelScreen(var10003::levelReady, var3));
+   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2, ReceivingLevelScreen.Reason var3, boolean var4) {
+      this.levelLoadStatusManager = new LevelLoadStatusManager(var1, var2, this.minecraft.levelRenderer, var4);
+      Screen var6 = this.minecraft.screen;
+      if (var6 instanceof ReceivingLevelScreen var5) {
+         LevelLoadStatusManager var10001 = this.levelLoadStatusManager;
+         Objects.requireNonNull(var10001);
+         var5.updateScreen(var10001::levelReady, var3);
+      } else {
+         Minecraft var10000 = this.minecraft;
+         LevelLoadStatusManager var10003 = this.levelLoadStatusManager;
+         Objects.requireNonNull(var10003);
+         var10000.setScreen(new ReceivingLevelScreen(var10003::levelReady, var3, this.random, (Connection)null));
+      }
+
    }
 
    public void handleMapItemData(ClientboundMapItemDataPacket var1) {
@@ -1415,6 +1463,18 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.level.globalLevelEvent(var1.getType(), var1.getPos(), var1.getData());
       } else {
          this.minecraft.level.levelEvent(var1.getType(), var1.getPos(), var1.getData());
+      }
+
+   }
+
+   public void handleUpdatePlayerUnlocksPacket(ClientboundUpdatePlayerUnlocksPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      Entity var2 = this.level.getEntity(var1.id());
+      if (var2 == this.minecraft.player) {
+         this.unlocks.update(var1);
+      } else if (var2 instanceof RemotePlayer) {
+         RemotePlayer var3 = (RemotePlayer)var2;
+         var3.updateUnlocks(var1);
       }
 
    }
@@ -1586,7 +1646,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity var2 = this.level.getEntity(var1.playerId());
       if (var2 == this.minecraft.player) {
          if (this.minecraft.player.shouldShowDeathScreen()) {
-            this.minecraft.setScreen(new DeathScreen(var1.message(), this.level.getLevelData().isHardcore()));
+            this.minecraft.setScreen(new DeathScreen(var1.message(), this.level.getLevelData().isHardcore(), this.level.getLevelData().isMap()));
          } else {
             this.minecraft.player.respawn();
          }
@@ -2216,6 +2276,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    }
 
+   public void handleChangeDimensionType(ClientboundChangeDimensionTypePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      this.level.setDimensionType(var1.dimensionType());
+   }
+
    private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, BitSet var5, BitSet var6, Iterator<byte[]> var7, boolean var8) {
       for(int var9 = 0; var9 < var3.getLightSectionCount(); ++var9) {
          int var10 = var3.getMinLightSection() + var9;
@@ -2273,6 +2338,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public ClientAdvancements getAdvancements() {
       return this.advancements;
+   }
+
+   public ClientPlayerUnlocks getUnlocks() {
+      return this.unlocks;
    }
 
    public CommandDispatcher<SharedSuggestionProvider> getCommands() {

@@ -45,6 +45,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.UnlockCondition;
 import org.slf4j.Logger;
 
 public class PlayerAdvancements {
@@ -210,6 +211,7 @@ public class PlayerAdvancements {
          this.progressChanged.add(var1);
          var3 = true;
          if (!var5 && var4.isDone()) {
+            UnlockCondition.onPlayerAdvancement(this.player.level(), this.player, var1);
             var1.value().rewards().grant(this.player);
             var1.value().display().ifPresent((var2x) -> {
                if (var2x.shouldAnnounceChat() && this.player.serverLevel().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {

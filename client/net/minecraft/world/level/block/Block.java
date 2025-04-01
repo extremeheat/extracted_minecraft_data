@@ -51,6 +51,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.UnlockCondition;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -305,25 +306,28 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static void dropResources(BlockState var0, Level var1, BlockPos var2) {
-      if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, (BlockEntity)null).forEach((var2x) -> popResource(var1, var2, var2x));
-         var0.spawnAfterBreak((ServerLevel)var1, var2, ItemStack.EMPTY, true);
+      if (var1 instanceof ServerLevel var3) {
+         UnlockCondition.onBlockDrops(var3, var2, var0);
+         getDrops(var0, var3, var2, (BlockEntity)null).forEach((var2x) -> popResource(var1, var2, var2x));
+         var0.spawnAfterBreak(var3, var2, ItemStack.EMPTY, true);
       }
 
    }
 
    public static void dropResources(BlockState var0, LevelAccessor var1, BlockPos var2, @Nullable BlockEntity var3) {
-      if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, var3).forEach((var2x) -> popResource((ServerLevel)var1, var2, var2x));
-         var0.spawnAfterBreak((ServerLevel)var1, var2, ItemStack.EMPTY, true);
+      if (var1 instanceof ServerLevel var4) {
+         UnlockCondition.onBlockDrops(var4, var2, var0);
+         getDrops(var0, var4, var2, var3).forEach((var2x) -> popResource((ServerLevel)var1, var2, var2x));
+         var0.spawnAfterBreak(var4, var2, ItemStack.EMPTY, true);
       }
 
    }
 
    public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
-      if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach((var2x) -> popResource(var1, var2, var2x));
-         var0.spawnAfterBreak((ServerLevel)var1, var2, var5, true);
+      if (var1 instanceof ServerLevel var6) {
+         UnlockCondition.onBlockDrops(var6, var2, var0);
+         getDrops(var0, var6, var2, var3, var4, var5).forEach((var2x) -> popResource(var1, var2, var2x));
+         var0.spawnAfterBreak(var6, var2, var5, true);
       }
 
    }
@@ -378,6 +382,14 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
+      if (var1.getIsBouncy()) {
+         double var5 = Math.abs(var4.getDeltaMovement().y);
+         if (var5 < 0.1 && !var4.isSteppingCarefully()) {
+            double var7 = 0.4 + var5 * 0.2;
+            var4.setDeltaMovement(var4.getDeltaMovement().multiply(var7, 1.0, var7));
+         }
+      }
+
    }
 
    @Nullable
@@ -403,15 +415,40 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
-      var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
+      if (var1.getIsBouncy()) {
+         if (!var4.isSuppressingBounce()) {
+            var4.causeFallDamage(var5, 0.0F, var1.damageSources().fall());
+         }
+      } else {
+         var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
+      }
+
    }
 
-   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
-      var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+   public void updateEntityMovementAfterFallOn(Level var1, Entity var2) {
+      if (var1.getIsBouncy()) {
+         if (var2.isSuppressingBounce()) {
+            var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+         } else {
+            this.bounceUp(var2);
+         }
+      } else {
+         var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+      }
+
    }
 
-   public float getFriction() {
-      return this.friction;
+   private void bounceUp(Entity var1) {
+      Vec3 var2 = var1.getDeltaMovement();
+      if (var2.y < 0.0) {
+         double var3 = var1 instanceof LivingEntity ? 1.0 : 0.8;
+         var1.setDeltaMovement(var2.x, -var2.y * var3, var2.z);
+      }
+
+   }
+
+   public float getFriction(boolean var1) {
+      return var1 ? 0.989F : this.friction;
    }
 
    public float getSpeedFactor() {

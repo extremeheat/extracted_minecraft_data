@@ -20,7 +20,7 @@ public class SaveOnCommand {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
          boolean var2 = false;
 
-         for(ServerLevel var4 : var1.getServer().getAllLevels()) {
+         for(ServerLevel var4 : var1.theGame().getAllLevels()) {
             if (var4 != null && var4.noSave) {
                var4.noSave = false;
                var2 = true;

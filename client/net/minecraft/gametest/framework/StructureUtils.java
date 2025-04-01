@@ -35,6 +35,8 @@ public class StructureUtils {
    public static final int DEFAULT_Y_SEARCH_RADIUS = 10;
    public static final String DEFAULT_TEST_STRUCTURES_DIR = "Minecraft.Server/src/test/convertables/data";
    public static Path testStructuresDir = Paths.get("Minecraft.Server/src/test/convertables/data");
+   public static final String DEFAULT_PLAIN_STRUCTURES_DIR = "Minecraft.Server/src/main/resources/data";
+   public static Path plainStructuresDir = Paths.get("Minecraft.Server/src/main/resources/data");
 
    public StructureUtils() {
       super();

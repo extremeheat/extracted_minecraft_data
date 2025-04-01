@@ -22,7 +22,6 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -337,11 +336,6 @@ public class WorldGenRegion implements WorldGenLevel {
       } else {
          return new DifficultyInstance(this.level.getDifficulty(), this.level.getDayTime(), 0L, this.level.getMoonBrightness());
       }
-   }
-
-   @Nullable
-   public MinecraftServer getServer() {
-      return this.level.getServer();
    }
 
    public ChunkSource getChunkSource() {

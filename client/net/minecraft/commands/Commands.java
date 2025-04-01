@@ -45,7 +45,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -80,6 +80,7 @@ import net.minecraft.server.commands.ItemCommands;
 import net.minecraft.server.commands.JfrCommand;
 import net.minecraft.server.commands.KickCommand;
 import net.minecraft.server.commands.KillCommand;
+import net.minecraft.server.commands.LevelCommand;
 import net.minecraft.server.commands.ListPlayersCommand;
 import net.minecraft.server.commands.LocateCommand;
 import net.minecraft.server.commands.LootCommand;
@@ -98,6 +99,7 @@ import net.minecraft.server.commands.RecipeCommand;
 import net.minecraft.server.commands.ReloadCommand;
 import net.minecraft.server.commands.ReturnCommand;
 import net.minecraft.server.commands.RideCommand;
+import net.minecraft.server.commands.RoomCommand;
 import net.minecraft.server.commands.RotateCommand;
 import net.minecraft.server.commands.SaveAllCommand;
 import net.minecraft.server.commands.SaveOffCommand;
@@ -127,6 +129,8 @@ import net.minecraft.server.commands.TimeCommand;
 import net.minecraft.server.commands.TitleCommand;
 import net.minecraft.server.commands.TransferCommand;
 import net.minecraft.server.commands.TriggerCommand;
+import net.minecraft.server.commands.UnlockCommand;
+import net.minecraft.server.commands.UnlockWorldEffectCommand;
 import net.minecraft.server.commands.WardenSpawnTrackerCommand;
 import net.minecraft.server.commands.WeatherCommand;
 import net.minecraft.server.commands.WhitelistCommand;
@@ -227,9 +231,11 @@ public class Commands {
          WardenSpawnTrackerCommand.register(this.dispatcher);
          SpawnArmorTrimsCommand.register(this.dispatcher);
          ServerPackCommand.register(this.dispatcher);
-         if (var1.includeDedicated) {
-            DebugConfigCommand.register(this.dispatcher);
-         }
+         LevelCommand.register(this.dispatcher, var2);
+         DebugConfigCommand.register(this.dispatcher);
+         UnlockCommand.register(this.dispatcher, var2);
+         UnlockWorldEffectCommand.register(this.dispatcher, var2);
+         RoomCommand.register(this.dispatcher);
       }
 
       if (var1.includeDedicated) {
@@ -328,7 +334,7 @@ public class Commands {
    }
 
    public static void executeCommandInContext(CommandSourceStack var0, Consumer<ExecutionContext<CommandSourceStack>> var1) {
-      MinecraftServer var2 = var0.getServer();
+      TheGame var2 = var0.theGame();
       ExecutionContext var3 = (ExecutionContext)CURRENT_EXECUTION_CONTEXT.get();
       boolean var4 = var3 == null;
       if (var4) {

@@ -26,7 +26,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -171,11 +171,11 @@ public class GameRules {
 
    }
 
-   public void assignFrom(GameRules var1, @Nullable MinecraftServer var2) {
+   public void assignFrom(GameRules var1, @Nullable TheGame var2) {
       var1.rules.keySet().forEach((var3) -> this.assignCap(var3, var1, var2));
    }
 
-   private <T extends Value<T>> void assignCap(Key<T> var1, GameRules var2, @Nullable MinecraftServer var3) {
+   private <T extends Value<T>> void assignCap(Key<T> var1, GameRules var2, @Nullable TheGame var3) {
       Value var4 = var2.getRule(var1);
       this.getRule(var1).setFrom(var4, var3);
    }
@@ -208,7 +208,7 @@ public class GameRules {
       RULE_REDUCEDDEBUGINFO = register("reducedDebugInfo", GameRules.Category.MISC, GameRules.BooleanValue.create(false, (var0, var1) -> {
          int var2 = var1.get() ? 22 : 23;
 
-         for(ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
+         for(ServerPlayer var4 : var0.playerList().getPlayers()) {
             var4.connection.send(new ClientboundEntityEventPacket(var4, (byte)var2));
          }
 
@@ -220,7 +220,7 @@ public class GameRules {
       RULE_MAX_ENTITY_CRAMMING = register("maxEntityCramming", GameRules.Category.MOBS, GameRules.IntegerValue.create(24));
       RULE_WEATHER_CYCLE = register("doWeatherCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
       RULE_LIMITED_CRAFTING = register("doLimitedCrafting", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
+         for(ServerPlayer var3 : var0.playerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LIMITED_CRAFTING, var1.get() ? 1.0F : 0.0F));
          }
 
@@ -232,7 +232,7 @@ public class GameRules {
       RULE_DISABLE_RAIDS = register("disableRaids", GameRules.Category.MOBS, GameRules.BooleanValue.create(false));
       RULE_DOINSOMNIA = register("doInsomnia", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true));
       RULE_DO_IMMEDIATE_RESPAWN = register("doImmediateRespawn", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
+         for(ServerPlayer var3 : var0.playerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.IMMEDIATE_RESPAWN, var1.get() ? 1.0F : 0.0F));
          }
 
@@ -345,12 +345,12 @@ public class GameRules {
    public static class Type<T extends Value<T>> {
       final Supplier<ArgumentType<?>> argument;
       private final Function<Type<T>, T> constructor;
-      final BiConsumer<MinecraftServer, T> callback;
+      final BiConsumer<TheGame, T> callback;
       private final VisitorCaller<T> visitorCaller;
       final Class<T> valueClass;
       final FeatureFlagSet requiredFeatures;
 
-      Type(Supplier<ArgumentType<?>> var1, Function<Type<T>, T> var2, BiConsumer<MinecraftServer, T> var3, VisitorCaller<T> var4, Class<T> var5, FeatureFlagSet var6) {
+      Type(Supplier<ArgumentType<?>> var1, Function<Type<T>, T> var2, BiConsumer<TheGame, T> var3, VisitorCaller<T> var4, Class<T> var5, FeatureFlagSet var6) {
          super();
          this.argument = var1;
          this.constructor = var2;
@@ -389,10 +389,10 @@ public class GameRules {
 
       public void setFromArgument(CommandContext<CommandSourceStack> var1, String var2) {
          this.updateFromArgument(var1, var2);
-         this.onChanged(((CommandSourceStack)var1.getSource()).getServer());
+         this.onChanged(((CommandSourceStack)var1.getSource()).theGame());
       }
 
-      protected void onChanged(@Nullable MinecraftServer var1) {
+      protected void onChanged(@Nullable TheGame var1) {
          if (var1 != null) {
             this.type.callback.accept(var1, this.getSelf());
          }
@@ -413,17 +413,17 @@ public class GameRules {
 
       protected abstract T copy();
 
-      public abstract void setFrom(T var1, @Nullable MinecraftServer var2);
+      public abstract void setFrom(T var1, @Nullable TheGame var2);
    }
 
    public static class IntegerValue extends Value<IntegerValue> {
       private int value;
 
-      private static Type<IntegerValue> create(int var0, BiConsumer<MinecraftServer, IntegerValue> var1) {
+      private static Type<IntegerValue> create(int var0, BiConsumer<TheGame, IntegerValue> var1) {
          return new Type<IntegerValue>(IntegerArgumentType::integer, (var1x) -> new IntegerValue(var1x, var0), var1, GameRuleTypeVisitor::visitInteger, IntegerValue.class, FeatureFlagSet.of());
       }
 
-      static Type<IntegerValue> create(int var0, int var1, int var2, FeatureFlagSet var3, BiConsumer<MinecraftServer, IntegerValue> var4) {
+      static Type<IntegerValue> create(int var0, int var1, int var2, FeatureFlagSet var3, BiConsumer<TheGame, IntegerValue> var4) {
          return new Type<IntegerValue>(() -> IntegerArgumentType.integer(var1, var2), (var1x) -> new IntegerValue(var1x, var0), var4, GameRuleTypeVisitor::visitInteger, IntegerValue.class, var3);
       }
 
@@ -445,7 +445,7 @@ public class GameRules {
          return this.value;
       }
 
-      public void set(int var1, @Nullable MinecraftServer var2) {
+      public void set(int var1, @Nullable TheGame var2) {
          this.value = var1;
          this.onChanged(var2);
       }
@@ -492,7 +492,7 @@ public class GameRules {
          return new IntegerValue(this.type, this.value);
       }
 
-      public void setFrom(IntegerValue var1, @Nullable MinecraftServer var2) {
+      public void setFrom(IntegerValue var1, @Nullable TheGame var2) {
          this.value = var1.value;
          this.onChanged(var2);
       }
@@ -511,7 +511,7 @@ public class GameRules {
    public static class BooleanValue extends Value<BooleanValue> {
       private boolean value;
 
-      static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1) {
+      static Type<BooleanValue> create(boolean var0, BiConsumer<TheGame, BooleanValue> var1) {
          return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, BooleanValue.class, FeatureFlagSet.of());
       }
 
@@ -533,7 +533,7 @@ public class GameRules {
          return this.value;
       }
 
-      public void set(boolean var1, @Nullable MinecraftServer var2) {
+      public void set(boolean var1, @Nullable TheGame var2) {
          this.value = var1;
          this.onChanged(var2);
       }
@@ -558,7 +558,7 @@ public class GameRules {
          return new BooleanValue(this.type, this.value);
       }
 
-      public void setFrom(BooleanValue var1, @Nullable MinecraftServer var2) {
+      public void setFrom(BooleanValue var1, @Nullable TheGame var2) {
          this.value = var1.value;
          this.onChanged(var2);
       }

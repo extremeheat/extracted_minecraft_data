@@ -34,6 +34,7 @@ import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.util.Mth;
@@ -51,6 +52,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -158,19 +160,22 @@ public class MultiPlayerGameMode {
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var4, 0.0F);
             this.startPrediction(this.minecraft.level, (var4x) -> {
                boolean var5 = !var4.isAir();
-               if (var5 && this.destroyProgress == 0.0F) {
-                  var4.attack(this.minecraft.level, var1, this.minecraft.player);
-               }
+               boolean var6 = !var4.is(Blocks.FIRE) || !this.minecraft.player.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE) || !this.minecraft.player.getMainHandItem().isEmpty();
+               if (var6) {
+                  if (var5 && this.destroyProgress == 0.0F) {
+                     var4.attack(this.minecraft.level, var1, this.minecraft.player);
+                  }
 
-               if (var5 && var4.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1) >= 1.0F) {
-                  this.destroyBlock(var1);
-               } else {
-                  this.isDestroying = true;
-                  this.destroyBlockPos = var1;
-                  this.destroyingItem = this.minecraft.player.getMainHandItem();
-                  this.destroyProgress = 0.0F;
-                  this.destroyTicks = 0.0F;
-                  this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
+                  if (var5 && var4.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1) >= 1.0F) {
+                     this.destroyBlock(var1);
+                  } else {
+                     this.isDestroying = true;
+                     this.destroyBlockPos = var1;
+                     this.destroyingItem = this.minecraft.player.getMainHandItem();
+                     this.destroyProgress = 0.0F;
+                     this.destroyTicks = 0.0F;
+                     this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
+                  }
                }
 
                return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var4x);

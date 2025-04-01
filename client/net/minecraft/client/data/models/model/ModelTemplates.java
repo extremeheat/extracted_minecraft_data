@@ -156,12 +156,15 @@ public class ModelTemplates {
    public static final ModelTemplate BUNDLE_OPEN_BACK_INVENTORY;
    public static final ModelTemplate BOW;
    public static final ModelTemplate CROSSBOW;
+   public static final ModelTemplate FLAT_BLOCK;
    public static final ModelTemplate CANDLE;
    public static final ModelTemplate TWO_CANDLES;
    public static final ModelTemplate THREE_CANDLES;
    public static final ModelTemplate FOUR_CANDLES;
    public static final ModelTemplate CANDLE_CAKE;
    public static final ModelTemplate SCULK_SHRIEKER;
+   public static final ModelTemplate MINE_CRAFTER;
+   public static final ModelTemplate MINE_REVISITOR;
    public static final ModelTemplate VAULT;
    public static final ModelTemplate FLAT_HANDHELD_MACE_ITEM;
 
@@ -341,12 +344,15 @@ public class ModelTemplates {
       BUNDLE_OPEN_BACK_INVENTORY = createItem("template_bundle_open_back", "_open_back", TextureSlot.LAYER0);
       BOW = createItem("bow", TextureSlot.LAYER0);
       CROSSBOW = createItem("crossbow", TextureSlot.LAYER0);
+      FLAT_BLOCK = create("block_generated", TextureSlot.LAYER0);
       CANDLE = create("template_candle", TextureSlot.ALL, TextureSlot.PARTICLE);
       TWO_CANDLES = create("template_two_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
       THREE_CANDLES = create("template_three_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
       FOUR_CANDLES = create("template_four_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
       CANDLE_CAKE = create("template_cake_with_candle", TextureSlot.CANDLE, TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE);
       SCULK_SHRIEKER = create("template_sculk_shrieker", TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE, TextureSlot.INNER_TOP);
+      MINE_CRAFTER = create("template_mine_crafter", TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE, TextureSlot.INNER_TOP);
+      MINE_REVISITOR = create("template_mine_revisitor", TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE, TextureSlot.INNER_TOP);
       VAULT = create("template_vault", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.FRONT);
       FLAT_HANDHELD_MACE_ITEM = createItem("handheld_mace", TextureSlot.LAYER0);
    }

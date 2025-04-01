@@ -20,6 +20,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.TriState;
 
@@ -50,12 +51,19 @@ public abstract class RenderType extends RenderStateShard {
    private static final Function<ResourceLocation, RenderType> ENTITY_SHADOW;
    private static final Function<ResourceLocation, RenderType> DRAGON_EXPLOSION_ALPHA;
    private static final Function<ResourceLocation, RenderType> EYES;
+   private static final Function<ResourceLocation, RenderType> VERY_BRIGHT_VERY_HOT_FIRE;
    private static final RenderType LEASH;
    private static final RenderType WATER_MASK;
    private static final RenderType ARMOR_ENTITY_GLINT;
    private static final RenderType GLINT_TRANSLUCENT;
+   private static final RenderType MAP_WON_GLINT_TRANSLUCENT;
+   private static final RenderType MAP_LOST_GLINT_TRANSLUCENT;
    private static final RenderType GLINT;
+   private static final RenderType MAP_WON_GLINT;
+   private static final RenderType MAP_LOST_GLINT;
    private static final RenderType ENTITY_GLINT;
+   private static final RenderType ENTITY_MAP_WON_GLINT;
+   private static final RenderType ENTITY_MAP_LOST_GLINT;
    private static final Function<ResourceLocation, RenderType> CRUMBLING;
    private static final Function<ResourceLocation, RenderType> TEXT;
    private static final RenderType TEXT_BACKGROUND;
@@ -71,6 +79,8 @@ public abstract class RenderType extends RenderStateShard {
    private static final RenderType TRIPWIRE;
    private static final RenderType END_PORTAL;
    private static final RenderType END_GATEWAY;
+   private static final RenderType MAP_GATEWAY;
+   private static final RenderType SKY_BLOCK;
    public static final CompositeRenderType LINES;
    public static final CompositeRenderType SECONDARY_BLOCK_OUTLINE;
    public static final CompositeRenderType LINE_STRIP;
@@ -218,6 +228,10 @@ public abstract class RenderType extends RenderStateShard {
       return (RenderType)ENTITY_TRANSLUCENT_EMISSIVE.apply(var0, false);
    }
 
+   public static RenderType veryBrightVeryHotFire(ResourceLocation var0) {
+      return (RenderType)VERY_BRIGHT_VERY_HOT_FIRE.apply(var0);
+   }
+
    public static RenderType breezeWind(ResourceLocation var0, float var1, float var2) {
       return create("breeze_wind", 1536, false, true, RenderPipelines.BREEZE_WIND, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setTexturingState(new RenderStateShard.OffsetTexturingStateShard(var1, var2)).setLightmapState(LIGHTMAP).setOverlayState(NO_OVERLAY).createCompositeState(false));
    }
@@ -242,16 +256,37 @@ public abstract class RenderType extends RenderStateShard {
       return ARMOR_ENTITY_GLINT;
    }
 
-   public static RenderType glintTranslucent() {
-      return GLINT_TRANSLUCENT;
+   public static RenderType glintTranslucent(ItemStackRenderState.FoilType var0) {
+      RenderType var10000;
+      switch (var0) {
+         case WON -> var10000 = MAP_WON_GLINT_TRANSLUCENT;
+         case LOST -> var10000 = MAP_LOST_GLINT_TRANSLUCENT;
+         default -> var10000 = GLINT_TRANSLUCENT;
+      }
+
+      return var10000;
    }
 
-   public static RenderType glint() {
-      return GLINT;
+   public static RenderType glint(ItemStackRenderState.FoilType var0) {
+      RenderType var10000;
+      switch (var0) {
+         case WON -> var10000 = MAP_WON_GLINT;
+         case LOST -> var10000 = MAP_LOST_GLINT;
+         default -> var10000 = GLINT;
+      }
+
+      return var10000;
    }
 
-   public static RenderType entityGlint() {
-      return ENTITY_GLINT;
+   public static RenderType entityGlint(ItemStackRenderState.FoilType var0) {
+      RenderType var10000;
+      switch (var0) {
+         case WON -> var10000 = ENTITY_MAP_WON_GLINT;
+         case LOST -> var10000 = ENTITY_MAP_LOST_GLINT;
+         default -> var10000 = ENTITY_GLINT;
+      }
+
+      return var10000;
    }
 
    public static RenderType crumbling(ResourceLocation var0) {
@@ -312,6 +347,14 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType endGateway() {
       return END_GATEWAY;
+   }
+
+   public static RenderType mapGateway() {
+      return MAP_GATEWAY;
+   }
+
+   public static RenderType skyBlock() {
+      return SKY_BLOCK;
    }
 
    public static RenderType lines() {
@@ -557,12 +600,22 @@ public abstract class RenderType extends RenderStateShard {
          RenderStateShard.TextureStateShard var1 = new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false);
          return create("eyes", 1536, false, true, RenderPipelines.EYES, RenderType.CompositeState.builder().setTextureState(var1).createCompositeState(false));
       }));
+      VERY_BRIGHT_VERY_HOT_FIRE = Util.memoize((Function)((var0) -> {
+         RenderStateShard.TextureStateShard var1 = new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false);
+         return create("very_bright_very_hot_fire", 1536, false, true, RenderPipelines.VERY_BRIGHT_VERY_HOT_FIRE, RenderType.CompositeState.builder().setTextureState(var1).createCompositeState(false));
+      }));
       LEASH = create("leash", 1536, RenderPipelines.LEASH, RenderType.CompositeState.builder().setTextureState(NO_TEXTURE).setLightmapState(LIGHTMAP).createCompositeState(false));
       WATER_MASK = create("water_mask", 1536, RenderPipelines.WATER_MASK, RenderType.CompositeState.builder().setTextureState(NO_TEXTURE).createCompositeState(false));
       ARMOR_ENTITY_GLINT = create("armor_entity_glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ARMOR, TriState.DEFAULT, false)).setTexturingState(ARMOR_ENTITY_GLINT_TEXTURING).setLayeringState(VIEW_OFFSET_Z_LAYERING).createCompositeState(false));
       GLINT_TRANSLUCENT = create("glint_translucent", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, TriState.DEFAULT, false)).setTexturingState(GLINT_TEXTURING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
+      MAP_WON_GLINT_TRANSLUCENT = create("map_won_glint_translucent", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.MAP_WON_GLINT, TriState.DEFAULT, false)).setTexturingState(GLINT_TEXTURING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
+      MAP_LOST_GLINT_TRANSLUCENT = create("map_lost_glint_translucent", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.MAP_LOST_GLINT, TriState.DEFAULT, false)).setTexturingState(GLINT_TEXTURING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
       GLINT = create("glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, TriState.DEFAULT, false)).setTexturingState(GLINT_TEXTURING).createCompositeState(false));
+      MAP_WON_GLINT = create("map_won_glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.MAP_WON_GLINT, TriState.DEFAULT, false)).setTexturingState(GLINT_TEXTURING).createCompositeState(false));
+      MAP_LOST_GLINT = create("map_lost_glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.MAP_LOST_GLINT, TriState.DEFAULT, false)).setTexturingState(GLINT_TEXTURING).createCompositeState(false));
       ENTITY_GLINT = create("entity_glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, TriState.DEFAULT, false)).setTexturingState(ENTITY_GLINT_TEXTURING).createCompositeState(false));
+      ENTITY_MAP_WON_GLINT = create("entity_map_won_glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.MAP_WON_GLINT, TriState.DEFAULT, false)).setTexturingState(ENTITY_GLINT_TEXTURING).createCompositeState(false));
+      ENTITY_MAP_LOST_GLINT = create("entity_map_lost_glint", 1536, RenderPipelines.GLINT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.MAP_LOST_GLINT, TriState.DEFAULT, false)).setTexturingState(ENTITY_GLINT_TEXTURING).createCompositeState(false));
       CRUMBLING = Util.memoize((Function)((var0) -> {
          RenderStateShard.TextureStateShard var1 = new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false);
          return create("crumbling", 1536, false, true, RenderPipelines.CRUMBLING, RenderType.CompositeState.builder().setTextureState(var1).createCompositeState(false));
@@ -581,6 +634,8 @@ public abstract class RenderType extends RenderStateShard {
       TRIPWIRE = create("tripwire", 1536, true, true, RenderPipelines.TRIPWIRE, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).setOutputState(WEATHER_TARGET).createCompositeState(true));
       END_PORTAL = create("end_portal", 1536, false, false, RenderPipelines.END_PORTAL, RenderType.CompositeState.builder().setTextureState(RenderStateShard.MultiTextureStateShard.builder().add(TheEndPortalRenderer.END_SKY_LOCATION, false, false).add(TheEndPortalRenderer.END_PORTAL_LOCATION, false, false).build()).createCompositeState(false));
       END_GATEWAY = create("end_gateway", 1536, false, false, RenderPipelines.END_GATEWAY, RenderType.CompositeState.builder().setTextureState(RenderStateShard.MultiTextureStateShard.builder().add(TheEndPortalRenderer.END_SKY_LOCATION, false, false).add(TheEndPortalRenderer.END_PORTAL_LOCATION, false, false).build()).createCompositeState(false));
+      MAP_GATEWAY = create("map_gateway", 1536, false, false, RenderPipelines.MAP_GATEWAY, RenderType.CompositeState.builder().createCompositeState(false));
+      SKY_BLOCK = create("sky_block", 1536, false, false, RenderPipelines.SKY_BLOCK, RenderType.CompositeState.builder().setTextureState(BLOCKS_AND_SKY).setTexturingState(SHIMMERING_GLINT_TEXTURING).createCompositeState(false));
       LINES = create("lines", 1536, RenderPipelines.LINES, RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty())).setLayeringState(VIEW_OFFSET_Z_LAYERING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
       SECONDARY_BLOCK_OUTLINE = create("secondary_block_outline", 1536, RenderPipelines.SECONDARY_BLOCK_OUTLINE, RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(7.0))).setLayeringState(VIEW_OFFSET_Z_LAYERING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
       LINE_STRIP = create("line_strip", 1536, RenderPipelines.LINE_STRIP, RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty())).setLayeringState(VIEW_OFFSET_Z_LAYERING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
@@ -596,7 +651,7 @@ public abstract class RenderType extends RenderStateShard {
       WEATHER_DEPTH_WRITE = createWeather(RenderPipelines.WEATHER_DEPTH_WRITE);
       WEATHER_NO_DEPTH_WRITE = createWeather(RenderPipelines.WEATHER_NO_DEPTH_WRITE);
       SUNRISE_SUNSET = create("sunrise_sunset", 1536, false, false, RenderPipelines.SUNRISE_SUNSET, RenderType.CompositeState.builder().createCompositeState(false));
-      CELESTIAL = Util.memoize((Function)((var0) -> create("celestial", 1536, false, false, RenderPipelines.CELESTIAL, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).createCompositeState(false))));
+      CELESTIAL = Util.memoize((Function)((var0) -> create("celestial", 1536, false, false, RenderPipelines.CELESTIAL, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setOutputState(SKY_TARGET).createCompositeState(false))));
       BLOCK_SCREEN_EFFECT = Util.memoize((Function)((var0) -> create("block_screen_effect", 1536, false, false, RenderPipelines.BLOCK_SCREEN_EFFECT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).createCompositeState(false))));
       FIRE_SCREEN_EFFECT = Util.memoize((Function)((var0) -> create("fire_screen_effect", 1536, false, false, RenderPipelines.FIRE_SCREEN_EFFECT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).createCompositeState(false))));
       GUI = create("gui", 786432, RenderPipelines.GUI, RenderType.CompositeState.builder().createCompositeState(false));
@@ -610,7 +665,7 @@ public abstract class RenderType extends RenderStateShard {
       VIGNETTE = Util.memoize((Function)((var0) -> create("vignette", 786432, RenderPipelines.VIGNETTE, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.DEFAULT, false)).createCompositeState(false))));
       CROSSHAIR = Util.memoize((Function)((var0) -> create("crosshair", 786432, RenderPipelines.CROSSHAIR, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).createCompositeState(false))));
       MOJANG_LOGO = create("mojang_logo", 786432, RenderPipelines.MOJANG_LOGO, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION, TriState.DEFAULT, false)).createCompositeState(false));
-      CHUNK_BUFFER_LAYERS = ImmutableList.of(solid(), cutoutMipped(), cutout(), translucent(), tripwire());
+      CHUNK_BUFFER_LAYERS = ImmutableList.of(skyBlock(), solid(), cutoutMipped(), cutout(), translucent(), tripwire());
    }
 
    protected static enum OutlineProperty {

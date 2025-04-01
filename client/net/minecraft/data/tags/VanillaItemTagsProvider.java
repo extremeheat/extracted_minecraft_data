@@ -76,6 +76,8 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.COAL_ORES, ItemTags.COAL_ORES);
       this.copy(BlockTags.EMERALD_ORES, ItemTags.EMERALD_ORES);
       this.copy(BlockTags.COPPER_ORES, ItemTags.COPPER_ORES);
+      this.tag(ItemTags.ORE).addTag(ItemTags.GOLD_ORES).addTag(ItemTags.IRON_ORES).addTag(ItemTags.DIAMOND_ORES).addTag(ItemTags.REDSTONE_ORES).addTag(ItemTags.LAPIS_ORES).addTag(ItemTags.COAL_ORES).addTag(ItemTags.EMERALD_ORES).addTag(ItemTags.COPPER_ORES);
+      this.tag(ItemTags.INGOT).add(Items.COPPER_INGOT, Items.IRON_INGOT, Items.GOLD_INGOT, Items.NETHERITE_INGOT);
       this.copy(BlockTags.DIRT, ItemTags.DIRT);
       this.copy(BlockTags.TERRACOTTA, ItemTags.TERRACOTTA);
       this.copy(BlockTags.COMPLETES_FIND_TREE_TUTORIAL, ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
@@ -103,7 +105,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.BREWING_FUEL).add(Items.BLAZE_POWDER);
       this.tag(ItemTags.NON_FLAMMABLE_WOOD).add(Items.WARPED_STEM, Items.STRIPPED_WARPED_STEM, Items.WARPED_HYPHAE, Items.STRIPPED_WARPED_HYPHAE, Items.CRIMSON_STEM, Items.STRIPPED_CRIMSON_STEM, Items.CRIMSON_HYPHAE, Items.STRIPPED_CRIMSON_HYPHAE, Items.CRIMSON_PLANKS, Items.WARPED_PLANKS, Items.CRIMSON_SLAB, Items.WARPED_SLAB, Items.CRIMSON_PRESSURE_PLATE, Items.WARPED_PRESSURE_PLATE, Items.CRIMSON_FENCE, Items.WARPED_FENCE, Items.CRIMSON_TRAPDOOR, Items.WARPED_TRAPDOOR, Items.CRIMSON_FENCE_GATE, Items.WARPED_FENCE_GATE, Items.CRIMSON_STAIRS, Items.WARPED_STAIRS, Items.CRIMSON_BUTTON, Items.WARPED_BUTTON, Items.CRIMSON_DOOR, Items.WARPED_DOOR, Items.CRIMSON_SIGN, Items.WARPED_SIGN, Items.WARPED_HANGING_SIGN, Items.CRIMSON_HANGING_SIGN);
       this.tag(ItemTags.WOODEN_TOOL_MATERIALS).addTag(ItemTags.PLANKS);
-      this.tag(ItemTags.STONE_TOOL_MATERIALS).add(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE);
+      this.tag(ItemTags.STONE_TOOL_MATERIALS).add(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE, Items.ANDESITE, Items.DIORITE, Items.GRANITE, Items.END_STONE, Items.TUFF);
       this.tag(ItemTags.IRON_TOOL_MATERIALS).add(Items.IRON_INGOT);
       this.tag(ItemTags.GOLD_TOOL_MATERIALS).add(Items.GOLD_INGOT);
       this.tag(ItemTags.DIAMOND_TOOL_MATERIALS).add(Items.DIAMOND);
@@ -116,7 +118,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.REPAIRS_NETHERITE_ARMOR).add(Items.NETHERITE_INGOT);
       this.tag(ItemTags.REPAIRS_TURTLE_HELMET).add(Items.TURTLE_SCUTE);
       this.tag(ItemTags.REPAIRS_WOLF_ARMOR).add(Items.ARMADILLO_SCUTE);
-      this.tag(ItemTags.STONE_CRAFTING_MATERIALS).add(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE);
+      this.tag(ItemTags.STONE_CRAFTING_MATERIALS).add(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE, Items.ANDESITE, Items.DIORITE, Items.GRANITE, Items.END_STONE, Items.TUFF);
       this.tag(ItemTags.FREEZE_IMMUNE_WEARABLES).add(Items.LEATHER_BOOTS, Items.LEATHER_LEGGINGS, Items.LEATHER_CHESTPLATE, Items.LEATHER_HELMET, Items.LEATHER_HORSE_ARMOR);
       this.tag(ItemTags.AXOLOTL_FOOD).add(Items.TROPICAL_FISH_BUCKET);
       this.tag(ItemTags.CLUSTER_MAX_HARVESTABLES).add(Items.DIAMOND_PICKAXE, Items.GOLDEN_PICKAXE, Items.IRON_PICKAXE, Items.NETHERITE_PICKAXE, Items.STONE_PICKAXE, Items.WOODEN_PICKAXE);
@@ -135,7 +137,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS).add(Items.BOW).add(Items.CROSSBOW);
       this.tag(ItemTags.DECORATED_POT_SHERDS).add(Items.ANGLER_POTTERY_SHERD, Items.ARCHER_POTTERY_SHERD, Items.ARMS_UP_POTTERY_SHERD, Items.BLADE_POTTERY_SHERD, Items.BREWER_POTTERY_SHERD, Items.BURN_POTTERY_SHERD, Items.DANGER_POTTERY_SHERD, Items.EXPLORER_POTTERY_SHERD, Items.FRIEND_POTTERY_SHERD, Items.HEART_POTTERY_SHERD, Items.HEARTBREAK_POTTERY_SHERD, Items.HOWL_POTTERY_SHERD, Items.MINER_POTTERY_SHERD, Items.MOURNER_POTTERY_SHERD, Items.PLENTY_POTTERY_SHERD, Items.PRIZE_POTTERY_SHERD, Items.SHEAF_POTTERY_SHERD, Items.SHELTER_POTTERY_SHERD, Items.SKULL_POTTERY_SHERD, Items.SNORT_POTTERY_SHERD, Items.FLOW_POTTERY_SHERD, Items.GUSTER_POTTERY_SHERD, Items.SCRAPE_POTTERY_SHERD);
       this.tag(ItemTags.DECORATED_POT_INGREDIENTS).add(Items.BRICK).addTag(ItemTags.DECORATED_POT_SHERDS);
-      this.tag(ItemTags.FOOT_ARMOR).add(Items.LEATHER_BOOTS, Items.CHAINMAIL_BOOTS, Items.GOLDEN_BOOTS, Items.IRON_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
+      this.tag(ItemTags.FOOT_ARMOR).add(Items.LEATHER_BOOTS, Items.CHAINMAIL_BOOTS, Items.GOLDEN_BOOTS, Items.IRON_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS, Items.SHAZBOOTS);
       this.tag(ItemTags.LEG_ARMOR).add(Items.LEATHER_LEGGINGS, Items.CHAINMAIL_LEGGINGS, Items.GOLDEN_LEGGINGS, Items.IRON_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
       this.tag(ItemTags.CHEST_ARMOR).add(Items.LEATHER_CHESTPLATE, Items.CHAINMAIL_CHESTPLATE, Items.GOLDEN_CHESTPLATE, Items.IRON_CHESTPLATE, Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE);
       this.tag(ItemTags.HEAD_ARMOR).add(Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
@@ -184,7 +186,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.LLAMA_TEMPT_ITEMS).add(Items.HAY_BLOCK);
       this.tag(ItemTags.PANDA_FOOD).add(Items.BAMBOO);
       this.tag(ItemTags.PANDA_EATS_FROM_GROUND).addTag(ItemTags.PANDA_FOOD).add(Items.CAKE);
-      this.tag(ItemTags.PIG_FOOD).add(Items.CARROT, Items.POTATO, Items.BEETROOT);
+      this.tag(ItemTags.PIG_FOOD).add(Items.CARROT, Items.POTATO, Items.BEETROOT, Items.GOLDEN_CARROT);
       this.tag(ItemTags.RABBIT_FOOD).add(Items.CARROT, Items.GOLDEN_CARROT, Items.DANDELION);
       this.tag(ItemTags.STRIDER_FOOD).add(Items.WARPED_FUNGUS);
       this.tag(ItemTags.STRIDER_TEMPT_ITEMS).addTag(ItemTags.STRIDER_FOOD).add(Items.WARPED_FUNGUS_ON_A_STICK);
@@ -196,5 +198,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.GOAT_FOOD).add(Items.WHEAT);
       this.tag(ItemTags.MAP_INVISIBILITY_EQUIPMENT).add(Items.CARVED_PUMPKIN);
       this.tag(ItemTags.GAZE_DISGUISE_EQUIPMENT).add(Items.CARVED_PUMPKIN);
+      this.tag(ItemTags.AMETHYST_CRYSTALS).add(Items.AMETHYST_BLOCK, Items.SMALL_AMETHYST_BUD, Items.MEDIUM_AMETHYST_BUD, Items.LARGE_AMETHYST_BUD, Items.AMETHYST_CLUSTER);
+      this.tag(ItemTags.CARRY_OVER).add(Items.TROPHY, Items.MOB_TROPHY);
    }
 }

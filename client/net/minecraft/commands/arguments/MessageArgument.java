@@ -19,7 +19,6 @@ import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.FilteredText;
 
@@ -55,17 +54,16 @@ public class MessageArgument implements SignedArgument<Message> {
    }
 
    private static void resolveSignedMessage(Consumer<PlayerChatMessage> var0, CommandSourceStack var1, PlayerChatMessage var2) {
-      MinecraftServer var3 = var1.getServer();
-      CompletableFuture var4 = filterPlainText(var1, var2);
-      Component var5 = var3.getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
-      var1.getChatMessageChainer().append(var4, (var3x) -> {
-         PlayerChatMessage var4 = var2.withUnsignedContent(var5).filter(var3x.mask());
-         var0.accept(var4);
+      CompletableFuture var3 = filterPlainText(var1, var2);
+      Component var4 = var1.theGame().server().getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
+      var1.getChatMessageChainer().append(var3, (var3x) -> {
+         PlayerChatMessage var4x = var2.withUnsignedContent(var4).filter(var3x.mask());
+         var0.accept(var4x);
       });
    }
 
    private static void resolveDisguisedMessage(Consumer<PlayerChatMessage> var0, CommandSourceStack var1, PlayerChatMessage var2) {
-      ChatDecorator var3 = var1.getServer().getChatDecorator();
+      ChatDecorator var3 = var1.theGame().server().getChatDecorator();
       Component var4 = var3.decorate(var1.getPlayer(), var2.decoratedContent());
       var0.accept(var2.withUnsignedContent(var4));
    }

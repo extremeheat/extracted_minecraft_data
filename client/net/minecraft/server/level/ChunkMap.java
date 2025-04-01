@@ -92,7 +92,6 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SerializableChunkData;
 import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.entity.EntityAccess;
-import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
@@ -168,25 +167,26 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       this.level = var1;
       RegistryAccess var16 = var1.registryAccess();
       long var17 = var1.getSeed();
-      if (var8 instanceof NoiseBasedChunkGenerator var19) {
-         this.randomState = RandomState.create((NoiseGeneratorSettings)((NoiseGeneratorSettings)var19.generatorSettings().value()), var16.lookupOrThrow(Registries.NOISE), var17);
+      NoiseGeneratorSettings var19 = var8.getNoiseGeneratorSettings();
+      if (var19 != null) {
+         this.randomState = RandomState.create((NoiseGeneratorSettings)var19, var16.lookupOrThrow(Registries.NOISE), var17);
       } else {
          this.randomState = RandomState.create((NoiseGeneratorSettings)NoiseGeneratorSettings.dummy(), var16.lookupOrThrow(Registries.NOISE), var17);
       }
 
       this.chunkGeneratorState = var8.createState(var16.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, var17);
       this.mainThreadExecutor = var6;
-      ConsecutiveExecutor var21 = new ConsecutiveExecutor(var5, "worldgen");
+      ConsecutiveExecutor var20 = new ConsecutiveExecutor(var5, "worldgen");
       this.progressListener = var9;
       this.chunkStatusListener = var10;
-      ConsecutiveExecutor var20 = new ConsecutiveExecutor(var5, "light");
-      this.worldgenTaskDispatcher = new ChunkTaskDispatcher(var21, var5);
-      this.lightTaskDispatcher = new ChunkTaskDispatcher(var20, var5);
-      this.lightEngine = new ThreadedLevelLightEngine(var7, this, this.level.dimensionType().hasSkyLight(), var20, this.lightTaskDispatcher);
+      ConsecutiveExecutor var21 = new ConsecutiveExecutor(var5, "light");
+      this.worldgenTaskDispatcher = new ChunkTaskDispatcher(var20, var5);
+      this.lightTaskDispatcher = new ChunkTaskDispatcher(var21, var5);
+      this.lightEngine = new ThreadedLevelLightEngine(var7, this, this.level.dimensionType().hasSkyLight(), var21, this.lightTaskDispatcher);
       this.distanceManager = new DistanceManager(var12, var5, var6);
       this.overworldDataStorage = var11;
       this.ticketStorage = var12;
-      this.poiManager = new PoiManager(new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "poi"), var15.resolve("poi"), var3, var14, var16, var1.getServer(), var1);
+      this.poiManager = new PoiManager(new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "poi"), var15.resolve("poi"), var3, var14, var16, var1.chunkIOErrorReporter(), var1);
       this.setServerViewDistance(var13);
       this.worldGenContext = new WorldGenContext(var1, var8, var4, this.lightEngine, var6, this::setChunkUnsaved);
    }
@@ -571,7 +571,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          if (!var6) {
          }
 
-         this.level.getServer().reportChunkLoadFailure(var9, this.storageInfo(), var2);
+         this.level.chunkIOErrorReporter().reportChunkLoadFailure(var9, this.storageInfo(), var2);
          return this.createEmptyChunk(var2);
       } else {
          CrashReport var7 = CrashReport.forThrowable(var1, "Exception loading chunk");
@@ -757,7 +757,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             Objects.requireNonNull(var5);
             this.write(var2, var5::join).handle((var2x, var3x) -> {
                if (var3x != null) {
-                  this.level.getServer().reportChunkSaveFailure(var3x, this.storageInfo(), var2);
+                  this.level.chunkIOErrorReporter().reportChunkSaveFailure(var3x, this.storageInfo(), var2);
                }
 
                this.activeChunkWrites.decrementAndGet();
@@ -766,7 +766,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             this.markPosition(var2, var3.getChunkType());
             return true;
          } catch (Exception var6) {
-            this.level.getServer().reportChunkSaveFailure(var6, this.storageInfo(), var2);
+            this.level.chunkIOErrorReporter().reportChunkSaveFailure(var6, this.storageInfo(), var2);
             return false;
          }
       }
@@ -1340,7 +1340,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       }
 
       private int scaledRange(int var1) {
-         return ChunkMap.this.level.getServer().getScaledTrackingDistance(var1);
+         return ChunkMap.this.level.theGame().server().getScaledTrackingDistance(var1);
       }
 
       private int getEffectiveRange() {

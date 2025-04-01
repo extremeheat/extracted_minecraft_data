@@ -9,8 +9,13 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.JukeboxSongPlayer;
@@ -18,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
@@ -113,6 +119,21 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       Optional var3 = JukeboxSong.fromStack(this.level.registryAccess(), this.item);
       this.notifyItemChangedInJukebox(var2);
       if (var2 && var3.isPresent()) {
+         Level var5 = this.level;
+         if (var5 instanceof ServerLevel) {
+            ServerLevel var4 = (ServerLevel)var5;
+            if (var4.isActive(WorldEffects.WARDEN_BOSS_FIGHT)) {
+               TargetingConditions var8 = TargetingConditions.forNonCombat();
+               Player var6 = var4.getNearestPlayer((double)this.getBlockPos().getX(), (double)this.getBlockPos().getY(), (double)this.getBlockPos().getZ(), 16.0, false);
+               if (var6 != null) {
+                  Warden var7 = (Warden)var4.getNearestEntity(Warden.class, var8, var6, (double)this.getBlockPos().getX(), (double)this.getBlockPos().getY(), (double)this.getBlockPos().getZ(), var6.getBoundingBox().inflate(16.0));
+                  if (var7 != null && var7.getBrain().isMemoryValue(MemoryModuleType.ACTING_STAGE, 0)) {
+                     var7.getBrain().setMemory(MemoryModuleType.ACTING_STAGE, 1);
+                  }
+               }
+            }
+         }
+
          this.jukeboxSongPlayer.play(this.level, (Holder)var3.get());
       } else {
          this.jukeboxSongPlayer.stop(this.level, this.getBlockState());

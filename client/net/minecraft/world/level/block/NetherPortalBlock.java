@@ -110,7 +110,7 @@ public class NetherPortalBlock extends Block implements Portal {
    @Nullable
    public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
-      ServerLevel var5 = var1.getServer().getLevel(var4);
+      ServerLevel var5 = var1.theGame().getLevel(var4);
       if (var5 == null) {
          return null;
       } else {

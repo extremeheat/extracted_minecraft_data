@@ -268,7 +268,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                ((ItemPickerMenu)this.menu).clicked(var1 == null ? var2 : var1.index, var3, var4, this.minecraft.player);
                if (AbstractContainerMenu.getQuickcraftHeader(var3) == 2) {
                   for(int var14 = 0; var14 < 9; ++var14) {
-                     this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + var14).getItem(), 36 + var14);
+                     this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + var14).getItem(), 41 + var14);
                   }
                } else if (var1 != null && Inventory.isHotbarSlot(var1.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
                   if (var4 == ClickType.THROW && !var10.isEmpty() && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
@@ -530,24 +530,24 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          for(int var11 = 0; var11 < var10.slots.size(); ++var11) {
             int var12;
             int var13;
-            if (var11 >= 5 && var11 < 9) {
-               int var15 = var11 - 5;
+            if (var11 >= 10 && var11 < 14) {
+               int var15 = var11 - 10;
                int var18 = var15 / 2;
                int var20 = var15 % 2;
                var12 = 54 + var18 * 54;
                var13 = 6 + var20 * 27;
-            } else if (var11 >= 0 && var11 < 5) {
+            } else if (var11 >= 0 && var11 < 10) {
                var12 = -2000;
                var13 = -2000;
-            } else if (var11 == 45) {
+            } else if (var11 == 50) {
                var12 = 35;
                var13 = 20;
             } else {
-               int var14 = var11 - 9;
+               int var14 = var11 - 14;
                int var17 = var14 % 9;
                int var19 = var14 / 9;
                var12 = 9 + var17 * 18;
-               if (var11 >= 36) {
+               if (var11 >= 41) {
                   var13 = 112;
                } else {
                   var13 = 54 + var19 * 18;
@@ -784,7 +784,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          for(int var9 = 0; var9 < Inventory.getSelectionSize(); ++var9) {
             ItemStack var10 = (ItemStack)var8.get(var9);
             var4.getInventory().setItem(var9, var10);
-            var0.gameMode.handleCreativeModeItemAdd(var10, 36 + var9);
+            var0.gameMode.handleCreativeModeItemAdd(var10, 41 + var9);
          }
 
          var4.inventoryMenu.broadcastChanges();

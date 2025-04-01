@@ -813,10 +813,10 @@ public final class ItemStack implements DataComponentHolder {
       return var1;
    }
 
-   public <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
-      TooltipProvider var6 = (TooltipProvider)this.get(var1);
-      if (var6 != null && var3.shows(var1)) {
-         var6.addToTooltip(var2, var4, var5, this.components);
+   public <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, TooltipDisplay var3, @Nullable Player var4, Consumer<Component> var5, TooltipFlag var6) {
+      TooltipProvider var7 = (TooltipProvider)this.get(var1);
+      if (var7 != null && var3.shows(var1)) {
+         var7.addToTooltip(var2, var5, var6, var4, this);
       }
 
    }
@@ -837,33 +837,38 @@ public final class ItemStack implements DataComponentHolder {
 
    public void addDetailsToTooltip(Item.TooltipContext var1, TooltipDisplay var2, @Nullable Player var3, TooltipFlag var4, Consumer<Component> var5) {
       this.getItem().appendHoverText(this, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.TROPICAL_FISH_PATTERN, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.INSTRUMENT, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.MAP_ID, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BEES, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.CONTAINER_LOOT, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.CONTAINER, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BANNER_PATTERNS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.POT_DECORATIONS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.CHARGED_PROJECTILES, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.FIREWORKS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.FIREWORK_EXPLOSION, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.POTION_CONTENTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.TRIM, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.DYED_COLOR, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.LORE, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.TROPICAL_FISH_PATTERN, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.INSTRUMENT, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.WORLD_MODIFIERS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.MAP_ID, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.BEES, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.CONTAINER_LOOT, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.CONTAINER, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.BANNER_PATTERNS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.POT_DECORATIONS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.CHARGED_PROJECTILES, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.FIREWORKS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.FIREWORK_EXPLOSION, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.POTION_CONTENTS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.TRIM, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.ROOM, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.SKY, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.MOB_TROPHY_TYPE, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.DYED_COLOR, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.TROPHY_TYPE, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.LORE, var1, var2, var3, var5, var4);
       this.addAttributeTooltips(var5, var2, var3);
       if (this.has(DataComponents.UNBREAKABLE) && var2.shows(DataComponents.UNBREAKABLE)) {
          var5.accept(UNBREAKABLE_TOOLTIP);
       }
 
-      this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var3, var5, var4);
+      this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var3, var5, var4);
       if ((this.is(Items.SPAWNER) || this.is(Items.TRIAL_SPAWNER)) && var2.shows(DataComponents.BLOCK_ENTITY_DATA)) {
          CustomData var6 = (CustomData)this.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
          Spawner.appendHoverText(var6, var5, "SpawnData");
@@ -883,6 +888,11 @@ public final class ItemStack implements DataComponentHolder {
          var7.addToTooltip(var5);
       }
 
+      if (this.has(DataComponents.WORLD_EFFECT_UNLOCK)) {
+         var5.accept(Component.translatable("world.effect.unlock"));
+      }
+
+      this.addToTooltip(DataComponents.EXCHANGE_VALUE, var1, var2, var3, var5, var4);
       if (var4.isAdvanced()) {
          if (this.isDamaged() && var2.shows(DataComponents.DAMAGE)) {
             var5.accept(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));

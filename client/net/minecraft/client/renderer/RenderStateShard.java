@@ -3,6 +3,7 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -26,10 +28,12 @@ public abstract class RenderStateShard {
    protected static final TextureStateShard BLOCK_SHEET_MIPPED;
    protected static final TextureStateShard BLOCK_SHEET;
    protected static final EmptyTextureStateShard NO_TEXTURE;
+   protected static final SkyTextureStateShard BLOCKS_AND_SKY;
    protected static final TexturingStateShard DEFAULT_TEXTURING;
    protected static final TexturingStateShard GLINT_TEXTURING;
    protected static final TexturingStateShard ENTITY_GLINT_TEXTURING;
    protected static final TexturingStateShard ARMOR_ENTITY_GLINT_TEXTURING;
+   protected static final TexturingStateShard SHIMMERING_GLINT_TEXTURING;
    protected static final LightmapStateShard LIGHTMAP;
    protected static final LightmapStateShard NO_LIGHTMAP;
    protected static final OverlayStateShard OVERLAY;
@@ -43,6 +47,7 @@ public abstract class RenderStateShard {
    protected static final OutputStateShard PARTICLES_TARGET;
    protected static final OutputStateShard WEATHER_TARGET;
    protected static final OutputStateShard ITEM_ENTITY_TARGET;
+   protected static final OutputStateShard SKY_TARGET;
    protected static final LineStateShard DEFAULT_LINE;
 
    public RenderStateShard(String var1, Runnable var2, Runnable var3) {
@@ -81,12 +86,14 @@ public abstract class RenderStateShard {
       BLOCK_SHEET_MIPPED = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, TriState.FALSE, true);
       BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, TriState.FALSE, false);
       NO_TEXTURE = new EmptyTextureStateShard();
+      BLOCKS_AND_SKY = new SkyTextureStateShard();
       DEFAULT_TEXTURING = new TexturingStateShard("default_texturing", () -> {
       }, () -> {
       });
       GLINT_TEXTURING = new TexturingStateShard("glint_texturing", () -> setupGlintTexturing(8.0F), RenderSystem::resetTextureMatrix);
       ENTITY_GLINT_TEXTURING = new TexturingStateShard("entity_glint_texturing", () -> setupGlintTexturing(0.5F), RenderSystem::resetTextureMatrix);
       ARMOR_ENTITY_GLINT_TEXTURING = new TexturingStateShard("armor_entity_glint_texturing", () -> setupGlintTexturing(0.16F), RenderSystem::resetTextureMatrix);
+      SHIMMERING_GLINT_TEXTURING = new TexturingStateShard("shimmering_glint_texturing", () -> setupGlintTexturing(0.01F), RenderSystem::resetTextureMatrix);
       LIGHTMAP = new LightmapStateShard(true);
       NO_LIGHTMAP = new LightmapStateShard(false);
       OVERLAY = new OverlayStateShard(true);
@@ -131,6 +138,7 @@ public abstract class RenderStateShard {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getItemEntityTarget();
          return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
       });
+      SKY_TARGET = new OutputStateShard("sky_target", () -> Minecraft.getInstance().levelRenderer.getSkyTarget());
       DEFAULT_LINE = new LineStateShard(OptionalDouble.of(1.0));
    }
 
@@ -232,6 +240,32 @@ public abstract class RenderStateShard {
 
       protected Optional<ResourceLocation> cutoutTexture() {
          return this.texture;
+      }
+   }
+
+   protected static class SkyTextureStateShard extends EmptyTextureStateShard {
+      public SkyTextureStateShard() {
+         super(() -> {
+            Minecraft var0 = Minecraft.getInstance();
+            TextureManager var1 = var0.getTextureManager();
+            AbstractTexture var2 = var1.getTexture(TextureAtlas.LOCATION_BLOCKS);
+            var2.setFilter(TriState.FALSE, true);
+            RenderSystem.setShaderTexture(0, var2.getTexture());
+            GpuTexture var3 = var0.levelRenderer.getSkyTarget().getColorTexture();
+            RenderSystem.setShaderTexture(1, var3);
+            AbstractTexture var4 = var1.getTexture(ItemRenderer.ENCHANTED_GLINT_ARMOR);
+            var4.setFilter(TriState.DEFAULT, false);
+            RenderSystem.setShaderTexture(2, var4.getTexture());
+         }, () -> {
+         });
+      }
+
+      public String toString() {
+         return this.name + "[]";
+      }
+
+      protected Optional<ResourceLocation> cutoutTexture() {
+         return Optional.empty();
       }
    }
 

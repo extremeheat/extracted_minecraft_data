@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -23,6 +24,8 @@ import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
@@ -33,6 +36,7 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -65,6 +69,8 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.mines.WorldEffect;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -183,7 +189,7 @@ public class Gui {
       this.bossOverlay = new BossHealthOverlay(var1);
       this.subtitleOverlay = new SubtitleOverlay(var1);
       this.resetTitleTimes();
-      LayeredDraw var2 = (new LayeredDraw()).add(this::renderCameraOverlays).add(this::renderCrosshair).add(this::renderHotbarAndDecorations).add(this::renderExperienceLevel).add(this::renderEffects).add((var1x, var2x) -> this.bossOverlay.render(var1x));
+      LayeredDraw var2 = (new LayeredDraw()).add(this::renderCameraOverlays).add(this::renderCrosshair).add(this::renderHotbarAndDecorations).add(this::renderExperienceLevel).add(this::renderEffects).add(this::renderActiveWorldEffects).add((var1x, var2x) -> this.bossOverlay.render(var1x));
       LayeredDraw var3 = (new LayeredDraw()).add(this::renderDemoOverlay).add((var1x, var2x) -> {
          if (this.debugOverlay.showDebugScreen()) {
             this.debugOverlay.render(var1x);
@@ -273,16 +279,44 @@ public class Gui {
 
          if (var5 > 8) {
             var1.pose().pushPose();
-            var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() - 68), 0.0F);
             int var6;
-            if (this.animateOverlayMessageColor) {
-               var6 = Mth.hsvToArgb(var4 / 50.0F, 0.7F, 0.6F, var5);
+            if (this.overlayMessageString.getStyle().isMega()) {
+               var6 = (int)((float)var1.guiHeight() * 0.5F);
             } else {
-               var6 = ARGB.color(var5, -1);
+               var6 = var1.guiHeight() - 68;
             }
 
-            int var7 = var3.width((FormattedText)this.overlayMessageString);
-            var1.drawStringWithBackdrop(var3, this.overlayMessageString, -var7 / 2, -4, var7, var6);
+            var1.pose().translate((float)(var1.guiWidth() / 2), (float)var6, 0.0F);
+            int var7;
+            if (this.animateOverlayMessageColor) {
+               var7 = Mth.hsvToArgb(var4 / 50.0F, 0.7F, 0.6F, var5);
+            } else {
+               var7 = ARGB.color(var5, -1);
+            }
+
+            int var8 = var3.width((FormattedText)this.overlayMessageString);
+            float var9 = this.overlayMessageString.getStyle().getScale() != null ? this.overlayMessageString.getStyle().getScale() : 1.0F;
+            int var10;
+            int var11;
+            if (var9 > 1.0F && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
+               float var12 = 3000.0F / (var9 * var9 * 0.4F);
+               float var13 = 1500.0F / (var9 * var9 * 0.4F);
+               float var14 = var9 * 0.4F;
+               var10 = (int)(Mth.sin((float)Util.getMillis() % var12 / var12 * 6.2831855F) * var14 * var14);
+               var11 = (int)(Mth.sin((float)Util.getMillis() % var13 / var13 * 6.2831855F) * var14 * var14);
+            } else {
+               var11 = 0;
+               var10 = 0;
+            }
+
+            if (this.overlayMessageString.getStyle().isMega()) {
+               float var15 = 1.8F - Mth.abs(Mth.sin((float)(Util.getMillis() % 1000L) / 1000.0F * 6.2831855F) * 0.1F);
+               var15 = var15 * 100.0F / (float)(var8 + 32);
+               var9 *= var15 * 2.0F;
+            }
+
+            var1.pose().scale(var9, var9, var9);
+            var1.drawStringWithBackdrop(var3, this.overlayMessageString, -var8 / 2 + var10, -4 + var11, var8, var7);
             var1.pose().popPose();
          }
 
@@ -477,6 +511,56 @@ public class Gui {
       }
    }
 
+   private void renderActiveWorldEffects(GuiGraphics var1, DeltaTracker var2) {
+      List var3 = this.minecraft.level.getActiveEffects();
+      if (!var3.isEmpty()) {
+         Screen var6 = this.minecraft.screen;
+         int var4;
+         int var5;
+         if (var6 instanceof ChatScreen) {
+            Window var7 = this.minecraft.getWindow();
+            var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var7));
+            var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var7));
+         } else {
+            var4 = -2147483648;
+            var5 = -2147483648;
+         }
+
+         ArrayList var18 = Lists.newArrayListWithExpectedSize(var3.size());
+         int var8 = 0;
+         int var9 = Mth.ceil((float)var3.size() / 10.0F);
+         boolean var10 = true;
+
+         for(WorldEffect var12 : var3) {
+            if (var12.itemModel() != null) {
+               int var13 = 1;
+               int var14 = 1;
+               if (this.minecraft.isDemo()) {
+                  var14 += 15;
+               }
+
+               int var15 = Mth.floor((float)var8 / 10.0F);
+               var13 += 25 * (var8 % 10);
+               if (var9 > 3) {
+                  var14 += (int)(50.0F / (float)var9 * (float)var15);
+               } else {
+                  var14 += 25 * var15;
+               }
+
+               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var13, var14, 24, 24);
+               var18.add((Runnable)() -> var1.renderFakeItem(WorldEffects.createEffectItem(var12, false), var13 + 4, var14 + 4));
+               if (var6 != null && var4 >= var13 && var5 >= var14 && var4 < var13 + 24 && var5 < var14 + 24) {
+                  var6.setTooltipForNextRenderPass(CommonComponents.joinLines(var12.name(), var12.description().copy().withStyle(ChatFormatting.GRAY)));
+               }
+
+               ++var8;
+            }
+         }
+
+         var18.forEach(Runnable::run);
+      }
+   }
+
    private void renderHotbarAndDecorations(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
          this.spectatorGui.renderHotbar(var1);
@@ -488,6 +572,8 @@ public class Gui {
       PlayerRideableJumping var4 = this.minecraft.player.jumpableVehicle();
       if (var4 != null) {
          this.renderJumpMeter(var4, var1, var3);
+      } else if (this.minecraft.player.hasEffect(MobEffects.SHAZBOOTS) && this.minecraft.player.input.keyPresses.jump()) {
+         this.renderShazbootJumpMeter(var1, var3);
       } else if (this.isExperienceBarVisible()) {
          this.renderExperienceBar(var1, var3);
       }
@@ -559,6 +645,15 @@ public class Gui {
          }
 
       }
+   }
+
+   private void renderShazbootJumpMeter(GuiGraphics var1, int var2) {
+      float var3 = (float)((int)(this.minecraft.player.getDeltaMovement().horizontalDistance() * 7.5)) * 0.085F;
+      boolean var4 = true;
+      int var5 = var1.guiHeight() - 32 + 3;
+      int var6 = (int)(Math.min(var3, 1.0F) * 183.0F);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)JUMP_BAR_BACKGROUND_SPRITE, var2, var5, 182, 5);
+      var1.blitSprite(RenderType::guiTextured, JUMP_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var2, var5, var6, 5);
    }
 
    private void renderJumpMeter(PlayerRideableJumping var1, GuiGraphics var2, int var3) {

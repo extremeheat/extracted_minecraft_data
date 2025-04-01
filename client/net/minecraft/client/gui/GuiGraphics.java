@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -19,6 +20,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
@@ -60,11 +62,13 @@ public class GuiGraphics {
    private final ScissorStack scissorStack;
    private final GuiSpriteManager sprites;
    private final ItemStackRenderState scratchItemStackRenderState;
+   public float rotation;
 
    private GuiGraphics(Minecraft var1, PoseStack var2, MultiBufferSource.BufferSource var3) {
       super();
       this.scissorStack = new ScissorStack();
       this.scratchItemStackRenderState = new ItemStackRenderState();
+      this.rotation = 0.0F;
       this.minecraft = var1;
       this.pose = var2;
       this.bufferSource = var3;
@@ -457,6 +461,7 @@ public class GuiGraphics {
 
          try {
             this.pose.scale(16.0F, -16.0F, 16.0F);
+            this.pose.rotateAround(Axis.ZP.rotation(this.rotation), 0.0F, 0.0F, 0.0F);
             boolean var8 = !this.scratchItemStackRenderState.usesBlockLight();
             if (var8) {
                this.flush();
@@ -671,6 +676,10 @@ public class GuiGraphics {
    public void drawSpecial(Consumer<MultiBufferSource> var1) {
       var1.accept(this.bufferSource);
       this.bufferSource.endBatch();
+   }
+
+   public DeltaTracker getDeltaTracker() {
+      return this.minecraft.getDeltaTracker();
    }
 
    static class ScissorStack {

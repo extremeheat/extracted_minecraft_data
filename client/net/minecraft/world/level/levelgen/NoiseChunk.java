@@ -141,7 +141,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       this.initialDensityNoJaggedness = var18.initialDensityWithoutJaggedness();
    }
 
-   protected Climate.Sampler cachedClimateSampler(NoiseRouter var1, List<Climate.ParameterPoint> var2) {
+   public Climate.Sampler cachedClimateSampler(NoiseRouter var1, List<Climate.ParameterPoint> var2) {
       return new Climate.Sampler(var1.temperature().mapAll(this::wrap), var1.vegetation().mapAll(this::wrap), var1.continents().mapAll(this::wrap), var1.erosion().mapAll(this::wrap), var1.depth().mapAll(this::wrap), var1.ridges().mapAll(this::wrap), var2);
    }
 

@@ -436,7 +436,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
                      var12.set(var13, var16, var14);
                      BlockState var17 = this.level().getBlockState(var12);
                      if (!(var17.getBlock() instanceof WaterlilyBlock) && Shapes.joinIsNotEmpty(var17.getCollisionShape(this.level(), var12).move((Vec3i)var12), var9, BooleanOp.AND)) {
-                        var10 += var17.getBlock().getFriction();
+                        var10 += var17.getBlock().getFriction(this.level().getIsIcy());
                         ++var11;
                      }
                   }

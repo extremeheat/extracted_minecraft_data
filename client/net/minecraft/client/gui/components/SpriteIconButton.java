@@ -66,6 +66,8 @@ public abstract class SpriteIconButton extends Button {
       private int width = 150;
       private int height = 20;
       @Nullable
+      private Tooltip tooltip;
+      @Nullable
       private ResourceLocation sprite;
       private int spriteWidth;
       private int spriteHeight;
@@ -102,11 +104,24 @@ public abstract class SpriteIconButton extends Button {
          return this;
       }
 
+      public Builder tooltip(@Nullable Tooltip var1) {
+         this.tooltip = var1;
+         return this;
+      }
+
       public SpriteIconButton build() {
          if (this.sprite == null) {
             throw new IllegalStateException("Sprite not set");
          } else {
-            return (SpriteIconButton)(this.iconOnly ? new CenteredIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration) : new TextAndIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration));
+            Object var1;
+            if (this.iconOnly) {
+               var1 = new CenteredIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration);
+            } else {
+               var1 = new TextAndIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration);
+            }
+
+            ((SpriteIconButton)var1).setTooltip(this.tooltip);
+            return (SpriteIconButton)var1;
          }
       }
    }

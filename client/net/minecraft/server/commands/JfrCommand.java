@@ -32,7 +32,7 @@ public class JfrCommand {
    }
 
    private static int startJfr(CommandSourceStack var0) throws CommandSyntaxException {
-      Environment var1 = Environment.from(var0.getServer());
+      Environment var1 = Environment.from(var0.theGame().server());
       if (!JvmProfiler.INSTANCE.start(var1)) {
          throw START_FAILED.create();
       } else {
@@ -44,7 +44,7 @@ public class JfrCommand {
    private static int stopJfr(CommandSourceStack var0) throws CommandSyntaxException {
       try {
          Path var1 = Paths.get(".").relativize(JvmProfiler.INSTANCE.stop().normalize());
-         Path var2 = var0.getServer().isPublished() && !SharedConstants.IS_RUNNING_IN_IDE ? var1 : var1.toAbsolutePath();
+         Path var2 = var0.theGame().server().isPublished() && !SharedConstants.IS_RUNNING_IN_IDE ? var1 : var1.toAbsolutePath();
          MutableComponent var3 = Component.literal(var1.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.CopyToClipboard(var2.toString())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click")))));
          var0.sendSuccess(() -> Component.translatable("commands.jfr.stopped", var3), false);
          return 1;

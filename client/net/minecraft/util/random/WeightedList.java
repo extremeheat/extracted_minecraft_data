@@ -129,7 +129,7 @@ public final class WeightedList<E> {
    }
 
    public static class Builder<E> {
-      private final ImmutableList.Builder<Weighted<E>> result = ImmutableList.builder();
+      private ImmutableList.Builder<Weighted<E>> result = ImmutableList.builder();
 
       public Builder() {
          super();
@@ -146,6 +146,11 @@ public final class WeightedList<E> {
 
       public WeightedList<E> build() {
          return new WeightedList<E>(this.result.build());
+      }
+
+      public Builder<E> clear() {
+         this.result = ImmutableList.builder();
+         return this;
       }
    }
 

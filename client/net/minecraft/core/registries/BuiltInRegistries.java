@@ -37,6 +37,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.players.PlayerUnlock;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
@@ -120,6 +122,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifierType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.mines.MineEvent;
+import net.minecraft.world.level.mines.SpecialMine;
+import net.minecraft.world.level.mines.SpecialMines;
+import net.minecraft.world.level.mines.WorldEffect;
+import net.minecraft.world.level.mines.WorldEffectSet;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
@@ -160,6 +168,7 @@ public class BuiltInRegistries {
    public static final Registry<RecipeType<?>> RECIPE_TYPE;
    public static final Registry<RecipeSerializer<?>> RECIPE_SERIALIZER;
    public static final Registry<Attribute> ATTRIBUTE;
+   public static final Registry<PlayerUnlock> PLAYER_UNLOCK;
    public static final Registry<PositionSourceType<?>> POSITION_SOURCE_TYPE;
    public static final Registry<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPE;
    public static final Registry<StatType<?>> STAT_TYPE;
@@ -220,9 +229,13 @@ public class BuiltInRegistries {
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
    public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
    public static final Registry<TicketType> TICKET_TYPE;
+   public static final Registry<WorldEffect> WORLD_EFFECT;
+   public static final Registry<WorldEffectSet> WORLD_EFFECT_SET;
    public static final Registry<MapCodec<? extends TestEnvironmentDefinition>> TEST_ENVIRONMENT_DEFINITION_TYPE;
    public static final Registry<MapCodec<? extends GameTestInstance>> TEST_INSTANCE_TYPE;
    public static final Registry<MapCodec<? extends SpawnCondition>> SPAWN_CONDITION_TYPE;
+   public static final Registry<SpecialMine> SPECIAL_MINE;
+   public static final Registry<MapCodec<? extends MineEvent>> MINE_EVENT_TYPE;
    public static final Registry<Consumer<GameTestHelper>> TEST_FUNCTION;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
@@ -323,6 +336,7 @@ public class BuiltInRegistries {
       RECIPE_TYPE = registerSimple(Registries.RECIPE_TYPE, (var0) -> RecipeType.CRAFTING);
       RECIPE_SERIALIZER = registerSimple(Registries.RECIPE_SERIALIZER, (var0) -> RecipeSerializer.SHAPELESS_RECIPE);
       ATTRIBUTE = registerSimple(Registries.ATTRIBUTE, Attributes::bootstrap);
+      PLAYER_UNLOCK = registerSimple(Registries.PLAYER_UNLOCK, PlayerUnlocks::bootstrap);
       POSITION_SOURCE_TYPE = registerSimple(Registries.POSITION_SOURCE_TYPE, (var0) -> PositionSourceType.BLOCK);
       COMMAND_ARGUMENT_TYPE = registerSimple(Registries.COMMAND_ARGUMENT_TYPE, ArgumentTypeInfos::bootstrap);
       STAT_TYPE = registerSimple(Registries.STAT_TYPE, (var0) -> Stats.ITEM_USED);
@@ -383,9 +397,13 @@ public class BuiltInRegistries {
       SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
       RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
       TICKET_TYPE = registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
+      WORLD_EFFECT = registerSimple(Registries.WORLD_EFFECT, WorldEffects::bootstrap);
+      WORLD_EFFECT_SET = registerSimple(Registries.WORLD_EFFECT_SET, WorldEffects::sets);
       TEST_ENVIRONMENT_DEFINITION_TYPE = registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
       TEST_INSTANCE_TYPE = registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
       SPAWN_CONDITION_TYPE = registerSimple(Registries.SPAWN_CONDITION_TYPE, SpawnConditions::bootstrap);
+      SPECIAL_MINE = registerSimple(Registries.SPECIAL_MINE, SpecialMines::bootstrap);
+      MINE_EVENT_TYPE = registerSimple(Registries.MINE_EVENT_TYPE, MineEvent::bootstrap);
       TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }

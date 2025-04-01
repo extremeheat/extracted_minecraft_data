@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.handshake.ServerHandshakePacketListener;
 import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TheGame;
 
 public class MemoryServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
    private final MinecraftServer server;
@@ -22,8 +23,13 @@ public class MemoryServerHandshakePacketListenerImpl implements ServerHandshakeP
       if (var1.intention() != ClientIntent.LOGIN) {
          throw new UnsupportedOperationException("Invalid intention " + String.valueOf(var1.intention()));
       } else {
-         this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, false));
-         this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
+         TheGame var2 = this.server.theGame();
+         if (var2 == null) {
+            throw new IllegalStateException("Not really running, what's up?");
+         } else {
+            this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(var2, this.connection, false));
+            this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
+         }
       }
    }
 

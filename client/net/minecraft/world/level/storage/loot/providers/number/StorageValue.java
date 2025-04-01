@@ -24,7 +24,7 @@ public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath pat
    }
 
    private Number getNumericTag(LootContext var1, Number var2) {
-      CompoundTag var3 = var1.getLevel().getServer().getCommandStorage().get(this.storage);
+      CompoundTag var3 = var1.getLevel().theGame().getCommandStorage().get(this.storage);
 
       try {
          List var4 = this.path.get(var3);

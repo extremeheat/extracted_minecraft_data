@@ -31,16 +31,16 @@ public class CraftingMenu extends AbstractCraftingMenu {
    private final Player player;
    private boolean placingRecipe;
 
-   public CraftingMenu(int var1, Inventory var2) {
+   public CraftingMenu(int var1, Inventory var2, List<Integer> var3) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 
    public CraftingMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
       super(MenuType.CRAFTING, var1, 3, 3);
       this.access = var3;
-      this.player = var2.player;
+      this.player = var2.getPlayer();
       this.addResultSlot(this.player, 124, 35);
-      this.addCraftingGridSlots(30, 17);
+      this.addCraftingGridSlots(this.player, 30, 17);
       this.addStandardInventorySlots(var2, 8, 84);
    }
 
@@ -48,7 +48,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
       CraftingInput var6 = var3.asCraftInput();
       ServerPlayer var7 = (ServerPlayer)var2;
       ItemStack var8 = ItemStack.EMPTY;
-      Optional var9 = var1.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var6, var1, var5);
+      Optional var9 = var1.theGame().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var6, var1, var5);
       if (var9.isPresent()) {
          RecipeHolder var10 = (RecipeHolder)var9.get();
          CraftingRecipe var11 = (CraftingRecipe)var10.value();

@@ -21,9 +21,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.SequencedPriorityIterator;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -53,60 +56,85 @@ public class JigsawPlacement {
       super();
    }
 
-   public static Optional<Structure.GenerationStub> addPieces(Structure.GenerationContext var0, Holder<StructureTemplatePool> var1, Optional<ResourceLocation> var2, int var3, BlockPos var4, boolean var5, Optional<Heightmap.Types> var6, int var7, PoolAliasLookup var8, DimensionPadding var9, LiquidSettings var10) {
-      RegistryAccess var11 = var0.registryAccess();
-      ChunkGenerator var12 = var0.chunkGenerator();
-      StructureTemplateManager var13 = var0.structureTemplateManager();
-      LevelHeightAccessor var14 = var0.heightAccessor();
-      WorldgenRandom var15 = var0.random();
-      Registry var16 = var11.lookupOrThrow(Registries.TEMPLATE_POOL);
-      Rotation var17 = Rotation.getRandom(var15);
-      StructureTemplatePool var18 = (StructureTemplatePool)var1.unwrapKey().flatMap((var2x) -> var16.getOptional(var8.lookup(var2x))).orElse((StructureTemplatePool)var1.value());
-      StructurePoolElement var19 = var18.getRandomTemplate(var15);
-      if (var19 == EmptyPoolElement.INSTANCE) {
+   public static Optional<Structure.GenerationStub> addPieces(Structure.GenerationContext var0, Holder<StructureTemplatePool> var1, Optional<ResourceLocation> var2, int var3, BlockPos var4, boolean var5, Optional<Heightmap.Types> var6, boolean var7, int var8, PoolAliasLookup var9, DimensionPadding var10, LiquidSettings var11) {
+      RegistryAccess var12 = var0.registryAccess();
+      ChunkGenerator var13 = var0.chunkGenerator();
+      StructureTemplateManager var14 = var0.structureTemplateManager();
+      LevelHeightAccessor var15 = var0.heightAccessor();
+      WorldgenRandom var16 = var0.random();
+      Registry var17 = var12.lookupOrThrow(Registries.TEMPLATE_POOL);
+      Rotation var18 = Rotation.getRandom(var16);
+      StructureTemplatePool var19 = (StructureTemplatePool)var1.unwrapKey().flatMap((var2x) -> var17.getOptional(var9.lookup(var2x))).orElse((StructureTemplatePool)var1.value());
+      StructurePoolElement var20 = var19.getRandomTemplate(var16);
+      if (var20 == EmptyPoolElement.INSTANCE) {
          return Optional.empty();
       } else {
-         BlockPos var20;
+         BlockPos var21;
          if (var2.isPresent()) {
-            ResourceLocation var21 = (ResourceLocation)var2.get();
-            Optional var22 = getRandomNamedJigsaw(var19, var21, var4, var17, var13, var15);
-            if (var22.isEmpty()) {
-               LOGGER.error("No starting jigsaw {} found in start pool {}", var21, var1.unwrapKey().map((var0x) -> var0x.location().toString()).orElse("<unregistered>"));
+            ResourceLocation var22 = (ResourceLocation)var2.get();
+            Optional var23 = getRandomNamedJigsaw(var20, var22, var4, var18, var14, var16);
+            if (var23.isEmpty()) {
+               LOGGER.error("No starting jigsaw {} found in start pool {}", var22, var1.unwrapKey().map((var0x) -> var0x.location().toString()).orElse("<unregistered>"));
                return Optional.empty();
             }
 
-            var20 = (BlockPos)var22.get();
+            var21 = (BlockPos)var23.get();
          } else {
-            var20 = var4;
+            var21 = var4;
          }
 
-         BlockPos var30 = var20.subtract(var4);
-         BlockPos var31 = var4.subtract(var30);
-         PoolElementStructurePiece var23 = new PoolElementStructurePiece(var13, var19, var31, var19.getGroundLevelDelta(), var17, var19.getBoundingBox(var13, var31, var17), var10);
-         BoundingBox var24 = var23.getBoundingBox();
-         int var25 = (var24.maxX() + var24.minX()) / 2;
-         int var26 = (var24.maxZ() + var24.minZ()) / 2;
-         int var27 = var6.isEmpty() ? var31.getY() : var4.getY() + var12.getFirstFreeHeight(var25, var26, (Heightmap.Types)var6.get(), var14, var0.randomState());
-         int var28 = var24.minY() + var23.getGroundLevelDelta();
-         var23.move(0, var27 - var28, 0);
-         if (isStartTooCloseToWorldHeightLimits(var14, var9, var23.getBoundingBox())) {
-            LOGGER.debug("Center piece {} with bounding box {} does not fit dimension padding {}", new Object[]{var19, var23.getBoundingBox(), var9});
+         BlockPos var33 = var21.subtract(var4);
+         BlockPos var34 = var4.subtract(var33);
+         PoolElementStructurePiece var24 = new PoolElementStructurePiece(var14, var20, var34, var20.getGroundLevelDelta(), var18, var20.getBoundingBox(var14, var34, var18), var11);
+         BoundingBox var25 = var24.getBoundingBox();
+         int var26 = (var25.maxX() + var25.minX()) / 2;
+         int var27 = (var25.maxZ() + var25.minZ()) / 2;
+         int var28 = var6.isEmpty() ? var34.getY() : var4.getY() + var13.getFirstFreeHeight(var26, var27, (Heightmap.Types)var6.get(), var15, var0.randomState());
+         int var29 = var15.getMinY();
+         int var30 = var15.getMaxY();
+         if (var7) {
+            int var31 = var28;
+
+            NoiseColumn var32;
+            for(var32 = var13.getBaseColumn(var26, var27, var15, var0.randomState()); var28 > var29 + 5 && !isOkSpawnPos(var32, var28); --var28) {
+            }
+
+            if (!isOkSpawnPos(var32, var28)) {
+               for(var28 = var31; var28 < var30 && !isOkSpawnPos(var32, var28); ++var28) {
+               }
+
+               if (!isOkSpawnPos(var32, var28)) {
+                  var28 = var31;
+               }
+            }
+         }
+
+         int var35 = var25.minY() + var24.getGroundLevelDelta();
+         var24.move(0, var28 - var35, 0);
+         if (isStartTooCloseToWorldHeightLimits(var15, var10, var24.getBoundingBox())) {
+            LOGGER.debug("Center piece {} with bounding box {} does not fit dimension padding {}", new Object[]{var20, var24.getBoundingBox(), var10});
             return Optional.empty();
          } else {
-            int var29 = var27 + ((Vec3i)var30).getY();
-            return Optional.of(new Structure.GenerationStub(new BlockPos(var25, var29, var26), (var17x) -> {
-               ArrayList var18 = Lists.newArrayList();
-               var18.add(var23);
+            int var36 = var28 + ((Vec3i)var33).getY();
+            return Optional.of(new Structure.GenerationStub(new BlockPos(var26, var36, var27), (var18x) -> {
+               ArrayList var19 = Lists.newArrayList();
+               var19.add(var24);
                if (var3 > 0) {
-                  AABB var19 = new AABB((double)(var25 - var7), (double)Math.max(var29 - var7, var14.getMinY() + var9.bottom()), (double)(var26 - var7), (double)(var25 + var7 + 1), (double)Math.min(var29 + var7 + 1, var14.getMaxY() + 1 - var9.top()), (double)(var26 + var7 + 1));
-                  VoxelShape var20 = Shapes.join(Shapes.create(var19), Shapes.create(AABB.of(var24)), BooleanOp.ONLY_FIRST);
-                  addPieces(var0.randomState(), var3, var5, var12, var13, var14, var15, var16, var23, var18, var20, var8, var10);
-                  Objects.requireNonNull(var17x);
-                  var18.forEach(var17x::addPiece);
+                  AABB var20 = new AABB((double)(var26 - var8), (double)Math.max(var36 - var8, var29 + var10.bottom()), (double)(var27 - var8), (double)(var26 + var8 + 1), (double)Math.min(var36 + var8 + 1, var15.getMaxY() + 1 - var10.top()), (double)(var27 + var8 + 1));
+                  VoxelShape var21 = Shapes.join(Shapes.create(var20), Shapes.create(AABB.of(var25)), BooleanOp.ONLY_FIRST);
+                  addPieces(var0.randomState(), var3, var5, var13, var14, var15, var16, var17, var24, var19, var21, var9, var11);
+                  Objects.requireNonNull(var18x);
+                  var19.forEach(var18x::addPiece);
                }
             }));
          }
       }
+   }
+
+   private static boolean isOkSpawnPos(NoiseColumn var0, int var1) {
+      BlockState var2 = var0.getBlock(var1);
+      BlockState var3 = var0.getBlock(var1 + 1);
+      return !var2.isAir() && !var2.is(Blocks.WATER) && (var3.isAir() || var3.is(Blocks.WATER));
    }
 
    private static boolean isStartTooCloseToWorldHeightLimits(LevelHeightAccessor var0, DimensionPadding var1, BoundingBox var2) {
@@ -140,13 +168,13 @@ public class JigsawPlacement {
 
    }
 
-   public static boolean generateJigsaw(ServerLevel var0, Holder<StructureTemplatePool> var1, ResourceLocation var2, int var3, BlockPos var4, boolean var5) {
+   public static boolean generateJigsaw(ServerLevel var0, Holder<StructureTemplatePool> var1, Optional<ResourceLocation> var2, int var3, BlockPos var4, boolean var5) {
       ChunkGenerator var6 = var0.getChunkSource().getGenerator();
       StructureTemplateManager var7 = var0.getStructureManager();
       StructureManager var8 = var0.structureManager();
       RandomSource var9 = var0.getRandom();
       Structure.GenerationContext var10 = new Structure.GenerationContext(var0.registryAccess(), var6, var6.getBiomeSource(), var0.getChunkSource().randomState(), var7, var0.getSeed(), new ChunkPos(var4), var0, (var0x) -> true);
-      Optional var11 = addPieces(var10, var1, Optional.of(var2), var3, var4, false, Optional.empty(), 128, PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS);
+      Optional var11 = addPieces(var10, var1, var2, var3, var4, false, Optional.empty(), false, 128, PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS);
       if (var11.isPresent()) {
          StructurePiecesBuilder var12 = ((Structure.GenerationStub)var11.get()).getPiecesBuilder();
 

@@ -53,6 +53,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.Vec3;
 
 public class WitherBoss extends Monster implements RangedAttackMob {
@@ -436,12 +437,14 @@ public class WitherBoss extends Monster implements RangedAttackMob {
    }
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      ItemEntity var4 = this.spawnAtLocation(var1, Items.NETHER_STAR);
-      if (var4 != null) {
-         var4.setExtendedLifetime();
-      }
+      if (!var1.isActive(WorldEffects.NO_DROPS)) {
+         super.dropCustomDeathLoot(var1, var2, var3);
+         ItemEntity var4 = this.spawnAtLocation(var1, Items.NETHER_STAR);
+         if (var4 != null) {
+            var4.setExtendedLifetime();
+         }
 
+      }
    }
 
    public void checkDespawn() {

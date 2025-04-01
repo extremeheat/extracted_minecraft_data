@@ -4,15 +4,16 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -34,7 +35,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       double var9 = (double)Util.getNanos();
       if (var9 - this.lastUpdateTime > 3.0E9) {
          this.lastUpdateTime = var9;
-         IntegratedServer var11 = this.minecraft.getSingleplayerServer();
+         TheGame var11 = this.minecraft.getSingleplayerGame();
          if (var11 != null) {
             this.data = new ChunkData(var11, var3, var7);
          } else {
@@ -69,7 +70,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       final Map<ChunkPos, String> clientData;
       final CompletableFuture<Map<ChunkPos, String>> serverData;
 
-      ChunkData(final IntegratedServer var2, final double var3, final double var5) {
+      ChunkData(final TheGame var2, final double var3, final double var5) {
          super();
          ClientLevel var7 = ChunkDebugRenderer.this.minecraft.level;
          ResourceKey var8 = var7.dimension();
@@ -96,7 +97,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
          this.clientData = var11.build();
-         this.serverData = var2.submit(() -> {
+         this.serverData = var2.eventLoop().submit((Supplier)(() -> {
             ServerLevel var5 = var2.getLevel(var8);
             if (var5 == null) {
                return ImmutableMap.of();
@@ -114,7 +115,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
                return var6.build();
             }
-         });
+         }));
       }
    }
 }

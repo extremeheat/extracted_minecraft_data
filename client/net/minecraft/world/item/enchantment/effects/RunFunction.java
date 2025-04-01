@@ -7,7 +7,6 @@ import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -25,12 +24,11 @@ public record RunFunction(ResourceLocation function) implements EnchantmentEntit
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      MinecraftServer var6 = var1.getServer();
-      ServerFunctionManager var7 = var6.getFunctions();
-      Optional var8 = var7.get(this.function);
-      if (var8.isPresent()) {
-         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(2).withSuppressedOutput().withEntity(var4).withLevel(var1).withPosition(var5).withRotation(var4.getRotationVector());
-         var7.execute((CommandFunction)var8.get(), var9);
+      ServerFunctionManager var6 = var1.theGame().getFunctions();
+      Optional var7 = var6.get(this.function);
+      if (var7.isPresent()) {
+         CommandSourceStack var8 = var1.theGame().createCommandSourceStack().withPermission(2).withSuppressedOutput().withEntity(var4).withLevel(var1).withPosition(var5).withRotation(var4.getRotationVector());
+         var6.execute((CommandFunction)var7.get(), var8);
       } else {
          LOGGER.error("Enchantment run_function effect failed for non-existent function {}", this.function);
       }

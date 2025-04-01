@@ -185,7 +185,7 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
    public ProtoChunk read(ServerLevel var1, PoiManager var2, RegionStorageInfo var3, ChunkPos var4) {
       if (!Objects.equals(var4, this.chunkPos)) {
          LOGGER.error("Chunk file at {} is in the wrong location; relocating. (Expected {}, got {})", new Object[]{var4, var4, this.chunkPos});
-         var1.getServer().reportMisplacedChunk(this.chunkPos, var4, var3);
+         var1.chunkIOErrorReporter().reportMisplacedChunk(this.chunkPos, var4, var3);
       }
 
       int var5 = var1.getSectionsCount();

@@ -4,11 +4,17 @@ import com.mojang.blaze3d.platform.Lighting;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
+import net.minecraft.client.gui.screens.unlocks.PlayerUnlocksScreen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -21,11 +27,13 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    private float yMouse;
    private boolean buttonClicked;
    private final EffectsInInventory effects;
+   final Button unlocksButton;
 
    public InventoryScreen(Player var1) {
-      super(var1.inventoryMenu, new CraftingRecipeBookComponent(var1.inventoryMenu), var1.getInventory(), Component.translatable("container.crafting"));
+      super(var1.inventoryMenu, new CraftingRecipeBookComponent(var1.inventoryMenu), var1.getInventory(), Component.empty());
       this.titleLabelX = 97;
       this.effects = new EffectsInInventory(this);
+      this.unlocksButton = SpriteIconButton.builder(PlayerUnlocksScreen.TITLE, this::openUpgradeScreen, true).sprite(ResourceLocation.withDefaultNamespace("icon/player_unlocks"), 24, 24).size(24, 24).tooltip(Tooltip.create(PlayerUnlocksScreen.TITLE)).build();
    }
 
    public void containerTick() {
@@ -34,6 +42,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
          this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       }
 
+      ((InventoryMenu)this.menu).menuTick(this.minecraft.player);
    }
 
    protected void init() {
@@ -41,11 +50,26 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
          this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       } else {
          super.init();
+         this.addWidget(this.unlocksButton);
+         boolean var1 = this.minecraft.player.isActive(PlayerUnlocks.INVENTORY_CRAFTING);
+         if (this.recipeBookButton != null) {
+            this.recipeBookButton.visible = var1;
+         }
+
+         if (this.recipeBookComponent.isVisible() && !var1) {
+            this.recipeBookComponent.toggleVisibility();
+         }
+
+         this.title = var1 ? Component.translatable("container.crafting") : Component.empty();
       }
    }
 
+   private void openUpgradeScreen(Button var1) {
+      this.minecraft.setScreen(new PlayerUnlocksScreen(this.minecraft.player.connection.getUnlocks(), this));
+   }
+
    protected ScreenPosition getRecipeBookButtonPosition() {
-      return new ScreenPosition(this.leftPos + 104, this.height / 2 - 22);
+      return new ScreenPosition(this.leftPos + 104 + 48, this.height / 2 - 22);
    }
 
    protected void onRecipeBookButtonClick() {
@@ -58,6 +82,8 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      this.unlocksButton.setPosition(this.leftPos + this.imageWidth, this.topPos - 22);
+      this.unlocksButton.render(var1, var2, var3, var4);
       this.effects.render(var1, var2, var3, var4);
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;
@@ -74,7 +100,14 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(RenderType::guiTextured, INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      if (this.minecraft.player.isActive(PlayerUnlocks.INVENTORY_CRAFTING_3X3)) {
+         var1.blit(RenderType::guiTextured, INVENTORY_LOCATION_3x3, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      } else if (this.minecraft.player.isActive(PlayerUnlocks.INVENTORY_CRAFTING)) {
+         var1.blit(RenderType::guiTextured, INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      } else {
+         var1.blit(RenderType::guiTextured, INVENTORY_LOCATION_NO_CRAFTING, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      }
+
       renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 8, var5 + 75, var6 + 78, 30, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
    }
 

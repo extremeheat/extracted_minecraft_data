@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -38,11 +39,18 @@ import net.minecraft.world.entity.ai.behavior.warden.SetWardenLookTarget;
 import net.minecraft.world.entity.ai.behavior.warden.Sniffing;
 import net.minecraft.world.entity.ai.behavior.warden.SonicBoom;
 import net.minecraft.world.entity.ai.behavior.warden.TryToSniff;
+import net.minecraft.world.entity.ai.behavior.warden.Stages.StageFour;
+import net.minecraft.world.entity.ai.behavior.warden.Stages.StageMinusOne;
+import net.minecraft.world.entity.ai.behavior.warden.Stages.StageOne;
+import net.minecraft.world.entity.ai.behavior.warden.Stages.StageThree;
+import net.minecraft.world.entity.ai.behavior.warden.Stages.StageTwo;
+import net.minecraft.world.entity.ai.behavior.warden.Stages.StageZero;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.phys.Vec3;
 
 public class WardenAi {
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.5F;
@@ -64,12 +72,13 @@ public class WardenAi {
    }
 
    public static void updateActivity(Warden var0) {
-      var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.EMERGE, Activity.DIG, Activity.ROAR, Activity.FIGHT, Activity.INVESTIGATE, Activity.SNIFF, Activity.IDLE));
+      var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.ACTING, Activity.EMERGE, Activity.DIG, Activity.ROAR, Activity.INVESTIGATE, Activity.SNIFF, Activity.IDLE));
    }
 
    protected static Brain<?> makeBrain(Warden var0, Dynamic<?> var1) {
       Brain.Provider var2 = Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
       Brain var3 = var2.makeBrain(var1);
+      initStageActivity(var3);
       initCoreActivity(var3);
       initEmergeActivity(var3);
       initDiggingActivity(var3);
@@ -82,6 +91,10 @@ public class WardenAi {
       var3.setDefaultActivity(Activity.IDLE);
       var3.useDefaultActivity();
       return var3;
+   }
+
+   private static void initStageActivity(Brain<Warden> var0) {
+      var0.addActivityWithConditions(Activity.ACTING, 10, ImmutableList.of(new LookAtTargetSink(45, 90), new MoveToTargetSink(500, 600), new StageMinusOne(6000, Pose.SLEEPING), new StageZero(1200, new Vec3(-3.0, 0.0, 7.0), Pose.EMERGING), new StageOne(1200, new Vec3(0.0, 0.0, -14.0), Pose.STANDING), new StageTwo(1200, new Vec3(0.0, 0.0, 7.0), Pose.SLEEPING), new StageThree(1200, new Vec3(3.0, 0.0, 0.0), Pose.ROARING), new StageFour(60, Pose.DIGGING)), ImmutableSet.of(Pair.of(MemoryModuleType.ACTING_STAGE, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT)));
    }
 
    private static void initCoreActivity(Brain<Warden> var0) {
@@ -147,7 +160,7 @@ public class WardenAi {
 
    static {
       SENSOR_TYPES = List.of(SensorType.NEAREST_PLAYERS, SensorType.WARDEN_ENTITY_SENSOR);
-      MEMORY_TYPES = List.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_NEMESIS, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.ROAR_TARGET, MemoryModuleType.DISTURBANCE_LOCATION, MemoryModuleType.RECENT_PROJECTILE, MemoryModuleType.IS_SNIFFING, MemoryModuleType.IS_EMERGING, MemoryModuleType.ROAR_SOUND_DELAY, MemoryModuleType.DIG_COOLDOWN, MemoryModuleType.ROAR_SOUND_COOLDOWN, MemoryModuleType.SNIFF_COOLDOWN, MemoryModuleType.TOUCH_COOLDOWN, MemoryModuleType.VIBRATION_COOLDOWN, MemoryModuleType.SONIC_BOOM_COOLDOWN, MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN, MemoryModuleType.SONIC_BOOM_SOUND_DELAY);
+      MEMORY_TYPES = List.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_NEMESIS, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.ROAR_TARGET, MemoryModuleType.DISTURBANCE_LOCATION, MemoryModuleType.RECENT_PROJECTILE, MemoryModuleType.IS_SNIFFING, MemoryModuleType.IS_EMERGING, MemoryModuleType.ROAR_SOUND_DELAY, MemoryModuleType.DIG_COOLDOWN, MemoryModuleType.ROAR_SOUND_COOLDOWN, MemoryModuleType.SNIFF_COOLDOWN, MemoryModuleType.TOUCH_COOLDOWN, MemoryModuleType.VIBRATION_COOLDOWN, MemoryModuleType.SONIC_BOOM_COOLDOWN, MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN, MemoryModuleType.SONIC_BOOM_SOUND_DELAY, MemoryModuleType.ACTING_STAGE);
       DIG_COOLDOWN_SETTER = BehaviorBuilder.create((Function)((var0) -> var0.group(var0.registered(MemoryModuleType.DIG_COOLDOWN)).apply(var0, (var1) -> (var2, var3, var4) -> {
                if (var0.tryGet(var1).isPresent()) {
                   var1.setWithExpiry(Unit.INSTANCE, 1200L);

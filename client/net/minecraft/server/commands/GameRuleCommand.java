@@ -27,14 +27,14 @@ public class GameRuleCommand {
 
    static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> var0, GameRules.Key<T> var1) {
       CommandSourceStack var2 = (CommandSourceStack)var0.getSource();
-      GameRules.Value var3 = var2.getServer().getGameRules().getRule(var1);
+      GameRules.Value var3 = var2.theGame().getGameRules().getRule(var1);
       var3.setFromArgument(var0, "value");
       var2.sendSuccess(() -> Component.translatable("commands.gamerule.set", var1.getId(), var3.toString()), true);
       return var3.getCommandResult();
    }
 
    static <T extends GameRules.Value<T>> int queryRule(CommandSourceStack var0, GameRules.Key<T> var1) {
-      GameRules.Value var2 = var0.getServer().getGameRules().getRule(var1);
+      GameRules.Value var2 = var0.theGame().getGameRules().getRule(var1);
       var0.sendSuccess(() -> Component.translatable("commands.gamerule.query", var1.getId(), var2.toString()), false);
       return var2.getCommandResult();
    }

@@ -29,6 +29,7 @@ import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.renderer.PanoramaRenderer;
+import net.minecraft.client.renderer.SkyRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
@@ -88,6 +89,7 @@ public class TitleScreen extends Screen {
       var0.registerForNextReload(LogoRenderer.MINECRAFT_EDITION);
       var0.registerForNextReload(PanoramaRenderer.PANORAMA_OVERLAY);
       CUBE_MAP.registerTextures(var0);
+      var0.registerForNextReload(SkyRenderer.THE_CODE);
    }
 
    public boolean isPauseScreen() {
@@ -270,7 +272,9 @@ public class TitleScreen extends Screen {
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, var2);
+      var1.flush();
+      this.minecraft.levelRenderer.getSkyRenderer().renderCodeSkyForTitle(this.minecraft, this.panoramaFade, var2);
+      var1.flush();
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {

@@ -42,17 +42,16 @@ public class OptimizeWorldScreen extends Screen {
    @Nullable
    public static OptimizeWorldScreen create(Minecraft var0, BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, boolean var4) {
       try {
-         WorldOpenFlows var5 = var0.createWorldOpenFlows();
-         PackRepository var6 = ServerPacksSource.createPackRepository(var3);
+         PackRepository var5 = ServerPacksSource.createPackRepository(var3);
 
-         try (WorldStem var7 = var5.loadWorldStem(var3.getDataTag(), false, var6)) {
-            WorldData var8 = var7.worldData();
-            RegistryAccess.Frozen var9 = var7.registries().compositeAccess();
-            var3.saveDataTag(var9, var8);
-            return new OptimizeWorldScreen(var1, var2, var3, var8, var4, var9);
+         try (WorldStem var6 = WorldOpenFlows.loadWorldStem(var3.getDataTag(), false, var5, var0)) {
+            WorldData var7 = var6.worldData();
+            RegistryAccess.Frozen var8 = var6.registries().compositeAccess();
+            var3.saveDataTag(var8, var7);
+            return new OptimizeWorldScreen(var1, var2, var3, var7, var4, var8);
          }
-      } catch (Exception var13) {
-         LOGGER.warn("Failed to load datapacks, can't optimize world", var13);
+      } catch (Exception var12) {
+         LOGGER.warn("Failed to load datapacks, can't optimize world", var12);
          return null;
       }
    }
