@@ -11,8 +11,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -371,7 +372,7 @@ public class EditBox extends AbstractWidget {
       if (this.isVisible()) {
          if (this.isBordered()) {
             ResourceLocation var5 = SPRITES.get(this.isActive(), this.isFocused());
-            var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
          int var17 = this.isEditable ? this.textColor : this.textColorUneditable;
@@ -385,15 +386,17 @@ public class EditBox extends AbstractWidget {
          int var13 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
          if (!var7.isEmpty()) {
             String var14 = var8 ? var7.substring(0, var6) : var7;
-            var12 = var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var14, this.displayPos), var10, var11, var17);
+            FormattedCharSequence var15 = (FormattedCharSequence)this.formatter.apply(var14, this.displayPos);
+            var1.drawString(this.font, var15, var10, var11, var17);
+            var12 = var10 + this.font.width(var15);
          }
 
          boolean var18 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
-         int var15 = var12;
+         int var19 = var12;
          if (!var8) {
-            var15 = var6 > 0 ? var10 + this.width : var10;
+            var19 = var6 > 0 ? var10 + this.width : var10;
          } else if (var18) {
-            var15 = var12 - 1;
+            var19 = var12 - 1;
             --var12;
          }
 
@@ -406,29 +409,28 @@ public class EditBox extends AbstractWidget {
          }
 
          if (!var18 && this.suggestion != null) {
-            var1.drawString(this.font, this.suggestion, var15 - 1, var11, -8355712);
+            var1.drawString(this.font, this.suggestion, var19 - 1, var11, -8355712);
          }
 
          if (var9) {
             if (var18) {
-               RenderType var10001 = RenderType.guiOverlay();
-               int var10003 = var11 - 1;
-               int var10004 = var15 + 1;
-               int var10005 = var11 + 1;
+               int var10002 = var11 - 1;
+               int var10003 = var19 + 1;
+               int var10004 = var11 + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var10001, var15, var10003, var10004, var10005 + 9, -3092272);
+               var1.fill(var19, var10002, var10003, var10004 + 9, -3092272);
             } else {
-               var1.drawString(this.font, "_", var15, var11, var17);
+               var1.drawString(this.font, "_", var19, var11, var17);
             }
          }
 
          if (var13 != var6) {
             int var16 = var10 + this.font.width(var7.substring(0, var13));
-            int var19 = var11 - 1;
-            int var20 = var16 - 1;
-            int var21 = var11 + 1;
+            int var20 = var11 - 1;
+            int var21 = var16 - 1;
+            int var10005 = var11 + 1;
             Objects.requireNonNull(this.font);
-            this.renderHighlight(var1, var15, var19, var20, var21 + 9);
+            this.renderHighlight(var1, var19, var20, var21, var10005 + 9);
          }
 
       }
@@ -455,7 +457,9 @@ public class EditBox extends AbstractWidget {
          var2 = this.getX() + this.width;
       }
 
-      var1.fill(RenderType.guiTextHighlight(), var2, var3, var4, var5, -16776961);
+      var1.pushGuiLayer(GuiLayer.SCREEN_TEXT_HIGHLIGHT);
+      var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
+      var1.popGuiLayer();
    }
 
    public void setMaxLength(int var1) {

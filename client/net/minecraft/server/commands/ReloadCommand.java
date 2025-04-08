@@ -10,7 +10,7 @@ import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.WorldData;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class ReloadCommand {
    }
 
    public static void reloadPacks(Collection<String> var0, CommandSourceStack var1) {
-      var1.theGame().reloadResources(var0).exceptionally((var1x) -> {
+      var1.getServer().reloadResources(var0).exceptionally((var1x) -> {
          LOGGER.warn("Failed to execute reload", var1x);
          var1.sendFailure(Component.translatable("commands.reload.failure"));
          return null;
@@ -47,7 +47,7 @@ public class ReloadCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("reload").requires((var0x) -> var0x.hasPermission(2))).executes((var0x) -> {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
-         TheGame var2 = var1.theGame();
+         MinecraftServer var2 = var1.getServer();
          PackRepository var3 = var2.getPackRepository();
          WorldData var4 = var2.getWorldData();
          Collection var5 = var3.getSelectedIds();

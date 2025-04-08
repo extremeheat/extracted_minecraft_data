@@ -5,17 +5,20 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 public class TemptGoal extends Goal {
    private static final TargetingConditions TEMPT_TARGETING = TargetingConditions.forNonCombat().ignoreLineOfSight();
+   private static final double DEFAULT_STOP_DISTANCE = 2.5;
    private final TargetingConditions targetingConditions;
-   protected final PathfinderMob mob;
-   private final double speedModifier;
+   protected final Mob mob;
+   protected final double speedModifier;
    private double px;
    private double py;
    private double pz;
@@ -27,13 +30,23 @@ public class TemptGoal extends Goal {
    private boolean isRunning;
    private final Predicate<ItemStack> items;
    private final boolean canScare;
+   private final double stopDistance;
 
    public TemptGoal(PathfinderMob var1, double var2, Predicate<ItemStack> var4, boolean var5) {
+      this((Mob)var1, var2, var4, var5, 2.5);
+   }
+
+   public TemptGoal(PathfinderMob var1, double var2, Predicate<ItemStack> var4, boolean var5, double var6) {
+      this((Mob)var1, var2, var4, var5, var6);
+   }
+
+   TemptGoal(Mob var1, double var2, Predicate<ItemStack> var4, boolean var5, double var6) {
       super();
       this.mob = var1;
       this.speedModifier = var2;
       this.items = var4;
       this.canScare = var5;
+      this.stopDistance = var6;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       this.targetingConditions = TEMPT_TARGETING.copy().selector((var1x, var2x) -> this.shouldFollow(var1x));
    }
@@ -88,22 +101,45 @@ public class TemptGoal extends Goal {
 
    public void stop() {
       this.player = null;
-      this.mob.getNavigation().stop();
+      this.stopNavigation();
       this.calmDown = reducedTickDelay(100);
       this.isRunning = false;
    }
 
    public void tick() {
       this.mob.getLookControl().setLookAt(this.player, (float)(this.mob.getMaxHeadYRot() + 20), (float)this.mob.getMaxHeadXRot());
-      if (this.mob.distanceToSqr(this.player) < 6.25) {
-         this.mob.getNavigation().stop();
+      if (this.mob.distanceToSqr(this.player) < this.stopDistance * this.stopDistance) {
+         this.stopNavigation();
       } else {
-         this.mob.getNavigation().moveTo((Entity)this.player, this.speedModifier);
+         this.navigateTowards(this.player);
       }
 
    }
 
+   protected void stopNavigation() {
+      this.mob.getNavigation().stop();
+   }
+
+   protected void navigateTowards(Player var1) {
+      this.mob.getNavigation().moveTo((Entity)var1, this.speedModifier);
+   }
+
    public boolean isRunning() {
       return this.isRunning;
+   }
+
+   public static class ForNonPathfinders extends TemptGoal {
+      public ForNonPathfinders(Mob var1, double var2, Predicate<ItemStack> var4, boolean var5, double var6) {
+         super(var1, var2, var4, var5, var6);
+      }
+
+      protected void stopNavigation() {
+         this.mob.getMoveControl().setWait();
+      }
+
+      protected void navigateTowards(Player var1) {
+         Vec3 var2 = var1.getEyePosition().subtract(this.mob.position()).scale(this.mob.getRandom().nextDouble()).add(this.mob.position());
+         this.mob.getMoveControl().setWantedPosition(var2.x, var2.y, var2.z, this.speedModifier);
+      }
    }
 }

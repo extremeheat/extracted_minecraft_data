@@ -34,7 +34,6 @@ public interface DamageTypes {
    ResourceKey<DamageType> FALLING_STALACTITE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("falling_stalactite"));
    ResourceKey<DamageType> STING = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("sting"));
    ResourceKey<DamageType> MOB_ATTACK = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("mob_attack"));
-   ResourceKey<DamageType> DEVOUR = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("devour"));
    ResourceKey<DamageType> MOB_ATTACK_NO_AGGRO = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("mob_attack_no_aggro"));
    ResourceKey<DamageType> PLAYER_ATTACK = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("player_attack"));
    ResourceKey<DamageType> ARROW = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("arrow"));
@@ -86,7 +85,6 @@ public interface DamageTypes {
       var0.register(FALLING_STALACTITE, new DamageType("fallingStalactite", 0.1F));
       var0.register(STING, new DamageType("sting", 0.1F));
       var0.register(MOB_ATTACK, new DamageType("mob", 0.1F));
-      var0.register(DEVOUR, new DamageType("devour", 0.1F));
       var0.register(MOB_ATTACK_NO_AGGRO, new DamageType("mob", 0.1F));
       var0.register(PLAYER_ATTACK, new DamageType("player", 0.1F));
       var0.register(ARROW, new DamageType("arrow", 0.1F));

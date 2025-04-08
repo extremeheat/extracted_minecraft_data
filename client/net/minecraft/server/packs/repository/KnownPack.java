@@ -17,7 +17,7 @@ public record KnownPack(String namespace, String id, String version) {
    }
 
    public static KnownPack vanilla(String var0) {
-      return new KnownPack("minecraft", var0, SharedConstants.getCurrentVersion().getId());
+      return new KnownPack("minecraft", var0, SharedConstants.getCurrentVersion().id());
    }
 
    public boolean isVanilla() {

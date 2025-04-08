@@ -38,7 +38,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -139,20 +138,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         this.moveRelative(0.02F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
-      } else if (this.isInLava()) {
-         this.moveRelative(0.02F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
-      } else {
-         this.moveRelative(this.getSpeed(), var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
-      }
-
+      this.travelFlying(var1, this.getSpeed());
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {

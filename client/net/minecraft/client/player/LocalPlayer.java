@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.toasts.LevelUpToast;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -31,13 +30,13 @@ import net.minecraft.client.resources.sounds.AmbientSoundHandler;
 import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
 import net.minecraft.client.resources.sounds.BubbleColumnAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.ElytraOnPlayerSoundInstance;
+import net.minecraft.client.resources.sounds.RidingHappyGhastSoundInstance;
 import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -47,15 +46,11 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerBuyUnlockPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerDonateExperiencePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerReactivateUnlockPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.server.players.PlayerUnlock;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -64,7 +59,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
@@ -72,13 +66,13 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.BaseCommandBlock;
@@ -130,8 +124,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private Input lastSentInput;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
-   private int lastXpPopupLevel;
-   private long lastXpPopupTime;
+   public int experienceDisplayStartTick;
    public float yBob;
    public float xBob;
    public float yBobO;
@@ -168,42 +161,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager(), var2.getBiomeManager()));
    }
 
-   public boolean isUnlocked(Holder<PlayerUnlock> var1) {
-      return this.connection.getUnlocks().isUnlocked(var1);
-   }
-
-   public boolean isActive(Holder<PlayerUnlock> var1) {
-      return this.connection.getUnlocks().isActive(var1);
-   }
-
-   public boolean buyUnlock(Holder<PlayerUnlock> var1) {
-      if (this.connection.getUnlocks().isUnlockable(var1) && super.buyUnlock(var1)) {
-         this.connection.send(new ServerboundPlayerBuyUnlockPacket(var1));
-         this.playNotifySound(SoundEvents.UI_PLAYER_UNLOCK_SUCCESS, SoundSource.MASTER, 0.5F, 2.0F);
-         return true;
-      } else {
-         this.playNotifySound(SoundEvents.UI_PLAYER_UNLOCK_FAIL, SoundSource.MASTER, 0.5F, 1.0F);
-         return false;
-      }
-   }
-
-   public void reactivateUnlock(Holder<PlayerUnlock> var1) {
-      if (this.connection.getUnlocks().isVisibleAtAll(var1)) {
-         this.connection.send(new ServerboundPlayerReactivateUnlockPacket(var1));
-         this.playNotifySound(SoundEvents.UI_PLAYER_UNLOCK_SUCCESS, SoundSource.MASTER, 0.5F, 2.0F);
-      }
-
-   }
-
-   public boolean donateExperienceToMineCrafter() {
-      if (!super.donateExperienceToMineCrafter()) {
-         return false;
-      } else {
-         this.connection.send(new ServerboundPlayerDonateExperiencePacket());
-         return true;
-      }
-   }
-
    public void heal(float var1) {
    }
 
@@ -214,6 +171,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          if (var1 instanceof AbstractMinecart) {
             this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, true));
             this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, false));
+         } else if (var1 instanceof HappyGhast) {
+            this.minecraft.getSoundManager().play(new RidingHappyGhastSoundInstance(this, (HappyGhast)var1));
          }
 
          return true;
@@ -238,18 +197,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
-         if (this.lastXpPopupLevel != this.experienceLevel) {
-            if (this.experienceLevel > this.lastXpPopupLevel) {
-               long var1 = this.level().getGameTime();
-               if (var1 > this.lastXpPopupTime + 200L) {
-                  this.minecraft.getToastManager().addToast(new LevelUpToast(this.experienceLevel));
-                  this.lastXpPopupTime = var1;
-               }
-            }
-
-            this.lastXpPopupLevel = this.experienceLevel;
-         }
-
          this.sendShiftKeyState();
          if (!this.lastSentInput.equals(this.input.keyPresses)) {
             this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
@@ -258,9 +205,9 @@ public class LocalPlayer extends AbstractClientPlayer {
 
          if (this.isPassenger()) {
             this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
-            Entity var3 = this.getRootVehicle();
-            if (var3 != this && var3.isLocalInstanceAuthoritative()) {
-               this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var3));
+            Entity var1 = this.getRootVehicle();
+            if (var1 != this && var1.isLocalInstanceAuthoritative()) {
+               this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var1));
                this.sendIsSprintingIfNeeded();
             }
          } else {
@@ -485,6 +432,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.experienceProgress = var1;
       this.totalExperience = var2;
       this.experienceLevel = var3;
+      this.experienceDisplayStartTick = this.tickCount;
    }
 
    public void handleEntityEvent(byte var1) {
@@ -860,25 +808,6 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       } else {
          this.jumpRidingScale = 0.0F;
-      }
-
-      if (this.isEquipped(Items.SHAZBOOTS)) {
-         if (this.input.keyPresses.jump()) {
-            this.addEffect(new MobEffectInstance(MobEffects.SHAZBOOTS, 20, 0, false, false, true));
-         } else if (this.onGround()) {
-            this.removeEffect(MobEffects.SHAZBOOTS);
-         } else if (!this.onGround()) {
-            this.removeEffect(MobEffects.JUMP_BOOST);
-         }
-
-         if (var1 && !this.input.keyPresses.jump() && this.onGround()) {
-            this.addEffect(new MobEffectInstance(MobEffects.JUMP_BOOST, 20, (int)(this.getDeltaMovement().horizontalDistance() * 7.5), false, false, false));
-            this.jumpFromGround();
-         }
-
-         if (this.noJumpDelay > 0) {
-            this.noJumpDelay = 2;
-         }
       }
 
       super.aiStep();

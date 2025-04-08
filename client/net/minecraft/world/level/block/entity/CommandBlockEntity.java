@@ -47,7 +47,7 @@ public class CommandBlockEntity extends BlockEntity {
 
       public CommandSourceStack createCommandSourceStack() {
          Direction var1 = (Direction)CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
-         return new CommandSourceStack(this, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, var1.toYRot()), this.getLevel(), 2, this.getName().getString(), this.getName(), this.getLevel().theGame(), (Entity)null);
+         return new CommandSourceStack(this, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, var1.toYRot()), this.getLevel(), 2, this.getName().getString(), this.getName(), this.getLevel().getServer(), (Entity)null);
       }
 
       public boolean isValid() {

@@ -3,7 +3,6 @@ package com.mojang.blaze3d.opengl;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
@@ -26,7 +25,7 @@ public class GlRenderPass implements RenderPass {
    @Nullable
    protected GpuBuffer indexBuffer;
    protected VertexFormat.IndexType indexType;
-   protected final ScissorState scissorState;
+   private final ScissorState scissorState;
    protected final HashMap<String, Object> uniforms;
    protected final HashMap<String, GpuTexture> samplers;
    protected final Set<String> dirtyUniforms;
@@ -77,16 +76,32 @@ public class GlRenderPass implements RenderPass {
       this.dirtyUniforms.add(var1);
    }
 
-   public void enableScissor(ScissorState var1) {
-      this.scissorState.copyFrom(var1);
-   }
-
    public void enableScissor(int var1, int var2, int var3, int var4) {
       this.scissorState.enable(var1, var2, var3, var4);
    }
 
    public void disableScissor() {
       this.scissorState.disable();
+   }
+
+   public boolean isScissorEnabled() {
+      return this.scissorState.enabled;
+   }
+
+   public int getScissorX() {
+      return this.scissorState.x;
+   }
+
+   public int getScissorY() {
+      return this.scissorState.y;
+   }
+
+   public int getScissorWidth() {
+      return this.scissorState.width;
+   }
+
+   public int getScissorHeight() {
+      return this.scissorState.height;
    }
 
    public void setVertexBuffer(int var1, GpuBuffer var2) {
@@ -136,5 +151,29 @@ public class GlRenderPass implements RenderPass {
 
    static {
       VALIDATION = SharedConstants.IS_RUNNING_IN_IDE;
+   }
+
+   static class ScissorState {
+      boolean enabled;
+      int x;
+      int y;
+      int width;
+      int height;
+
+      ScissorState() {
+         super();
+      }
+
+      public void enable(int var1, int var2, int var3, int var4) {
+         this.enabled = true;
+         this.x = var1;
+         this.y = var2;
+         this.width = var3;
+         this.height = var4;
+      }
+
+      public void disable() {
+         this.enabled = false;
+      }
    }
 }

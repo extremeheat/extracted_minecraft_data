@@ -155,23 +155,14 @@ public class LevelStorageSource {
    }
 
    public static LevelDataAndDimensions getLevelDataAndDimensions(Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, HolderLookup.Provider var3) {
-      return getLevelDataAndDimensions(var0, var1, var2, var3, false);
-   }
-
-   public static LevelDataAndDimensions getLevelDataAndDimensions(Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, HolderLookup.Provider var3, boolean var4) {
-      Dynamic var5 = RegistryOps.injectRegistryContext(var0, var3);
-      Dynamic var6 = var5.get("WorldGenSettings").orElseEmptyMap();
-      WorldGenSettings var7 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var6).getOrThrow();
-      LevelSettings var8 = LevelSettings.parse(var5, var1);
-      WorldDimensions var9 = var7.dimensions();
-      if (var4) {
-         var9 = var9.stripGenerated();
-      }
-
-      WorldDimensions.Complete var10 = var9.bake(var2);
-      Lifecycle var11 = var10.lifecycle().add(var3.allRegistriesLifecycle());
-      PrimaryLevelData var12 = PrimaryLevelData.parse(var5, var8, var10.specialWorldProperty(), var7.options(), var11);
-      return new LevelDataAndDimensions(var12, var10);
+      Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
+      Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();
+      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow();
+      LevelSettings var7 = LevelSettings.parse(var4, var1);
+      WorldDimensions.Complete var8 = var6.dimensions().bake(var2);
+      Lifecycle var9 = var8.lifecycle().add(var3.allRegistriesLifecycle());
+      PrimaryLevelData var10 = PrimaryLevelData.parse(var4, var7, var8.specialWorldProperty(), var6.options(), var9);
+      return new LevelDataAndDimensions(var10, var8);
    }
 
    public String getName() {

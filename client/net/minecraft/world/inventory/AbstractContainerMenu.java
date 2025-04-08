@@ -23,7 +23,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.HashedStack;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
@@ -97,47 +96,10 @@ public abstract class AbstractContainerMenu {
 
    }
 
-   protected void addInventoryExtendedSlots(Container var1, final Player var2, int var3, int var4, final int var5) {
-      for(int var6 = 0; var6 < 3; ++var6) {
-         for(int var7 = 0; var7 < 9; ++var7) {
-            this.addSlot(new Slot(var1, var7 + (var6 + 1) * 9, var3 + var7 * 18, var4 + var6 * 18) {
-               public boolean mayPlace(ItemStack var1) {
-                  return super.mayPlace(var1) && this.inventorySlotActive();
-               }
-
-               public boolean isActive() {
-                  return super.isActive() && this.inventorySlotActive();
-               }
-
-               private boolean inventorySlotActive() {
-                  int var1 = this.index - var5;
-                  int var2x = var1 / 9;
-                  boolean var10000;
-                  switch (var2x) {
-                     case 0 -> var10000 = var2.isActive(PlayerUnlocks.INVENTORY_SLOTS_1);
-                     case 1 -> var10000 = var2.isActive(PlayerUnlocks.INVENTORY_SLOTS_2);
-                     case 2 -> var10000 = var2.isActive(PlayerUnlocks.INVENTORY_SLOTS_3);
-                     default -> var10000 = true;
-                  }
-
-                  return var10000;
-               }
-            });
-         }
-      }
-
-   }
-
    protected void addStandardInventorySlots(Container var1, int var2, int var3) {
-      int var4 = this.slots.size();
-      if (var1.getPlayer() != null) {
-         this.addInventoryExtendedSlots(var1, var1.getPlayer(), var2, var3, var4);
-      } else {
-         this.addInventoryExtendedSlots(var1, var2, var3);
-      }
-
+      this.addInventoryExtendedSlots(var1, var2, var3);
+      boolean var4 = true;
       boolean var5 = true;
-      boolean var6 = true;
       this.addInventoryHotbarSlots(var1, var2, var3 + 58);
    }
 
@@ -151,11 +113,6 @@ public abstract class AbstractContainerMenu {
       } else {
          return this.menuType;
       }
-   }
-
-   @Nullable
-   public MenuType<?> getTypeRaw() {
-      return this.menuType;
    }
 
    protected static void checkContainerSize(Container var0, int var1) {
@@ -398,7 +355,7 @@ public abstract class AbstractContainerMenu {
       }
    }
 
-   protected void doClick(int var1, int var2, ClickType var3, Player var4) {
+   private void doClick(int var1, int var2, ClickType var3, Player var4) {
       Inventory var5 = var4.getInventory();
       if (var3 == ClickType.QUICK_CRAFT) {
          int var6 = this.quickcraftStatus;
@@ -922,8 +879,5 @@ public abstract class AbstractContainerMenu {
    public int incrementStateId() {
       this.stateId = this.stateId + 1 & 32767;
       return this.stateId;
-   }
-
-   public void updateData(List<Integer> var1) {
    }
 }

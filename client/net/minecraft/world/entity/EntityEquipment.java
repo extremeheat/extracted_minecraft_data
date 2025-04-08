@@ -55,7 +55,7 @@ public class EntityEquipment {
 
    public void dropAll(LivingEntity var1) {
       for(ItemStack var3 : this.items.values()) {
-         var1.drop(var3, true, false, true);
+         var1.drop(var3, true, false);
       }
 
       this.clear();

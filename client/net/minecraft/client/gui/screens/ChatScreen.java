@@ -166,14 +166,11 @@ public class ChatScreen extends Screen {
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
+      this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       this.input.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 200.0F);
       this.commandSuggestions.render(var1, var2, var3);
-      var1.pose().popPose();
       GuiMessageTag var5 = this.minecraft.gui.getChat().getMessageTagAt((double)var2, (double)var3);
       if (var5 != null && var5.text() != null) {
          var1.renderTooltip(this.font, this.font.split(var5.text(), 210), var2, var3);

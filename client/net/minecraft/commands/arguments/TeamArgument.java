@@ -31,7 +31,7 @@ public class TeamArgument implements ArgumentType<String> {
 
    public static PlayerTeam getTeam(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       String var2 = (String)var0.getArgument(var1, String.class);
-      ServerScoreboard var3 = ((CommandSourceStack)var0.getSource()).theGame().getScoreboard();
+      ServerScoreboard var3 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
       PlayerTeam var4 = ((Scoreboard)var3).getPlayerTeam(var2);
       if (var4 == null) {
          throw ERROR_TEAM_NOT_FOUND.create(var2);

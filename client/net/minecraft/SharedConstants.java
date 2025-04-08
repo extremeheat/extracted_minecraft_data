@@ -14,28 +14,28 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4323;
+   public static final int WORLD_VERSION = 4422;
    /** @deprecated */
    @Deprecated
-   public static final String SERIES = "april2025";
+   public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "25w14craftmine";
+   public static final String VERSION_STRING = "25w15a";
    /** @deprecated */
    @Deprecated
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 770;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 244;
-   public static final int SNBT_NAG_VERSION = 4292;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 245;
+   public static final int SNBT_NAG_VERSION = 4420;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 55;
+   public static final int RESOURCE_PACK_FORMAT = 56;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 71;
+   public static final int DATA_PACK_FORMAT = 72;
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -49,6 +49,7 @@ public class SharedConstants {
    public static final boolean DEBUG_HOTKEYS = false;
    public static final boolean DEBUG_UI_NARRATION = false;
    public static final boolean DEBUG_RENDER = false;
+   public static final boolean DEBUG_SHUFFLE_RENDER_PIPELINES = false;
    public static final boolean DEBUG_PATHFINDING = false;
    public static final boolean DEBUG_WATER = false;
    public static final boolean DEBUG_HEIGHTMAP = false;
@@ -94,7 +95,6 @@ public class SharedConstants {
    public static final boolean DEBUG_VAULT_DETECTS_SHEEP_AS_PLAYERS = false;
    public static final boolean DEBUG_FORCE_ONBOARDING_SCREEN = false;
    public static final boolean DEBUG_CURSOR_POS = false;
-   public static final boolean DEBUG_SOLID_SKY_BLOCK = false;
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = false;
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
    public static final boolean DEBUG_AQUIFERS = false;
@@ -177,7 +177,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742068;
+      return 1073742069;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

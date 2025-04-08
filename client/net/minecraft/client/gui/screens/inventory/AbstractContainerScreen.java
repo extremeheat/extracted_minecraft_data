@@ -12,9 +12,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.BundleMouseActions;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.ItemSlotMouseAction;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -27,17 +28,12 @@ import net.minecraft.world.item.ItemStack;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
    public static final ResourceLocation INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory.png");
-   public static final ResourceLocation INVENTORY_LOCATION_3x3 = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory_3x3.png");
-   public static final ResourceLocation INVENTORY_LOCATION_NO_CRAFTING = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory_no_crafting.png");
-   public static final ResourceLocation DISABLED_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/crafter/disabled_slot");
    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
    protected static final int BACKGROUND_TEXTURE_WIDTH = 256;
    protected static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    private static final float SNAPBACK_SPEED = 100.0F;
    private static final int QUICKDROP_DELAY = 500;
-   public static final int SLOT_ITEM_BLIT_OFFSET = 100;
-   private static final int HOVER_ITEM_BLIT_OFFSET = 200;
    protected int imageWidth = 176;
    protected int imageHeight = 166;
    protected int titleLabelX;
@@ -108,13 +104,17 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       int var5 = this.leftPos;
       int var6 = this.topPos;
       super.render(var1, var2, var3, var4);
-      var1.pose().pushPose();
-      var1.pose().translate((float)var5, (float)var6, 0.0F);
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)var5, (float)var6);
       Slot var7 = this.hoveredSlot;
       this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
+      var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_BACK);
       this.renderSlotHighlightBack(var1);
+      var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT);
       this.renderSlots(var1);
+      var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_FRONT);
       this.renderSlotHighlightFront(var1);
+      var1.popGuiLayer();
       if (var7 != null && var7 != this.hoveredSlot) {
          this.onStopHovering(var7);
       }
@@ -151,15 +151,13 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          this.renderFloatingItem(var1, this.snapbackItem, var12, var13, (String)null);
       }
 
-      var1.pose().popPose();
+      var1.pose().popMatrix();
    }
 
    protected void renderSlots(GuiGraphics var1) {
       for(Slot var3 : this.menu.slots) {
          if (var3.isActive()) {
             this.renderSlot(var1, var3);
-         } else if (!(this instanceof MineCraftingScreen)) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_SLOT_SPRITE, var3.x - 1, var3.y - 1, 18, 18);
          }
       }
 
@@ -184,14 +182,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void renderSlotHighlightBack(GuiGraphics var1) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
 
    private void renderSlotHighlightFront(GuiGraphics var1) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
-         var1.blitSprite(RenderType::guiTexturedOverlay, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
@@ -215,11 +213,8 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    private void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 232.0F);
       var1.renderItem(var2, var3, var4);
-      var1.renderItemDecorations(this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
-      var1.pose().popPose();
+      var1.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
@@ -262,12 +257,10 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          }
       }
 
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 100.0F);
       if (var5.isEmpty() && var2.isActive()) {
          ResourceLocation var13 = var2.getNoItemIcon();
          if (var13 != null) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var13, var3, var4, 16, 16);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var13, var3, var4, 16, 16);
             var7 = true;
          }
       }
@@ -284,10 +277,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             var1.renderItem(var5, var3, var4, var14);
          }
 
-         var1.renderItemDecorations(this.font, var5, var3, var4, var9);
+         var1.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, this.font, var5, var3, var4, var9);
       }
 
-      var1.pose().popPose();
    }
 
    private void recalculateQuickCraftRemaining() {

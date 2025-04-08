@@ -14,14 +14,23 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class AttributeMap {
-   private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap();
-   private final Set<AttributeInstance> attributesToSync = new ObjectOpenHashSet();
-   private final Set<AttributeInstance> attributesToUpdate = new ObjectOpenHashSet();
+   private final Map<Holder<Attribute>, AttributeInstance> attributes;
+   private final Set<AttributeInstance> attributesToSync;
+   private final Set<AttributeInstance> attributesToUpdate;
    private final AttributeSupplier supplier;
+   private final AttributeReceiver receiver;
 
    public AttributeMap(AttributeSupplier var1) {
+      this(var1, AttributeReceiver.EMPTY);
+   }
+
+   public AttributeMap(AttributeSupplier var1, AttributeReceiver var2) {
       super();
+      this.attributes = new Object2ObjectOpenHashMap();
+      this.attributesToSync = new ObjectOpenHashSet();
+      this.attributesToUpdate = new ObjectOpenHashSet();
       this.supplier = var1;
+      this.receiver = var2;
    }
 
    private void onAttributeModified(AttributeInstance var1) {
@@ -30,6 +39,7 @@ public class AttributeMap {
          this.attributesToSync.add(var1);
       }
 
+      this.receiver.onAttributeModified(var1);
    }
 
    public Set<AttributeInstance> getAttributesToSync() {

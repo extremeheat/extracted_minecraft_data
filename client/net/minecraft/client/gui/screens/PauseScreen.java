@@ -19,7 +19,7 @@ import net.minecraft.client.gui.screens.multiplayer.ServerLinksScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -107,8 +107,8 @@ public class PauseScreen extends Screen {
    }
 
    static void addFeedbackButtons(Screen var0, GridLayout.RowHelper var1) {
-      var1.addChild(openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().isStable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK));
-      ((Button)var1.addChild(openLinkButton(var0, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK))).active = !SharedConstants.getCurrentVersion().getDataVersion().isSideSeries();
+      var1.addChild(openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK));
+      ((Button)var1.addChild(openLinkButton(var0, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK))).active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
    }
 
    private void onDisconnect() {
@@ -139,7 +139,7 @@ public class PauseScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if (this.showPauseMenu && this.minecraft != null && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
       }
 
    }

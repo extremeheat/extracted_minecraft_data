@@ -33,7 +33,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.GameRules;
 
@@ -168,7 +168,7 @@ public class EditGameRulesScreen extends Screen {
 
       public BooleanRuleEntry(final Component var2, final List<FormattedCharSequence> var3, final String var4, final GameRules.BooleanValue var5) {
          super(var3, var2);
-         this.checkbox = CycleButton.onOffBuilder(var5.get()).displayOnlyValue().withCustomNarration((var1x) -> var1x.createDefaultNarrationMessage().append("\n").append(var4)).create(10, 5, 44, 20, var2, (var1x, var2x) -> var5.set(var2x, (TheGame)null));
+         this.checkbox = CycleButton.onOffBuilder(var5.get()).displayOnlyValue().withCustomNarration((var1x) -> var1x.createDefaultNarrationMessage().append("\n").append(var4)).create(10, 5, 44, 20, var2, (var1x, var2x) -> var5.set(var2x, (MinecraftServer)null));
          this.children.add(this.checkbox);
       }
 

@@ -36,7 +36,7 @@ public class ChunkStatusTasks {
 
    static CompletableFuture<ChunkAccess> generateStructureStarts(WorldGenContext var0, ChunkStep var1, StaticCache2D<GenerationChunkHolder> var2, ChunkAccess var3) {
       ServerLevel var4 = var0.level();
-      if (var4.theGame().getWorldData().worldGenOptions().generateStructures()) {
+      if (var4.getServer().getWorldData().worldGenOptions().generateStructures()) {
          var0.generator().createStructures(var4.registryAccess(), var4.getChunkSource().getGeneratorState(), var4.structureManager(), var3, var0.structureManager(), var4.dimension());
       }
 

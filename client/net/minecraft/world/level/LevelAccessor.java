@@ -7,6 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -41,6 +42,9 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
    LevelData getLevelData();
 
    DifficultyInstance getCurrentDifficultyAt(BlockPos var1);
+
+   @Nullable
+   MinecraftServer getServer();
 
    default Difficulty getDifficulty() {
       return this.getLevelData().getDifficulty();

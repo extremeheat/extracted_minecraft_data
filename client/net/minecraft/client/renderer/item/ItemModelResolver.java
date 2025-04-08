@@ -82,8 +82,4 @@ public class ItemModelResolver {
       ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
       return var2 == null ? true : ((ClientItem.Properties)this.clientProperties.apply(var2)).handAnimationOnSwap();
    }
-
-   public ItemModel get(ResourceLocation var1) {
-      return (ItemModel)this.modelGetter.apply(var1);
-   }
 }

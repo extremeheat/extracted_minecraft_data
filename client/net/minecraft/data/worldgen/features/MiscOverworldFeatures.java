@@ -5,18 +5,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.LakeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.PlaceTemplateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SpringConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
@@ -41,12 +38,6 @@ public class MiscOverworldFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_LAVA_OVERWORLD = FeatureUtils.createKey("spring_lava_overworld");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_LAVA_FROZEN = FeatureUtils.createKey("spring_lava_frozen");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_WATER = FeatureUtils.createKey("spring_water");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> MINE_START = FeatureUtils.createKey("mine_start");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> WARDEN_ARENA = FeatureUtils.createKey("warden_arena");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> DIRTY_ICE_BALL = FeatureUtils.createKey("dirty_ice_ball");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> DIRTY_ICE_BALL_FOX = FeatureUtils.createKey("dirty_ice_ball_fox");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> DIRTY_ICE_BALL_GOLEMS = FeatureUtils.createKey("dirty_ice_ball_golems");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> SPACE_IGLOO = FeatureUtils.createKey("space_igloo");
 
    public MiscOverworldFeatures() {
       super();
@@ -71,11 +62,5 @@ public class MiscOverworldFeatures {
       FeatureUtils.register(var0, SPRING_LAVA_OVERWORLD, Feature.SPRING, new SpringConfiguration(Fluids.LAVA.defaultFluidState(), true, 4, 1, HolderSet.direct(Block::builtInRegistryHolder, Blocks.STONE, Blocks.GRANITE, Blocks.DIORITE, Blocks.ANDESITE, Blocks.DEEPSLATE, Blocks.TUFF, Blocks.CALCITE, Blocks.DIRT)));
       FeatureUtils.register(var0, SPRING_LAVA_FROZEN, Feature.SPRING, new SpringConfiguration(Fluids.LAVA.defaultFluidState(), true, 4, 1, HolderSet.direct(Block::builtInRegistryHolder, Blocks.SNOW_BLOCK, Blocks.POWDER_SNOW, Blocks.PACKED_ICE)));
       FeatureUtils.register(var0, SPRING_WATER, Feature.SPRING, new SpringConfiguration(Fluids.WATER.defaultFluidState(), true, 4, 1, HolderSet.direct(Block::builtInRegistryHolder, Blocks.STONE, Blocks.GRANITE, Blocks.DIORITE, Blocks.ANDESITE, Blocks.DEEPSLATE, Blocks.TUFF, Blocks.CALCITE, Blocks.DIRT, Blocks.SNOW_BLOCK, Blocks.POWDER_SNOW, Blocks.PACKED_ICE)));
-      FeatureUtils.register(var0, MINE_START, Feature.PLACE_TEMPLATE, new PlaceTemplateConfiguration(List.of(ResourceLocation.withDefaultNamespace("mines/start_platform"))));
-      FeatureUtils.register(var0, WARDEN_ARENA, Feature.PLACE_TEMPLATE, new PlaceTemplateConfiguration(List.of(ResourceLocation.withDefaultNamespace("mines/warden_arena")), Rotation.NONE));
-      FeatureUtils.register(var0, DIRTY_ICE_BALL, Feature.PLACE_TEMPLATE, new PlaceTemplateConfiguration(List.of(ResourceLocation.withDefaultNamespace("mines/dirty_ice_ball"))));
-      FeatureUtils.register(var0, DIRTY_ICE_BALL_FOX, Feature.PLACE_TEMPLATE, new PlaceTemplateConfiguration(List.of(ResourceLocation.withDefaultNamespace("mines/dirty_ice_ball_fox"))));
-      FeatureUtils.register(var0, DIRTY_ICE_BALL_GOLEMS, Feature.PLACE_TEMPLATE, new PlaceTemplateConfiguration(List.of(ResourceLocation.withDefaultNamespace("mines/dirty_ice_ball_golems"))));
-      FeatureUtils.register(var0, SPACE_IGLOO, Feature.PLACE_TEMPLATE, new PlaceTemplateConfiguration(List.of(ResourceLocation.withDefaultNamespace("mines/space_igloo")), Rotation.CLOCKWISE_90));
    }
 }

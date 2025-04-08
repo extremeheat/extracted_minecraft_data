@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
@@ -14,7 +13,7 @@ public class GoalUtils {
    }
 
    public static boolean hasGroundPathNavigation(Mob var0) {
-      return var0.getNavigation() instanceof GroundPathNavigation;
+      return var0.getNavigation().canNavigateGround();
    }
 
    public static boolean mobRestricted(PathfinderMob var0, int var1) {

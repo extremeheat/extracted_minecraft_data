@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.client.color.item.GradeColor;
 import net.minecraft.client.color.item.GrassColorSource;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
@@ -39,15 +38,12 @@ import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.VariantMutator;
 import net.minecraft.client.renderer.block.model.multipart.CombinedCondition;
 import net.minecraft.client.renderer.block.model.multipart.Condition;
-import net.minecraft.client.renderer.item.BlockModelWrapper;
-import net.minecraft.client.renderer.item.CompositeModel;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.special.BannerSpecialRenderer;
 import net.minecraft.client.renderer.special.BedSpecialRenderer;
 import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.special.ConduitSpecialRenderer;
 import net.minecraft.client.renderer.special.DecoratedPotSpecialRenderer;
-import net.minecraft.client.renderer.special.MobTrophySpecialRenderer;
 import net.minecraft.client.renderer.special.ShulkerBoxSpecialRenderer;
 import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -66,6 +62,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.CreakingHeartBlock;
+import net.minecraft.world.level.block.DriedGhastBlock;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.LightBlock;
@@ -76,7 +73,6 @@ import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
 import net.minecraft.world.level.block.TestBlock;
-import net.minecraft.world.level.block.TrophyType;
 import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -160,11 +156,6 @@ public class BlockModelGenerators {
    private static BlockModelDefinitionGenerator createMirroredCubeGenerator(Block var0, Variant var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
       Variant var4 = plainModel(ModelTemplates.CUBE_MIRRORED_ALL.create(var0, var2, var3));
       return MultiVariantGenerator.dispatch(var0, createRotatedVariants(var1, var4));
-   }
-
-   private void generateFlatTrophy(TrophyType var1) {
-      ResourceLocation var2 = ResourceLocation.withDefaultNamespace("block/trophy_" + var1.getSerializedName());
-      ModelTemplates.FLAT_BLOCK.create(var2, TextureMapping.layer0(var2), this.modelOutput);
    }
 
    private static BlockModelDefinitionGenerator createNorthWestMirroredCubeGenerator(Block var0, Variant var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
@@ -318,17 +309,6 @@ public class BlockModelGenerators {
 
    private static PropertyDispatch<VariantMutator> createRotatedPillar() {
       return PropertyDispatch.modify(BlockStateProperties.AXIS).select(Direction.Axis.Y, NOP).select(Direction.Axis.Z, X_ROT_90).select(Direction.Axis.X, X_ROT_90.then(Y_ROT_90));
-   }
-
-   private void createTrophyBlock() {
-      PropertyDispatch.C1 var1 = PropertyDispatch.initial(BlockStateProperties.TROPHY_TYPE);
-
-      for(TrophyType var5 : TrophyType.values()) {
-         ResourceLocation var6 = ResourceLocation.withDefaultNamespace("block/trophy_" + var5.getSerializedName());
-         var1.select(var5, plainVariant(var6));
-      }
-
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.TROPHY).with(var1).with(ROTATION_HORIZONTAL_FACING));
    }
 
    static BlockModelDefinitionGenerator createPillarBlockUVLocked(Block var0, TextureMapping var1, BiConsumer<ResourceLocation, ModelInstance> var2) {
@@ -903,26 +883,14 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createSimpleBlock(Blocks.CARTOGRAPHY_TABLE, plainVariant(ModelTemplates.CUBE.create(Blocks.CARTOGRAPHY_TABLE, var1, this.modelOutput))));
    }
 
-   private void createMineCraftingTable() {
-      ResourceLocation var1 = ModelTemplates.MINE_CRAFTER.create(Blocks.MINE_CRAFTER, TextureMapping.mineCrafter(false), this.modelOutput);
-      this.registerSimpleItemModel(Blocks.MINE_CRAFTER, var1);
-      this.blockStateOutput.accept(createSimpleBlock(Blocks.MINE_CRAFTER, plainVariant(ModelLocationUtils.getModelLocation(Blocks.MINE_CRAFTER))));
-   }
-
-   private void createRevisitorBlock() {
-      ResourceLocation var1 = ModelTemplates.MINE_REVISITOR.create(Blocks.MINE_REVISITOR, TextureMapping.mineRevisitor(false), this.modelOutput);
-      this.registerSimpleItemModel(Blocks.MINE_REVISITOR, var1);
-      this.blockStateOutput.accept(createSimpleBlock(Blocks.MINE_REVISITOR, plainVariant(ModelLocationUtils.getModelLocation(Blocks.MINE_REVISITOR))));
-   }
-
    private void createSmithingTable() {
       TextureMapping var1 = (new TextureMapping()).put(TextureSlot.PARTICLE, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_front")).put(TextureSlot.DOWN, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_bottom")).put(TextureSlot.UP, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_top")).put(TextureSlot.NORTH, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_front")).put(TextureSlot.SOUTH, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_front")).put(TextureSlot.EAST, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_side")).put(TextureSlot.WEST, TextureMapping.getBlockTexture(Blocks.SMITHING_TABLE, "_side"));
       this.blockStateOutput.accept(createSimpleBlock(Blocks.SMITHING_TABLE, plainVariant(ModelTemplates.CUBE.create(Blocks.SMITHING_TABLE, var1, this.modelOutput))));
    }
 
-   private void createCraftingTableLike(Block var1, Block var2, Block var3, BiFunction<Block, Block, TextureMapping> var4) {
-      TextureMapping var5 = (TextureMapping)var4.apply(var2, var3);
-      this.blockStateOutput.accept(createSimpleBlock(var1, plainVariant(ModelTemplates.CUBE.create(var1, var5, this.modelOutput))));
+   private void createCraftingTableLike(Block var1, Block var2, BiFunction<Block, Block, TextureMapping> var3) {
+      TextureMapping var4 = (TextureMapping)var3.apply(var1, var2);
+      this.blockStateOutput.accept(createSimpleBlock(var1, plainVariant(ModelTemplates.CUBE.create(var1, var4, this.modelOutput))));
    }
 
    public void createGenericCube(Block var1) {
@@ -971,6 +939,12 @@ public class BlockModelGenerators {
       MultiVariant var4 = plainVariant(ModelTemplates.CUBE_ORIENTABLE.create(var1, var2, this.modelOutput));
       MultiVariant var5 = plainVariant(ModelTemplates.CUBE_ORIENTABLE_VERTICAL.create(var1, var3, this.modelOutput));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(PropertyDispatch.initial(BlockStateProperties.FACING).select(Direction.DOWN, var5.with(X_ROT_180)).select(Direction.UP, var5).select(Direction.NORTH, var4).select(Direction.EAST, var4.with(Y_ROT_90)).select(Direction.SOUTH, var4.with(Y_ROT_180)).select(Direction.WEST, var4.with(Y_ROT_270))));
+   }
+
+   private void createEndPortalFrame() {
+      MultiVariant var1 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.END_PORTAL_FRAME));
+      MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.END_PORTAL_FRAME, "_filled"));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.END_PORTAL_FRAME).with(PropertyDispatch.initial(BlockStateProperties.EYE).select(false, var1).select(true, var2)).with(ROTATION_HORIZONTAL_FACING_ALT));
    }
 
    private void createChorusPlant() {
@@ -1151,12 +1125,6 @@ public class BlockModelGenerators {
    private void createCocoa() {
       this.registerSimpleFlatItemModel(Items.COCOA_BEANS);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.COCOA).with(PropertyDispatch.initial(BlockStateProperties.AGE_2).select(0, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COCOA, "_stage0"))).select(1, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COCOA, "_stage1"))).select(2, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COCOA, "_stage2")))).with(ROTATION_HORIZONTAL_FACING_ALT));
-   }
-
-   private void createMobTrophy() {
-      ResourceLocation var1 = ModelLocationUtils.getModelLocation(Blocks.MOB_TROPHY);
-      this.itemModelOutput.accept((Item)Blocks.MOB_TROPHY.asItem(), new CompositeModel.Unbaked(List.of(new BlockModelWrapper.Unbaked(var1, List.of(new GradeColor())), ItemModelUtils.specialModel(var1, new MobTrophySpecialRenderer.Unbaked()))));
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.MOB_TROPHY, plainVariant(var1)).with(ROTATION_HORIZONTAL_FACING));
    }
 
    private void createDirtPath() {
@@ -1508,6 +1476,25 @@ public class BlockModelGenerators {
    private void createTurtleEgg() {
       this.registerSimpleFlatItemModel(Items.TURTLE_EGG);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.TURTLE_EGG).with(PropertyDispatch.initial(BlockStateProperties.EGGS, BlockStateProperties.HATCH).generate((var1, var2) -> createRotatedVariants(this.createTurtleEggModel(var1, var2)))));
+   }
+
+   private void createDriedGhastBlock() {
+      ResourceLocation var1 = ModelLocationUtils.getModelLocation(Blocks.DRIED_GHAST, "_hydration_0");
+      this.registerSimpleItemModel(Blocks.DRIED_GHAST, var1);
+      Function var2 = (var1x) -> {
+         String var10000;
+         switch (var1x) {
+            case 1 -> var10000 = "_hydration_1";
+            case 2 -> var10000 = "_hydration_2";
+            case 3 -> var10000 = "_hydration_3";
+            default -> var10000 = "_hydration_0";
+         }
+
+         String var2 = var10000;
+         TextureMapping var3 = TextureMapping.driedGhast(var2);
+         return ModelTemplates.DRIED_GHAST.createWithSuffix(Blocks.DRIED_GHAST, var2, var3, this.modelOutput);
+      };
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.DRIED_GHAST).with(PropertyDispatch.initial(DriedGhastBlock.HYDRATION_LEVEL).generate((var1x) -> plainVariant((ResourceLocation)var2.apply(var1x)))).with(ROTATION_HORIZONTAL_FACING));
    }
 
    private void createSnifferEgg() {
@@ -1898,8 +1885,6 @@ public class BlockModelGenerators {
       this.createAirLikeBlock(Blocks.STRUCTURE_VOID, Items.STRUCTURE_VOID);
       this.registerSimpleFlatItemModel(Items.STRUCTURE_VOID);
       this.createAirLikeBlock(Blocks.MOVING_PISTON, TextureMapping.getBlockTexture(Blocks.PISTON, "_side"));
-      this.createTrivialBlock(Blocks.SKY, TexturedModel.LEAVES);
-      this.createDoor(Blocks.SHIMMERING_DOOR);
       this.createTrivialCube(Blocks.COAL_ORE);
       this.createTrivialCube(Blocks.DEEPSLATE_COAL_ORE);
       this.createTrivialCube(Blocks.COAL_BLOCK);
@@ -2012,12 +1997,12 @@ public class BlockModelGenerators {
       this.createCakeBlock();
       this.createCampfires(Blocks.CAMPFIRE, Blocks.SOUL_CAMPFIRE);
       this.createCartographyTable();
-      this.createMineCraftingTable();
       this.createCauldrons();
       this.createChorusFlower();
       this.createChorusPlant();
       this.createComposter();
       this.createDaylightDetector();
+      this.createEndPortalFrame();
       this.createRotatableColumn(Blocks.END_ROD);
       this.createLightningRod();
       this.createFarmland();
@@ -2026,7 +2011,6 @@ public class BlockModelGenerators {
       this.createFrostedIce();
       this.createGrassBlocks();
       this.createCocoa();
-      this.createMobTrophy();
       this.createDirtPath();
       this.createGrindstone();
       this.createHopper();
@@ -2054,6 +2038,7 @@ public class BlockModelGenerators {
       this.createTripwireHook();
       this.createTurtleEgg();
       this.createSnifferEgg();
+      this.createDriedGhastBlock();
       this.createVine();
       this.createMultiface(Blocks.GLOW_LICHEN);
       this.createMultiface(Blocks.SCULK_VEIN);
@@ -2063,7 +2048,6 @@ public class BlockModelGenerators {
       this.createSculkSensor();
       this.createCalibratedSculkSensor();
       this.createSculkShrieker();
-      this.createRevisitorBlock();
       this.createFrogspawnBlock();
       this.createMangrovePropagule();
       this.createMuddyMangroveRoots();
@@ -2076,9 +2060,8 @@ public class BlockModelGenerators {
       this.createNonTemplateHorizontalBlock(Blocks.BIG_DRIPLEAF_STEM);
       this.createNormalTorch(Blocks.TORCH, Blocks.WALL_TORCH);
       this.createNormalTorch(Blocks.SOUL_TORCH, Blocks.SOUL_WALL_TORCH);
-      this.createCraftingTableLike(Blocks.CRAFTING_TABLE, Blocks.CRAFTING_TABLE, Blocks.OAK_PLANKS, TextureMapping::craftingTable);
-      this.createCraftingTableLike(Blocks.DIMENSION_CONTROL, Blocks.CRAFTING_TABLE, Blocks.OAK_PLANKS, TextureMapping::craftingTable);
-      this.createCraftingTableLike(Blocks.FLETCHING_TABLE, Blocks.FLETCHING_TABLE, Blocks.BIRCH_PLANKS, TextureMapping::fletchingTable);
+      this.createCraftingTableLike(Blocks.CRAFTING_TABLE, Blocks.OAK_PLANKS, TextureMapping::craftingTable);
+      this.createCraftingTableLike(Blocks.FLETCHING_TABLE, Blocks.BIRCH_PLANKS, TextureMapping::fletchingTable);
       this.createNyliumBlock(Blocks.CRIMSON_NYLIUM);
       this.createNyliumBlock(Blocks.WARPED_NYLIUM);
       this.createDispenserBlock(Blocks.DISPENSER);
@@ -2142,8 +2125,8 @@ public class BlockModelGenerators {
       this.generateSimpleSpecialItemModel(Blocks.CONDUIT, new ConduitSpecialRenderer.Unbaked());
       this.createParticleOnlyBlock(Blocks.DECORATED_POT, Blocks.TERRACOTTA);
       this.generateSimpleSpecialItemModel(Blocks.DECORATED_POT, new DecoratedPotSpecialRenderer.Unbaked());
+      this.createParticleOnlyBlock(Blocks.END_PORTAL, Blocks.OBSIDIAN);
       this.createParticleOnlyBlock(Blocks.END_GATEWAY, Blocks.OBSIDIAN);
-      this.createNonTemplateModelBlock(Blocks.MINE_TRAVELLING_BLOCK);
       this.createTrivialCube(Blocks.AZALEA_LEAVES);
       this.createTrivialCube(Blocks.FLOWERING_AZALEA_LEAVES);
       this.createTrivialCube(Blocks.WHITE_CONCRETE);
@@ -2364,8 +2347,6 @@ public class BlockModelGenerators {
       this.createInfestedStone();
       this.copyModel(Blocks.STONE_BRICKS, Blocks.INFESTED_STONE_BRICKS);
       this.createInfestedDeepslate();
-      this.createTrophyBlock();
-      this.generateFlatTrophy(TrophyType.NO_MEDAL);
    }
 
    private void createLightBlock() {

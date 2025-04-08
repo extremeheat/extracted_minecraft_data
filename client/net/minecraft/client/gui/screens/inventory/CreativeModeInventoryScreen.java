@@ -23,7 +23,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -268,7 +268,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                ((ItemPickerMenu)this.menu).clicked(var1 == null ? var2 : var1.index, var3, var4, this.minecraft.player);
                if (AbstractContainerMenu.getQuickcraftHeader(var3) == 2) {
                   for(int var14 = 0; var14 < 9; ++var14) {
-                     this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + var14).getItem(), 41 + var14);
+                     this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + var14).getItem(), 36 + var14);
                   }
                } else if (var1 != null && Inventory.isHotbarSlot(var1.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
                   if (var4 == ClickType.THROW && !var10.isEmpty() && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
@@ -530,24 +530,24 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          for(int var11 = 0; var11 < var10.slots.size(); ++var11) {
             int var12;
             int var13;
-            if (var11 >= 10 && var11 < 14) {
-               int var15 = var11 - 10;
+            if (var11 >= 5 && var11 < 9) {
+               int var15 = var11 - 5;
                int var18 = var15 / 2;
                int var20 = var15 % 2;
                var12 = 54 + var18 * 54;
                var13 = 6 + var20 * 27;
-            } else if (var11 >= 0 && var11 < 10) {
+            } else if (var11 >= 0 && var11 < 5) {
                var12 = -2000;
                var13 = -2000;
-            } else if (var11 == 50) {
+            } else if (var11 == 45) {
                var12 = 35;
                var13 = 20;
             } else {
-               int var14 = var11 - 14;
+               int var14 = var11 - 9;
                int var17 = var14 % 9;
                int var19 = var14 / 9;
                var12 = 9 + var17 * 18;
-               if (var11 >= 41) {
+               if (var11 >= 36) {
                   var13 = 112;
                } else {
                   var13 = 54 + var19 * 18;
@@ -689,14 +689,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          }
       }
 
-      var1.blit(RenderType::guiTextured, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
          ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
       this.renderTabButton(var1, selectedTab);
@@ -758,15 +758,12 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 100.0F);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
       var6 += 5;
       var7 += 8 + (var4 ? 1 : -1);
       ItemStack var9 = var2.getIconItem();
       var1.renderItem(var9, var6, var7);
       var1.renderItemDecorations(this.font, var9, var6, var7);
-      var1.pose().popPose();
    }
 
    public boolean isInventoryOpen() {
@@ -784,7 +781,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          for(int var9 = 0; var9 < Inventory.getSelectionSize(); ++var9) {
             ItemStack var10 = (ItemStack)var8.get(var9);
             var4.getInventory().setItem(var9, var10);
-            var0.gameMode.handleCreativeModeItemAdd(var10, 41 + var9);
+            var0.gameMode.handleCreativeModeItemAdd(var10, 36 + var9);
          }
 
          var4.inventoryMenu.broadcastChanges();
@@ -794,7 +791,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          Component var12 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
          MutableComponent var13 = Component.translatable("inventory.hotbarSaved", var12, var11);
          var0.gui.setOverlayMessage(var13, false);
-         var0.getNarrator().sayNow((Component)var13);
+         var0.getNarrator().saySystemNow((Component)var13);
          var6.save();
       }
 

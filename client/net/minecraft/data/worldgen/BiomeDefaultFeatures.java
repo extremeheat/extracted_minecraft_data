@@ -32,8 +32,6 @@ public class BiomeDefaultFeatures {
    public static void addDefaultUndergroundVariety(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIRT);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRAVEL);
-      var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_STONE_UPPER);
-      var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_STONE_LOWER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_UPPER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_LOWER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIORITE_UPPER);

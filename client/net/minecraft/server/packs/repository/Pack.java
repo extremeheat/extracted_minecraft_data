@@ -26,7 +26,7 @@ public class Pack {
 
    @Nullable
    public static Pack readMetaAndCreate(PackLocationInfo var0, ResourcesSupplier var1, PackType var2, PackSelectionConfig var3) {
-      int var4 = SharedConstants.getCurrentVersion().getPackVersion(var2);
+      int var4 = SharedConstants.getCurrentVersion().packVersion(var2);
       Metadata var5 = readPackMetadata(var0, var1, var4);
       return var5 != null ? new Pack(var0, var1, var5, var3) : null;
    }

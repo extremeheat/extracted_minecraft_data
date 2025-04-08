@@ -264,10 +264,6 @@ public class Shulker extends AbstractGolem implements Enemy {
       this.setYRot(0.0F);
       this.yHeadRot = this.getYRot();
       this.setOldPosAndRot();
-      if (var3 == EntitySpawnReason.NATURAL) {
-         this.setVariant(Optional.of((DyeColor)Util.getRandom(DyeColor.values(), this.getRandom())));
-      }
-
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

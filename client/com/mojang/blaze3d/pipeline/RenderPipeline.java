@@ -35,8 +35,10 @@ public class RenderPipeline {
    private final VertexFormat.Mode vertexFormatMode;
    private final float depthBiasScaleFactor;
    private final float depthBiasConstant;
+   private final int sortKey;
+   private static int sortKeySeed;
 
-   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18) {
+   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18, int var19) {
       super();
       this.location = var1;
       this.vertexShader = var2;
@@ -56,6 +58,15 @@ public class RenderPipeline {
       this.vertexFormatMode = var16;
       this.depthBiasScaleFactor = var17;
       this.depthBiasConstant = var18;
+      this.sortKey = var19;
+   }
+
+   public int getSortKey() {
+      return this.sortKey;
+   }
+
+   public static void updateSortKeySeed() {
+      sortKeySeed = Math.round(100000.0F * (float)Math.random());
    }
 
    public String toString() {
@@ -150,6 +161,7 @@ public class RenderPipeline {
 
    @DontObfuscate
    public static class Builder {
+      private static int nextPipelineSortKey;
       private Optional<ResourceLocation> location = Optional.empty();
       private Optional<ResourceLocation> fragmentShader = Optional.empty();
       private Optional<ResourceLocation> vertexShader = Optional.empty();
@@ -402,7 +414,7 @@ public class RenderPipeline {
          } else if (this.vertexFormatMode.isEmpty()) {
             throw new IllegalStateException("Missing vertex mode");
          } else {
-            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant);
+            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant, nextPipelineSortKey++);
          }
       }
    }

@@ -36,7 +36,6 @@ public class CustomBossEvents {
    }
 
    public void remove(CustomBossEvent var1) {
-      var1.removeAllPlayers();
       this.events.remove(var1.getTextId());
    }
 

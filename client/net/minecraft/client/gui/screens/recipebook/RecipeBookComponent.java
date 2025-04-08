@@ -27,7 +27,7 @@ import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.Component;
@@ -307,11 +307,9 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
             this.time += var4;
          }
 
-         var1.pose().pushPose();
-         var1.pose().translate(0.0F, 0.0F, 100.0F);
          int var5 = this.getXOrigin();
          int var6 = this.getYOrigin();
-         var1.blit(RenderType::guiTextured, RECIPE_BOOK_LOCATION, var5, var6, 1.0F, 1.0F, 147, 166, 256, 256);
+         var1.blit(RenderPipelines.GUI_TEXTURED, RECIPE_BOOK_LOCATION, var5, var6, 1.0F, 1.0F, 147, 166, 256, 256);
          this.searchBox.render(var1, var2, var3, var4);
 
          for(RecipeBookTabButton var8 : this.tabButtons) {
@@ -320,7 +318,6 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
          this.filterButton.render(var1, var2, var3, var4);
          this.recipeBookPage.render(var1, var5, var6, var2, var3, var4);
-         var1.pose().popPose();
       }
    }
 

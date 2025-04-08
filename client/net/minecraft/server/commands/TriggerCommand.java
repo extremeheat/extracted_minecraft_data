@@ -42,7 +42,7 @@ public class TriggerCommand {
       Entity var2 = var0.getEntity();
       ArrayList var3 = Lists.newArrayList();
       if (var2 != null) {
-         ServerScoreboard var4 = var0.theGame().getScoreboard();
+         ServerScoreboard var4 = var0.getServer().getScoreboard();
 
          for(Objective var6 : ((Scoreboard)var4).getObjectives()) {
             if (var6.getCriteria() == ObjectiveCriteria.TRIGGER) {
@@ -58,21 +58,21 @@ public class TriggerCommand {
    }
 
    private static int addValue(CommandSourceStack var0, ServerPlayer var1, Objective var2, int var3) throws CommandSyntaxException {
-      ScoreAccess var4 = getScore(var0.theGame().getScoreboard(), var1, var2);
+      ScoreAccess var4 = getScore(var0.getServer().getScoreboard(), var1, var2);
       int var5 = var4.add(var3);
       var0.sendSuccess(() -> Component.translatable("commands.trigger.add.success", var2.getFormattedDisplayName(), var3), true);
       return var5;
    }
 
    private static int setValue(CommandSourceStack var0, ServerPlayer var1, Objective var2, int var3) throws CommandSyntaxException {
-      ScoreAccess var4 = getScore(var0.theGame().getScoreboard(), var1, var2);
+      ScoreAccess var4 = getScore(var0.getServer().getScoreboard(), var1, var2);
       var4.set(var3);
       var0.sendSuccess(() -> Component.translatable("commands.trigger.set.success", var2.getFormattedDisplayName(), var3), true);
       return var3;
    }
 
    private static int simpleTrigger(CommandSourceStack var0, ServerPlayer var1, Objective var2) throws CommandSyntaxException {
-      ScoreAccess var3 = getScore(var0.theGame().getScoreboard(), var1, var2);
+      ScoreAccess var3 = getScore(var0.getServer().getScoreboard(), var1, var2);
       int var4 = var3.add(1);
       var0.sendSuccess(() -> Component.translatable("commands.trigger.simple.success", var2.getFormattedDisplayName()), true);
       return var4;

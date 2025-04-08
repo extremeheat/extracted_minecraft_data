@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.core.Holder;
@@ -82,9 +82,9 @@ public class EffectsInInventory {
 
       for(MobEffectInstance var8 : var4) {
          if (var5) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
          } else {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
          }
 
          var6 += var3;
@@ -99,7 +99,7 @@ public class EffectsInInventory {
       for(MobEffectInstance var9 : var4) {
          Holder var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
-         var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)var11, var2 + (var5 ? 6 : 7), var7 + 7, 18, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var11, var2 + (var5 ? 6 : 7), var7 + 7, 18, 18);
          var7 += var3;
       }
 

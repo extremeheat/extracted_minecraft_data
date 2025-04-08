@@ -124,6 +124,10 @@ public class ModelLayers {
    public static final ModelLayerLocation GOAT = register("goat");
    public static final ModelLayerLocation GOAT_BABY = register("goat_baby");
    public static final ModelLayerLocation GUARDIAN = register("guardian");
+   public static final ModelLayerLocation HAPPY_GHAST = register("happy_ghast");
+   public static final ModelLayerLocation HAPPY_GHAST_BABY = register("happy_ghast_baby");
+   public static final ModelLayerLocation HAPPY_GHAST_HARNESS = register("happy_ghast_harness");
+   public static final ModelLayerLocation HAPPY_GHAST_BABY_HARNESS = register("happy_ghast_baby_harness");
    public static final ModelLayerLocation HOGLIN = register("hoglin");
    public static final ModelLayerLocation HOGLIN_BABY = register("hoglin_baby");
    public static final ModelLayerLocation HOPPER_MINECART = register("hopper_minecart");

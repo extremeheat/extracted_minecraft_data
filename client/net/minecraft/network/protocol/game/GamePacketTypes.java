@@ -55,8 +55,7 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundMoveEntityPacket.Rot> CLIENTBOUND_MOVE_ENTITY_ROT = createClientbound("move_entity_rot");
    public static final PacketType<ClientboundMoveVehiclePacket> CLIENTBOUND_MOVE_VEHICLE = createClientbound("move_vehicle");
    public static final PacketType<ClientboundOpenBookPacket> CLIENTBOUND_OPEN_BOOK = createClientbound("open_book");
-   public static final PacketType<ClientboundOpenWindowPacket> CLIENTBOUND_OPEN_WINDOW = createClientbound("open_window");
-   public static final PacketType<ClientboundUpdateScreenPacket> CLIENTBOUND_UPDATE_SCREEN = createClientbound("update_screen");
+   public static final PacketType<ClientboundOpenScreenPacket> CLIENTBOUND_OPEN_SCREEN = createClientbound("open_screen");
    public static final PacketType<ClientboundOpenSignEditorPacket> CLIENTBOUND_OPEN_SIGN_EDITOR = createClientbound("open_sign_editor");
    public static final PacketType<ClientboundPlaceGhostRecipePacket> CLIENTBOUND_PLACE_GHOST_RECIPE = createClientbound("place_ghost_recipe");
    public static final PacketType<ClientboundPlayerAbilitiesPacket> CLIENTBOUND_PLAYER_ABILITIES = createClientbound("player_abilities");
@@ -75,7 +74,6 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundRemoveEntitiesPacket> CLIENTBOUND_REMOVE_ENTITIES = createClientbound("remove_entities");
    public static final PacketType<ClientboundRemoveMobEffectPacket> CLIENTBOUND_REMOVE_MOB_EFFECT = createClientbound("remove_mob_effect");
    public static final PacketType<ClientboundRespawnPacket> CLIENTBOUND_RESPAWN = createClientbound("respawn");
-   public static final PacketType<ClientboundUpdateUnlockedEffectsPacket> CLIENTBOUND_UPDATE_UNLOCKED_EFFECTS = createClientbound("update_unlocked_effects");
    public static final PacketType<ClientboundRotateHeadPacket> CLIENTBOUND_ROTATE_HEAD = createClientbound("rotate_head");
    public static final PacketType<ClientboundSectionBlocksUpdatePacket> CLIENTBOUND_SECTION_BLOCKS_UPDATE = createClientbound("section_blocks_update");
    public static final PacketType<ClientboundSelectAdvancementsTabPacket> CLIENTBOUND_SELECT_ADVANCEMENTS_TAB = createClientbound("select_advancements_tab");
@@ -118,12 +116,11 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundTeleportEntityPacket> CLIENTBOUND_TELEPORT_ENTITY = createClientbound("teleport_entity");
    public static final PacketType<ClientboundTestInstanceBlockStatus> CLIENTBOUND_TEST_INSTANCE_BLOCK_STATUS = createClientbound("test_instance_block_status");
    public static final PacketType<ClientboundUpdateAdvancementsPacket> CLIENTBOUND_UPDATE_ADVANCEMENTS = createClientbound("update_advancements");
-   public static final PacketType<ClientboundUpdatePlayerUnlocksPacket> CLIENTBOUND_UPDATE_PLAYER_UNLOCKS = createClientbound("player_unlocks");
    public static final PacketType<ClientboundUpdateAttributesPacket> CLIENTBOUND_UPDATE_ATTRIBUTES = createClientbound("update_attributes");
    public static final PacketType<ClientboundUpdateMobEffectPacket> CLIENTBOUND_UPDATE_MOB_EFFECT = createClientbound("update_mob_effect");
    public static final PacketType<ClientboundUpdateRecipesPacket> CLIENTBOUND_UPDATE_RECIPES = createClientbound("update_recipes");
    public static final PacketType<ClientboundProjectilePowerPacket> CLIENTBOUND_PROJECTILE_POWER = createClientbound("projectile_power");
-   public static final PacketType<ClientboundChangeDimensionTypePacket> CLIENTBOUND_CHANGE_DIMENSION_TYPE = createClientbound("change_dimension_type");
+   public static final PacketType<ClientboundTrackedWaypointPacket> CLIENTBOUND_WAYPOINT = createClientbound("waypoint");
    public static final PacketType<ServerboundAcceptTeleportationPacket> SERVERBOUND_ACCEPT_TELEPORTATION = createServerbound("accept_teleportation");
    public static final PacketType<ServerboundBlockEntityTagQueryPacket> SERVERBOUND_BLOCK_ENTITY_TAG_QUERY = createServerbound("block_entity_tag_query");
    public static final PacketType<ServerboundSelectBundleItemPacket> SERVERBOUND_BUNDLE_ITEM_SELECTED = createServerbound("bundle_item_selected");
@@ -136,7 +133,6 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundChunkBatchReceivedPacket> SERVERBOUND_CHUNK_BATCH_RECEIVED = createServerbound("chunk_batch_received");
    public static final PacketType<ServerboundClientCommandPacket> SERVERBOUND_CLIENT_COMMAND = createServerbound("client_command");
    public static final PacketType<ServerboundClientTickEndPacket> SERVERBOUND_CLIENT_TICK_END = createServerbound("client_tick_end");
-   public static final PacketType<ServerboundPlayerDonateExperiencePacket> SERVERBOUND_PLAYER_DONATE_EXPERIENCE = createServerbound("player_donate_experience");
    public static final PacketType<ServerboundCommandSuggestionPacket> SERVERBOUND_COMMAND_SUGGESTION = createServerbound("command_suggestion");
    public static final PacketType<ServerboundConfigurationAcknowledgedPacket> SERVERBOUND_CONFIGURATION_ACKNOWLEDGED = createServerbound("configuration_acknowledged");
    public static final PacketType<ServerboundContainerButtonClickPacket> SERVERBOUND_CONTAINER_BUTTON_CLICK = createServerbound("container_button_click");
@@ -163,8 +159,6 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundPlayerCommandPacket> SERVERBOUND_PLAYER_COMMAND = createServerbound("player_command");
    public static final PacketType<ServerboundPlayerInputPacket> SERVERBOUND_PLAYER_INPUT = createServerbound("player_input");
    public static final PacketType<ServerboundPlayerLoadedPacket> SERVERBOUND_PLAYER_LOADED = createServerbound("player_loaded");
-   public static final PacketType<ServerboundPlayerBuyUnlockPacket> SERVERBOUND_PLAYER_BUY_UNLOCK = createServerbound("player_buy_unlock");
-   public static final PacketType<ServerboundPlayerReactivateUnlockPacket> SERVERBOUND_PLAYER_REACTIVATE_UNLOCK = createServerbound("player_reactivate_unlock");
    public static final PacketType<ServerboundRecipeBookChangeSettingsPacket> SERVERBOUND_RECIPE_BOOK_CHANGE_SETTINGS = createServerbound("recipe_book_change_settings");
    public static final PacketType<ServerboundRecipeBookSeenRecipePacket> SERVERBOUND_RECIPE_BOOK_SEEN_RECIPE = createServerbound("recipe_book_seen_recipe");
    public static final PacketType<ServerboundRenameItemPacket> SERVERBOUND_RENAME_ITEM = createServerbound("rename_item");
@@ -189,7 +183,6 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundTickingStepPacket> CLIENTBOUND_TICKING_STEP = createClientbound("ticking_step");
    public static final PacketType<ClientboundSetCursorItemPacket> CLIENTBOUND_SET_CURSOR_ITEM = createClientbound("set_cursor_item");
    public static final PacketType<ClientboundSetPlayerInventoryPacket> CLIENTBOUND_SET_PLAYER_INVENTORY = createClientbound("set_player_inventory");
-   public static final PacketType<ClientboundOpenDoorPacket> CLIENTBOUND_OPEN_DOOR_PACKET = createClientbound("open_door_packet");
 
    public GamePacketTypes() {
       super();

@@ -8,16 +8,13 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.BeehiveBlock;
-import net.minecraft.world.level.block.MobTrophyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -68,16 +65,10 @@ public record BlockItemStateProperties(Map<String, String> properties) implement
       return this.properties.isEmpty();
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-      Integer var6 = (Integer)this.get(BeehiveBlock.HONEY_LEVEL);
-      if (var6 != null) {
-         var2.accept(Component.translatable("container.beehive.honey", var6, 5).withStyle(ChatFormatting.GRAY));
-      }
-
-      MobTrophyBlock.Grade var7 = (MobTrophyBlock.Grade)this.get(MobTrophyBlock.GRADE);
-      if (var7 != null) {
-         MutableComponent var8 = Component.translatable(var7.translationId()).withColor(var7.color());
-         var2.accept(Component.translatable("item.minecraft.mob_trophy.grade", var8));
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      Integer var5 = (Integer)this.get(BeehiveBlock.HONEY_LEVEL);
+      if (var5 != null) {
+         var2.accept(Component.translatable("container.beehive.honey", var5, 5).withStyle(ChatFormatting.GRAY));
       }
 
    }

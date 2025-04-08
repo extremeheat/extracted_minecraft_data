@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.navigation.ScreenPosition;
@@ -14,10 +13,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
 public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-   protected final RecipeBookComponent<?> recipeBookComponent;
+   private final RecipeBookComponent<?> recipeBookComponent;
    private boolean widthTooNarrow;
-   @Nullable
-   protected ImageButton recipeBookButton;
 
    public AbstractRecipeBookScreen(T var1, RecipeBookComponent<?> var2, Inventory var3, Component var4) {
       super(var1, var3, var4);
@@ -36,14 +33,13 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
 
    private void initButton() {
       ScreenPosition var1 = this.getRecipeBookButtonPosition();
-      this.recipeBookButton = new ImageButton(var1.x(), var1.y(), 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, (var1x) -> {
+      this.addRenderableWidget(new ImageButton(var1.x(), var1.y(), 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, (var1x) -> {
          this.recipeBookComponent.toggleVisibility();
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
          ScreenPosition var2 = this.getRecipeBookButtonPosition();
          var1x.setPosition(var2.x(), var2.y());
          this.onRecipeBookButtonClick();
-      });
-      this.addRenderableWidget(this.recipeBookButton);
+      }));
       this.addWidget(this.recipeBookComponent);
    }
 

@@ -18,7 +18,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TheGame;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.profiling.EmptyProfileResults;
@@ -41,12 +40,12 @@ public class PerfCommand {
    }
 
    private static int startProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.theGame().server();
+      MinecraftServer var1 = var0.getServer();
       if (var1.isRecordingMetrics()) {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
          Consumer var2 = (var1x) -> whenStopped(var0, var1x);
-         Consumer var3 = (var1x) -> saveResults(var0, var1x, var0.theGame());
+         Consumer var3 = (var2x) -> saveResults(var0, var2x, var1);
          var1.startRecordingMetrics(var2, var3);
          var0.sendSuccess(() -> Component.translatable("commands.perf.started"), false);
          return 0;
@@ -54,7 +53,7 @@ public class PerfCommand {
    }
 
    private static int stopProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.theGame().server();
+      MinecraftServer var1 = var0.getServer();
       if (!var1.isRecordingMetrics()) {
          throw ERROR_NOT_RUNNING.create();
       } else {
@@ -63,8 +62,8 @@ public class PerfCommand {
       }
    }
 
-   private static void saveResults(CommandSourceStack var0, Path var1, TheGame var2) {
-      String var3 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var2.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().getId());
+   private static void saveResults(CommandSourceStack var0, Path var1, MinecraftServer var2) {
+      String var3 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var2.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().id());
 
       String var4;
       try {
@@ -78,7 +77,7 @@ public class PerfCommand {
       FileZipper var5 = new FileZipper(MetricsPersister.PROFILING_RESULTS_DIR.resolve(var4));
 
       try {
-         var5.add(Paths.get("system.txt"), var2.server().fillSystemReport(new SystemReport()).toLineSeparatedString());
+         var5.add(Paths.get("system.txt"), var2.fillSystemReport(new SystemReport()).toLineSeparatedString());
          var5.add(var1);
       } catch (Throwable var10) {
          try {

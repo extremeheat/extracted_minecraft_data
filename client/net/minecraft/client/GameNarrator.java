@@ -23,29 +23,41 @@ public class GameNarrator {
       this.minecraft = var1;
    }
 
-   public void sayChat(Component var1) {
+   public void sayChatQueued(Component var1) {
       if (this.getStatus().shouldNarrateChat()) {
-         String var2 = var1.getString();
-         this.logNarratedMessage(var2);
-         this.narrateMessage(var2, false);
+         this.narrateNotInterruptingMessage(var1);
       }
 
    }
 
-   public void say(Component var1) {
+   public void saySystemChatQueued(Component var1) {
+      if (this.getStatus().shouldNarrateSystemOrChat()) {
+         this.narrateNotInterruptingMessage(var1);
+      }
+
+   }
+
+   public void saySystemQueued(Component var1) {
+      if (this.getStatus().shouldNarrateSystem()) {
+         this.narrateNotInterruptingMessage(var1);
+      }
+
+   }
+
+   private void narrateNotInterruptingMessage(Component var1) {
       String var2 = var1.getString();
-      if (this.getStatus().shouldNarrateSystem() && !var2.isEmpty()) {
+      if (!var2.isEmpty()) {
          this.logNarratedMessage(var2);
          this.narrateMessage(var2, false);
       }
 
    }
 
-   public void sayNow(Component var1) {
-      this.sayNow(var1.getString());
+   public void saySystemNow(Component var1) {
+      this.saySystemNow(var1.getString());
    }
 
-   public void sayNow(String var1) {
+   public void saySystemNow(String var1) {
       if (this.getStatus().shouldNarrateSystem() && !var1.isEmpty()) {
          this.logNarratedMessage(var1);
          if (this.narrator.active()) {

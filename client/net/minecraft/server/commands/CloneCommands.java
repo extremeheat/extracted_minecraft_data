@@ -107,13 +107,13 @@ public class CloneCommands {
                            BlockEntity var29 = var13.getBlockEntity(var25);
                            if (var29 != null) {
                               CloneBlockEntityInfo var30 = new CloneBlockEntityInfo(var29.saveCustomOnly(var0.registryAccess()), var29.components());
-                              var18.add(new CloneBlockInfo(var26, var28, var30));
+                              var18.add(new CloneBlockInfo(var26, var28, var30, var14.getBlockState(var26)));
                               var20.addLast(var25);
                            } else if (!var28.isSolidRender() && !var28.isCollisionShapeFullBlock(var13, var25)) {
-                              var19.add(new CloneBlockInfo(var26, var28, (CloneBlockEntityInfo)null));
+                              var19.add(new CloneBlockInfo(var26, var28, (CloneBlockEntityInfo)null, var14.getBlockState(var26)));
                               var20.addFirst(var25);
                            } else {
-                              var17.add(new CloneBlockInfo(var26, var28, (CloneBlockEntityInfo)null));
+                              var17.add(new CloneBlockInfo(var26, var28, (CloneBlockEntityInfo)null, var14.getBlockState(var26)));
                               var20.addLast(var25);
                            }
                         }
@@ -165,7 +165,7 @@ public class CloneCommands {
 
                if (!var6) {
                   for(CloneBlockInfo var47 : var37) {
-                     var14.updateNeighborsAt(var47.pos, var47.state.getBlock());
+                     var14.updateNeighboursOnBlockSet(var47.pos, var47.previousStateAtDestination);
                   }
                }
 
@@ -223,17 +223,19 @@ public class CloneCommands {
       }
    }
 
-   static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo) {
+   static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo, BlockState previousStateAtDestination) {
       final BlockPos pos;
       final BlockState state;
       @Nullable
       final CloneBlockEntityInfo blockEntityInfo;
+      final BlockState previousStateAtDestination;
 
-      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3) {
+      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3, BlockState var4) {
          super();
          this.pos = var1;
          this.state = var2;
          this.blockEntityInfo = var3;
+         this.previousStateAtDestination = var4;
       }
    }
 }

@@ -14,6 +14,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -22,9 +23,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 
@@ -55,24 +54,24 @@ public class ItemEnchantments implements TooltipProvider {
       return this.enchantments.getInt(var1);
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-      HolderLookup.Provider var6 = var1.registries();
-      HolderSet var7 = getTagOrEmpty(var6, Registries.ENCHANTMENT, EnchantmentTags.TOOLTIP_ORDER);
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      HolderLookup.Provider var5 = var1.registries();
+      HolderSet var6 = getTagOrEmpty(var5, Registries.ENCHANTMENT, EnchantmentTags.TOOLTIP_ORDER);
 
-      for(Holder var9 : var7) {
-         int var10 = this.enchantments.getInt(var9);
-         if (var10 > 0) {
-            var2.accept(Enchantment.getFullname(var9, var10));
+      for(Holder var8 : var6) {
+         int var9 = this.enchantments.getInt(var8);
+         if (var9 > 0) {
+            var2.accept(Enchantment.getFullname(var8, var9));
          }
       }
 
-      ObjectIterator var11 = this.enchantments.object2IntEntrySet().iterator();
+      ObjectIterator var10 = this.enchantments.object2IntEntrySet().iterator();
 
-      while(var11.hasNext()) {
-         Object2IntMap.Entry var12 = (Object2IntMap.Entry)var11.next();
-         Holder var13 = (Holder)var12.getKey();
-         if (!var7.contains(var13)) {
-            var2.accept(Enchantment.getFullname((Holder)var12.getKey(), var12.getIntValue()));
+      while(var10.hasNext()) {
+         Object2IntMap.Entry var11 = (Object2IntMap.Entry)var10.next();
+         Holder var12 = (Holder)var11.getKey();
+         if (!var6.contains(var12)) {
+            var2.accept(Enchantment.getFullname((Holder)var11.getKey(), var11.getIntValue()));
          }
       }
 

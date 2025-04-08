@@ -160,6 +160,10 @@ public class MoveControl implements Control {
       return this.wantedZ;
    }
 
+   public void setWait() {
+      this.operation = MoveControl.Operation.WAIT;
+   }
+
    protected static enum Operation {
       WAIT,
       MOVE_TO,

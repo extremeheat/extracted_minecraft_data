@@ -2,11 +2,7 @@ package net.minecraft.client.player;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPlayerUnlocks;
-import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundUpdatePlayerUnlocksPacket;
-import net.minecraft.server.players.PlayerUnlock;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.damagesource.DamageSource;
@@ -15,12 +11,10 @@ import net.minecraft.world.phys.Vec3;
 public class RemotePlayer extends AbstractClientPlayer {
    private Vec3 lerpDeltaMovement;
    private int lerpDeltaMovementSteps;
-   private final ClientPlayerUnlocks unlocks;
 
    public RemotePlayer(ClientLevel var1, GameProfile var2) {
       super(var1, var2);
       this.lerpDeltaMovement = Vec3.ZERO;
-      this.unlocks = new ClientPlayerUnlocks();
       this.noPhysics = true;
    }
 
@@ -86,17 +80,5 @@ public class RemotePlayer extends AbstractClientPlayer {
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
       this.setOldPosAndRot();
-   }
-
-   public boolean isUnlocked(Holder<PlayerUnlock> var1) {
-      return this.unlocks.isUnlocked(var1);
-   }
-
-   public boolean isActive(Holder<PlayerUnlock> var1) {
-      return this.unlocks.isActive(var1);
-   }
-
-   public void updateUnlocks(ClientboundUpdatePlayerUnlocksPacket var1) {
-      this.unlocks.update(var1);
    }
 }

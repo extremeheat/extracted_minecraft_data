@@ -7,6 +7,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.entity.vehicle.MinecartBehavior;
 import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
@@ -55,7 +56,7 @@ public class Camera {
    }
 
    public void setup(BlockGetter var1, Entity var2, boolean var3, boolean var4, float var5) {
-      label39: {
+      label44: {
          this.initialized = true;
          this.level = var1;
          this.entity = var2;
@@ -65,14 +66,14 @@ public class Camera {
             Entity var8 = var2.getVehicle();
             if (var8 instanceof Minecart) {
                Minecart var6 = (Minecart)var8;
-               MinecartBehavior var12 = var6.getBehavior();
-               if (var12 instanceof NewMinecartBehavior) {
-                  NewMinecartBehavior var7 = (NewMinecartBehavior)var12;
+               MinecartBehavior var15 = var6.getBehavior();
+               if (var15 instanceof NewMinecartBehavior) {
+                  NewMinecartBehavior var7 = (NewMinecartBehavior)var15;
                   if (var7.cartHasPosRotLerp()) {
-                     Vec3 var13 = var6.getPassengerRidingPosition(var2).subtract(var6.position()).subtract(var2.getVehicleAttachmentPoint(var6)).add(new Vec3(0.0, (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), 0.0));
+                     Vec3 var16 = var6.getPassengerRidingPosition(var2).subtract(var6.position()).subtract(var2.getVehicleAttachmentPoint(var6)).add(new Vec3(0.0, (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), 0.0));
                      this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
-                     this.setPosition(var7.getCartLerpPosition(var5).add(var13));
-                     break label39;
+                     this.setPosition(var7.getCartLerpPosition(var5).add(var16));
+                     break label44;
                   }
                }
             }
@@ -87,19 +88,29 @@ public class Camera {
             this.setRotation(this.yRot + 180.0F, -this.xRot);
          }
 
-         float var10000;
+         float var12 = 4.0F;
+         float var14 = 1.0F;
          if (var2 instanceof LivingEntity) {
-            LivingEntity var11 = (LivingEntity)var2;
-            var10000 = var11.getScale();
-         } else {
-            var10000 = 1.0F;
+            LivingEntity var17 = (LivingEntity)var2;
+            var14 = var17.getScale();
+            var12 = (float)var17.getAttributeValue(Attributes.CAMERA_DISTANCE);
          }
 
-         float var9 = var10000;
-         this.move(-this.getMaxZoom(4.0F * var9), 0.0F, 0.0F);
+         float var18 = var14;
+         float var9 = var12;
+         if (var2.isPassenger()) {
+            Entity var11 = var2.getVehicle();
+            if (var11 instanceof LivingEntity) {
+               LivingEntity var10 = (LivingEntity)var11;
+               var18 = var10.getScale();
+               var9 = (float)var10.getAttributeValue(Attributes.CAMERA_DISTANCE);
+            }
+         }
+
+         this.move(-this.getMaxZoom(Math.max(var14 * var12, var18 * var9)), 0.0F, 0.0F);
       } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
-         Direction var10 = ((LivingEntity)var2).getBedOrientation();
-         this.setRotation(var10 != null ? var10.toYRot() - 180.0F : 0.0F, 0.0F);
+         Direction var13 = ((LivingEntity)var2).getBedOrientation();
+         this.setRotation(var13 != null ? var13.toYRot() - 180.0F : 0.0F, 0.0F);
          this.move(0.0F, 0.3F, 0.0F);
       }
 

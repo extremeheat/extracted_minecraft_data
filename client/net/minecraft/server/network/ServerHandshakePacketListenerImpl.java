@@ -12,11 +12,9 @@ import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.StatusProtocols;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TheGame;
 
 public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
    private static final Component IGNORE_STATUS_REASON = Component.translatable("disconnect.ignoring_status_request");
-   private static final Component NO_GAME = Component.literal("We are not playing any games here");
    private final MinecraftServer server;
    private final Connection connection;
 
@@ -58,24 +56,18 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
 
    private void beginLogin(ClientIntentionPacket var1, boolean var2) {
       this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
-      if (var1.protocolVersion() != SharedConstants.getCurrentVersion().getProtocolVersion()) {
+      if (var1.protocolVersion() != SharedConstants.getCurrentVersion().protocolVersion()) {
          MutableComponent var3;
          if (var1.protocolVersion() < 754) {
-            var3 = Component.translatable("multiplayer.disconnect.outdated_client", SharedConstants.getCurrentVersion().getName());
+            var3 = Component.translatable("multiplayer.disconnect.outdated_client", SharedConstants.getCurrentVersion().name());
          } else {
-            var3 = Component.translatable("multiplayer.disconnect.incompatible", SharedConstants.getCurrentVersion().getName());
+            var3 = Component.translatable("multiplayer.disconnect.incompatible", SharedConstants.getCurrentVersion().name());
          }
 
          this.connection.send(new ClientboundLoginDisconnectPacket(var3));
          this.connection.disconnect((Component)var3);
       } else {
-         TheGame var4 = this.server.theGame();
-         if (var4 == null) {
-            this.connection.send(new ClientboundLoginDisconnectPacket(NO_GAME));
-            this.connection.disconnect(NO_GAME);
-         } else {
-            this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(var4, this.connection, var2));
-         }
+         this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, var2));
       }
 
    }

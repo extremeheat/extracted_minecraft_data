@@ -21,7 +21,7 @@ public class StructureTagsProvider extends TagsProvider<Structure> {
       this.tag(StructureTags.RUINED_PORTAL).add(BuiltinStructures.RUINED_PORTAL_DESERT).add(BuiltinStructures.RUINED_PORTAL_JUNGLE).add(BuiltinStructures.RUINED_PORTAL_MOUNTAIN).add(BuiltinStructures.RUINED_PORTAL_NETHER).add(BuiltinStructures.RUINED_PORTAL_OCEAN).add(BuiltinStructures.RUINED_PORTAL_STANDARD).add(BuiltinStructures.RUINED_PORTAL_SWAMP);
       this.tag(StructureTags.CATS_SPAWN_IN).add(BuiltinStructures.SWAMP_HUT);
       this.tag(StructureTags.CATS_SPAWN_AS_BLACK).add(BuiltinStructures.SWAMP_HUT);
-      this.tag(StructureTags.EYE_OF_ENDER_LOCATED).add(BuiltinStructures.CAVE_MINE_EXIT).add(BuiltinStructures.SURFACE_MINE_EXIT).add(BuiltinStructures.RARE_SURFACE_MINE_EXIT);
+      this.tag(StructureTags.EYE_OF_ENDER_LOCATED).add(BuiltinStructures.STRONGHOLD);
       this.tag(StructureTags.DOLPHIN_LOCATED).addTag(StructureTags.OCEAN_RUIN).addTag(StructureTags.SHIPWRECK);
       this.tag(StructureTags.ON_WOODLAND_EXPLORER_MAPS).add(BuiltinStructures.WOODLAND_MANSION);
       this.tag(StructureTags.ON_OCEAN_EXPLORER_MAPS).add(BuiltinStructures.OCEAN_MONUMENT);
@@ -34,6 +34,5 @@ public class StructureTagsProvider extends TagsProvider<Structure> {
       this.tag(StructureTags.ON_SNOWY_VILLAGE_MAPS).add(BuiltinStructures.VILLAGE_SNOWY);
       this.tag(StructureTags.ON_SWAMP_EXPLORER_MAPS).add(BuiltinStructures.SWAMP_HUT);
       this.tag(StructureTags.ON_JUNGLE_EXPLORER_MAPS).add(BuiltinStructures.JUNGLE_TEMPLE);
-      this.tag(StructureTags.MINE_EXIT).add(BuiltinStructures.SURFACE_MINE_EXIT).add(BuiltinStructures.RARE_SURFACE_MINE_EXIT).add(BuiltinStructures.CAVE_MINE_EXIT);
    }
 }

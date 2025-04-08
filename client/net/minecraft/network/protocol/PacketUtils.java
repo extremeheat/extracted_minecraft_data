@@ -20,7 +20,7 @@ public class PacketUtils {
    }
 
    public static <T extends PacketListener> void ensureRunningOnSameThread(Packet<T> var0, T var1, ServerLevel var2) throws RunningOnDifferentThreadException {
-      ensureRunningOnSameThread(var0, var1, var2.eventLoop());
+      ensureRunningOnSameThread(var0, var1, (BlockableEventLoop)var2.getServer());
    }
 
    public static <T extends PacketListener> void ensureRunningOnSameThread(Packet<T> var0, T var1, BlockableEventLoop<?> var2) throws RunningOnDifferentThreadException {

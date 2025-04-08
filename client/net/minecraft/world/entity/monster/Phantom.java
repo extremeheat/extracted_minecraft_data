@@ -22,7 +22,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
@@ -37,10 +36,11 @@ import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
-public class Phantom extends FlyingMob implements Enemy {
+public class Phantom extends Mob implements Enemy {
    public static final float FLAP_DEGREES_PER_TICK = 7.448451F;
    public static final int TICKS_PER_FLAP = Mth.ceil(24.166098F);
    private static final EntityDataAccessor<Integer> ID_SIZE;
@@ -132,6 +132,17 @@ public class Phantom extends FlyingMob implements Enemy {
       }
 
       super.aiStep();
+   }
+
+   protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
+   }
+
+   public boolean onClimbable() {
+      return false;
+   }
+
+   public void travel(Vec3 var1) {
+      this.travelFlying(var1, 0.2F);
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {

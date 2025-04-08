@@ -28,7 +28,7 @@ public interface EquipmentUser {
    }
 
    default void equip(ResourceKey<LootTable> var1, LootParams var2, long var3, Map<EquipmentSlot, Float> var5) {
-      LootTable var6 = var2.getLevel().theGame().reloadableRegistries().getLootTable(var1);
+      LootTable var6 = var2.getLevel().getServer().reloadableRegistries().getLootTable(var1);
       if (var6 != LootTable.EMPTY) {
          ObjectArrayList var7 = var6.getRandomItems(var2, var3);
          ArrayList var8 = new ArrayList();

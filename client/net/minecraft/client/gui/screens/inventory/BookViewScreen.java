@@ -10,7 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -177,7 +177,7 @@ public class BookViewScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
-      var1.blit(RenderType::guiTextured, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {

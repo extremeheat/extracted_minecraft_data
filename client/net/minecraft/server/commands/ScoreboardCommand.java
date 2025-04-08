@@ -85,7 +85,7 @@ public class ScoreboardCommand {
 
    private static CompletableFuture<Suggestions> suggestTriggers(CommandSourceStack var0, Collection<ScoreHolder> var1, SuggestionsBuilder var2) {
       ArrayList var3 = Lists.newArrayList();
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
 
       for(Objective var6 : ((Scoreboard)var4).getObjectives()) {
          if (var6.getCriteria() == ObjectiveCriteria.TRIGGER) {
@@ -109,7 +109,7 @@ public class ScoreboardCommand {
    }
 
    private static int getScore(CommandSourceStack var0, ScoreHolder var1, Objective var2) throws CommandSyntaxException {
-      ServerScoreboard var3 = var0.theGame().getScoreboard();
+      ServerScoreboard var3 = var0.getServer().getScoreboard();
       ReadOnlyScoreInfo var4 = ((Scoreboard)var3).getPlayerScoreInfo(var1, var2);
       if (var4 == null) {
          throw ERROR_NO_VALUE.create(var2.getName(), var1.getFeedbackDisplayName());
@@ -124,7 +124,7 @@ public class ScoreboardCommand {
    }
 
    private static int performOperation(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, OperationArgument.Operation var3, Collection<ScoreHolder> var4, Objective var5) throws CommandSyntaxException {
-      ServerScoreboard var6 = var0.theGame().getScoreboard();
+      ServerScoreboard var6 = var0.getServer().getScoreboard();
       int var7 = 0;
 
       for(ScoreHolder var9 : var1) {
@@ -151,7 +151,7 @@ public class ScoreboardCommand {
       if (var2.getCriteria() != ObjectiveCriteria.TRIGGER) {
          throw ERROR_NOT_TRIGGER.create();
       } else {
-         ServerScoreboard var3 = var0.theGame().getScoreboard();
+         ServerScoreboard var3 = var0.getServer().getScoreboard();
          int var4 = 0;
 
          for(ScoreHolder var6 : var1) {
@@ -177,7 +177,7 @@ public class ScoreboardCommand {
    }
 
    private static int resetScores(CommandSourceStack var0, Collection<ScoreHolder> var1) {
-      ServerScoreboard var2 = var0.theGame().getScoreboard();
+      ServerScoreboard var2 = var0.getServer().getScoreboard();
 
       for(ScoreHolder var4 : var1) {
          ((Scoreboard)var2).resetAllPlayerScores(var4);
@@ -193,7 +193,7 @@ public class ScoreboardCommand {
    }
 
    private static int resetScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2) {
-      ServerScoreboard var3 = var0.theGame().getScoreboard();
+      ServerScoreboard var3 = var0.getServer().getScoreboard();
 
       for(ScoreHolder var5 : var1) {
          ((Scoreboard)var3).resetSinglePlayerScore(var5, var2);
@@ -209,7 +209,7 @@ public class ScoreboardCommand {
    }
 
    private static int setScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
 
       for(ScoreHolder var6 : var1) {
          ((Scoreboard)var4).getOrCreatePlayerScore(var6, var2).set(var3);
@@ -225,7 +225,7 @@ public class ScoreboardCommand {
    }
 
    private static int setScoreDisplay(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, @Nullable Component var3) {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
 
       for(ScoreHolder var6 : var1) {
          ((Scoreboard)var4).getOrCreatePlayerScore(var6, var2).display(var3);
@@ -247,7 +247,7 @@ public class ScoreboardCommand {
    }
 
    private static int setScoreNumberFormat(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, @Nullable NumberFormat var3) {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
 
       for(ScoreHolder var6 : var1) {
          ((Scoreboard)var4).getOrCreatePlayerScore(var6, var2).numberFormatOverride(var3);
@@ -269,7 +269,7 @@ public class ScoreboardCommand {
    }
 
    private static int addScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
       int var5 = 0;
 
       for(ScoreHolder var7 : var1) {
@@ -288,7 +288,7 @@ public class ScoreboardCommand {
    }
 
    private static int removeScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
       int var5 = 0;
 
       for(ScoreHolder var7 : var1) {
@@ -307,7 +307,7 @@ public class ScoreboardCommand {
    }
 
    private static int listTrackedPlayers(CommandSourceStack var0) {
-      Collection var1 = var0.theGame().getScoreboard().getTrackedPlayers();
+      Collection var1 = var0.getServer().getScoreboard().getTrackedPlayers();
       if (var1.isEmpty()) {
          var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.empty"), false);
       } else {
@@ -318,7 +318,7 @@ public class ScoreboardCommand {
    }
 
    private static int listTrackedPlayerScores(CommandSourceStack var0, ScoreHolder var1) {
-      Object2IntMap var2 = var0.theGame().getScoreboard().listPlayerScores(var1);
+      Object2IntMap var2 = var0.getServer().getScoreboard().listPlayerScores(var1);
       if (var2.isEmpty()) {
          var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.empty", var1.getFeedbackDisplayName()), false);
       } else {
@@ -330,7 +330,7 @@ public class ScoreboardCommand {
    }
 
    private static int clearDisplaySlot(CommandSourceStack var0, DisplaySlot var1) throws CommandSyntaxException {
-      ServerScoreboard var2 = var0.theGame().getScoreboard();
+      ServerScoreboard var2 = var0.getServer().getScoreboard();
       if (((Scoreboard)var2).getDisplayObjective(var1) == null) {
          throw ERROR_DISPLAY_SLOT_ALREADY_EMPTY.create();
       } else {
@@ -341,7 +341,7 @@ public class ScoreboardCommand {
    }
 
    private static int setDisplaySlot(CommandSourceStack var0, DisplaySlot var1, Objective var2) throws CommandSyntaxException {
-      ServerScoreboard var3 = var0.theGame().getScoreboard();
+      ServerScoreboard var3 = var0.getServer().getScoreboard();
       if (((Scoreboard)var3).getDisplayObjective(var1) == var2) {
          throw ERROR_DISPLAY_SLOT_ALREADY_SET.create();
       } else {
@@ -394,14 +394,14 @@ public class ScoreboardCommand {
    }
 
    private static int removeObjective(CommandSourceStack var0, Objective var1) {
-      ServerScoreboard var2 = var0.theGame().getScoreboard();
+      ServerScoreboard var2 = var0.getServer().getScoreboard();
       ((Scoreboard)var2).removeObjective(var1);
       var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.remove.success", var1.getFormattedDisplayName()), true);
       return ((Scoreboard)var2).getObjectives().size();
    }
 
    private static int addObjective(CommandSourceStack var0, String var1, ObjectiveCriteria var2, Component var3) throws CommandSyntaxException {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
       if (((Scoreboard)var4).getObjective(var1) != null) {
          throw ERROR_OBJECTIVE_ALREADY_EXISTS.create();
       } else {
@@ -413,7 +413,7 @@ public class ScoreboardCommand {
    }
 
    private static int listObjectives(CommandSourceStack var0) {
-      Collection var1 = var0.theGame().getScoreboard().getObjectives();
+      Collection var1 = var0.getServer().getScoreboard().getObjectives();
       if (var1.isEmpty()) {
          var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.list.empty"), false);
       } else {

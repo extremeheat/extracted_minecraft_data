@@ -23,8 +23,6 @@ import net.minecraft.world.level.Level;
 
 public class ItemRenderer {
    public static final ResourceLocation ENCHANTED_GLINT_ARMOR = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
-   public static final ResourceLocation MAP_WON_GLINT = ResourceLocation.withDefaultNamespace("textures/misc/map_won_glint.png");
-   public static final ResourceLocation MAP_LOST_GLINT = ResourceLocation.withDefaultNamespace("textures/misc/map_lost_glint.png");
    public static final ResourceLocation ENCHANTED_GLINT_ITEM = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
    public static final int GUI_SLOT_CENTER_X = 8;
    public static final int GUI_SLOT_CENTER_Y = 8;
@@ -53,7 +51,7 @@ public class ItemRenderer {
 
          var9 = getCompassFoilBuffer(var2, var7, var10);
       } else {
-         var9 = getFoilBuffer(var2, var7, true, var8);
+         var9 = getFoilBuffer(var2, var7, true, var8 != ItemStackRenderState.FoilType.NONE);
       }
 
       renderQuadList(var1, var9, var6, var5, var3, var4);
@@ -64,12 +62,12 @@ public class ItemRenderer {
    }
 
    private static VertexConsumer getCompassFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint(ItemStackRenderState.FoilType.SPECIAL)), var2, 0.0078125F), var0.getBuffer(var1));
+      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
    }
 
-   public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, ItemStackRenderState.FoilType var3) {
-      if (var3 != ItemStackRenderState.FoilType.NONE) {
-         return Minecraft.useShaderTransparency() && var1 == Sheets.translucentItemSheet() ? VertexMultiConsumer.create(var0.getBuffer(RenderType.glintTranslucent(var3)), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint(var3) : RenderType.entityGlint(var3)), var0.getBuffer(var1));
+   public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
+      if (var3) {
+         return Minecraft.useShaderTransparency() && var1 == Sheets.translucentItemSheet() ? VertexMultiConsumer.create(var0.getBuffer(RenderType.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlint()), var0.getBuffer(var1));
       } else {
          return var0.getBuffer(var1);
       }

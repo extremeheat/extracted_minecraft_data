@@ -40,7 +40,7 @@ public class LightTexture implements AutoCloseable {
       var3.createCommandEncoder().clearColorTexture(this.texture, -1);
    }
 
-   public GpuTexture getTarget() {
+   public GpuTexture getTexture() {
       return this.texture;
    }
 

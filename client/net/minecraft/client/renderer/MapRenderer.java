@@ -22,8 +22,8 @@ import org.joml.Quaternionfc;
 public class MapRenderer {
    private static final float MAP_Z_OFFSET = -0.01F;
    private static final float DECORATION_Z_OFFSET = -0.001F;
-   private static final int WIDTH = 128;
-   private static final int HEIGHT = 128;
+   public static final int WIDTH = 128;
+   public static final int HEIGHT = 128;
    private final MapTextureManager mapTextureManager;
    private final MapDecorationTextureManager decorationTextures;
 

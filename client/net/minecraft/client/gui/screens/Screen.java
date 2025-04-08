@@ -35,11 +35,12 @@ import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.CubeMap;
 import net.minecraft.client.renderer.PanoramaRenderer;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -55,7 +56,7 @@ import org.slf4j.Logger;
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   public static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
+   protected static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
    protected static final PanoramaRenderer PANORAMA;
    public static final ResourceLocation MENU_BACKGROUND;
    public static final ResourceLocation HEADER_SEPARATOR;
@@ -63,7 +64,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private static final ResourceLocation INWORLD_MENU_BACKGROUND;
    public static final ResourceLocation INWORLD_HEADER_SEPARATOR;
    public static final ResourceLocation INWORLD_FOOTER_SEPARATOR;
-   protected Component title;
+   protected final Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
    private final List<NarratableEntry> narratables = Lists.newArrayList();
    @Nullable
@@ -108,17 +109,21 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public final void renderWithTooltip(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.pushGuiLayer(GuiLayer.SCREEN_BACKGROUND);
+      this.renderBackground(var1, var2, var3, var4);
+      var1.popPushGuiLayer(GuiLayer.SCREEN);
       this.render(var1, var2, var3, var4);
       if (this.deferredTooltipRendering != null) {
+         var1.pushGuiLayer(GuiLayer.SCREEN_TOOLTIP);
          var1.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(), this.deferredTooltipRendering.positioner(), var2, var3);
          this.deferredTooltipRendering = null;
+         var1.popGuiLayer();
       }
 
+      var1.popGuiLayer();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1, var2, var3, var4);
-
       for(Renderable var6 : this.renderables) {
          var6.render(var1, var2, var3, var4);
       }
@@ -425,10 +430,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      var1.fill(0, 0, var1.guiWidth(), var1.guiHeight(), -16777216);
-      var1.flush();
-      this.minecraft.levelRenderer.getSkyRenderer().renderCodeSkyForTitle(this.minecraft, 1.0F, var2);
-      var1.flush();
+      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -441,7 +443,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public static void renderMenuBackgroundTexture(GuiGraphics var0, ResourceLocation var1, int var2, int var3, float var4, float var5, int var6, int var7) {
       boolean var8 = true;
-      var0.blit(RenderType::guiTextured, var1, var2, var3, var4, var5, var6, var7, 32, 32);
+      var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, var4, var5, var6, var7, 32, 32);
    }
 
    public void renderTransparentBackground(GuiGraphics var1) {
@@ -568,7 +570,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narrationState.update(this::updateNarrationState);
       String var2 = this.narrationState.collectNarrationText(!var1);
       if (!var2.isEmpty()) {
-         this.minecraft.getNarrator().sayNow(var2);
+         this.minecraft.getNarrator().saySystemNow(var2);
       }
 
    }

@@ -61,7 +61,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
-import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
@@ -109,11 +108,6 @@ public abstract class ChunkGenerator {
 
    public Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> getTypeNameForDataFixer() {
       return BuiltInRegistries.CHUNK_GENERATOR.getResourceKey(this.codec());
-   }
-
-   @Nullable
-   public NoiseGeneratorSettings getNoiseGeneratorSettings() {
-      return null;
    }
 
    public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
@@ -483,7 +477,7 @@ public abstract class ChunkGenerator {
    private boolean tryGenerateStructure(StructureSet.StructureSelectionEntry var1, StructureManager var2, RegistryAccess var3, RandomState var4, StructureTemplateManager var5, long var6, ChunkAccess var8, ChunkPos var9, SectionPos var10, ResourceKey<Level> var11) {
       Structure var12 = (Structure)var1.structure().value();
       int var13 = fetchReferences(var2, var8, var10, var12);
-      HolderSet var14 = var12.filteredBiomes(HolderSet.direct(this.biomeSource.possibleBiomes()));
+      HolderSet var14 = var12.biomes();
       Objects.requireNonNull(var14);
       Predicate var15 = var14::contains;
       StructureStart var16 = var12.generate(var1.structure(), var11, var3, this, this.biomeSource, var4, var5, var6, var9, var13, var8, var15);

@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -21,7 +20,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.UnlockCondition;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -73,17 +71,12 @@ public class BlockItem extends Item {
                   updateBlockEntityComponents(var5, var4, var7);
                   var8.getBlock().setPlacedBy(var5, var4, var8, var6, var7);
                   if (var6 instanceof ServerPlayer) {
-                     ServerPlayer var9 = (ServerPlayer)var6;
-                     if (var5 instanceof ServerLevel) {
-                        ServerLevel var10 = (ServerLevel)var5;
-                        UnlockCondition.onBlockPlace(var10, var9, var4, var8);
-                        CriteriaTriggers.PLACED_BLOCK.trigger(var9, var4, var7);
-                     }
+                     CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var6, var4, var7);
                   }
                }
 
-               SoundType var11 = var8.getSoundType();
-               var5.playSound(var6, (BlockPos)var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var11.getVolume() + 1.0F) / 2.0F, var11.getPitch() * 0.8F);
+               SoundType var9 = var8.getSoundType();
+               var5.playSound(var6, (BlockPos)var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
                var5.gameEvent(GameEvent.BLOCK_PLACE, var4, GameEvent.Context.of(var6, var8));
                var7.consume(1, var6);
                return InteractionResult.SUCCESS;

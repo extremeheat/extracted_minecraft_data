@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.AdultAndBabyModelPair;
 import net.minecraft.client.model.CowModel;
 import net.minecraft.client.model.EntityModel;
@@ -13,12 +12,9 @@ import net.minecraft.client.renderer.entity.state.CowRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.CowVariant;
-import net.minecraft.world.level.Level;
 
 public class CowRenderer extends MobRenderer<Cow, CowRenderState, CowModel> {
    private final Map<CowVariant.ModelType, AdultAndBabyModelPair<CowModel>> models;
@@ -40,12 +36,6 @@ public class CowRenderer extends MobRenderer<Cow, CowRenderState, CowModel> {
       return new CowRenderState();
    }
 
-   public CowRenderState createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable Level var1) {
-      CowRenderState var2 = (CowRenderState)super.createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(var1);
-      var2.variant = var1 != null ? (CowVariant)var1.registryAccess().lookupOrThrow(Registries.COW_VARIANT).getAny().map(Holder::value).orElse((Object)null) : null;
-      return var2;
-   }
-
    public void extractRenderState(Cow var1, CowRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.variant = (CowVariant)var1.getVariant().value();
@@ -61,11 +51,6 @@ public class CowRenderer extends MobRenderer<Cow, CowRenderState, CowModel> {
    // $FF: synthetic method
    public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CowRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable final Level var1) {
-      return this.createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(var1);
    }
 
    // $FF: synthetic method

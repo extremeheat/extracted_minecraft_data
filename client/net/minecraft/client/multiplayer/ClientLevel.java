@@ -28,6 +28,7 @@ import net.minecraft.client.particle.FireworkParticles;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
@@ -44,7 +45,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.TheGame;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -84,7 +84,6 @@ import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.dimension.DimensionSpecialEffects;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTickList;
 import net.minecraft.world.level.entity.LevelCallback;
@@ -93,7 +92,6 @@ import net.minecraft.world.level.entity.TransientEntitySectionManager;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.mines.WorldEffect;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
@@ -117,6 +115,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final LevelRenderer levelRenderer;
    private final LevelEventHandler levelEventHandler;
    private final ClientLevelData clientLevelData;
+   private final DimensionSpecialEffects effects;
    private final TickRateManager tickRateManager;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
@@ -136,8 +135,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private final int seaLevel;
    private boolean tickDayTime;
-   private final List<WorldEffect> unlockedEffects;
-   private final List<WorldEffect> activeEffects;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
 
    public void handleBlockChangedAck(int var1) {
@@ -181,18 +178,17 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   public ClientLevel(ClientPacketListener var1, ClientLevelData var2, ResourceKey<Level> var3, Holder<DimensionType> var4, int var5, int var6, LevelRenderer var7, boolean var8, long var9, int var11, List<WorldEffect> var12, List<WorldEffect> var13) {
+   public ClientLevel(ClientPacketListener var1, ClientLevelData var2, ResourceKey<Level> var3, Holder<DimensionType> var4, int var5, int var6, LevelRenderer var7, boolean var8, long var9, int var11) {
       super(var2, var3, var1.registryAccess(), var4, true, var8, var9, 1000000);
       this.connection = var1;
       this.chunkSource = new ClientChunkCache(this, var5);
-      this.unlockedEffects = var12;
-      this.activeEffects = var13;
       this.tickRateManager = new TickRateManager();
       this.clientLevelData = var2;
       this.levelRenderer = var7;
       this.seaLevel = var11;
       this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var7);
-      this.setDefaultSpawnPos(TheGame.DEFAULT_SPAWN, 90.0F);
+      this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
+      this.setDefaultSpawnPos(new BlockPos(8, 64, 8), 0.0F);
       this.serverSimulationDistance = var6;
       this.updateSkyBrightness();
       this.prepareWeather();
@@ -218,7 +214,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public DimensionSpecialEffects effects() {
-      return this.dimensionType().dimensionSpecialEffects();
+      return this.effects;
    }
 
    public void tick(BooleanSupplier var1) {
@@ -819,31 +815,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.connection.registerForCleaning(var1);
    }
 
-   public boolean isEffectUnlocked(WorldEffect var1) {
-      return this.unlockedEffects.contains(var1);
-   }
-
-   public boolean isActive(WorldEffect var1) {
-      return this.activeEffects.contains(var1);
-   }
-
-   public List<WorldEffect> getActiveEffects() {
-      return this.activeEffects;
-   }
-
-   public List<WorldEffect> getUnlockedEffects() {
-      return this.unlockedEffects;
-   }
-
-   public void setUnlockedWorldEffects(List<WorldEffect> var1) {
-      this.unlockedEffects.clear();
-      this.unlockedEffects.addAll(var1);
-   }
-
-   public boolean isMine() {
-      return this.clientLevelData.isMap();
-   }
-
    // $FF: synthetic method
    public LevelData getLevelData() {
       return this.getLevelData();
@@ -866,7 +837,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    public static class ClientLevelData implements WritableLevelData {
       private final boolean hardcore;
       private final boolean isFlat;
-      private final boolean isMap;
       private BlockPos spawnPos;
       private float spawnAngle;
       private long gameTime;
@@ -875,12 +845,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       private Difficulty difficulty;
       private boolean difficultyLocked;
 
-      public ClientLevelData(Difficulty var1, boolean var2, boolean var3, boolean var4) {
+      public ClientLevelData(Difficulty var1, boolean var2, boolean var3) {
          super();
          this.difficulty = var1;
          this.hardcore = var2;
          this.isFlat = var3;
-         this.isMap = var4;
       }
 
       public BlockPos getSpawnPos() {
@@ -926,10 +895,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
       public boolean isHardcore() {
          return this.hardcore;
-      }
-
-      public boolean isMap() {
-         return this.isMap;
       }
 
       public Difficulty getDifficulty() {

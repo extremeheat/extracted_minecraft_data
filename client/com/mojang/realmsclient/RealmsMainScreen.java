@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Axis;
 import com.mojang.realmsclient.client.Ping;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.PingResult;
@@ -71,7 +70,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientActivePlayersTooltip;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
@@ -85,7 +84,6 @@ import net.minecraft.util.CommonLinks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameType;
 import org.apache.commons.lang3.StringUtils;
-import org.joml.Quaternionfc;
 import org.slf4j.Logger;
 
 public class RealmsMainScreen extends RealmsScreen {
@@ -407,7 +405,7 @@ public class RealmsMainScreen extends RealmsScreen {
          this.pendingInvitesButton.setNotificationCount(var1x);
          this.pendingInvitesButton.setTooltip(var1x == 0 ? Tooltip.create(NO_PENDING_INVITES) : Tooltip.create(PENDING_INVITES));
          if (var1x > 0 && this.inviteNarrationLimiter.tryAcquire(1)) {
-            this.minecraft.getNarrator().sayNow((Component)Component.translatable("mco.configure.world.invite.narration", var1x));
+            this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("mco.configure.world.invite.narration", var1x));
          }
 
       });
@@ -569,7 +567,7 @@ public class RealmsMainScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if (isSnapshot()) {
-         var1.drawString(this.font, (String)("Minecraft " + SharedConstants.getCurrentVersion().getName()), 2, this.height - 10, -1);
+         var1.drawString(this.font, (String)("Minecraft " + SharedConstants.getCurrentVersion().name()), 2, this.height - 10, -1);
       }
 
       if (this.trialsAvailable && this.addRealmButton.active) {
@@ -601,9 +599,9 @@ public class RealmsMainScreen extends RealmsScreen {
          switch (var0.compatibility) {
             case COMPATIBLE -> Minecraft.getInstance().setScreen(new RealmsLongRunningMcoTaskScreen(var1, new LongRunningTask[]{new GetServerDetailsTask(var1, var0)}));
             case UNVERIFIABLE -> confirmToPlay(var0, var1, Component.translatable("mco.compatibility.unverifiable.title").withColor(-171), Component.translatable("mco.compatibility.unverifiable.message"), CommonComponents.GUI_CONTINUE);
-            case NEEDS_DOWNGRADE -> confirmToPlay(var0, var1, Component.translatable("selectWorld.backupQuestion.downgrade").withColor(-2142128), Component.translatable("mco.compatibility.downgrade.description", Component.literal(var0.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().getName()).withColor(-171)), Component.translatable("mco.compatibility.downgrade"));
+            case NEEDS_DOWNGRADE -> confirmToPlay(var0, var1, Component.translatable("selectWorld.backupQuestion.downgrade").withColor(-2142128), Component.translatable("mco.compatibility.downgrade.description", Component.literal(var0.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-171)), Component.translatable("mco.compatibility.downgrade"));
             case NEEDS_UPGRADE -> upgradeRealmAndPlay(var0, var1);
-            case INCOMPATIBLE -> Minecraft.getInstance().setScreen((new PopupScreen.Builder(var1, INCOMPATIBLE_POPUP_TITLE)).setMessage(Component.translatable("mco.compatibility.incompatible.series.popup.message", Component.literal(var0.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().getName()).withColor(-171))).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
+            case INCOMPATIBLE -> Minecraft.getInstance().setScreen((new PopupScreen.Builder(var1, INCOMPATIBLE_POPUP_TITLE)).setMessage(Component.translatable("mco.compatibility.incompatible.series.popup.message", Component.literal(var0.activeVersion).withColor(-171), Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-171))).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
             case RELEASE_TYPE_INCOMPATIBLE -> Minecraft.getInstance().setScreen((new PopupScreen.Builder(var1, INCOMPATIBLE_POPUP_TITLE)).setMessage(INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE).addButton(CommonComponents.GUI_BACK, PopupScreen::onClose).build());
          }
       }
@@ -621,7 +619,7 @@ public class RealmsMainScreen extends RealmsScreen {
       MutableComponent var2 = Component.translatable("mco.compatibility.upgrade.title").withColor(-171);
       MutableComponent var3 = Component.translatable("mco.compatibility.upgrade");
       MutableComponent var4 = Component.literal(var0.activeVersion).withColor(-171);
-      MutableComponent var5 = Component.literal(SharedConstants.getCurrentVersion().getName()).withColor(-171);
+      MutableComponent var5 = Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-171);
       MutableComponent var6 = isSelfOwnedServer(var0) ? Component.translatable("mco.compatibility.upgrade.description", var4, var5) : Component.translatable("mco.compatibility.upgrade.friend.description", var4, var5);
       confirmToPlay(var0, var1, var2, var6, var3);
    }
@@ -647,12 +645,12 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void renderEnvironment(GuiGraphics var1, String var2, int var3) {
-      var1.pose().pushPose();
-      var1.pose().translate((float)(this.width / 2 - 25), 20.0F, 0.0F);
-      var1.pose().mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-20.0F));
-      var1.pose().scale(1.5F, 1.5F, 1.5F);
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)(this.width / 2 - 25), 20.0F);
+      var1.pose().rotate(-0.34906584F);
+      var1.pose().scale(1.5F, 1.5F);
       var1.drawString(this.font, (String)var2, 0, 0, var3);
-      var1.pose().popPose();
+      var1.pose().popMatrix();
    }
 
    static {
@@ -662,7 +660,7 @@ public class RealmsMainScreen extends RealmsScreen {
       PENDING_INVITES = Component.translatable("mco.invites.pending");
       INCOMPATIBLE_POPUP_TITLE = Component.translatable("mco.compatibility.incompatible.popup.title");
       INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE = Component.translatable("mco.compatibility.incompatible.releaseType.popup.message");
-      SNAPSHOT = !SharedConstants.getCurrentVersion().isStable();
+      SNAPSHOT = !SharedConstants.getCurrentVersion().stable();
       snapshotToggle = SNAPSHOT;
    }
 
@@ -765,7 +763,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var6, var2, var3, 10, 28);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var2, var3, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)var4, (double)var5) && var4 >= var2 && var4 <= var2 + 10 && var5 >= var3 && var5 <= var3 + 28) {
             RealmsMainScreen.this.setTooltipForNextRenderPass((Component)var7.get());
          }
@@ -818,7 +816,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
          if (var6) {
             var8 -= 10;
-            var2.blitSprite(RenderType::guiTextured, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
+            var2.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
          }
 
          return var8;
@@ -985,7 +983,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, var4 - 5, var3 + var6 / 2 - 10, 40, 20);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, var4 - 5, var3 + var6 / 2 - 10, 40, 20);
          int var10000 = var3 + var6 / 2;
          Objects.requireNonNull(RealmsMainScreen.this.font);
          int var11 = var10000 - 9 / 2;
@@ -1079,7 +1077,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, var4 - 5, var3 + var6 / 2 - 10, 40, 20);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, var4 - 5, var3 + var6 / 2 - 10, 40, 20);
             int var10000 = var3 + var6 / 2;
             Objects.requireNonNull(RealmsMainScreen.this.font);
             int var12 = var10000 - 9 / 2;
@@ -1226,7 +1224,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void drawNotificationCounter(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
       }
    }
 

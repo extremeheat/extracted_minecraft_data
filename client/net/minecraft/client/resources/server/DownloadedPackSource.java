@@ -160,7 +160,7 @@ public class DownloadedPackSource implements AutoCloseable {
 
          private Map<String, String> createDownloadHeaders() {
             WorldVersion var1x = SharedConstants.getCurrentVersion();
-            return Map.of("X-Minecraft-Username", var3.getName(), "X-Minecraft-UUID", UndashedUuid.toString(var3.getProfileId()), "X-Minecraft-Version", var1x.getName(), "X-Minecraft-Version-ID", var1x.getId(), "X-Minecraft-Pack-Format", String.valueOf(var1x.getPackVersion(PackType.CLIENT_RESOURCES)), "User-Agent", "Minecraft Java/" + var1x.getName());
+            return Map.of("X-Minecraft-Username", var3.getName(), "X-Minecraft-UUID", UndashedUuid.toString(var3.getProfileId()), "X-Minecraft-Version", var1x.name(), "X-Minecraft-Version-ID", var1x.id(), "X-Minecraft-Pack-Format", String.valueOf(var1x.packVersion(PackType.CLIENT_RESOURCES)), "User-Agent", "Minecraft Java/" + var1x.name());
          }
 
          public void download(Map<UUID, DownloadQueue.DownloadRequest> var1x, Consumer<DownloadQueue.BatchResult> var2x) {
@@ -207,7 +207,7 @@ public class DownloadedPackSource implements AutoCloseable {
          Path var6 = var4.path();
          PackLocationInfo var7 = new PackLocationInfo(var5, SERVER_NAME, this.packType, Optional.empty());
          FilePackResources.FileResourcesSupplier var8 = new FilePackResources.FileResourcesSupplier(var6);
-         int var9 = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
+         int var9 = SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES);
          Pack.Metadata var10 = Pack.readPackMetadata(var7, var8, var9);
          if (var10 == null) {
             LOGGER.warn("Invalid pack metadata in {}, ignoring all", var6);

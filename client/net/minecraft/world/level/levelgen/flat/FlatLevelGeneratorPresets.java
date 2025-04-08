@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.flat;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -58,7 +58,7 @@ public class FlatLevelGeneratorPresets {
          HolderGetter var10 = this.context.lookup(Registries.BIOME);
          Stream var10000 = var4.stream();
          Objects.requireNonNull(var8);
-         HolderSet.Direct var11 = HolderSet.direct((Collection)var10000.map(var8::getOrThrow).collect(Collectors.toList()));
+         HolderSet.Direct var11 = HolderSet.direct((List)var10000.map(var8::getOrThrow).collect(Collectors.toList()));
          FlatLevelGeneratorSettings var12 = new FlatLevelGeneratorSettings(Optional.of(var11), var10.getOrThrow(var3), FlatLevelGeneratorSettings.createLakesList(var9));
          if (var5) {
             var12.setDecoration();

@@ -9,20 +9,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.UnlockCondition;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -62,7 +58,7 @@ public class ServerPlayerGameMode {
       } else {
          this.setGameModeForPlayer(var1, this.previousGameModeForPlayer);
          this.player.onUpdateAbilities();
-         this.player.theGame().playerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
+         this.player.server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
          if (var1 == GameType.CREATIVE) {
             this.player.resetCurrentImpulseContext();
@@ -164,17 +160,10 @@ public class ServerPlayerGameMode {
             this.destroyProgressStart = this.gameTicks;
             float var6 = 1.0F;
             BlockState var7 = this.level.getBlockState(var1);
-            if (var7.is(Blocks.FIRE) && this.player.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE) && this.player.getMainHandItem().isEmpty()) {
-               return;
-            }
-
             if (!var7.isAir()) {
                EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(var1), var7, (var1x) -> this.player.onEquippedItemBroken(var1x, EquipmentSlot.MAINHAND));
                var7.attack(this.level, var1, this.player);
                var6 = var7.getDestroyProgress(this.player, this.player.level(), var1);
-               if (this.player.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE) && this.player.getMainHandItem().isEmpty()) {
-                  FlintAndSteelItem.ignite(new UseOnContext(this.player, this.player.getUsedItemHand(), new BlockHitResult(var1.getCenter(), var3, var1, true)));
-               }
             }
 
             if (!var7.isAir() && var6 >= 1.0F) {
@@ -254,21 +243,20 @@ public class ServerPlayerGameMode {
             return false;
          } else {
             BlockState var4 = var3.playerWillDestroy(this.level, var1, var5, this.player);
-            boolean var6 = this.level.removeBlock(var1, false);
-            if (var6) {
-               UnlockCondition.onBlockBreak(this.level, this.player, var1, var5);
+            boolean var9 = this.level.removeBlock(var1, false);
+            if (var9) {
                var3.destroy(this.level, var1, var4);
             }
 
             if (this.player.preventsBlockDrops()) {
                return true;
             } else {
-               ItemStack var7 = this.player.getMainHandItem();
-               ItemStack var8 = var7.copy();
-               boolean var9 = this.player.hasCorrectToolForDrops(var4);
-               var7.mineBlock(this.level, var4, var1, this.player);
-               if (var6 && var9) {
-                  var3.playerDestroy(this.level, this.player, var1, var4, var2, var8);
+               ItemStack var6 = this.player.getMainHandItem();
+               ItemStack var7 = var6.copy();
+               boolean var8 = this.player.hasCorrectToolForDrops(var4);
+               var6.mineBlock(this.level, var4, var1, this.player);
+               if (var9 && var8) {
+                  var3.playerDestroy(this.level, this.player, var1, var4, var2, var7);
                }
 
                return true;
@@ -283,29 +271,27 @@ public class ServerPlayerGameMode {
       } else if (var1.getCooldowns().isOnCooldown(var3)) {
          return InteractionResult.PASS;
       } else {
-         ItemStack var5 = var3.copy();
-         int var6 = var3.getCount();
-         int var7 = var3.getDamageValue();
-         InteractionResult var8 = var3.use(var2, var1, var4);
-         ItemStack var9;
-         if (var8 instanceof InteractionResult.Success) {
-            InteractionResult.Success var10 = (InteractionResult.Success)var8;
-            UnlockCondition.onUsedItem(var2, var1, var5);
-            var9 = (ItemStack)Objects.requireNonNullElse(var10.heldItemTransformedTo(), var1.getItemInHand(var4));
+         int var5 = var3.getCount();
+         int var6 = var3.getDamageValue();
+         InteractionResult var7 = var3.use(var2, var1, var4);
+         ItemStack var8;
+         if (var7 instanceof InteractionResult.Success) {
+            InteractionResult.Success var9 = (InteractionResult.Success)var7;
+            var8 = (ItemStack)Objects.requireNonNullElse(var9.heldItemTransformedTo(), var1.getItemInHand(var4));
          } else {
-            var9 = var1.getItemInHand(var4);
+            var8 = var1.getItemInHand(var4);
          }
 
-         if (var9 == var3 && var9.getCount() == var6 && var9.getUseDuration(var1) <= 0 && var9.getDamageValue() == var7) {
-            return var8;
-         } else if (var8 instanceof InteractionResult.Fail && var9.getUseDuration(var1) > 0 && !var1.isUsingItem()) {
-            return var8;
+         if (var8 == var3 && var8.getCount() == var5 && var8.getUseDuration(var1) <= 0 && var8.getDamageValue() == var6) {
+            return var7;
+         } else if (var7 instanceof InteractionResult.Fail && var8.getUseDuration(var1) > 0 && !var1.isUsingItem()) {
+            return var7;
          } else {
-            if (var3 != var9) {
-               var1.setItemInHand(var4, var9);
+            if (var3 != var8) {
+               var1.setItemInHand(var4, var8);
             }
 
-            if (var9.isEmpty()) {
+            if (var8.isEmpty()) {
                var1.setItemInHand(var4, ItemStack.EMPTY);
             }
 
@@ -313,7 +299,7 @@ public class ServerPlayerGameMode {
                var1.inventoryMenu.sendAllDataToRemote();
             }
 
-            return var8;
+            return var7;
          }
       }
    }

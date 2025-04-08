@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -28,7 +27,7 @@ public class BeaconMenu extends AbstractContainerMenu {
    private final ContainerLevelAccess access;
    private final ContainerData beaconData;
 
-   public BeaconMenu(int var1, Container var2, List<Integer> var3) {
+   public BeaconMenu(int var1, Container var2) {
       this(var1, var2, new SimpleContainerData(3), ContainerLevelAccess.NULL);
    }
 

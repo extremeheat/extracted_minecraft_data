@@ -21,7 +21,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
@@ -56,14 +55,12 @@ public class ItemEntity extends Entity implements TraceableEntity {
    @Nullable
    private UUID target;
    public final float bobOffs;
-   protected InterpolationHandler interpolation;
 
    public ItemEntity(EntityType<? extends ItemEntity> var1, Level var2) {
       super(var1, var2);
       this.age = 0;
       this.pickupDelay = 0;
       this.health = 5;
-      this.interpolation = new InterpolationHandler(this);
       this.bobOffs = this.random.nextFloat() * 3.1415927F * 2.0F;
       this.setYRot(this.random.nextFloat() * 360.0F);
    }
@@ -84,15 +81,10 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.age = 0;
       this.pickupDelay = 0;
       this.health = 5;
-      this.interpolation = new InterpolationHandler(this);
       this.setItem(var1.getItem().copy());
       this.copyPosition(var1);
       this.age = var1.age;
       this.bobOffs = var1.bobOffs;
-   }
-
-   public InterpolationHandler getInterpolation() {
-      return this.interpolation;
    }
 
    public boolean dampensVibrations() {
@@ -172,7 +164,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
             this.applyEffectsFromBlocks();
             float var2 = 0.98F;
             if (this.onGround()) {
-               var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction(this.level().getIsIcy()) * 0.98F;
+               var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
             }
 
             this.setDeltaMovement(this.getDeltaMovement().multiply((double)var2, 0.98, (double)var2));
@@ -357,7 +349,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
          ItemStack var2 = this.getItem();
          Item var3 = var2.getItem();
          int var4 = var2.getCount();
-         if (this.pickupDelay == 0 && (this.target == null || this.target.equals(var1.getUUID())) && var1.addItem(var2)) {
+         if (this.pickupDelay == 0 && (this.target == null || this.target.equals(var1.getUUID())) && var1.getInventory().add(var2)) {
             var1.take(this, var4);
             if (var2.isEmpty()) {
                this.discard();

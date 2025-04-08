@@ -10,7 +10,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.gui.render.GuiLayer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -105,23 +106,25 @@ public class RealmsWorldSlotButton extends Button {
             var9 = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
          }
 
-         var1.blit(RenderType::guiTextured, var8, var5 + 3, var6 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var9);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var8, var5 + 3, var6 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var9);
          if (var7 && this.state.action != RealmsWorldSlotButton.Action.NOTHING) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80);
          } else if (this.state.isCurrentlyActiveSlot) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80, ARGB.colorFromFloat(1.0F, 0.8F, 0.8F, 0.8F));
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80, ARGB.colorFromFloat(1.0F, 0.8F, 0.8F, 0.8F));
          } else {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80, ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F));
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80, ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F));
          }
 
+         var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_ICON_ABOVE_HIGHLIGHT);
          if (this.state.isCurrentlyActiveSlot) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)CHECKMARK_SPRITE, var5 + 67, var6 + 4, 9, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)CHECKMARK_SPRITE, var5 + 67, var6 + 4, 9, 8);
          }
 
          if (this.state.hardcore) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var5 + 3, var6 + 4, 9, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var5 + 3, var6 + 4, 9, 8);
          }
 
+         var1.popGuiLayer();
          Font var10 = Minecraft.getInstance().font;
          String var11 = this.state.slotName;
          if (var10.width(var11) > 64) {

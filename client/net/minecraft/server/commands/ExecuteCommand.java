@@ -130,7 +130,7 @@ public class ExecuteCommand {
    @VisibleForTesting
    public static final Dynamic2CommandExceptionType ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.execute.function.instantiationFailure", var0, var1));
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_PREDICATE = (var0, var1) -> {
-      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).theGame().reloadableRegistries();
+      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
       return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.PREDICATE), var1);
    };
 
@@ -207,7 +207,7 @@ public class ExecuteCommand {
    }
 
    private static CommandSourceStack storeValue(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, boolean var3) {
-      ServerScoreboard var4 = var0.theGame().getScoreboard();
+      ServerScoreboard var4 = var0.getServer().getScoreboard();
       return var0.withCallback((var4x, var5) -> {
          for(ScoreHolder var7 : var1) {
             ScoreAccess var8 = var4.getOrCreatePlayerScore(var7, var2);
@@ -330,7 +330,7 @@ public class ExecuteCommand {
       Objective var3 = ObjectiveArgument.getObjective(var0, "targetObjective");
       ScoreHolder var4 = ScoreHolderArgument.getName(var0, "source");
       Objective var5 = ObjectiveArgument.getObjective(var0, "sourceObjective");
-      ServerScoreboard var6 = ((CommandSourceStack)var0.getSource()).theGame().getScoreboard();
+      ServerScoreboard var6 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
       ReadOnlyScoreInfo var7 = ((Scoreboard)var6).getPlayerScoreInfo(var2, var3);
       ReadOnlyScoreInfo var8 = ((Scoreboard)var6).getPlayerScoreInfo(var4, var5);
       return var7 != null && var8 != null ? var1.test(var7.value(), var8.value()) : false;
@@ -339,7 +339,7 @@ public class ExecuteCommand {
    private static boolean checkScore(CommandContext<CommandSourceStack> var0, MinMaxBounds.Ints var1) throws CommandSyntaxException {
       ScoreHolder var2 = ScoreHolderArgument.getName(var0, "target");
       Objective var3 = ObjectiveArgument.getObjective(var0, "targetObjective");
-      ServerScoreboard var4 = ((CommandSourceStack)var0.getSource()).theGame().getScoreboard();
+      ServerScoreboard var4 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
       ReadOnlyScoreInfo var5 = ((Scoreboard)var4).getPlayerScoreInfo(var2, var3);
       return var5 == null ? false : var1.matches(var5.value());
    }

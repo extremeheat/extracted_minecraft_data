@@ -119,6 +119,10 @@ public class GroundPathNavigation extends PathNavigation {
 
    }
 
+   public boolean canNavigateGround() {
+      return true;
+   }
+
    protected boolean hasValidPathType(PathType var1) {
       if (var1 == PathType.WATER) {
          return false;
@@ -127,10 +131,6 @@ public class GroundPathNavigation extends PathNavigation {
       } else {
          return var1 != PathType.OPEN;
       }
-   }
-
-   public void setCanOpenDoors(boolean var1) {
-      this.nodeEvaluator.setCanOpenDoors(var1);
    }
 
    public void setAvoidSun(boolean var1) {

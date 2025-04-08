@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.StyledFormat;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.Objective;
@@ -56,12 +57,15 @@ public record ScoreContents(Either<SelectorPattern, String> name, String objecti
    }
 
    private MutableComponent getScore(ScoreHolder var1, CommandSourceStack var2) {
-      ServerScoreboard var3 = var2.theGame().getScoreboard();
-      Objective var4 = ((Scoreboard)var3).getObjective(this.objective);
-      if (var4 != null) {
-         ReadOnlyScoreInfo var5 = ((Scoreboard)var3).getPlayerScoreInfo(var1, var4);
+      MinecraftServer var3 = var2.getServer();
+      if (var3 != null) {
+         ServerScoreboard var4 = var3.getScoreboard();
+         Objective var5 = ((Scoreboard)var4).getObjective(this.objective);
          if (var5 != null) {
-            return var5.formatValue(var4.numberFormatOrDefault(StyledFormat.NO_STYLE));
+            ReadOnlyScoreInfo var6 = ((Scoreboard)var4).getPlayerScoreInfo(var1, var5);
+            if (var6 != null) {
+               return var6.formatValue(var5.numberFormatOrDefault(StyledFormat.NO_STYLE));
+            }
          }
       }
 

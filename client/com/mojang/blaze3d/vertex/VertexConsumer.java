@@ -5,7 +5,9 @@ import java.nio.IntBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.ARGB;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.lwjgl.system.MemoryStack;
@@ -133,6 +135,11 @@ public interface VertexConsumer {
    default VertexConsumer addVertex(Matrix4f var1, float var2, float var3, float var4) {
       Vector3f var5 = var1.transformPosition(var2, var3, var4, new Vector3f());
       return this.addVertex(var5.x(), var5.y(), var5.z());
+   }
+
+   default VertexConsumer addVertexWith2DPose(Matrix3x2f var1, float var2, float var3, float var4) {
+      Vector2f var5 = var1.transformPosition(var2, var3, new Vector2f());
+      return this.addVertex(var5.x(), var5.y(), var4);
    }
 
    default VertexConsumer setNormal(PoseStack.Pose var1, float var2, float var3, float var4) {

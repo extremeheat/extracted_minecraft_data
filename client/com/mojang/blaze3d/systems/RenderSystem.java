@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 
 @DontObfuscate
 public class RenderSystem {
-   public static final ScissorState SCISSOR_STATE = new ScissorState();
    static final Logger LOGGER = LogUtils.getLogger();
    public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    @Nullable
@@ -89,6 +88,10 @@ public class RenderSystem {
    @Nullable
    private static GpuBuffer QUAD_VERTEX_BUFFER;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
+   @Nullable
+   public static GpuTexture outputColorTextureOverride;
+   @Nullable
+   public static GpuTexture outputDepthTextureOverride;
 
    public RenderSystem() {
       super();
@@ -147,14 +150,6 @@ public class RenderSystem {
       }
 
       lastDrawTime = var3;
-   }
-
-   public static void enableScissor(int var0, int var1, int var2, int var3) {
-      SCISSOR_STATE.enable(var0, var1, var2, var3);
-   }
-
-   public static void disableScissor() {
-      SCISSOR_STATE.disable();
    }
 
    public static void setShaderFog(FogParameters var0) {

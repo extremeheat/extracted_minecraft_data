@@ -127,7 +127,7 @@ public class ServerStatsCounter extends StatsCounter {
    protected String toJson() {
       JsonObject var1 = new JsonObject();
       var1.add("stats", (JsonElement)STATS_CODEC.encodeStart(JsonOps.INSTANCE, this.stats).getOrThrow());
-      var1.addProperty("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+      var1.addProperty("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
       return var1.toString();
    }
 

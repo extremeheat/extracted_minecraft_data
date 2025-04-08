@@ -61,11 +61,11 @@ public class FlyingPathNavigation extends PathNavigation {
       }
    }
 
-   public void setCanOpenDoors(boolean var1) {
-      this.nodeEvaluator.setCanOpenDoors(var1);
-   }
-
    public boolean isStableDestination(BlockPos var1) {
       return this.level.getBlockState(var1).entityCanStandOn(this.level, var1, this.mob);
+   }
+
+   public boolean canNavigateGround() {
+      return false;
    }
 }

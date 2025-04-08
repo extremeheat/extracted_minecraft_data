@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -16,29 +15,18 @@ import net.minecraft.world.level.biome.OverworldBiomeBuilder;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState defaultBlock, BlockState defaultFluid, NoiseRouter noiseRouter, SurfaceRules.RuleSource surfaceRule, List<Climate.ParameterPoint> spawnTarget, int seaLevel, boolean disableMobGeneration, boolean aquifersEnabled, boolean oreVeinsEnabled, boolean useLegacyRandomSource, long salt) {
-   final NoiseSettings noiseSettings;
-   final BlockState defaultBlock;
-   final BlockState defaultFluid;
-   final NoiseRouter noiseRouter;
-   final SurfaceRules.RuleSource surfaceRule;
-   final List<Climate.ParameterPoint> spawnTarget;
-   final int seaLevel;
-   final boolean disableMobGeneration;
-   final boolean aquifersEnabled;
-   final boolean oreVeinsEnabled;
-   final boolean useLegacyRandomSource;
-   final long salt;
-   public static final Codec<NoiseGeneratorSettings> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(NoiseSettings.CODEC.fieldOf("noise").forGetter(NoiseGeneratorSettings::noiseSettings), BlockState.CODEC.fieldOf("default_block").forGetter(NoiseGeneratorSettings::defaultBlock), BlockState.CODEC.fieldOf("default_fluid").forGetter(NoiseGeneratorSettings::defaultFluid), NoiseRouter.CODEC.fieldOf("noise_router").forGetter(NoiseGeneratorSettings::noiseRouter), SurfaceRules.RuleSource.CODEC.fieldOf("surface_rule").forGetter(NoiseGeneratorSettings::surfaceRule), Climate.ParameterPoint.CODEC.listOf().fieldOf("spawn_target").forGetter(NoiseGeneratorSettings::spawnTarget), Codec.INT.fieldOf("sea_level").forGetter(NoiseGeneratorSettings::seaLevel), Codec.BOOL.fieldOf("disable_mob_generation").forGetter(NoiseGeneratorSettings::disableMobGeneration), Codec.BOOL.fieldOf("aquifers_enabled").forGetter(NoiseGeneratorSettings::isAquifersEnabled), Codec.BOOL.fieldOf("ore_veins_enabled").forGetter(NoiseGeneratorSettings::oreVeinsEnabled), Codec.BOOL.fieldOf("legacy_random_source").forGetter(NoiseGeneratorSettings::useLegacyRandomSource), Codec.LONG.optionalFieldOf("salt", 0L).forGetter(NoiseGeneratorSettings::salt)).apply(var0, NoiseGeneratorSettings::new));
+public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState defaultBlock, BlockState defaultFluid, NoiseRouter noiseRouter, SurfaceRules.RuleSource surfaceRule, List<Climate.ParameterPoint> spawnTarget, int seaLevel, boolean disableMobGeneration, boolean aquifersEnabled, boolean oreVeinsEnabled, boolean useLegacyRandomSource) {
+   public static final Codec<NoiseGeneratorSettings> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(NoiseSettings.CODEC.fieldOf("noise").forGetter(NoiseGeneratorSettings::noiseSettings), BlockState.CODEC.fieldOf("default_block").forGetter(NoiseGeneratorSettings::defaultBlock), BlockState.CODEC.fieldOf("default_fluid").forGetter(NoiseGeneratorSettings::defaultFluid), NoiseRouter.CODEC.fieldOf("noise_router").forGetter(NoiseGeneratorSettings::noiseRouter), SurfaceRules.RuleSource.CODEC.fieldOf("surface_rule").forGetter(NoiseGeneratorSettings::surfaceRule), Climate.ParameterPoint.CODEC.listOf().fieldOf("spawn_target").forGetter(NoiseGeneratorSettings::spawnTarget), Codec.INT.fieldOf("sea_level").forGetter(NoiseGeneratorSettings::seaLevel), Codec.BOOL.fieldOf("disable_mob_generation").forGetter(NoiseGeneratorSettings::disableMobGeneration), Codec.BOOL.fieldOf("aquifers_enabled").forGetter(NoiseGeneratorSettings::isAquifersEnabled), Codec.BOOL.fieldOf("ore_veins_enabled").forGetter(NoiseGeneratorSettings::oreVeinsEnabled), Codec.BOOL.fieldOf("legacy_random_source").forGetter(NoiseGeneratorSettings::useLegacyRandomSource)).apply(var0, NoiseGeneratorSettings::new));
    public static final Codec<Holder<NoiseGeneratorSettings>> CODEC;
    public static final ResourceKey<NoiseGeneratorSettings> OVERWORLD;
+   public static final ResourceKey<NoiseGeneratorSettings> LARGE_BIOMES;
    public static final ResourceKey<NoiseGeneratorSettings> AMPLIFIED;
    public static final ResourceKey<NoiseGeneratorSettings> NETHER;
    public static final ResourceKey<NoiseGeneratorSettings> END;
    public static final ResourceKey<NoiseGeneratorSettings> CAVES;
    public static final ResourceKey<NoiseGeneratorSettings> FLOATING_ISLANDS;
 
-   public NoiseGeneratorSettings(NoiseSettings var1, BlockState var2, BlockState var3, NoiseRouter var4, SurfaceRules.RuleSource var5, List<Climate.ParameterPoint> var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11, long var12) {
+   public NoiseGeneratorSettings(NoiseSettings var1, BlockState var2, BlockState var3, NoiseRouter var4, SurfaceRules.RuleSource var5, List<Climate.ParameterPoint> var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11) {
       super();
       this.noiseSettings = var1;
       this.defaultBlock = var2;
@@ -51,7 +39,6 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
       this.aquifersEnabled = var9;
       this.oreVeinsEnabled = var10;
       this.useLegacyRandomSource = var11;
-      this.salt = var12;
    }
 
    /** @deprecated */
@@ -69,8 +56,9 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    }
 
    public static void bootstrap(BootstrapContext<NoiseGeneratorSettings> var0) {
-      var0.register(OVERWORLD, overworld(var0, false));
-      var0.register(AMPLIFIED, overworld(var0, true));
+      var0.register(OVERWORLD, overworld(var0, false, false));
+      var0.register(LARGE_BIOMES, overworld(var0, false, true));
+      var0.register(AMPLIFIED, overworld(var0, true, false));
       var0.register(NETHER, nether(var0));
       var0.register(END, end(var0));
       var0.register(CAVES, caves(var0));
@@ -78,144 +66,37 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    }
 
    private static NoiseGeneratorSettings end(BootstrapContext<?> var0) {
-      return new NoiseGeneratorSettings(NoiseSettings.END_NOISE_SETTINGS, Blocks.END_STONE.defaultBlockState(), Blocks.AIR.defaultBlockState(), NoiseRouterData.end(var0.lookup(Registries.DENSITY_FUNCTION)), SurfaceRuleData.end(), List.of(), 0, true, false, false, true, 0L);
+      return new NoiseGeneratorSettings(NoiseSettings.END_NOISE_SETTINGS, Blocks.END_STONE.defaultBlockState(), Blocks.AIR.defaultBlockState(), NoiseRouterData.end(var0.lookup(Registries.DENSITY_FUNCTION)), SurfaceRuleData.end(), List.of(), 0, true, false, false, true);
    }
 
    private static NoiseGeneratorSettings nether(BootstrapContext<?> var0) {
-      return new NoiseGeneratorSettings(NoiseSettings.NETHER_NOISE_SETTINGS, Blocks.NETHERRACK.defaultBlockState(), Blocks.LAVA.defaultBlockState(), NoiseRouterData.nether(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE)), SurfaceRuleData.nether(), List.of(), 32, false, false, false, true, 0L);
+      return new NoiseGeneratorSettings(NoiseSettings.NETHER_NOISE_SETTINGS, Blocks.NETHERRACK.defaultBlockState(), Blocks.LAVA.defaultBlockState(), NoiseRouterData.nether(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE)), SurfaceRuleData.nether(), List.of(), 32, false, false, false, true);
    }
 
-   private static NoiseGeneratorSettings overworld(BootstrapContext<?> var0, boolean var1) {
-      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.overworld(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE), var1, false), SurfaceRuleData.overworld(), (new OverworldBiomeBuilder()).spawnTarget(), 63, false, true, true, false, 0L);
+   private static NoiseGeneratorSettings overworld(BootstrapContext<?> var0, boolean var1, boolean var2) {
+      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.overworld(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE), var2, var1), SurfaceRuleData.overworld(), (new OverworldBiomeBuilder()).spawnTarget(), 63, false, true, true, false);
    }
 
    private static NoiseGeneratorSettings caves(BootstrapContext<?> var0) {
-      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.caves(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE)), SurfaceRuleData.overworldLike(false, true, true), List.of(), 32, false, false, false, true, 0L);
+      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.caves(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE)), SurfaceRuleData.overworldLike(false, true, true), List.of(), 32, false, false, false, true);
    }
 
    private static NoiseGeneratorSettings floatingIslands(BootstrapContext<?> var0) {
-      return new NoiseGeneratorSettings(NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.floatingIslands(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE)), SurfaceRuleData.overworldLike(false, false, false), List.of(), -64, false, false, false, true, 0L);
+      return new NoiseGeneratorSettings(NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.floatingIslands(var0.lookup(Registries.DENSITY_FUNCTION), var0.lookup(Registries.NOISE)), SurfaceRuleData.overworldLike(false, false, false), List.of(), -64, false, false, false, true);
    }
 
    public static NoiseGeneratorSettings dummy() {
-      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.AIR.defaultBlockState(), NoiseRouterData.none(), SurfaceRuleData.air(), List.of(), 63, true, false, false, false, 0L);
-   }
-
-   public Builder asBuilder() {
-      return new Builder(this);
+      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.AIR.defaultBlockState(), NoiseRouterData.none(), SurfaceRuleData.air(), List.of(), 63, true, false, false, false);
    }
 
    static {
       CODEC = RegistryFileCodec.<Holder<NoiseGeneratorSettings>>create(Registries.NOISE_SETTINGS, DIRECT_CODEC);
       OVERWORLD = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("overworld"));
+      LARGE_BIOMES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("large_biomes"));
       AMPLIFIED = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("amplified"));
       NETHER = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("nether"));
       END = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("end"));
       CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("caves"));
       FLOATING_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("floating_islands"));
-   }
-
-   public static class Builder {
-      private NoiseSettings noiseSettings;
-      private BlockState defaultBlock;
-      private BlockState defaultFluid;
-      private NoiseRouter noiseRouter;
-      private SurfaceRules.RuleSource surfaceRule;
-      private List<Climate.ParameterPoint> spawnTarget;
-      private int seaLevel;
-      private boolean disableMobGeneration;
-      private boolean aquifersEnabled;
-      private boolean oreVeinsEnabled;
-      private boolean useLegacyRandomSource;
-      private long salt;
-
-      public Builder(NoiseGeneratorSettings var1) {
-         super();
-         this.noiseSettings = var1.noiseSettings;
-         this.defaultBlock = var1.defaultBlock;
-         this.defaultFluid = var1.defaultFluid;
-         this.noiseRouter = var1.noiseRouter;
-         this.surfaceRule = var1.surfaceRule;
-         this.spawnTarget = var1.spawnTarget;
-         this.seaLevel = var1.seaLevel;
-         this.disableMobGeneration = var1.disableMobGeneration;
-         this.aquifersEnabled = var1.aquifersEnabled;
-         this.oreVeinsEnabled = var1.oreVeinsEnabled;
-         this.useLegacyRandomSource = var1.useLegacyRandomSource;
-         this.salt = var1.salt;
-      }
-
-      public Builder noiseSettings(NoiseSettings var1) {
-         this.noiseSettings = var1;
-         return this;
-      }
-
-      public Builder defaultBlock(BlockState var1) {
-         this.defaultBlock = var1;
-         return this;
-      }
-
-      public Builder defaultFluid(BlockState var1) {
-         this.defaultFluid = var1;
-         return this;
-      }
-
-      public Builder noiseRouter(NoiseRouter var1) {
-         this.noiseRouter = var1;
-         return this;
-      }
-
-      public Builder surfaceRule(SurfaceRules.RuleSource var1) {
-         this.surfaceRule = var1;
-         return this;
-      }
-
-      public Builder modifySurfaceRule(UnaryOperator<SurfaceRules.RuleSource> var1) {
-         this.surfaceRule = (SurfaceRules.RuleSource)var1.apply(this.surfaceRule);
-         return this;
-      }
-
-      public Builder spawnTarget(List<Climate.ParameterPoint> var1) {
-         this.spawnTarget = var1;
-         return this;
-      }
-
-      public Builder seaLevel(int var1) {
-         this.seaLevel = var1;
-         return this;
-      }
-
-      public int seaLevel() {
-         return this.seaLevel;
-      }
-
-      public Builder disableMobGeneration(boolean var1) {
-         this.disableMobGeneration = var1;
-         return this;
-      }
-
-      public Builder aquifersEnabled(boolean var1) {
-         this.aquifersEnabled = var1;
-         return this;
-      }
-
-      public Builder oreVeinsEnabled(boolean var1) {
-         this.oreVeinsEnabled = var1;
-         return this;
-      }
-
-      public Builder useLegacyRandomSource(boolean var1) {
-         this.useLegacyRandomSource = var1;
-         return this;
-      }
-
-      public Builder salt(long var1) {
-         this.salt = var1;
-         return this;
-      }
-
-      public NoiseGeneratorSettings create() {
-         return new NoiseGeneratorSettings(this.noiseSettings, this.defaultBlock, this.defaultFluid, this.noiseRouter, this.surfaceRule, this.spawnTarget, this.seaLevel, this.disableMobGeneration, this.aquifersEnabled, this.oreVeinsEnabled, this.useLegacyRandomSource, this.salt);
-      }
    }
 }

@@ -27,8 +27,8 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES).add(EntityType.STRIDER, EntityType.BLAZE, EntityType.MAGMA_CUBE);
       this.tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER).addTag(EntityTypeTags.UNDEAD).add(EntityType.AXOLOTL, EntityType.FROG, EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN, EntityType.TURTLE, EntityType.GLOW_SQUID, EntityType.COD, EntityType.PUFFERFISH, EntityType.SALMON, EntityType.SQUID, EntityType.TROPICAL_FISH, EntityType.TADPOLE, EntityType.ARMOR_STAND);
       this.tag(EntityTypeTags.FROG_FOOD).add(EntityType.SLIME, EntityType.MAGMA_CUBE);
-      this.tag(EntityTypeTags.FALL_DAMAGE_IMMUNE).add(EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM, EntityType.SHULKER, EntityType.ALLAY, EntityType.BAT, EntityType.BEE, EntityType.BLAZE, EntityType.CAT, EntityType.CHICKEN, EntityType.GHAST, EntityType.PHANTOM, EntityType.MAGMA_CUBE, EntityType.OCELOT, EntityType.PARROT, EntityType.WITHER, EntityType.BREEZE);
-      this.tag(EntityTypeTags.DISMOUNTS_UNDERWATER).add(EntityType.CAMEL, EntityType.CHICKEN, EntityType.DONKEY, EntityType.HORSE, EntityType.LLAMA, EntityType.MULE, EntityType.PIG, EntityType.RAVAGER, EntityType.SPIDER, EntityType.STRIDER, EntityType.TRADER_LLAMA, EntityType.ZOMBIE_HORSE);
+      this.tag(EntityTypeTags.FALL_DAMAGE_IMMUNE).add(EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM, EntityType.SHULKER, EntityType.ALLAY, EntityType.BAT, EntityType.BEE, EntityType.BLAZE, EntityType.CAT, EntityType.CHICKEN, EntityType.GHAST, EntityType.HAPPY_GHAST, EntityType.PHANTOM, EntityType.MAGMA_CUBE, EntityType.OCELOT, EntityType.PARROT, EntityType.WITHER, EntityType.BREEZE);
+      this.tag(EntityTypeTags.DISMOUNTS_UNDERWATER).add(EntityType.CAMEL, EntityType.CHICKEN, EntityType.DONKEY, EntityType.HAPPY_GHAST, EntityType.HORSE, EntityType.LLAMA, EntityType.MULE, EntityType.PIG, EntityType.RAVAGER, EntityType.SPIDER, EntityType.STRIDER, EntityType.TRADER_LLAMA, EntityType.ZOMBIE_HORSE);
       this.tag(EntityTypeTags.NON_CONTROLLING_RIDER).add(EntityType.SLIME, EntityType.MAGMA_CUBE);
       this.tag(EntityTypeTags.ILLAGER).add(EntityType.EVOKER).add(EntityType.ILLUSIONER).add(EntityType.PILLAGER).add(EntityType.VINDICATOR);
       this.tag(EntityTypeTags.AQUATIC).add(EntityType.TURTLE).add(EntityType.AXOLOTL).add(EntityType.GUARDIAN).add(EntityType.ELDER_GUARDIAN).add(EntityType.COD).add(EntityType.PUFFERFISH).add(EntityType.SALMON).add(EntityType.TROPICAL_FISH).add(EntityType.DOLPHIN).add(EntityType.SQUID).add(EntityType.GLOW_SQUID).add(EntityType.TADPOLE);
@@ -49,6 +49,8 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add(EntityType.SLIME);
       this.tag(EntityTypeTags.BOAT).add(EntityType.OAK_BOAT, EntityType.SPRUCE_BOAT, EntityType.BIRCH_BOAT, EntityType.JUNGLE_BOAT, EntityType.ACACIA_BOAT, EntityType.CHERRY_BOAT, EntityType.DARK_OAK_BOAT, EntityType.PALE_OAK_BOAT, EntityType.MANGROVE_BOAT, EntityType.BAMBOO_RAFT);
       this.tag(EntityTypeTags.CAN_EQUIP_SADDLE).add(EntityType.HORSE, EntityType.SKELETON_HORSE, EntityType.ZOMBIE_HORSE, EntityType.DONKEY, EntityType.MULE, EntityType.PIG, EntityType.STRIDER, EntityType.CAMEL);
+      this.tag(EntityTypeTags.CAN_EQUIP_HARNESS).add(EntityType.HAPPY_GHAST);
       this.tag(EntityTypeTags.CAN_WEAR_HORSE_ARMOR).add(EntityType.HORSE);
+      this.tag(EntityTypeTags.FOLLOWABLE_FRIENDLY_MOBS).add(EntityType.ARMADILLO, EntityType.BEE, EntityType.CAMEL, EntityType.CAT, EntityType.CHICKEN, EntityType.COW, EntityType.DONKEY, EntityType.FOX, EntityType.GOAT, EntityType.HORSE, EntityType.SKELETON_HORSE, EntityType.LLAMA, EntityType.MULE, EntityType.OCELOT, EntityType.PANDA, EntityType.PARROT, EntityType.PIG, EntityType.POLAR_BEAR, EntityType.RABBIT, EntityType.SHEEP, EntityType.SNIFFER, EntityType.STRIDER, EntityType.VILLAGER, EntityType.WOLF);
    }
 }

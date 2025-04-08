@@ -41,7 +41,7 @@ public class ChunkStorage implements AutoCloseable {
 
    public CompoundTag upgradeChunkTag(ResourceKey<Level> var1, Supplier<DimensionDataStorage> var2, CompoundTag var3, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> var4) {
       int var5 = getVersion(var3);
-      if (var5 == SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
+      if (var5 == SharedConstants.getCurrentVersion().dataVersion().version()) {
          return var3;
       } else {
          try {

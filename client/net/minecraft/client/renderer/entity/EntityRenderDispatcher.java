@@ -99,19 +99,13 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
-      if (var1 instanceof AbstractClientPlayer var5) {
-         PlayerSkin.Model var3 = var5.getSkin().model();
+      if (var1 instanceof AbstractClientPlayer var2) {
+         PlayerSkin.Model var3 = var2.getSkin().model();
          EntityRenderer var4 = (EntityRenderer)this.playerRenderers.get(var3);
          return var4 != null ? var4 : (EntityRenderer)this.playerRenderers.get(PlayerSkin.Model.WIDE);
       } else {
-         EntityType var2 = var1.getType();
-         return this.getRenderer(var2);
+         return (EntityRenderer)this.renderers.get(var1.getType());
       }
-   }
-
-   @Nullable
-   public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(EntityType<?> var1) {
-      return (EntityRenderer)this.renderers.get(var1);
    }
 
    public <S extends EntityRenderState> EntityRenderer<?, ? super S> getRenderer(S var1) {

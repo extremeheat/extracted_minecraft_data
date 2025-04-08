@@ -61,7 +61,11 @@ public abstract class GpuTexture implements AutoCloseable {
    public void setTextureFilter(FilterMode var1, FilterMode var2, boolean var3) {
       this.minFilter = var1;
       this.magFilter = var2;
-      this.useMipmaps = var3;
+      this.setUseMipmaps(var3);
+   }
+
+   public void setUseMipmaps(boolean var1) {
+      this.useMipmaps = var1;
    }
 
    public String getLabel() {

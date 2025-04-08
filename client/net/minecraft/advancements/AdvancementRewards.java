@@ -9,7 +9,7 @@ import java.util.Optional;
 import net.minecraft.commands.CacheableFunction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.ServerFunctionManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -40,7 +40,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       boolean var3 = false;
 
       for(ResourceKey var5 : this.loot) {
-         ObjectListIterator var6 = var1.theGame().reloadableRegistries().getLootTable(var5).getRandomItems(var2).iterator();
+         ObjectListIterator var6 = var1.server.reloadableRegistries().getLootTable(var5).getRandomItems(var2).iterator();
 
          while(var6.hasNext()) {
             ItemStack var7 = (ItemStack)var6.next();
@@ -65,8 +65,8 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          var1.awardRecipesByKey(this.recipes);
       }
 
-      ServerFunctionManager var9 = var1.theGame().getFunctions();
-      this.function.flatMap((var1x) -> var1x.get(var9)).ifPresent((var2x) -> var9.execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
+      MinecraftServer var9 = var1.server;
+      this.function.flatMap((var1x) -> var1x.get(var9.getFunctions())).ifPresent((var2x) -> var9.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
    }
 
    public static class Builder {

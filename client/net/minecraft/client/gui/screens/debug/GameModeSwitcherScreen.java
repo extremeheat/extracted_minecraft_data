@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -66,11 +66,9 @@ public class GameModeSwitcherScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (!this.checkToClose()) {
-         var1.pose().pushPose();
          int var5 = this.width / 2 - 62;
          int var6 = this.height / 2 - 31 - 27;
-         var1.blit(RenderType::guiTextured, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
-         var1.pose().popPose();
+         var1.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
          super.render(var1, var2, var3, var4);
          var1.drawCenteredString(this.font, (Component)this.currentlyHovered.getName(), this.width / 2, this.height / 2 - 31 - 20, -1);
          var1.drawCenteredString(this.font, SELECT_KEY, this.width / 2, this.height / 2 + 5, 16777215);
@@ -142,7 +140,7 @@ public class GameModeSwitcherScreen extends Screen {
       CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.GRASS_BLOCK)),
       SURVIVAL(Component.translatable("gameMode.survival"), "gamemode survival", new ItemStack(Items.IRON_SWORD)),
       ADVENTURE(Component.translatable("gameMode.adventure"), "gamemode adventure", new ItemStack(Items.MAP)),
-      SPECTATOR(Component.translatable("gameMode.spectator"), "gamemode spectator", new ItemStack(Items.EXIT_EYE));
+      SPECTATOR(Component.translatable("gameMode.spectator"), "gamemode spectator", new ItemStack(Items.ENDER_EYE));
 
       protected static final GameModeIcon[] VALUES = values();
       private static final int ICON_AREA = 16;
@@ -232,11 +230,11 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       private void drawSlot(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
       }
 
       private void drawSelection(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
       }
    }
 }

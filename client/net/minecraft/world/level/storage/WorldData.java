@@ -2,30 +2,20 @@ package net.minecraft.world.level.storage;
 
 import com.mojang.serialization.Lifecycle;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
-import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.mines.MineEventData;
-import net.minecraft.world.level.mines.SpecialMine;
-import net.minecraft.world.level.mines.WorldEffect;
 
 public interface WorldData {
    int ANVIL_VERSION_ID = 19133;
@@ -118,30 +108,4 @@ public interface WorldData {
    default FeatureFlagSet enabledFeatures() {
       return this.getDataConfiguration().enabledFeatures();
    }
-
-   void unlockEffect(WorldEffect var1);
-
-   boolean isEffectUnlocked(WorldEffect var1);
-
-   Optional<Holder<DimensionType>> hubDimensionType();
-
-   void setHubDimensionType(Holder<DimensionType> var1);
-
-   Iterable<WorldEffect> getUnlockedEffects();
-
-   boolean isSpecialMineUnlocked(SpecialMine var1);
-
-   void unlockSpecialMine(SpecialMine var1);
-
-   void mineCompleted(Optional<SpecialMine> var1, boolean var2);
-
-   Optional<SpecialMine> getNextSpecialMine(RandomSource var1);
-
-   int getMineCrafterLevel();
-
-   int getMineCrafterExp();
-
-   void addExperienceToMineCrafter(int var1);
-
-   Map<ResourceKey<Level>, MineEventData> events();
 }

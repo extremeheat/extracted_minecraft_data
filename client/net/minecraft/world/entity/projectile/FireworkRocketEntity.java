@@ -22,10 +22,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.monster.warden.Warden;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -33,7 +29,6 @@ import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -72,19 +67,6 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       this.setDeltaMovement(this.random.triangle(0.0, 0.002297), 0.05, this.random.triangle(0.0, 0.002297));
       this.lifetime = 10 * var9 + this.random.nextInt(6) + this.random.nextInt(7);
-      if (var1 instanceof ServerLevel var11) {
-         if (var11.isActive(WorldEffects.WARDEN_BOSS_FIGHT)) {
-            TargetingConditions var12 = TargetingConditions.forNonCombat();
-            Player var13 = var11.getNearestPlayer(this.position().x, this.position().y, this.position().z, 16.0, false);
-            if (var13 != null) {
-               Warden var14 = (Warden)var11.getNearestEntity(Warden.class, var12, var13, var13.getX(), var13.getY(), var13.getZ(), var13.getBoundingBox().inflate(16.0));
-               if (var14 != null && var14.getBrain().isMemoryValue(MemoryModuleType.ACTING_STAGE, 3)) {
-                  var14.getBrain().setMemory(MemoryModuleType.ACTING_STAGE, 4);
-               }
-            }
-         }
-      }
-
    }
 
    public FireworkRocketEntity(Level var1, @Nullable Entity var2, double var3, double var5, double var7, ItemStack var9) {

@@ -8,7 +8,7 @@ import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -31,15 +31,15 @@ public class TabButton extends AbstractWidget {
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.blitSprite(RenderType::guiTextured, SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
       Font var5 = Minecraft.getInstance().font;
       int var6 = this.active ? -1 : -6250336;
-      this.renderString(var1, var5, var6);
       if (this.isSelected()) {
          this.renderMenuBackground(var1, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
          this.renderFocusUnderline(var1, var5, var6);
       }
 
+      this.renderString(var1, var5, var6);
    }
 
    protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {

@@ -3,7 +3,7 @@ package net.minecraft.client;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -73,7 +73,7 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
       }
 
       public void draw(GuiGraphics var1, int var2, int var3) {
-         var1.blitSprite(RenderType::guiTextured, this.sprite, var2, var3, this.width, this.height);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var2, var3, this.width, this.height);
       }
 
       // $FF: synthetic method

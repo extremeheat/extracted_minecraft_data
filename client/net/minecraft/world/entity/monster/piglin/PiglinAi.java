@@ -68,7 +68,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -273,7 +272,7 @@ public class PiglinAi {
       if (var1.isAdult()) {
          boolean var4 = isBarterCurrency(var3);
          if (var2 && var4) {
-            throwItems(var1, getBarterResponseItems(var0, var1));
+            throwItems(var1, getBarterResponseItems(var1));
          } else if (!var4) {
             boolean var5 = !var1.equipItemIfPossible(var0, var3).isEmpty();
             if (!var5) {
@@ -338,10 +337,10 @@ public class PiglinAi {
 
    }
 
-   private static List<ItemStack> getBarterResponseItems(ServerLevel var0, Piglin var1) {
-      LootTable var2 = var0.theGame().reloadableRegistries().getLootTable(BuiltInLootTables.PIGLIN_BARTERING);
-      ObjectArrayList var3 = var2.getRandomItems((new LootParams.Builder((ServerLevel)var1.level())).withParameter(LootContextParams.THIS_ENTITY, var1).create(LootContextParamSets.PIGLIN_BARTER));
-      return var3;
+   private static List<ItemStack> getBarterResponseItems(Piglin var0) {
+      LootTable var1 = var0.level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.PIGLIN_BARTERING);
+      ObjectArrayList var2 = var1.getRandomItems((new LootParams.Builder((ServerLevel)var0.level())).withParameter(LootContextParams.THIS_ENTITY, var0).create(LootContextParamSets.PIGLIN_BARTER));
+      return var2;
    }
 
    private static boolean wantsToDance(LivingEntity var0, LivingEntity var1) {
@@ -431,10 +430,10 @@ public class PiglinAi {
    public static void angerNearbyPiglins(ServerLevel var0, Player var1, boolean var2) {
       List var3 = var1.level().getEntitiesOfClass(Piglin.class, var1.getBoundingBox().inflate(16.0));
       var3.stream().filter(PiglinAi::isIdle).filter((var2x) -> !var2 || BehaviorUtils.canSee(var2x, var1)).forEach((var2x) -> {
-         if (!var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && !var0.isActive(WorldEffects.UNIVERSAL_ANGER)) {
-            setAngerTarget(var0, var2x, var1);
-         } else {
+         if (var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             setAngerTargetToNearestTargetablePlayerIfFound(var0, var2x, var1);
+         } else {
+            setAngerTarget(var0, var2x, var1);
          }
 
       });
@@ -496,12 +495,12 @@ public class PiglinAi {
       if (!var1.getBrain().isActive(Activity.AVOID)) {
          if (Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, var2)) {
             if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(var1, var2, 4.0)) {
-               if (var2.getType() != EntityType.PLAYER || !var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && !var0.isActive(WorldEffects.UNIVERSAL_ANGER)) {
-                  setAngerTarget(var0, var1, var2);
-                  broadcastAngerTarget(var0, var1, var2);
-               } else {
+               if (var2.getType() == EntityType.PLAYER && var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
                   setAngerTargetToNearestTargetablePlayerIfFound(var0, var1, var2);
                   broadcastUniversalAnger(var0, var1);
+               } else {
+                  setAngerTarget(var0, var1, var2);
+                  broadcastAngerTarget(var0, var1, var2);
                }
 
             }
@@ -584,7 +583,7 @@ public class PiglinAi {
             dontKillAnyMoreHoglinsForAWhile(var1);
          }
 
-         if (var2.getType() == EntityType.PLAYER && (var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) || var0.isActive(WorldEffects.UNIVERSAL_ANGER))) {
+         if (var2.getType() == EntityType.PLAYER && var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             var1.getBrain().setMemoryWithExpiry(MemoryModuleType.UNIVERSAL_ANGER, true, 600L);
          }
 

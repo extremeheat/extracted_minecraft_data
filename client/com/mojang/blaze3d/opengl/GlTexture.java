@@ -79,4 +79,9 @@ public class GlTexture extends GpuTexture {
       super.setTextureFilter(var1, var2, var3);
       this.modesDirty = true;
    }
+
+   public void setUseMipmaps(boolean var1) {
+      super.setUseMipmaps(var1);
+      this.modesDirty = true;
+   }
 }

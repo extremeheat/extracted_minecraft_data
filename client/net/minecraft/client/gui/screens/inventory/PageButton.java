@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -31,7 +31,7 @@ public class PageButton extends Button {
          var5 = this.isHoveredOrFocused() ? PAGE_BACKWARD_HIGHLIGHTED_SPRITE : PAGE_BACKWARD_SPRITE;
       }
 
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var5, this.getX(), this.getY(), 23, 13);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5, this.getX(), this.getY(), 23, 13);
    }
 
    public void playDownSound(SoundManager var1) {

@@ -55,7 +55,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    }
 
    private static <T> Registry<T> getRegistry(CommandContext<CommandSourceStack> var0, ResourceKey<? extends Registry<T>> var1) {
-      return ((CommandSourceStack)var0.getSource()).theGame().registryAccess().lookupOrThrow(var1);
+      return ((CommandSourceStack)var0.getSource()).getServer().registryAccess().lookupOrThrow(var1);
    }
 
    private static <T> Holder.Reference<T> resolveKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
@@ -76,14 +76,14 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    }
 
    public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      RecipeManager var2 = ((CommandSourceStack)var0.getSource()).theGame().getRecipeManager();
+      RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
       ResourceKey var3 = getRegistryKey(var0, var1, Registries.RECIPE, ERROR_INVALID_RECIPE);
       return (RecipeHolder)var2.byKey(var3).orElseThrow(() -> ERROR_INVALID_RECIPE.create(var3.location()));
    }
 
    public static AdvancementHolder getAdvancement(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       ResourceKey var2 = getRegistryKey(var0, var1, Registries.ADVANCEMENT, ERROR_INVALID_ADVANCEMENT);
-      AdvancementHolder var3 = ((CommandSourceStack)var0.getSource()).theGame().getAdvancements().get(var2.location());
+      AdvancementHolder var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().get(var2.location());
       if (var3 == null) {
          throw ERROR_INVALID_ADVANCEMENT.create(var2.location());
       } else {

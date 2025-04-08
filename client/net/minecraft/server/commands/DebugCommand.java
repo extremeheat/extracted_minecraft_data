@@ -57,7 +57,7 @@ public class DebugCommand {
    }
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.theGame().server();
+      MinecraftServer var1 = var0.getServer();
       if (var1.isTimeProfilerRunning()) {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
@@ -68,7 +68,7 @@ public class DebugCommand {
    }
 
    private static int stop(CommandSourceStack var0) throws CommandSyntaxException {
-      MinecraftServer var1 = var0.theGame().server();
+      MinecraftServer var1 = var0.getServer();
       if (!var1.isTimeProfilerRunning()) {
          throw ERROR_NOT_RUNNING.create();
       } else {
@@ -93,24 +93,25 @@ public class DebugCommand {
          } else {
             CommandContext var5 = var2.getTopContext();
             Collection var6 = FunctionArgument.getFunctions(var5, "name");
-            String var7 = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
-            CommandDispatcher var8 = var1.theGame().getFunctions().getDispatcher();
-            int var9 = 0;
+            MinecraftServer var7 = var1.getServer();
+            String var8 = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
+            CommandDispatcher var9 = var1.getServer().getFunctions().getDispatcher();
+            int var10 = 0;
 
             try {
-               Path var10 = var1.theGame().server().getFile("debug");
-               Files.createDirectories(var10);
-               final PrintWriter var11 = new PrintWriter(Files.newBufferedWriter(var10.resolve(var7), StandardCharsets.UTF_8));
-               Tracer var12 = new Tracer(var11);
-               var4.tracer(var12);
+               Path var11 = var7.getFile("debug");
+               Files.createDirectories(var11);
+               final PrintWriter var12 = new PrintWriter(Files.newBufferedWriter(var11.resolve(var8), StandardCharsets.UTF_8));
+               Tracer var13 = new Tracer(var12);
+               var4.tracer(var13);
 
-               for(final CommandFunction var14 : var6) {
+               for(final CommandFunction var15 : var6) {
                   try {
-                     CommandSourceStack var15 = var1.withSource(var12).withMaximumPermission(2);
-                     InstantiatedFunction var16 = var14.instantiate((CompoundTag)null, var8);
-                     var4.queueNext((new CallFunction<CommandSourceStack>(var16, CommandResultCallback.EMPTY, false) {
+                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
+                     InstantiatedFunction var17 = var15.instantiate((CompoundTag)null, var9);
+                     var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
                         public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
-                           var11.println(var14.id());
+                           var12.println(var15.id());
                            super.execute(var1, var2, var3);
                         }
 
@@ -118,22 +119,22 @@ public class DebugCommand {
                         public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
                            this.execute((CommandSourceStack)var1, var2, var3);
                         }
-                     }).bind(var15));
-                     var9 += var16.entries().size();
-                  } catch (FunctionInstantiationException var17) {
-                     var1.sendFailure(var17.messageComponent());
+                     }).bind(var16));
+                     var10 += var17.entries().size();
+                  } catch (FunctionInstantiationException var18) {
+                     var1.sendFailure(var18.messageComponent());
                   }
                }
-            } catch (IOException | UncheckedIOException var18) {
-               DebugCommand.LOGGER.warn("Tracing failed", var18);
+            } catch (IOException | UncheckedIOException var19) {
+               DebugCommand.LOGGER.warn("Tracing failed", var19);
                var1.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
             }
 
             var4.queueNext((var4x, var5x) -> {
                if (var6.size() == 1) {
-                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.single", var9, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var7), true);
+                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.single", var10, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8), true);
                } else {
-                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var9, var6.size(), var7), true);
+                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var10, var6.size(), var8), true);
                }
 
             });

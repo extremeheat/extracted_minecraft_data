@@ -22,7 +22,6 @@ public class ItemModels {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("bundle/selected_item"), BundleSelectedItemSpecialRenderer.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("select"), SelectItemModel.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("condition"), ConditionalItemModel.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("level_ingredient"), MineIngredientModel.Unbaked.MAP_CODEC);
    }
 
    static {

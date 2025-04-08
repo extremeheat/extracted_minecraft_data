@@ -9,7 +9,7 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -54,7 +54,7 @@ public class AdvancementToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       DisplayInfo var5 = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (var5 != null) {
          List var6 = var2.split(var5.getTitle(), 125);
          int var7 = var5.getType() == AdvancementType.CHALLENGE ? -30465 : -256;

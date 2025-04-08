@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.mines.WorldEffects;
 
 public interface NeutralMob {
    String TAG_ANGER_TIME = "AngerTime";
@@ -74,11 +73,7 @@ public interface NeutralMob {
    }
 
    default boolean isAngryAtAllPlayers(ServerLevel var1) {
-      if (var1.isActive(WorldEffects.UNIVERSAL_ANGER)) {
-         return true;
-      } else {
-         return var1.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && this.isAngry() && this.getPersistentAngerTarget() == null;
-      }
+      return var1.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && this.isAngry() && this.getPersistentAngerTarget() == null;
    }
 
    default boolean isAngry() {

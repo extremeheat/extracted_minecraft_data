@@ -101,7 +101,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       ++this.animTick;
       if (this.status != null && this.narrationRateLimiter.tryAcquire(1)) {
          Component var1 = this.createProgressNarrationMessage();
-         this.minecraft.getNarrator().sayNow(var1);
+         this.minecraft.getNarrator().saySystemNow(var1);
       }
 
    }

@@ -1,17 +1,16 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -25,7 +24,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
@@ -47,6 +45,9 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final int SCROLLER_FULL_HEIGHT = 56;
    private static final int PATTERNS_X = 60;
    private static final int PATTERNS_Y = 13;
+   private static final float BANNER_PATTERN_TEXTURE_SIZE = 64.0F;
+   private static final float BANNER_PATTERN_WIDTH = 21.0F;
+   private static final float BANNER_PATTERN_HEIGHT = 40.0F;
    private ModelPart flag;
    @Nullable
    private BannerPatternLayers resultBannerPatterns;
@@ -85,58 +86,51 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(RenderType::guiTextured, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       Slot var7 = ((LoomMenu)this.menu).getBannerSlot();
       Slot var8 = ((LoomMenu)this.menu).getDyeSlot();
       Slot var9 = ((LoomMenu)this.menu).getPatternSlot();
       Slot var10 = ((LoomMenu)this.menu).getResultSlot();
       if (!var7.hasItem()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
       }
 
       if (!var8.hasItem()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DYE_SLOT_SPRITE, var5 + var8.x, var6 + var8.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DYE_SLOT_SPRITE, var5 + var8.x, var6 + var8.y, 16, 16);
       }
 
       if (!var9.hasItem()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)PATTERN_SLOT_SPRITE, var5 + var9.x, var6 + var9.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PATTERN_SLOT_SPRITE, var5 + var9.x, var6 + var9.y, 16, 16);
       }
 
       int var11 = (int)(41.0F * this.scrollOffs);
       ResourceLocation var12 = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var5 + 119, var6 + 13 + var11, 12, 15);
-      var1.flush();
-      Lighting.setupForFlatItems();
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var5 + 119, var6 + 13 + var11, 12, 15);
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
-         var1.pose().pushPose();
-         var1.pose().translate((float)(var5 + 139), (float)(var6 + 52), 0.0F);
-         var1.pose().scale(24.0F, 24.0F, 1.0F);
-         var1.pose().translate(0.5F, 0.0F, 0.5F);
-         float var13 = 0.6666667F;
-         var1.pose().scale(0.6666667F, 0.6666667F, -0.6666667F);
-         DyeColor var14 = ((BannerItem)var10.getItem().getItem()).getColor();
-         var1.drawSpecial((var3x) -> BannerRenderer.renderPatterns(var1.pose(), var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns));
-         var1.pose().popPose();
+         DyeColor var13 = ((BannerItem)var10.getItem().getItem()).getColor();
+         int var14 = var5 + 141;
+         int var15 = var6 + 8;
+         var1.submitBannerPatternRenderState(this.flag, var13, this.resultBannerPatterns, var14, var15, var14 + 20, var15 + 40);
       } else if (this.hasMaxPatterns) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
       }
 
       if (this.displayPatterns) {
-         int var24 = var5 + 60;
-         int var25 = var6 + 13;
-         List var15 = (this.menu).getSelectablePatterns();
+         int var25 = var5 + 60;
+         int var26 = var6 + 13;
+         List var27 = (this.menu).getSelectablePatterns();
 
          label64:
          for(int var16 = 0; var16 < 4; ++var16) {
             for(int var17 = 0; var17 < 4; ++var17) {
                int var18 = var16 + this.startRow;
                int var19 = var18 * 4 + var17;
-               if (var19 >= var15.size()) {
+               if (var19 >= var27.size()) {
                   break label64;
                }
 
-               int var20 = var24 + var17 * 14;
-               int var21 = var25 + var16 * 14;
+               int var20 = var25 + var17 * 14;
+               int var21 = var26 + var16 * 14;
                boolean var22 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
                ResourceLocation var23;
                if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
@@ -147,29 +141,31 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   var23 = PATTERN_SPRITE;
                }
 
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var23, var20, var21, 14, 14);
-               this.renderPattern(var1, (Holder)var15.get(var19), var20, var21);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var23, var20, var21, 14, 14);
+               TextureAtlasSprite var24 = Sheets.getBannerMaterial((Holder)var27.get(var19)).sprite();
+               this.renderBannerOnButton(var1, var20, var21, var24);
             }
          }
       }
 
-      var1.flush();
       Lighting.setupFor3DItems();
    }
 
-   private void renderPattern(GuiGraphics var1, Holder<BannerPattern> var2, int var3, int var4) {
-      PoseStack var5 = new PoseStack();
-      var5.pushPose();
-      var5.translate((float)var3 + 0.5F, (float)(var4 + 16), 0.0F);
-      var5.scale(6.0F, -6.0F, 1.0F);
-      var5.translate(0.5F, 0.0F, 0.0F);
-      var5.translate(0.5F, 0.5F, 0.5F);
-      float var6 = 0.6666667F;
-      var5.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      BannerPatternLayers var7 = (new BannerPatternLayers.Builder()).add(var2, DyeColor.WHITE).build();
-      var1.drawSpecial((var3x) -> BannerRenderer.renderPatterns(var5, var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7));
-      var5.popPose();
-      var1.flush();
+   private void renderBannerOnButton(GuiGraphics var1, int var2, int var3, TextureAtlasSprite var4) {
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)(var2 + 4), (float)(var3 + 2));
+      float var5 = var4.getU0();
+      float var6 = var5 + (var4.getU1() - var4.getU0()) * 21.0F / 64.0F;
+      float var7 = var4.getV1() - var4.getV0();
+      float var8 = var4.getV0() + var7 / 64.0F;
+      float var9 = var8 + var7 * 40.0F / 64.0F;
+      boolean var10 = true;
+      boolean var11 = true;
+      var1.fill(0, 0, 5, 10, DyeColor.GRAY.getTextureDiffuseColor());
+      var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_DECORATION);
+      var1.blit(var4.atlasLocation(), 0, 0, 5, 10, var5, var6, var8, var9);
+      var1.popGuiLayer();
+      var1.pose().popMatrix();
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {

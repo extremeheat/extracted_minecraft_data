@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
@@ -67,9 +67,9 @@ public class BossHealthOverlay {
    }
 
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
-      var1.blitSprite(RenderType::guiTextured, var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
-         var1.blitSprite(RenderType::guiTextured, var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
       }
 
    }

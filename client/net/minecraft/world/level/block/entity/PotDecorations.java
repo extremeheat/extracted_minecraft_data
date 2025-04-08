@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -14,7 +14,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -56,7 +55,7 @@ public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<
       return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> (Item)var0.orElse(Items.BRICK)).toList();
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       if (!this.equals(EMPTY)) {
          var2.accept(CommonComponents.EMPTY);
          addSideDetailsToTooltip(var2, this.front);

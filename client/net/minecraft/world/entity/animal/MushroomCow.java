@@ -267,11 +267,11 @@ public class MushroomCow extends AbstractCow implements Shearable {
          return this.type;
       }
 
-      public int id() {
+      private int id() {
          return this.id;
       }
 
-      public static Variant byId(int var0) {
+      static Variant byId(int var0) {
          return (Variant)BY_ID.apply(var0);
       }
 

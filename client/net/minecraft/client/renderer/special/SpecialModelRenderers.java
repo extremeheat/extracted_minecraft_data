@@ -37,7 +37,6 @@ public class SpecialModelRenderers {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("decorated_pot"), DecoratedPotSpecialRenderer.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("standing_sign"), StandingSignSpecialRenderer.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("hanging_sign"), HangingSignSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("mob_trophy"), MobTrophySpecialRenderer.Unbaked.MAP_CODEC);
    }
 
    public static Map<Block, SpecialModelRenderer<?>> createBlockRenderers(EntityModelSet var0) {

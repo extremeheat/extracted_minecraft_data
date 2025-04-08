@@ -30,7 +30,6 @@ public class Activity {
    public static final Activity ROAR = register("roar");
    public static final Activity EMERGE = register("emerge");
    public static final Activity DIG = register("dig");
-   public static final Activity ACTING = register("acting");
    private final String name;
    private final int hashCode;
 

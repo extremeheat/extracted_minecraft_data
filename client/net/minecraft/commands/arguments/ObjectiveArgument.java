@@ -32,7 +32,7 @@ public class ObjectiveArgument implements ArgumentType<String> {
 
    public static Objective getObjective(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       String var2 = (String)var0.getArgument(var1, String.class);
-      ServerScoreboard var3 = ((CommandSourceStack)var0.getSource()).theGame().getScoreboard();
+      ServerScoreboard var3 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
       Objective var4 = ((Scoreboard)var3).getObjective(var2);
       if (var4 == null) {
          throw ERROR_OBJECTIVE_NOT_FOUND.create(var2);
@@ -57,7 +57,7 @@ public class ObjectiveArgument implements ArgumentType<String> {
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       Object var3 = var1.getSource();
       if (var3 instanceof CommandSourceStack var4) {
-         return SharedSuggestionProvider.suggest(var4.theGame().getScoreboard().getObjectiveNames(), var2);
+         return SharedSuggestionProvider.suggest(var4.getServer().getScoreboard().getObjectiveNames(), var2);
       } else if (var3 instanceof SharedSuggestionProvider var5) {
          return var5.customSuggestion(var1);
       } else {

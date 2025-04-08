@@ -8,13 +8,13 @@ import net.minecraft.resources.ResourceLocation;
 public class Attributes {
    public static final Holder<Attribute> ARMOR = register("armor", (new RangedAttribute("attribute.name.armor", 0.0, 0.0, 30.0)).setSyncable(true));
    public static final Holder<Attribute> ARMOR_TOUGHNESS = register("armor_toughness", (new RangedAttribute("attribute.name.armor_toughness", 0.0, 0.0, 20.0)).setSyncable(true));
-   public static final Holder<Attribute> EXPERIENCE_GAIN_MODIFIER = register("experience_gain_modifier", new RangedAttribute("attribute.name.experience_gain_modifier", 1.0, 0.0, 2048.0));
    public static final Holder<Attribute> ATTACK_DAMAGE = register("attack_damage", new RangedAttribute("attribute.name.attack_damage", 2.0, 0.0, 2048.0));
    public static final Holder<Attribute> ATTACK_KNOCKBACK = register("attack_knockback", new RangedAttribute("attribute.name.attack_knockback", 0.0, 0.0, 5.0));
    public static final Holder<Attribute> ATTACK_SPEED = register("attack_speed", (new RangedAttribute("attribute.name.attack_speed", 4.0, 0.0, 1024.0)).setSyncable(true));
    public static final Holder<Attribute> BLOCK_BREAK_SPEED = register("block_break_speed", (new RangedAttribute("attribute.name.block_break_speed", 1.0, 0.0, 1024.0)).setSyncable(true));
    public static final Holder<Attribute> BLOCK_INTERACTION_RANGE = register("block_interaction_range", (new RangedAttribute("attribute.name.block_interaction_range", 4.5, 0.0, 64.0)).setSyncable(true));
    public static final Holder<Attribute> BURNING_TIME;
+   public static final Holder<Attribute> CAMERA_DISTANCE;
    public static final Holder<Attribute> EXPLOSION_KNOCKBACK_RESISTANCE;
    public static final Holder<Attribute> ENTITY_INTERACTION_RANGE;
    public static final Holder<Attribute> FALL_DAMAGE_MULTIPLIER;
@@ -39,8 +39,8 @@ public class Attributes {
    public static final Holder<Attribute> SWEEPING_DAMAGE_RATIO;
    public static final Holder<Attribute> TEMPT_RANGE;
    public static final Holder<Attribute> WATER_MOVEMENT_EFFICIENCY;
-   public static final Holder<Attribute> PICKUP_AREA_SIZE;
-   public static final Holder<Attribute> MAX_JUMPS;
+   public static final Holder<Attribute> WAYPOINT_TRANSMIT_RANGE;
+   public static final Holder<Attribute> WAYPOINT_RECEIVE_RANGE;
 
    public Attributes() {
       super();
@@ -56,6 +56,7 @@ public class Attributes {
 
    static {
       BURNING_TIME = register("burning_time", (new RangedAttribute("attribute.name.burning_time", 1.0, 0.0, 1024.0)).setSyncable(true).setSentiment(Attribute.Sentiment.NEGATIVE));
+      CAMERA_DISTANCE = register("camera_distance", (new RangedAttribute("attribute.name.camera_distance", 4.0, 0.0, 32.0)).setSyncable(true));
       EXPLOSION_KNOCKBACK_RESISTANCE = register("explosion_knockback_resistance", (new RangedAttribute("attribute.name.explosion_knockback_resistance", 0.0, 0.0, 1.0)).setSyncable(true));
       ENTITY_INTERACTION_RANGE = register("entity_interaction_range", (new RangedAttribute("attribute.name.entity_interaction_range", 3.0, 0.0, 64.0)).setSyncable(true));
       FALL_DAMAGE_MULTIPLIER = register("fall_damage_multiplier", (new RangedAttribute("attribute.name.fall_damage_multiplier", 1.0, 0.0, 100.0)).setSyncable(true).setSentiment(Attribute.Sentiment.NEGATIVE));
@@ -80,7 +81,7 @@ public class Attributes {
       SWEEPING_DAMAGE_RATIO = register("sweeping_damage_ratio", (new RangedAttribute("attribute.name.sweeping_damage_ratio", 0.0, 0.0, 1.0)).setSyncable(true));
       TEMPT_RANGE = register("tempt_range", new RangedAttribute("attribute.name.tempt_range", 10.0, 0.0, 2048.0));
       WATER_MOVEMENT_EFFICIENCY = register("water_movement_efficiency", (new RangedAttribute("attribute.name.water_movement_efficiency", 0.0, 0.0, 1.0)).setSyncable(true));
-      PICKUP_AREA_SIZE = register("pickup_area_size", (new RangedAttribute("attribute.name.pickup_area_size", 1.0, 0.0, 10.0)).setSyncable(true));
-      MAX_JUMPS = register("max_jumps", (new RangedAttribute("attribute.name.max_jumps", 1.0, 0.0, 100.0)).setSyncable(true));
+      WAYPOINT_TRANSMIT_RANGE = register("waypoint_transmit_range", (new RangedAttribute("attribute.name.waypoint_transmit_range", 0.0, 0.0, 6.0E7)).setSentiment(Attribute.Sentiment.NEUTRAL));
+      WAYPOINT_RECEIVE_RANGE = register("waypoint_receive_range", (new RangedAttribute("attribute.name.waypoint_receive_range", 0.0, 0.0, 6.0E7)).setSentiment(Attribute.Sentiment.NEUTRAL));
    }
 }

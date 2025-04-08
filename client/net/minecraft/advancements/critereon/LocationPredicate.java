@@ -2,17 +2,11 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -20,25 +14,21 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.mines.SpecialMine;
-import net.minecraft.world.level.mines.WorldEffect;
 
-public record LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<ResourceKey<SpecialMine>> specialMine, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid, Optional<Boolean> canSeeSky, List<WorldEffect> worldEffects) {
-   public static final Codec<LocationPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(LocationPredicate.PositionPredicate.CODEC.optionalFieldOf("position").forGetter(LocationPredicate::position), RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(LocationPredicate::biomes), RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(LocationPredicate::structures), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(LocationPredicate::dimension), ResourceKey.codec(Registries.SPECIAL_MINE).optionalFieldOf("special_mine").forGetter(LocationPredicate::specialMine), Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey), LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light), BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block), FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid), Codec.BOOL.optionalFieldOf("can_see_sky").forGetter(LocationPredicate::canSeeSky), WorldEffect.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(LocationPredicate::worldEffects)).apply(var0, LocationPredicate::new));
+public record LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid, Optional<Boolean> canSeeSky) {
+   public static final Codec<LocationPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(LocationPredicate.PositionPredicate.CODEC.optionalFieldOf("position").forGetter(LocationPredicate::position), RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(LocationPredicate::biomes), RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(LocationPredicate::structures), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(LocationPredicate::dimension), Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey), LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light), BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block), FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid), Codec.BOOL.optionalFieldOf("can_see_sky").forGetter(LocationPredicate::canSeeSky)).apply(var0, LocationPredicate::new));
 
-   public LocationPredicate(Optional<PositionPredicate> var1, Optional<HolderSet<Biome>> var2, Optional<HolderSet<Structure>> var3, Optional<ResourceKey<Level>> var4, Optional<ResourceKey<SpecialMine>> var5, Optional<Boolean> var6, Optional<LightPredicate> var7, Optional<BlockPredicate> var8, Optional<FluidPredicate> var9, Optional<Boolean> var10, List<WorldEffect> var11) {
+   public LocationPredicate(Optional<PositionPredicate> var1, Optional<HolderSet<Biome>> var2, Optional<HolderSet<Structure>> var3, Optional<ResourceKey<Level>> var4, Optional<Boolean> var5, Optional<LightPredicate> var6, Optional<BlockPredicate> var7, Optional<FluidPredicate> var8, Optional<Boolean> var9) {
       super();
       this.position = var1;
       this.biomes = var2;
       this.structures = var3;
       this.dimension = var4;
-      this.specialMine = var5;
-      this.smokey = var6;
-      this.light = var7;
-      this.block = var8;
-      this.fluid = var9;
-      this.canSeeSky = var10;
-      this.worldEffects = var11;
+      this.smokey = var5;
+      this.light = var6;
+      this.block = var7;
+      this.fluid = var8;
+      this.canSeeSky = var9;
    }
 
    public boolean matches(ServerLevel var1, double var2, double var4, double var6) {
@@ -47,35 +37,19 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
       } else if (this.dimension.isPresent() && this.dimension.get() != var1.dimension()) {
          return false;
       } else {
-         Optional var10000 = var1.specialMine();
-         Registry var10001 = BuiltInRegistries.SPECIAL_MINE;
-         Objects.requireNonNull(var10001);
-         Optional var8 = var10000.flatMap(var10001::getResourceKey);
-         if (!this.specialMine.isPresent() || !var8.isEmpty() && this.specialMine.get() == var8.get()) {
-            BlockPos var9 = BlockPos.containing(var2, var4, var6);
-            boolean var10 = var1.isLoaded(var9);
-            if (!this.biomes.isPresent() || var10 && ((HolderSet)this.biomes.get()).contains(var1.getBiome(var9))) {
-               if (!this.structures.isPresent() || var10 && var1.structureManager().getStructureWithPieceAt(var9, (HolderSet)this.structures.get()).isValid()) {
-                  if (!this.smokey.isPresent() || var10 && (Boolean)this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var9)) {
-                     if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(var1, var9)) {
-                        return false;
-                     } else if (this.block.isPresent() && !((BlockPredicate)this.block.get()).matches(var1, var9)) {
-                        return false;
-                     } else if (this.fluid.isPresent() && !((FluidPredicate)this.fluid.get()).matches(var1, var9)) {
-                        return false;
-                     } else if (this.canSeeSky.isPresent() && (Boolean)this.canSeeSky.get() != var1.canSeeSky(var9)) {
-                        return false;
-                     } else {
-                        for(WorldEffect var12 : this.worldEffects) {
-                           if (!var1.isActive(var12)) {
-                              return false;
-                           }
-                        }
-
-                        return true;
-                     }
-                  } else {
+         BlockPos var8 = BlockPos.containing(var2, var4, var6);
+         boolean var9 = var1.isLoaded(var8);
+         if (!this.biomes.isPresent() || var9 && ((HolderSet)this.biomes.get()).contains(var1.getBiome(var8))) {
+            if (!this.structures.isPresent() || var9 && var1.structureManager().getStructureWithPieceAt(var8, (HolderSet)this.structures.get()).isValid()) {
+               if (!this.smokey.isPresent() || var9 && (Boolean)this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var8)) {
+                  if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(var1, var8)) {
                      return false;
+                  } else if (this.block.isPresent() && !((BlockPredicate)this.block.get()).matches(var1, var8)) {
+                     return false;
+                  } else if (this.fluid.isPresent() && !((FluidPredicate)this.fluid.get()).matches(var1, var8)) {
+                     return false;
+                  } else {
+                     return !this.canSeeSky.isPresent() || (Boolean)this.canSeeSky.get() == var1.canSeeSky(var8);
                   }
                } else {
                   return false;
@@ -115,13 +89,11 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
       private Optional<HolderSet<Biome>> biomes;
       private Optional<HolderSet<Structure>> structures;
       private Optional<ResourceKey<Level>> dimension;
-      private Optional<ResourceKey<SpecialMine>> specialMine;
       private Optional<Boolean> smokey;
       private Optional<LightPredicate> light;
       private Optional<BlockPredicate> block;
       private Optional<FluidPredicate> fluid;
       private Optional<Boolean> canSeeSky;
-      private List<WorldEffect> effects;
 
       public Builder() {
          super();
@@ -131,13 +103,11 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          this.biomes = Optional.empty();
          this.structures = Optional.empty();
          this.dimension = Optional.empty();
-         this.specialMine = Optional.empty();
          this.smokey = Optional.empty();
          this.light = Optional.empty();
          this.block = Optional.empty();
          this.fluid = Optional.empty();
          this.canSeeSky = Optional.empty();
-         this.effects = new ArrayList();
       }
 
       public static Builder location() {
@@ -190,11 +160,6 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          return this;
       }
 
-      public Builder setSpecialMine(ResourceKey<SpecialMine> var1) {
-         this.specialMine = Optional.of(var1);
-         return this;
-      }
-
       public Builder setLight(LightPredicate.Builder var1) {
          this.light = Optional.of(var1.build());
          return this;
@@ -220,14 +185,9 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          return this;
       }
 
-      public Builder hasWorldEffects(WorldEffect... var1) {
-         this.effects.addAll(Arrays.asList(var1));
-         return this;
-      }
-
       public LocationPredicate build() {
          Optional var1 = LocationPredicate.PositionPredicate.of(this.x, this.y, this.z);
-         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.specialMine, this.smokey, this.light, this.block, this.fluid, this.canSeeSky, List.copyOf(this.effects));
+         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.smokey, this.light, this.block, this.fluid, this.canSeeSky);
       }
    }
 }

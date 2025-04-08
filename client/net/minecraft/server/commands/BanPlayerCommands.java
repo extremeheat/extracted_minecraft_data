@@ -30,7 +30,7 @@ public class BanPlayerCommands {
    }
 
    private static int banPlayers(CommandSourceStack var0, Collection<GameProfile> var1, @Nullable Component var2) throws CommandSyntaxException {
-      UserBanList var3 = var0.playerList().getBans();
+      UserBanList var3 = var0.getServer().getPlayerList().getBans();
       int var4 = 0;
 
       for(GameProfile var6 : var1) {
@@ -39,7 +39,7 @@ public class BanPlayerCommands {
             var3.add(var7);
             ++var4;
             var0.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(var6.getName()), var7.getReason()), true);
-            ServerPlayer var8 = var0.playerList().getPlayer(var6.getId());
+            ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.getId());
             if (var8 != null) {
                var8.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
             }

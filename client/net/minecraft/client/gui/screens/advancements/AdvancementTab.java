@@ -9,7 +9,7 @@ import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.chat.Component;
@@ -87,8 +87,8 @@ public class AdvancementTab {
       }
 
       var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
-      var1.pose().pushPose();
-      var1.pose().translate((float)var2, (float)var3, 0.0F);
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)var2, (float)var3);
       ResourceLocation var4 = (ResourceLocation)this.display.getBackground().map(ClientAsset::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
       int var5 = Mth.floor(this.scrollX);
       int var6 = Mth.floor(this.scrollY);
@@ -97,20 +97,18 @@ public class AdvancementTab {
 
       for(int var9 = -1; var9 <= 15; ++var9) {
          for(int var10 = -1; var10 <= 8; ++var10) {
-            var1.blit(RenderType::guiTextured, var4, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
+            var1.blit(RenderPipelines.GUI_TEXTURED, var4, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
 
       this.root.drawConnectivity(var1, var5, var6, true);
       this.root.drawConnectivity(var1, var5, var6, false);
       this.root.draw(var1, var5, var6);
-      var1.pose().popPose();
+      var1.pose().popMatrix();
       var1.disableScissor();
    }
 
    public void drawTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, -200.0F);
       var1.fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
       boolean var6 = false;
       int var7 = Mth.floor(this.scrollX);
@@ -125,7 +123,6 @@ public class AdvancementTab {
          }
       }
 
-      var1.pose().popPose();
       if (var6) {
          this.fade = Mth.clamp(this.fade + 0.02F, 0.0F, 0.3F);
       } else {

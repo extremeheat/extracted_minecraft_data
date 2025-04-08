@@ -23,7 +23,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.TheGame;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -305,16 +304,15 @@ public class GameTestHelper {
    )
    public ServerPlayer makeMockServerPlayerInLevel() {
       CommonListenerCookie var1 = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
-      TheGame var2 = this.getLevel().theGame();
-      ServerPlayer var3 = new ServerPlayer(var2, this.getLevel(), var1.gameProfile(), var1.clientInformation()) {
+      ServerPlayer var2 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), var1.gameProfile(), var1.clientInformation()) {
          public GameType gameMode() {
             return GameType.CREATIVE;
          }
       };
-      Connection var4 = new Connection(PacketFlow.SERVERBOUND);
-      new EmbeddedChannel(new ChannelHandler[]{var4});
-      var2.playerList().placeNewPlayer(var4, var3, var1);
-      return var3;
+      Connection var3 = new Connection(PacketFlow.SERVERBOUND);
+      new EmbeddedChannel(new ChannelHandler[]{var3});
+      this.getLevel().getServer().getPlayerList().placeNewPlayer(var3, var2, var1);
+      return var2;
    }
 
    public void pullLever(int var1, int var2, int var3) {
@@ -380,7 +378,7 @@ public class GameTestHelper {
    }
 
    public void assertBlockTag(TagKey<Block> var1, BlockPos var2) {
-      this.assertBlockState(var2, (var1x) -> var1x.is(var1), (var1x) -> Component.translatable("test.error.expected_block_tag", var1.location(), var1x.getBlock().getName()));
+      this.assertBlockState(var2, (var1x) -> var1x.is(var1), (var1x) -> Component.translatable("test.error.expected_block_tag", Component.translationArg(var1.location()), var1x.getBlock().getName()));
    }
 
    public void succeedWhenBlockPresent(Block var1, int var2, int var3, int var4) {

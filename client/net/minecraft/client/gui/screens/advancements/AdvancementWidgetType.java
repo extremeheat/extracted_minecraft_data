@@ -5,9 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public enum AdvancementWidgetType {
    OBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_obtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_obtained")),
-   OBTAINED_ACTIVE(ResourceLocation.withDefaultNamespace("advancements/box_obtained_active"), ResourceLocation.withDefaultNamespace("advancements/task_frame_obtained_active"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_obtained")),
-   UNOBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_unobtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_unobtained")),
-   UNOBTAINED_LOCKED(ResourceLocation.withDefaultNamespace("advancements/box_unobtained_locked"), ResourceLocation.withDefaultNamespace("advancements/task_frame_unobtained_locked"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_unobtained_locked"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_unobtained"));
+   UNOBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_unobtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_unobtained"));
 
    private final ResourceLocation boxSprite;
    private final ResourceLocation taskFrameSprite;
@@ -39,6 +37,6 @@ public enum AdvancementWidgetType {
 
    // $FF: synthetic method
    private static AdvancementWidgetType[] $values() {
-      return new AdvancementWidgetType[]{OBTAINED, OBTAINED_ACTIVE, UNOBTAINED, UNOBTAINED_LOCKED};
+      return new AdvancementWidgetType[]{OBTAINED, UNOBTAINED};
    }
 }

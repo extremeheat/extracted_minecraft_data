@@ -14,10 +14,8 @@ public class NoiseData {
    }
 
    public static void bootstrap(BootstrapContext<NormalNoise.NoiseParameters> var0) {
-      register(var0, Noises.TEMPERATURE, -6, 1.5, 0.0, 1.0, 0.0, 0.0, 0.0);
-      register(var0, Noises.VEGETATION, -5, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
-      register(var0, Noises.CONTINENTALNESS, -6, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0);
-      register(var0, Noises.EROSION, -6, 1.0, 1.0, 0.0, 1.0, 1.0);
+      registerBiomeNoises(var0, 0, Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS, Noises.EROSION);
+      registerBiomeNoises(var0, -2, Noises.TEMPERATURE_LARGE, Noises.VEGETATION_LARGE, Noises.CONTINENTALNESS_LARGE, Noises.EROSION_LARGE);
       register(var0, Noises.RIDGE, -7, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0);
       var0.register(Noises.SHIFT, DEFAULT_SHIFT);
       register(var0, Noises.AQUIFER_BARRIER, -3, 1.0);
@@ -70,6 +68,13 @@ public class NoiseData {
       register(var0, Noises.NETHERRACK, -3, 1.0, 0.0, 0.0, 0.35);
       register(var0, Noises.NETHER_WART, -3, 1.0, 0.0, 0.0, 0.9);
       register(var0, Noises.NETHER_STATE_SELECTOR, -4, 1.0);
+   }
+
+   private static void registerBiomeNoises(BootstrapContext<NormalNoise.NoiseParameters> var0, int var1, ResourceKey<NormalNoise.NoiseParameters> var2, ResourceKey<NormalNoise.NoiseParameters> var3, ResourceKey<NormalNoise.NoiseParameters> var4, ResourceKey<NormalNoise.NoiseParameters> var5) {
+      register(var0, var2, -10 + var1, 1.5, 0.0, 1.0, 0.0, 0.0, 0.0);
+      register(var0, var3, -8 + var1, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+      register(var0, var4, -9 + var1, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0);
+      register(var0, var5, -9 + var1, 1.0, 1.0, 0.0, 1.0, 1.0);
    }
 
    private static void register(BootstrapContext<NormalNoise.NoiseParameters> var0, ResourceKey<NormalNoise.NoiseParameters> var1, int var2, double var3, double... var5) {

@@ -28,22 +28,14 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class ThrownEnderpearl extends ThrowableItemProjectile {
-   private long ticketTimer;
-   private boolean wand;
+   private long ticketTimer = 0L;
 
    public ThrownEnderpearl(EntityType<? extends ThrownEnderpearl> var1, Level var2) {
       super(var1, var2);
-      this.ticketTimer = 0L;
    }
 
    public ThrownEnderpearl(Level var1, LivingEntity var2, ItemStack var3) {
       super(EntityType.ENDER_PEARL, var2, var1, var3);
-      this.ticketTimer = 0L;
-   }
-
-   public ThrownEnderpearl(Level var1, LivingEntity var2, ItemStack var3, boolean var4) {
-      this(var1, var2, var3);
-      this.wand = var4;
    }
 
    protected Item getDefaultItem() {
@@ -86,7 +78,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          if (var6 != null) {
             return var6;
          } else {
-            for(ServerLevel var5 : var2.theGame().getAllLevels()) {
+            for(ServerLevel var5 : var2.getServer().getAllLevels()) {
                if (var5 != var2) {
                   var6 = var5.getEntity(var1);
                   if (var6 != null) {
@@ -123,7 +115,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                if (var8 instanceof ServerPlayer) {
                   ServerPlayer var5 = (ServerPlayer)var8;
                   if (var5.connection.isAcceptingMessages()) {
-                     if (!this.wand && this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     if (this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
                         Endermite var6 = EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
                         if (var6 != null) {
                            var6.snapTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());
@@ -139,9 +131,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                      if (var9 != null) {
                         var9.resetFallDistance();
                         var9.resetCurrentImpulseContext();
-                        if (!this.wand) {
-                           var9.hurtServer(var5.serverLevel(), this.damageSources().enderPearl(), 5.0F);
-                        }
+                        var9.hurtServer(var5.serverLevel(), this.damageSources().enderPearl(), 5.0F);
                      }
 
                      this.playSound(var7, var4);

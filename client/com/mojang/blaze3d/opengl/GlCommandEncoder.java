@@ -93,11 +93,8 @@ public class GlCommandEncoder implements CommandEncoder {
    public void clearColorTexture(GpuTexture var1, int var2) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
-      } else if (!var1.getFormat().hasColorAspect()) {
-         throw new IllegalStateException("Trying to clear a non-color texture as color");
-      } else if (var1.isClosed()) {
-         throw new IllegalStateException("Color texture is closed");
       } else {
+         this.verifyColorTexture(var1);
          this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)var1).id, 0, 0, 36160);
          GL11.glClearColor(ARGB.redFloat(var2), ARGB.greenFloat(var2), ARGB.blueFloat(var2), ARGB.alphaFloat(var2));
          GlStateManager._disableScissorTest();
@@ -111,15 +108,9 @@ public class GlCommandEncoder implements CommandEncoder {
    public void clearColorAndDepthTextures(GpuTexture var1, int var2, GpuTexture var3, double var4) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
-      } else if (!var1.getFormat().hasColorAspect()) {
-         throw new IllegalStateException("Trying to clear a non-color texture as color");
-      } else if (!var3.getFormat().hasDepthAspect()) {
-         throw new IllegalStateException("Trying to clear a non-depth texture as depth");
-      } else if (var1.isClosed()) {
-         throw new IllegalStateException("Color texture is closed");
-      } else if (var3.isClosed()) {
-         throw new IllegalStateException("Depth texture is closed");
       } else {
+         this.verifyColorTexture(var1);
+         this.verifyDepthTexture(var3);
          int var6 = ((GlTexture)var1).getFbo(this.device.directStateAccess(), var3);
          GlStateManager._glBindFramebuffer(36160, var6);
          GlStateManager._disableScissorTest();
@@ -132,14 +123,51 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
+   public void clearColorAndDepthTextures(GpuTexture var1, int var2, GpuTexture var3, double var4, int var6, int var7, int var8, int var9) {
+      if (this.inRenderPass) {
+         throw new IllegalStateException("Close the existing render pass before creating a new one!");
+      } else {
+         this.verifyColorTexture(var1);
+         this.verifyDepthTexture(var3);
+         this.verifyRegion(var1, var6, var7, var8, var9);
+         int var10 = ((GlTexture)var1).getFbo(this.device.directStateAccess(), var3);
+         GlStateManager._glBindFramebuffer(36160, var10);
+         GlStateManager._scissorBox(var6, var7, var8, var9);
+         GlStateManager._enableScissorTest();
+         GL11.glClearDepth(var4);
+         GL11.glClearColor(ARGB.redFloat(var2), ARGB.greenFloat(var2), ARGB.blueFloat(var2), ARGB.alphaFloat(var2));
+         GlStateManager._depthMask(true);
+         GlStateManager._colorMask(true, true, true, true);
+         GlStateManager._clear(16640);
+         GlStateManager._glBindFramebuffer(36160, 0);
+      }
+   }
+
+   private void verifyRegion(GpuTexture var1, int var2, int var3, int var4, int var5) {
+      if (var2 >= 0 && var2 < var1.getWidth(0)) {
+         if (var3 >= 0 && var3 < var1.getHeight(0)) {
+            if (var4 <= 0) {
+               throw new IllegalArgumentException("regionWidth should be greater than 0");
+            } else if (var2 + var4 > var1.getWidth(0)) {
+               throw new IllegalArgumentException("regionWidth + regionX should be less than the texture width");
+            } else if (var5 <= 0) {
+               throw new IllegalArgumentException("regionHeight should be greater than 0");
+            } else if (var3 + var5 > var1.getHeight(0)) {
+               throw new IllegalArgumentException("regionWidth + regionX should be less than the texture height");
+            }
+         } else {
+            throw new IllegalArgumentException("regionY should not be outside of the texture");
+         }
+      } else {
+         throw new IllegalArgumentException("regionX should not be outside of the texture");
+      }
+   }
+
    public void clearDepthTexture(GpuTexture var1, double var2) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
-      } else if (!var1.getFormat().hasDepthAspect()) {
-         throw new IllegalStateException("Trying to clear a non-depth texture as depth");
-      } else if (var1.isClosed()) {
-         throw new IllegalStateException("Depth texture is closed");
       } else {
+         this.verifyDepthTexture(var1);
          this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, 0, ((GlTexture)var1).id, 0, 36160);
          GL11.glDrawBuffer(0);
          GL11.glClearDepth(var2);
@@ -149,6 +177,22 @@ public class GlCommandEncoder implements CommandEncoder {
          GL11.glDrawBuffer(36064);
          GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, 0, 0);
          GlStateManager._glBindFramebuffer(36160, 0);
+      }
+   }
+
+   private void verifyColorTexture(GpuTexture var1) {
+      if (!var1.getFormat().hasColorAspect()) {
+         throw new IllegalStateException("Trying to clear a non-color texture as color");
+      } else if (var1.isClosed()) {
+         throw new IllegalStateException("Color texture is closed");
+      }
+   }
+
+   private void verifyDepthTexture(GpuTexture var1) {
+      if (!var1.getFormat().hasDepthAspect()) {
+         throw new IllegalStateException("Trying to clear a non-depth texture as depth");
+      } else if (var1.isClosed()) {
+         throw new IllegalStateException("Depth texture is closed");
       }
    }
 
@@ -546,9 +590,9 @@ public class GlCommandEncoder implements CommandEncoder {
          var20.upload();
       }
 
-      if (var1.scissorState.isEnabled()) {
+      if (var1.isScissorEnabled()) {
          GlStateManager._enableScissorTest();
-         GlStateManager._scissorBox(var1.scissorState.getX(), var1.scissorState.getY(), var1.scissorState.getWidth(), var1.scissorState.getHeight());
+         GlStateManager._scissorBox(var1.getScissorX(), var1.getScissorY(), var1.getScissorWidth(), var1.getScissorHeight());
       } else {
          GlStateManager._disableScissorTest();
       }

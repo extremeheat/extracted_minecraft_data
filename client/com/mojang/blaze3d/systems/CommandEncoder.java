@@ -20,6 +20,8 @@ public interface CommandEncoder {
 
    void clearColorAndDepthTextures(GpuTexture var1, int var2, GpuTexture var3, double var4);
 
+   void clearColorAndDepthTextures(GpuTexture var1, int var2, GpuTexture var3, double var4, int var6, int var7, int var8, int var9);
+
    void clearDepthTexture(GpuTexture var1, double var2);
 
    void writeToBuffer(GpuBuffer var1, ByteBuffer var2, int var3);

@@ -60,7 +60,6 @@ import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.component.ItemExchangeValue;
 import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -92,8 +91,6 @@ public class Item implements FeatureElement, ItemLike {
    public static final ResourceLocation BASE_ATTACK_DAMAGE_ID;
    public static final ResourceLocation BASE_ATTACK_SPEED_ID;
    public static final int DEFAULT_MAX_STACK_SIZE = 64;
-   public static final ItemExchangeValue DEFAULT_EXCHANGE_VALUE;
-   public static final ItemExchangeValue NO_EXCHANGE;
    public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
    protected static final int APPROXIMATELY_INFINITE_USE_DURATION = 72000;
@@ -375,8 +372,6 @@ public class Item implements FeatureElement, ItemLike {
       BY_BLOCK = Maps.newHashMap();
       BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
       BASE_ATTACK_SPEED_ID = ResourceLocation.withDefaultNamespace("base_attack_speed");
-      DEFAULT_EXCHANGE_VALUE = new ItemExchangeValue(0.01F);
-      NO_EXCHANGE = new ItemExchangeValue(0.0F);
    }
 
    public static class Properties {
@@ -417,10 +412,6 @@ public class Item implements FeatureElement, ItemLike {
 
       public Properties stacksTo(int var1) {
          return this.component(DataComponents.MAX_STACK_SIZE, var1);
-      }
-
-      public Properties experienceExchangeValue(float var1) {
-         return this.component(DataComponents.EXCHANGE_VALUE, new ItemExchangeValue(var1));
       }
 
       public Properties durability(int var1) {
@@ -493,7 +484,7 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Properties humanoidArmor(ArmorMaterial var1, ArmorType var2) {
-         return this.durability(var2.getDurability(var1.durability())).attributes(var1.createAttributes(var2)).enchantable(var1.enchantmentValue()).component(DataComponents.EXCHANGE_VALUE, new ItemExchangeValue(var1.experienceExchangeValue() * (float)(var2.getDurability(1) % 10))).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).build()).repairable(var1.repairIngredient());
+         return this.durability(var2.getDurability(var1.durability())).attributes(var1.createAttributes(var2)).enchantable(var1.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).build()).repairable(var1.repairIngredient());
       }
 
       public Properties wolfArmor(ArmorMaterial var1) {
@@ -502,7 +493,7 @@ public class Item implements FeatureElement, ItemLike {
 
       public Properties horseArmor(ArmorMaterial var1) {
          HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).build()).experienceExchangeValue(var1.experienceExchangeValue()).stacksTo(1);
+         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).build()).stacksTo(1);
       }
 
       public Properties trimMaterial(ResourceKey<TrimMaterial> var1) {
@@ -544,11 +535,6 @@ public class Item implements FeatureElement, ItemLike {
 
       public <T> Properties component(DataComponentType<T> var1, T var2) {
          this.components.set(var1, var2);
-         return this;
-      }
-
-      public <T> Properties withoutComponent(DataComponentType<T> var1) {
-         this.components.set(var1, (Object)null);
          return this;
       }
 

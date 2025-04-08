@@ -23,11 +23,14 @@ import org.joml.Vector3fc;
 public class ItemStackRenderState {
    ItemDisplayContext displayContext;
    private int activeLayerCount;
+   private boolean animated;
+   private final List<Object> modelIdentityElements;
    private LayerRenderState[] layers;
 
    public ItemStackRenderState() {
       super();
       this.displayContext = ItemDisplayContext.NONE;
+      this.modelIdentityElements = new ArrayList();
       this.layers = new LayerRenderState[]{new LayerRenderState()};
    }
 
@@ -57,6 +60,23 @@ public class ItemStackRenderState {
       }
 
       this.activeLayerCount = 0;
+      this.animated = false;
+   }
+
+   public void setAnimated() {
+      this.animated = true;
+   }
+
+   public boolean isAnimated() {
+      return this.animated;
+   }
+
+   public void appendModelIdentityElement(Object var1) {
+      this.modelIdentityElements.add(var1);
+   }
+
+   public Object getModelIdentity() {
+      return this.modelIdentityElements;
    }
 
    private LayerRenderState firstLayer() {
@@ -105,16 +125,14 @@ public class ItemStackRenderState {
    public static enum FoilType {
       NONE,
       STANDARD,
-      SPECIAL,
-      WON,
-      LOST;
+      SPECIAL;
 
       private FoilType() {
       }
 
       // $FF: synthetic method
       private static FoilType[] $values() {
-         return new FoilType[]{NONE, STANDARD, SPECIAL, WON, LOST};
+         return new FoilType[]{NONE, STANDARD, SPECIAL};
       }
    }
 

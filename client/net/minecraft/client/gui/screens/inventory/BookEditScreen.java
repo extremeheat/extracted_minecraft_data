@@ -22,7 +22,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -401,7 +401,7 @@ public class BookEditScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
-      var1.blit(RenderType::guiTextured, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
    private void renderCursor(GuiGraphics var1, Pos2i var2, boolean var3) {
@@ -427,7 +427,7 @@ public class BookEditScreen extends Screen {
          int var8 = var6.getY();
          int var9 = var7 + var6.getWidth();
          int var10 = var8 + var6.getHeight();
-         var1.fill(RenderType.guiTextHighlight(), var7, var8, var9, var10, -16776961);
+         var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var7, var8, var9, var10, -16776961);
       }
 
    }

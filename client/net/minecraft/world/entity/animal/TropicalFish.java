@@ -32,7 +32,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -317,22 +316,22 @@ public class TropicalFish extends AbstractSchoolingFish {
          return this.displayName;
       }
 
-      public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-         DyeColor var6 = (DyeColor)var5.getOrDefault(DataComponents.TROPICAL_FISH_BASE_COLOR, TropicalFish.DEFAULT_VARIANT.baseColor());
-         DyeColor var7 = (DyeColor)var5.getOrDefault(DataComponents.TROPICAL_FISH_PATTERN_COLOR, TropicalFish.DEFAULT_VARIANT.patternColor());
-         ChatFormatting[] var8 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
-         int var9 = TropicalFish.COMMON_VARIANTS.indexOf(new Variant(this, var6, var7));
-         if (var9 != -1) {
-            var2.accept(Component.translatable(TropicalFish.getPredefinedName(var9)).withStyle(var8));
+      public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+         DyeColor var5 = (DyeColor)var4.getOrDefault(DataComponents.TROPICAL_FISH_BASE_COLOR, TropicalFish.DEFAULT_VARIANT.baseColor());
+         DyeColor var6 = (DyeColor)var4.getOrDefault(DataComponents.TROPICAL_FISH_PATTERN_COLOR, TropicalFish.DEFAULT_VARIANT.patternColor());
+         ChatFormatting[] var7 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
+         int var8 = TropicalFish.COMMON_VARIANTS.indexOf(new Variant(this, var5, var6));
+         if (var8 != -1) {
+            var2.accept(Component.translatable(TropicalFish.getPredefinedName(var8)).withStyle(var7));
          } else {
-            var2.accept(this.displayName.plainCopy().withStyle(var8));
-            MutableComponent var10 = Component.translatable("color.minecraft." + var6.getName());
-            if (var6 != var7) {
-               var10.append(", ").append((Component)Component.translatable("color.minecraft." + var7.getName()));
+            var2.accept(this.displayName.plainCopy().withStyle(var7));
+            MutableComponent var9 = Component.translatable("color.minecraft." + var5.getName());
+            if (var5 != var6) {
+               var9.append(", ").append((Component)Component.translatable("color.minecraft." + var6.getName()));
             }
 
-            var10.withStyle(var8);
-            var2.accept(var10);
+            var9.withStyle(var7);
+            var2.accept(var9);
          }
       }
 

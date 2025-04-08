@@ -17,6 +17,7 @@ public class BundleSelectedItemSpecialRenderer implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       ItemStack var8 = BundleItem.getSelectedItemStack(var2);
       if (!var8.isEmpty()) {
          var3.appendItemLayers(var1, var8, var4, var5, var6, var7);

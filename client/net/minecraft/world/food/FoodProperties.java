@@ -5,11 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -36,13 +34,8 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
       RandomSource var5 = var2.getRandom();
       var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var4.sound().value(), SoundSource.NEUTRAL, 1.0F, var5.triangle(1.0F, 0.4F));
       if (var2 instanceof Player var6) {
-         if (var6.isActive(PlayerUnlocks.DIRT_CONNOISSEUR) && !var3.is(ItemTags.DIRT)) {
-            var6.hurt(var6.damageSources().starve(), 1.0F);
-            var1.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_HURT, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
-         } else {
-            var6.getFoodData().eat(this);
-            var1.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
-         }
+         var6.getFoodData().eat(this);
+         var1.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
       }
 
    }

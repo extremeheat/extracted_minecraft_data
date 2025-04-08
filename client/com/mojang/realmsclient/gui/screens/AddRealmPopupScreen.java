@@ -1,7 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -12,9 +10,10 @@ import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
@@ -27,11 +26,9 @@ public class AddRealmPopupScreen extends RealmsScreen {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("popup/background");
    private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = ResourceLocation.withDefaultNamespace("icon/trial_available");
    private static final WidgetSprites CROSS_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/cross_button"), ResourceLocation.withDefaultNamespace("widget/cross_button_highlighted"));
-   private static final int BG_TEXTURE_WIDTH = 236;
-   private static final int BG_TEXTURE_HEIGHT = 34;
-   private static final int BG_BORDER_SIZE = 6;
    private static final int IMAGE_WIDTH = 195;
    private static final int IMAGE_HEIGHT = 152;
+   private static final int BG_BORDER_SIZE = 6;
    private static final int BUTTON_SPACING = 4;
    private static final int PADDING = 10;
    private static final int WIDTH = 320;
@@ -95,24 +92,19 @@ public class AddRealmPopupScreen extends RealmsScreen {
 
    public static void renderDiamond(GuiGraphics var0, Button var1) {
       boolean var2 = true;
-      var0.pose().pushPose();
-      var0.pose().translate(0.0F, 0.0F, 110.0F);
-      var0.blitSprite(RenderType::guiTextured, (ResourceLocation)TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
-      var0.pose().popPose();
+      var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.backgroundScreen.render(var1, -1, -1, var4);
-      var1.flush();
-      RenderTarget var5 = this.minecraft.getMainRenderTarget();
-      RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var5.getDepthTexture(), 1.0);
-      this.clearTooltipForNextRenderPass();
+      var1.pushGuiLayer(GuiLayer.SCREEN_POPUP);
       this.renderTransparentBackground(var1);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
-         var1.blit(RenderType::guiTextured, (ResourceLocation)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
+         var1.blit(RenderPipelines.GUI_TEXTURED, (ResourceLocation)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
       }
 
+      var1.popGuiLayer();
    }
 
    private int left() {

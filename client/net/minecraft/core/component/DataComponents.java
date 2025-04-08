@@ -41,9 +41,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.EitherHolder;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.JukeboxPlayable;
-import net.minecraft.world.item.MobTrophyInfo;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.Bees;
@@ -63,7 +61,6 @@ import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.component.InstrumentComponent;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
-import net.minecraft.world.item.component.ItemExchangeValue;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.component.MapDecorations;
@@ -72,7 +69,6 @@ import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.item.component.RoomerinoComponentino;
 import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.component.Tool;
@@ -80,7 +76,6 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.Weapon;
-import net.minecraft.world.item.component.WorldModifiers;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.Recipe;
@@ -89,28 +84,18 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
-import net.minecraft.world.level.block.TrophyType;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.PotDecorations;
-import net.minecraft.world.level.dimension.DimensionSpecialEffects;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.mines.SpecialMine;
 import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class DataComponents {
    static final EncoderCache ENCODER_CACHE = new EncoderCache(512);
    public static final DataComponentType<CustomData> CUSTOM_DATA = register("custom_data", (var0) -> var0.persistent(CustomData.CODEC));
    public static final DataComponentType<Integer> MAX_STACK_SIZE = register("max_stack_size", (var0) -> var0.persistent(ExtraCodecs.intRange(1, 99)).networkSynchronized(ByteBufCodecs.VAR_INT));
-   public static final DataComponentType<ItemExchangeValue> EXCHANGE_VALUE = register("exchange_value", (var0) -> var0.persistent(ItemExchangeValue.CODEC).networkSynchronized(ItemExchangeValue.STREAM_CODEC));
    public static final DataComponentType<Integer> MAX_DAMAGE = register("max_damage", (var0) -> var0.persistent(ExtraCodecs.POSITIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT));
    public static final DataComponentType<Integer> DAMAGE = register("damage", (var0) -> var0.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT));
    public static final DataComponentType<Unit> UNBREAKABLE = register("unbreakable", (var0) -> var0.persistent(Unit.CODEC).networkSynchronized(Unit.STREAM_CODEC));
-   public static final DataComponentType<Unit> WORLD_EFFECT_UNLOCK = register("world_effect_unlock", (var0) -> var0.persistent(Unit.CODEC).networkSynchronized(Unit.STREAM_CODEC));
-   public static final DataComponentType<Unit> WORLD_EFFECT_HINT = register("world_effect_uhint", (var0) -> var0.persistent(Unit.CODEC).networkSynchronized(Unit.STREAM_CODEC));
-   public static final DataComponentType<Unit> MINE_ACTIVE = register("mine_active", (var0) -> var0.persistent(Unit.CODEC).networkSynchronized(Unit.STREAM_CODEC));
-   public static final DataComponentType<SpecialMine> SPECIAL_MINE = register("special_mine", (var0) -> var0.persistent(SpecialMine.CODEC).networkSynchronized(SpecialMine.STREAM_CODEC));
-   public static final DataComponentType<Boolean> MINE_COMPLETED = register("mine_completed", (var0) -> var0.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
    public static final DataComponentType<Component> CUSTOM_NAME = register("custom_name", (var0) -> var0.persistent(ComponentSerialization.CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<Component> ITEM_NAME = register("item_name", (var0) -> var0.persistent(ComponentSerialization.CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<ResourceLocation> ITEM_MODEL = register("item_model", (var0) -> var0.persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).cacheEncoding());
@@ -159,8 +144,6 @@ public class DataComponents {
    public static final DataComponentType<CustomData> BUCKET_ENTITY_DATA = register("bucket_entity_data", (var0) -> var0.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC));
    public static final DataComponentType<CustomData> BLOCK_ENTITY_DATA = register("block_entity_data", (var0) -> var0.persistent(CustomData.CODEC_WITH_ID).networkSynchronized(CustomData.STREAM_CODEC));
    public static final DataComponentType<InstrumentComponent> INSTRUMENT = register("instrument", (var0) -> var0.persistent(InstrumentComponent.CODEC).networkSynchronized(InstrumentComponent.STREAM_CODEC).cacheEncoding());
-   public static final DataComponentType<WorldModifiers> WORLD_MODIFIERS = register("world_modifiers", (var0) -> var0.persistent(WorldModifiers.CODEC).networkSynchronized(WorldModifiers.STREAM_CODEC).cacheEncoding());
-   public static final DataComponentType<ResourceKey<LevelStem>> DIMENSION_ID = register("dimension_id", (var0) -> var0.persistent(ResourceKey.codec(Registries.LEVEL_STEM)).networkSynchronized(ResourceKey.streamCodec(Registries.LEVEL_STEM)).cacheEncoding());
    public static final DataComponentType<ProvidesTrimMaterial> PROVIDES_TRIM_MATERIAL = register("provides_trim_material", (var0) -> var0.persistent(ProvidesTrimMaterial.CODEC).networkSynchronized(ProvidesTrimMaterial.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<OminousBottleAmplifier> OMINOUS_BOTTLE_AMPLIFIER = register("ominous_bottle_amplifier", (var0) -> var0.persistent(OminousBottleAmplifier.CODEC).networkSynchronized(OminousBottleAmplifier.STREAM_CODEC));
    public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = register("jukebox_playable", (var0) -> var0.persistent(JukeboxPlayable.CODEC).networkSynchronized(JukeboxPlayable.STREAM_CODEC));
@@ -180,7 +163,6 @@ public class DataComponents {
    public static final DataComponentType<LockCode> LOCK = register("lock", (var0) -> var0.persistent(LockCode.CODEC));
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", (var0) -> var0.persistent(SeededContainerLoot.CODEC));
    public static final DataComponentType<Holder<SoundEvent>> BREAK_SOUND = register("break_sound", (var0) -> var0.persistent(SoundEvent.CODEC).networkSynchronized(SoundEvent.STREAM_CODEC).cacheEncoding());
-   public static final DataComponentType<RoomerinoComponentino> ROOM = register("instant_room", (var0) -> var0.persistent(RoomerinoComponentino.CODEC).networkSynchronized(RoomerinoComponentino.STREAM_CODEC));
    public static final DataComponentType<Holder<VillagerType>> VILLAGER_VARIANT = register("villager/variant", (var0) -> var0.persistent(VillagerType.CODEC).networkSynchronized(VillagerType.STREAM_CODEC));
    public static final DataComponentType<Holder<WolfVariant>> WOLF_VARIANT = register("wolf/variant", (var0) -> var0.persistent(WolfVariant.CODEC).networkSynchronized(WolfVariant.STREAM_CODEC));
    public static final DataComponentType<Holder<WolfSoundVariant>> WOLF_SOUND_VARIANT = register("wolf/sound_variant", (var0) -> var0.persistent(WolfSoundVariant.CODEC).networkSynchronized(WolfSoundVariant.STREAM_CODEC));
@@ -205,9 +187,6 @@ public class DataComponents {
    public static final DataComponentType<DyeColor> CAT_COLLAR = register("cat/collar", (var0) -> var0.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyeColor> SHEEP_COLOR = register("sheep/color", (var0) -> var0.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyeColor> SHULKER_COLOR = register("shulker/color", (var0) -> var0.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
-   public static final DataComponentType<DimensionSpecialEffects.Sky> SKY = register("sky", (var0) -> var0.persistent(DimensionSpecialEffects.Sky.CODEC).networkSynchronized(DimensionSpecialEffects.Sky.STREAM_CODEC));
-   public static final DataComponentType<TrophyType> TROPHY_TYPE = register("trophy/type", (var0) -> var0.persistent(TrophyType.CODEC).networkSynchronized(TrophyType.STREAM_CODEC));
-   public static final DataComponentType<MobTrophyInfo> MOB_TROPHY_TYPE = register("mob_trophy/type", (var0) -> var0.persistent(MobTrophyInfo.CODEC).networkSynchronized(MobTrophyInfo.STREAM_CODEC));
    public static final DataComponentMap COMMON_ITEM_COMPONENTS;
 
    public DataComponents() {
@@ -223,6 +202,6 @@ public class DataComponents {
    }
 
    static {
-      COMMON_ITEM_COMPONENTS = DataComponentMap.builder().set(MAX_STACK_SIZE, 64).set(LORE, ItemLore.EMPTY).set(ENCHANTMENTS, ItemEnchantments.EMPTY).set(REPAIR_COST, 0).set(ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).set(RARITY, Rarity.COMMON).set(BREAK_SOUND, SoundEvents.ITEM_BREAK).set(TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).set(EXCHANGE_VALUE, Item.NO_EXCHANGE).build();
+      COMMON_ITEM_COMPONENTS = DataComponentMap.builder().set(MAX_STACK_SIZE, 64).set(LORE, ItemLore.EMPTY).set(ENCHANTMENTS, ItemEnchantments.EMPTY).set(REPAIR_COST, 0).set(ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).set(RARITY, Rarity.COMMON).set(BREAK_SOUND, SoundEvents.ITEM_BREAK).set(TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).build();
    }
 }

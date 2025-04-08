@@ -18,7 +18,6 @@ import net.minecraft.network.chat.numbers.NumberFormatType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.TicketType;
-import net.minecraft.server.players.PlayerUnlock;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatType;
 import net.minecraft.util.valueproviders.FloatProviderType;
@@ -113,10 +112,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifierType;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.mines.MineEvent;
-import net.minecraft.world.level.mines.SpecialMine;
-import net.minecraft.world.level.mines.WorldEffect;
-import net.minecraft.world.level.mines.WorldEffectSet;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
@@ -181,7 +176,6 @@ public class Registries {
    public static final ResourceKey<Registry<NumberFormatType<?>>> NUMBER_FORMAT_TYPE = createRegistryKey("number_format_type");
    public static final ResourceKey<Registry<ParticleType<?>>> PARTICLE_TYPE = createRegistryKey("particle_type");
    public static final ResourceKey<Registry<PlacementModifierType<?>>> PLACEMENT_MODIFIER_TYPE = createRegistryKey("worldgen/placement_modifier_type");
-   public static final ResourceKey<Registry<PlayerUnlock>> PLAYER_UNLOCK = createRegistryKey("player_unlock");
    public static final ResourceKey<Registry<PoiType>> POINT_OF_INTEREST_TYPE = createRegistryKey("point_of_interest_type");
    public static final ResourceKey<Registry<MapCodec<? extends PoolAliasBinding>>> POOL_ALIAS_BINDING = createRegistryKey("worldgen/pool_alias_binding");
    public static final ResourceKey<Registry<PositionSourceType<?>>> POSITION_SOURCE_TYPE = createRegistryKey("position_source_type");
@@ -229,10 +223,6 @@ public class Registries {
    public static final ResourceKey<Registry<FlatLevelGeneratorPreset>> FLAT_LEVEL_GENERATOR_PRESET = createRegistryKey("worldgen/flat_level_generator_preset");
    public static final ResourceKey<Registry<FrogVariant>> FROG_VARIANT = createRegistryKey("frog_variant");
    public static final ResourceKey<Registry<Instrument>> INSTRUMENT = createRegistryKey("instrument");
-   public static final ResourceKey<Registry<SpecialMine>> SPECIAL_MINE = createRegistryKey("special_mine");
-   public static final ResourceKey<Registry<MapCodec<? extends MineEvent>>> MINE_EVENT_TYPE = createRegistryKey("mine_event_type");
-   public static final ResourceKey<Registry<WorldEffect>> WORLD_EFFECT = createRegistryKey("world_effect");
-   public static final ResourceKey<Registry<WorldEffectSet>> WORLD_EFFECT_SET = createRegistryKey("world_effect_set");
    public static final ResourceKey<Registry<JukeboxSong>> JUKEBOX_SONG = createRegistryKey("jukebox_song");
    public static final ResourceKey<Registry<MultiNoiseBiomeSourceParameterList>> MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST = createRegistryKey("worldgen/multi_noise_biome_source_parameter_list");
    public static final ResourceKey<Registry<NoiseGeneratorSettings>> NOISE_SETTINGS = createRegistryKey("worldgen/noise_settings");

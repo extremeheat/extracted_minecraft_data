@@ -25,7 +25,6 @@ import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartBehavior;
 import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -196,10 +195,6 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
    public abstract S createRenderState();
 
-   public S createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable Level var1) {
-      return (S)this.createRenderState();
-   }
-
    public final S createRenderState(T var1, float var2) {
       EntityRenderState var3 = this.reusedState;
       this.extractRenderState(var1, var3, var2);
@@ -325,7 +320,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    private static Entity getServerSideEntity(Entity var0) {
       IntegratedServer var1 = Minecraft.getInstance().getSingleplayerServer();
       if (var1 != null) {
-         ServerLevel var2 = var1.theGame().getLevel(var0.level().dimension());
+         ServerLevel var2 = var1.getLevel(var0.level().dimension());
          if (var2 != null) {
             return var2.getEntity(var0.getId());
          }

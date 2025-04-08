@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.state;
 
 public class PufferfishRenderState extends LivingEntityRenderState {
-   public int puffState = 2;
+   public int puffState;
 
    public PufferfishRenderState() {
       super();

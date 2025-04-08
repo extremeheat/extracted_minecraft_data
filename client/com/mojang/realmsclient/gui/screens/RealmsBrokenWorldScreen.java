@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -198,12 +198,12 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
       if (var6) {
          float var14 = 0.9F + 0.1F * Mth.cos((float)this.animTick * 0.2F);
-         var1.blit(RenderType::guiTextured, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
       } else {
          int var15 = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
-         var1.blit(RenderType::guiTextured, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
       }
 
       var1.drawCenteredString(this.font, (String)var7, var2 + 40, var3 + 66, -1);

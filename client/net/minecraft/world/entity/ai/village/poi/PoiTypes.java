@@ -99,7 +99,7 @@ public class PoiTypes {
       register(var0, BEEHIVE, getBlockStates(Blocks.BEEHIVE), 0, 1);
       register(var0, BEE_NEST, getBlockStates(Blocks.BEE_NEST), 0, 1);
       register(var0, NETHER_PORTAL, getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
-      register(var0, LODESTONE, getBlockStates(Blocks.LODESTONE), 1, 1);
+      register(var0, LODESTONE, getBlockStates(Blocks.LODESTONE), 0, 1);
       return register(var0, LIGHTNING_ROD, getBlockStates(Blocks.LIGHTNING_ROD), 0, 1);
    }
 

@@ -385,7 +385,7 @@ public class Armadillo extends Animal {
          }
       };
 
-      public static final Codec<ArmadilloState> CODEC = StringRepresentable.<ArmadilloState>fromEnum(ArmadilloState::values);
+      static final Codec<ArmadilloState> CODEC = StringRepresentable.<ArmadilloState>fromEnum(ArmadilloState::values);
       private static final IntFunction<ArmadilloState> BY_ID = ByIdMap.<ArmadilloState>continuous(ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, ArmadilloState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ArmadilloState::id);
       private final String name;

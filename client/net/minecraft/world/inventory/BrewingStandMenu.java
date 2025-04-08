@@ -1,13 +1,11 @@
 package net.minecraft.world.inventory;
 
-import java.util.List;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -35,36 +33,20 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    private final ContainerData brewingStandData;
    private final Slot ingredientSlot;
 
-   public BrewingStandMenu(int var1, Inventory var2, List<Integer> var3) {
+   public BrewingStandMenu(int var1, Inventory var2) {
       this(var1, var2, new SimpleContainer(5), new SimpleContainerData(2));
    }
 
-   public BrewingStandMenu(int var1, final Inventory var2, Container var3, ContainerData var4) {
+   public BrewingStandMenu(int var1, Inventory var2, Container var3, ContainerData var4) {
       super(MenuType.BREWING_STAND, var1);
       checkContainerSize(var3, 5);
       checkContainerDataCount(var4, 2);
       this.brewingStand = var3;
       this.brewingStandData = var4;
-      PotionBrewing var5 = var2.getPlayer().level().potionBrewing();
-      this.addSlot(new PotionSlot(var3, 0, 56, 51) {
-         public boolean mayPlace(ItemStack var1) {
-            return var2.getPlayer().isActive(PlayerUnlocks.MASS_PRODUCTION);
-         }
-
-         public boolean isActive() {
-            return var2.getPlayer().isActive(PlayerUnlocks.MASS_PRODUCTION) && super.isActive();
-         }
-      });
+      PotionBrewing var5 = var2.player.level().potionBrewing();
+      this.addSlot(new PotionSlot(var3, 0, 56, 51));
       this.addSlot(new PotionSlot(var3, 1, 79, 58));
-      this.addSlot(new PotionSlot(var3, 2, 102, 51) {
-         public boolean mayPlace(ItemStack var1) {
-            return var2.getPlayer().isActive(PlayerUnlocks.MASS_PRODUCTION);
-         }
-
-         public boolean isActive() {
-            return var2.getPlayer().isActive(PlayerUnlocks.MASS_PRODUCTION) && super.isActive();
-         }
-      });
+      this.addSlot(new PotionSlot(var3, 2, 102, 51));
       this.ingredientSlot = this.addSlot(new IngredientsSlot(var5, var3, 3, 79, 17));
       this.addSlot(new FuelSlot(var3, 4, 17, 17));
       this.addDataSlots(var4);

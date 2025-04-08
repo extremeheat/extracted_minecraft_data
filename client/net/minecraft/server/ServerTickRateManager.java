@@ -13,11 +13,11 @@ public class ServerTickRateManager extends TickRateManager {
    private long sprintTimeSpend = 0L;
    private long scheduledCurrentSprintTicks = 0L;
    private boolean previousIsFrozen = false;
-   private final TheGame theGame;
+   private final MinecraftServer server;
 
-   public ServerTickRateManager(TheGame var1) {
+   public ServerTickRateManager(MinecraftServer var1) {
       super();
-      this.theGame = var1;
+      this.server = var1;
    }
 
    public boolean isSprinting() {
@@ -30,11 +30,11 @@ public class ServerTickRateManager extends TickRateManager {
    }
 
    private void updateStateToClients() {
-      this.theGame.playerList().broadcastAll(ClientboundTickingStatePacket.from(this));
+      this.server.getPlayerList().broadcastAll(ClientboundTickingStatePacket.from(this));
    }
 
    private void updateStepTicks() {
-      this.theGame.playerList().broadcastAll(ClientboundTickingStepPacket.from(this));
+      this.server.getPlayerList().broadcastAll(ClientboundTickingStepPacket.from(this));
    }
 
    public boolean stepGameIfPaused(int var1) {
@@ -83,10 +83,10 @@ public class ServerTickRateManager extends TickRateManager {
       String var6 = String.format("%.2f", var1 == 0L ? (double)this.millisecondsPerTick() : var3 / (double)var1);
       this.scheduledCurrentSprintTicks = 0L;
       this.sprintTimeSpend = 0L;
-      this.theGame.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", var5, var6), true);
+      this.server.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", var5, var6), true);
       this.remainingSprintTicks = 0L;
       this.setFrozen(this.previousIsFrozen);
-      this.theGame.server().onTickRateChanged(this.theGame);
+      this.server.onTickRateChanged();
    }
 
    public boolean checkShouldSprintThisTick() {
@@ -108,7 +108,7 @@ public class ServerTickRateManager extends TickRateManager {
 
    public void setTickRate(float var1) {
       super.setTickRate(var1);
-      this.theGame.server().onTickRateChanged(this.theGame);
+      this.server.onTickRateChanged();
       this.updateStateToClients();
    }
 

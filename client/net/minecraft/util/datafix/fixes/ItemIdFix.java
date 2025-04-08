@@ -283,7 +283,7 @@ public class ItemIdFix extends DataFix {
       var0.put(378, "minecraft:magma_cream");
       var0.put(379, "minecraft:brewing_stand");
       var0.put(380, "minecraft:cauldron");
-      var0.put(381, "minecraft:exit_eye");
+      var0.put(381, "minecraft:ender_eye");
       var0.put(382, "minecraft:speckled_melon");
       var0.put(383, "minecraft:spawn_egg");
       var0.put(384, "minecraft:experience_bottle");

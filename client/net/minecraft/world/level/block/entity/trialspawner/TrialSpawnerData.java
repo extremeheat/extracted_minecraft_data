@@ -274,7 +274,7 @@ public class TrialSpawnerData {
       if (this.dispensing != null) {
          return this.dispensing;
       } else {
-         LootTable var4 = var1.theGame().reloadableRegistries().getLootTable(var2.itemsToDropWhenOminous());
+         LootTable var4 = var1.getServer().reloadableRegistries().getLootTable(var2.itemsToDropWhenOminous());
          LootParams var5 = (new LootParams.Builder(var1)).create(LootContextParamSets.EMPTY);
          long var6 = lowResolutionPosition(var1, var3);
          ObjectArrayList var8 = var4.getRandomItems(var5, var6);

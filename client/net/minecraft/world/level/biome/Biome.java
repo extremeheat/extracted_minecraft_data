@@ -2,6 +2,7 @@ package net.minecraft.world.level.biome;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import java.util.Optional;
@@ -33,8 +34,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public final class Biome {
-   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
-   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects)).apply(var0, (var0x, var1) -> new Biome(var0x, var1, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
+   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
+   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects)).apply(var0, (var0x, var1) -> new Biome(var0x, var1, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
    public static final Codec<Holder<Biome>> CODEC;
    public static final Codec<HolderSet<Biome>> LIST_CODEC;
    private static final PerlinSimplexNoise TEMPERATURE_NOISE;
@@ -58,7 +59,7 @@ public final class Biome {
          return var1;
       }));
 
-   public Biome(ClimateSettings var1, BiomeSpecialEffects var2, BiomeGenerationSettings var3, MobSpawnSettings var4) {
+   Biome(ClimateSettings var1, BiomeSpecialEffects var2, BiomeGenerationSettings var3, MobSpawnSettings var4) {
       super();
       this.climateSettings = var1;
       this.generationSettings = var3;
@@ -87,7 +88,7 @@ public final class Biome {
    }
 
    private float getHeightAdjustedTemperature(BlockPos var1, int var2) {
-      float var3 = this.climateSettings.temperatureModifier().modifyTemperature(var1, this.getBaseTemperature());
+      float var3 = this.climateSettings.temperatureModifier.modifyTemperature(var1, this.getBaseTemperature());
       int var4 = var2 + 17;
       if (var1.getY() > var4) {
          float var5 = (float)(TEMPERATURE_NOISE.getValue((double)((float)var1.getX() / 8.0F), (double)((float)var1.getZ() / 8.0F), false) * 8.0);
@@ -189,8 +190,8 @@ public final class Biome {
    }
 
    private int getGrassColorFromTexture() {
-      double var1 = (double)Mth.clamp(this.climateSettings.temperature(), 0.0F, 1.0F);
-      double var3 = (double)Mth.clamp(this.climateSettings.downfall(), 0.0F, 1.0F);
+      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return GrassColor.get(var1, var3);
    }
 
@@ -199,8 +200,8 @@ public final class Biome {
    }
 
    private int getFoliageColorFromTexture() {
-      double var1 = (double)Mth.clamp(this.climateSettings.temperature(), 0.0F, 1.0F);
-      double var3 = (double)Mth.clamp(this.climateSettings.downfall(), 0.0F, 1.0F);
+      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return FoliageColor.get(var1, var3);
    }
 
@@ -209,13 +210,13 @@ public final class Biome {
    }
 
    private int getDryFoliageColorFromTexture() {
-      double var1 = (double)Mth.clamp(this.climateSettings.temperature(), 0.0F, 1.0F);
-      double var3 = (double)Mth.clamp(this.climateSettings.downfall(), 0.0F, 1.0F);
+      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return DryFoliageColor.get(var1, var3);
    }
 
    public float getBaseTemperature() {
-      return this.climateSettings.temperature();
+      return this.climateSettings.temperature;
    }
 
    public BiomeSpecialEffects getSpecialEffects() {
@@ -252,21 +253,6 @@ public final class Biome {
 
    public float getBackgroundMusicVolume() {
       return this.specialEffects.getBackgroundMusicVolume();
-   }
-
-   public BiomeBuilder asBuilder() {
-      return (new BiomeBuilder()).climate(this.climateSettings.asBuilder()).specialEffects(this.specialEffects.asBuilder()).mobSpawnSettings(this.mobSettings.asBuilder()).generationSettings(this.generationSettings.asBuilder());
-   }
-
-   public boolean equals(@Nullable Object var1) {
-      if (var1 == null) {
-         return false;
-      } else if (!var1.getClass().equals(this.getClass())) {
-         return false;
-      } else {
-         Biome var2 = (Biome)var1;
-         return var2.climateSettings.equals(this.climateSettings) && var2.mobSettings.equals(this.mobSettings) && var2.generationSettings.equals(this.generationSettings) && var2.specialEffects.equals(this.specialEffects);
-      }
    }
 
    static {
@@ -341,6 +327,89 @@ public final class Biome {
       // $FF: synthetic method
       private static TemperatureModifier[] $values() {
          return new TemperatureModifier[]{NONE, FROZEN};
+      }
+   }
+
+   public static class BiomeBuilder {
+      private boolean hasPrecipitation = true;
+      @Nullable
+      private Float temperature;
+      private TemperatureModifier temperatureModifier;
+      @Nullable
+      private Float downfall;
+      @Nullable
+      private BiomeSpecialEffects specialEffects;
+      @Nullable
+      private MobSpawnSettings mobSpawnSettings;
+      @Nullable
+      private BiomeGenerationSettings generationSettings;
+
+      public BiomeBuilder() {
+         super();
+         this.temperatureModifier = Biome.TemperatureModifier.NONE;
+      }
+
+      public BiomeBuilder hasPrecipitation(boolean var1) {
+         this.hasPrecipitation = var1;
+         return this;
+      }
+
+      public BiomeBuilder temperature(float var1) {
+         this.temperature = var1;
+         return this;
+      }
+
+      public BiomeBuilder downfall(float var1) {
+         this.downfall = var1;
+         return this;
+      }
+
+      public BiomeBuilder specialEffects(BiomeSpecialEffects var1) {
+         this.specialEffects = var1;
+         return this;
+      }
+
+      public BiomeBuilder mobSpawnSettings(MobSpawnSettings var1) {
+         this.mobSpawnSettings = var1;
+         return this;
+      }
+
+      public BiomeBuilder generationSettings(BiomeGenerationSettings var1) {
+         this.generationSettings = var1;
+         return this;
+      }
+
+      public BiomeBuilder temperatureAdjustment(TemperatureModifier var1) {
+         this.temperatureModifier = var1;
+         return this;
+      }
+
+      public Biome build() {
+         if (this.temperature != null && this.downfall != null && this.specialEffects != null && this.mobSpawnSettings != null && this.generationSettings != null) {
+            return new Biome(new ClimateSettings(this.hasPrecipitation, this.temperature, this.temperatureModifier, this.downfall), this.specialEffects, this.generationSettings, this.mobSpawnSettings);
+         } else {
+            throw new IllegalStateException("You are missing parameters to build a proper biome\n" + String.valueOf(this));
+         }
+      }
+
+      public String toString() {
+         boolean var10000 = this.hasPrecipitation;
+         return "BiomeBuilder{\nhasPrecipitation=" + var10000 + ",\ntemperature=" + this.temperature + ",\ntemperatureModifier=" + String.valueOf(this.temperatureModifier) + ",\ndownfall=" + this.downfall + ",\nspecialEffects=" + String.valueOf(this.specialEffects) + ",\nmobSpawnSettings=" + String.valueOf(this.mobSpawnSettings) + ",\ngenerationSettings=" + String.valueOf(this.generationSettings) + ",\n}";
+      }
+   }
+
+   static record ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
+      final float temperature;
+      final TemperatureModifier temperatureModifier;
+      final float downfall;
+      public static final MapCodec<ClimateSettings> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("has_precipitation").forGetter((var0x) -> var0x.hasPrecipitation), Codec.FLOAT.fieldOf("temperature").forGetter((var0x) -> var0x.temperature), Biome.TemperatureModifier.CODEC.optionalFieldOf("temperature_modifier", Biome.TemperatureModifier.NONE).forGetter((var0x) -> var0x.temperatureModifier), Codec.FLOAT.fieldOf("downfall").forGetter((var0x) -> var0x.downfall)).apply(var0, ClimateSettings::new));
+
+      ClimateSettings(boolean var1, float var2, TemperatureModifier var3, float var4) {
+         super();
+         this.hasPrecipitation = var1;
+         this.temperature = var2;
+         this.temperatureModifier = var3;
+         this.downfall = var4;
       }
    }
 }

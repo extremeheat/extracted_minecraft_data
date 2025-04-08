@@ -1,7 +1,5 @@
 package net.minecraft.client.gui.components.debugchart;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
@@ -10,16 +8,13 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ResultField;
 
 public class ProfilerPieChart {
-   private static final int RADIUS = 105;
+   public static final int RADIUS = 105;
+   public static final int PIE_CHART_THICKNESS = 10;
    private static final int MARGIN = 5;
-   private static final int CHART_Z_OFFSET = 10;
    private final Font font;
    @Nullable
    private ProfileResults profilerPieChartResults;
@@ -54,45 +49,7 @@ public class ProfilerPieChart {
          boolean var10 = true;
          int var11 = var9 - 62 - 5;
          var1.fill(var5 - 5, var11 - 62 - 5, var6 + 5, var8 + 5, -1873784752);
-         var1.drawSpecial((var4x) -> {
-            double var5 = 0.0;
-
-            for(ResultField var8 : var2) {
-               int var9 = Mth.floor(var8.percentage / 4.0) + 1;
-               VertexConsumer var10 = var4x.getBuffer(RenderType.debugTriangleFan());
-               int var11x = ARGB.opaque(var8.getColor());
-               int var12 = ARGB.multiply(var11x, -8355712);
-               PoseStack.Pose var13 = var1.pose().last();
-               var10.addVertex(var13, (float)var4, (float)var11, 10.0F).setColor(var11x);
-
-               for(int var14 = var9; var14 >= 0; --var14) {
-                  float var15 = (float)((var5 + var8.percentage * (double)var14 / (double)var9) * 6.2831854820251465 / 100.0);
-                  float var16 = Mth.sin(var15) * 105.0F;
-                  float var17 = Mth.cos(var15) * 105.0F * 0.5F;
-                  var10.addVertex(var13, (float)var4 + var16, (float)var11 - var17, 10.0F).setColor(var11x);
-               }
-
-               var10 = var4x.getBuffer(RenderType.debugQuads());
-
-               for(int var22 = var9; var22 > 0; --var22) {
-                  float var23 = (float)((var5 + var8.percentage * (double)var22 / (double)var9) * 6.2831854820251465 / 100.0);
-                  float var24 = Mth.sin(var23) * 105.0F;
-                  float var25 = Mth.cos(var23) * 105.0F * 0.5F;
-                  float var18 = (float)((var5 + var8.percentage * (double)(var22 - 1) / (double)var9) * 6.2831854820251465 / 100.0);
-                  float var19 = Mth.sin(var18) * 105.0F;
-                  float var20 = Mth.cos(var18) * 105.0F * 0.5F;
-                  if (!((var25 + var20) / 2.0F > 0.0F)) {
-                     var10.addVertex(var13, (float)var4 + var24, (float)var11 - var25, 10.0F).setColor(var12);
-                     var10.addVertex(var13, (float)var4 + var24, (float)var11 - var25 + 10.0F, 10.0F).setColor(var12);
-                     var10.addVertex(var13, (float)var4 + var19, (float)var11 - var20 + 10.0F, 10.0F).setColor(var12);
-                     var10.addVertex(var13, (float)var4 + var19, (float)var11 - var20, 10.0F).setColor(var12);
-                  }
-               }
-
-               var5 += var8.percentage;
-            }
-
-         });
+         var1.submitProfilerChartRenderState(var2, var5, var11 - 62 + 10, var6, var11 + 62);
          DecimalFormat var12 = new DecimalFormat("##0.00");
          var12.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
          String var13 = ProfileResults.demanglePath(var3.name);

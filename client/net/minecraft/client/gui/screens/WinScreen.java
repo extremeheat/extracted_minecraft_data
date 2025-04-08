@@ -13,9 +13,13 @@ import java.io.Reader;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LogoRenderer;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
@@ -245,8 +249,8 @@ public class WinScreen extends Screen {
       int var5 = this.width / 2 - 128;
       int var6 = this.height + 50;
       float var7 = -this.scroll;
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, var7, 0.0F);
+      var1.pose().pushMatrix();
+      var1.pose().translate(0.0F, var7);
       this.logoRenderer.renderLogo(var1, this.width, 1.0F, var6);
       int var8 = var6 + 100;
 
@@ -254,7 +258,7 @@ public class WinScreen extends Screen {
          if (var9 == this.lines.size() - 1) {
             float var10 = (float)var8 + var7 - (float)(this.height / 2 - 6);
             if (var10 < 0.0F) {
-               var1.pose().translate(0.0F, -var10, 0.0F);
+               var1.pose().translate(0.0F, -var10);
             }
          }
 
@@ -270,16 +274,18 @@ public class WinScreen extends Screen {
          var8 += 12;
       }
 
-      var1.pose().popPose();
+      var1.pose().popMatrix();
    }
 
    private void renderVignette(GuiGraphics var1) {
-      var1.blit(RenderType::vignette, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
+      var1.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.poem) {
-         var1.fillRenderType(RenderType.endPortal(), 0, 0, this.width, this.height, 0);
+         TextureManager var5 = Minecraft.getInstance().getTextureManager();
+         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(TheEndPortalRenderer.END_SKY_LOCATION).getTexture(), var5.getTexture(TheEndPortalRenderer.END_PORTAL_LOCATION).getTexture());
+         var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
       } else {
          super.renderBackground(var1, var2, var3, var4);
       }

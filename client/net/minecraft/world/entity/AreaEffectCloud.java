@@ -51,6 +51,8 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final int DEFAULT_WAIT_TIME = 20;
    private static final int DEFAULT_REAPPLICATION_DELAY = 20;
    private static final ColorParticleOption DEFAULT_PARTICLE;
+   @Nullable
+   private ParticleOptions customParticle;
    private PotionContents potionContents;
    private float potionDurationScale;
    private final Map<Entity, Integer> victims;
@@ -111,18 +113,24 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    public void setPotionContents(PotionContents var1) {
       this.potionContents = var1;
-      this.updateColor();
+      this.updateParticle();
+   }
+
+   public void setCustomParticle(@Nullable ParticleOptions var1) {
+      this.customParticle = var1;
+      this.updateParticle();
    }
 
    public void setPotionDurationScale(float var1) {
       this.potionDurationScale = var1;
    }
 
-   private void updateColor() {
-      ParticleOptions var1 = (ParticleOptions)this.entityData.get(DATA_PARTICLE);
-      if (var1 instanceof ColorParticleOption var2) {
-         int var3 = this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor();
-         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(var2.getType(), ARGB.opaque(var3)));
+   private void updateParticle() {
+      if (this.customParticle != null) {
+         this.entityData.set(DATA_PARTICLE, this.customParticle);
+      } else {
+         int var1 = ARGB.opaque(this.potionContents.getColor());
+         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(DEFAULT_PARTICLE.getType(), var1));
       }
 
    }
@@ -133,10 +141,6 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    public ParticleOptions getParticle() {
       return (ParticleOptions)this.getEntityData().get(DATA_PARTICLE);
-   }
-
-   public void setParticle(ParticleOptions var1) {
-      this.getEntityData().set(DATA_PARTICLE, var1);
    }
 
    protected void setWaiting(boolean var1) {
@@ -189,7 +193,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             double var13 = this.getZ() + (double)(Mth.sin(var7) * var8);
             if (var3.getType() == ParticleTypes.ENTITY_EFFECT) {
                if (var1 && this.random.nextBoolean()) {
-                  this.level().addAlwaysVisibleParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, -1), var9, var11, var13, 0.0, 0.0, 0.0);
+                  this.level().addAlwaysVisibleParticle(DEFAULT_PARTICLE, var9, var11, var13, 0.0, 0.0, 0.0);
                } else {
                   this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, 0.0, 0.0, 0.0);
                }
@@ -358,7 +362,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.setRadius(var1.getFloatOr("Radius", 3.0F));
       this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setParticle((ParticleOptions)var1.read("Particle", ParticleTypes.CODEC, var2).orElse(DEFAULT_PARTICLE));
+      this.setCustomParticle((ParticleOptions)var1.read("custom_particle", ParticleTypes.CODEC, var2).orElse((Object)null));
       this.setPotionContents((PotionContents)var1.read("potion_contents", PotionContents.CODEC, var2).orElse(PotionContents.EMPTY));
       this.potionDurationScale = var1.getFloatOr("potion_duration_scale", 1.0F);
    }
@@ -373,7 +377,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       var1.putFloat("RadiusPerTick", this.radiusPerTick);
       var1.putFloat("Radius", this.getRadius());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("Particle", ParticleTypes.CODEC, var2, this.getParticle());
+      var1.storeNullable("custom_particle", ParticleTypes.CODEC, var2, this.customParticle);
       var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
          var1.store("potion_contents", PotionContents.CODEC, var2, this.potionContents);

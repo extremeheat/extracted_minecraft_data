@@ -8,15 +8,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.OptionalDynamic;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,38 +19,25 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.TheGame;
-import net.minecraft.util.RandomSource;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.block.entity.MineCrafterBlockEntity;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.mines.MineEventData;
-import net.minecraft.world.level.mines.SpecialMine;
-import net.minecraft.world.level.mines.SpecialMines;
-import net.minecraft.world.level.mines.UnlockMode;
-import net.minecraft.world.level.mines.WorldEffect;
 import net.minecraft.world.level.timers.TimerCallbacks;
 import net.minecraft.world.level.timers.TimerQueue;
 import org.slf4j.Logger;
@@ -67,10 +47,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    public static final String LEVEL_NAME = "LevelName";
    protected static final String PLAYER = "Player";
    protected static final String WORLD_GEN_SETTINGS = "WorldGenSettings";
-   protected static final Random RANDOM = new Random();
    private LevelSettings settings;
    private final WorldOptions worldOptions;
-   private Optional<Holder<DimensionType>> hubDimensionType;
    private final SpecialWorldProperty specialWorldProperty;
    private final Lifecycle worldGenSettingsLifecycle;
    private BlockPos spawnPos;
@@ -98,16 +76,9 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final Set<String> knownServerBrands;
    private boolean wasModded;
    private final Set<String> removedFeatureFlags;
-   private final TimerQueue<TheGame> scheduledEvents;
-   private final List<WorldEffect> worldEffectsUnlocked;
-   private final List<SpecialMine> specialMinesUnlocked;
-   private final List<SpecialMine> specialMinesWon;
-   private int mineCrafterLevel;
-   private int mineCrafterExp;
-   private int levelCount;
-   private final Map<ResourceKey<Level>, MineEventData> events;
+   private final TimerQueue<MinecraftServer> scheduledEvents;
 
-   private PrimaryLevelData(@Nullable CompoundTag var1, boolean var2, BlockPos var3, float var4, long var5, long var7, int var9, int var10, int var11, boolean var12, int var13, boolean var14, boolean var15, boolean var16, WorldBorder.Settings var17, int var18, int var19, @Nullable UUID var20, Set<String> var21, Set<String> var22, TimerQueue<TheGame> var23, @Nullable CompoundTag var24, EndDragonFight.Data var25, LevelSettings var26, WorldOptions var27, SpecialWorldProperty var28, Optional<Holder<DimensionType>> var29, Lifecycle var30, List<WorldEffect> var31, List<SpecialMine> var32, List<SpecialMine> var33, Object2IntOpenHashMap<SpecialMine> var34, int var35, int var36, int var37, Map<ResourceKey<Level>, MineEventData> var38) {
+   private PrimaryLevelData(@Nullable CompoundTag var1, boolean var2, BlockPos var3, float var4, long var5, long var7, int var9, int var10, int var11, boolean var12, int var13, boolean var14, boolean var15, boolean var16, WorldBorder.Settings var17, int var18, int var19, @Nullable UUID var20, Set<String> var21, Set<String> var22, TimerQueue<MinecraftServer> var23, @Nullable CompoundTag var24, EndDragonFight.Data var25, LevelSettings var26, WorldOptions var27, SpecialWorldProperty var28, Lifecycle var29) {
       super();
       this.wasModded = var2;
       this.spawnPos = var3;
@@ -135,32 +106,11 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       this.settings = var26;
       this.worldOptions = var27;
       this.specialWorldProperty = var28;
-      this.worldGenSettingsLifecycle = var30;
-      this.worldEffectsUnlocked = var31;
-      this.specialMinesUnlocked = var32;
-      this.specialMinesWon = var33;
-      this.mineCrafterLevel = var35;
-      this.mineCrafterExp = var36;
-      this.levelCount = var37;
-      this.events = new HashMap(var38);
-      this.hubDimensionType = var29;
-
-      for(WorldEffect var40 : BuiltInRegistries.WORLD_EFFECT) {
-         if (var40.unlockMode() == UnlockMode.ALWAYS_UNLOCKED && !var31.contains(var40)) {
-            var31.add(var40);
-         }
-      }
-
-      for(SpecialMine var42 : SpecialMines.DEFAULT_UNLOCKED) {
-         if (!var32.contains(var42)) {
-            this.unlockSpecialMine(var42);
-         }
-      }
-
+      this.worldGenSettingsLifecycle = var29;
    }
 
    public PrimaryLevelData(LevelSettings var1, WorldOptions var2, SpecialWorldProperty var3, Lifecycle var4) {
-      this((CompoundTag)null, false, BlockPos.ZERO, 0.0F, 0L, 0L, 19133, 0, 0, false, 0, false, false, false, WorldBorder.DEFAULT_SETTINGS, 0, 0, (UUID)null, Sets.newLinkedHashSet(), new HashSet(), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS), (CompoundTag)null, EndDragonFight.Data.DEFAULT, var1.copy(), var2, var3, Optional.empty(), var4, new ArrayList(), new ArrayList(), new ArrayList(), new Object2IntOpenHashMap(), 0, 0, 0, Map.of());
+      this((CompoundTag)null, false, BlockPos.ZERO, 0.0F, 0L, 0L, 19133, 0, 0, false, 0, false, false, false, WorldBorder.DEFAULT_SETTINGS, 0, 0, (UUID)null, Sets.newLinkedHashSet(), new HashSet(), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS), (CompoundTag)null, EndDragonFight.Data.DEFAULT, var1.copy(), var2, var3, var4);
    }
 
    public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
@@ -192,7 +142,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       DataResult var10024 = var0.get("DragonFight").read(EndDragonFight.Data.CODEC);
       Logger var10025 = LOGGER;
       Objects.requireNonNull(var10025);
-      return new PrimaryLevelData(var7, var8, var10004, var10005, var5, var10007, var10008, var10009, var10010, var10011, var10012, var10013, var10014, var10015, var10016, var10017, var10018, var10019, var10020, var10021, var10022, var10023, (EndDragonFight.Data)var10024.resultOrPartial(var10025::error).orElse(EndDragonFight.Data.DEFAULT), var1, var3, var2, var0.get("hub_dimension_type").read(DimensionType.CODEC).result(), var4, (List)var0.get("effects_unlocked").asStream().flatMap((var0x) -> var0x.read(WorldEffect.CODEC).result().stream()).collect(Collectors.toCollection(ArrayList::new)), (List)var0.get("special_mines_unlocked").asStream().flatMap((var0x) -> var0x.read(SpecialMine.CODEC).result().stream()).collect(Collectors.toCollection(ArrayList::new)), (List)var0.get("special_mines_won").asStream().flatMap((var0x) -> var0x.read(SpecialMine.CODEC).result().stream()).collect(Collectors.toCollection(ArrayList::new)), (Object2IntOpenHashMap)var0.get("special_mines_rotation").read(Codec.unboundedMap(SpecialMine.CODEC, Codec.INT)).result().map(Object2IntOpenHashMap::new).orElse(new Object2IntOpenHashMap()), var0.get("mine_crafter_level").asInt(0), var0.get("mine_crafter_exp").asInt(0), var0.get("level_count").asInt(0), (Map)var0.get("events").read(Codec.unboundedMap(ResourceKey.codec(Registries.DIMENSION), MineEventData.CODEC)).result().orElse(Map.of()));
+      return new PrimaryLevelData(var7, var8, var10004, var10005, var5, var10007, var10008, var10009, var10010, var10011, var10012, var10013, var10014, var10015, var10016, var10017, var10018, var10019, var10020, var10021, var10022, var10023, (EndDragonFight.Data)var10024.resultOrPartial(var10025::error).orElse(EndDragonFight.Data.DEFAULT), var1, var3, var2, var4);
    }
 
    public CompoundTag createTag(RegistryAccess var1, @Nullable CompoundTag var2) {
@@ -213,10 +163,10 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       }
 
       CompoundTag var4 = new CompoundTag();
-      var4.putString("Name", SharedConstants.getCurrentVersion().getName());
-      var4.putInt("Id", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-      var4.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().isStable());
-      var4.putString("Series", SharedConstants.getCurrentVersion().getDataVersion().getSeries());
+      var4.putString("Name", SharedConstants.getCurrentVersion().name());
+      var4.putInt("Id", SharedConstants.getCurrentVersion().dataVersion().version());
+      var4.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().stable());
+      var4.putString("Series", SharedConstants.getCurrentVersion().dataVersion().series());
       var2.put("Version", var4);
       NbtUtils.addCurrentDataVersion(var2);
       RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);
@@ -247,7 +197,6 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.putBoolean("DifficultyLocked", this.difficultyLocked);
       var2.put("GameRules", this.settings.gameRules().createTag());
       var2.store("DragonFight", EndDragonFight.Data.CODEC, this.endDragonFightData);
-      this.hubDimensionType.ifPresent((var1x) -> var2.store("hub_dimension_type", DimensionType.CODEC, var1x));
       if (var3 != null) {
          var2.put("Player", var3);
       }
@@ -261,13 +210,6 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.putInt("WanderingTraderSpawnDelay", this.wanderingTraderSpawnDelay);
       var2.putInt("WanderingTraderSpawnChance", this.wanderingTraderSpawnChance);
       var2.storeNullable("WanderingTraderId", UUIDUtil.CODEC, this.wanderingTraderId);
-      var2.store("effects_unlocked", WorldEffect.CODEC.listOf(), this.worldEffectsUnlocked);
-      var2.store("special_mines_unlocked", SpecialMine.CODEC.listOf(), this.specialMinesUnlocked);
-      var2.store("won_special_mines_won", SpecialMine.CODEC.listOf(), this.specialMinesWon);
-      var2.store("events", Codec.unboundedMap(ResourceKey.codec(Registries.DIMENSION), MineEventData.CODEC), var5, this.events);
-      var2.putInt("mine_crafter_level", this.mineCrafterLevel);
-      var2.putInt("mine_crafter_exp", this.mineCrafterExp);
-      var2.putInt("level_count", this.levelCount);
    }
 
    private static ListTag stringCollectionToTag(Set<String> var0) {
@@ -388,14 +330,6 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.settings.gameRules();
    }
 
-   public int getLevelCount() {
-      return this.levelCount;
-   }
-
-   public int incrementAndGetLevelCount() {
-      return ++this.levelCount;
-   }
-
    public WorldBorder.Settings getWorldBorder() {
       return this.worldBorder;
    }
@@ -416,82 +350,11 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.difficultyLocked;
    }
 
-   public void unlockEffect(WorldEffect var1) {
-      this.worldEffectsUnlocked.add(var1);
-   }
-
-   public Iterable<WorldEffect> getUnlockedEffects() {
-      return this.worldEffectsUnlocked;
-   }
-
-   public boolean isSpecialMineUnlocked(SpecialMine var1) {
-      return this.specialMinesUnlocked.contains(var1);
-   }
-
-   public void unlockSpecialMine(SpecialMine var1) {
-      this.specialMinesUnlocked.add(var1);
-   }
-
-   public void mineCompleted(Optional<SpecialMine> var1, boolean var2) {
-      if (var2 && var1.isPresent()) {
-         this.specialMinesWon.add((SpecialMine)var1.get());
-      }
-
-   }
-
-   public Optional<SpecialMine> getNextSpecialMine(RandomSource var1) {
-      if (!this.isSpecialMineLevel(this.getLevelCount() + 1)) {
-         return Optional.empty();
-      } else {
-         List var2 = this.specialMinesUnlocked.stream().filter((var1x) -> !this.specialMinesWon.contains(var1x)).toList();
-         if (var2.isEmpty()) {
-            var2 = this.specialMinesUnlocked.stream().toList();
-         }
-
-         return Optional.of((SpecialMine)Util.getRandom(var2, var1));
-      }
-   }
-
-   public boolean isSpecialMineLevel(int var1) {
-      return var1 % 5 == 0;
-   }
-
-   public boolean isEffectUnlocked(WorldEffect var1) {
-      return this.worldEffectsUnlocked.contains(var1);
-   }
-
-   public Optional<Holder<DimensionType>> hubDimensionType() {
-      return this.hubDimensionType;
-   }
-
-   public void setHubDimensionType(Holder<DimensionType> var1) {
-      this.hubDimensionType = Optional.of(var1);
-   }
-
-   public int getMineCrafterLevel() {
-      return this.mineCrafterLevel;
-   }
-
-   public int getMineCrafterExp() {
-      return this.mineCrafterExp;
-   }
-
-   public void addExperienceToMineCrafter(int var1) {
-      for(this.mineCrafterExp += var1; this.mineCrafterExp >= MineCrafterBlockEntity.experienceRequiredForLevel(this.mineCrafterLevel); ++this.mineCrafterLevel) {
-         this.mineCrafterExp -= MineCrafterBlockEntity.experienceRequiredForLevel(this.mineCrafterLevel);
-      }
-
-   }
-
-   public Map<ResourceKey<Level>, MineEventData> events() {
-      return this.events;
-   }
-
    public void setDifficultyLocked(boolean var1) {
       this.difficultyLocked = var1;
    }
 
-   public TimerQueue<TheGame> getScheduledEvents() {
+   public TimerQueue<MinecraftServer> getScheduledEvents() {
       return this.scheduledEvents;
    }
 

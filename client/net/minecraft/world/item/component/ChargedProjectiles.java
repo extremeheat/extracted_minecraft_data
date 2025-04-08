@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -79,25 +79,25 @@ public final class ChargedProjectiles implements TooltipProvider {
       return "ChargedProjectiles[items=" + String.valueOf(this.items) + "]";
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-      ItemStack var6 = null;
-      int var7 = 0;
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      ItemStack var5 = null;
+      int var6 = 0;
 
-      for(ItemStack var9 : this.items) {
-         if (var6 == null) {
-            var6 = var9;
-            var7 = 1;
-         } else if (ItemStack.matches(var6, var9)) {
-            ++var7;
+      for(ItemStack var8 : this.items) {
+         if (var5 == null) {
+            var5 = var8;
+            var6 = 1;
+         } else if (ItemStack.matches(var5, var8)) {
+            ++var6;
          } else {
-            addProjectileTooltip(var1, var2, var6, var7);
-            var6 = var9;
-            var7 = 1;
+            addProjectileTooltip(var1, var2, var5, var6);
+            var5 = var8;
+            var6 = 1;
          }
       }
 
-      if (var6 != null) {
-         addProjectileTooltip(var1, var2, var6, var7);
+      if (var5 != null) {
+         addProjectileTooltip(var1, var2, var5, var6);
       }
 
    }

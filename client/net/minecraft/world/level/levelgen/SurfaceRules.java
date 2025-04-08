@@ -7,7 +7,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -426,10 +425,6 @@ public class SurfaceRules {
          return SurfaceRules.<ConditionSource>register(var0, "stone_depth", SurfaceRules.StoneDepthCheck.CODEC);
       }
 
-      default ConditionSource mapBiomes(Map<ResourceKey<Biome>, ResourceKey<Biome>> var1) {
-         return this;
-      }
-
       KeyDispatchDataCodec<? extends ConditionSource> codec();
    }
 
@@ -443,10 +438,6 @@ public class SurfaceRules {
          return SurfaceRules.<RuleSource>register(var0, "condition", SurfaceRules.TestRuleSource.CODEC);
       }
 
-      default RuleSource mapBiomes(Map<ResourceKey<Biome>, ResourceKey<Biome>> var1) {
-         return this;
-      }
-
       KeyDispatchDataCodec<? extends RuleSource> codec();
    }
 
@@ -456,10 +447,6 @@ public class SurfaceRules {
       NotConditionSource(ConditionSource var1) {
          super();
          this.target = var1;
-      }
-
-      public ConditionSource mapBiomes(Map<ResourceKey<Biome>, ResourceKey<Biome>> var1) {
-         return new NotConditionSource(this.target.mapBiomes(var1));
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -662,10 +649,6 @@ public class SurfaceRules {
          Set var10001 = Set.copyOf(var1);
          Objects.requireNonNull(var10001);
          this.biomeNameTest = var10001::contains;
-      }
-
-      public ConditionSource mapBiomes(Map<ResourceKey<Biome>, ResourceKey<Biome>> var1) {
-         return new BiomeConditionSource(this.biomes.stream().map((var1x) -> (ResourceKey)var1.getOrDefault(var1x, var1x)).toList());
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -895,10 +878,6 @@ public class SurfaceRules {
          this.thenRun = var2;
       }
 
-      public RuleSource mapBiomes(Map<ResourceKey<Biome>, ResourceKey<Biome>> var1) {
-         return new TestRuleSource(this.ifTrue.mapBiomes(var1), this.thenRun.mapBiomes(var1));
-      }
-
       public KeyDispatchDataCodec<? extends RuleSource> codec() {
          return CODEC;
       }
@@ -919,10 +898,6 @@ public class SurfaceRules {
       SequenceRuleSource(List<RuleSource> var1) {
          super();
          this.sequence = var1;
-      }
-
-      public RuleSource mapBiomes(Map<ResourceKey<Biome>, ResourceKey<Biome>> var1) {
-         return new SequenceRuleSource(this.sequence.stream().map((var1x) -> var1x.mapBiomes(var1)).toList());
       }
 
       public KeyDispatchDataCodec<? extends RuleSource> codec() {

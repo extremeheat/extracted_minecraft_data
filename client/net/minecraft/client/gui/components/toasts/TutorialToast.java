@@ -5,7 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -78,7 +78,7 @@ public class TutorialToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       int var5 = this.height();
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
       this.icon.render(var1, 6, 6);
       int var6 = this.lines.size() * 11;
       int var7 = 7 + (this.contentHeight() - var6) / 2;
@@ -126,7 +126,7 @@ public class TutorialToast implements Toast {
       }
 
       public void render(GuiGraphics var1, int var2, int var3) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.sprite, var2, var3, 20, 20);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, var2, var3, 20, 20);
       }
 
       // $FF: synthetic method

@@ -1,20 +1,21 @@
 package net.minecraft.client.gui;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Optionull;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
-import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -24,19 +25,21 @@ import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
-import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
+import net.minecraft.client.gui.contextualbar.ExperienceBarRenderer;
+import net.minecraft.client.gui.contextualbar.JumpableVehicleBarRenderer;
+import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -69,8 +72,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.mines.WorldEffect;
-import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -79,7 +80,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import org.joml.Matrix4fStack;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class Gui {
    private static final ResourceLocation CROSSHAIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair");
@@ -94,11 +95,6 @@ public class Gui {
    private static final ResourceLocation HOTBAR_OFFHAND_RIGHT_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_right");
    private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_background");
    private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_progress");
-   private static final ResourceLocation JUMP_BAR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/jump_bar_background");
-   private static final ResourceLocation JUMP_BAR_COOLDOWN_SPRITE = ResourceLocation.withDefaultNamespace("hud/jump_bar_cooldown");
-   private static final ResourceLocation JUMP_BAR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/jump_bar_progress");
-   private static final ResourceLocation EXPERIENCE_BAR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/experience_bar_background");
-   private static final ResourceLocation EXPERIENCE_BAR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/experience_bar_progress");
    private static final ResourceLocation ARMOR_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_empty");
    private static final ResourceLocation ARMOR_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_half");
    private static final ResourceLocation ARMOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_full");
@@ -122,6 +118,7 @@ public class Gui {
    private static final Component DEMO_EXPIRED_TEXT;
    private static final Component SAVING_TEXT;
    private static final float MIN_CROSSHAIR_ATTACK_SPEED = 5.0F;
+   private static final int EXPERIENCE_BAR_DISPLAY_TICKS = 100;
    private static final int NUM_HEARTS_PER_ROW = 10;
    private static final int LINE_HEIGHT = 10;
    private static final String SPACER = ": ";
@@ -174,13 +171,14 @@ public class Gui {
    private int lastBubblePopSoundPlayed;
    private float autosaveIndicatorValue;
    private float lastAutosaveIndicatorValue;
-   private final LayeredDraw layers;
+   private Pair<ContextualInfo, ContextualBarRenderer> contextualInfoBar;
+   private final Map<ContextualInfo, Supplier<ContextualBarRenderer>> contextualInfoBarRenderers;
    private float scopeScale;
 
    public Gui(Minecraft var1) {
       super();
       this.lastToolHighlight = ItemStack.EMPTY;
-      this.layers = new LayeredDraw();
+      this.contextualInfoBar = Pair.of(Gui.ContextualInfo.EMPTY, ContextualBarRenderer.EMPTY);
       this.minecraft = var1;
       this.debugOverlay = new DebugScreenOverlay(var1);
       this.spectatorGui = new SpectatorGui(var1);
@@ -188,15 +186,8 @@ public class Gui {
       this.tabList = new PlayerTabOverlay(var1, this);
       this.bossOverlay = new BossHealthOverlay(var1);
       this.subtitleOverlay = new SubtitleOverlay(var1);
+      this.contextualInfoBarRenderers = ImmutableMap.of(Gui.ContextualInfo.EMPTY, (Supplier)() -> ContextualBarRenderer.EMPTY, Gui.ContextualInfo.EXPERIENCE, (Supplier)() -> new ExperienceBarRenderer(var1), Gui.ContextualInfo.LOCATOR, (Supplier)() -> new LocatorBarRenderer(var1), Gui.ContextualInfo.JUMPABLE_VEHICLE, (Supplier)() -> new JumpableVehicleBarRenderer(var1));
       this.resetTitleTimes();
-      LayeredDraw var2 = (new LayeredDraw()).add(this::renderCameraOverlays).add(this::renderCrosshair).add(this::renderHotbarAndDecorations).add(this::renderExperienceLevel).add(this::renderEffects).add(this::renderActiveWorldEffects).add((var1x, var2x) -> this.bossOverlay.render(var1x));
-      LayeredDraw var3 = (new LayeredDraw()).add(this::renderDemoOverlay).add((var1x, var2x) -> {
-         if (this.debugOverlay.showDebugScreen()) {
-            this.debugOverlay.render(var1x);
-         }
-
-      }).add(this::renderScoreboardSidebar).add(this::renderOverlayMessage).add(this::renderTitle).add(this::renderChat).add(this::renderTabList).add((var1x, var2x) -> this.subtitleOverlay.render(var1x));
-      this.layers.add(var2, () -> !var1.options.hideGui).add(this::renderSleepOverlay).add(var3, () -> !var1.options.hideGui);
    }
 
    public void resetTitleTimes() {
@@ -206,10 +197,51 @@ public class Gui {
    }
 
    public void render(GuiGraphics var1, DeltaTracker var2) {
-      this.layers.render(var1, var2);
+      if (!this.minecraft.options.hideGui) {
+         this.renderOnLayer(var1, var2, this::renderCameraOverlays, GuiLayer.GAMEPLAY_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderCrosshair, GuiLayer.HUD);
+         this.renderOnLayer(var1, var2, this::renderHotbarAndDecorations, GuiLayer.HUD);
+         this.renderOnLayer(var1, var2, this::renderEffects, GuiLayer.HUD);
+         this.renderOnLayer(var1, var2, this::renderBossOverlay, GuiLayer.HUD);
+      }
+
+      this.renderOnLayer(var1, var2, this::renderSleepOverlay, GuiLayer.SLEEP_OVERLAY);
+      if (!this.minecraft.options.hideGui) {
+         this.renderOnLayer(var1, var2, this::renderDemoOverlay, GuiLayer.DEMO_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderDebugOverlay, GuiLayer.DEBUG_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderScoreboardSidebar, GuiLayer.SCOREBOARD_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderOverlayMessage, GuiLayer.OVERLAY_MESSAGE);
+         this.renderOnLayer(var1, var2, this::renderTitle, GuiLayer.TITLE_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderChat, GuiLayer.CHAT_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderTabList, GuiLayer.TABLIST_OVERLAY);
+         this.renderOnLayer(var1, var2, this::renderSubtitleOverlay, GuiLayer.SUBTITLE_OVERLAY);
+      }
+
+   }
+
+   private void renderOnLayer(GuiGraphics var1, DeltaTracker var2, RenderFunction var3, GuiLayer var4) {
+      var1.pushGuiLayer(var4);
+      var3.render(var1, var2);
+      var1.popGuiLayer();
+   }
+
+   private void renderBossOverlay(GuiGraphics var1, DeltaTracker var2) {
+      this.bossOverlay.render(var1);
+   }
+
+   private void renderDebugOverlay(GuiGraphics var1, DeltaTracker var2) {
+      if (this.debugOverlay.showDebugScreen()) {
+         this.debugOverlay.render(var1);
+      }
+
+   }
+
+   private void renderSubtitleOverlay(GuiGraphics var1, DeltaTracker var2) {
+      this.subtitleOverlay.render(var1);
    }
 
    private void renderCameraOverlays(GuiGraphics var1, DeltaTracker var2) {
+      var1.pushGuiLayer(GuiLayer.GAMEPLAY_OVERLAY);
       if (Minecraft.useFancyGraphics()) {
          this.renderVignette(var1, this.minecraft.getCameraEntity());
       }
@@ -250,6 +282,7 @@ public class Gui {
          }
       }
 
+      var1.popGuiLayer();
    }
 
    private void renderSleepOverlay(GuiGraphics var1, DeltaTracker var2) {
@@ -262,7 +295,9 @@ public class Gui {
          }
 
          int var5 = (int)(220.0F * var4) << 24 | 1052704;
-         var1.fill(RenderType.guiOverlay(), 0, 0, var1.guiWidth(), var1.guiHeight(), var5);
+         var1.pushGuiLayer(GuiLayer.GAMEPLAY_OVERLAY);
+         var1.fill(0, 0, var1.guiWidth(), var1.guiHeight(), var5);
+         var1.popGuiLayer();
          Profiler.get().pop();
       }
    }
@@ -278,46 +313,18 @@ public class Gui {
          }
 
          if (var5 > 8) {
-            var1.pose().pushPose();
+            var1.pose().pushMatrix();
+            var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() - 68));
             int var6;
-            if (this.overlayMessageString.getStyle().isMega()) {
-               var6 = (int)((float)var1.guiHeight() * 0.5F);
-            } else {
-               var6 = var1.guiHeight() - 68;
-            }
-
-            var1.pose().translate((float)(var1.guiWidth() / 2), (float)var6, 0.0F);
-            int var7;
             if (this.animateOverlayMessageColor) {
-               var7 = Mth.hsvToArgb(var4 / 50.0F, 0.7F, 0.6F, var5);
+               var6 = Mth.hsvToArgb(var4 / 50.0F, 0.7F, 0.6F, var5);
             } else {
-               var7 = ARGB.color(var5, -1);
+               var6 = ARGB.color(var5, -1);
             }
 
-            int var8 = var3.width((FormattedText)this.overlayMessageString);
-            float var9 = this.overlayMessageString.getStyle().getScale() != null ? this.overlayMessageString.getStyle().getScale() : 1.0F;
-            int var10;
-            int var11;
-            if (var9 > 1.0F && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
-               float var12 = 3000.0F / (var9 * var9 * 0.4F);
-               float var13 = 1500.0F / (var9 * var9 * 0.4F);
-               float var14 = var9 * 0.4F;
-               var10 = (int)(Mth.sin((float)Util.getMillis() % var12 / var12 * 6.2831855F) * var14 * var14);
-               var11 = (int)(Mth.sin((float)Util.getMillis() % var13 / var13 * 6.2831855F) * var14 * var14);
-            } else {
-               var11 = 0;
-               var10 = 0;
-            }
-
-            if (this.overlayMessageString.getStyle().isMega()) {
-               float var15 = 1.8F - Mth.abs(Mth.sin((float)(Util.getMillis() % 1000L) / 1000.0F * 6.2831855F) * 0.1F);
-               var15 = var15 * 100.0F / (float)(var8 + 32);
-               var9 *= var15 * 2.0F;
-            }
-
-            var1.pose().scale(var9, var9, var9);
-            var1.drawStringWithBackdrop(var3, this.overlayMessageString, -var8 / 2 + var10, -4 + var11, var8, var7);
-            var1.pose().popPose();
+            int var7 = var3.width((FormattedText)this.overlayMessageString);
+            var1.drawStringWithBackdrop(var3, this.overlayMessageString, -var7 / 2, -4, var7, var6);
+            var1.pose().popMatrix();
          }
 
          Profiler.get().pop();
@@ -341,23 +348,23 @@ public class Gui {
 
          var5 = Mth.clamp(var5, 0, 255);
          if (var5 > 8) {
-            var1.pose().pushPose();
-            var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2), 0.0F);
-            var1.pose().pushPose();
-            var1.pose().scale(4.0F, 4.0F, 4.0F);
+            var1.pose().pushMatrix();
+            var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2));
+            var1.pose().pushMatrix();
+            var1.pose().scale(4.0F, 4.0F);
             int var10 = var3.width((FormattedText)this.title);
             int var7 = ARGB.color(var5, -1);
             var1.drawStringWithBackdrop(var3, this.title, -var10 / 2, -10, var10, var7);
-            var1.pose().popPose();
+            var1.pose().popMatrix();
             if (this.subtitle != null) {
-               var1.pose().pushPose();
-               var1.pose().scale(2.0F, 2.0F, 2.0F);
+               var1.pose().pushMatrix();
+               var1.pose().scale(2.0F, 2.0F);
                int var8 = var3.width((FormattedText)this.subtitle);
                var1.drawStringWithBackdrop(var3, this.subtitle, -var8 / 2, 5, var8, var7);
-               var1.pose().popPose();
+               var1.pose().popMatrix();
             }
 
-            var1.pose().popPose();
+            var1.pose().popMatrix();
          }
 
          Profiler.get().pop();
@@ -408,20 +415,9 @@ public class Gui {
       Options var3 = this.minecraft.options;
       if (var3.getCameraType().isFirstPerson()) {
          if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
-            if (this.debugOverlay.showDebugScreen() && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)var3.reducedDebugInfo().get()) {
-               Camera var10 = this.minecraft.gameRenderer.getMainCamera();
-               Matrix4fStack var11 = RenderSystem.getModelViewStack();
-               var11.pushMatrix();
-               var11.mul(var1.pose().last().pose());
-               var11.translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2), 0.0F);
-               var11.rotateX(-var10.getXRot() * 0.017453292F);
-               var11.rotateY(var10.getYRot() * 0.017453292F);
-               var11.scale(-1.0F, -1.0F, -1.0F);
-               this.debugOverlay.render3dCrosshair();
-               var11.popMatrix();
-            } else {
+            if (!this.shouldRenderDebugCrosshair()) {
                boolean var4 = true;
-               var1.blitSprite(RenderType::crosshair, (ResourceLocation)CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
+               var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
                if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
                   float var5 = this.minecraft.player.getAttackStrengthScale(0.0F);
                   boolean var6 = false;
@@ -433,17 +429,21 @@ public class Gui {
                   int var7 = var1.guiHeight() / 2 - 7 + 16;
                   int var8 = var1.guiWidth() / 2 - 8;
                   if (var6) {
-                     var1.blitSprite(RenderType::crosshair, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, var8, var7, 16, 16);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, var8, var7, 16, 16);
                   } else if (var5 < 1.0F) {
                      int var9 = (int)(var5 * 17.0F);
-                     var1.blitSprite(RenderType::crosshair, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var7, 16, 4);
-                     var1.blitSprite(RenderType::crosshair, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, var8, var7, var9, 4);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var7, 16, 4);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, var8, var7, var9, 4);
                   }
                }
             }
 
          }
       }
+   }
+
+   public boolean shouldRenderDebugCrosshair() {
+      return this.debugOverlay.showDebugScreen() && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)this.minecraft.options.reducedDebugInfo().get();
    }
 
    private boolean canRenderCrosshairForSpectator(@Nullable HitResult var1) {
@@ -488,9 +488,9 @@ public class Gui {
 
                float var13 = 1.0F;
                if (var9.isAmbient()) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var11, var12, 24, 24);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var11, var12, 24, 24);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var11, var12, 24, 24);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var11, var12, 24, 24);
                   if (var9.endsWithin(200)) {
                      int var14 = var9.getDuration();
                      int var15 = 10 - var14 / 20;
@@ -502,62 +502,12 @@ public class Gui {
                TextureAtlasSprite var20 = var6.get(var10);
                var7.add((Runnable)() -> {
                   int var5 = ARGB.white(var13);
-                  var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)var20, var11 + 3, var12 + 3, 18, 18, var5);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var20, var11 + 3, var12 + 3, 18, 18, var5);
                });
             }
          }
 
          var7.forEach(Runnable::run);
-      }
-   }
-
-   private void renderActiveWorldEffects(GuiGraphics var1, DeltaTracker var2) {
-      List var3 = this.minecraft.level.getActiveEffects();
-      if (!var3.isEmpty()) {
-         Screen var6 = this.minecraft.screen;
-         int var4;
-         int var5;
-         if (var6 instanceof ChatScreen) {
-            Window var7 = this.minecraft.getWindow();
-            var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var7));
-            var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var7));
-         } else {
-            var4 = -2147483648;
-            var5 = -2147483648;
-         }
-
-         ArrayList var18 = Lists.newArrayListWithExpectedSize(var3.size());
-         int var8 = 0;
-         int var9 = Mth.ceil((float)var3.size() / 10.0F);
-         boolean var10 = true;
-
-         for(WorldEffect var12 : var3) {
-            if (var12.itemModel() != null) {
-               int var13 = 1;
-               int var14 = 1;
-               if (this.minecraft.isDemo()) {
-                  var14 += 15;
-               }
-
-               int var15 = Mth.floor((float)var8 / 10.0F);
-               var13 += 25 * (var8 % 10);
-               if (var9 > 3) {
-                  var14 += (int)(50.0F / (float)var9 * (float)var15);
-               } else {
-                  var14 += 25 * var15;
-               }
-
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var13, var14, 24, 24);
-               var18.add((Runnable)() -> var1.renderFakeItem(WorldEffects.createEffectItem(var12, false), var13 + 4, var14 + 4));
-               if (var6 != null && var4 >= var13 && var5 >= var14 && var4 < var13 + 24 && var5 < var14 + 24) {
-                  var6.setTooltipForNextRenderPass(CommonComponents.joinLines(var12.name(), var12.description().copy().withStyle(ChatFormatting.GRAY)));
-               }
-
-               ++var8;
-            }
-         }
-
-         var18.forEach(Runnable::run);
       }
    }
 
@@ -568,21 +518,22 @@ public class Gui {
          this.renderItemHotbar(var1, var2);
       }
 
-      int var3 = var1.guiWidth() / 2 - 91;
-      PlayerRideableJumping var4 = this.minecraft.player.jumpableVehicle();
-      if (var4 != null) {
-         this.renderJumpMeter(var4, var1, var3);
-      } else if (this.minecraft.player.hasEffect(MobEffects.SHAZBOOTS) && this.minecraft.player.input.keyPresses.jump()) {
-         this.renderShazbootJumpMeter(var1, var3);
-      } else if (this.isExperienceBarVisible()) {
-         this.renderExperienceBar(var1, var3);
-      }
-
       if (this.minecraft.gameMode.canHurtPlayer()) {
          this.renderPlayerHealth(var1);
       }
 
       this.renderVehicleHealth(var1);
+      ContextualInfo var3 = this.nextContextualInfoState();
+      if (var3 != this.contextualInfoBar.getKey()) {
+         this.contextualInfoBar = Pair.of(var3, (ContextualBarRenderer)((Supplier)this.contextualInfoBarRenderers.get(var3)).get());
+      }
+
+      ((ContextualBarRenderer)this.contextualInfoBar.getValue()).renderBackground(var1, var2);
+      if (this.minecraft.gameMode.hasExperience() && this.minecraft.player.experienceLevel > 0) {
+         ContextualBarRenderer.renderExperienceLevel(var1, this.minecraft.font, this.minecraft.player.experienceLevel);
+      }
+
+      ((ContextualBarRenderer)this.contextualInfoBar.getValue()).render(var1, var2);
       if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
          this.renderSelectedItemName(var1);
       } else if (this.minecraft.player.isSpectator()) {
@@ -599,19 +550,16 @@ public class Gui {
          int var6 = var1.guiWidth() / 2;
          boolean var7 = true;
          boolean var8 = true;
-         var1.pose().pushPose();
-         var1.pose().translate(0.0F, 0.0F, -90.0F);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
          if (!var4.isEmpty()) {
             if (var5 == HumanoidArm.LEFT) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
             } else {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_OFFHAND_RIGHT_SPRITE, var6 + 91, var1.guiHeight() - 23, 29, 24);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_OFFHAND_RIGHT_SPRITE, var6 + 91, var1.guiHeight() - 23, 29, 24);
             }
          }
 
-         var1.pose().popPose();
          int var9 = 1;
 
          for(int var10 = 0; var10 < 9; ++var10) {
@@ -639,74 +587,12 @@ public class Gui {
                }
 
                int var13 = (int)(var17 * 19.0F);
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
-               var1.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var19, var18 + 18 - var13, 18, var13);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var19, var18 + 18 - var13, 18, var13);
             }
          }
 
       }
-   }
-
-   private void renderShazbootJumpMeter(GuiGraphics var1, int var2) {
-      float var3 = (float)((int)(this.minecraft.player.getDeltaMovement().horizontalDistance() * 7.5)) * 0.085F;
-      boolean var4 = true;
-      int var5 = var1.guiHeight() - 32 + 3;
-      int var6 = (int)(Math.min(var3, 1.0F) * 183.0F);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)JUMP_BAR_BACKGROUND_SPRITE, var2, var5, 182, 5);
-      var1.blitSprite(RenderType::guiTextured, JUMP_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var2, var5, var6, 5);
-   }
-
-   private void renderJumpMeter(PlayerRideableJumping var1, GuiGraphics var2, int var3) {
-      Profiler.get().push("jumpBar");
-      float var4 = this.minecraft.player.getJumpRidingScale();
-      boolean var5 = true;
-      int var6 = (int)(var4 * 183.0F);
-      int var7 = var2.guiHeight() - 32 + 3;
-      var2.blitSprite(RenderType::guiTextured, (ResourceLocation)JUMP_BAR_BACKGROUND_SPRITE, var3, var7, 182, 5);
-      if (var1.getJumpCooldown() > 0) {
-         var2.blitSprite(RenderType::guiTextured, (ResourceLocation)JUMP_BAR_COOLDOWN_SPRITE, var3, var7, 182, 5);
-      } else if (var6 > 0) {
-         var2.blitSprite(RenderType::guiTextured, JUMP_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var3, var7, var6, 5);
-      }
-
-      Profiler.get().pop();
-   }
-
-   private void renderExperienceBar(GuiGraphics var1, int var2) {
-      Profiler.get().push("expBar");
-      int var3 = this.minecraft.player.getXpNeededForNextLevel();
-      if (var3 > 0) {
-         boolean var4 = true;
-         int var5 = (int)(this.minecraft.player.experienceProgress * 183.0F);
-         int var6 = var1.guiHeight() - 32 + 3;
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EXPERIENCE_BAR_BACKGROUND_SPRITE, var2, var6, 182, 5);
-         if (var5 > 0) {
-            var1.blitSprite(RenderType::guiTextured, EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var2, var6, var5, 5);
-         }
-      }
-
-      Profiler.get().pop();
-   }
-
-   private void renderExperienceLevel(GuiGraphics var1, DeltaTracker var2) {
-      int var3 = this.minecraft.player.experienceLevel;
-      if (this.isExperienceBarVisible() && var3 > 0) {
-         Profiler.get().push("expLevel");
-         String var4 = "" + var3;
-         int var5 = (var1.guiWidth() - this.getFont().width(var4)) / 2;
-         int var6 = var1.guiHeight() - 31 - 4;
-         var1.drawString(this.getFont(), (String)var4, var5 + 1, var6, 0, false);
-         var1.drawString(this.getFont(), (String)var4, var5 - 1, var6, 0, false);
-         var1.drawString(this.getFont(), (String)var4, var5, var6 + 1, 0, false);
-         var1.drawString(this.getFont(), (String)var4, var5, var6 - 1, 0, false);
-         var1.drawString(this.getFont(), var4, var5, var6, 8453920, false);
-         Profiler.get().pop();
-      }
-
-   }
-
-   private boolean isExperienceBarVisible() {
-      return this.minecraft.player.jumpableVehicle() == null && this.minecraft.gameMode.hasExperience();
    }
 
    private void renderSelectedItemName(GuiGraphics var1) {
@@ -929,15 +815,15 @@ public class Gui {
          for(int var8 = 0; var8 < 10; ++var8) {
             int var9 = var5 + var8 * 8;
             if (var8 * 2 + 1 < var6) {
-               var0.blitSprite(RenderType::guiTextured, (ResourceLocation)ARMOR_FULL_SPRITE, var9, var7, 9, 9);
+               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ARMOR_FULL_SPRITE, var9, var7, 9, 9);
             }
 
             if (var8 * 2 + 1 == var6) {
-               var0.blitSprite(RenderType::guiTextured, (ResourceLocation)ARMOR_HALF_SPRITE, var9, var7, 9, 9);
+               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ARMOR_HALF_SPRITE, var9, var7, 9, 9);
             }
 
             if (var8 * 2 + 1 > var6) {
-               var0.blitSprite(RenderType::guiTextured, (ResourceLocation)ARMOR_EMPTY_SPRITE, var9, var7, 9, 9);
+               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ARMOR_EMPTY_SPRITE, var9, var7, 9, 9);
             }
          }
 
@@ -989,7 +875,7 @@ public class Gui {
    }
 
    private void renderHeart(GuiGraphics var1, HeartType var2, int var3, int var4, boolean var5, boolean var6, boolean var7) {
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
    }
 
    private void renderAirBubbles(GuiGraphics var1, Player var2, int var3, int var4, int var5) {
@@ -1009,13 +895,13 @@ public class Gui {
          for(int var13 = 1; var13 <= 10; ++var13) {
             int var14 = var5 - (var13 - 1) * 8 - 9;
             if (var13 <= var9) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)AIR_SPRITE, var14, var4, 9, 9);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)AIR_SPRITE, var14, var4, 9, 9);
             } else if (var12 && var13 == var10 && var8) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)AIR_POPPING_SPRITE, var14, var4, 9, 9);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)AIR_POPPING_SPRITE, var14, var4, 9, 9);
                this.playAirBubblePoppedSound(var13, var2, var11);
             } else if (var13 > 10 - var11) {
                int var15 = var11 == 10 && this.tickCount % 2 == 0 ? this.random.nextInt(2) : 0;
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)AIR_EMPTY_SPRITE, var14, var4 + var15, 9, 9);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)AIR_EMPTY_SPRITE, var14, var4 + var15, 9, 9);
             }
          }
       }
@@ -1070,13 +956,13 @@ public class Gui {
          }
 
          int var12 = var4 - var7 * 8 - 9;
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var9, var12, var8, 9, 9);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var9, var12, var8, 9, 9);
          if (var7 * 2 + 1 < var6) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var11, var12, var8, 9, 9);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var11, var12, var8, 9, 9);
          }
 
          if (var7 * 2 + 1 == var6) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var10, var12, var8, 9, 9);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var10, var12, var8, 9, 9);
          }
       }
 
@@ -1099,13 +985,13 @@ public class Gui {
 
                for(int var10 = 0; var10 < var9; ++var10) {
                   int var11 = var6 - var10 * 8 - 9;
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_VEHICLE_CONTAINER_SPRITE, var11, var7, 9, 9);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_CONTAINER_SPRITE, var11, var7, 9, 9);
                   if (var10 * 2 + 1 + var8 < var4) {
-                     var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_VEHICLE_FULL_SPRITE, var11, var7, 9, 9);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_FULL_SPRITE, var11, var7, 9, 9);
                   }
 
                   if (var10 * 2 + 1 + var8 == var4) {
-                     var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_VEHICLE_HALF_SPRITE, var11, var7, 9, 9);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_HALF_SPRITE, var11, var7, 9, 9);
                   }
                }
 
@@ -1118,7 +1004,7 @@ public class Gui {
 
    private void renderTextureOverlay(GuiGraphics var1, ResourceLocation var2, float var3) {
       int var4 = ARGB.white(var3);
-      var1.blit(RenderType::guiTexturedOverlay, var2, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var4);
+      var1.blit(RenderPipelines.GUI_TEXTURED, var2, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var4);
    }
 
    private void renderSpyglassOverlay(GuiGraphics var1, float var2) {
@@ -1130,11 +1016,11 @@ public class Gui {
       int var9 = (var1.guiHeight() - var7) / 2;
       int var10 = var8 + var6;
       int var11 = var9 + var7;
-      var1.blit(RenderType::guiTextured, SPYGLASS_SCOPE_LOCATION, var8, var9, 0.0F, 0.0F, var6, var7, var6, var7);
-      var1.fill(RenderType.guiOverlay(), 0, var11, var1.guiWidth(), var1.guiHeight(), -90, -16777216);
-      var1.fill(RenderType.guiOverlay(), 0, 0, var1.guiWidth(), var9, -90, -16777216);
-      var1.fill(RenderType.guiOverlay(), 0, var9, var8, var11, -90, -16777216);
-      var1.fill(RenderType.guiOverlay(), var10, var9, var1.guiWidth(), var11, -90, -16777216);
+      var1.blit(RenderPipelines.GUI_TEXTURED, SPYGLASS_SCOPE_LOCATION, var8, var9, 0.0F, 0.0F, var6, var7, var6, var7);
+      var1.fill(RenderPipelines.GUI, 0, var11, var1.guiWidth(), var1.guiHeight(), -16777216);
+      var1.fill(RenderPipelines.GUI, 0, 0, var1.guiWidth(), var9, -16777216);
+      var1.fill(RenderPipelines.GUI, 0, var9, var8, var11, -16777216);
+      var1.fill(RenderPipelines.GUI, var10, var9, var1.guiWidth(), var11, -16777216);
    }
 
    private void updateVignetteBrightness(Entity var1) {
@@ -1166,7 +1052,7 @@ public class Gui {
          var11 = ARGB.colorFromFloat(1.0F, var12, var12, var12);
       }
 
-      var1.blit(RenderType::vignette, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var11);
+      var1.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var11);
    }
 
    private void renderPortalOverlay(GuiGraphics var1, float var2) {
@@ -1178,22 +1064,22 @@ public class Gui {
 
       int var3 = ARGB.white(var2);
       TextureAtlasSprite var4 = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(Blocks.NETHER_PORTAL.defaultBlockState());
-      var1.blitSprite(RenderType::guiTexturedOverlay, (TextureAtlasSprite)var4, 0, 0, var1.guiWidth(), var1.guiHeight(), var3);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var4, 0, 0, var1.guiWidth(), var1.guiHeight(), var3);
    }
 
    private void renderConfusionOverlay(GuiGraphics var1, float var2) {
       int var3 = var1.guiWidth();
       int var4 = var1.guiHeight();
-      var1.pose().pushPose();
+      var1.pose().pushMatrix();
       float var5 = Mth.lerp(var2, 2.0F, 1.0F);
-      var1.pose().translate((float)var3 / 2.0F, (float)var4 / 2.0F, 0.0F);
-      var1.pose().scale(var5, var5, var5);
-      var1.pose().translate((float)(-var3) / 2.0F, (float)(-var4) / 2.0F, 0.0F);
+      var1.pose().translate((float)var3 / 2.0F, (float)var4 / 2.0F);
+      var1.pose().scale(var5, var5);
+      var1.pose().translate((float)(-var3) / 2.0F, (float)(-var4) / 2.0F);
       float var6 = 0.2F * var2;
       float var7 = 0.4F * var2;
       float var8 = 0.2F * var2;
-      var1.blit((var0) -> RenderType.guiNauseaOverlay(), NAUSEA_LOCATION, 0, 0, 0.0F, 0.0F, var3, var4, var3, var4, ARGB.colorFromFloat(1.0F, var6, var7, var8));
-      var1.pose().popPose();
+      var1.blit(RenderPipelines.GUI_NAUSEA_OVERLAY, NAUSEA_LOCATION, 0, 0, 0.0F, 0.0F, var3, var4, var3, var4, ARGB.colorFromFloat(1.0F, var6, var7, var8));
+      var1.pose().popMatrix();
    }
 
    private void renderSlot(GuiGraphics var1, int var2, int var3, DeltaTracker var4, Player var5, ItemStack var6, int var7) {
@@ -1201,18 +1087,21 @@ public class Gui {
          float var8 = (float)var6.getPopTime() - var4.getGameTimeDeltaPartialTick(false);
          if (var8 > 0.0F) {
             float var9 = 1.0F + var8 / 5.0F;
-            var1.pose().pushPose();
-            var1.pose().translate((float)(var2 + 8), (float)(var3 + 12), 0.0F);
-            var1.pose().scale(1.0F / var9, (var9 + 1.0F) / 2.0F, 1.0F);
-            var1.pose().translate((float)(-(var2 + 8)), (float)(-(var3 + 12)), 0.0F);
+            var1.pose().pushMatrix();
+            var1.pose().translate((float)(var2 + 8), (float)(var3 + 12));
+            var1.pose().scale(1.0F / var9, (var9 + 1.0F) / 2.0F);
+            var1.pose().translate((float)(-(var2 + 8)), (float)(-(var3 + 12)));
          }
 
+         var1.pushGuiLayer(GuiLayer.HUD_ITEM);
          var1.renderItem(var5, var6, var2, var3, var7);
          if (var8 > 0.0F) {
-            var1.pose().popPose();
+            var1.pose().popMatrix();
          }
 
-         var1.renderItemDecorations(this.minecraft.font, var6, var2, var3);
+         var1.popPushGuiLayer(GuiLayer.HUD_ITEM_DECORATION);
+         var1.renderItemDecorations(GuiGraphics.ItemSlotContext.HUD, this.minecraft.font, var6, var2, var3);
+         var1.popGuiLayer();
       }
    }
 
@@ -1271,7 +1160,7 @@ public class Gui {
    public void setNowPlaying(Component var1) {
       MutableComponent var2 = Component.translatable("record.nowPlaying", var1);
       this.setOverlayMessage(var2, true);
-      this.minecraft.getNarrator().sayNow((Component)var2);
+      this.minecraft.getNarrator().saySystemNow((Component)var2);
    }
 
    public void setOverlayMessage(Component var1, boolean var2) {
@@ -1376,10 +1265,37 @@ public class Gui {
             int var10000 = var1.guiHeight();
             Objects.requireNonNull(var4);
             int var8 = var10000 - 9 - 5;
+            var1.pushGuiLayer(GuiLayer.SCREEN);
             var1.drawStringWithBackdrop(var4, SAVING_TEXT, var7, var8, var5, var6);
+            var1.popGuiLayer();
          }
       }
 
+   }
+
+   private boolean willPrioritizeExperienceInfo() {
+      return this.minecraft.player.experienceDisplayStartTick + 100 > this.minecraft.player.tickCount;
+   }
+
+   private boolean willPrioritizeJumpInfo() {
+      return this.minecraft.player.getJumpRidingScale() > 0.0F || (Integer)Optionull.mapOrDefault(this.minecraft.player.jumpableVehicle(), PlayerRideableJumping::getJumpCooldown, 0) > 0;
+   }
+
+   private ContextualInfo nextContextualInfoState() {
+      boolean var1 = this.minecraft.player.connection.getWaypointManager().hasWaypoints();
+      boolean var2 = this.minecraft.player.jumpableVehicle() != null;
+      boolean var3 = this.minecraft.gameMode.hasExperience();
+      if (var1) {
+         if (var2 && this.willPrioritizeJumpInfo()) {
+            return Gui.ContextualInfo.JUMPABLE_VEHICLE;
+         } else {
+            return var3 && this.willPrioritizeExperienceInfo() ? Gui.ContextualInfo.EXPERIENCE : Gui.ContextualInfo.LOCATOR;
+         }
+      } else if (var2) {
+         return Gui.ContextualInfo.JUMPABLE_VEHICLE;
+      } else {
+         return var3 ? Gui.ContextualInfo.EXPERIENCE : Gui.ContextualInfo.EMPTY;
+      }
    }
 
    static {
@@ -1449,5 +1365,24 @@ public class Gui {
       private static HeartType[] $values() {
          return new HeartType[]{CONTAINER, NORMAL, POISIONED, WITHERED, ABSORBING, FROZEN};
       }
+   }
+
+   static enum ContextualInfo {
+      EMPTY,
+      EXPERIENCE,
+      LOCATOR,
+      JUMPABLE_VEHICLE;
+
+      private ContextualInfo() {
+      }
+
+      // $FF: synthetic method
+      private static ContextualInfo[] $values() {
+         return new ContextualInfo[]{EMPTY, EXPERIENCE, LOCATOR, JUMPABLE_VEHICLE};
+      }
+   }
+
+   public interface RenderFunction {
+      void render(GuiGraphics var1, DeltaTracker var2);
    }
 }

@@ -30,7 +30,7 @@ public class ValidateNearbyPoi {
                GlobalPos var7 = (GlobalPos)var2.get(var2x);
                BlockPos var8 = var7.pos();
                if (var3.dimension() == var7.dimension() && var8.closerToCenterThan(var4.position(), 16.0)) {
-                  ServerLevel var9 = var3.theGame().getLevel(var7.dimension());
+                  ServerLevel var9 = var3.getServer().getLevel(var7.dimension());
                   if (var9 != null && var9.getPoiManager().exists(var8, var0)) {
                      if (bedIsOccupied(var9, var8, var4)) {
                         var2x.erase();

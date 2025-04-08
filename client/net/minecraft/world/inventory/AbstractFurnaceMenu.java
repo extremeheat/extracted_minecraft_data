@@ -4,7 +4,6 @@ import java.util.List;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -24,7 +23,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    public static final int FUEL_SLOT = 1;
    public static final int RESULT_SLOT = 2;
    public static final int SLOT_COUNT = 3;
-   public static final int DATA_COUNT = 5;
+   public static final int DATA_COUNT = 4;
    private static final int INV_SLOT_START = 3;
    private static final int INV_SLOT_END = 30;
    private static final int USE_ROW_SLOT_START = 30;
@@ -35,38 +34,24 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    private final RecipeType<? extends AbstractCookingRecipe> recipeType;
    private final RecipePropertySet acceptedInputs;
    private final RecipeBookType recipeBookType;
-   private final Inventory inventory;
 
    protected AbstractFurnaceMenu(MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, ResourceKey<RecipePropertySet> var3, RecipeBookType var4, int var5, Inventory var6) {
-      this(var1, var2, var3, var4, var5, var6, new SimpleContainer(3), new SimpleContainerData(5));
+      this(var1, var2, var3, var4, var5, var6, new SimpleContainer(3), new SimpleContainerData(4));
    }
 
-   protected AbstractFurnaceMenu(MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, ResourceKey<RecipePropertySet> var3, RecipeBookType var4, int var5, final Inventory var6, Container var7, final ContainerData var8) {
+   protected AbstractFurnaceMenu(MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, ResourceKey<RecipePropertySet> var3, RecipeBookType var4, int var5, Inventory var6, Container var7, ContainerData var8) {
       super(var1, var5);
       this.recipeType = var2;
       this.recipeBookType = var4;
       checkContainerSize(var7, 3);
-      checkContainerDataCount(var8, 5);
+      checkContainerDataCount(var8, 4);
       this.container = var7;
       this.data = var8;
-      this.inventory = var6;
-      this.level = var6.getPlayer().level();
+      this.level = var6.player.level();
       this.acceptedInputs = this.level.recipeAccess().propertySet(var3);
-      this.addSlot(new Slot(var7, 0, 56, 17) {
-         public void setByPlayer(ItemStack var1) {
-            super.setByPlayer(var1);
-            if (var6.getPlayer() != null) {
-               if (var6.getPlayer().isActive(PlayerUnlocks.SMELTER_2)) {
-                  var8.set(4, 2);
-               } else if (var6.getPlayer().isActive(PlayerUnlocks.SMELTER_1)) {
-                  var8.set(4, 1);
-               }
-            }
-
-         }
-      });
+      this.addSlot(new Slot(var7, 0, 56, 17));
       this.addSlot(new FurnaceFuelSlot(this, var7, 1, 56, 53));
-      this.addSlot(new FurnaceResultSlot(var6.getPlayer(), var7, 2, 116, 35));
+      this.addSlot(new FurnaceResultSlot(var6.player, var7, 2, 116, 35));
       this.addStandardInventorySlots(var6, 8, 84);
       this.addDataSlots(var8);
    }
@@ -101,14 +86,6 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
          } else if (var2 != 1 && var2 != 0) {
             if (this.canSmelt(var5)) {
                if (!this.moveItemStackTo(var5, 0, 1, false)) {
-                  if (this.inventory.getPlayer() != null) {
-                     if (this.inventory.getPlayer().isActive(PlayerUnlocks.SMELTER_2)) {
-                        this.data.set(4, 2);
-                     } else if (this.inventory.getPlayer().isActive(PlayerUnlocks.SMELTER_1)) {
-                        this.data.set(4, 1);
-                     }
-                  }
-
                   return ItemStack.EMPTY;
                }
             } else if (this.isFuel(var5)) {

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -29,21 +28,20 @@ public class SpecialModelWrapper<T> implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
          var8.setFoilType(ItemStackRenderState.FoilType.STANDARD);
-      }
-
-      if (var2.has(DataComponents.MINE_COMPLETED)) {
-         if ((Boolean)var2.get(DataComponents.MINE_COMPLETED)) {
-            var8.setFoilType(ItemStackRenderState.FoilType.WON);
-         } else {
-            var8.setFoilType(ItemStackRenderState.FoilType.LOST);
-         }
+         var1.setAnimated();
       }
 
       var8.setExtents(() -> EXTENTS);
-      var8.setupSpecialModel(this.specialRenderer, this.specialRenderer.extractArgument(var2));
+      Object var9 = this.specialRenderer.extractArgument(var2);
+      var8.setupSpecialModel(this.specialRenderer, var9);
+      if (var9 != null) {
+         var1.appendModelIdentityElement(var9);
+      }
+
       this.properties.applyToLayer(var8, var4);
    }
 

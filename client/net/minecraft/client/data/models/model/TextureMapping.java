@@ -281,6 +281,10 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_north")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_bottom")).put(TextureSlot.TOP, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_top")).put(TextureSlot.NORTH, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_north")).put(TextureSlot.SOUTH, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_south")).put(TextureSlot.EAST, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_east")).put(TextureSlot.WEST, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_west"));
    }
 
+   public static TextureMapping driedGhast(String var0) {
+      return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_north")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_bottom")).put(TextureSlot.TOP, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_top")).put(TextureSlot.NORTH, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_north")).put(TextureSlot.SOUTH, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_south")).put(TextureSlot.EAST, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_east")).put(TextureSlot.WEST, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_west")).put(TextureSlot.TENTACLES, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_tentacles"));
+   }
+
    public static TextureMapping campfire(Block var0) {
       return (new TextureMapping()).put(TextureSlot.LIT_LOG, getBlockTexture(var0, "_log_lit")).put(TextureSlot.FIRE, getBlockTexture(var0, "_fire"));
    }
@@ -296,16 +300,6 @@ public class TextureMapping {
    public static TextureMapping sculkShrieker(boolean var0) {
       String var1 = var0 ? "_can_summon" : "";
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.SCULK_SHRIEKER, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.SCULK_SHRIEKER, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.SCULK_SHRIEKER, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.SCULK_SHRIEKER, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.SCULK_SHRIEKER, "_bottom"));
-   }
-
-   public static TextureMapping mineCrafter(boolean var0) {
-      String var1 = var0 ? "_active" : "";
-      return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.MINE_CRAFTER, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.MINE_CRAFTER, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.MINE_CRAFTER, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.MINE_CRAFTER, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.MINE_CRAFTER, "_bottom"));
-   }
-
-   public static TextureMapping mineRevisitor(boolean var0) {
-      String var1 = var0 ? "_active" : "";
-      return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.MINE_REVISITOR, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.MINE_REVISITOR, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.MINE_REVISITOR, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.MINE_REVISITOR, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.MINE_REVISITOR, "_bottom"));
    }
 
    public static TextureMapping layer0(Item var0) {

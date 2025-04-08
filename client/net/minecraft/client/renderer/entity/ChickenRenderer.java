@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.AdultAndBabyModelPair;
 import net.minecraft.client.model.ChickenModel;
 import net.minecraft.client.model.ColdChickenModel;
@@ -14,13 +13,10 @@ import net.minecraft.client.renderer.entity.state.ChickenRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.ChickenVariant;
-import net.minecraft.world.level.Level;
 
 public class ChickenRenderer extends MobRenderer<Chicken, ChickenRenderState, ChickenModel> {
    private final Map<ChickenVariant.ModelType, AdultAndBabyModelPair<ChickenModel>> models;
@@ -49,12 +45,6 @@ public class ChickenRenderer extends MobRenderer<Chicken, ChickenRenderState, Ch
       return new ChickenRenderState();
    }
 
-   public ChickenRenderState createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable Level var1) {
-      ChickenRenderState var2 = (ChickenRenderState)super.createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(var1);
-      var2.variant = var1 != null ? (ChickenVariant)var1.registryAccess().lookupOrThrow(Registries.CHICKEN_VARIANT).getAny().map(Holder::value).orElse((Object)null) : null;
-      return var2;
-   }
-
    public void extractRenderState(Chicken var1, ChickenRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.flap = Mth.lerp(var3, var1.oFlap, var1.flap);
@@ -65,11 +55,6 @@ public class ChickenRenderer extends MobRenderer<Chicken, ChickenRenderState, Ch
    // $FF: synthetic method
    public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ChickenRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable final Level var1) {
-      return this.createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(var1);
    }
 
    // $FF: synthetic method

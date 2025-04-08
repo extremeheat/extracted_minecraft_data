@@ -22,7 +22,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.reporting.ReportPlayerScreen;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -170,7 +170,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       }
 
       if (this.hasDraftReport && this.reportButton != null) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
       }
 
    }
@@ -218,7 +218,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    private void onHiddenOrShown(boolean var1, Component var2) {
       this.updateHideAndShowButton(var1);
       this.minecraft.gui.getChat().addMessage(var2);
-      this.minecraft.getNarrator().sayNow(var2);
+      this.minecraft.getNarrator().saySystemNow(var2);
    }
 
    private void updateHideAndShowButton(boolean var1) {

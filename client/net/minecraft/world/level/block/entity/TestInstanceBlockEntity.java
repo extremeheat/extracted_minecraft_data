@@ -290,7 +290,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
             GameTestInfo var5 = new GameTestInfo((Holder.Reference)var7.get(), this.data.rotation(), var2, RetryOptions.noRetries());
             var5.setTestBlockPos(var4);
             GameTestRunner var6 = GameTestRunner.Builder.fromInfo(List.of(var5), var2).build();
-            TestCommand.trackAndStartRunner(var2.theGame().createCommandSourceStack(), var6);
+            TestCommand.trackAndStartRunner(var2.getServer().createCommandSourceStack(), var6);
          }
       }
    }

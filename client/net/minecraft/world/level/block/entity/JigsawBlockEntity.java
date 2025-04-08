@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.serialization.Codec;
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
@@ -145,7 +144,7 @@ public class JigsawBlockEntity extends BlockEntity {
       BlockPos var4 = this.getBlockPos().relative(((FrontAndTop)this.getBlockState().getValue(JigsawBlock.ORIENTATION)).front());
       Registry var5 = var1.registryAccess().lookupOrThrow(Registries.TEMPLATE_POOL);
       Holder.Reference var6 = var5.getOrThrow(this.pool);
-      JigsawPlacement.generateJigsaw(var1, var6, Optional.of(this.target), var2, var4, var3);
+      JigsawPlacement.generateJigsaw(var1, var6, this.target, var2, var4, var3);
    }
 
    // $FF: synthetic method

@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.List;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,27 +14,27 @@ public class ChestMenu extends AbstractContainerMenu {
       this(var1, var2, var3, new SimpleContainer(9 * var4), var4);
    }
 
-   public static ChestMenu oneRow(int var0, Inventory var1, List<Integer> var2) {
+   public static ChestMenu oneRow(int var0, Inventory var1) {
       return new ChestMenu(MenuType.GENERIC_9x1, var0, var1, 1);
    }
 
-   public static ChestMenu twoRows(int var0, Inventory var1, List<Integer> var2) {
+   public static ChestMenu twoRows(int var0, Inventory var1) {
       return new ChestMenu(MenuType.GENERIC_9x2, var0, var1, 2);
    }
 
-   public static ChestMenu threeRows(int var0, Inventory var1, List<Integer> var2) {
+   public static ChestMenu threeRows(int var0, Inventory var1) {
       return new ChestMenu(MenuType.GENERIC_9x3, var0, var1, 3);
    }
 
-   public static ChestMenu fourRows(int var0, Inventory var1, List<Integer> var2) {
+   public static ChestMenu fourRows(int var0, Inventory var1) {
       return new ChestMenu(MenuType.GENERIC_9x4, var0, var1, 4);
    }
 
-   public static ChestMenu fiveRows(int var0, Inventory var1, List<Integer> var2) {
+   public static ChestMenu fiveRows(int var0, Inventory var1) {
       return new ChestMenu(MenuType.GENERIC_9x5, var0, var1, 5);
    }
 
-   public static ChestMenu sixRows(int var0, Inventory var1, List<Integer> var2) {
+   public static ChestMenu sixRows(int var0, Inventory var1) {
       return new ChestMenu(MenuType.GENERIC_9x6, var0, var1, 6);
    }
 
@@ -52,7 +51,7 @@ public class ChestMenu extends AbstractContainerMenu {
       checkContainerSize(var4, var5 * 9);
       this.container = var4;
       this.containerRows = var5;
-      var4.startOpen(var3.getPlayer());
+      var4.startOpen(var3.player);
       boolean var6 = true;
       this.addChestGrid(var4, 8, 18);
       int var7 = 18 + this.containerRows * 18 + 13;

@@ -24,7 +24,6 @@ public abstract class ReloadableTexture extends AbstractTexture {
    public void apply(TextureContents var1) {
       boolean var2 = var1.clamp();
       boolean var3 = var1.blur();
-      this.defaultBlur = var3;
 
       try (NativeImage var4 = var1.image()) {
          this.doLoad(var4, var3, var2);

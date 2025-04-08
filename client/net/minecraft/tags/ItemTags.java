@@ -69,6 +69,9 @@ public final class ItemTags {
    public static final TagKey<Item> CAT_FOOD = bind("cat_food");
    public static final TagKey<Item> HORSE_FOOD = bind("horse_food");
    public static final TagKey<Item> HORSE_TEMPT_ITEMS = bind("horse_tempt_items");
+   public static final TagKey<Item> HARNESSES = bind("harnesses");
+   public static final TagKey<Item> HAPPY_GHAST_FOOD = bind("happy_ghast_food");
+   public static final TagKey<Item> HAPPY_GHAST_TEMPT_ITEMS = bind("happy_ghast_tempt_items");
    public static final TagKey<Item> CAMEL_FOOD = bind("camel_food");
    public static final TagKey<Item> ARMADILLO_FOOD = bind("armadillo_food");
    public static final TagKey<Item> BEE_FOOD = bind("bee_food");
@@ -101,10 +104,7 @@ public final class ItemTags {
    public static final TagKey<Item> CANDLES = bind("candles");
    public static final TagKey<Item> DIRT = bind("dirt");
    public static final TagKey<Item> TERRACOTTA = bind("terracotta");
-   public static final TagKey<Item> ORE = bind("ore");
-   public static final TagKey<Item> INGOT = bind("ingot");
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL = bind("completes_find_tree_tutorial");
-   public static final TagKey<Item> CARRY_OVER = bind("carry_over");
    public static final TagKey<Item> BOATS = bind("boats");
    public static final TagKey<Item> CHEST_BOATS = bind("chest_boats");
    public static final TagKey<Item> FISHES = bind("fishes");
@@ -184,7 +184,6 @@ public final class ItemTags {
    public static final TagKey<Item> MACE_ENCHANTABLE = bind("enchantable/mace");
    public static final TagKey<Item> MAP_INVISIBILITY_EQUIPMENT = bind("map_invisibility_equipment");
    public static final TagKey<Item> GAZE_DISGUISE_EQUIPMENT = bind("gaze_disguise_equipment");
-   public static final TagKey<Item> AMETHYST_CRYSTALS = bind("amethyst_crystals");
 
    private ItemTags() {
       super();

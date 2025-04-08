@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 
 public class LevelTargetBundle implements PostChain.TargetBundle {
    public static final ResourceLocation MAIN_TARGET_ID;
-   public static final ResourceLocation SKY_TARGET_ID;
    public static final ResourceLocation TRANSLUCENT_TARGET_ID;
    public static final ResourceLocation ITEM_ENTITY_TARGET_ID;
    public static final ResourceLocation PARTICLES_TARGET_ID;
@@ -19,7 +18,6 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    public static final Set<ResourceLocation> OUTLINE_TARGETS;
    public static final Set<ResourceLocation> SORTING_TARGETS;
    public ResourceHandle<RenderTarget> main = ResourceHandle.<RenderTarget>invalid();
-   public ResourceHandle<RenderTarget> sky = ResourceHandle.<RenderTarget>invalid();
    @Nullable
    public ResourceHandle<RenderTarget> translucent;
    @Nullable
@@ -40,8 +38,6 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    public void replace(ResourceLocation var1, ResourceHandle<RenderTarget> var2) {
       if (var1.equals(MAIN_TARGET_ID)) {
          this.main = var2;
-      } else if (var1.equals(SKY_TARGET_ID)) {
-         this.sky = var2;
       } else if (var1.equals(TRANSLUCENT_TARGET_ID)) {
          this.translucent = var2;
       } else if (var1.equals(ITEM_ENTITY_TARGET_ID)) {
@@ -66,8 +62,6 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    public ResourceHandle<RenderTarget> get(ResourceLocation var1) {
       if (var1.equals(MAIN_TARGET_ID)) {
          return this.main;
-      } else if (var1.equals(SKY_TARGET_ID)) {
-         return this.sky;
       } else if (var1.equals(TRANSLUCENT_TARGET_ID)) {
          return this.translucent;
       } else if (var1.equals(ITEM_ENTITY_TARGET_ID)) {
@@ -85,7 +79,6 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
 
    public void clear() {
       this.main = ResourceHandle.<RenderTarget>invalid();
-      this.sky = ResourceHandle.<RenderTarget>invalid();
       this.translucent = null;
       this.itemEntity = null;
       this.particles = null;
@@ -96,7 +89,6 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
 
    static {
       MAIN_TARGET_ID = PostChain.MAIN_TARGET_ID;
-      SKY_TARGET_ID = ResourceLocation.withDefaultNamespace("sky");
       TRANSLUCENT_TARGET_ID = ResourceLocation.withDefaultNamespace("translucent");
       ITEM_ENTITY_TARGET_ID = ResourceLocation.withDefaultNamespace("item_entity");
       PARTICLES_TARGET_ID = ResourceLocation.withDefaultNamespace("particles");

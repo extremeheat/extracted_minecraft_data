@@ -2,7 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -11,14 +10,12 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -257,13 +254,6 @@ public class ItemInHandRenderer {
          var16.renderLeftHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
 
-      Lighting.setupLevel();
-      var1.translate(-0.4F, 0.7F, 0.1F);
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
-      if (((AbstractClientPlayer)var15).isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE)) {
-         ItemInHandLayer.renderFireHands(0.7F, var1, var2);
-      }
-
    }
 
    private void applyEatTransform(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4, Player var5) {
@@ -426,15 +416,6 @@ public class ItemInHandRenderer {
                }
             }
 
-            if (var1.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE)) {
-               Lighting.setupLevel();
-               var8.pushPose();
-               var8.translate(0.1F, -0.2F, 0.2F);
-               var8.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
-               ItemInHandLayer.renderFireHands(0.7F, var8, var9);
-               var8.popPose();
-            }
-
             this.renderItem(var1, var6, var14 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, var8, var9, var10);
          } else {
             boolean var21 = var12 == HumanoidArm.RIGHT;
@@ -518,15 +499,6 @@ public class ItemInHandRenderer {
                var8.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var22 * -85.0F));
             } else {
                this.swingArm(var5, var7, var8, var22, var12);
-            }
-
-            if (var1.isActive(PlayerUnlocks.YOU_ARE_THE_CAMPFIRE)) {
-               Lighting.setupLevel();
-               var8.pushPose();
-               var8.translate(0.1F, -0.2F, 0.2F);
-               var8.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
-               ItemInHandLayer.renderFireHands(0.7F, var8, var9);
-               var8.popPose();
             }
 
             this.renderItem(var1, var6, var21 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, var8, var9, var10);

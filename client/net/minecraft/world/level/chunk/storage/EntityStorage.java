@@ -54,11 +54,11 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                   ChunkPos var3 = (ChunkPos)((CompoundTag)var2x.get()).read("Position", ChunkPos.CODEC).orElseThrow();
                   if (!Objects.equals(var1, var3)) {
                      LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{var1, var1, var3});
-                     this.level.chunkIOErrorReporter().reportMisplacedChunk(var3, var1, this.simpleRegionStorage.storageInfo());
+                     this.level.getServer().reportMisplacedChunk(var3, var1, this.simpleRegionStorage.storageInfo());
                   }
                } catch (Exception var6) {
                   LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
-                  this.level.chunkIOErrorReporter().reportChunkLoadFailure(var6, this.simpleRegionStorage.storageInfo(), var1);
+                  this.level.getServer().reportChunkLoadFailure(var6, this.simpleRegionStorage.storageInfo(), var1);
                }
 
                CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
@@ -104,7 +104,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    private void reportSaveFailureIfPresent(CompletableFuture<?> var1, ChunkPos var2) {
       var1.exceptionally((var2x) -> {
          LOGGER.error("Failed to store entity chunk {}", var2, var2x);
-         this.level.chunkIOErrorReporter().reportChunkSaveFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
+         this.level.getServer().reportChunkSaveFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
          return null;
       });
    }
@@ -112,7 +112,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    private void reportLoadFailureIfPresent(CompletableFuture<?> var1, ChunkPos var2) {
       var1.exceptionally((var2x) -> {
          LOGGER.error("Failed to load entity chunk {}", var2, var2x);
-         this.level.chunkIOErrorReporter().reportChunkLoadFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
+         this.level.getServer().reportChunkLoadFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
          return null;
       });
    }

@@ -37,7 +37,7 @@ public class DataGenerator {
       Stopwatch var3 = Stopwatch.createUnstarted();
       this.providersToRun.forEach((var3x, var4) -> {
          if (!this.alwaysGenerate && !var1.shouldRunInThisVersion(var3x)) {
-            LOGGER.debug("Generator {} already run for version {}", var3x, this.version.getName());
+            LOGGER.debug("Generator {} already run for version {}", var3x, this.version.name());
          } else {
             LOGGER.info("Starting provider: {}", var3x);
             var3.start();

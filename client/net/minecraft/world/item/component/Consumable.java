@@ -24,7 +24,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import net.minecraft.world.item.consume_effects.PlaySoundConsumeEffect;
 import net.minecraft.world.level.Level;
@@ -67,9 +66,6 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
       if (var2 instanceof ServerPlayer var5) {
          var5.awardStat(Stats.ITEM_USED.get(var3.getItem()));
          CriteriaTriggers.CONSUME_ITEM.trigger(var5, var3);
-         if (var3.is(Items.POISONOUS_POTATO) && var5.getStats().getValue(Stats.ITEM_USED.get(var3.getItem())) >= 100) {
-            CriteriaTriggers.CONSUMED_HUNDRED_POISONOUS_POTATOES.trigger(var5, var3);
-         }
       }
 
       var3.getAllOfType(ConsumableListener.class).forEach((var4x) -> var4x.onConsume(var1, var2, var3, this));

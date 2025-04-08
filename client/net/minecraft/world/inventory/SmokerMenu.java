@@ -1,13 +1,12 @@
 package net.minecraft.world.inventory;
 
-import java.util.List;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
 
 public class SmokerMenu extends AbstractFurnaceMenu {
-   public SmokerMenu(int var1, Inventory var2, List<Integer> var3) {
+   public SmokerMenu(int var1, Inventory var2) {
       super(MenuType.SMOKER, RecipeType.SMOKING, RecipePropertySet.SMOKER_INPUT, RecipeBookType.SMOKER, var1, var2);
    }
 

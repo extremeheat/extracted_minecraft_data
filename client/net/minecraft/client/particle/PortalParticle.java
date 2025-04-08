@@ -50,7 +50,7 @@ public class PortalParticle extends TextureSheetParticle {
       float var3 = (float)this.age / (float)this.lifetime;
       var3 *= var3;
       var3 *= var3;
-      int var4 = var2 & 85;
+      int var4 = var2 & 255;
       int var5 = var2 >> 16 & 255;
       var5 += (int)(var3 * 15.0F * 16.0F);
       if (var5 > 240) {

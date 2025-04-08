@@ -45,7 +45,7 @@ public class RealmsCreateWorldFlow {
             return true;
          }
 
-         RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), var8.getLevelSettings().allowCommands(), SharedConstants.getCurrentVersion().getName());
+         RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), var8.getLevelSettings().allowCommands(), SharedConstants.getCurrentVersion().name());
          RealmsWorldUpload var12 = new RealmsWorldUpload(var10, var11, var0.getUser(), var4.id, var3, RealmsWorldUploadStatusTracker.noOp());
          Objects.requireNonNull(var12);
          var0.forceSetScreen(new AlertScreen(var12::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));

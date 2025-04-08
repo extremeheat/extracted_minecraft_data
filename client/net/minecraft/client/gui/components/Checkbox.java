@@ -8,7 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -88,7 +88,7 @@ public class Checkbox extends AbstractButton {
       }
 
       int var8 = getBoxSize(var6);
-      var1.blitSprite(RenderType::guiTextured, var7, this.getX(), this.getY(), var8, var8, ARGB.white(this.alpha));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, this.getX(), this.getY(), var8, var8, ARGB.white(this.alpha));
       int var9 = this.getX() + var8 + 4;
       int var10 = this.getY() + var8 / 2 - this.textWidget.getHeight() / 2;
       this.textWidget.setPosition(var9, var10);

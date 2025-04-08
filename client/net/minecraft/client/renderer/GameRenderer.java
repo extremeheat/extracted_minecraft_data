@@ -4,7 +4,6 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -18,6 +17,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -32,6 +32,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.GuiLayer;
+import net.minecraft.client.gui.render.GuiRenderer;
+import net.minecraft.client.gui.render.pip.GuiBannerResultRenderer;
+import net.minecraft.client.gui.render.pip.GuiBookModelRenderer;
+import net.minecraft.client.gui.render.pip.GuiEntityRenderer;
+import net.minecraft.client.gui.render.pip.GuiProfilerChartRenderer;
+import net.minecraft.client.gui.render.pip.GuiSignRenderer;
+import net.minecraft.client.gui.render.pip.GuiSkinRenderer;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -41,7 +50,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -58,7 +66,6 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,6 +76,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.waypoints.TrackedWaypoint;
 import org.apache.commons.io.IOUtils;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -78,19 +86,18 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
-public class GameRenderer implements AutoCloseable {
+public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private static final ResourceLocation BLUR_POST_CHAIN_ID = ResourceLocation.withDefaultNamespace("blur");
    public static final int MAX_BLUR_RADIUS = 10;
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final float PROJECTION_Z_NEAR = 0.05F;
-   private static final float GUI_Z_NEAR = 1000.0F;
    private static final float PORTAL_SPINNING_SPEED = 20.0F;
    private static final float NAUSEA_SPINNING_SPEED = 7.0F;
    private final Minecraft minecraft;
-   private final ResourceManager resourceManager;
    private final RandomSource random = RandomSource.create();
    private float renderDistance;
    public final ItemInHandRenderer itemInHandRenderer;
+   private final ScreenEffectRenderer screenEffectRenderer;
    private final RenderBuffers renderBuffers;
    private float spinningEffectTime;
    private float spinningEffectSpeed;
@@ -98,7 +105,6 @@ public class GameRenderer implements AutoCloseable {
    private float oldFovModifier;
    private float darkenWorldAmount;
    private float darkenWorldAmountO;
-   private boolean renderHand = true;
    private boolean renderBlockOutline = true;
    private long lastScreenshotAttempt;
    private boolean hasWorldScreenshot;
@@ -106,38 +112,31 @@ public class GameRenderer implements AutoCloseable {
    private final LightTexture lightTexture;
    private final OverlayTexture overlayTexture = new OverlayTexture();
    private boolean panoramicMode;
-   private float zoom = 1.0F;
-   private float zoomX;
-   private float zoomY;
-   public static final int ITEM_ACTIVATION_ANIMATION_LENGTH = 40;
-   @Nullable
-   private ItemStack itemActivationItem;
-   private int itemActivationTicks;
-   private float itemActivationOffX;
-   private float itemActivationOffY;
    private final CrossFrameResourcePool resourcePool = new CrossFrameResourcePool(3);
+   private final GuiRenderer guiRenderer;
+   private final GuiRenderState guiRenderState;
    @Nullable
    private ResourceLocation postEffectId;
    private boolean effectActive;
    private final Camera mainCamera = new Camera();
 
-   public GameRenderer(Minecraft var1, ItemInHandRenderer var2, ResourceManager var3, RenderBuffers var4) {
+   public GameRenderer(Minecraft var1, ItemInHandRenderer var2, RenderBuffers var3) {
       super();
       this.minecraft = var1;
-      this.resourceManager = var3;
       this.itemInHandRenderer = var2;
       this.lightTexture = new LightTexture(this, var1);
-      this.renderBuffers = var4;
+      this.renderBuffers = var3;
+      this.guiRenderState = new GuiRenderState();
+      MultiBufferSource.BufferSource var4 = var3.bufferSource();
+      this.guiRenderer = new GuiRenderer(this.guiRenderState, var4, List.of(new GuiEntityRenderer(var4, var1.getEntityRenderDispatcher()), new GuiSkinRenderer(var4), new GuiBookModelRenderer(var4), new GuiBannerResultRenderer(var4), new GuiSignRenderer(var4), new GuiProfilerChartRenderer(var4)));
+      this.screenEffectRenderer = new ScreenEffectRenderer(var1, var4);
    }
 
    public void close() {
       this.lightTexture.close();
       this.overlayTexture.close();
       this.resourcePool.close();
-   }
-
-   public void setRenderHand(boolean var1) {
-      this.renderHand = var1;
+      this.guiRenderer.close();
    }
 
    public void setRenderBlockOutline(boolean var1) {
@@ -222,8 +221,7 @@ public class GameRenderer implements AutoCloseable {
          }
       };
       var2.precompilePipeline(RenderPipelines.GUI, var3);
-      var2.precompilePipeline(RenderPipelines.GUI_OVERLAY, var3);
-      var2.precompilePipeline(RenderPipelines.GUI_TEXTURED_OVERLAY, var3);
+      var2.precompilePipeline(RenderPipelines.GUI_TEXTURED, var3);
       if (TracyClient.isAvailable()) {
          var2.precompilePipeline(RenderPipelines.TRACY_BLIT, var3);
       }
@@ -261,13 +259,7 @@ public class GameRenderer implements AutoCloseable {
             this.darkenWorldAmount -= 0.0125F;
          }
 
-         if (this.itemActivationTicks > 0) {
-            --this.itemActivationTicks;
-            if (this.itemActivationTicks == 0) {
-               this.itemActivationItem = null;
-            }
-         }
-
+         this.screenEffectRenderer.tick();
       }
    }
 
@@ -417,55 +409,31 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   public void renderZoomed(float var1, float var2, float var3) {
-      this.zoom = var1;
-      this.zoomX = var2;
-      this.zoomY = var3;
-      this.setRenderBlockOutline(false);
-      this.setRenderHand(false);
-      this.renderLevel(DeltaTracker.ZERO);
-      this.zoom = 1.0F;
-   }
-
-   private void renderItemInHand(Camera var1, float var2, Matrix4f var3) {
+   private void renderItemInHand(float var1, boolean var2, Matrix4f var3) {
       if (!this.panoramicMode) {
-         Matrix4f var4 = this.getProjectionMatrix(this.getFov(var1, var2, false));
-         RenderSystem.setProjectionMatrix(var4, ProjectionType.PERSPECTIVE);
-         PoseStack var5 = new PoseStack();
-         var5.pushPose();
-         var5.mulPose((Matrix4fc)var3.invert(new Matrix4f()));
-         Matrix4fStack var6 = RenderSystem.getModelViewStack();
-         var6.pushMatrix().mul(var3);
-         this.bobHurt(var5, var2);
+         PoseStack var4 = new PoseStack();
+         var4.pushPose();
+         var4.mulPose((Matrix4fc)var3.invert(new Matrix4f()));
+         Matrix4fStack var5 = RenderSystem.getModelViewStack();
+         var5.pushMatrix().mul(var3);
+         this.bobHurt(var4, var1);
          if ((Boolean)this.minecraft.options.bobView().get()) {
-            this.bobView(var5, var2);
+            this.bobView(var4, var1);
          }
 
-         boolean var7 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
-         if (this.minecraft.options.getCameraType().isFirstPerson() && !var7 && !this.minecraft.options.hideGui && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
+         if (this.minecraft.options.getCameraType().isFirstPerson() && !var2 && !this.minecraft.options.hideGui && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
             this.lightTexture.turnOnLightLayer();
-            this.itemInHandRenderer.renderHandsWithItems(var2, var5, this.renderBuffers.bufferSource(), this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var2));
+            this.itemInHandRenderer.renderHandsWithItems(var1, var4, this.renderBuffers.bufferSource(), this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var1));
             this.lightTexture.turnOffLightLayer();
          }
 
-         var6.popMatrix();
-         var5.popPose();
-         if (this.minecraft.options.getCameraType().isFirstPerson() && !var7) {
-            MultiBufferSource.BufferSource var8 = this.renderBuffers.bufferSource();
-            ScreenEffectRenderer.renderScreenEffect(this.minecraft, var5, var8);
-            var8.endBatch();
-         }
-
+         var5.popMatrix();
+         var4.popPose();
       }
    }
 
    public Matrix4f getProjectionMatrix(float var1) {
       Matrix4f var2 = new Matrix4f();
-      if (this.zoom != 1.0F) {
-         var2.translate(this.zoomX, -this.zoomY, 0.0F);
-         var2.scale(this.zoom, this.zoom, 1.0F);
-      }
-
       return var2.perspective(var1 * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.getDepthFar());
    }
 
@@ -506,72 +474,64 @@ public class GameRenderer implements AutoCloseable {
             }
          }
 
-         Window var20 = this.minecraft.getWindow();
-         RenderTarget var8 = this.minecraft.getMainRenderTarget();
-         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var8.getDepthTexture(), 1.0);
-         Matrix4f var9 = (new Matrix4f()).setOrtho(0.0F, (float)((double)var20.getWidth() / var20.getGuiScale()), (float)((double)var20.getHeight() / var20.getGuiScale()), 0.0F, 1000.0F, 21000.0F);
-         RenderSystem.setProjectionMatrix(var9, ProjectionType.ORTHOGRAPHIC);
-         Matrix4fStack var10 = RenderSystem.getModelViewStack();
-         var10.pushMatrix();
-         var10.translation(0.0F, 0.0F, -11000.0F);
+         RenderTarget var17 = this.minecraft.getMainRenderTarget();
+         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
          Lighting.setupFor3DItems();
-         GuiGraphics var11 = new GuiGraphics(this.minecraft, this.renderBuffers.bufferSource());
+         GuiGraphics var8 = new GuiGraphics(this.minecraft, this.guiRenderState);
          if (var4 && var2 && this.minecraft.level != null) {
             var3.popPush("gui");
-            if (!this.minecraft.options.hideGui) {
-               this.renderItemActivationAnimation(var11, var1.getGameTimeDeltaPartialTick(false));
-            }
-
-            this.minecraft.gui.render(var11, var1);
-            var11.flush();
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var8.getDepthTexture(), 1.0);
+            this.minecraft.gui.render(var8, var1);
+            this.guiRenderer.render();
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
             var3.pop();
          }
 
          if (this.minecraft.getOverlay() != null) {
             try {
-               this.minecraft.getOverlay().render(var11, var5, var6, var1.getGameTimeDeltaTicks());
-            } catch (Throwable var18) {
-               CrashReport var13 = CrashReport.forThrowable(var18, "Rendering overlay");
-               CrashReportCategory var14 = var13.addCategory("Overlay render details");
-               var14.setDetail("Overlay name", (CrashReportDetail)(() -> this.minecraft.getOverlay().getClass().getCanonicalName()));
-               throw new ReportedException(var13);
+               this.minecraft.getOverlay().render(var8, var5, var6, var1.getGameTimeDeltaTicks());
+            } catch (Throwable var15) {
+               CrashReport var10 = CrashReport.forThrowable(var15, "Rendering overlay");
+               CrashReportCategory var11 = var10.addCategory("Overlay render details");
+               var11.setDetail("Overlay name", (CrashReportDetail)(() -> this.minecraft.getOverlay().getClass().getCanonicalName()));
+               throw new ReportedException(var10);
             }
          } else if (var4 && this.minecraft.screen != null) {
             try {
-               this.minecraft.screen.renderWithTooltip(var11, var5, var6, var1.getGameTimeDeltaTicks());
-            } catch (Throwable var17) {
-               CrashReport var21 = CrashReport.forThrowable(var17, "Rendering screen");
-               CrashReportCategory var23 = var21.addCategory("Screen render details");
-               var23.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
-               this.minecraft.mouseHandler.fillMousePositionDetails(var23, this.minecraft.getWindow());
-               throw new ReportedException(var21);
+               this.minecraft.screen.renderWithTooltip(var8, var5, var6, var1.getGameTimeDeltaTicks());
+            } catch (Throwable var14) {
+               CrashReport var18 = CrashReport.forThrowable(var14, "Rendering screen");
+               CrashReportCategory var20 = var18.addCategory("Screen render details");
+               var20.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
+               this.minecraft.mouseHandler.fillMousePositionDetails(var20, this.minecraft.getWindow());
+               throw new ReportedException(var18);
             }
 
             try {
                if (this.minecraft.screen != null) {
                   this.minecraft.screen.handleDelayedNarration();
                }
-            } catch (Throwable var16) {
-               CrashReport var22 = CrashReport.forThrowable(var16, "Narrating screen");
-               CrashReportCategory var24 = var22.addCategory("Screen details");
-               var24.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
-               throw new ReportedException(var22);
+            } catch (Throwable var13) {
+               CrashReport var19 = CrashReport.forThrowable(var13, "Narrating screen");
+               CrashReportCategory var21 = var19.addCategory("Screen details");
+               var21.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
+               throw new ReportedException(var19);
             }
          }
 
          if (var4 && var2 && this.minecraft.level != null) {
-            this.minecraft.gui.renderSavingIndicator(var11, var1);
+            this.minecraft.gui.renderSavingIndicator(var8, var1);
          }
 
          if (var4) {
-            try (Zone var12 = var3.zone("toasts")) {
-               this.minecraft.getToastManager().render(var11);
+            try (Zone var9 = var3.zone("toasts")) {
+               var8.pushGuiLayer(GuiLayer.SCREEN);
+               this.minecraft.getToastManager().render(var8);
+               var8.popGuiLayer();
             }
          }
 
-         var11.flush();
-         var10.popMatrix();
+         this.guiRenderer.render();
+         this.guiRenderer.incrementFrameNumber();
          this.resourcePool.endFrame();
       }
    }
@@ -706,57 +666,38 @@ public class GameRenderer implements AutoCloseable {
          var10.rotate(-var18, var17);
       }
 
-      float var21 = Math.max(var9, (float)(Integer)this.minecraft.options.fov().get());
-      Matrix4f var22 = this.getProjectionMatrix(var21);
+      float var23 = Math.max(var9, (float)(Integer)this.minecraft.options.fov().get());
+      Matrix4f var24 = this.getProjectionMatrix(var23);
       RenderSystem.setProjectionMatrix(var10, ProjectionType.PERSPECTIVE);
-      Quaternionf var23 = var6.rotation().conjugate(new Quaternionf());
-      Matrix4f var19 = (new Matrix4f()).rotation(var23);
-      this.minecraft.levelRenderer.prepareCullFrustum(var6.getPosition(), var19, var22);
+      Quaternionf var25 = var6.rotation().conjugate(new Quaternionf());
+      Matrix4f var19 = (new Matrix4f()).rotation(var25);
+      this.minecraft.levelRenderer.prepareCullFrustum(var6.getPosition(), var19, var24);
       this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, var6, this, var19, var10);
+      boolean var20 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
+      RenderSystem.setProjectionMatrix(this.getProjectionMatrix(this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
       var4.popPush("hand");
-      if (this.renderHand) {
-         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
-         this.renderItemInHand(var6, var2, var19);
+      RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
+      this.renderItemInHand(var2, var20, var19);
+      var4.popPush("screen effects");
+      MultiBufferSource.BufferSource var21 = this.renderBuffers.bufferSource();
+      this.screenEffectRenderer.renderScreenEffect(var20, var2);
+      var21.endBatch();
+      var4.pop();
+      if (this.minecraft.gui.shouldRenderDebugCrosshair()) {
+         this.minecraft.getDebugOverlay().render3dCrosshair(var6);
       }
 
-      var4.pop();
    }
 
    public void resetData() {
-      this.itemActivationItem = null;
+      this.screenEffectRenderer.resetItemActivation();
       this.minecraft.getMapTextureManager().resetData();
       this.mainCamera.reset();
       this.hasWorldScreenshot = false;
    }
 
    public void displayItemActivation(ItemStack var1) {
-      this.itemActivationItem = var1;
-      this.itemActivationTicks = 40;
-      this.itemActivationOffX = this.random.nextFloat() * 2.0F - 1.0F;
-      this.itemActivationOffY = this.random.nextFloat() * 2.0F - 1.0F;
-   }
-
-   private void renderItemActivationAnimation(GuiGraphics var1, float var2) {
-      if (this.itemActivationItem != null && this.itemActivationTicks > 0) {
-         int var3 = 40 - this.itemActivationTicks;
-         float var4 = ((float)var3 + var2) / 40.0F;
-         float var5 = var4 * var4;
-         float var6 = var4 * var5;
-         float var7 = 10.25F * var6 * var5 - 24.95F * var5 * var5 + 25.5F * var6 - 13.8F * var5 + 4.0F * var4;
-         float var8 = var7 * 3.1415927F;
-         float var9 = this.itemActivationOffX * (float)(var1.guiWidth() / 4);
-         float var10 = this.itemActivationOffY * (float)(var1.guiHeight() / 4);
-         PoseStack var11 = var1.pose();
-         var11.pushPose();
-         var11.translate((float)(var1.guiWidth() / 2) + var9 * Mth.abs(Mth.sin(var8 * 2.0F)), (float)(var1.guiHeight() / 2) + var10 * Mth.abs(Mth.sin(var8 * 2.0F)), -50.0F);
-         float var12 = 50.0F + 175.0F * Mth.sin(var8);
-         var11.scale(var12, -var12, var12);
-         var11.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
-         var11.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
-         var11.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
-         var1.drawSpecial((var2x) -> this.minecraft.getItemRenderer().renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var11, var2x, this.minecraft.level, 0));
-         var11.popPose();
-      }
+      this.screenEffectRenderer.displayItemActivation(var1, this.random);
    }
 
    public Minecraft getMinecraft() {
@@ -781,5 +722,28 @@ public class GameRenderer implements AutoCloseable {
 
    public OverlayTexture overlayTexture() {
       return this.overlayTexture;
+   }
+
+   public Vec3 projectPointToScreen(Vec3 var1) {
+      Matrix4f var2 = this.getProjectionMatrix(this.getFov(this.mainCamera, 0.0F, true));
+      Quaternionf var3 = this.mainCamera.rotation().conjugate(new Quaternionf());
+      Matrix4f var4 = (new Matrix4f()).rotation(var3);
+      Matrix4f var5 = var2.mul(var4);
+      Vec3 var6 = this.mainCamera.getPosition();
+      Vec3 var7 = var1.subtract(var6);
+      Vector3f var8 = var5.transformProject(var7.toVector3f());
+      return new Vec3(var8);
+   }
+
+   public double projectHorizonToScreen() {
+      float var1 = this.mainCamera.getXRot();
+      if (var1 <= -90.0F) {
+         return -1.0 / 0.0;
+      } else if (var1 >= 90.0F) {
+         return 1.0 / 0.0;
+      } else {
+         float var2 = this.getFov(this.mainCamera, 0.0F, true);
+         return Math.tan((double)(var1 * 0.017453292F)) / Math.tan((double)(var2 / 2.0F * 0.017453292F));
+      }
    }
 }

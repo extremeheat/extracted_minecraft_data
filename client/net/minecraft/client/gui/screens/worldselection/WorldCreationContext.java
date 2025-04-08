@@ -53,7 +53,10 @@ public record WorldCreationContext(WorldOptions options, Registry<LevelStem> dat
    }
 
    public void validate() {
-      this.datapackDimensions().listElements().forEach((var1) -> LevelStem.generator(this.worldgenRegistries.compositeAccess(), var1).validate());
+      for(LevelStem var2 : this.datapackDimensions()) {
+         var2.generator().validate();
+      }
+
    }
 
    @FunctionalInterface

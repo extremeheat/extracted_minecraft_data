@@ -32,17 +32,16 @@ public final class RandomState {
       return new RandomState(var0, var1, var2);
    }
 
-   private RandomState(NoiseGeneratorSettings var1, HolderGetter<NormalNoise.NoiseParameters> var2, long var3) {
+   private RandomState(NoiseGeneratorSettings var1, HolderGetter<NormalNoise.NoiseParameters> var2, final long var3) {
       super();
-      final long var5 = var3 ^ var1.salt();
-      this.random = var1.getRandomSource().newInstance(var5).forkPositional();
+      this.random = var1.getRandomSource().newInstance(var3).forkPositional();
       this.noises = var2;
       this.aquiferRandom = this.random.fromHashOf(ResourceLocation.withDefaultNamespace("aquifer")).forkPositional();
       this.oreRandom = this.random.fromHashOf(ResourceLocation.withDefaultNamespace("ore")).forkPositional();
       this.noiseIntances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
       this.surfaceSystem = new SurfaceSystem(this, var1.defaultBlock(), var1.seaLevel(), this.random);
-      final boolean var7 = var1.useLegacyRandomSource();
+      final boolean var5 = var1.useLegacyRandomSource();
 
       class 1NoiseWiringHelper implements DensityFunction.Visitor {
          private final Map<DensityFunction, DensityFunction> wrapped = new HashMap();
@@ -52,12 +51,12 @@ public final class RandomState {
          }
 
          private RandomSource newLegacyInstance(long var1) {
-            return new LegacyRandomSource(var5 + var1);
+            return new LegacyRandomSource(var3 + var1);
          }
 
          public DensityFunction.NoiseHolder visitNoise(DensityFunction.NoiseHolder var1) {
             Holder var2 = var1.noiseData();
-            if (var7) {
+            if (var5) {
                if (var2.is(Noises.TEMPERATURE)) {
                   NormalNoise var6 = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
                   return new DensityFunction.NoiseHolder(var2, var6);
@@ -74,16 +73,16 @@ public final class RandomState {
                }
             }
 
-            NormalNoise var3 = RandomState.this.getOrCreateNoise((ResourceKey)var2.unwrapKey().orElseThrow());
-            return new DensityFunction.NoiseHolder(var2, var3);
+            NormalNoise var3x = RandomState.this.getOrCreateNoise((ResourceKey)var2.unwrapKey().orElseThrow());
+            return new DensityFunction.NoiseHolder(var2, var3x);
          }
 
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof BlendedNoise var2) {
-               RandomSource var3 = var7 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(ResourceLocation.withDefaultNamespace("terrain"));
-               return var2.withNewRandom(var3);
+               RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(ResourceLocation.withDefaultNamespace("terrain"));
+               return var2.withNewRandom(var3x);
             } else {
-               return (DensityFunction)(var1 instanceof DensityFunctions.EndIslandDensityFunction ? new DensityFunctions.EndIslandDensityFunction(var5) : var1);
+               return (DensityFunction)(var1 instanceof DensityFunctions.EndIslandDensityFunction ? new DensityFunctions.EndIslandDensityFunction(var3) : var1);
             }
          }
 
@@ -93,7 +92,7 @@ public final class RandomState {
       }
 
       this.router = var1.noiseRouter().mapAll(new 1NoiseWiringHelper());
-      DensityFunction.Visitor var8 = new DensityFunction.Visitor() {
+      DensityFunction.Visitor var6 = new DensityFunction.Visitor() {
          private final Map<DensityFunction, DensityFunction> wrapped = new HashMap();
 
          private DensityFunction wrapNew(DensityFunction var1) {
@@ -110,7 +109,7 @@ public final class RandomState {
             return (DensityFunction)this.wrapped.computeIfAbsent(var1, this::wrapNew);
          }
       };
-      this.sampler = new Climate.Sampler(this.router.temperature().mapAll(var8), this.router.vegetation().mapAll(var8), this.router.continents().mapAll(var8), this.router.erosion().mapAll(var8), this.router.depth().mapAll(var8), this.router.ridges().mapAll(var8), var1.spawnTarget());
+      this.sampler = new Climate.Sampler(this.router.temperature().mapAll(var6), this.router.vegetation().mapAll(var6), this.router.continents().mapAll(var6), this.router.erosion().mapAll(var6), this.router.depth().mapAll(var6), this.router.ridges().mapAll(var6), var1.spawnTarget());
    }
 
    public NormalNoise getOrCreateNoise(ResourceKey<NormalNoise.NoiseParameters> var1) {

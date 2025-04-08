@@ -35,7 +35,7 @@ public class RealmsConnect {
    public void connect(final RealmsServer var1, ServerAddress var2) {
       final Minecraft var3 = Minecraft.getInstance();
       var3.prepareForMultiplayer();
-      var3.getNarrator().sayNow((Component)Component.translatable("mco.connect.success"));
+      var3.getNarrator().saySystemNow((Component)Component.translatable("mco.connect.success"));
       final String var4 = var2.getHost();
       final int var5 = var2.getPort();
       (new Thread("Realms-connect-task") {

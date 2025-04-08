@@ -74,7 +74,7 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
    @Nullable
    public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       if (this.canOpen(var3)) {
-         this.unpackLootTable(var2.getPlayer());
+         this.unpackLootTable(var2.player);
          return this.createMenu(var1, var2);
       } else {
          return null;

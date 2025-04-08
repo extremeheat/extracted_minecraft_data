@@ -24,7 +24,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -79,6 +78,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
 public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting {
@@ -397,15 +397,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected void dropFromLootTable(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropFromLootTable(var1, var2, var3);
-      if (var3) {
-         Entity var5 = var2.getEntity();
-         if (var5 instanceof Player) {
-            Player var4 = (Player)var5;
-            if (var4.isActive(PlayerUnlocks.HUNTER)) {
-            }
-         }
-      }
-
       this.lootTable = Optional.empty();
    }
 
@@ -439,6 +430,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.setXxa(0.0F);
       this.setYya(0.0F);
       this.setSpeed(0.0F);
+      this.setDeltaMovement(0.0, 0.0, 0.0);
    }
 
    public void aiStep() {
@@ -1109,6 +1101,14 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          return true;
       } else {
          return this.restrictCenter.distSqr(var1) < (double)(this.restrictRadius * this.restrictRadius);
+      }
+   }
+
+   public boolean isWithinRestriction(Vec3 var1) {
+      if (this.restrictRadius == -1.0F) {
+         return true;
+      } else {
+         return this.restrictCenter.distToCenterSqr(var1) < (double)(this.restrictRadius * this.restrictRadius);
       }
    }
 

@@ -75,19 +75,19 @@ public interface RandomizableContainer extends Container {
       Level var2 = this.getLevel();
       BlockPos var3 = this.getBlockPos();
       ResourceKey var4 = this.getLootTable();
-      if (var4 != null && var2 instanceof ServerLevel var5) {
-         LootTable var6 = var5.theGame().reloadableRegistries().getLootTable(var4);
+      if (var4 != null && var2 != null && var2.getServer() != null) {
+         LootTable var5 = var2.getServer().reloadableRegistries().getLootTable(var4);
          if (var1 instanceof ServerPlayer) {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, var4);
          }
 
          this.setLootTable((ResourceKey)null);
-         LootParams.Builder var7 = (new LootParams.Builder((ServerLevel)var2)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3));
+         LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)var2)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3));
          if (var1 != null) {
-            var7.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
+            var6.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
          }
 
-         var6.fill(this, var7.create(LootContextParamSets.CHEST), this.getLootTableSeed());
+         var5.fill(this, var6.create(LootContextParamSets.CHEST), this.getLootTableSeed());
       }
 
    }

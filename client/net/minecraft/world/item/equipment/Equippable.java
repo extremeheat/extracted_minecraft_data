@@ -55,6 +55,11 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       return builder(EquipmentSlot.SADDLE).setEquipSound(SoundEvents.HORSE_SADDLE).setAsset(EquipmentAssets.SADDLE).setAllowedEntities(var0.getOrThrow(EntityTypeTags.CAN_EQUIP_SADDLE)).setEquipOnInteract(true).build();
    }
 
+   public static Equippable harness(DyeColor var0) {
+      HolderGetter var1 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
+      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HARNESS_EQUIP).setAsset((ResourceKey)EquipmentAssets.HARNESSES.get(var0)).setAllowedEntities(var1.getOrThrow(EntityTypeTags.CAN_EQUIP_HARNESS)).setEquipOnInteract(true).build();
+   }
+
    public static Builder builder(EquipmentSlot var0) {
       return new Builder(var0);
    }

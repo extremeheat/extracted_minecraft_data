@@ -6,7 +6,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -31,17 +30,8 @@ public class LargeFireball extends Fireball {
       super.onHit(var1);
       Level var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
-         Level.ExplosionInteraction var4;
-         boolean var5;
-         if (this.getOwner() instanceof Player) {
-            var5 = true;
-            var4 = Level.ExplosionInteraction.TNT;
-         } else {
-            var5 = var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-            var4 = Level.ExplosionInteraction.MOB;
-         }
-
-         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var5, var4);
+         boolean var4 = var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var4, Level.ExplosionInteraction.MOB);
          this.discard();
       }
 

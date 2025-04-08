@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,7 +28,7 @@ public class SlimeBlock extends HalfTransparentBlock {
 
    }
 
-   public void updateEntityMovementAfterFallOn(Level var1, Entity var2) {
+   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
       if (var2.isSuppressingBounce()) {
          super.updateEntityMovementAfterFallOn(var1, var2);
       } else {
@@ -52,5 +53,6 @@ public class SlimeBlock extends HalfTransparentBlock {
          var4.setDeltaMovement(var4.getDeltaMovement().multiply(var7, 1.0, var7));
       }
 
+      super.stepOn(var1, var2, var3, var4);
    }
 }

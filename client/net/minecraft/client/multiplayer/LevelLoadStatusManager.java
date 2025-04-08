@@ -9,15 +9,13 @@ public class LevelLoadStatusManager {
    private final ClientLevel level;
    private final LevelRenderer levelRenderer;
    private Status status;
-   private final boolean lingerScreen;
 
-   public LevelLoadStatusManager(LocalPlayer var1, ClientLevel var2, LevelRenderer var3, boolean var4) {
+   public LevelLoadStatusManager(LocalPlayer var1, ClientLevel var2, LevelRenderer var3) {
       super();
       this.status = LevelLoadStatusManager.Status.WAITING_FOR_SERVER;
       this.player = var1;
       this.level = var2;
       this.levelRenderer = var3;
-      this.lingerScreen = var4;
    }
 
    public void tick() {
@@ -35,7 +33,7 @@ public class LevelLoadStatusManager {
    }
 
    public boolean levelReady() {
-      return this.status == LevelLoadStatusManager.Status.LEVEL_READY && !this.lingerScreen;
+      return this.status == LevelLoadStatusManager.Status.LEVEL_READY;
    }
 
    public void loadingPacketsReceived() {

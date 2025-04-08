@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -124,7 +124,7 @@ public class SpectatorMenu {
       }
 
       public void renderIcon(GuiGraphics var1, float var2, float var3) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
       }
 
       public boolean isEnabled() {
@@ -153,9 +153,9 @@ public class SpectatorMenu {
       public void renderIcon(GuiGraphics var1, float var2, float var3) {
          int var4 = ARGB.colorFromFloat(var3, var2, var2, var2);
          if (this.direction < 0) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, var4);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, var4);
          } else {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, var4);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, var4);
          }
 
       }

@@ -235,7 +235,7 @@ public abstract class ServerTextFilter implements AutoCloseable {
       var2.setRequestMethod("POST");
       var2.setRequestProperty("Content-Type", "application/json; charset=utf-8");
       var2.setRequestProperty("Accept", "application/json");
-      var2.setRequestProperty("User-Agent", "Minecraft server" + SharedConstants.getCurrentVersion().getName());
+      var2.setRequestProperty("User-Agent", "Minecraft server" + SharedConstants.getCurrentVersion().name());
       return var2;
    }
 

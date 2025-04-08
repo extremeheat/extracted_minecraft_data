@@ -58,8 +58,11 @@ public class PartNames {
    public static final String HAT = "hat";
    public static final String BODY = "body";
    public static final String UPPER_BODY = "upper_body";
+   public static final String INNER_BODY = "inner_body";
    public static final String HAT_RIM = "hat_rim";
+   public static final String GOGGLES = "goggles";
    public static final String JACKET = "jacket";
+   public static final String HARNESS = "harness";
    public static final String TOP_GILLS = "top_gills";
    public static final String LEFT_GILLS = "left_gills";
    public static final String RIGHT_GILLS = "right_gills";
@@ -92,5 +95,9 @@ public class PartNames {
 
    public PartNames() {
       super();
+   }
+
+   public static String tentacle(int var0) {
+      return "tentacle" + var0;
    }
 }

@@ -7,7 +7,6 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,11 +22,14 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
+import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterLists;
+import net.minecraft.world.level.biome.TheEndBiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.mines.MineSpawnStrategy;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 
 public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
@@ -68,14 +70,8 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    public static Map<ResourceKey<LevelStem>, LevelStem> withOverworld(Map<ResourceKey<LevelStem>, LevelStem> var0, Holder<DimensionType> var1, ChunkGenerator var2) {
       ImmutableMap.Builder var3 = ImmutableMap.builder();
       var3.putAll(var0);
-      var3.put(LevelStem.OVERWORLD, new LevelStem(var1, Optional.of(var2), List.of(), Optional.empty(), MineSpawnStrategy.SURFACE));
+      var3.put(LevelStem.OVERWORLD, new LevelStem(var1, var2));
       return var3.buildKeepingLast();
-   }
-
-   public WorldDimensions stripGenerated() {
-      HashMap var1 = new HashMap(this.dimensions);
-      var1.entrySet().removeIf((var0) -> ((ResourceKey)var0.getKey()).location().getPath().startsWith("level") & ((LevelStem)var0.getValue()).generator().isEmpty());
-      return new WorldDimensions(var1);
    }
 
    public ChunkGenerator overworld() {
@@ -83,7 +79,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
       if (var1 == null) {
          throw new IllegalStateException("Overworld settings missing");
       } else {
-         return (ChunkGenerator)var1.generator().get();
+         return var1.generator();
       }
    }
 
@@ -101,7 +97,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
 
    private static PrimaryLevelData.SpecialWorldProperty specialWorldProperty(Registry<LevelStem> var0) {
       return (PrimaryLevelData.SpecialWorldProperty)var0.getOptional(LevelStem.OVERWORLD).map((var0x) -> {
-         ChunkGenerator var1 = (ChunkGenerator)var0x.generator().get();
+         ChunkGenerator var1 = var0x.generator();
          if (var1 instanceof DebugLevelSource) {
             return PrimaryLevelData.SpecialWorldProperty.DEBUG;
          } else {
@@ -115,7 +111,70 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    private static boolean isVanillaLike(ResourceKey<LevelStem> var0, LevelStem var1) {
-      return true;
+      if (var0 == LevelStem.OVERWORLD) {
+         return isStableOverworld(var1);
+      } else if (var0 == LevelStem.NETHER) {
+         return isStableNether(var1);
+      } else {
+         return var0 == LevelStem.END ? isStableEnd(var1) : false;
+      }
+   }
+
+   private static boolean isStableOverworld(LevelStem var0) {
+      Holder var1 = var0.type();
+      if (!var1.is(BuiltinDimensionTypes.OVERWORLD) && !var1.is(BuiltinDimensionTypes.OVERWORLD_CAVES)) {
+         return false;
+      } else {
+         BiomeSource var3 = var0.generator().getBiomeSource();
+         if (var3 instanceof MultiNoiseBiomeSource) {
+            MultiNoiseBiomeSource var2 = (MultiNoiseBiomeSource)var3;
+            if (!var2.stable(MultiNoiseBiomeSourceParameterLists.OVERWORLD)) {
+               return false;
+            }
+         }
+
+         return true;
+      }
+   }
+
+   private static boolean isStableNether(LevelStem var0) {
+      boolean var10000;
+      if (var0.type().is(BuiltinDimensionTypes.NETHER)) {
+         ChunkGenerator var3 = var0.generator();
+         if (var3 instanceof NoiseBasedChunkGenerator) {
+            NoiseBasedChunkGenerator var2 = (NoiseBasedChunkGenerator)var3;
+            if (var2.stable(NoiseGeneratorSettings.NETHER)) {
+               BiomeSource var4 = var2.getBiomeSource();
+               if (var4 instanceof MultiNoiseBiomeSource) {
+                  MultiNoiseBiomeSource var1 = (MultiNoiseBiomeSource)var4;
+                  if (var1.stable(MultiNoiseBiomeSourceParameterLists.NETHER)) {
+                     var10000 = true;
+                     return var10000;
+                  }
+               }
+            }
+         }
+      }
+
+      var10000 = false;
+      return var10000;
+   }
+
+   private static boolean isStableEnd(LevelStem var0) {
+      boolean var10000;
+      if (var0.type().is(BuiltinDimensionTypes.END)) {
+         ChunkGenerator var2 = var0.generator();
+         if (var2 instanceof NoiseBasedChunkGenerator) {
+            NoiseBasedChunkGenerator var1 = (NoiseBasedChunkGenerator)var2;
+            if (var1.stable(NoiseGeneratorSettings.END) && var1.getBiomeSource() instanceof TheEndBiomeSource) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    public Complete bake(Registry<LevelStem> var1) {
@@ -148,7 +207,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    static {
-      BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD);
+      BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD, LevelStem.NETHER, LevelStem.END);
       VANILLA_DIMENSION_COUNT = BUILTIN_ORDER.size();
    }
 

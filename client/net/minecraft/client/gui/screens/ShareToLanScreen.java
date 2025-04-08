@@ -11,7 +11,6 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.server.TheGame;
 import net.minecraft.server.commands.PublishCommand;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.world.level.GameType;
@@ -42,41 +41,41 @@ public class ShareToLanScreen extends Screen {
 
    protected void init() {
       IntegratedServer var1 = this.minecraft.getSingleplayerServer();
-      TheGame var2 = this.minecraft.getSingleplayerGame();
-      this.gameMode = var2.getDefaultGameType();
-      this.commands = var2.getWorldData().isAllowCommands();
+      this.gameMode = var1.getDefaultGameType();
+      this.commands = var1.getWorldData().isAllowCommands();
       this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).withInitialValue(this.gameMode).create(this.width / 2 - 155, 100, 150, 20, GAME_MODE_LABEL, (var1x, var2x) -> this.gameMode = var2x));
       this.addRenderableWidget(CycleButton.onOffBuilder(this.commands).create(this.width / 2 + 5, 100, 150, 20, ALLOW_COMMANDS_LABEL, (var1x, var2x) -> this.commands = var2x));
-      Button var3 = Button.builder(Component.translatable("lanServer.start"), (var3x) -> {
+      Button var2 = Button.builder(Component.translatable("lanServer.start"), (var2x) -> {
          this.minecraft.setScreen((Screen)null);
-         MutableComponent var4;
-         if (var1.publishServer(var2, this.gameMode, this.commands, this.port)) {
-            var4 = PublishCommand.getSuccessMessage(this.port);
+         MutableComponent var3;
+         if (var1.publishServer(this.gameMode, this.commands, this.port)) {
+            var3 = PublishCommand.getSuccessMessage(this.port);
          } else {
-            var4 = Component.translatable("commands.publish.failed");
+            var3 = Component.translatable("commands.publish.failed");
          }
 
-         this.minecraft.gui.getChat().addMessage(var4);
+         this.minecraft.gui.getChat().addMessage(var3);
+         this.minecraft.getNarrator().saySystemQueued(var3);
          this.minecraft.updateTitle();
       }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build();
       this.portEdit = new EditBox(this.font, this.width / 2 - 75, 160, 150, 20, Component.translatable("lanServer.port"));
       this.portEdit.setResponder((var2x) -> {
-         Component var3x = this.tryParsePort(var2x);
+         Component var3 = this.tryParsePort(var2x);
          this.portEdit.setHint(Component.literal("" + this.port).withStyle(ChatFormatting.DARK_GRAY));
-         if (var3x == null) {
+         if (var3 == null) {
             this.portEdit.setTextColor(14737632);
             this.portEdit.setTooltip((Tooltip)null);
-            var3.active = true;
+            var2.active = true;
          } else {
             this.portEdit.setTextColor(16733525);
-            this.portEdit.setTooltip(Tooltip.create(var3x));
-            var3.active = false;
+            this.portEdit.setTooltip(Tooltip.create(var3));
+            var2.active = false;
          }
 
       });
       this.portEdit.setHint(Component.literal("" + this.port).withStyle(ChatFormatting.DARK_GRAY));
       this.addRenderableWidget(this.portEdit);
-      this.addRenderableWidget(var3);
+      this.addRenderableWidget(var2);
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
    }
 

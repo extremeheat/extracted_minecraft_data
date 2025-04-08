@@ -1,17 +1,11 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Vector3f;
 
 public class SignEditScreen extends AbstractSignEditScreen {
@@ -31,26 +25,18 @@ public class SignEditScreen extends AbstractSignEditScreen {
       this.signModel = SignRenderer.createSignModel(this.minecraft.getEntityModels(), this.woodType, var1);
    }
 
-   protected void offsetSign(GuiGraphics var1, BlockState var2) {
-      super.offsetSign(var1, var2);
-      boolean var3 = var2.getBlock() instanceof StandingSignBlock;
-      if (!var3) {
-         var1.pose().translate(0.0F, 35.0F, 0.0F);
-      }
-
+   protected float getSignYOffset() {
+      return 90.0F;
    }
 
    protected void renderSignBackground(GuiGraphics var1) {
       if (this.signModel != null) {
-         var1.pose().translate(0.0F, 31.0F, 0.0F);
-         var1.pose().scale(62.500004F, 62.500004F, -62.500004F);
-         var1.drawSpecial((var2) -> {
-            Material var3 = Sheets.getSignMaterial(this.woodType);
-            Model var10002 = this.signModel;
-            Objects.requireNonNull(var10002);
-            VertexConsumer var4 = var3.buffer(var2, var10002::renderType);
-            this.signModel.renderToBuffer(var1.pose(), var4, 15728880, OverlayTexture.NO_OVERLAY);
-         });
+         int var2 = this.width / 2;
+         int var3 = var2 - 48;
+         boolean var4 = true;
+         int var5 = var2 + 48;
+         boolean var6 = true;
+         var1.submitSignRenderState(this.signModel, 62.500004F, this.woodType, var3, 66, var5, 168);
       }
    }
 

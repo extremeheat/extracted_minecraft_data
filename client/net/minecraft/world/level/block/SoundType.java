@@ -124,6 +124,7 @@ public class SoundType {
    public static final SoundType RESIN;
    public static final SoundType RESIN_BRICKS;
    public static final SoundType IRON;
+   public static final SoundType DRIED_GHAST;
    public final float volume;
    public final float pitch;
    private final SoundEvent breakSound;
@@ -292,5 +293,6 @@ public class SoundType {
       RESIN = new SoundType(1.0F, 1.0F, SoundEvents.RESIN_BREAK, SoundEvents.RESIN_STEP, SoundEvents.RESIN_PLACE, SoundEvents.EMPTY, SoundEvents.RESIN_FALL);
       RESIN_BRICKS = new SoundType(1.0F, 1.0F, SoundEvents.RESIN_BRICKS_BREAK, SoundEvents.RESIN_BRICKS_STEP, SoundEvents.RESIN_BRICKS_PLACE, SoundEvents.RESIN_BRICKS_HIT, SoundEvents.RESIN_BRICKS_FALL);
       IRON = new SoundType(1.0F, 1.0F, SoundEvents.IRON_BREAK, SoundEvents.IRON_STEP, SoundEvents.IRON_PLACE, SoundEvents.IRON_HIT, SoundEvents.IRON_FALL);
+      DRIED_GHAST = new SoundType(1.0F, 1.0F, SoundEvents.DRIED_GHAST_BREAK, SoundEvents.DRIED_GHAST_STEP, SoundEvents.EMPTY, SoundEvents.DRIED_GHAST_HIT, SoundEvents.DRIED_GHAST_FALL);
    }
 }

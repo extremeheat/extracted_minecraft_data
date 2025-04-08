@@ -47,7 +47,7 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
    public static ServerLevel getDimension(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       ResourceLocation var2 = (ResourceLocation)var0.getArgument(var1, ResourceLocation.class);
       ResourceKey var3 = ResourceKey.create(Registries.DIMENSION, var2);
-      ServerLevel var4 = ((CommandSourceStack)var0.getSource()).theGame().getLevel(var3);
+      ServerLevel var4 = ((CommandSourceStack)var0.getSource()).getServer().getLevel(var3);
       if (var4 == null) {
          throw ERROR_INVALID_VALUE.create(var2);
       } else {

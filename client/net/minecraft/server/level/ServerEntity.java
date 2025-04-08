@@ -138,7 +138,7 @@ public class ServerEntity {
             this.sendDirtyEntityData();
             this.wasRiding = true;
          } else {
-            label195: {
+            label197: {
                Entity var33 = this.entity;
                if (var33 instanceof AbstractMinecart) {
                   AbstractMinecart var30 = (AbstractMinecart)var33;
@@ -146,7 +146,7 @@ public class ServerEntity {
                   if (var34 instanceof NewMinecartBehavior) {
                      NewMinecartBehavior var32 = (NewMinecartBehavior)var34;
                      this.handleMinecartPosRot(var32, var26, var28, var29);
-                     break label195;
+                     break label197;
                   }
                }
 
@@ -161,7 +161,7 @@ public class ServerEntity {
                long var15 = this.positionCodec.encodeY(var35);
                long var17 = this.positionCodec.encodeZ(var35);
                boolean var19 = var13 < -32768L || var13 > 32767L || var15 < -32768L || var15 > 32767L || var17 < -32768L || var17 > 32767L;
-               if (!var19 && this.teleportDelay <= 400 && !this.wasRiding && this.wasOnGround == this.entity.onGround()) {
+               if (!this.entity.getRequiresPrecisePosition() && !var19 && this.teleportDelay <= 400 && !this.wasRiding && this.wasOnGround == this.entity.onGround()) {
                   if ((!var10 || !var29) && !(this.entity instanceof AbstractArrow)) {
                      if (var10) {
                         var9 = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short)((int)var13), (short)((int)var15), (short)((int)var17), this.entity.onGround());
@@ -174,6 +174,7 @@ public class ServerEntity {
                      var9 = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)((int)var13), (short)((int)var15), (short)((int)var17), var26, var28, this.entity.onGround());
                      var11 = true;
                      var12 = true;
+                     this.entity.setRequiresPrecisePosition(false);
                   }
                } else {
                   this.wasOnGround = this.entity.onGround();

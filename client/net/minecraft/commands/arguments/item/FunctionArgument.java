@@ -65,11 +65,11 @@ public class FunctionArgument implements ArgumentType<Result> {
    }
 
    static CommandFunction<CommandSourceStack> getFunction(CommandContext<CommandSourceStack> var0, ResourceLocation var1) throws CommandSyntaxException {
-      return (CommandFunction)((CommandSourceStack)var0.getSource()).theGame().getFunctions().get(var1).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(var1.toString()));
+      return (CommandFunction)((CommandSourceStack)var0.getSource()).getServer().getFunctions().get(var1).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(var1.toString()));
    }
 
    static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(CommandContext<CommandSourceStack> var0, ResourceLocation var1) throws CommandSyntaxException {
-      List var2 = ((CommandSourceStack)var0.getSource()).theGame().getFunctions().getTag(var1);
+      List var2 = ((CommandSourceStack)var0.getSource()).getServer().getFunctions().getTag(var1);
       if (var2 == null) {
          throw ERROR_UNKNOWN_TAG.create(var1.toString());
       } else {

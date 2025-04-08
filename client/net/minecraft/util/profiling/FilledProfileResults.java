@@ -174,7 +174,7 @@ public class FilledProfileResults implements ProfileResults {
    protected String getProfilerResults(long var1, int var3) {
       StringBuilder var4 = new StringBuilder();
       ReportType.PROFILE.appendHeader(var4, List.of());
-      var4.append("Version: ").append(SharedConstants.getCurrentVersion().getId()).append('\n');
+      var4.append("Version: ").append(SharedConstants.getCurrentVersion().id()).append('\n');
       var4.append("Time span: ").append(var1 / 1000000L).append(" ms\n");
       var4.append("Tick span: ").append(var3).append(" ticks\n");
       var4.append("// This is approximately ").append(String.format(Locale.ROOT, "%.2f", (float)var3 / ((float)var1 / 1.0E9F))).append(" ticks per second. It should be ").append(20).append(" ticks per second\n\n");

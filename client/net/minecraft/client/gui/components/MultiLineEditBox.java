@@ -8,7 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -93,9 +93,12 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          for(MultilineTextField.StringView var13 : this.textField.iterateLines()) {
             Objects.requireNonNull(this.font);
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
+            int var15 = this.getInnerLeft();
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
-                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var6), this.getInnerLeft(), var11, -2039584) - 1;
+                  String var23 = var5.substring(var13.beginIndex(), var6);
+                  var1.drawString(this.font, var23, var15, var11, -2039584);
+                  var9 = var15 + this.font.width(var23);
                   int var10002 = var11 - 1;
                   int var10003 = var9 + 1;
                   int var10004 = var11 + 1;
@@ -105,7 +108,9 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                }
             } else {
                if (var14) {
-                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var13.endIndex()), this.getInnerLeft(), var11, -2039584) - 1;
+                  String var16 = var5.substring(var13.beginIndex(), var13.endIndex());
+                  var1.drawString(this.font, var16, var15, var11, -2039584);
+                  var9 = var15 + this.font.width(var16);
                }
 
                var10 = var11;
@@ -127,29 +132,29 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             int var20 = this.getInnerLeft();
             var11 = this.getInnerTop();
 
-            for(MultilineTextField.StringView var15 : this.textField.iterateLines()) {
-               if (var19.beginIndex() > var15.endIndex()) {
+            for(MultilineTextField.StringView var22 : this.textField.iterateLines()) {
+               if (var19.beginIndex() > var22.endIndex()) {
                   Objects.requireNonNull(this.font);
                   var11 += 9;
                } else {
-                  if (var15.beginIndex() > var19.endIndex()) {
+                  if (var22.beginIndex() > var19.endIndex()) {
                      break;
                   }
 
                   Objects.requireNonNull(this.font);
                   if (this.withinContentAreaTopBottom(var11, var11 + 9)) {
-                     int var16 = this.font.width(var5.substring(var15.beginIndex(), Math.max(var19.beginIndex(), var15.beginIndex())));
+                     int var24 = this.font.width(var5.substring(var22.beginIndex(), Math.max(var19.beginIndex(), var22.beginIndex())));
                      int var17;
-                     if (var19.endIndex() > var15.endIndex()) {
+                     if (var19.endIndex() > var22.endIndex()) {
                         var17 = this.width - this.innerPadding();
                      } else {
-                        var17 = this.font.width(var5.substring(var15.beginIndex(), var19.endIndex()));
+                        var17 = this.font.width(var5.substring(var22.beginIndex(), var19.endIndex()));
                      }
 
-                     int var22 = var20 + var16;
-                     int var23 = var20 + var17;
+                     int var25 = var20 + var24;
+                     int var26 = var20 + var17;
                      Objects.requireNonNull(this.font);
-                     this.renderHighlight(var1, var22, var11, var23, var11 + 9);
+                     this.renderHighlight(var1, var25, var11, var26, var11 + 9);
                   }
 
                   Objects.requireNonNull(this.font);
@@ -182,7 +187,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    }
 
    private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.fill(RenderType.guiTextHighlight(), var2, var3, var4, var5, -16776961);
+      var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
    }
 
    private void scrollToCursor() {

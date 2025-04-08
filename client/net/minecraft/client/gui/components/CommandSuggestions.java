@@ -536,7 +536,7 @@ public class CommandSuggestions {
          Suggestion var2 = (Suggestion)this.suggestionList.get(this.current);
          CommandSuggestions.this.input.setSuggestion(CommandSuggestions.calculateSuggestionSuffix(CommandSuggestions.this.input.getValue(), var2.apply(this.originalContents)));
          if (this.lastNarratedEntry != this.current) {
-            CommandSuggestions.this.minecraft.getNarrator().sayNow(this.getNarrationMessage());
+            CommandSuggestions.this.minecraft.getNarrator().saySystemNow(this.getNarrationMessage());
          }
 
       }

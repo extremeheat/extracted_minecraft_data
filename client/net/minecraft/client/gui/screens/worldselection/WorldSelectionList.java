@@ -35,6 +35,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ErrorScreen;
@@ -44,7 +45,7 @@ import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
@@ -374,9 +375,11 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          int var10004 = var3 + 9;
          Objects.requireNonNull(this.minecraft.font);
          var1.drawString(var10001, var15, var10003, var10004 + 9 + 3, -8355712);
-         var1.blit(RenderType::guiTextured, this.icon.textureLocation(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
+         var1.blit(RenderPipelines.GUI_TEXTURED, this.icon.textureLocation(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          if ((Boolean)this.minecraft.options.touchscreen().get() || var9) {
+            var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_FRONT);
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
+            var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT_ICON_ABOVE_HIGHLIGHT);
             int var16 = var7 - var4;
             boolean var17 = var16 < 32;
             ResourceLocation var18 = var17 ? WorldSelectionList.JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.JOIN_SPRITE;
@@ -384,42 +387,44 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             ResourceLocation var20 = var17 ? WorldSelectionList.ERROR_HIGHLIGHTED_SPRITE : WorldSelectionList.ERROR_SPRITE;
             ResourceLocation var21 = var17 ? WorldSelectionList.MARKED_JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.MARKED_JOIN_SPRITE;
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary || this.summary instanceof LevelSummary.CorruptedLevelSummary) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var20, var4, var3, 32, 32);
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var21, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var21, var4, var3, 32, 32);
                return;
             }
 
             if (this.summary.isLocked()) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var20, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                if (var17) {
                   this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.WORLD_LOCKED_TOOLTIP, 175));
                }
             } else if (this.summary.requiresManualConversion()) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var20, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                if (var17) {
                   this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.WORLD_REQUIRES_CONVERSION, 175));
                }
             } else if (!this.summary.isCompatible()) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var20, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                if (var17) {
                   this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.INCOMPATIBLE_VERSION_TOOLTIP, 175));
                }
             } else if (this.summary.shouldBackup()) {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var21, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var21, var4, var3, 32, 32);
                if (this.summary.isDowngrade()) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var20, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                   if (var17) {
                      this.screen.setTooltipForNextRenderPass(ImmutableList.of(WorldSelectionList.FROM_NEWER_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.FROM_NEWER_TOOLTIP_2.getVisualOrderText()));
                   }
-               } else if (!SharedConstants.getCurrentVersion().isStable()) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var19, var4, var3, 32, 32);
+               } else if (!SharedConstants.getCurrentVersion().stable()) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var19, var4, var3, 32, 32);
                   if (var17) {
                      this.screen.setTooltipForNextRenderPass(ImmutableList.of(WorldSelectionList.SNAPSHOT_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.SNAPSHOT_TOOLTIP_2.getVisualOrderText()));
                   }
                }
             } else {
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var18, var4, var3, 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var18, var4, var3, 32, 32);
             }
+
+            var1.popGuiLayer();
          }
 
       }

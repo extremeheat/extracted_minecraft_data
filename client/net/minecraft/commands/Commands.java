@@ -45,7 +45,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -80,7 +80,6 @@ import net.minecraft.server.commands.ItemCommands;
 import net.minecraft.server.commands.JfrCommand;
 import net.minecraft.server.commands.KickCommand;
 import net.minecraft.server.commands.KillCommand;
-import net.minecraft.server.commands.LevelCommand;
 import net.minecraft.server.commands.ListPlayersCommand;
 import net.minecraft.server.commands.LocateCommand;
 import net.minecraft.server.commands.LootCommand;
@@ -99,7 +98,6 @@ import net.minecraft.server.commands.RecipeCommand;
 import net.minecraft.server.commands.ReloadCommand;
 import net.minecraft.server.commands.ReturnCommand;
 import net.minecraft.server.commands.RideCommand;
-import net.minecraft.server.commands.RoomCommand;
 import net.minecraft.server.commands.RotateCommand;
 import net.minecraft.server.commands.SaveAllCommand;
 import net.minecraft.server.commands.SaveOffCommand;
@@ -129,9 +127,9 @@ import net.minecraft.server.commands.TimeCommand;
 import net.minecraft.server.commands.TitleCommand;
 import net.minecraft.server.commands.TransferCommand;
 import net.minecraft.server.commands.TriggerCommand;
-import net.minecraft.server.commands.UnlockCommand;
-import net.minecraft.server.commands.UnlockWorldEffectCommand;
+import net.minecraft.server.commands.VersionCommand;
 import net.minecraft.server.commands.WardenSpawnTrackerCommand;
+import net.minecraft.server.commands.WaypointCommand;
 import net.minecraft.server.commands.WeatherCommand;
 import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
@@ -165,7 +163,7 @@ public class Commands {
       CloneCommands.register(this.dispatcher, var2);
       DamageCommand.register(this.dispatcher, var2);
       DataCommands.register(this.dispatcher);
-      DataPackCommand.register(this.dispatcher);
+      DataPackCommand.register(this.dispatcher, var2);
       DebugCommand.register(this.dispatcher);
       DefaultGameModeCommands.register(this.dispatcher);
       DifficultyCommand.register(this.dispatcher);
@@ -201,6 +199,7 @@ public class Commands {
       ScheduleCommand.register(this.dispatcher);
       ScoreboardCommand.register(this.dispatcher, var2);
       SeedCommand.register(this.dispatcher, var1 != Commands.CommandSelection.INTEGRATED);
+      VersionCommand.register(this.dispatcher, var1 != Commands.CommandSelection.INTEGRATED);
       SetBlockCommand.register(this.dispatcher, var2);
       SetSpawnCommand.register(this.dispatcher);
       SetWorldSpawnCommand.register(this.dispatcher);
@@ -218,6 +217,10 @@ public class Commands {
       TimeCommand.register(this.dispatcher);
       TitleCommand.register(this.dispatcher, var2);
       TriggerCommand.register(this.dispatcher);
+      if (var2.enabledFeatures().contains(FeatureFlags.LOCATOR_BAR)) {
+         WaypointCommand.register(this.dispatcher, var2);
+      }
+
       WeatherCommand.register(this.dispatcher);
       WorldBorderCommand.register(this.dispatcher);
       if (JvmProfiler.INSTANCE.isAvailable()) {
@@ -231,11 +234,9 @@ public class Commands {
          WardenSpawnTrackerCommand.register(this.dispatcher);
          SpawnArmorTrimsCommand.register(this.dispatcher);
          ServerPackCommand.register(this.dispatcher);
-         LevelCommand.register(this.dispatcher, var2);
-         DebugConfigCommand.register(this.dispatcher);
-         UnlockCommand.register(this.dispatcher, var2);
-         UnlockWorldEffectCommand.register(this.dispatcher, var2);
-         RoomCommand.register(this.dispatcher);
+         if (var1.includeDedicated) {
+            DebugConfigCommand.register(this.dispatcher);
+         }
       }
 
       if (var1.includeDedicated) {
@@ -334,7 +335,7 @@ public class Commands {
    }
 
    public static void executeCommandInContext(CommandSourceStack var0, Consumer<ExecutionContext<CommandSourceStack>> var1) {
-      TheGame var2 = var0.theGame();
+      MinecraftServer var2 = var0.getServer();
       ExecutionContext var3 = (ExecutionContext)CURRENT_EXECUTION_CONTEXT.get();
       boolean var4 = var3 == null;
       if (var4) {

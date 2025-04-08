@@ -2,10 +2,10 @@ package net.minecraft.world.item;
 
 import com.mojang.serialization.Codec;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -35,10 +35,10 @@ public record JukeboxPlayable(EitherHolder<JukeboxSong> song) implements Tooltip
       this.song = var1;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-      HolderLookup.Provider var6 = var1.registries();
-      if (var6 != null) {
-         this.song.unwrap(var6).ifPresent((var1x) -> {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      HolderLookup.Provider var5 = var1.registries();
+      if (var5 != null) {
+         this.song.unwrap(var5).ifPresent((var1x) -> {
             MutableComponent var2x = ((JukeboxSong)var1x.value()).description().copy();
             ComponentUtils.mergeStyles(var2x, Style.EMPTY.withColor(ChatFormatting.GRAY));
             var2.accept(var2x);

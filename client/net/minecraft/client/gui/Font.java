@@ -14,6 +14,7 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
+import net.minecraft.client.gui.render.state.TextRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -30,8 +31,8 @@ import net.minecraft.util.StringDecomposer;
 import org.joml.Matrix4f;
 
 public class Font {
-   private static final float EFFECT_DEPTH = 0.01F;
-   public static final float SHADOW_DEPTH = 0.03F;
+   private static final float EFFECT_DEPTH = 0.001F;
+   public static final float SHADOW_DEPTH = 0.003F;
    public static final int NO_SHADOW = 0;
    public static final int ALPHA_CUTOFF = 8;
    public final int lineHeight = 9;
@@ -61,29 +62,41 @@ public class Font {
       }
    }
 
-   public int drawInBatch(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
+   public void drawInBatch(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
       if (this.isBidirectional()) {
          var1 = this.bidirectionalShaping(var1);
       }
 
-      return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
+      this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
    }
 
-   public int drawInBatch(Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
-      return this.drawInBatch(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
+   public TextRenderState extractTextRenderState(String var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8) {
+      if (this.isBidirectional()) {
+         var1 = this.bidirectionalShaping(var1);
+      }
+
+      return this.extractInternal(var1, var2, var3, var4, var5, var6, var7, var8, true);
    }
 
-   public int drawInBatch(Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
-      return this.drawInternal(var1.getVisualOrderText(), var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+   public void drawInBatch(Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
+      this.drawInBatch(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
    }
 
-   public int drawInBatch(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
-      return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
+   public void drawInBatch(Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
+      this.drawInternal(var1.getVisualOrderText(), var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+   }
+
+   public void drawInBatch(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
+      this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
+   }
+
+   public TextRenderState extractTextRenderState(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8) {
+      return this.extractInternal(var1, var2, var3, var4, var5, var6, var7, var8, true);
    }
 
    public void drawInBatch8xOutline(FormattedCharSequence var1, float var2, float var3, int var4, int var5, Matrix4f var6, MultiBufferSource var7, int var8) {
       int var9 = adjustColor(var5);
-      StringRenderOutput var10 = new StringRenderOutput(var7, 0.0F, 0.0F, var9, false, var6, Font.DisplayMode.NORMAL, var8);
+      StringRenderOutput var10 = new StringRenderOutput(0.0F, 0.0F, var9, false, Font.DisplayMode.NORMAL, var8);
 
       for(int var11 = -1; var11 <= 1; ++var11) {
          for(int var12 = -1; var12 <= 1; ++var12) {
@@ -102,38 +115,58 @@ public class Font {
          }
       }
 
-      var10.renderCharacters();
-      StringRenderOutput var16 = new StringRenderOutput(var7, var2, var3, adjustColor(var4), false, var6, Font.DisplayMode.POLYGON_OFFSET, var8);
+      var10.renderCharacters(var7, var6);
+      StringRenderOutput var16 = new StringRenderOutput(var2, var3, adjustColor(var4), false, Font.DisplayMode.POLYGON_OFFSET, var8);
       var1.accept(var16);
-      var16.finish(var2);
+      var16.finish(var2, var7, var6);
    }
 
    private static int adjustColor(int var0) {
       return (var0 & -67108864) == 0 ? ARGB.opaque(var0) : var0;
    }
 
-   private int drawInternal(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
+   private void drawInternal(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
       var4 = adjustColor(var4);
-      var2 = this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-      return (int)var2 + (var5 ? 1 : 0);
+      this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
    }
 
-   private int drawInternal(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
+   private TextRenderState extractInternal(String var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8, boolean var9) {
       var4 = adjustColor(var4);
-      var2 = this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-      return (int)var2 + (var5 ? 1 : 0);
+      return this.extractText(var1, var2, var3, var4, var5, var6, var7, var8, var9);
    }
 
-   private float renderText(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
-      StringRenderOutput var12 = new StringRenderOutput(var7, var2, var3, var4, var9, var5, var6, var8, var10, var11);
+   private void drawInternal(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
+      var4 = adjustColor(var4);
+      this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+   }
+
+   private TextRenderState extractInternal(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8, boolean var9) {
+      var4 = adjustColor(var4);
+      return this.extractText(var1, var2, var3, var4, var5, var6, var7, var8, var9);
+   }
+
+   private void renderText(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
+      StringRenderOutput var12 = new StringRenderOutput(var2, var3, var4, var9, var5, var8, var10, var11);
       StringDecomposer.iterateFormatted((String)var1, Style.EMPTY, var12);
-      return var12.finish(var2);
+      var12.finish(var2, var7, var6);
    }
 
-   private float renderText(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
-      StringRenderOutput var12 = new StringRenderOutput(var7, var2, var3, var4, var9, var5, var6, var8, var10, var11);
+   private TextRenderState extractText(String var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8, boolean var9) {
+      StringRenderOutput var10 = new StringRenderOutput(var2, var3, var4, var7, var5, var6, var8, var9);
+      StringDecomposer.iterateFormatted((String)var1, Style.EMPTY, var10);
+      return var10.extract();
+   }
+
+   private void renderText(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
+      StringRenderOutput var12 = new StringRenderOutput(var2, var3, var4, var9, var5, var8, var10, var11);
       var1.accept(var12);
-      return var12.finish(var2);
+      var12.finish(var2, var7, var6);
+   }
+
+   private TextRenderState extractText(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8, boolean var9) {
+      StringRenderOutput var10 = new StringRenderOutput(var2, var3, var4, var7, var5, var6, var8, var9);
+      var1.accept(var10);
+      return var10.extract();
    }
 
    public int width(String var1) {
@@ -195,11 +228,9 @@ public class Font {
    }
 
    class StringRenderOutput implements FormattedCharSink {
-      final MultiBufferSource bufferSource;
       private final boolean drawShadow;
       private final int color;
       private final int backgroundColor;
-      private final Matrix4f pose;
       private final DisplayMode mode;
       private final int packedLightCoords;
       private final boolean inverseDepth;
@@ -217,23 +248,21 @@ public class Font {
          this.effects.add(var1);
       }
 
-      public StringRenderOutput(final MultiBufferSource var2, final float var3, final float var4, final int var5, final boolean var6, final Matrix4f var7, final DisplayMode var8, final int var9) {
-         this(var2, var3, var4, var5, 0, var6, var7, var8, var9, true);
+      public StringRenderOutput(final float var2, final float var3, final int var4, final boolean var5, final DisplayMode var6, final int var7) {
+         this(var2, var3, var4, 0, var5, var6, var7, true);
       }
 
-      public StringRenderOutput(final MultiBufferSource var2, final float var3, final float var4, final int var5, final int var6, final boolean var7, final Matrix4f var8, final DisplayMode var9, final int var10, final boolean var11) {
+      public StringRenderOutput(final float var2, final float var3, final int var4, final int var5, final boolean var6, final DisplayMode var7, final int var8, final boolean var9) {
          super();
          this.glyphInstances = new ArrayList();
-         this.bufferSource = var2;
-         this.x = var3;
-         this.y = var4;
-         this.drawShadow = var7;
-         this.color = var5;
-         this.backgroundColor = var6;
-         this.pose = var8;
-         this.mode = var9;
-         this.packedLightCoords = var10;
-         this.inverseDepth = var11;
+         this.x = var2;
+         this.y = var3;
+         this.drawShadow = var6;
+         this.color = var4;
+         this.backgroundColor = var5;
+         this.mode = var7;
+         this.packedLightCoords = var8;
+         this.inverseDepth = var9;
       }
 
       public boolean accept(int var1, Style var2, int var3) {
@@ -253,40 +282,43 @@ public class Font {
          }
 
          if (var2.isStrikethrough()) {
-            this.addEffect(new BakedGlyph.Effect(var12, this.y + 4.5F, this.x + var11, this.y + 4.5F - 1.0F, this.getOverTextEffectDepth(), var9, var10, var13));
+            this.addEffect(new BakedGlyph.Effect(var12, this.y + 4.5F - 1.0F, this.x + var11, this.y + 4.5F, this.getOverTextEffectDepth(), var9, var10, var13));
          }
 
          if (var2.isUnderlined()) {
-            this.addEffect(new BakedGlyph.Effect(var12, this.y + 9.0F, this.x + var11, this.y + 9.0F - 1.0F, this.getOverTextEffectDepth(), var9, var10, var13));
+            this.addEffect(new BakedGlyph.Effect(var12, this.y + 9.0F - 1.0F, this.x + var11, this.y + 9.0F, this.getOverTextEffectDepth(), var9, var10, var13));
          }
 
          this.x += var11;
          return true;
       }
 
-      float finish(float var1) {
-         BakedGlyph var2 = null;
+      void finish(float var1, MultiBufferSource var2, Matrix4f var3) {
+         BakedGlyph var4 = null;
          if (this.backgroundColor != 0) {
-            BakedGlyph.Effect var3 = new BakedGlyph.Effect(var1 - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, this.getUnderTextEffectDepth(), this.backgroundColor);
-            var2 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
-            VertexConsumer var4 = this.bufferSource.getBuffer(var2.renderType(this.mode));
-            var2.renderEffect(var3, this.pose, var4, this.packedLightCoords);
+            BakedGlyph.Effect var5 = new BakedGlyph.Effect(var1 - 1.0F, this.y - 1.0F, this.x, this.y + 9.0F, this.getUnderTextEffectDepth(), this.backgroundColor);
+            var4 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
+            VertexConsumer var6 = var2.getBuffer(var4.renderType(this.mode));
+            var4.renderEffect(var5, var3, var6, this.packedLightCoords);
          }
 
-         this.renderCharacters();
+         this.renderCharacters(var2, var3);
          if (this.effects != null) {
-            if (var2 == null) {
-               var2 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
+            if (var4 == null) {
+               var4 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
             }
 
-            VertexConsumer var6 = this.bufferSource.getBuffer(var2.renderType(this.mode));
+            VertexConsumer var8 = var2.getBuffer(var4.renderType(this.mode));
 
-            for(BakedGlyph.Effect var5 : this.effects) {
-               var2.renderEffect(var5, this.pose, var6, this.packedLightCoords);
+            for(BakedGlyph.Effect var7 : this.effects) {
+               var4.renderEffect(var7, var3, var8, this.packedLightCoords);
             }
          }
 
-         return this.x;
+      }
+
+      TextRenderState extract() {
+         return new TextRenderState(this.drawShadow, this.color, this.backgroundColor, this.mode, this.packedLightCoords, this.glyphInstances, this.effects, 9, Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph(), this.x);
       }
 
       private int getTextColor(@Nullable TextColor var1) {
@@ -310,21 +342,21 @@ public class Font {
          }
       }
 
-      void renderCharacters() {
-         for(BakedGlyph.GlyphInstance var2 : this.glyphInstances) {
-            BakedGlyph var3 = var2.glyph();
-            VertexConsumer var4 = this.bufferSource.getBuffer(var3.renderType(this.mode));
-            var3.renderChar(var2, this.pose, var4, this.packedLightCoords);
+      void renderCharacters(MultiBufferSource var1, Matrix4f var2) {
+         for(BakedGlyph.GlyphInstance var4 : this.glyphInstances) {
+            BakedGlyph var5 = var4.glyph();
+            VertexConsumer var6 = var1.getBuffer(var5.renderType(this.mode));
+            var5.renderChar(var4, var2, var6, this.packedLightCoords);
          }
 
       }
 
       private float getOverTextEffectDepth() {
-         return this.inverseDepth ? 0.01F : -0.01F;
+         return this.inverseDepth ? 0.001F : -0.001F;
       }
 
       private float getUnderTextEffectDepth() {
-         return this.inverseDepth ? -0.01F : 0.01F;
+         return this.inverseDepth ? -0.001F : 0.001F;
       }
    }
 }

@@ -16,6 +16,7 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
 public class SetBlockCommand {
@@ -45,11 +46,12 @@ public class SetBlockCommand {
             var7 = true;
          }
 
+         BlockState var8 = var6.getBlockState(var1);
          if (var7 && !var2.place(var6, var1, 2 | (var5 ? 816 : 256))) {
             throw ERROR_FAILED.create();
          } else {
             if (!var5) {
-               var6.updateNeighborsAt(var1, var2.getState().getBlock());
+               var6.updateNeighboursOnBlockSet(var1, var8);
             }
 
             var0.sendSuccess(() -> Component.translatable("commands.setblock.success", var1.getX(), var1.getY(), var1.getZ()), true);

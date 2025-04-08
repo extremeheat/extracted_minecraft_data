@@ -1,7 +1,6 @@
 package net.minecraft.client.data.models;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.Codec;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,40 +116,36 @@ public class ModelProvider implements DataProvider {
    }
 
    static class ItemInfoCollector implements ItemModelOutput {
-      private final Map<ResourceLocation, ClientItem> itemInfos = new HashMap();
-      private final Map<ResourceLocation, ResourceLocation> copies = new HashMap();
+      private final Map<Item, ClientItem> itemInfos = new HashMap();
+      private final Map<Item, Item> copies = new HashMap();
 
       ItemInfoCollector() {
          super();
       }
 
       public void accept(Item var1, ItemModel.Unbaked var2) {
-         this.register(var1.builtInRegistryHolder().key().location(), new ClientItem(var2, ClientItem.Properties.DEFAULT));
+         this.register(var1, new ClientItem(var2, ClientItem.Properties.DEFAULT));
       }
 
-      private void register(ResourceLocation var1, ClientItem var2) {
+      private void register(Item var1, ClientItem var2) {
          ClientItem var3 = (ClientItem)this.itemInfos.put(var1, var2);
          if (var3 != null) {
             throw new IllegalStateException("Duplicate item model definition for " + String.valueOf(var1));
          }
       }
 
-      public void accept(ResourceLocation var1, ItemModel.Unbaked var2) {
-         this.register(var1, new ClientItem(var2, ClientItem.Properties.DEFAULT));
-      }
-
       public void copy(Item var1, Item var2) {
-         this.copies.put(var2.builtInRegistryHolder().key().location(), var1.builtInRegistryHolder().key().location());
+         this.copies.put(var2, var1);
       }
 
       public void finalizeAndValidate() {
          BuiltInRegistries.ITEM.forEach((var1x) -> {
-            if (!this.copies.containsKey(var1x.builtInRegistryHolder().key().location())) {
+            if (!this.copies.containsKey(var1x)) {
                if (var1x instanceof BlockItem) {
                   BlockItem var2 = (BlockItem)var1x;
-                  if (!this.itemInfos.containsKey(var2.builtInRegistryHolder().key().location())) {
+                  if (!this.itemInfos.containsKey(var2)) {
                      ResourceLocation var3 = ModelLocationUtils.getModelLocation(var2.getBlock());
-                     this.accept((Item)var2, ItemModelUtils.plainModel(var3));
+                     this.accept(var2, ItemModelUtils.plainModel(var3));
                   }
                }
 
@@ -165,16 +160,14 @@ public class ModelProvider implements DataProvider {
                this.register(var1x, var3);
             }
          });
-         List var1 = BuiltInRegistries.ITEM.listElements().filter((var1x) -> !this.itemInfos.containsKey(var1x.key().location())).map((var0) -> var0.key().location()).toList();
+         List var1 = BuiltInRegistries.ITEM.listElements().filter((var1x) -> !this.itemInfos.containsKey(var1x.value())).map((var0) -> var0.key().location()).toList();
          if (!var1.isEmpty()) {
             throw new IllegalStateException("Missing item model definitions for: " + String.valueOf(var1));
          }
       }
 
       public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
-         Codec var10001 = ClientItem.CODEC;
-         Objects.requireNonNull(var2);
-         return DataProvider.saveAll(var1, var10001, var2::json, this.itemInfos);
+         return DataProvider.saveAll(var1, ClientItem.CODEC, (Function)((var1x) -> var2.json(var1x.builtInRegistryHolder().key().location())), this.itemInfos);
       }
    }
 }

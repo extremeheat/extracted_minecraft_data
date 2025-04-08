@@ -18,9 +18,9 @@ public class BanListCommands {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("banlist").requires((var0x) -> var0x.hasPermission(3))).executes((var0x) -> {
-         PlayerList var1 = ((CommandSourceStack)var0x.getSource()).playerList();
+         PlayerList var1 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
          return showList((CommandSourceStack)var0x.getSource(), Lists.newArrayList(Iterables.concat(var1.getBans().getEntries(), var1.getIpBans().getEntries())));
-      })).then(Commands.literal("ips").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).playerList().getIpBans().getEntries())))).then(Commands.literal("players").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).playerList().getBans().getEntries()))));
+      })).then(Commands.literal("ips").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getEntries())))).then(Commands.literal("players").executes((var0x) -> showList((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getBans().getEntries()))));
    }
 
    private static int showList(CommandSourceStack var0, Collection<? extends BanListEntry<?>> var1) {

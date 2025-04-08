@@ -20,6 +20,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.HeightmapTypeArgument;
+import net.minecraft.commands.arguments.HexColorArgument;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.NbtTagArgument;
@@ -93,6 +94,7 @@ public class ArgumentTypeInfos {
       register(var0, "item_stack", ItemArgument.class, SingletonArgumentInfo.contextAware(ItemArgument::item));
       register(var0, "item_predicate", ItemPredicateArgument.class, SingletonArgumentInfo.contextAware(ItemPredicateArgument::itemPredicate));
       register(var0, "color", ColorArgument.class, SingletonArgumentInfo.contextFree(ColorArgument::color));
+      register(var0, "hex_color", HexColorArgument.class, SingletonArgumentInfo.contextFree(HexColorArgument::hexColor));
       register(var0, "component", ComponentArgument.class, SingletonArgumentInfo.contextAware(ComponentArgument::textComponent));
       register(var0, "style", StyleArgument.class, SingletonArgumentInfo.contextAware(StyleArgument::style));
       register(var0, "message", MessageArgument.class, SingletonArgumentInfo.contextFree(MessageArgument::message));

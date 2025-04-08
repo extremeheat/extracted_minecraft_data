@@ -22,8 +22,6 @@ public interface RenderPass extends AutoCloseable {
 
    void setUniform(String var1, Matrix4f var2);
 
-   void enableScissor(ScissorState var1);
-
    void enableScissor(int var1, int var2, int var3, int var4);
 
    void disableScissor();

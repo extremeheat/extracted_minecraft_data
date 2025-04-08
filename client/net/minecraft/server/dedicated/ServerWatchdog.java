@@ -1,5 +1,6 @@
 package net.minecraft.server.dedicated;
 
+import com.google.common.collect.Streams;
 import com.mojang.logging.LogUtils;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -15,8 +16,6 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.server.Bootstrap;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TheGame;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.world.level.GameRules;
 import org.slf4j.Logger;
@@ -25,38 +24,35 @@ public class ServerWatchdog implements Runnable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final long MAX_SHUTDOWN_TIME = 10000L;
    private static final int SHUTDOWN_STATUS = 1;
-   private final MinecraftServer server;
-   private final TheGame theGame;
+   private final DedicatedServer server;
    private final long maxTickTimeNanos;
 
-   public ServerWatchdog(TheGame var1, long var2) {
+   public ServerWatchdog(DedicatedServer var1) {
       super();
-      this.theGame = var1;
-      this.server = var1.server();
-      this.maxTickTimeNanos = var2;
+      this.server = var1;
+      this.maxTickTimeNanos = var1.getMaxTickLength() * TimeUtil.NANOSECONDS_PER_MILLISECOND;
    }
 
    public void run() {
-      while(this.server.isRunning() && this.server.theGame() == this.theGame) {
+      while(this.server.isRunning()) {
          long var1 = this.server.getNextTickTime();
          long var3 = Util.getNanos();
          long var5 = var3 - var1;
          if (var5 > this.maxTickTimeNanos) {
-            float var7 = this.theGame.tickRateManager().millisecondsPerTick() / (float)TimeUtil.MILLISECONDS_PER_SECOND;
-            LOGGER.error(LogUtils.FATAL_MARKER, "A single server tick took {} seconds (should be max {})", String.format(Locale.ROOT, "%.2f", (float)var5 / (float)TimeUtil.NANOSECONDS_PER_SECOND), String.format(Locale.ROOT, "%.2f", var7));
+            LOGGER.error(LogUtils.FATAL_MARKER, "A single server tick took {} seconds (should be max {})", String.format(Locale.ROOT, "%.2f", (float)var5 / (float)TimeUtil.NANOSECONDS_PER_SECOND), String.format(Locale.ROOT, "%.2f", this.server.tickRateManager().millisecondsPerTick() / (float)TimeUtil.MILLISECONDS_PER_SECOND));
             LOGGER.error(LogUtils.FATAL_MARKER, "Considering it to be crashed, server will forcibly shutdown.");
-            CrashReport var8 = createWatchdogCrashReport("Watching Server", this.server.getRunningThread().threadId());
-            this.server.fillSystemReport(var8.getSystemReport());
-            CrashReportCategory var9 = var8.addCategory("Performance stats");
-            var9.setDetail("Random tick rate", (CrashReportDetail)(() -> ((GameRules.IntegerValue)this.theGame.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING)).toString()));
-            var9.setDetail("Level stats", (CrashReportDetail)(() -> (String)this.theGame.getAllLevels().stream().map((var0) -> {
+            CrashReport var7 = createWatchdogCrashReport("Watching Server", this.server.getRunningThread().threadId());
+            this.server.fillSystemReport(var7.getSystemReport());
+            CrashReportCategory var8 = var7.addCategory("Performance stats");
+            var8.setDetail("Random tick rate", (CrashReportDetail)(() -> ((GameRules.IntegerValue)this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING)).toString()));
+            var8.setDetail("Level stats", (CrashReportDetail)(() -> (String)Streams.stream(this.server.getAllLevels()).map((var0) -> {
                   String var10000 = String.valueOf(var0.dimension().location());
                   return var10000 + ": " + var0.getWatchdogStats();
                }).collect(Collectors.joining(",\n"))));
-            Bootstrap.realStdoutPrintln("Crash report:\n" + var8.getFriendlyReport(ReportType.CRASH));
-            Path var10 = this.server.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
-            if (var8.saveToFile(var10, ReportType.CRASH)) {
-               LOGGER.error("This crash report has been saved to: {}", var10.toAbsolutePath());
+            Bootstrap.realStdoutPrintln("Crash report:\n" + var7.getFriendlyReport(ReportType.CRASH));
+            Path var9 = this.server.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
+            if (var7.saveToFile(var9, ReportType.CRASH)) {
+               LOGGER.error("This crash report has been saved to: {}", var9.toAbsolutePath());
             } else {
                LOGGER.error("We were unable to save this crash report to disk.");
             }
@@ -66,11 +62,10 @@ public class ServerWatchdog implements Runnable {
 
          try {
             Thread.sleep((var1 + this.maxTickTimeNanos - var3) / TimeUtil.NANOSECONDS_PER_MILLISECOND);
-         } catch (InterruptedException var11) {
+         } catch (InterruptedException var10) {
          }
       }
 
-      LOGGER.info("Watchdog shutting down");
    }
 
    public static CrashReport createWatchdogCrashReport(String var0, long var1) {

@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -67,7 +66,6 @@ public class WorldUpgrader implements AutoCloseable {
    final boolean eraseCache;
    final boolean recreateRegionFiles;
    final LevelStorageSource.LevelStorageAccess levelStorage;
-   final RegistryAccess registryAccess;
    private final Thread thread;
    final DataFixer dataFixer;
    volatile boolean running = true;
@@ -85,7 +83,6 @@ public class WorldUpgrader implements AutoCloseable {
    public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, WorldData var3, RegistryAccess var4, boolean var5, boolean var6) {
       super();
       this.dimensions = var4.lookupOrThrow(Registries.LEVEL_STEM);
-      this.registryAccess = var4;
       this.levels = (Set)this.dimensions.registryKeySet().stream().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
       this.eraseCache = var5;
       this.dataFixer = var2;
@@ -394,7 +391,7 @@ public class WorldUpgrader implements AutoCloseable {
          if (var4 != null) {
             int var5 = ChunkStorage.getVersion(var4);
             CompoundTag var6 = this.upgradeTag(var1, var4);
-            boolean var7 = var5 < SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            boolean var7 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
             if (var7 || WorldUpgrader.this.recreateRegionFiles) {
                if (this.previousWriteFuture != null) {
                   this.previousWriteFuture.join();
@@ -445,14 +442,14 @@ public class WorldUpgrader implements AutoCloseable {
          CompoundTag var4 = (CompoundTag)((Optional)var1.read(var2).join()).orElse((Object)null);
          if (var4 != null) {
             int var5 = ChunkStorage.getVersion(var4);
-            ChunkGenerator var6 = LevelStem.generator(WorldUpgrader.this.registryAccess, (Holder.Reference)WorldUpgrader.this.dimensions.get(Registries.levelToLevelStem(var3)).get());
+            ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(var3))).generator();
             CompoundTag var7 = var1.upgradeChunkTag(var3, () -> WorldUpgrader.this.overworldDataStorage, var4, var6.getTypeNameForDataFixer());
             ChunkPos var8 = new ChunkPos(var7.getIntOr("xPos", 0), var7.getIntOr("zPos", 0));
             if (!var8.equals(var2)) {
                WorldUpgrader.LOGGER.warn("Chunk {} has invalid position {}", var2, var8);
             }
 
-            boolean var9 = var5 < SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            boolean var9 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
             if (WorldUpgrader.this.eraseCache) {
                var9 = var9 || var7.contains("Heightmaps");
                var7.remove("Heightmaps");

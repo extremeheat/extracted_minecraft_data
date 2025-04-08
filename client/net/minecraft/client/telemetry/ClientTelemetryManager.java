@@ -42,7 +42,7 @@ public class ClientTelemetryManager implements AutoCloseable {
       var3.getXuid().ifPresent((var1x) -> var4.put(TelemetryProperty.USER_ID, var1x));
       var3.getClientId().ifPresent((var1x) -> var4.put(TelemetryProperty.CLIENT_ID, var1x));
       var4.put(TelemetryProperty.MINECRAFT_SESSION_ID, UUID.randomUUID());
-      var4.put(TelemetryProperty.GAME_VERSION, SharedConstants.getCurrentVersion().getId());
+      var4.put(TelemetryProperty.GAME_VERSION, SharedConstants.getCurrentVersion().id());
       var4.put(TelemetryProperty.OPERATING_SYSTEM, Util.getPlatform().telemetryName());
       var4.put(TelemetryProperty.PLATFORM, System.getProperty("os.name"));
       var4.put(TelemetryProperty.CLIENT_MODDED, Minecraft.checkModStatus().shouldReportAsModified());

@@ -19,6 +19,7 @@ public class CompositeModel implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       var1.ensureCapacity(this.models.size());
 
       for(ItemModel var9 : this.models) {

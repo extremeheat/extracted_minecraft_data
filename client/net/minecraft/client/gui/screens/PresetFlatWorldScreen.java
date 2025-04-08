@@ -19,7 +19,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -208,12 +208,9 @@ public class PresetFlatWorldScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 400.0F);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 8, 16777215);
       var1.drawString(this.font, (Component)this.shareText, 51, 30, 10526880);
       var1.drawString(this.font, (Component)this.listText, 51, 68, 10526880);
-      var1.pose().popPose();
       this.export.render(var1, var2, var3, var4);
    }
 
@@ -292,7 +289,7 @@ public class PresetFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
          }
 
          public Component getNarration() {

@@ -40,7 +40,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -339,7 +338,7 @@ public class EntitySelectorOptions {
             var1.expect('}');
             if (!var2.isEmpty()) {
                var0.addPredicate((var1x) -> {
-                  ServerScoreboard var2x = var1x.theGame().getScoreboard();
+                  ServerScoreboard var2x = var1x.getServer().getScoreboard();
 
                   for(Map.Entry var4 : var2.entrySet()) {
                      Objective var5 = ((Scoreboard)var2x).getObjective((String)var4.getKey());
@@ -426,7 +425,7 @@ public class EntitySelectorOptions {
                      return false;
                   } else {
                      PlayerAdvancements var3 = var2x.getAdvancements();
-                     ServerAdvancementManager var4 = var2x.theGame().getAdvancements();
+                     ServerAdvancementManager var4 = var2x.getServer().getAdvancements();
 
                      for(Map.Entry var6 : var2.entrySet()) {
                         AdvancementHolder var7 = var4.get((ResourceLocation)var6.getKey());
@@ -447,19 +446,19 @@ public class EntitySelectorOptions {
             boolean var1 = var0.shouldInvertValue();
             ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, ResourceLocation.read(var0.getReader()));
             var0.addPredicate((var2x) -> {
-               Level var4 = var2x.level();
-               if (var4 instanceof ServerLevel var3) {
-                  Optional var7 = var3.theGame().reloadableRegistries().lookup().get(var2).map(Holder::value);
-                  if (var7.isEmpty()) {
+               if (!(var2x.level() instanceof ServerLevel)) {
+                  return false;
+               } else {
+                  ServerLevel var3 = (ServerLevel)var2x.level();
+                  Optional var4 = var3.getServer().reloadableRegistries().lookup().get(var2).map(Holder::value);
+                  if (var4.isEmpty()) {
                      return false;
                   } else {
                      LootParams var5 = (new LootParams.Builder(var3)).withParameter(LootContextParams.THIS_ENTITY, var2x).withParameter(LootContextParams.ORIGIN, var2x.position()).create(LootContextParamSets.SELECTOR);
                      LootContext var6 = (new LootContext.Builder(var5)).create(Optional.empty());
-                     var6.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var7.get()));
-                     return var1 ^ ((LootItemCondition)var7.get()).test(var6);
+                     var6.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var4.get()));
+                     return var1 ^ ((LootItemCondition)var4.get()).test(var6);
                   }
-               } else {
-                  return false;
                }
             });
          }, (var0) -> true, Component.translatable("argument.entity.options.predicate.description"));

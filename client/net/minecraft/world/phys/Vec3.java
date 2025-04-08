@@ -239,6 +239,10 @@ public class Vec3 implements Position {
       return new Vec3(var4, var6, var8);
    }
 
+   public Vec3 rotateClockwise90() {
+      return new Vec3(-this.z, this.y, this.x);
+   }
+
    public static Vec3 directionFromRotation(Vec2 var0) {
       return directionFromRotation(var0.x, var0.y);
    }

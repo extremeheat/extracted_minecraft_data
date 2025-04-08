@@ -29,7 +29,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -575,18 +575,17 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public void releasePoi(MemoryModuleType<GlobalPos> var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         TheGame var4 = var2.theGame();
-         this.brain.getMemory(var1).ifPresent((var3x) -> {
-            ServerLevel var4x = var4.getLevel(var3x.dimension());
-            if (var4x != null) {
-               PoiManager var5 = var4x.getPoiManager();
-               Optional var6 = var5.getType(var3x.pos());
+      if (this.level() instanceof ServerLevel) {
+         MinecraftServer var2 = ((ServerLevel)this.level()).getServer();
+         this.brain.getMemory(var1).ifPresent((var3) -> {
+            ServerLevel var4 = var2.getLevel(var3.dimension());
+            if (var4 != null) {
+               PoiManager var5 = var4.getPoiManager();
+               Optional var6 = var5.getType(var3.pos());
                BiPredicate var7 = (BiPredicate)POI_MEMORIES.get(var1);
                if (var6.isPresent() && var7.test(this, (Holder)var6.get())) {
-                  var5.release(var3x.pos());
-                  DebugPackets.sendPoiTicketCountPacket(var4x, var3x.pos());
+                  var5.release(var3.pos());
+                  DebugPackets.sendPoiTicketCountPacket(var4, var3.pos());
                }
 
             }

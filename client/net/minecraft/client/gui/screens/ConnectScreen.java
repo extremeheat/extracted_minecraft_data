@@ -208,7 +208,7 @@ public class ConnectScreen extends Screen {
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
          this.lastNarration = var5;
-         this.minecraft.getNarrator().sayNow((Component)Component.translatable("narrator.joining"));
+         this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("narrator.joining"));
       }
 
       var1.drawCenteredString(this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);

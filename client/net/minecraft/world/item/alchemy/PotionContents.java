@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
@@ -224,8 +224,8 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       this.applyToLivingEntity(var2, (Float)var3.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-      addPotionTooltip(this.getAllEffects(), var2, (Float)var5.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F), var1.tickRate());
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      addPotionTooltip(this.getAllEffects(), var2, (Float)var4.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F), var1.tickRate());
    }
 
    static {

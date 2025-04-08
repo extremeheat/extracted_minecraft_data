@@ -123,7 +123,7 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 200.0);
+      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 200.0).add(Attributes.CAMERA_DISTANCE, 16.0);
    }
 
    public boolean isFlapping() {

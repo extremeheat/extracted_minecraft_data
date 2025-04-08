@@ -5,11 +5,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ExtraCodecs;
 
 public class TimerCallbacks<C> {
-   public static final TimerCallbacks<TheGame> SERVER_CALLBACKS;
+   public static final TimerCallbacks<MinecraftServer> SERVER_CALLBACKS;
    private final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends TimerCallback<C>>> idMapper = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends TimerCallback<C>>>();
    private final Codec<TimerCallback<C>> codec;
 
@@ -29,6 +29,6 @@ public class TimerCallbacks<C> {
    }
 
    static {
-      SERVER_CALLBACKS = (new TimerCallbacks<TheGame>()).register(ResourceLocation.withDefaultNamespace("function"), FunctionCallback.CODEC).register(ResourceLocation.withDefaultNamespace("function_tag"), FunctionTagCallback.CODEC);
+      SERVER_CALLBACKS = (new TimerCallbacks<MinecraftServer>()).register(ResourceLocation.withDefaultNamespace("function"), FunctionCallback.CODEC).register(ResourceLocation.withDefaultNamespace("function_tag"), FunctionTagCallback.CODEC);
    }
 }

@@ -8,8 +8,8 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,10 +17,8 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle) implements TooltipProvider {
@@ -40,7 +38,7 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
       this.hasTwinkle = var5;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       var2.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
       this.addAdditionalTooltip(var2);
    }

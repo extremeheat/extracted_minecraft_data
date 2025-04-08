@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.goal;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -56,12 +55,11 @@ public abstract class DoorInteractGoal extends Goal {
       } else if (!this.mob.horizontalCollision) {
          return false;
       } else {
-         GroundPathNavigation var1 = (GroundPathNavigation)this.mob.getNavigation();
-         Path var2 = var1.getPath();
-         if (var2 != null && !var2.isDone()) {
-            for(int var3 = 0; var3 < Math.min(var2.getNextNodeIndex() + 2, var2.getNodeCount()); ++var3) {
-               Node var4 = var2.getNode(var3);
-               this.doorPos = new BlockPos(var4.x, var4.y + 1, var4.z);
+         Path var1 = this.mob.getNavigation().getPath();
+         if (var1 != null && !var1.isDone()) {
+            for(int var2 = 0; var2 < Math.min(var1.getNextNodeIndex() + 2, var1.getNodeCount()); ++var2) {
+               Node var3 = var1.getNode(var2);
+               this.doorPos = new BlockPos(var3.x, var3.y + 1, var3.z);
                if (!(this.mob.distanceToSqr((double)this.doorPos.getX(), this.mob.getY(), (double)this.doorPos.getZ()) > 2.25)) {
                   this.hasDoor = DoorBlock.isWoodenDoor(this.mob.level(), this.doorPos);
                   if (this.hasDoor) {

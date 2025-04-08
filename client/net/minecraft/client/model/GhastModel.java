@@ -1,12 +1,14 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartNames;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GhastRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -18,13 +20,9 @@ public class GhastModel extends EntityModel<GhastRenderState> {
       super(var1);
 
       for(int var2 = 0; var2 < this.tentacles.length; ++var2) {
-         this.tentacles[var2] = var1.getChild(createTentacleName(var2));
+         this.tentacles[var2] = var1.getChild(PartNames.tentacle(var2));
       }
 
-   }
-
-   private static String createTentacleName(int var0) {
-      return "tentacle" + var0;
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -37,7 +35,7 @@ public class GhastModel extends EntityModel<GhastRenderState> {
          float var4 = (((float)(var3 % 3) - (float)(var3 / 3 % 2) * 0.5F + 0.25F) / 2.0F * 2.0F - 1.0F) * 5.0F;
          float var5 = ((float)(var3 / 3) / 2.0F * 2.0F - 1.0F) * 5.0F;
          int var6 = var2.nextInt(7) + 8;
-         var1.addOrReplaceChild(createTentacleName(var3), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, (float)var6, 2.0F), PartPose.offset(var4, 24.6F, var5));
+         var1.addOrReplaceChild(PartNames.tentacle(var3), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, (float)var6, 2.0F), PartPose.offset(var4, 24.6F, var5));
       }
 
       return LayerDefinition.create(var0, 64, 32).apply(MeshTransformer.scaling(4.5F));
@@ -45,9 +43,12 @@ public class GhastModel extends EntityModel<GhastRenderState> {
 
    public void setupAnim(GhastRenderState var1) {
       super.setupAnim(var1);
+      animateTentacles(var1, this.tentacles);
+   }
 
-      for(int var2 = 0; var2 < this.tentacles.length; ++var2) {
-         this.tentacles[var2].xRot = 0.2F * Mth.sin(var1.ageInTicks * 0.3F + (float)var2) + 0.4F;
+   public static void animateTentacles(EntityRenderState var0, ModelPart[] var1) {
+      for(int var2 = 0; var2 < var1.length; ++var2) {
+         var1[var2].xRot = 0.2F * Mth.sin(var0.ageInTicks * 0.3F + (float)var2) + 0.4F;
       }
 
    }

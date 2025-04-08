@@ -24,7 +24,7 @@ import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
 import net.minecraft.client.multiplayer.chat.report.ChatReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
@@ -321,7 +321,7 @@ public class ChatSelectionScreen extends Screen {
 
          private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
          }
 
          private int getMaximumTextWidth() {

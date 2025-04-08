@@ -29,7 +29,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.server.TheGame;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.slf4j.Logger;
 
@@ -120,10 +119,7 @@ public class MinecraftServerGui extends JComponent {
       var4.addActionListener((var2x) -> {
          String var3 = var4.getText().trim();
          if (!var3.isEmpty()) {
-            TheGame var4x = this.server.theGame();
-            if (var4x != null) {
-               this.server.handleConsoleInput(var3, var4x.createCommandSourceStack());
-            }
+            this.server.handleConsoleInput(var3, this.server.createCommandSourceStack());
          }
 
          var4.setText("");

@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -36,7 +36,7 @@ public class LockIconButton extends Button {
          var5 = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;
       }
 
-      var1.blitSprite(RenderType::guiTextured, var5.sprite, this.getX(), this.getY(), this.width, this.height);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5.sprite, this.getX(), this.getY(), this.width, this.height);
    }
 
    static enum Icon {

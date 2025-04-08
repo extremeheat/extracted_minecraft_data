@@ -71,7 +71,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -142,6 +142,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Team;
+import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
 
 public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess, ScoreHolder, DataComponentGetter {
@@ -169,6 +170,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public static final String UUID_TAG = "UUID";
    private static double viewScale;
    private final EntityType<?> type;
+   private boolean requiresPrecisePosition;
    private int id;
    public boolean blocksBuilding;
    private ImmutableList<Entity> passengers;
@@ -345,6 +347,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public EntityType<?> getType() {
       return this.type;
+   }
+
+   public boolean getRequiresPrecisePosition() {
+      return this.requiresPrecisePosition;
+   }
+
+   public void setRequiresPrecisePosition(boolean var1) {
+      this.requiresPrecisePosition = var1;
    }
 
    public int getId() {
@@ -830,7 +840,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    }
 
-   protected void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
+   public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
       this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
    }
 
@@ -1375,6 +1385,21 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public boolean isUnderWater() {
       return this.wasEyeInWater && this.isInWater();
+   }
+
+   public boolean isInClouds() {
+      Optional var1 = this.level.dimensionType().cloudHeight();
+      if (var1.isEmpty()) {
+         return false;
+      } else {
+         int var2 = (Integer)var1.get();
+         if (this.getY() + (double)this.getBbHeight() < (double)var2) {
+            return false;
+         } else {
+            int var3 = var2 + 4;
+            return this.getY() <= (double)var3;
+         }
+      }
    }
 
    public void updateSwimming() {
@@ -2301,7 +2326,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
                if (var3 != null) {
                   ServerLevel var4 = var3.newLevel();
-                  if (var1.theGame().server().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
+                  if (var1.getServer().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
                      this.teleport(var3);
                   }
                }
@@ -2707,7 +2732,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             }
 
             if (var4) {
-               return this.teleportCrossDimension(var3, var1);
+               return this.teleportCrossDimension(var2, var3, var1);
             }
 
             return this.teleportSameDimension(var2, var1);
@@ -2734,51 +2759,50 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this;
    }
 
-   private Entity teleportCrossDimension(ServerLevel var1, TeleportTransition var2) {
-      List var3 = this.getPassengers();
-      ArrayList var4 = new ArrayList(var3.size());
+   private Entity teleportCrossDimension(ServerLevel var1, ServerLevel var2, TeleportTransition var3) {
+      List var4 = this.getPassengers();
+      ArrayList var5 = new ArrayList(var4.size());
       this.ejectPassengers();
 
-      for(Entity var6 : var3) {
-         Entity var7 = var6.teleport(this.calculatePassengerTransition(var2, var6));
-         if (var7 != null) {
-            var4.add(var7);
+      for(Entity var7 : var4) {
+         Entity var8 = var7.teleport(this.calculatePassengerTransition(var3, var7));
+         if (var8 != null) {
+            var5.add(var8);
          }
       }
 
-      ProfilerFiller var11 = Profiler.get();
-      var11.push("teleportCrossDimension");
-      Entity var12 = this.getType().create(var1, EntitySpawnReason.DIMENSION_TRAVEL);
-      if (var12 == null) {
-         var11.pop();
+      ProfilerFiller var10 = Profiler.get();
+      var10.push("teleportCrossDimension");
+      Entity var11 = this.getType().create(var2, EntitySpawnReason.DIMENSION_TRAVEL);
+      if (var11 == null) {
+         var10.pop();
          return null;
       } else {
-         var12.restoreFrom(this);
+         var11.restoreFrom(this);
          this.removeAfterChangingDimensions();
-         var12.teleportSetPosition(PositionMoveRotation.of(var2), var2.relatives());
-         var1.addDuringTeleport(var12);
+         var11.teleportSetPosition(PositionMoveRotation.of(var3), var3.relatives());
+         var2.addDuringTeleport(var11);
 
-         for(Entity var8 : var4) {
-            var8.startRiding(var12, true);
+         for(Entity var9 : var5) {
+            var9.startRiding(var11, true);
          }
 
-         var1.resetEmptyTime();
-         var2.postTeleportTransition().onTransition(var12);
-         var11.pop();
-         Level var15 = this.level();
-         if (var15 instanceof ServerLevel) {
-            ServerLevel var14 = (ServerLevel)var15;
-
-            for(ServerPlayer var10 : new ArrayList(var14.players())) {
-               if (var10.getCamera() == this) {
-                  var10.teleport(var2);
-                  var10.setCamera((Entity)null);
-               }
-            }
-         }
-
-         return var12;
+         var2.resetEmptyTime();
+         var3.postTeleportTransition().onTransition(var11);
+         this.teleportSpectators(var3, var1);
+         var10.pop();
+         return var11;
       }
+   }
+
+   protected void teleportSpectators(TeleportTransition var1, ServerLevel var2) {
+      for(ServerPlayer var5 : List.copyOf(var2.players())) {
+         if (var5.getCamera() == this) {
+            var5.teleport(var1);
+            var5.setCamera((Entity)null);
+         }
+      }
+
    }
 
    private TeleportTransition calculatePassengerTransition(TeleportTransition var1, Entity var2) {
@@ -2836,6 +2860,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
       if (this instanceof Leashable var1) {
          var1.removeLeash();
+      }
+
+      if (this instanceof WaypointTransmitter var4) {
+         Level var3 = this.level;
+         if (var3 instanceof ServerLevel var2) {
+            var2.getWaypointManager().untrackWaypoint(var4);
+         }
       }
 
    }
@@ -3094,16 +3125,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    @Nullable
-   public TheGame theGame() {
-      Level var2 = this.level();
-      TheGame var10000;
-      if (var2 instanceof ServerLevel var1) {
-         var10000 = var1.theGame();
-      } else {
-         var10000 = null;
-      }
-
-      return var10000;
+   public MinecraftServer getServer() {
+      return this.level().getServer();
    }
 
    public InteractionResult interactAt(Player var1, Vec3 var2, InteractionHand var3) {
@@ -3298,7 +3321,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getName().getString(), this.getDisplayName(), var1.theGame(), this);
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getName().getString(), this.getDisplayName(), var1.getServer(), this);
    }
 
    public void lookAt(EntityAnchorArgument.Anchor var1, Vec3 var2) {
@@ -3529,6 +3552,25 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
 
          this.levelCallback.onMove();
+         if (!this.firstTick) {
+            Level var11 = this.level;
+            if (var11 instanceof ServerLevel) {
+               ServerLevel var10 = (ServerLevel)var11;
+               if (this instanceof WaypointTransmitter) {
+                  WaypointTransmitter var13 = (WaypointTransmitter)this;
+                  if (var13.isTransmittingWaypoint()) {
+                     var10.getWaypointManager().updateWaypoint(var13);
+                  }
+               }
+
+               if (this instanceof ServerPlayer) {
+                  ServerPlayer var14 = (ServerPlayer)this;
+                  if (var14.isReceivingWaypoints() && var14.connection != null) {
+                     var10.getWaypointManager().updatePlayer(var14);
+                  }
+               }
+            }
+         }
       }
 
    }

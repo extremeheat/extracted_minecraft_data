@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,7 +13,6 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.phys.AABB;
 
 public class HurtByTargetGoal extends TargetGoal {
@@ -36,17 +34,16 @@ public class HurtByTargetGoal extends TargetGoal {
       int var1 = this.mob.getLastHurtByMobTimestamp();
       LivingEntity var2 = this.mob.getLastHurtByMob();
       if (var1 != this.timestamp && var2 != null) {
-         ServerLevel var3 = getServerLevel(this.mob);
-         if (var2.getType() != EntityType.PLAYER || !var3.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && !var3.isActive(WorldEffects.UNIVERSAL_ANGER)) {
-            for(Class var7 : this.toIgnoreDamage) {
-               if (var7.isAssignableFrom(var2.getClass())) {
+         if (var2.getType() == EntityType.PLAYER && getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+            return false;
+         } else {
+            for(Class var6 : this.toIgnoreDamage) {
+               if (var6.isAssignableFrom(var2.getClass())) {
                   return false;
                }
             }
 
             return this.canAttack(var2, HURT_BY_TARGETING);
-         } else {
-            return false;
          }
       } else {
          return false;

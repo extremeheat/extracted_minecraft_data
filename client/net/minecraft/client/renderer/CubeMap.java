@@ -27,7 +27,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 public class CubeMap {
-   public static final int SIDES = 6;
+   private static final int SIDES = 6;
    @Nullable
    private GpuBuffer cubeMapBuffer = null;
    private final List<ResourceLocation> sides;
@@ -42,7 +42,7 @@ public class CubeMap {
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
       if (this.cubeMapBuffer == null) {
-         this.cubeMapBuffer = initializeVertices();
+         this.initializeVertices();
       }
 
       Matrix4f var5 = (new Matrix4f()).setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
@@ -88,10 +88,9 @@ public class CubeMap {
       var6.popMatrix();
    }
 
-   public static GpuBuffer initializeVertices() {
-      GpuBuffer var0 = RenderSystem.getDevice().createBuffer(() -> "Cube map vertex buffer", BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, 24 * DefaultVertexFormat.POSITION_TEX.getVertexSize());
+   private void initializeVertices() {
+      this.cubeMapBuffer = RenderSystem.getDevice().createBuffer(() -> "Cube map vertex buffer", BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, 24 * DefaultVertexFormat.POSITION_TEX.getVertexSize());
 
-      GpuBuffer var10;
       try (ByteBufferBuilder var1 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4)) {
          BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
          var2.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F);
@@ -121,13 +120,10 @@ public class CubeMap {
 
          try (MeshData var3 = var2.buildOrThrow()) {
             CommandEncoder var4 = RenderSystem.getDevice().createCommandEncoder();
-            var4.writeToBuffer(var0, var3.vertexBuffer(), 0);
+            var4.writeToBuffer(this.cubeMapBuffer, var3.vertexBuffer(), 0);
          }
-
-         var10 = var0;
       }
 
-      return var10;
    }
 
    public void registerTextures(TextureManager var1) {

@@ -71,7 +71,7 @@ public class ChaseCommand {
       if (alreadyRunning(var0)) {
          return 0;
       } else {
-         chaseServer = new ChaseServer(var1, var2, var0.playerList(), 100);
+         chaseServer = new ChaseServer(var1, var2, var0.getServer().getPlayerList(), 100);
 
          try {
             chaseServer.start();
@@ -90,7 +90,7 @@ public class ChaseCommand {
       if (alreadyRunning(var0)) {
          return 0;
       } else {
-         chaseClient = new ChaseClient(var1, var2, var0.theGame(), var0.theGame().eventLoop());
+         chaseClient = new ChaseClient(var1, var2, var0.getServer());
          chaseClient.start();
          var0.sendSuccess(() -> Component.literal("You are now chasing " + var1 + ":" + var2 + ". If that server does '/chase lead' then you will automatically go to the same position. Use '/chase stop' to stop chasing."), false);
          return 0;

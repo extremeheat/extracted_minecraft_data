@@ -535,10 +535,6 @@ public class Fox extends Animal {
       this.setFlag(16, var1);
    }
 
-   public boolean isJumping() {
-      return this.jumping;
-   }
-
    public boolean isFullyCrouched() {
       return this.crouchAmount == 3.0F;
    }

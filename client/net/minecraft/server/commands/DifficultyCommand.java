@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 
 public class DifficultyCommand {
@@ -32,7 +32,7 @@ public class DifficultyCommand {
    }
 
    public static int setDifficulty(CommandSourceStack var0, Difficulty var1) throws CommandSyntaxException {
-      TheGame var2 = var0.theGame();
+      MinecraftServer var2 = var0.getServer();
       if (var2.getWorldData().getDifficulty() == var1) {
          throw ERROR_ALREADY_DIFFICULT.create(var1.getKey());
       } else {

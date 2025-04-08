@@ -193,10 +193,6 @@ public class DamageSources {
       return this.source(DamageTypes.STING, var1);
    }
 
-   public DamageSource devour(LivingEntity var1) {
-      return this.source(DamageTypes.DEVOUR, var1);
-   }
-
    public DamageSource mobAttack(LivingEntity var1) {
       return this.source(DamageTypes.MOB_ATTACK, var1);
    }

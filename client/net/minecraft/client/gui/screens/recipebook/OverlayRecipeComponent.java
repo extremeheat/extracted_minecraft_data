@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.ResourceLocation;
@@ -125,19 +125,16 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible) {
-         var1.pose().pushPose();
-         var1.pose().translate(0.0F, 0.0F, 1000.0F);
          int var5 = this.recipeButtons.size() <= 16 ? 4 : 5;
          int var6 = Math.min(this.recipeButtons.size(), var5);
          int var7 = Mth.ceil((float)this.recipeButtons.size() / (float)var5);
          boolean var8 = true;
-         var1.blitSprite(RenderType::guiTextured, OVERLAY_RECIPE_SPRITE, this.x, this.y, var6 * 25 + 8, var7 * 25 + 8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, OVERLAY_RECIPE_SPRITE, this.x, this.y, var6 * 25 + 8, var7 * 25 + 8);
 
          for(OverlayRecipeButton var10 : this.recipeButtons) {
             var10.render(var1, var2, var3, var4);
          }
 
-         var1.pose().popPose();
       }
    }
 
@@ -263,18 +260,17 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blitSprite(RenderType::guiTextured, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
          float var5 = (float)(this.getX() + 2);
          float var6 = (float)(this.getY() + 2);
-         float var7 = 150.0F;
 
-         for(Pos var9 : this.slots) {
-            var1.pose().pushPose();
-            var1.pose().translate(var5 + (float)var9.x, var6 + (float)var9.y, 150.0F);
-            var1.pose().scale(0.375F, 0.375F, 1.0F);
-            var1.pose().translate(-8.0F, -8.0F, 0.0F);
-            var1.renderItem(var9.selectIngredient(OverlayRecipeComponent.this.slotSelectTime.currentIndex()), 0, 0);
-            var1.pose().popPose();
+         for(Pos var8 : this.slots) {
+            var1.pose().pushMatrix();
+            var1.pose().translate(var5 + (float)var8.x, var6 + (float)var8.y);
+            var1.pose().scale(0.375F, 0.375F);
+            var1.pose().translate(-8.0F, -8.0F);
+            var1.renderItem(var8.selectIngredient(OverlayRecipeComponent.this.slotSelectTime.currentIndex()), 0, 0);
+            var1.pose().popMatrix();
          }
 
       }

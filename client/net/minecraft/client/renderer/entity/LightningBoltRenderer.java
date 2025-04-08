@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -10,7 +9,6 @@ import net.minecraft.client.renderer.entity.state.LightningBoltRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.level.Level;
 import org.joml.Matrix4f;
 
 public class LightningBoltRenderer extends EntityRenderer<LightningBolt, LightningBoltRenderState> {
@@ -98,12 +96,6 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       return new LightningBoltRenderState();
    }
 
-   public LightningBoltRenderState createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable Level var1) {
-      LightningBoltRenderState var2 = (LightningBoltRenderState)super.createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(var1);
-      var2.seed = var1 != null ? var1.getGameTime() : 0L;
-      return var2;
-   }
-
    public void extractRenderState(LightningBolt var1, LightningBoltRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.seed = var1.seed;
@@ -111,11 +103,6 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
 
    protected boolean affectedByCulling(LightningBolt var1) {
       return false;
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(@Nullable final Level var1) {
-      return this.createSpecialRenderStateBecauseImLazyMojangDevAndItsTimeToHack(var1);
    }
 
    // $FF: synthetic method

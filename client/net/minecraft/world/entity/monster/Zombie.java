@@ -48,8 +48,6 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Turtle;
@@ -65,7 +63,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.mines.WorldEffects;
 
 public class Zombie extends Monster {
    private static final ResourceLocation SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
@@ -142,10 +139,10 @@ public class Zombie extends Monster {
    }
 
    public void setCanBreakDoors(boolean var1) {
-      if (GoalUtils.hasGroundPathNavigation(this)) {
+      if (this.navigation.canNavigateGround()) {
          if (this.canBreakDoors != var1) {
             this.canBreakDoors = var1;
-            ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var1);
+            this.navigation.setCanOpenDoors(var1);
             if (var1) {
                this.goalSelector.addGoal(1, this.breakDoorGoal);
             } else {
@@ -522,21 +519,18 @@ public class Zombie extends Monster {
    }
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      if (!var1.isActive(WorldEffects.NO_DROPS)) {
-         super.dropCustomDeathLoot(var1, var2, var3);
-         Entity var4 = var2.getEntity();
-         if (var4 instanceof Creeper) {
-            Creeper var5 = (Creeper)var4;
-            if (var5.canDropMobsSkull()) {
-               ItemStack var6 = this.getSkull();
-               if (!var6.isEmpty()) {
-                  var5.increaseDroppedSkulls();
-                  this.spawnAtLocation(var1, var6);
-               }
+      super.dropCustomDeathLoot(var1, var2, var3);
+      Entity var4 = var2.getEntity();
+      if (var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            ItemStack var6 = this.getSkull();
+            if (!var6.isEmpty()) {
+               var5.increaseDroppedSkulls();
+               this.spawnAtLocation(var1, var6);
             }
          }
-
       }
+
    }
 
    protected ItemStack getSkull() {

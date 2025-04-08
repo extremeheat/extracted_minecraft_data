@@ -25,7 +25,6 @@ public interface StructureTags {
    TagKey<Structure> SHIPWRECK = create("shipwreck");
    TagKey<Structure> RUINED_PORTAL = create("ruined_portal");
    TagKey<Structure> OCEAN_RUIN = create("ocean_ruin");
-   TagKey<Structure> MINE_EXIT = create("mine_exit");
 
    private static TagKey<Structure> create(String var0) {
       return TagKey.<Structure>create(Registries.STRUCTURE, ResourceLocation.withDefaultNamespace(var0));

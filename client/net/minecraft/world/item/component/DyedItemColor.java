@@ -5,8 +5,8 @@ import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -14,7 +14,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -83,7 +82,7 @@ public record DyedItemColor(int rgb) implements TooltipProvider {
       }
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       if (var3.isAdvanced()) {
          var2.accept(Component.translatable("item.color", String.format(Locale.ROOT, "#%06X", this.rgb)).withStyle(ChatFormatting.GRAY));
       } else {

@@ -38,8 +38,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.MANGROVE_ROOTS, var2);
       var0.put(Blocks.MANGROVE_LEAVES, var2);
       RenderType var3 = RenderType.cutout();
-      var0.put(Blocks.MOB_TROPHY, var3);
-      var0.put(Blocks.TROPHY, var3);
       var0.put(Blocks.OAK_SAPLING, var3);
       var0.put(Blocks.SPRUCE_SAPLING, var3);
       var0.put(Blocks.BIRCH_SAPLING, var3);
@@ -298,8 +296,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.CALIBRATED_SCULK_SENSOR, var3);
       var0.put(Blocks.SCULK_VEIN, var3);
       var0.put(Blocks.SCULK_SHRIEKER, var3);
-      var0.put(Blocks.MINE_REVISITOR, var3);
-      var0.put(Blocks.MINE_CRAFTER, var3);
       var0.put(Blocks.MANGROVE_PROPAGULE, var3);
       var0.put(Blocks.FROGSPAWN, var3);
       var0.put(Blocks.COPPER_GRATE, var3);
@@ -366,15 +362,11 @@ public class ItemBlockRenderTypes {
 
    public static RenderType getChunkRenderType(BlockState var0) {
       Block var1 = var0.getBlock();
-      if (var1 != Blocks.SKY && var1 != Blocks.SHIMMERING_DOOR && var1 != Blocks.DIMENSION_CONTROL) {
-         if (var1 instanceof LeavesBlock) {
-            return renderCutout ? RenderType.cutoutMipped() : RenderType.solid();
-         } else {
-            RenderType var2 = (RenderType)TYPE_BY_BLOCK.get(var1);
-            return var2 != null ? var2 : RenderType.solid();
-         }
+      if (var1 instanceof LeavesBlock) {
+         return renderCutout ? RenderType.cutoutMipped() : RenderType.solid();
       } else {
-         return RenderType.skyBlock();
+         RenderType var2 = (RenderType)TYPE_BY_BLOCK.get(var1);
+         return var2 != null ? var2 : RenderType.solid();
       }
    }
 

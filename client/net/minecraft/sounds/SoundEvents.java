@@ -465,11 +465,21 @@ public class SoundEvents {
    public static final SoundEvent DONKEY_EAT = register("entity.donkey.eat");
    public static final SoundEvent DONKEY_HURT = register("entity.donkey.hurt");
    public static final SoundEvent DONKEY_JUMP = register("entity.donkey.jump");
+   public static final SoundEvent DRIED_GHAST_BREAK = register("block.dried_ghast.break");
+   public static final SoundEvent DRIED_GHAST_STEP = register("block.dried_ghast.step");
+   public static final SoundEvent DRIED_GHAST_FALL = register("block.dried_ghast.fall");
+   public static final SoundEvent DRIED_GHAST_HIT = register("block.dried_ghast.hit");
+   public static final SoundEvent DRIED_GHAST_AMBIENT = register("block.dried_ghast.ambient");
+   public static final SoundEvent DRIED_GHAST_AMBIENT_WATER = register("block.dried_ghast.ambient_water");
+   public static final SoundEvent DRIED_GHAST_PLACE = register("block.dried_ghast.place");
+   public static final SoundEvent DRIED_GHAST_PLACE_IN_WATER = register("block.dried_ghast.place_in_water");
+   public static final SoundEvent DRIED_GHAST_TRANSITION = register("block.dried_ghast.transition");
    public static final SoundEvent DRIPSTONE_BLOCK_BREAK = register("block.dripstone_block.break");
    public static final SoundEvent DRIPSTONE_BLOCK_STEP = register("block.dripstone_block.step");
    public static final SoundEvent DRIPSTONE_BLOCK_PLACE = register("block.dripstone_block.place");
    public static final SoundEvent DRIPSTONE_BLOCK_HIT = register("block.dripstone_block.hit");
    public static final SoundEvent DRIPSTONE_BLOCK_FALL = register("block.dripstone_block.fall");
+   public static final SoundEvent DRY_GRASS = register("block.dry_grass.ambient");
    public static final SoundEvent POINTED_DRIPSTONE_BREAK = register("block.pointed_dripstone.break");
    public static final SoundEvent POINTED_DRIPSTONE_STEP = register("block.pointed_dripstone.step");
    public static final SoundEvent POINTED_DRIPSTONE_PLACE = register("block.pointed_dripstone.place");
@@ -631,6 +641,10 @@ public class SoundEvents {
    public static final SoundEvent GHAST_SCREAM = register("entity.ghast.scream");
    public static final SoundEvent GHAST_SHOOT = register("entity.ghast.shoot");
    public static final SoundEvent GHAST_WARN = register("entity.ghast.warn");
+   public static final SoundEvent GHASTLING_AMBIENT = register("entity.ghastling.ambient");
+   public static final SoundEvent GHASTLING_DEATH = register("entity.ghastling.death");
+   public static final SoundEvent GHASTLING_HURT = register("entity.ghastling.hurt");
+   public static final SoundEvent GHASTLING_SPAWN = register("entity.ghastling.spawn");
    public static final SoundEvent GILDED_BLACKSTONE_BREAK = register("block.gilded_blackstone.break");
    public static final SoundEvent GILDED_BLACKSTONE_FALL = register("block.gilded_blackstone.fall");
    public static final SoundEvent GILDED_BLACKSTONE_HIT = register("block.gilded_blackstone.hit");
@@ -699,6 +713,10 @@ public class SoundEvents {
    public static final SoundEvent HANGING_SIGN_FALL = register("block.hanging_sign.fall");
    public static final SoundEvent HANGING_SIGN_HIT = register("block.hanging_sign.hit");
    public static final SoundEvent HANGING_SIGN_PLACE = register("block.hanging_sign.place");
+   public static final SoundEvent HAPPY_GHAST_AMBIENT = register("entity.happy_ghast.ambient");
+   public static final SoundEvent HAPPY_GHAST_DEATH = register("entity.happy_ghast.death");
+   public static final SoundEvent HAPPY_GHAST_HURT = register("entity.happy_ghast.hurt");
+   public static final SoundEvent HAPPY_GHAST_RIDING = register("entity.happy_ghast.riding");
    public static final SoundEvent HEAVY_CORE_BREAK = register("block.heavy_core.break");
    public static final SoundEvent HEAVY_CORE_FALL = register("block.heavy_core.fall");
    public static final SoundEvent HEAVY_CORE_HIT = register("block.heavy_core.hit");
@@ -730,6 +748,10 @@ public class SoundEvents {
    public static final SoundEvent TRIAL_SPAWNER_OPEN_SHUTTER = register("block.trial_spawner.open_shutter");
    public static final SoundEvent TRIAL_SPAWNER_CLOSE_SHUTTER = register("block.trial_spawner.close_shutter");
    public static final SoundEvent TRIAL_SPAWNER_EJECT_ITEM = register("block.trial_spawner.eject_item");
+   public static final Holder.Reference<SoundEvent> HARNESS_EQUIP = registerForHolder("entity.happy_ghast.equip");
+   public static final SoundEvent HARNESS_UNEQUIP = register("entity.happy_ghast.unequip");
+   public static final SoundEvent HARNESS_GOGGLES_UP = register("entity.happy_ghast.harness_goggles_up");
+   public static final SoundEvent HARNESS_GOGGLES_DOWN = register("entity.happy_ghast.harness_goggles_down");
    public static final SoundEvent HOE_TILL = register("item.hoe.till");
    public static final SoundEvent HOGLIN_AMBIENT = register("entity.hoglin.ambient");
    public static final SoundEvent HOGLIN_ANGRY = register("entity.hoglin.angry");
@@ -918,7 +940,6 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_5 = registerForHolder("music_disc.5");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_11 = registerForHolder("music_disc.11");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_13 = registerForHolder("music_disc.13");
-   public static final Holder.Reference<SoundEvent> MUSIC_DISC_AND_ACTION = registerForHolder(new ResourceLocation("nothingtoseehere", "and_action"));
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_BLOCKS = registerForHolder("music_disc.blocks");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CAT = registerForHolder("music_disc.cat");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CHIRP = registerForHolder("music_disc.chirp");
@@ -1239,7 +1260,6 @@ public class SoundEvents {
    public static final SoundEvent SAND_PLACE = register("block.sand.place");
    public static final SoundEvent SAND_STEP = register("block.sand.step");
    public static final SoundEvent SAND_IDLE = register("block.sand.idle");
-   public static final SoundEvent SAND_WIND = register("block.sand.wind");
    public static final SoundEvent SCAFFOLDING_BREAK = register("block.scaffolding.break");
    public static final SoundEvent SCAFFOLDING_FALL = register("block.scaffolding.fall");
    public static final SoundEvent SCAFFOLDING_HIT = register("block.scaffolding.hit");
@@ -1500,8 +1520,6 @@ public class SoundEvents {
    public static final SoundEvent UI_TOAST_CHALLENGE_COMPLETE = register("ui.toast.challenge_complete");
    public static final SoundEvent UI_TOAST_IN = register("ui.toast.in");
    public static final SoundEvent UI_TOAST_OUT = register("ui.toast.out");
-   public static final SoundEvent UI_PLAYER_UNLOCK_SUCCESS = register(new ResourceLocation("nothingtoseehere", "ui.player_unlock_success"));
-   public static final SoundEvent UI_PLAYER_UNLOCK_FAIL = register(new ResourceLocation("nothingtoseehere", "ui.player_unlock_fail"));
    public static final SoundEvent VAULT_ACTIVATE = register("block.vault.activate");
    public static final SoundEvent VAULT_AMBIENT = register("block.vault.ambient");
    public static final SoundEvent VAULT_BREAK = register("block.vault.break");
@@ -1671,9 +1689,6 @@ public class SoundEvents {
    public static final SoundEvent APPLY_EFFECT_BAD_OMEN = register("event.mob_effect.bad_omen");
    public static final SoundEvent APPLY_EFFECT_TRIAL_OMEN = register("event.mob_effect.trial_omen");
    public static final SoundEvent APPLY_EFFECT_RAID_OMEN = register("event.mob_effect.raid_omen");
-   public static final SoundEvent VILLAGER_CROWD_START = register(new ResourceLocation("nothingtoseehere", "crowd_start"));
-   public static final SoundEvent VILLAGER_CROWD_CHEER = register(new ResourceLocation("nothingtoseehere", "crowd_cheer"));
-   public static final SoundEvent VILLAGER_CROWD_WAITING = register(new ResourceLocation("nothingtoseehere", "crowd_waiting"));
 
    public SoundEvents() {
       super();

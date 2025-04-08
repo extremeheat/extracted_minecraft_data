@@ -41,7 +41,7 @@ import net.minecraft.advancements.critereon.SummonedEntityTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
 import net.minecraft.advancements.critereon.TargetBlockTrigger;
 import net.minecraft.advancements.critereon.TradeTrigger;
-import net.minecraft.advancements.critereon.UsedExitEyeTrigger;
+import net.minecraft.advancements.critereon.UsedEnderEyeTrigger;
 import net.minecraft.advancements.critereon.UsedTotemTrigger;
 import net.minecraft.advancements.critereon.UsingItemTrigger;
 import net.minecraft.core.Registry;
@@ -61,7 +61,7 @@ public class CriteriaTriggers {
    public static final FilledBucketTrigger FILLED_BUCKET;
    public static final BrewedPotionTrigger BREWED_POTION;
    public static final ConstructBeaconTrigger CONSTRUCT_BEACON;
-   public static final UsedExitEyeTrigger USED_EXIT_EYE;
+   public static final UsedEnderEyeTrigger USED_ENDER_EYE;
    public static final SummonedEntityTrigger SUMMONED_ENTITY;
    public static final BredAnimalsTrigger BRED_ANIMALS;
    public static final PlayerTrigger LOCATION;
@@ -75,7 +75,6 @@ public class CriteriaTriggers {
    public static final TameAnimalTrigger TAME_ANIMAL;
    public static final ItemUsedOnLocationTrigger PLACED_BLOCK;
    public static final ConsumeItemTrigger CONSUME_ITEM;
-   public static final ConsumeItemTrigger CONSUMED_HUNDRED_POISONOUS_POTATOES;
    public static final EffectsChangedTrigger EFFECTS_CHANGED;
    public static final UsedTotemTrigger USED_TOTEM;
    public static final DistanceTrigger NETHER_TRAVEL;
@@ -106,14 +105,6 @@ public class CriteriaTriggers {
    public static final RecipeCraftedTrigger RECIPE_CRAFTED;
    public static final RecipeCraftedTrigger CRAFTER_RECIPE_CRAFTED;
    public static final FallAfterExplosionTrigger FALL_AFTER_EXPLOSION;
-   public static final PlayerTrigger PLAYER_UNLOCK_BOUGHT;
-   public static final PlayerTrigger PLAYER_UNLOCK_UNLOCKED;
-   public static final PlayerTrigger MINE_CRAFTER_UPGRADED;
-   public static final PlayerTrigger MINE_REVISITOR_ACTIVATED;
-   public static final PlayerTrigger LEVEL_COMPLETED;
-   public static final PlayerTrigger SPECIAL_MINE_COMPLETED;
-   public static final PlayerTrigger LEVEL_FAILED;
-   public static final ItemUsedOnLocationTrigger INVENTORY_CASHED_IN;
 
    public CriteriaTriggers() {
       super();
@@ -141,7 +132,7 @@ public class CriteriaTriggers {
       FILLED_BUCKET = (FilledBucketTrigger)register("filled_bucket", new FilledBucketTrigger());
       BREWED_POTION = (BrewedPotionTrigger)register("brewed_potion", new BrewedPotionTrigger());
       CONSTRUCT_BEACON = (ConstructBeaconTrigger)register("construct_beacon", new ConstructBeaconTrigger());
-      USED_EXIT_EYE = (UsedExitEyeTrigger)register("used_exit_eye", new UsedExitEyeTrigger());
+      USED_ENDER_EYE = (UsedEnderEyeTrigger)register("used_ender_eye", new UsedEnderEyeTrigger());
       SUMMONED_ENTITY = (SummonedEntityTrigger)register("summoned_entity", new SummonedEntityTrigger());
       BRED_ANIMALS = (BredAnimalsTrigger)register("bred_animals", new BredAnimalsTrigger());
       LOCATION = (PlayerTrigger)register("location", new PlayerTrigger());
@@ -155,7 +146,6 @@ public class CriteriaTriggers {
       TAME_ANIMAL = (TameAnimalTrigger)register("tame_animal", new TameAnimalTrigger());
       PLACED_BLOCK = (ItemUsedOnLocationTrigger)register("placed_block", new ItemUsedOnLocationTrigger());
       CONSUME_ITEM = (ConsumeItemTrigger)register("consume_item", new ConsumeItemTrigger());
-      CONSUMED_HUNDRED_POISONOUS_POTATOES = (ConsumeItemTrigger)register("consume_poisonous_potatoes", new ConsumeItemTrigger());
       EFFECTS_CHANGED = (EffectsChangedTrigger)register("effects_changed", new EffectsChangedTrigger());
       USED_TOTEM = (UsedTotemTrigger)register("used_totem", new UsedTotemTrigger());
       NETHER_TRAVEL = (DistanceTrigger)register("nether_travel", new DistanceTrigger());
@@ -186,13 +176,5 @@ public class CriteriaTriggers {
       RECIPE_CRAFTED = (RecipeCraftedTrigger)register("recipe_crafted", new RecipeCraftedTrigger());
       CRAFTER_RECIPE_CRAFTED = (RecipeCraftedTrigger)register("crafter_recipe_crafted", new RecipeCraftedTrigger());
       FALL_AFTER_EXPLOSION = (FallAfterExplosionTrigger)register("fall_after_explosion", new FallAfterExplosionTrigger());
-      PLAYER_UNLOCK_BOUGHT = (PlayerTrigger)register("player_unlock_bought", new PlayerTrigger());
-      PLAYER_UNLOCK_UNLOCKED = (PlayerTrigger)register("player_unlock_unlocked", new PlayerTrigger());
-      MINE_CRAFTER_UPGRADED = (PlayerTrigger)register("mine_crafter_upgraded", new PlayerTrigger());
-      MINE_REVISITOR_ACTIVATED = (PlayerTrigger)register("mine_revisitor_activated", new PlayerTrigger());
-      LEVEL_COMPLETED = (PlayerTrigger)register("level_completed", new PlayerTrigger());
-      SPECIAL_MINE_COMPLETED = (PlayerTrigger)register("special_mine_completed", new PlayerTrigger());
-      LEVEL_FAILED = (PlayerTrigger)register("level_failed", new PlayerTrigger());
-      INVENTORY_CASHED_IN = (ItemUsedOnLocationTrigger)register("inventory_cashed_in", new ItemUsedOnLocationTrigger());
    }
 }

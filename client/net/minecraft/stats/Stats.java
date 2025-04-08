@@ -36,6 +36,7 @@ public class Stats {
    public static final ResourceLocation MINECART_ONE_CM;
    public static final ResourceLocation BOAT_ONE_CM;
    public static final ResourceLocation PIG_ONE_CM;
+   public static final ResourceLocation HAPPY_GHAST_ONE_CM;
    public static final ResourceLocation HORSE_ONE_CM;
    public static final ResourceLocation AVIATE_ONE_CM;
    public static final ResourceLocation SWIM_ONE_CM;
@@ -138,6 +139,7 @@ public class Stats {
       MINECART_ONE_CM = makeCustomStat("minecart_one_cm", StatFormatter.DISTANCE);
       BOAT_ONE_CM = makeCustomStat("boat_one_cm", StatFormatter.DISTANCE);
       PIG_ONE_CM = makeCustomStat("pig_one_cm", StatFormatter.DISTANCE);
+      HAPPY_GHAST_ONE_CM = makeCustomStat("happy_ghast_one_cm", StatFormatter.DISTANCE);
       HORSE_ONE_CM = makeCustomStat("horse_one_cm", StatFormatter.DISTANCE);
       AVIATE_ONE_CM = makeCustomStat("aviate_one_cm", StatFormatter.DISTANCE);
       SWIM_ONE_CM = makeCustomStat("swim_one_cm", StatFormatter.DISTANCE);

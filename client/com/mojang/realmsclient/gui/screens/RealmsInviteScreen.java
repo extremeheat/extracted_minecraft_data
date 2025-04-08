@@ -95,7 +95,7 @@ public class RealmsInviteScreen extends RealmsScreen {
 
    private void showMessage(Component var1) {
       this.message = var1;
-      this.minecraft.getNarrator().sayNow(var1);
+      this.minecraft.getNarrator().saySystemNow(var1);
    }
 
    public void onClose() {

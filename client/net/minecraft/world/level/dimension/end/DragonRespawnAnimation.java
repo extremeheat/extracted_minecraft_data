@@ -11,12 +11,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
-import org.jetbrains.annotations.NotNull;
 
 public enum DragonRespawnAnimation {
    START {
       public void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5) {
-         BlockPos var6 = DragonRespawnAnimation.getPosAbovePortal(var2);
+         BlockPos var6 = new BlockPos(0, 128, 0);
 
          for(EndCrystal var8 : var3) {
             var8.setBeamTarget(var6);
@@ -29,7 +28,7 @@ public enum DragonRespawnAnimation {
       public void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5) {
          if (var4 < 100) {
             if (var4 == 0 || var4 == 50 || var4 == 51 || var4 == 52 || var4 >= 95) {
-               var1.levelEvent(3001, DragonRespawnAnimation.getPosAbovePortal(var2), 0);
+               var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);
             }
          } else {
             var2.setRespawnStage(SUMMONING_PILLARS);
@@ -59,7 +58,7 @@ public enum DragonRespawnAnimation {
                   }
 
                   var1.explode((Entity)null, (double)((float)var11.getCenterX() + 0.5F), (double)var11.getHeight(), (double)((float)var11.getCenterZ() + 0.5F), 5.0F, Level.ExplosionInteraction.BLOCK);
-                  SpikeConfiguration var17 = new SpikeConfiguration(true, ImmutableList.of(var11), var2.portalLocation != null ? var2.portalLocation.above(16) : new BlockPos(0, 128, 0));
+                  SpikeConfiguration var17 = new SpikeConfiguration(true, ImmutableList.of(var11), new BlockPos(0, 128, 0));
                   Feature.END_SPIKE.place(var17, var1, var1.getChunkSource().getGenerator(), RandomSource.create(), new BlockPos(var11.getCenterX(), 45, var11.getCenterZ()));
                }
             } else if (var7) {
@@ -81,13 +80,13 @@ public enum DragonRespawnAnimation {
                var7.discard();
             }
          } else if (var4 >= 80) {
-            var1.levelEvent(3001, DragonRespawnAnimation.getPosAbovePortal(var2), 0);
+            var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);
          } else if (var4 == 0) {
             for(EndCrystal var9 : var3) {
                var9.setBeamTarget(new BlockPos(0, 128, 0));
             }
          } else if (var4 < 5) {
-            var1.levelEvent(3001, DragonRespawnAnimation.getPosAbovePortal(var2), 0);
+            var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);
          }
 
       }
@@ -98,10 +97,6 @@ public enum DragonRespawnAnimation {
    };
 
    DragonRespawnAnimation() {
-   }
-
-   static @NotNull BlockPos getPosAbovePortal(EndDragonFight var0) {
-      return var0.portalLocation != null ? var0.portalLocation.above(16) : new BlockPos(0, 128, 0);
    }
 
    public abstract void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5);

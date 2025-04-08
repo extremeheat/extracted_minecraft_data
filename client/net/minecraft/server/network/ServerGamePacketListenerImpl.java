@@ -114,12 +114,9 @@ import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerBuyUnlockPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerDonateExperiencePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerReactivateUnlockPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
@@ -145,7 +142,6 @@ import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.TheGame;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FutureChain;
@@ -165,8 +161,6 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Inventory;
@@ -207,7 +201,6 @@ import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -264,17 +257,16 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private final FutureChain chatMessageChain;
    private boolean waitingForSwitchToConfig;
 
-   public ServerGamePacketListenerImpl(TheGame var1, Connection var2, ServerPlayer var3, CommonListenerCookie var4) {
+   public ServerGamePacketListenerImpl(MinecraftServer var1, Connection var2, ServerPlayer var3, CommonListenerCookie var4) {
       super(var1, var2, var4);
       this.chunkSender = new PlayerChunkSender(var2.isMemoryConnection());
       this.player = var3;
       var3.connection = this;
       var3.getTextFilter().join();
       UUID var10001 = var3.getUUID();
-      MinecraftServer var10002 = var1.server();
-      Objects.requireNonNull(var10002);
-      this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(var10001, var10002::enforceSecureProfile);
-      this.chatMessageChain = new FutureChain(var1.eventLoop());
+      Objects.requireNonNull(var1);
+      this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(var10001, var1::enforceSecureProfile);
+      this.chatMessageChain = new FutureChain(var1);
    }
 
    public void tick() {
@@ -329,8 +321,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.keepConnectionAlive();
       this.chatSpamThrottler.tick();
       this.dropSpamThrottler.tick();
-      int var1 = this.theGame.server().getPlayerIdleTimeout();
-      if (this.player.getLastActionTime() > 0L && var1 > 0 && Util.getMillis() - this.player.getLastActionTime() > (long)var1 * 1000L * 60L) {
+      if (this.player.getLastActionTime() > 0L && this.server.getPlayerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > (long)this.server.getPlayerIdleTimeout() * 1000L * 60L) {
          this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
       }
 
@@ -477,7 +468,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             var2.setOnGroundWithMovement(var1.onGround(), var34);
             var2.doCheckFallDamage(var34.x, var34.y, var34.z, var1.onGround());
             this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
-            this.clientVehicleIsFloating = var42 >= -0.03125 && !var29 && !this.theGame.server().isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
+            this.clientVehicleIsFloating = var42 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
             this.vehicleLastGoodY = var2.getY();
             this.vehicleLastGoodZ = var2.getZ();
@@ -513,19 +504,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.player.setClientLoaded(true);
    }
 
-   public void handleBuyUnlock(ServerboundPlayerBuyUnlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.player.buyUnlock(var1.unlock());
-   }
-
-   public void handleReactivateUnlock(ServerboundPlayerReactivateUnlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.player.reactivateUnlock(var1.unlock());
-   }
-
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      RecipeManager.ServerDisplayInfo var2 = this.theGame.getRecipeManager().getRecipeFromDisplay(var1.recipe());
+      RecipeManager.ServerDisplayInfo var2 = this.server.getRecipeManager().getRecipeFromDisplay(var1.recipe());
       if (var2 != null) {
          this.player.getRecipeBook().removeHighlight(var2.parent().id());
       }
@@ -546,7 +527,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getAction() == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
          ResourceLocation var2 = (ResourceLocation)Objects.requireNonNull(var1.getTab());
-         AdvancementHolder var3 = this.theGame.getAdvancements().get(var2);
+         AdvancementHolder var3 = this.server.getAdvancements().get(var2);
          if (var3 != null) {
             this.player.getAdvancements().setSelectedTab(var3);
          }
@@ -561,8 +542,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          var2.skip();
       }
 
-      ParseResults var3 = this.theGame.getCommands().getDispatcher().parse(var2, this.player.createCommandSourceStack());
-      this.theGame.getCommands().getDispatcher().getCompletionSuggestions(var3).thenAccept((var2x) -> {
+      ParseResults var3 = this.server.getCommands().getDispatcher().parse(var2, this.player.createCommandSourceStack());
+      this.server.getCommands().getDispatcher().getCompletionSuggestions(var3).thenAccept((var2x) -> {
          Suggestions var3 = var2x.getList().size() <= 1000 ? var2x : new Suggestions(var2x.getRange(), var2x.getList().subList(0, 1000));
          this.send(new ClientboundCommandSuggestionsPacket(var1.getId(), var3));
       });
@@ -570,7 +551,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleSetCommandBlock(ServerboundSetCommandBlockPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      if (!this.theGame.server().isCommandBlockEnabled()) {
+      if (!this.server.isCommandBlockEnabled()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
       } else if (!this.player.canUseGameMasterBlocks()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notAllowed"));
@@ -627,7 +608,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      if (!this.theGame.server().isCommandBlockEnabled()) {
+      if (!this.server.isCommandBlockEnabled()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
       } else if (!this.player.canUseGameMasterBlocks()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notAllowed"));
@@ -927,7 +908,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          var4.ifPresent(var3::add);
          var3.addAll(var1.pages());
          Consumer var5 = var4.isPresent() ? (var2x) -> this.signBook((FilteredText)var2x.get(0), var2x.subList(1, var2x.size()), var2) : (var2x) -> this.updateBookContents(var2x, var2);
-         this.filterTextPacket((List)var3).thenAcceptAsync(var5, this.theGame.eventLoop());
+         this.filterTextPacket((List)var3).thenAcceptAsync(var5, this.server);
       }
    }
 
@@ -1048,19 +1029,18 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            }
                         }
 
-                        AABB var44 = this.player.getBoundingBox();
+                        AABB var43 = this.player.getBoundingBox();
                         var17 = var5 - this.lastGoodX;
                         var19 = var7 - this.lastGoodY;
                         var21 = var9 - this.lastGoodZ;
-                        boolean var45 = var19 > 0.0;
-                        AttributeInstance var30 = this.player.getAttribute(Attributes.MAX_JUMPS);
-                        if (var45 && var30 != null && var30.getValue() > (double)this.player.consecutiveJumps || this.player.onGround() && !var1.isOnGround() && var45) {
+                        boolean var44 = var19 > 0.0;
+                        if (this.player.onGround() && !var1.isOnGround() && var44) {
                            this.player.jumpFromGround();
                         }
 
-                        boolean var31 = this.player.verticalCollisionBelow;
+                        boolean var30 = this.player.verticalCollisionBelow;
                         this.player.move(MoverType.PLAYER, new Vec3(var17, var19, var21));
-                        double var32 = var19;
+                        double var31 = var19;
                         var17 = var5 - this.player.getX();
                         var19 = var7 - this.player.getY();
                         if (var19 > -0.5 || var19 < 0.5) {
@@ -1069,26 +1049,26 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
                         var21 = var9 - this.player.getZ();
                         var25 = var17 * var17 + var19 * var19 + var21 * var21;
-                        boolean var34 = false;
+                        boolean var33 = false;
                         if (!this.player.isChangingDimension() && var25 > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator()) {
-                           var34 = true;
+                           var33 = true;
                            LOGGER.warn("{} moved wrongly!", this.player.getName().getString());
                         }
 
-                        if (this.player.noPhysics || this.player.isSleeping() || (!var34 || !var2.noCollision(this.player, var44)) && !this.isPlayerCollidingWithAnythingNew(var2, var44, var5, var7, var9)) {
+                        if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43, var5, var7, var9)) {
                            this.player.absSnapTo(var5, var7, var9, var3, var4);
-                           boolean var35 = this.player.isAutoSpinAttack();
-                           this.clientIsFloating = var32 >= -0.03125 && !var31 && !this.player.isSpectator() && !this.theGame.server().isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var35 && this.noBlocksAround(this.player);
+                           boolean var34 = this.player.isAutoSpinAttack();
+                           this.clientIsFloating = var31 >= -0.03125 && !var30 && !this.player.isSpectator() && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
                            this.player.serverLevel().getChunkSource().move(this.player);
-                           Vec3 var36 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
-                           this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var36);
-                           this.player.doCheckFallDamage(var36.x, var36.y, var36.z, var1.isOnGround());
-                           this.handlePlayerKnownMovement(var36);
-                           if (var45) {
+                           Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
+                           this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
+                           this.player.doCheckFallDamage(var35.x, var35.y, var35.z, var1.isOnGround());
+                           this.handlePlayerKnownMovement(var35);
+                           if (var44) {
                               this.player.resetFallDistance();
                            }
 
-                           if (var1.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var35) {
+                           if (var1.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
                               this.player.tryResetCurrentImpulseContext();
                            }
 
@@ -1299,7 +1279,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleTeleportToEntityPacket(ServerboundTeleportToEntityPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.isSpectator()) {
-         for(ServerLevel var3 : this.theGame.getAllLevels()) {
+         for(ServerLevel var3 : this.server.getAllLevels()) {
             Entity var4 = var1.getEntity(var3);
             if (var4 != null) {
                this.player.teleportTo(var3, var4.getX(), var4.getY(), var4.getZ(), Set.of(), var4.getYRot(), var4.getXRot(), true);
@@ -1327,13 +1307,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private void removePlayerFromWorld() {
       this.chatMessageChain.close();
-      this.theGame.server().invalidateStatus();
-      if (!this.waitingForSwitchToConfig) {
-         this.theGame.playerList().broadcastSystemMessage(Component.translatable("multiplayer.player.left", this.player.getDisplayName()).withStyle(ChatFormatting.YELLOW), false);
-      }
-
+      this.server.invalidateStatus();
+      this.server.getPlayerList().broadcastSystemMessage(Component.translatable("multiplayer.player.left", this.player.getDisplayName()).withStyle(ChatFormatting.YELLOW), false);
       this.player.disconnect();
-      this.theGame.playerList().remove(this.player);
+      this.server.getPlayerList().remove(this.player);
       this.player.getTextFilter().leave();
    }
 
@@ -1372,7 +1349,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             }
 
             CompletableFuture var4 = this.filterTextPacket(var3.signedContent());
-            Component var5 = this.theGame.server().getChatDecorator().decorate(this.player, var3.decoratedContent());
+            Component var5 = this.server.getChatDecorator().decorate(this.player, var3.decoratedContent());
             this.chatMessageChain.append(var4, (var3x) -> {
                PlayerChatMessage var4 = var3.withUnsignedContent(var5).filter(var3x.mask());
                this.broadcastChatMessage(var4);
@@ -1390,11 +1367,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private void performUnsignedChatCommand(String var1) {
       ParseResults var2 = this.parseCommand(var1);
-      if (this.theGame.server().enforceSecureProfile() && SignableCommand.hasSignableArguments(var2)) {
+      if (this.server.enforceSecureProfile() && SignableCommand.hasSignableArguments(var2)) {
          LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", this.player.getGameProfile().getName(), var1);
          this.player.sendSystemMessage(INVALID_COMMAND_SIGNATURE);
       } else {
-         this.theGame.getCommands().performCommand(var2, var1);
+         this.server.getCommands().performCommand(var2, var1);
       }
    }
 
@@ -1421,7 +1398,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
       CommandSigningContext.SignedArguments var5 = new CommandSigningContext.SignedArguments(var4);
       var3 = Commands.mapSource(var3, (var2x) -> var2x.withSigningContext(var5, this.chatMessageChain));
-      this.theGame.getCommands().performCommand(var3, var1.command());
+      this.server.getCommands().performCommand(var3, var1.command());
    }
 
    private void handleMessageDecodeFailure(SignedMessageChain.DecodeException var1) {
@@ -1477,7 +1454,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private ParseResults<CommandSourceStack> parseCommand(String var1) {
-      CommandDispatcher var2 = this.theGame.getCommands().getDispatcher();
+      CommandDispatcher var2 = this.server.getCommands().getDispatcher();
       return var2.parse(var1, this.player.createCommandSourceStack());
    }
 
@@ -1488,7 +1465,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
       } else {
          this.player.resetLastActionTime();
-         this.theGame.eventLoop().execute(var2);
+         this.server.execute(var2);
       }
    }
 
@@ -1524,13 +1501,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private void broadcastChatMessage(PlayerChatMessage var1) {
-      this.theGame.playerList().broadcastChatMessage(var1, this.player, ChatType.bind(ChatType.CHAT, (Entity)this.player));
+      this.server.getPlayerList().broadcastChatMessage(var1, this.player, ChatType.bind(ChatType.CHAT, (Entity)this.player));
       this.detectRateSpam();
    }
 
    private void detectRateSpam() {
       this.chatSpamThrottler.increment();
-      if (!this.chatSpamThrottler.isUnderThreshold() && !this.theGame.playerList().isOp(this.player.getGameProfile()) && !this.theGame.server().isSingleplayerOwner(this.player.getGameProfile())) {
+      if (!this.chatSpamThrottler.isUnderThreshold() && !this.server.getPlayerList().isOp(this.player.getGameProfile()) && !this.server.isSingleplayerOwner(this.player.getGameProfile())) {
          this.disconnect(Component.translatable("disconnect.spam"));
       }
 
@@ -1728,28 +1705,21 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          case PERFORM_RESPAWN:
             if (this.player.wonGame) {
                this.player.wonGame = false;
-               this.player = this.theGame.playerList().respawn(this.player, true, Entity.RemovalReason.CHANGED_DIMENSION, Optional.empty());
+               this.player = this.server.getPlayerList().respawn(this.player, true, Entity.RemovalReason.CHANGED_DIMENSION);
                this.resetPosition();
                CriteriaTriggers.CHANGED_DIMENSION.trigger(this.player, Level.END, Level.OVERWORLD);
-            }
-
-            if (this.player.getHealth() > 0.0F) {
-               return;
-            }
-
-            if (this.player.serverLevel().isMine()) {
-               if (this.player.isRevisiting()) {
-                  this.player = this.theGame.playerList().respawn(this.player, false, Entity.RemovalReason.KILLED, Optional.of(new TeleportTransition(this.player.serverLevel(), this.player.position(), Vec3.ZERO, this.player.getYRot(), this.player.getXRot(), TeleportTransition.DO_NOTHING)));
-                  this.player.serverLevel().respawnPlayerIntoHub(this.player, (var0) -> var0.getInventory().clearContent());
-               } else {
-                  this.player = this.theGame.playerList().respawn(this.player, false, Entity.RemovalReason.KILLED, Optional.of(new TeleportTransition(this.player.serverLevel(), this.player.position(), Vec3.ZERO, this.player.getYRot(), this.player.getXRot(), TeleportTransition.DO_NOTHING)));
-                  this.player.setGameMode(GameType.SPECTATOR);
-               }
             } else {
-               this.player = this.theGame.playerList().respawn(this.player, false, Entity.RemovalReason.KILLED, Optional.empty());
-            }
+               if (this.player.getHealth() > 0.0F) {
+                  return;
+               }
 
-            this.resetPosition();
+               this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
+               this.resetPosition();
+               if (this.server.isHardcore()) {
+                  this.player.setGameMode(GameType.SPECTATOR);
+                  ((GameRules.BooleanValue)this.player.serverLevel().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS)).set(false, this.server);
+               }
+            }
             break;
          case REQUEST_STATS:
             this.player.getStats().sendStats(this.player);
@@ -1805,7 +1775,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          if (!this.player.containerMenu.stillValid(this.player)) {
             LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
          } else {
-            RecipeManager.ServerDisplayInfo var2 = this.theGame.getRecipeManager().getRecipeFromDisplay(var1.recipe());
+            RecipeManager.ServerDisplayInfo var2 = this.server.getRecipeManager().getRecipeFromDisplay(var1.recipe());
             if (var2 != null) {
                RecipeHolder var3 = var2.parent();
                if (this.player.getRecipeBook().contains(var3.id())) {
@@ -1854,7 +1824,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             return;
          }
 
-         boolean var4 = var1.slotNum() >= 1 && var1.slotNum() <= 50;
+         boolean var4 = var1.slotNum() >= 1 && var1.slotNum() <= 45;
          boolean var5 = var3.isEmpty() || var3.getCount() <= var3.getMaxStackSize();
          if (var4 && var5) {
             this.player.inventoryMenu.getSlot(var1.slotNum()).setByPlayer(var3);
@@ -1874,7 +1844,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleSignUpdate(ServerboundSignUpdatePacket var1) {
       List var2 = (List)Stream.of(var1.getLines()).map(ChatFormatting::stripFormatting).collect(Collectors.toList());
-      this.filterTextPacket(var2).thenAcceptAsync((var2x) -> this.updateSignText(var1, var2x), this.theGame.eventLoop());
+      this.filterTextPacket(var2).thenAcceptAsync((var2x) -> this.updateSignText(var1, var2x), this.server);
    }
 
    private void updateSignText(ServerboundSignUpdatePacket var1, List<FilteredText> var2) {
@@ -1903,7 +1873,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       boolean var2 = this.player.isModelPartShown(PlayerModelPart.HAT);
       this.player.updateOptions(var1.information());
       if (this.player.isModelPartShown(PlayerModelPart.HAT) != var2) {
-         this.theGame.playerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_HAT, this.player));
+         this.server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_HAT, this.player));
       }
 
    }
@@ -1911,14 +1881,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
-         this.theGame.setDifficulty(var1.getDifficulty(), false);
+         this.server.setDifficulty(var1.getDifficulty(), false);
       }
    }
 
    public void handleLockDifficulty(ServerboundLockDifficultyPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
-         this.theGame.setDifficultyLocked(this.theGame.playerList(), var1.isLocked());
+         this.server.setDifficultyLocked(var1.isLocked());
       }
    }
 
@@ -1932,7 +1902,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             this.disconnect(ProfilePublicKey.EXPIRED_PROFILE_PUBLIC_KEY);
          } else {
             try {
-               SignatureValidator var5 = this.theGame.server().getProfileKeySignatureValidator();
+               SignatureValidator var5 = this.server.getProfileKeySignatureValidator();
                if (var5 == null) {
                   LOGGER.warn("Ignoring chat session from {} due to missing Services public key", this.player.getGameProfile().getName());
                   return;
@@ -1952,7 +1922,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (!this.waitingForSwitchToConfig) {
          throw new IllegalStateException("Client acknowledged config, but none was requested");
       } else {
-         this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, new ServerHibernateConfigPacketListenerImpl(this.connection, this.createCookie(this.player.clientInformation()), this.theGame.eventLoop()));
+         this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation())));
       }
    }
 
@@ -1963,7 +1933,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.theGame.server().subscribeToDebugSample(this.player, var1.sampleType());
+      this.server.subscribeToDebugSample(this.player, var1.sampleType());
    }
 
    private void resetPlayerChatState(RemoteChatSession var1) {
@@ -1971,7 +1941,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.signedMessageDecoder = var1.createMessageDecoder(this.player.getUUID());
       this.chatMessageChain.append(() -> {
          this.player.setChatSession(var1);
-         this.theGame.playerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT), List.of(this.player)));
+         this.server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT), List.of(this.player)));
       });
    }
 
@@ -1985,11 +1955,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
 
       this.receivedMovementThisTick = false;
-   }
-
-   public void handlePlayerDonateExperience(ServerboundPlayerDonateExperiencePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.player.donateExperienceToMineCrafter();
    }
 
    private void handlePlayerKnownMovement(Vec3 var1) {

@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 
 public class SaveAllCommand {
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.save.failed"));
@@ -21,8 +22,9 @@ public class SaveAllCommand {
 
    private static int saveAll(CommandSourceStack var0, boolean var1) throws CommandSyntaxException {
       var0.sendSuccess(() -> Component.translatable("commands.save.saving"), false);
-      boolean var2 = var0.theGame().server().saveEverything(var0.theGame(), true, var1, true);
-      if (!var2) {
+      MinecraftServer var2 = var0.getServer();
+      boolean var3 = var2.saveEverything(true, var1, true);
+      if (!var3) {
          throw ERROR_FAILED.create();
       } else {
          var0.sendSuccess(() -> Component.translatable("commands.save.success"), true);

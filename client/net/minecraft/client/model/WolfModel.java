@@ -16,7 +16,7 @@ public class WolfModel extends EntityModel<WolfRenderState> {
    private static final String REAL_HEAD = "real_head";
    private static final String UPPER_BODY = "upper_body";
    private static final String REAL_TAIL = "real_tail";
-   public final ModelPart head;
+   private final ModelPart head;
    private final ModelPart realHead;
    private final ModelPart body;
    private final ModelPart rightHindLeg;
@@ -51,12 +51,13 @@ public class WolfModel extends EntityModel<WolfRenderState> {
       var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(18, 14).addBox(-3.0F, -2.0F, -3.0F, 6.0F, 9.0F, 6.0F, var0), PartPose.offsetAndRotation(0.0F, 14.0F, 2.0F, 1.5707964F, 0.0F, 0.0F));
       var2.addOrReplaceChild("upper_body", CubeListBuilder.create().texOffs(21, 0).addBox(-3.0F, -3.0F, -3.0F, 8.0F, 6.0F, 7.0F, var0), PartPose.offsetAndRotation(-1.0F, 14.0F, -3.0F, 1.5707964F, 0.0F, 0.0F));
       CubeListBuilder var5 = CubeListBuilder.create().texOffs(0, 18).addBox(0.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, var0);
-      var2.addOrReplaceChild("right_hind_leg", var5, PartPose.offset(-2.5F, 16.0F, 7.0F));
+      CubeListBuilder var6 = CubeListBuilder.create().mirror().texOffs(0, 18).addBox(0.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, var0);
+      var2.addOrReplaceChild("right_hind_leg", var6, PartPose.offset(-2.5F, 16.0F, 7.0F));
       var2.addOrReplaceChild("left_hind_leg", var5, PartPose.offset(0.5F, 16.0F, 7.0F));
-      var2.addOrReplaceChild("right_front_leg", var5, PartPose.offset(-2.5F, 16.0F, -4.0F));
+      var2.addOrReplaceChild("right_front_leg", var6, PartPose.offset(-2.5F, 16.0F, -4.0F));
       var2.addOrReplaceChild("left_front_leg", var5, PartPose.offset(0.5F, 16.0F, -4.0F));
-      PartDefinition var6 = var2.addOrReplaceChild("tail", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.0F, 12.0F, 8.0F, 0.62831855F, 0.0F, 0.0F));
-      var6.addOrReplaceChild("real_tail", CubeListBuilder.create().texOffs(9, 18).addBox(0.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, var0), PartPose.ZERO);
+      PartDefinition var7 = var2.addOrReplaceChild("tail", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.0F, 12.0F, 8.0F, 0.62831855F, 0.0F, 0.0F));
+      var7.addOrReplaceChild("real_tail", CubeListBuilder.create().texOffs(9, 18).addBox(0.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, var0), PartPose.ZERO);
       return var1;
    }
 

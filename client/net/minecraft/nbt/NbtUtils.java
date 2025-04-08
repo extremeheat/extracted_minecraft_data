@@ -539,7 +539,7 @@ public final class NbtUtils {
    }
 
    public static CompoundTag addCurrentDataVersion(CompoundTag var0) {
-      int var1 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+      int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
       return addDataVersion(var0, var1);
    }
 

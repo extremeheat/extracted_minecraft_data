@@ -119,7 +119,7 @@ public class MinecartCommandBlock extends AbstractMinecart {
       }
 
       public CommandSourceStack createCommandSourceStack() {
-         return new CommandSourceStack(this, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), this.getLevel(), 2, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), this.getLevel().theGame(), MinecartCommandBlock.this);
+         return new CommandSourceStack(this, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), this.getLevel(), 2, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), this.getLevel().getServer(), MinecartCommandBlock.this);
       }
 
       public boolean isValid() {

@@ -131,4 +131,85 @@ public class ARGB {
    public static int fromABGR(int var0) {
       return toABGR(var0);
    }
+
+   public static int setBrightness(int var0, float var1) {
+      int var2 = red(var0);
+      int var3 = green(var0);
+      int var4 = blue(var0);
+      int var5 = alpha(var0);
+      int var6 = Math.max(Math.max(var2, var3), var4);
+      int var7 = Math.min(Math.min(var2, var3), var4);
+      float var8 = (float)(var6 - var7);
+      float var9;
+      if (var6 != 0) {
+         var9 = var8 / (float)var6;
+      } else {
+         var9 = 0.0F;
+      }
+
+      float var10;
+      if (var9 == 0.0F) {
+         var10 = 0.0F;
+      } else {
+         float var11 = (float)(var6 - var2) / var8;
+         float var12 = (float)(var6 - var3) / var8;
+         float var13 = (float)(var6 - var4) / var8;
+         if (var2 == var6) {
+            var10 = var13 - var12;
+         } else if (var3 == var6) {
+            var10 = 2.0F + var11 - var13;
+         } else {
+            var10 = 4.0F + var12 - var11;
+         }
+
+         var10 /= 6.0F;
+         if (var10 < 0.0F) {
+            ++var10;
+         }
+      }
+
+      if (var9 == 0.0F) {
+         var2 = var3 = var4 = Math.round(var1 * 255.0F);
+         return color(var5, var2, var3, var4);
+      } else {
+         float var20 = (var10 - (float)Math.floor((double)var10)) * 6.0F;
+         float var21 = var20 - (float)Math.floor((double)var20);
+         float var22 = var1 * (1.0F - var9);
+         float var14 = var1 * (1.0F - var9 * var21);
+         float var15 = var1 * (1.0F - var9 * (1.0F - var21));
+         switch ((int)var20) {
+            case 0:
+               var2 = Math.round(var1 * 255.0F);
+               var3 = Math.round(var15 * 255.0F);
+               var4 = Math.round(var22 * 255.0F);
+               break;
+            case 1:
+               var2 = Math.round(var14 * 255.0F);
+               var3 = Math.round(var1 * 255.0F);
+               var4 = Math.round(var22 * 255.0F);
+               break;
+            case 2:
+               var2 = Math.round(var22 * 255.0F);
+               var3 = Math.round(var1 * 255.0F);
+               var4 = Math.round(var15 * 255.0F);
+               break;
+            case 3:
+               var2 = Math.round(var22 * 255.0F);
+               var3 = Math.round(var14 * 255.0F);
+               var4 = Math.round(var1 * 255.0F);
+               break;
+            case 4:
+               var2 = Math.round(var15 * 255.0F);
+               var3 = Math.round(var22 * 255.0F);
+               var4 = Math.round(var1 * 255.0F);
+               break;
+            case 5:
+               var2 = Math.round(var1 * 255.0F);
+               var3 = Math.round(var22 * 255.0F);
+               var4 = Math.round(var14 * 255.0F);
+         }
+
+         return color(var5, var2, var3, var4);
+      }
+   }
 }

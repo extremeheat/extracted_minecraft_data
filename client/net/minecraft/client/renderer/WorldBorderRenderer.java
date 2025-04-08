@@ -23,7 +23,6 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.util.TriState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -121,7 +120,7 @@ public class WorldBorderRenderer {
          RenderSystem.setModelOffset((float)(this.lastMinX - var17), (float)(-var2.y), (float)(this.lastMinZ - var19));
          TextureManager var29 = Minecraft.getInstance().getTextureManager();
          AbstractTexture var30 = var29.getTexture(FORCEFIELD_LOCATION);
-         var30.setFilter(TriState.FALSE, false);
+         var30.setUseMipmaps(false);
          RenderPipeline var31 = RenderPipelines.WORLD_BORDER;
          RenderTarget var32 = Minecraft.getInstance().getMainRenderTarget();
          RenderTarget var33 = Minecraft.getInstance().levelRenderer.getWeatherTarget();

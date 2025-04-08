@@ -259,17 +259,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   public void replaceListener(PacketListener var1) {
-      PacketListener var2 = this.packetListener;
-      if (var2 == null) {
-         throw new IllegalStateException("Listener not set");
-      } else if (var1.protocol() == var2.protocol() && var1.flow() == var2.flow()) {
-         this.packetListener = var1;
-      } else {
-         throw new IllegalStateException("Incompatible listener");
-      }
-   }
-
    public void initiateServerboundStatusConnection(String var1, int var2, ClientStatusPacketListener var3) {
       this.initiateServerboundConnection(var1, var2, StatusProtocols.SERVERBOUND, StatusProtocols.CLIENTBOUND, var3, ClientIntent.STATUS);
    }
@@ -289,7 +278,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          this.disconnectListener = var5;
          this.runOnceConnected((var7) -> {
             this.setupInboundProtocol(var4, var5);
-            var7.sendPacket(new ClientIntentionPacket(SharedConstants.getCurrentVersion().getProtocolVersion(), var1, var2, var6), (PacketSendListener)null, true);
+            var7.sendPacket(new ClientIntentionPacket(SharedConstants.getCurrentVersion().protocolVersion(), var1, var2, var6), (PacketSendListener)null, true);
             this.setupOutboundProtocol(var3);
          });
       }

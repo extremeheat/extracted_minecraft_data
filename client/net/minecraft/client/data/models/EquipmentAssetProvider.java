@@ -39,10 +39,16 @@ public class EquipmentAssetProvider implements DataProvider {
       EquipmentClientInfo.Layer var1 = new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("saddle"));
       var0.accept(EquipmentAssets.SADDLE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.PIG_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.STRIDER_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.CAMEL_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.DONKEY_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.MULE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, var1).build());
 
-      for(Map.Entry var3 : EquipmentAssets.CARPETS.entrySet()) {
+      for(Map.Entry var3 : EquipmentAssets.HARNESSES.entrySet()) {
          DyeColor var4 = (DyeColor)var3.getKey();
          ResourceKey var5 = (ResourceKey)var3.getValue();
-         var0.accept(var5, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace(var4.getSerializedName()))).build());
+         var0.accept(var5, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.HAPPY_GHAST_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace(var4.getSerializedName() + "_harness"), false)).build());
+      }
+
+      for(Map.Entry var7 : EquipmentAssets.CARPETS.entrySet()) {
+         DyeColor var8 = (DyeColor)var7.getKey();
+         ResourceKey var9 = (ResourceKey)var7.getValue();
+         var0.accept(var9, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace(var8.getSerializedName()))).build());
       }
 
       var0.accept(EquipmentAssets.TRADER_LLAMA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("trader_llama"))).build());

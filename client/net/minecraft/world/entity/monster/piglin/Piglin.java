@@ -59,7 +59,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.mines.WorldEffects;
 
 public class Piglin extends AbstractPiglin implements CrossbowAttackMob, InventoryCarrier {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
@@ -107,20 +106,17 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      if (!var1.isActive(WorldEffects.NO_DROPS)) {
-         super.dropCustomDeathLoot(var1, var2, var3);
-         Entity var4 = var2.getEntity();
-         if (var4 instanceof Creeper) {
-            Creeper var5 = (Creeper)var4;
-            if (var5.canDropMobsSkull()) {
-               ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
-               var5.increaseDroppedSkulls();
-               this.spawnAtLocation(var1, var6);
-            }
+      super.dropCustomDeathLoot(var1, var2, var3);
+      Entity var4 = var2.getEntity();
+      if (var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
+            var5.increaseDroppedSkulls();
+            this.spawnAtLocation(var1, var6);
          }
-
-         this.inventory.removeAllItems().forEach((var2x) -> this.spawnAtLocation(var1, var2x));
       }
+
+      this.inventory.removeAllItems().forEach((var2x) -> this.spawnAtLocation(var1, var2x));
    }
 
    protected ItemStack addToInventory(ItemStack var1) {

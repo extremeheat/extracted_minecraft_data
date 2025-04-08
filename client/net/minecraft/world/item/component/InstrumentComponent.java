@@ -3,10 +3,10 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -15,11 +15,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 public record InstrumentComponent(EitherHolder<Instrument> instrument) implements TooltipProvider {
@@ -41,14 +39,14 @@ public record InstrumentComponent(EitherHolder<Instrument> instrument) implement
       this.instrument = var1;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, @Nullable Player var4, ItemStack var5) {
-      HolderLookup.Provider var6 = var1.registries();
-      if (var6 != null) {
-         Optional var7 = this.unwrap(var6);
-         if (var7.isPresent()) {
-            MutableComponent var8 = ((Instrument)((Holder)var7.get()).value()).description().copy();
-            ComponentUtils.mergeStyles(var8, Style.EMPTY.withColor(ChatFormatting.GRAY));
-            var2.accept(var8);
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      HolderLookup.Provider var5 = var1.registries();
+      if (var5 != null) {
+         Optional var6 = this.unwrap(var5);
+         if (var6.isPresent()) {
+            MutableComponent var7 = ((Instrument)((Holder)var6.get()).value()).description().copy();
+            ComponentUtils.mergeStyles(var7, Style.EMPTY.withColor(ChatFormatting.GRAY));
+            var2.accept(var7);
          }
 
       }

@@ -6,9 +6,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
@@ -21,9 +23,6 @@ public interface StructureSets {
       var0.register(BuiltinStructureSets.DESERT_PYRAMIDS, new StructureSet(var1.getOrThrow(BuiltinStructures.DESERT_PYRAMID), new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 14357617)));
       var0.register(BuiltinStructureSets.IGLOOS, new StructureSet(var1.getOrThrow(BuiltinStructures.IGLOO), new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 14357618)));
       var0.register(BuiltinStructureSets.JUNGLE_TEMPLES, new StructureSet(var1.getOrThrow(BuiltinStructures.JUNGLE_TEMPLE), new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 14357619)));
-      var0.register(BuiltinStructureSets.SURFACE_MINE_EXITS, new StructureSet(var1.getOrThrow(BuiltinStructures.SURFACE_MINE_EXIT), new RandomSpreadStructurePlacement(40, 16, RandomSpreadType.LINEAR, 5657987)));
-      var0.register(BuiltinStructureSets.CAVE_MINE_EXITS, new StructureSet(var1.getOrThrow(BuiltinStructures.CAVE_MINE_EXIT), new RandomSpreadStructurePlacement(8, 2, RandomSpreadType.LINEAR, 34432322)));
-      var0.register(BuiltinStructureSets.RARE_SURFACE_MINE_EXITS, new StructureSet(var1.getOrThrow(BuiltinStructures.RARE_SURFACE_MINE_EXIT), new RandomSpreadStructurePlacement(80, 50, RandomSpreadType.LINEAR, 5657987)));
       var0.register(BuiltinStructureSets.SWAMP_HUTS, new StructureSet(var1.getOrThrow(BuiltinStructures.SWAMP_HUT), new RandomSpreadStructurePlacement(32, 8, RandomSpreadType.LINEAR, 14357620)));
       var0.register(BuiltinStructureSets.PILLAGER_OUTPOSTS, new StructureSet(var1.getOrThrow(BuiltinStructures.PILLAGER_OUTPOST), new RandomSpreadStructurePlacement(Vec3i.ZERO, StructurePlacement.FrequencyReductionMethod.LEGACY_TYPE_1, 0.2F, 165745296, Optional.of(new StructurePlacement.ExclusionZone(var3, 10)), 32, 8, RandomSpreadType.LINEAR)));
       var0.register(BuiltinStructureSets.ANCIENT_CITIES, new StructureSet(var1.getOrThrow(BuiltinStructures.ANCIENT_CITY), new RandomSpreadStructurePlacement(24, 8, RandomSpreadType.LINEAR, 20083232)));
@@ -37,7 +36,7 @@ public interface StructureSets {
       var0.register(BuiltinStructureSets.NETHER_COMPLEXES, new StructureSet(List.of(StructureSet.entry(var1.getOrThrow(BuiltinStructures.FORTRESS), 2), StructureSet.entry(var1.getOrThrow(BuiltinStructures.BASTION_REMNANT), 3)), new RandomSpreadStructurePlacement(27, 4, RandomSpreadType.LINEAR, 30084232)));
       var0.register(BuiltinStructureSets.NETHER_FOSSILS, new StructureSet(var1.getOrThrow(BuiltinStructures.NETHER_FOSSIL), new RandomSpreadStructurePlacement(2, 1, RandomSpreadType.LINEAR, 14357921)));
       var0.register(BuiltinStructureSets.END_CITIES, new StructureSet(var1.getOrThrow(BuiltinStructures.END_CITY), new RandomSpreadStructurePlacement(20, 11, RandomSpreadType.TRIANGULAR, 10387313)));
-      var0.register(BuiltinStructureSets.STRONGHOLDS, new StructureSet(var1.getOrThrow(BuiltinStructures.STRONGHOLD), new RandomSpreadStructurePlacement(64, 5, RandomSpreadType.LINEAR, 98712938)));
+      var0.register(BuiltinStructureSets.STRONGHOLDS, new StructureSet(var1.getOrThrow(BuiltinStructures.STRONGHOLD), new ConcentricRingsStructurePlacement(32, 3, 128, var2.getOrThrow(BiomeTags.STRONGHOLD_BIASED_TO))));
       var0.register(BuiltinStructureSets.TRAIL_RUINS, new StructureSet(var1.getOrThrow(BuiltinStructures.TRAIL_RUINS), new RandomSpreadStructurePlacement(34, 8, RandomSpreadType.LINEAR, 83469867)));
       var0.register(BuiltinStructureSets.TRIAL_CHAMBERS, new StructureSet(var1.getOrThrow(BuiltinStructures.TRIAL_CHAMBERS), new RandomSpreadStructurePlacement(34, 12, RandomSpreadType.LINEAR, 94251327)));
    }

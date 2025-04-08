@@ -35,7 +35,6 @@ public class ExperienceOrb extends Entity {
    private static final short DEFAULT_AGE = 0;
    private static final short DEFAULT_VALUE = 0;
    private static final int DEFAULT_COUNT = 1;
-   public static final int PICKUP_AGE_DELAY = 40;
    private int age;
    private int health;
    private int count;
@@ -44,23 +43,14 @@ public class ExperienceOrb extends Entity {
    private final InterpolationHandler interpolation;
 
    public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {
-      this(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8);
-   }
-
-   public ExperienceOrb(Level var1, Vec3 var2, Vec3 var3, int var4) {
       this(EntityType.EXPERIENCE_ORB, var1);
-      this.setPos(var2);
+      this.setPos(var2, var4, var6);
       if (!this.level().isClientSide) {
          this.setYRot((float)(this.random.nextDouble() * 360.0));
-         Vec3 var5 = new Vec3((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
-         if (var3.lengthSqr() > 0.0 && var3.dot(var5) < 0.0) {
-            var5 = var5.scale(-1.0);
-         }
-
-         this.setDeltaMovement(var5);
+         this.setDeltaMovement((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
       }
 
-      this.setValue(var4);
+      this.setValue(var8);
    }
 
    public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
@@ -100,33 +90,27 @@ public class ExperienceOrb extends Entity {
             this.setDeltaMovement((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F), 0.20000000298023224, (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F));
          }
 
-         if (this.isOfAge() && this.tickCount % 20 == 1) {
+         if (this.tickCount % 20 == 1) {
             this.scanForMerges();
          }
 
-         if (this.isOfAge()) {
-            this.followNearbyPlayer();
-         }
-
+         this.followNearbyPlayer();
          if (this.followingPlayer == null && !this.level().isClientSide && var1) {
-            boolean var2 = !this.level().noCollision(this.getBoundingBox().move(this.getDeltaMovement()));
-            if (var2) {
-               this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
-               this.hasImpulse = true;
-            }
+            this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
+            this.hasImpulse = true;
          }
 
-         double var5 = this.getDeltaMovement().y;
+         double var2 = this.getDeltaMovement().y;
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.applyEffectsFromBlocks();
          float var4 = 0.98F;
          if (this.onGround()) {
-            var4 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction(this.level().getIsIcy()) * 0.98F;
+            var4 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
          }
 
          this.setDeltaMovement(this.getDeltaMovement().scale((double)var4));
-         if (this.verticalCollisionBelow && var5 < -this.getGravity()) {
-            this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var5 * 0.4, this.getDeltaMovement().z));
+         if (this.verticalCollisionBelow && var2 < -this.getGravity()) {
+            this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var2 * 0.4, this.getDeltaMovement().z));
          }
 
          ++this.age;
@@ -135,10 +119,6 @@ public class ExperienceOrb extends Entity {
          }
 
       }
-   }
-
-   private boolean isOfAge() {
-      return this.age > 40 || this.level().isMine();
    }
 
    private void followNearbyPlayer() {
@@ -174,15 +154,11 @@ public class ExperienceOrb extends Entity {
    }
 
    public static void award(ServerLevel var0, Vec3 var1, int var2) {
-      awardWithDirection(var0, var1, Vec3.ZERO, var2);
-   }
-
-   public static void awardWithDirection(ServerLevel var0, Vec3 var1, Vec3 var2, int var3) {
-      while(var3 > 0) {
-         int var4 = getExperienceValue(var3);
-         var3 -= var4;
-         if (!tryMergeToExisting(var0, var1, var4)) {
-            var0.addFreshEntity(new ExperienceOrb(var0, var1, var2, var4));
+      while(var2 > 0) {
+         int var3 = getExperienceValue(var2);
+         var2 -= var3;
+         if (!tryMergeToExisting(var0, var1, var3)) {
+            var0.addFreshEntity(new ExperienceOrb(var0, var1.x(), var1.y(), var1.z(), var3));
          }
       }
 
@@ -257,25 +233,18 @@ public class ExperienceOrb extends Entity {
    }
 
    public void playerTouch(Player var1) {
-      if (this.isOfAge()) {
-         if (var1 instanceof ServerPlayer) {
-            ServerPlayer var2 = (ServerPlayer)var1;
-            if (!var2.isRevisiting()) {
-               if (var1.takeXpDelay == 0) {
-                  var1.takeXpDelay = 2;
-                  var1.take(this, 1);
-                  int var3 = this.repairPlayerItems(var2, this.getValue());
-                  if (var3 > 0) {
-                     var1.giveExperiencePoints(var3);
-                  }
+      if (var1 instanceof ServerPlayer var2) {
+         if (var1.takeXpDelay == 0) {
+            var1.takeXpDelay = 2;
+            var1.take(this, 1);
+            int var3 = this.repairPlayerItems(var2, this.getValue());
+            if (var3 > 0) {
+               var1.giveExperiencePoints(var3);
+            }
 
-                  --this.count;
-                  if (this.count == 0) {
-                     this.discard();
-                  }
-               }
-
-               return;
+            --this.count;
+            if (this.count == 0) {
+               this.discard();
             }
          }
 

@@ -443,7 +443,7 @@ public class RealmsClient {
    private String execute(Request<?> var1) throws RealmsServiceException {
       var1.cookie("sid", this.sessionId);
       var1.cookie("user", this.username);
-      var1.cookie("version", SharedConstants.getCurrentVersion().getName());
+      var1.cookie("version", SharedConstants.getCurrentVersion().name());
       var1.addSnapshotHeader(RealmsMainScreen.isSnapshot());
 
       try {

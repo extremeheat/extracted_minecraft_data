@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Map;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -18,7 +17,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerInventoryPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -37,7 +35,7 @@ public class Inventory implements Container, Nameable {
    public static final Int2ObjectMap<EquipmentSlot> EQUIPMENT_SLOT_MAPPING;
    private final NonNullList<ItemStack> items;
    private int selected;
-   private final Player player;
+   public final Player player;
    private final EntityEquipment equipment;
    private int timesChanged;
 
@@ -81,22 +79,9 @@ public class Inventory implements Container, Nameable {
    }
 
    public int getFreeSlot() {
-      int var1 = 9;
-      if (this.player.isActive(PlayerUnlocks.INVENTORY_SLOTS_1)) {
-         var1 += 9;
-      }
-
-      if (this.player.isActive(PlayerUnlocks.INVENTORY_SLOTS_2)) {
-         var1 += 9;
-      }
-
-      if (this.player.isActive(PlayerUnlocks.INVENTORY_SLOTS_3)) {
-         var1 += 9;
-      }
-
-      for(int var2 = 0; var2 < var1; ++var2) {
-         if (((ItemStack)this.items.get(var2)).isEmpty()) {
-            return var2;
+      for(int var1 = 0; var1 < this.items.size(); ++var1) {
+         if (((ItemStack)this.items.get(var1)).isEmpty()) {
+            return var1;
          }
       }
 
@@ -454,7 +439,7 @@ public class Inventory implements Container, Nameable {
       for(int var1 = 0; var1 < this.items.size(); ++var1) {
          ItemStack var2 = this.items.get(var1);
          if (!var2.isEmpty()) {
-            this.player.drop(var2, true, false, true);
+            this.player.drop(var2, true, false);
             this.items.set(var1, ItemStack.EMPTY);
          }
       }
@@ -527,11 +512,6 @@ public class Inventory implements Container, Nameable {
    public ItemStack removeFromSelected(boolean var1) {
       ItemStack var2 = this.getSelectedItem();
       return var2.isEmpty() ? ItemStack.EMPTY : this.removeItem(this.selected, var1 ? var2.getCount() : 1);
-   }
-
-   @Nullable
-   public Player getPlayer() {
-      return this.player;
    }
 
    static {

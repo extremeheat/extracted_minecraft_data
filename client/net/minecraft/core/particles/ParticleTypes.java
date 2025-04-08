@@ -69,7 +69,6 @@ public class ParticleTypes {
    public static final SimpleParticleType NOTE = register("note", false);
    public static final SimpleParticleType POOF = register("poof", true);
    public static final SimpleParticleType PORTAL = register("portal", false);
-   public static final SimpleParticleType MINE_TRAVEL = register("mine_travel", false);
    public static final SimpleParticleType RAIN = register("rain", false);
    public static final SimpleParticleType SMOKE = register("smoke", false);
    public static final SimpleParticleType WHITE_SMOKE = register("white_smoke", false);

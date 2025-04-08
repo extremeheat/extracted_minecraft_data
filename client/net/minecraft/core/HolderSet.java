@@ -54,7 +54,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       return new Direct<T>(List.of(var0));
    }
 
-   static <T> Direct<T> direct(Collection<? extends Holder<T>> var0) {
+   static <T> Direct<T> direct(List<? extends Holder<T>> var0) {
       return new Direct<T>(List.copyOf(var0));
    }
 

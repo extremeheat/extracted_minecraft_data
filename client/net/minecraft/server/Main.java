@@ -33,9 +33,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtException;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.obfuscate.DontObfuscate;
@@ -143,16 +141,16 @@ public class Main {
             try {
                var29 = var28.getDataTag();
                var30 = var28.getSummary(var29);
-            } catch (NbtException | ReportedNbtException | IOException var42) {
+            } catch (NbtException | ReportedNbtException | IOException var41) {
                LevelStorageSource.LevelDirectory var32 = var28.getLevelDirectory();
-               LOGGER.warn("Failed to load world data from {}", var32.dataFile(), var42);
+               LOGGER.warn("Failed to load world data from {}", var32.dataFile(), var41);
                LOGGER.info("Attempting to use fallback");
 
                try {
                   var29 = var28.getDataTagFallback();
                   var30 = var28.getSummary(var29);
-               } catch (NbtException | ReportedNbtException | IOException var41) {
-                  LOGGER.error("Failed to load world data from {}", var32.oldDataFile(), var41);
+               } catch (NbtException | ReportedNbtException | IOException var40) {
+                  LOGGER.error("Failed to load world data from {}", var32.oldDataFile(), var40);
                   LOGGER.error("Failed to load world data from {} and {}. World files may be corrupted. Shutting down.", var32.dataFile(), var32.oldDataFile());
                   return;
                }
@@ -173,21 +171,21 @@ public class Main {
             var29 = null;
          }
 
-         Dynamic var44 = var29;
+         Dynamic var43 = var29;
          boolean var31 = var18.has(var9);
          if (var31) {
             LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
          }
 
-         PackRepository var45 = ServerPacksSource.createPackRepository(var28);
-         WorldLoader.InitConfig var34 = loadOrCreateConfig(var21.getProperties(), var29, var31, var45);
+         PackRepository var44 = ServerPacksSource.createPackRepository(var28);
 
          WorldStem var33;
          try {
+            WorldLoader.InitConfig var34 = loadOrCreateConfig(var21.getProperties(), var43, var31, var44);
             var33 = (WorldStem)Util.blockUntilDone((var6x) -> WorldLoader.load(var34, (var5x) -> {
                   Registry var6 = var5x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
-                  if (var44 != null) {
-                     LevelDataAndDimensions var12 = LevelStorageSource.getLevelDataAndDimensions(var44, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
+                  if (var43 != null) {
+                     LevelDataAndDimensions var12 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
                      return new WorldLoader.DataLoadOutput(var12.worldData(), var12.dimensions().dimensionsRegistryAccess());
                   } else {
                      LOGGER.info("No existing world data, creating new world");
@@ -210,64 +208,42 @@ public class Main {
                      return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var7, var8, var13.specialWorldProperty(), var11), var13.dimensionsRegistryAccess());
                   }
                }, WorldStem::new, Util.backgroundExecutor(), var6x)).get();
-         } catch (Exception var40) {
-            LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var40);
+         } catch (Exception var39) {
+            LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var39);
             return;
          }
 
-         RegistryAccess.Frozen var35 = var33.registries().compositeAccess();
-         WorldData var36 = var33.worldData();
-         boolean var37 = var18.has(var8);
-         if (var18.has(var6) || var37) {
-            forceUpgrade(var28, var36, DataFixers.getDataFixer(), var18.has(var7), () -> true, var35, var37);
+         RegistryAccess.Frozen var45 = var33.registries().compositeAccess();
+         WorldData var35 = var33.worldData();
+         boolean var36 = var18.has(var8);
+         if (var18.has(var6) || var36) {
+            forceUpgrade(var28, var35, DataFixers.getDataFixer(), var18.has(var7), () -> true, var45, var36);
          }
 
-         var28.saveDataTag(var35, var36);
-         final DedicatedServer var38 = (DedicatedServer)MinecraftServer.spin(var45, var33, createWorldReloader(var21), LoggerChunkProgressListener::createFromGameruleRadius, (var9x) -> {
-            DedicatedServer var10 = new DedicatedServer(var9x, var28, var21, DataFixers.getDataFixer(), var25);
-            var10.setPort((Integer)var18.valueOf(var13));
-            var10.setDemo(var18.has(var4));
-            var10.setId((String)var18.valueOf(var14));
-            boolean var11 = !var18.has(var2) && !var18.valuesOf(var17).contains("nogui");
-            if (var11 && !GraphicsEnvironment.isHeadless()) {
-               var10.showGui();
+         var28.saveDataTag(var45, var35);
+         final DedicatedServer var37 = (DedicatedServer)MinecraftServer.spin((var11x) -> {
+            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25, LoggerChunkProgressListener::createFromGameruleRadius);
+            var12.setPort((Integer)var18.valueOf(var13));
+            var12.setDemo(var18.has(var4));
+            var12.setId((String)var18.valueOf(var14));
+            boolean var13x = !var18.has(var2) && !var18.valuesOf(var17).contains("nogui");
+            if (var13x && !GraphicsEnvironment.isHeadless()) {
+               var12.showGui();
             }
 
-            return var10;
+            return var12;
          });
-         Thread var39 = new Thread("Server Shutdown Thread") {
+         Thread var38 = new Thread("Server Shutdown Thread") {
             public void run() {
-               var38.halt(true);
+               var37.halt(true);
             }
          };
-         var39.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-         Runtime.getRuntime().addShutdownHook(var39);
-      } catch (Exception var43) {
-         LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var43);
+         var38.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+         Runtime.getRuntime().addShutdownHook(var38);
+      } catch (Exception var42) {
+         LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var42);
       }
 
-   }
-
-   private static MinecraftServer.WorldReloader createWorldReloader(DedicatedServerSettings var0) {
-      return (var1, var2, var3, var4) -> {
-         try {
-            Dynamic var5 = new Dynamic(NbtOps.INSTANCE, var3.worldData().createTag(var3.registries().compositeAccess(), (CompoundTag)null));
-            WorldLoader.PackConfig var6 = LevelStorageSource.getPackConfig(var5, var2, false);
-            WorldLoader.InitConfig var7 = createInitialConfig(var6, var0.getProperties());
-            return (WorldStem)Util.blockUntilDone((var2x) -> WorldLoader.load(var7, (var1) -> {
-                  Registry var2 = var1.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
-                  LevelDataAndDimensions var3 = LevelStorageSource.getLevelDataAndDimensions(var5, var1.dataConfiguration(), var2, var1.datapackWorldgen());
-                  return new WorldLoader.DataLoadOutput(var3.worldData(), var3.dimensions().dimensionsRegistryAccess());
-               }, WorldStem::new, Util.backgroundExecutor(), var2x)).get();
-         } catch (Exception var8) {
-            LOGGER.warn("Failed to reload, returning to existing data", var8);
-            return var3;
-         }
-      };
-   }
-
-   private static WorldLoader.InitConfig createInitialConfig(WorldLoader.PackConfig var0, DedicatedServerProperties var1) {
-      return new WorldLoader.InitConfig(var0, Commands.CommandSelection.DEDICATED, var1.functionPermissionLevel);
    }
 
    private static void writePidFile(Path var0) {
@@ -292,7 +268,7 @@ public class Main {
       }
 
       WorldLoader.PackConfig var7 = new WorldLoader.PackConfig(var3, var5, var2, var4);
-      return createInitialConfig(var7, var0);
+      return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissionLevel);
    }
 
    private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, WorldData var1, DataFixer var2, boolean var3, BooleanSupplier var4, RegistryAccess var5, boolean var6) {

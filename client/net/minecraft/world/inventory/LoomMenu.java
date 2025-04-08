@@ -43,7 +43,7 @@ public class LoomMenu extends AbstractContainerMenu {
    private final Container inputContainer;
    private final Container outputContainer;
 
-   public LoomMenu(int var1, Inventory var2, List<Integer> var3) {
+   public LoomMenu(int var1, Inventory var2) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 
@@ -107,7 +107,7 @@ public class LoomMenu extends AbstractContainerMenu {
       });
       this.addStandardInventorySlots(var2, 8, 84);
       this.addDataSlot(this.selectedBannerPatternIndex);
-      this.patternGetter = var2.getPlayer().registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
+      this.patternGetter = var2.player.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
    }
 
    public boolean stillValid(Player var1) {

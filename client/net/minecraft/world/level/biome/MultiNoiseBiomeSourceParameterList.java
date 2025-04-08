@@ -34,12 +34,6 @@ public class MultiNoiseBiomeSourceParameterList {
       this.parameters = var10001.<Holder<Biome>>apply(var2::getOrThrow);
    }
 
-   public MultiNoiseBiomeSourceParameterList(List<Holder<Biome>> var1, Map<Holder<Biome>, Holder<Biome>> var2, HolderGetter<Biome> var3) {
-      super();
-      this.preset = MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD;
-      this.parameters = new Climate.ParameterList<Holder<Biome>>(MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.provider.apply((var2x) -> (Holder)var2.getOrDefault(var3.getOrThrow(var2x), var3.getOrThrow(var2x))).values().stream().filter((var1x) -> var1.contains(var1x.getSecond())).toList());
-   }
-
    public Climate.ParameterList<Holder<Biome>> parameters() {
       return this.parameters;
    }
@@ -56,12 +50,7 @@ public class MultiNoiseBiomeSourceParameterList {
       final SourceProvider provider;
       public static final Preset NETHER = new Preset(ResourceLocation.withDefaultNamespace("nether"), new SourceProvider() {
          public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
-            return new Climate.ParameterList<T>(List.of(Pair.of(Climate.parameters(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.5F, 0.0F), var1.apply(Biomes.NETHER_WASTES)), Pair.of(Climate.parameters(0.0F, -0.5F, 0.0F, 0.0F, 0.0F, -0.5F, 0.0F), var1.apply(Biomes.SOUL_SAND_VALLEY)), Pair.of(Climate.parameters(0.4F, 0.0F, 0.0F, 0.0F, 0.0F, -0.5F, 0.0F), var1.apply(Biomes.CRIMSON_FOREST)), Pair.of(Climate.parameters(0.0F, 0.5F, 0.0F, 0.0F, 0.0F, -0.5F, 0.375F), var1.apply(Biomes.WARPED_FOREST)), Pair.of(Climate.parameters(-0.5F, 0.0F, 0.0F, 0.0F, 0.0F, -0.5F, 0.175F), var1.apply(Biomes.BASALT_DELTAS))));
-         }
-      });
-      public static final Preset ENDISH = new Preset(ResourceLocation.withDefaultNamespace("endish"), new SourceProvider() {
-         public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
-            return new Climate.ParameterList<T>(List.of(Pair.of(Climate.parameters(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F), var1.apply(Biomes.THE_END)), Pair.of(Climate.parameters(0.0F, -0.5F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F), var1.apply(Biomes.END_BARRENS)), Pair.of(Climate.parameters(0.4F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F), var1.apply(Biomes.END_MIDLANDS)), Pair.of(Climate.parameters(0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.5F, 0.375F), var1.apply(Biomes.SMALL_END_ISLANDS)), Pair.of(Climate.parameters(-0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.175F), var1.apply(Biomes.END_HIGHLANDS))));
+            return new Climate.ParameterList<T>(List.of(Pair.of(Climate.parameters(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.NETHER_WASTES)), Pair.of(Climate.parameters(0.0F, -0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.SOUL_SAND_VALLEY)), Pair.of(Climate.parameters(0.4F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.CRIMSON_FOREST)), Pair.of(Climate.parameters(0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.375F), var1.apply(Biomes.WARPED_FOREST)), Pair.of(Climate.parameters(-0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.175F), var1.apply(Biomes.BASALT_DELTAS))));
          }
       });
       public static final Preset OVERWORLD = new Preset(ResourceLocation.withDefaultNamespace("overworld"), new SourceProvider() {
@@ -89,7 +78,7 @@ public class MultiNoiseBiomeSourceParameterList {
       }
 
       static {
-         BY_NAME = (Map)Stream.of(NETHER, OVERWORLD, ENDISH).collect(Collectors.toMap(Preset::id, (var0) -> var0));
+         BY_NAME = (Map)Stream.of(NETHER, OVERWORLD).collect(Collectors.toMap(Preset::id, (var0) -> var0));
          CODEC = ResourceLocation.CODEC.flatXmap((var0) -> (DataResult)Optional.ofNullable((Preset)BY_NAME.get(var0)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown preset: " + String.valueOf(var0))), (var0) -> DataResult.success(var0.id));
       }
 

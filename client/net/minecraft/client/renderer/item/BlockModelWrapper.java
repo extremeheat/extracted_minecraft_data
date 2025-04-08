@@ -19,7 +19,6 @@ import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,6 +32,7 @@ public class BlockModelWrapper implements ItemModel {
    private final List<BakedQuad> quads;
    private final Supplier<Vector3f[]> extents;
    private final ModelRenderProperties properties;
+   private final boolean animated;
 
    public BlockModelWrapper(List<ItemTintSource> var1, List<BakedQuad> var2, ModelRenderProperties var3) {
       super();
@@ -40,6 +40,16 @@ public class BlockModelWrapper implements ItemModel {
       this.quads = var2;
       this.properties = var3;
       this.extents = Suppliers.memoize(() -> computeExtents(this.quads));
+      boolean var4 = false;
+
+      for(BakedQuad var6 : var2) {
+         if (var6.sprite().isAnimated()) {
+            var4 = true;
+            break;
+         }
+      }
+
+      this.animated = var4;
    }
 
    public static Vector3f[] computeExtents(List<BakedQuad> var0) {
@@ -55,17 +65,11 @@ public class BlockModelWrapper implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
          var8.setFoilType(hasSpecialAnimatedTexture(var2) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD);
-      }
-
-      if (var2.has(DataComponents.MINE_COMPLETED)) {
-         if ((Boolean)var2.get(DataComponents.MINE_COMPLETED)) {
-            var8.setFoilType(ItemStackRenderState.FoilType.WON);
-         } else {
-            var8.setFoilType(ItemStackRenderState.FoilType.LOST);
-         }
+         var1.setAnimated();
       }
 
       int var9 = this.tints.size();
@@ -79,6 +83,10 @@ public class BlockModelWrapper implements ItemModel {
       var8.setRenderType(ItemBlockRenderTypes.getRenderType(var2));
       this.properties.applyToLayer(var8, var4);
       var8.prepareQuadList().addAll(this.quads);
+      if (this.animated) {
+         var1.setAnimated();
+      }
+
    }
 
    private static boolean hasSpecialAnimatedTexture(ItemStack var0) {

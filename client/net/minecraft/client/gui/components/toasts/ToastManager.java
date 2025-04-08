@@ -201,10 +201,10 @@ public class ToastManager {
       }
 
       public void render(GuiGraphics var1, int var2) {
-         var1.pose().pushPose();
-         var1.pose().translate((float)var2 - (float)this.toast.width() * this.visiblePortion, (float)(this.firstSlotIndex * 32), 800.0F);
+         var1.pose().pushMatrix();
+         var1.pose().translate((float)var2 - (float)this.toast.width() * this.visiblePortion, (float)(this.firstSlotIndex * 32));
          this.toast.render(var1, ToastManager.this.minecraft.font, this.fullyVisibleFor);
-         var1.pose().popPose();
+         var1.pose().popMatrix();
       }
    }
 }

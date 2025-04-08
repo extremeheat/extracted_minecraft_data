@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -30,7 +29,7 @@ public class FollowOwnerGoal extends Goal {
       this.startDistance = var4;
       this.stopDistance = var5;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      if (!(var1.getNavigation() instanceof GroundPathNavigation) && !(var1.getNavigation() instanceof FlyingPathNavigation) && !(var1.getNavigation() instanceof AmphibiousPathNavigation)) {
+      if (!(var1.getNavigation() instanceof GroundPathNavigation) && !(var1.getNavigation() instanceof FlyingPathNavigation)) {
          throw new IllegalArgumentException("Unsupported mob type for FollowOwnerGoal");
       }
    }

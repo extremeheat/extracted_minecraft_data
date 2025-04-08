@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
@@ -30,7 +29,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
    public final Container container;
    private final ResultContainer resultContainer;
 
-   public CartographyTableMenu(int var1, Inventory var2, List<Integer> var3) {
+   public CartographyTableMenu(int var1, Inventory var2) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 

@@ -19,7 +19,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
@@ -272,18 +272,18 @@ public class StatsScreen extends Screen {
 
          for(int var4 = 0; var4 < this.iconSprites.length; ++var4) {
             ResourceLocation var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 18, 18);
          }
 
          if (this.sortColumn != null) {
             int var6 = this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
             ResourceLocation var8 = this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var2 + var6, var3 + 1, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var2 + var6, var3 + 1, 18, 18);
          }
 
          for(int var7 = 0; var7 < this.iconSprites.length; ++var7) {
             int var9 = this.headerPressed == var7 ? 1 : 0;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 18, 18);
          }
 
       }
@@ -421,7 +421,7 @@ public class StatsScreen extends Screen {
          }
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)StatsScreen.SLOT_SPRITE, var4, var3, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)StatsScreen.SLOT_SPRITE, var4, var3, 18, 18);
             var1.renderFakeItem(this.item.getDefaultInstance(), var4 + 1, var3 + 1);
             if (StatsScreen.this.itemStatsList != null) {
                for(int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {

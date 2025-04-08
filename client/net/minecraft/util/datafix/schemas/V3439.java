@@ -15,11 +15,10 @@ public class V3439 extends NamespacedSchema {
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
       this.register(var2, "minecraft:sign", () -> sign(var1));
-      this.register(var2, "minecraft:hanging_sign", () -> sign(var1));
       return var2;
    }
 
-   private static TypeTemplate sign(Schema var0) {
+   public static TypeTemplate sign(Schema var0) {
       return DSL.optionalFields("front_text", DSL.optionalFields("messages", DSL.list(References.TEXT_COMPONENT.in(var0)), "filtered_messages", DSL.list(References.TEXT_COMPONENT.in(var0))), "back_text", DSL.optionalFields("messages", DSL.list(References.TEXT_COMPONENT.in(var0)), "filtered_messages", DSL.list(References.TEXT_COMPONENT.in(var0))));
    }
 }

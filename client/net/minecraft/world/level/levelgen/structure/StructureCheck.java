@@ -94,7 +94,7 @@ public class StructureCheck {
       StructureTemplateManager var10007 = this.structureTemplateManager;
       long var10008 = this.seed;
       LevelHeightAccessor var10010 = this.heightAccessor;
-      HolderSet var10011 = var2.filteredBiomes(HolderSet.direct(this.biomeSource.possibleBiomes()));
+      HolderSet var10011 = var2.biomes();
       Objects.requireNonNull(var10011);
       return var2.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, var1, var10010, var10011::contains)).isPresent();
    }

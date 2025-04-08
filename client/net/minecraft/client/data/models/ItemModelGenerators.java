@@ -17,9 +17,7 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.renderer.item.BundleSelectedItemSpecialRenderer;
 import net.minecraft.client.renderer.item.ItemModel;
-import net.minecraft.client.renderer.item.MineIngredientModel;
 import net.minecraft.client.renderer.item.RangeSelectItemModel;
-import net.minecraft.client.renderer.item.SelectItemModel;
 import net.minecraft.client.renderer.item.properties.conditional.Broken;
 import net.minecraft.client.renderer.item.properties.conditional.BundleHasSelectedItem;
 import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperty;
@@ -31,7 +29,6 @@ import net.minecraft.client.renderer.item.properties.numeric.Time;
 import net.minecraft.client.renderer.item.properties.numeric.UseCycle;
 import net.minecraft.client.renderer.item.properties.numeric.UseDuration;
 import net.minecraft.client.renderer.item.properties.select.Charge;
-import net.minecraft.client.renderer.item.properties.select.ComponentContents;
 import net.minecraft.client.renderer.item.properties.select.DisplayContext;
 import net.minecraft.client.renderer.item.properties.select.TrimMaterialProperty;
 import net.minecraft.client.renderer.special.ShieldSpecialRenderer;
@@ -39,7 +36,6 @@ import net.minecraft.client.renderer.special.TridentSpecialRenderer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Item;
@@ -50,9 +46,6 @@ import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
-import net.minecraft.world.level.block.TrophyType;
-import net.minecraft.world.level.mines.CustomIcons;
-import net.minecraft.world.level.mines.WorldEffects;
 
 public class ItemModelGenerators {
    private static final ItemTintSource BLANK_LAYER = ItemModelUtils.constantTint(-1);
@@ -200,11 +193,6 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.select(new DisplayContext(), var2, ItemModelUtils.when(ItemDisplayContext.GUI, var6)));
    }
 
-   private void generateLevelIngredient(Item var1) {
-      ItemModel.Unbaked var2 = ItemModelUtils.composite(new MineIngredientModel.Unbaked(), ItemModelUtils.plainModel(this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM)));
-      this.itemModelOutput.accept(var1, var2);
-   }
-
    private ResourceLocation generateBundleCoverModel(Item var1, ModelTemplate var2, String var3) {
       ResourceLocation var4 = TextureMapping.getItemTexture(var1, var3);
       return var2.create(var1, TextureMapping.layer0(var4), this.modelOutput);
@@ -301,23 +289,13 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var3, new Dye(var2)));
    }
 
-   private void generateWolfArmor(Item var1) {
+   private void generateTwoLayerDyedItem(Item var1) {
       ResourceLocation var2 = TextureMapping.getItemTexture(var1);
       ResourceLocation var3 = TextureMapping.getItemTexture(var1, "_overlay");
       ResourceLocation var4 = ModelTemplates.FLAT_ITEM.create(var1, TextureMapping.layer0(var2), this.modelOutput);
       ResourceLocation var5 = ModelLocationUtils.getModelLocation(var1, "_dyed");
       ModelTemplates.TWO_LAYERED_ITEM.create(var5, TextureMapping.layered(var2, var3), this.modelOutput);
       this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.hasComponent(DataComponents.DYED_COLOR), ItemModelUtils.tintedModel(var5, BLANK_LAYER, new Dye(0)), ItemModelUtils.plainModel(var4)));
-   }
-
-   public void generateTrophies() {
-      ArrayList var1 = new ArrayList();
-
-      for(TrophyType var5 : TrophyType.values()) {
-         var1.add(ItemModelUtils.when(var5, ItemModelUtils.plainModel(ResourceLocation.withDefaultNamespace("block/trophy_" + var5.getSerializedName()))));
-      }
-
-      this.itemModelOutput.accept(Items.TROPHY, ItemModelUtils.select(new ComponentContents(DataComponents.TROPHY_TYPE), ((SelectItemModel.SwitchCase)var1.getFirst()).model(), var1));
    }
 
    public void run() {
@@ -391,7 +369,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BROWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EMERALD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ENCHANTED_BOOK, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.EXIT_EYE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ENDER_EYE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ENDER_PEARL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.END_CRYSTAL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EXPERIENCE_BOTTLE, ModelTemplates.FLAT_ITEM);
@@ -466,7 +444,6 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.DISC_FRAGMENT_5, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.MUSIC_DISC_11, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_13, ModelTemplates.MUSIC_DISC);
-      this.generateFlatItem(Items.MUSIC_DISC_AND_ACTION, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_BLOCKS, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_CAT, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_CHIRP, ModelTemplates.MUSIC_DISC);
@@ -584,11 +561,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.SHAZBOOTS, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DEBUG_STICK, Items.STICK, ModelTemplates.FLAT_HANDHELD_ITEM);
-      this.generateFlatItem(Items.FIRE_WAND, Items.BLAZE_ROD, ModelTemplates.FLAT_HANDHELD_ITEM);
-      this.generateFlatItem(Items.WIND_WAND, Items.BREEZE_ROD, ModelTemplates.FLAT_HANDHELD_ITEM);
-      this.generateFlatItem(Items.TELEPORTATION_WAND, Items.STICK, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE, ModelTemplates.FLAT_ITEM);
       this.generateTrimmableItem(Items.TURTLE_HELMET, EquipmentAssets.TURTLE_SCUTE, TRIM_PREFIX_HELMET, false);
       this.generateTrimmableItem(Items.LEATHER_HELMET, EquipmentAssets.LEATHER, TRIM_PREFIX_HELMET, true);
@@ -616,7 +589,6 @@ public class ItemModelGenerators {
       this.generateTrimmableItem(Items.NETHERITE_LEGGINGS, EquipmentAssets.NETHERITE, TRIM_PREFIX_LEGGINGS, false);
       this.generateTrimmableItem(Items.NETHERITE_BOOTS, EquipmentAssets.NETHERITE, TRIM_PREFIX_BOOTS, false);
       this.generateDyedItem(Items.LEATHER_HORSE_ARMOR, -6265536);
-      this.generateFlatItem(Items.SHIMMERING_KEY, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ANGLER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARCHER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARMS_UP_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
@@ -643,7 +615,6 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.TRIAL_KEY, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.OMINOUS_TRIAL_KEY, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.OMINOUS_BOTTLE, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.GRAVE_ADVANCEMENT, ModelTemplates.FLAT_ITEM);
       this.generateItemWithTintedOverlay(Items.FIREWORK_STAR, new Firework());
       this.generateItemWithTintedOverlay(Items.FILLED_MAP, "_markings", new MapColor());
       this.generateBundleModels(Items.BUNDLE);
@@ -665,7 +636,23 @@ public class ItemModelGenerators {
       this.generateBundleModels(Items.ORANGE_BUNDLE);
       this.generateSpyglass(Items.SPYGLASS);
       this.generateTrident(Items.TRIDENT);
-      this.generateWolfArmor(Items.WOLF_ARMOR);
+      this.generateTwoLayerDyedItem(Items.WOLF_ARMOR);
+      this.generateFlatItem(Items.WHITE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ORANGE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.MAGENTA_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LIGHT_BLUE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.YELLOW_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LIME_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PINK_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GRAY_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LIGHT_GRAY_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CYAN_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PURPLE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLUE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BROWN_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GREEN_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.RED_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLACK_HARNESS, ModelTemplates.FLAT_ITEM);
       this.generateBow(Items.BOW);
       this.generateCrossbow(Items.CROSSBOW);
       this.generateElytra(Items.ELYTRA);
@@ -706,6 +693,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.GLOW_SQUID_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOAT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GUARDIAN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.HAPPY_GHAST_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HOGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HORSE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HUSK_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
@@ -771,18 +759,6 @@ public class ItemModelGenerators {
       this.declareCustomModelItem(Items.COD);
       this.declareCustomModelItem(Items.FEATHER);
       this.declareCustomModelItem(Items.LEAD);
-      this.declareCustomModelItem(Items.SKY_BOX);
-      this.generateLevelIngredient(Items.MINE_INGREDIENT);
-      this.generateFlatItem(Items.MINE, ModelTemplates.FLAT_ITEM);
-      this.generateTrophies();
-      PlayerUnlocks.beep();
-      WorldEffects.boop();
-
-      for(ResourceLocation var2 : CustomIcons.ICONS) {
-         ResourceLocation var3 = var2.withPrefix("item/");
-         this.itemModelOutput.accept(var2, ItemModelUtils.plainModel(ModelTemplates.FLAT_ITEM.create(var3, TextureMapping.layer0(var3), this.modelOutput)));
-      }
-
    }
 
    static {

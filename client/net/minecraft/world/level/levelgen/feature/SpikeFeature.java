@@ -1,16 +1,19 @@
 package net.minecraft.world.level.levelgen.feature;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -23,16 +26,22 @@ import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
 import net.minecraft.world.phys.AABB;
 
 public class SpikeFeature extends Feature<SpikeConfiguration> {
    public static final int NUMBER_OF_SPIKES = 10;
    private static final int SPIKE_DISTANCE = 42;
+   private static final LoadingCache<Long, List<EndSpike>> SPIKE_CACHE;
 
    public SpikeFeature(Codec<SpikeConfiguration> var1) {
       super(var1);
+   }
+
+   public static List<EndSpike> getSpikesForLevel(WorldGenLevel var0) {
+      RandomSource var1 = RandomSource.create(var0.getSeed());
+      long var2 = var1.nextLong() & 65535L;
+      return (List)SPIKE_CACHE.getUnchecked(var2);
    }
 
    public boolean place(FeaturePlaceContext<SpikeConfiguration> var1) {
@@ -42,7 +51,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       BlockPos var5 = var1.origin();
       List var6 = var2.getSpikes();
       if (var6.isEmpty()) {
-         var6 = getSpikesForLevel(var3.getLevel());
+         var6 = getSpikesForLevel(var3);
       }
 
       for(EndSpike var8 : var6) {
@@ -101,23 +110,8 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
 
    }
 
-   public static List<EndSpike> getSpikesForLevel(ServerLevel var0) {
-      IntArrayList var1 = Util.toShuffledList(IntStream.range(0, 10), RandomSource.create(var0.getSeed()));
-      ArrayList var2 = Lists.newArrayList();
-      int var3 = var0.getHeight(Heightmap.Types.WORLD_SURFACE_WG, BlockPos.ZERO);
-
-      for(int var4 = 0; var4 < 10; ++var4) {
-         int var5 = Mth.floor(42.0 * Math.cos(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)var4)));
-         int var6 = Mth.floor(42.0 * Math.sin(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)var4)));
-         int var7 = var1.get(var4);
-         int var8 = 2 + var7 / 3;
-         int var9 = Math.max(var3, var0.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var5, var6));
-         int var10 = var9 + 12 + var7 * 3;
-         boolean var11 = var7 == 1 || var7 == 2;
-         var2.add(new EndSpike(var5, var6, var8, var10, var11));
-      }
-
-      return var2;
+   static {
+      SPIKE_CACHE = CacheBuilder.newBuilder().expireAfterWrite(5L, TimeUnit.MINUTES).build(new SpikeCacheLoader());
    }
 
    public static class EndSpike {
@@ -165,6 +159,34 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
 
       public AABB getTopBoundingBox() {
          return this.topBoundingBox;
+      }
+   }
+
+   static class SpikeCacheLoader extends CacheLoader<Long, List<EndSpike>> {
+      SpikeCacheLoader() {
+         super();
+      }
+
+      public List<EndSpike> load(Long var1) {
+         IntArrayList var2 = Util.toShuffledList(IntStream.range(0, 10), RandomSource.create(var1));
+         ArrayList var3 = Lists.newArrayList();
+
+         for(int var4 = 0; var4 < 10; ++var4) {
+            int var5 = Mth.floor(42.0 * Math.cos(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)var4)));
+            int var6 = Mth.floor(42.0 * Math.sin(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)var4)));
+            int var7 = var2.get(var4);
+            int var8 = 2 + var7 / 3;
+            int var9 = 76 + var7 * 3;
+            boolean var10 = var7 == 1 || var7 == 2;
+            var3.add(new EndSpike(var5, var6, var8, var9, var10));
+         }
+
+         return var3;
+      }
+
+      // $FF: synthetic method
+      public Object load(final Object var1) throws Exception {
+         return this.load((Long)var1);
       }
    }
 }

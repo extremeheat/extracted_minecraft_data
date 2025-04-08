@@ -7,8 +7,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerUnlocks;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -34,17 +32,9 @@ public class CompassItem extends Item {
    public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
       LodestoneTracker var5 = (LodestoneTracker)var1.get(DataComponents.LODESTONE_TRACKER);
       if (var5 != null) {
-         LodestoneTracker var7 = var5.tick(var3.blockPosition(), var2);
-         if (var7 != var5) {
-            var1.set(DataComponents.LODESTONE_TRACKER, var7);
-         }
-      } else if (var3 instanceof ServerPlayer) {
-         ServerPlayer var6 = (ServerPlayer)var3;
-         if (var6.isActive(PlayerUnlocks.LODESTONE_EXITS)) {
-            LodestoneTracker var8 = LodestoneTracker.getExitTracker(var6.blockPosition(), var2);
-            if (var8 != null) {
-               var1.set(DataComponents.LODESTONE_TRACKER, var8);
-            }
+         LodestoneTracker var6 = var5.tick(var2);
+         if (var6 != var5) {
+            var1.set(DataComponents.LODESTONE_TRACKER, var6);
          }
       }
 
@@ -60,7 +50,7 @@ public class CompassItem extends Item {
          Player var4 = var1.getPlayer();
          ItemStack var5 = var1.getItemInHand();
          boolean var6 = !var4.hasInfiniteMaterials() && var5.getCount() == 1;
-         LodestoneTracker var7 = new LodestoneTracker(Optional.of(GlobalPos.of(var3.dimension(), var2)), true, false);
+         LodestoneTracker var7 = new LodestoneTracker(Optional.of(GlobalPos.of(var3.dimension(), var2)), true);
          if (var6) {
             var5.set(DataComponents.LODESTONE_TRACKER, var7);
          } else {

@@ -27,17 +27,22 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
       this.leftFrontLeg = var1.getChild("left_front_leg");
    }
 
-   public static MeshDefinition createBodyMesh(int var0, CubeDeformation var1) {
-      MeshDefinition var2 = new MeshDefinition();
-      PartDefinition var3 = var2.getRoot();
-      var3.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F, var1), PartPose.offset(0.0F, (float)(18 - var0), -6.0F));
-      var3.addOrReplaceChild("body", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F, var1), PartPose.offsetAndRotation(0.0F, (float)(17 - var0), 2.0F, 1.5707964F, 0.0F, 0.0F));
-      CubeListBuilder var4 = CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, (float)var0, 4.0F, var1);
-      var3.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-3.0F, (float)(24 - var0), 7.0F));
-      var3.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(3.0F, (float)(24 - var0), 7.0F));
-      var3.addOrReplaceChild("right_front_leg", var4, PartPose.offset(-3.0F, (float)(24 - var0), -5.0F));
-      var3.addOrReplaceChild("left_front_leg", var4, PartPose.offset(3.0F, (float)(24 - var0), -5.0F));
-      return var2;
+   public static MeshDefinition createBodyMesh(int var0, boolean var1, boolean var2, CubeDeformation var3) {
+      MeshDefinition var4 = new MeshDefinition();
+      PartDefinition var5 = var4.getRoot();
+      var5.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F, var3), PartPose.offset(0.0F, (float)(18 - var0), -6.0F));
+      var5.addOrReplaceChild("body", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F, var3), PartPose.offsetAndRotation(0.0F, (float)(17 - var0), 2.0F, 1.5707964F, 0.0F, 0.0F));
+      createLegs(var5, var1, var2, var0, var3);
+      return var4;
+   }
+
+   static void createLegs(PartDefinition var0, boolean var1, boolean var2, int var3, CubeDeformation var4) {
+      CubeListBuilder var5 = CubeListBuilder.create().mirror(var2).texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, (float)var3, 4.0F, var4);
+      CubeListBuilder var6 = CubeListBuilder.create().mirror(var1).texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, (float)var3, 4.0F, var4);
+      var0.addOrReplaceChild("right_hind_leg", var5, PartPose.offset(-3.0F, (float)(24 - var3), 7.0F));
+      var0.addOrReplaceChild("left_hind_leg", var6, PartPose.offset(3.0F, (float)(24 - var3), 7.0F));
+      var0.addOrReplaceChild("right_front_leg", var5, PartPose.offset(-3.0F, (float)(24 - var3), -5.0F));
+      var0.addOrReplaceChild("left_front_leg", var6, PartPose.offset(3.0F, (float)(24 - var3), -5.0F));
    }
 
    public void setupAnim(T var1) {

@@ -15,12 +15,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import net.minecraft.Util;
-import net.minecraft.commands.CommandResultCallback;
-import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -33,7 +29,6 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -77,7 +72,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       CompletableFuture var5 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var2), var3);
       CompletableFuture var6 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var2), var3).thenCompose((var2x) -> {
          HashMap var3x = Maps.newHashMap();
-         CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationLevel, "", CommonComponents.EMPTY, (TheGame)null, (Entity)null, false, CommandResultCallback.EMPTY, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(Util.backgroundExecutor()));
+         CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationLevel, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
 
          for(Map.Entry var6 : var2x.entrySet()) {
             ResourceLocation var7 = (ResourceLocation)var6.getKey();

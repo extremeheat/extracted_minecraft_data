@@ -29,7 +29,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.TheGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -77,8 +77,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.mines.WorldEffect;
-import net.minecraft.world.level.mines.WorldEffects;
 import net.minecraft.world.level.redstone.CollectingNeighborUpdater;
 import net.minecraft.world.level.redstone.NeighborUpdater;
 import net.minecraft.world.level.redstone.Orientation;
@@ -91,10 +89,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 
 public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCloseable {
-   public static final int TIME_DAY = 1000;
-   public static final int TIME_NOON = 6000;
-   public static final int TIME_NIGHT = 13000;
-   public static final int TIME_MIDNIGHT = 18000;
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
    public static final ResourceKey<Level> OVERWORLD;
    public static final ResourceKey<Level> NETHER;
@@ -119,13 +113,11 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    protected float rainLevel;
    protected float oThunderLevel;
    protected float thunderLevel;
-   protected boolean isIcy;
-   protected boolean isBouncy;
    public final RandomSource random = RandomSource.create();
    /** @deprecated */
    @Deprecated
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
-   private Holder<DimensionType> dimensionTypeRegistration;
+   private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
    public final boolean isClientSide;
    private final WorldBorder worldBorder;
@@ -162,12 +154,6 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
       this.registryAccess = var3;
       this.damageSources = new DamageSources(var3);
-      this.isIcy = false;
-      this.isBouncy = false;
-   }
-
-   public void setDimensionType(Holder<DimensionType> var1) {
-      this.dimensionTypeRegistration = var1;
    }
 
    public boolean isClientSide() {
@@ -175,7 +161,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    }
 
    @Nullable
-   public TheGame theGame() {
+   public MinecraftServer getServer() {
       return null;
    }
 
@@ -485,10 +471,6 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       return this.shouldTickBlocksAt(ChunkPos.asLong(var1));
    }
 
-   public boolean isMine() {
-      return false;
-   }
-
    public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, ExplosionInteraction var9) {
       this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
    }
@@ -699,7 +681,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public abstract TickRateManager tickRateManager();
 
    public float getThunderLevel(float var1) {
-      return this.isActive(WorldEffects.ETERNAL_LIGHTNING) ? 1.0F : Mth.lerp(var1, this.oThunderLevel, this.thunderLevel) * this.getRainLevel(var1);
+      return Mth.lerp(var1, this.oThunderLevel, this.thunderLevel) * this.getRainLevel(var1);
    }
 
    public void setThunderLevel(float var1) {
@@ -709,21 +691,13 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    }
 
    public float getRainLevel(float var1) {
-      return !this.isActive(WorldEffects.ETERNAL_RAIN) && !this.isActive(WorldEffects.ETERNAL_LIGHTNING) ? Mth.lerp(var1, this.oRainLevel, this.rainLevel) : 1.0F;
+      return Mth.lerp(var1, this.oRainLevel, this.rainLevel);
    }
 
    public void setRainLevel(float var1) {
       float var2 = Mth.clamp(var1, 0.0F, 1.0F);
       this.oRainLevel = var2;
       this.rainLevel = var2;
-   }
-
-   public boolean getIsIcy() {
-      return this.isActive(WorldEffects.ICY);
-   }
-
-   public boolean getIsBouncy() {
-      return this.isActive(WorldEffects.BOUNCY);
    }
 
    private boolean canHaveWeather() {
@@ -739,15 +713,19 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    }
 
    public boolean isRainingAt(BlockPos var1) {
+      return this.precipitationAt(var1) == Biome.Precipitation.RAIN;
+   }
+
+   public Biome.Precipitation precipitationAt(BlockPos var1) {
       if (!this.isRaining()) {
-         return false;
+         return Biome.Precipitation.NONE;
       } else if (!this.canSeeSky(var1)) {
-         return false;
+         return Biome.Precipitation.NONE;
       } else if (this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var1).getY() > var1.getY()) {
-         return false;
+         return Biome.Precipitation.NONE;
       } else {
          Biome var2 = (Biome)this.getBiome(var1).value();
-         return var2.getPrecipitationAt(var1, this.getSeaLevel()) == Biome.Precipitation.RAIN;
+         return var2.getPrecipitationAt(var1, this.getSeaLevel());
       }
    }
 
@@ -894,22 +872,6 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
 
    public int getClientLeafTintColor(BlockPos var1) {
       return 0;
-   }
-
-   public boolean isEffectUnlocked(WorldEffect var1) {
-      return false;
-   }
-
-   public boolean isActive(WorldEffect var1) {
-      return false;
-   }
-
-   public List<WorldEffect> getActiveEffects() {
-      return List.of();
-   }
-
-   public List<WorldEffect> getUnlockedEffects() {
-      return List.of();
    }
 
    // $FF: synthetic method

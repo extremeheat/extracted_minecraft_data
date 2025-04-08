@@ -28,7 +28,6 @@ public class PlayerRenderState extends HumanoidRenderState {
    public boolean shouldApplyFlyingYRot;
    public float flyingYRot;
    public boolean swinging;
-   public boolean isCampfirePlayer;
    @Nullable
    public Component scoreText;
    @Nullable

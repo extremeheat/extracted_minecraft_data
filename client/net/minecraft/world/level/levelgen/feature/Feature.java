@@ -38,7 +38,6 @@ import net.minecraft.world.level.levelgen.feature.configurations.MultifaceGrowth
 import net.minecraft.world.level.levelgen.feature.configurations.NetherForestVegetationConfig;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.PlaceTemplateConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.PointedDripstoneConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomBooleanFeatureConfiguration;
@@ -121,7 +120,6 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<LargeDripstoneConfiguration> LARGE_DRIPSTONE;
    public static final Feature<PointedDripstoneConfiguration> POINTED_DRIPSTONE;
    public static final Feature<SculkPatchConfiguration> SCULK_PATCH;
-   public static final Feature<PlaceTemplateConfiguration> PLACE_TEMPLATE;
    private final MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
    private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String var0, F var1) {
@@ -265,6 +263,5 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       LARGE_DRIPSTONE = register("large_dripstone", new LargeDripstoneFeature(LargeDripstoneConfiguration.CODEC));
       POINTED_DRIPSTONE = register("pointed_dripstone", new PointedDripstoneFeature(PointedDripstoneConfiguration.CODEC));
       SCULK_PATCH = register("sculk_patch", new SculkPatchFeature(SculkPatchConfiguration.CODEC));
-      PLACE_TEMPLATE = register("place_template", new PlaceTemplateFeature(PlaceTemplateConfiguration.CODEC));
    }
 }

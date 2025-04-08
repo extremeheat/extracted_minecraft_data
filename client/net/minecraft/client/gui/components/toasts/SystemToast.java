@@ -9,7 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -84,7 +84,7 @@ public class SystemToast implements Toast {
    }
 
    public void render(GuiGraphics var1, Font var2, long var3) {
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (this.messageLines.isEmpty()) {
          var1.drawString(var2, (Component)this.title, 18, 12, -256, false);
       } else {

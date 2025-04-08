@@ -19,12 +19,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -116,7 +117,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          int var6 = this.getRowTop(var5);
          int var7 = this.getRowBottom(var5);
          if (var7 >= this.getY() && var6 <= this.getBottom()) {
-            this.minecraft.getNarrator().say(Component.translatable("multiplayer.lan.server_found", var9.getServerNarration()));
+            this.minecraft.getNarrator().saySystemQueued(Component.translatable("multiplayer.lan.server_found", var9.getServerNarration()));
          }
       }
 
@@ -260,7 +261,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             ServerSelectionList.THREAD_POOL.submit(() -> {
                try {
                   this.screen.getPinger().pingServer(this.serverData, () -> this.minecraft.execute(this::updateServerList), () -> {
-                     this.serverData.setState(this.serverData.protocol == SharedConstants.getCurrentVersion().getProtocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE);
+                     this.serverData.setState(this.serverData.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE);
                      this.minecraft.execute(this::refreshStatus);
                   });
                } catch (UnknownHostException var2) {
@@ -288,7 +289,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             var1.drawString(var10001, var10002, var10003, var10004 + 9 * var12, -8355712);
          }
 
+         var1.pushGuiLayer(GuiLayer.SCREEN_SLOT);
          this.drawIcon(var1, var4, var3, this.icon.textureLocation());
+         var1.popGuiLayer();
          if (this.serverData.state() == ServerData.State.PINGING) {
             int var19 = (int)(Util.getMillis() / 100L + (long)(var2 * 2) & 7L);
             if (var19 > 4) {
@@ -309,7 +312,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
          int var20 = var4 + var5 - 10 - 5;
          if (this.statusIcon != null) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.statusIcon, var20, var3, 10, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var20, var3, 10, 8);
          }
 
          byte[] var13 = this.serverData.getIconBytes();
@@ -337,32 +340,36 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          }
 
          if ((Boolean)this.minecraft.options.touchscreen().get() || var9) {
+            var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_FRONT);
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var17 = var7 - var4;
             int var18 = var8 - var3;
+            var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT_ICON_ABOVE_HIGHLIGHT);
             if (this.canJoin()) {
                if (var17 < 32 && var17 > 16) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 > 0) {
                if (var17 < 16 && var18 < 16) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 < this.screen.getServers().size() - 1) {
                if (var17 < 16 && var18 > 16) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
                }
             }
+
+            var1.popGuiLayer();
          }
 
       }
@@ -408,7 +415,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       protected void drawIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
-         var1.blit(RenderType::guiTextured, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 
       private boolean canJoin() {

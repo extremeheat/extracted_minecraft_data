@@ -323,8 +323,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
                @Nullable
                public AbstractContainerMenu createMenu(int var1x, Inventory var2x, Player var3x) {
                   if (var1.canOpen(var3x) && var2.canOpen(var3x)) {
-                     var1.unpackLootTable(var2x.getPlayer());
-                     var2.unpackLootTable(var2x.getPlayer());
+                     var1.unpackLootTable(var2x.player);
+                     var2.unpackLootTable(var2x.player);
                      return ChestMenu.sixRows(var1x, var2x, var3);
                   } else {
                      return null;

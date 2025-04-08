@@ -15,7 +15,6 @@ public class LootContextParamSets {
    private static final BiMap<ResourceLocation, ContextKeySet> REGISTRY = HashBiMap.create();
    public static final Codec<ContextKeySet> CODEC;
    public static final ContextKeySet EMPTY;
-   public static final ContextKeySet HUB_REWARD;
    public static final ContextKeySet CHEST;
    public static final ContextKeySet COMMAND;
    public static final ContextKeySet SELECTOR;
@@ -64,7 +63,6 @@ public class LootContextParamSets {
       CODEC = var10000.comapFlatMap(var10001, var10002::get);
       EMPTY = register("empty", (var0) -> {
       });
-      HUB_REWARD = register("hub_reward", (var0) -> var0.required(LootContextParams.ORIGIN));
       CHEST = register("chest", (var0) -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
       COMMAND = register("command", (var0) -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
       SELECTOR = register("selector", (var0) -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY));

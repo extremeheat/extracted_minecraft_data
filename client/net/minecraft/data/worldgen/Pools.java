@@ -41,6 +41,5 @@ public class Pools {
       AncientCityStructurePieces.bootstrap(var0);
       TrailRuinsStructurePools.bootstrap(var0);
       TrialChambersStructurePools.bootstrap(var0);
-      MineExitPools.bootstrap(var0);
    }
 }

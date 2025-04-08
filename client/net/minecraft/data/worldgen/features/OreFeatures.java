@@ -20,7 +20,6 @@ public class OreFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_BLACKSTONE = FeatureUtils.createKey("ore_blackstone");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_DIRT = FeatureUtils.createKey("ore_dirt");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_GRAVEL = FeatureUtils.createKey("ore_gravel");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_STONE = FeatureUtils.createKey("ore_stone");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_GRANITE = FeatureUtils.createKey("ore_granite");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_DIORITE = FeatureUtils.createKey("ore_diorite");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ORE_ANDESITE = FeatureUtils.createKey("ore_andesite");
@@ -71,7 +70,6 @@ public class OreFeatures {
       FeatureUtils.register(var0, ORE_DIRT, Feature.ORE, new OreConfiguration(var1, Blocks.DIRT.defaultBlockState(), 33));
       FeatureUtils.register(var0, ORE_GRAVEL, Feature.ORE, new OreConfiguration(var1, Blocks.GRAVEL.defaultBlockState(), 33));
       FeatureUtils.register(var0, ORE_GRANITE, Feature.ORE, new OreConfiguration(var1, Blocks.GRANITE.defaultBlockState(), 64));
-      FeatureUtils.register(var0, ORE_STONE, Feature.ORE, new OreConfiguration(var1, Blocks.STONE.defaultBlockState(), 64));
       FeatureUtils.register(var0, ORE_DIORITE, Feature.ORE, new OreConfiguration(var1, Blocks.DIORITE.defaultBlockState(), 64));
       FeatureUtils.register(var0, ORE_ANDESITE, Feature.ORE, new OreConfiguration(var1, Blocks.ANDESITE.defaultBlockState(), 64));
       FeatureUtils.register(var0, ORE_TUFF, Feature.ORE, new OreConfiguration(var1, Blocks.TUFF.defaultBlockState(), 64));

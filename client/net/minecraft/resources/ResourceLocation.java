@@ -23,7 +23,7 @@ public final class ResourceLocation implements Comparable<ResourceLocation> {
    private final String namespace;
    private final String path;
 
-   public ResourceLocation(String var1, String var2) {
+   private ResourceLocation(String var1, String var2) {
       super();
 
       assert isValidNamespace(var1);

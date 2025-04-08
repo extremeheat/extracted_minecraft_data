@@ -79,7 +79,7 @@ public class PlaceCommand {
       ServerLevel var5 = var0.getLevel();
       ChunkPos var6 = new ChunkPos(var4);
       checkLoaded(var5, var6, var6);
-      if (!JigsawPlacement.generateJigsaw(var5, var1, Optional.of(var2), var3, var4, false)) {
+      if (!JigsawPlacement.generateJigsaw(var5, var1, var2, var3, var4, false)) {
          throw ERROR_JIGSAW_FAILED.create();
       } else {
          var0.sendSuccess(() -> Component.translatable("commands.place.jigsaw.success", var4.getX(), var4.getY(), var4.getZ()), true);

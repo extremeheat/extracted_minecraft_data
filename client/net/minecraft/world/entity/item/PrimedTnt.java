@@ -50,15 +50,11 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    public PrimedTnt(Level var1, double var2, double var4, double var6, @Nullable LivingEntity var8) {
-      this(var1, var2, var4, var6, var8, 80);
-   }
-
-   public PrimedTnt(Level var1, double var2, double var4, double var6, @Nullable LivingEntity var8, int var9) {
       this(EntityType.TNT, var1);
       this.setPos(var2, var4, var6);
-      double var10 = var1.random.nextDouble() * 6.2831854820251465;
-      this.setDeltaMovement(-Math.sin(var10) * 0.02, 0.20000000298023224, -Math.cos(var10) * 0.02);
-      this.setFuse(var9);
+      double var9 = var1.random.nextDouble() * 6.2831854820251465;
+      this.setDeltaMovement(-Math.sin(var9) * 0.02, 0.20000000298023224, -Math.cos(var9) * 0.02);
+      this.setFuse(80);
       this.xo = var2;
       this.yo = var4;
       this.zo = var6;

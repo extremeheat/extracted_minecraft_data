@@ -91,10 +91,10 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.getInnerTop();
       int var6 = this.getInnerLeft();
-      var1.pose().pushPose();
-      var1.pose().translate((double)var6, (double)var5, 0.0);
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)var6, (float)var5);
       this.content.container().visitWidgets((var4x) -> var4x.render(var1, var2, var3, var4));
-      var1.pose().popPose();
+      var1.pose().popMatrix();
    }
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {

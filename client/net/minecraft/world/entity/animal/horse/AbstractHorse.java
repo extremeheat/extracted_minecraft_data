@@ -188,10 +188,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.owner = var1 != null ? new EntityReference(var1) : null;
    }
 
-   public boolean isJumping() {
-      return this.isJumping;
-   }
-
    public void setTamed(boolean var1) {
       this.setFlag(2, var1);
    }

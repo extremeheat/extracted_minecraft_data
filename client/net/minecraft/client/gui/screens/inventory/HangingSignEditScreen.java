@@ -1,11 +1,10 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Vector3f;
 
 public class HangingSignEditScreen extends AbstractSignEditScreen {
@@ -20,14 +19,14 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
       this.texture = ResourceLocation.withDefaultNamespace("textures/gui/hanging_signs/" + this.woodType.name() + ".png");
    }
 
-   protected void offsetSign(GuiGraphics var1, BlockState var2) {
-      var1.pose().translate((float)this.width / 2.0F, 125.0F, 50.0F);
+   protected float getSignYOffset() {
+      return 125.0F;
    }
 
    protected void renderSignBackground(GuiGraphics var1) {
-      var1.pose().translate(0.0F, -13.0F, 0.0F);
-      var1.pose().scale(4.5F, 4.5F, 1.0F);
-      var1.blit(RenderType::guiTextured, this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
+      var1.pose().translate(0.0F, -13.0F);
+      var1.pose().scale(4.5F, 4.5F);
+      var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
    }
 
    protected Vector3f getSignTextScale() {

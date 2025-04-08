@@ -212,23 +212,6 @@ public class StructureTemplate {
       }
    }
 
-   public ObjectArrayList<StructureBlockInfo> getBlocks(BlockPos var1, StructurePlaceSettings var2, boolean var3) {
-      ObjectArrayList var4 = new ObjectArrayList();
-      BoundingBox var5 = var2.getBoundingBox();
-      if (this.palettes.isEmpty()) {
-         return var4;
-      } else {
-         for(StructureBlockInfo var7 : var2.getRandomPalette(this.palettes, var1).blocks()) {
-            BlockPos var8 = var3 ? calculateRelativePosition(var2, var7.pos).offset(var1) : var7.pos;
-            if (var5 == null || var5.isInside(var8)) {
-               var4.add(new StructureBlockInfo(var8, var7.state.rotate(var2.getRotation()), var7.nbt));
-            }
-         }
-
-         return var4;
-      }
-   }
-
    public BlockPos calculateConnectedPosition(StructurePlaceSettings var1, BlockPos var2, StructurePlaceSettings var3, BlockPos var4) {
       BlockPos var5 = calculateRelativePosition(var1, var2);
       BlockPos var6 = calculateRelativePosition(var3, var4);

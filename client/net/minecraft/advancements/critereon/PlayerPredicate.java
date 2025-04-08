@@ -42,11 +42,11 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameType, List<StatMatcher<?>> stats, Object2BooleanMap<ResourceKey<Recipe<?>>> recipes, Map<ResourceLocation, AdvancementPredicate> advancements, Optional<EntityPredicate> lookingAt, Optional<InputPredicate> input, UnlockPredicate unlocks) implements EntitySubPredicate {
+public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameType, List<StatMatcher<?>> stats, Object2BooleanMap<ResourceKey<Recipe<?>>> recipes, Map<ResourceLocation, AdvancementPredicate> advancements, Optional<EntityPredicate> lookingAt, Optional<InputPredicate> input) implements EntitySubPredicate {
    public static final int LOOKING_AT_RANGE = 100;
-   public static final MapCodec<PlayerPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level), GameTypePredicate.CODEC.optionalFieldOf("gamemode", GameTypePredicate.ANY).forGetter(PlayerPredicate::gameType), PlayerPredicate.StatMatcher.CODEC.listOf().optionalFieldOf("stats", List.of()).forGetter(PlayerPredicate::stats), ExtraCodecs.object2BooleanMap(Recipe.KEY_CODEC).optionalFieldOf("recipes", Object2BooleanMaps.emptyMap()).forGetter(PlayerPredicate::recipes), Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC).optionalFieldOf("advancements", Map.of()).forGetter(PlayerPredicate::advancements), EntityPredicate.CODEC.optionalFieldOf("looking_at").forGetter(PlayerPredicate::lookingAt), InputPredicate.CODEC.optionalFieldOf("input").forGetter(PlayerPredicate::input), UnlockPredicate.CODEC.optionalFieldOf("unlocks", UnlockPredicate.ANY).forGetter(PlayerPredicate::unlocks)).apply(var0, PlayerPredicate::new));
+   public static final MapCodec<PlayerPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level), GameTypePredicate.CODEC.optionalFieldOf("gamemode", GameTypePredicate.ANY).forGetter(PlayerPredicate::gameType), PlayerPredicate.StatMatcher.CODEC.listOf().optionalFieldOf("stats", List.of()).forGetter(PlayerPredicate::stats), ExtraCodecs.object2BooleanMap(Recipe.KEY_CODEC).optionalFieldOf("recipes", Object2BooleanMaps.emptyMap()).forGetter(PlayerPredicate::recipes), Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC).optionalFieldOf("advancements", Map.of()).forGetter(PlayerPredicate::advancements), EntityPredicate.CODEC.optionalFieldOf("looking_at").forGetter(PlayerPredicate::lookingAt), InputPredicate.CODEC.optionalFieldOf("input").forGetter(PlayerPredicate::input)).apply(var0, PlayerPredicate::new));
 
-   public PlayerPredicate(MinMaxBounds.Ints var1, GameTypePredicate var2, List<StatMatcher<?>> var3, Object2BooleanMap<ResourceKey<Recipe<?>>> var4, Map<ResourceLocation, AdvancementPredicate> var5, Optional<EntityPredicate> var6, Optional<InputPredicate> var7, UnlockPredicate var8) {
+   public PlayerPredicate(MinMaxBounds.Ints var1, GameTypePredicate var2, List<StatMatcher<?>> var3, Object2BooleanMap<ResourceKey<Recipe<?>>> var4, Map<ResourceLocation, AdvancementPredicate> var5, Optional<EntityPredicate> var6, Optional<InputPredicate> var7) {
       super();
       this.level = var1;
       this.gameType = var2;
@@ -55,7 +55,6 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
       this.advancements = var5;
       this.lookingAt = var6;
       this.input = var7;
-      this.unlocks = var8;
    }
 
    public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
@@ -86,7 +85,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
 
          if (!this.advancements.isEmpty()) {
             PlayerAdvancements var14 = var4.getAdvancements();
-            ServerAdvancementManager var16 = var4.theGame().getAdvancements();
+            ServerAdvancementManager var16 = var4.getServer().getAdvancements();
 
             for(Map.Entry var10 : this.advancements.entrySet()) {
                AdvancementHolder var11 = var16.get((ResourceLocation)var10.getKey());
@@ -112,8 +111,6 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
          }
 
          if (this.input.isPresent() && !((InputPredicate)this.input.get()).matches(var4.getLastClientInput())) {
-            return false;
-         } else if (!this.unlocks.test(var4)) {
             return false;
          } else {
             return true;
@@ -227,7 +224,6 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
       private final Map<ResourceLocation, AdvancementPredicate> advancements;
       private Optional<EntityPredicate> lookingAt;
       private Optional<InputPredicate> input;
-      private Optional<UnlockPredicate> unlocks;
 
       public Builder() {
          super();
@@ -238,7 +234,6 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
          this.advancements = Maps.newHashMap();
          this.lookingAt = Optional.empty();
          this.input = Optional.empty();
-         this.unlocks = Optional.empty();
       }
 
       public static Builder player() {
@@ -285,13 +280,8 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
          return this;
       }
 
-      public Builder withPlayerUnlocks(UnlockPredicate.Builder var1) {
-         this.unlocks = Optional.of(var1.build());
-         return this;
-      }
-
       public PlayerPredicate build() {
-         return new PlayerPredicate(this.level, this.gameType, this.stats.build(), this.recipes, this.advancements, this.lookingAt, this.input, (UnlockPredicate)this.unlocks.orElse(UnlockPredicate.ANY));
+         return new PlayerPredicate(this.level, this.gameType, this.stats.build(), this.recipes, this.advancements, this.lookingAt, this.input);
       }
    }
 }

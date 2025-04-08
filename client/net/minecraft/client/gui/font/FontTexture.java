@@ -39,7 +39,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
             float var3 = 256.0F;
             float var4 = 256.0F;
             float var5 = 0.01F;
-            return new BakedGlyph(this.renderTypes, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getTop(), var1.getBottom());
+            return new BakedGlyph(this.renderTypes, this.texture, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getTop(), var1.getBottom());
          } else {
             return null;
          }

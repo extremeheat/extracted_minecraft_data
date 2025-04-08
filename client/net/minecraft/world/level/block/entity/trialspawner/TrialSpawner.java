@@ -222,7 +222,7 @@ public final class TrialSpawner {
    }
 
    public void ejectReward(ServerLevel var1, BlockPos var2, ResourceKey<LootTable> var3) {
-      LootTable var4 = var1.theGame().reloadableRegistries().getLootTable(var3);
+      LootTable var4 = var1.getServer().reloadableRegistries().getLootTable(var3);
       LootParams var5 = (new LootParams.Builder(var1)).create(LootContextParamSets.EMPTY);
       ObjectArrayList var6 = var4.getRandomItems(var5);
       if (!var6.isEmpty()) {

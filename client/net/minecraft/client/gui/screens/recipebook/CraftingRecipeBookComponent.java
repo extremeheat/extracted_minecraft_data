@@ -27,12 +27,12 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
    }
 
    protected boolean isCraftingSlot(Slot var1) {
-      return var1.isActive() && (((AbstractCraftingMenu)this.menu).getResultSlot() == var1 || ((AbstractCraftingMenu)this.menu).getInputGridSlots().contains(var1));
+      return ((AbstractCraftingMenu)this.menu).getResultSlot() == var1 || ((AbstractCraftingMenu)this.menu).getInputGridSlots().contains(var1);
    }
 
    private boolean canDisplay(RecipeDisplay var1) {
-      int var2 = ((AbstractCraftingMenu)this.menu).getGridWidth(this.minecraft.player);
-      int var3 = ((AbstractCraftingMenu)this.menu).getGridHeight(this.minecraft.player);
+      int var2 = ((AbstractCraftingMenu)this.menu).getGridWidth();
+      int var3 = ((AbstractCraftingMenu)this.menu).getGridHeight();
       Objects.requireNonNull(var1);
       byte var5 = 0;
       boolean var10000;
@@ -66,7 +66,7 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
          case 0:
             ShapedCraftingRecipeDisplay var6 = (ShapedCraftingRecipeDisplay)var2;
             List var11 = (this.menu).getInputGridSlots();
-            PlaceRecipeHelper.placeRecipe(((AbstractCraftingMenu)this.menu).getGridWidth(this.minecraft.player), ((AbstractCraftingMenu)this.menu).getGridHeight(this.minecraft.player), var6.width(), var6.height(), var6.ingredients(), (var3x, var4, var5x, var6x) -> {
+            PlaceRecipeHelper.placeRecipe(((AbstractCraftingMenu)this.menu).getGridWidth(), ((AbstractCraftingMenu)this.menu).getGridHeight(), var6.width(), var6.height(), var6.ingredients(), (var3x, var4, var5x, var6x) -> {
                Slot var7 = (Slot)var11.get(var4);
                var1.setInput(var7, var3, var3x);
             });

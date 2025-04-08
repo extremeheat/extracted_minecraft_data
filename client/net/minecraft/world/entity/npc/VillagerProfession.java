@@ -36,7 +36,6 @@ public record VillagerProfession(Component name, Predicate<Holder<PoiType>> held
    public static final ResourceKey<VillagerProfession> SHEPHERD = createKey("shepherd");
    public static final ResourceKey<VillagerProfession> TOOLSMITH = createKey("toolsmith");
    public static final ResourceKey<VillagerProfession> WEAPONSMITH = createKey("weaponsmith");
-   public static final ResourceKey<VillagerProfession> TRAITOR = createKey("traitor");
 
    public VillagerProfession(Component var1, Predicate<Holder<PoiType>> var2, Predicate<Holder<PoiType>> var3, ImmutableSet<Item> var4, ImmutableSet<Block> var5, @Nullable SoundEvent var6) {
       super();
@@ -84,7 +83,6 @@ public record VillagerProfession(Component name, Predicate<Holder<PoiType>> held
       register(var0, NITWIT, PoiType.NONE, PoiType.NONE, (SoundEvent)null);
       register(var0, SHEPHERD, PoiTypes.SHEPHERD, SoundEvents.VILLAGER_WORK_SHEPHERD);
       register(var0, TOOLSMITH, PoiTypes.TOOLSMITH, SoundEvents.VILLAGER_WORK_TOOLSMITH);
-      register(var0, TRAITOR, PoiTypes.LODESTONE, SoundEvents.PILLAGER_AMBIENT);
       return register(var0, WEAPONSMITH, PoiTypes.WEAPONSMITH, SoundEvents.VILLAGER_WORK_WEAPONSMITH);
    }
 }

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,12 +10,10 @@ import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.TriState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -28,12 +25,10 @@ public abstract class RenderStateShard {
    protected static final TextureStateShard BLOCK_SHEET_MIPPED;
    protected static final TextureStateShard BLOCK_SHEET;
    protected static final EmptyTextureStateShard NO_TEXTURE;
-   protected static final SkyTextureStateShard BLOCKS_AND_SKY;
    protected static final TexturingStateShard DEFAULT_TEXTURING;
    protected static final TexturingStateShard GLINT_TEXTURING;
    protected static final TexturingStateShard ENTITY_GLINT_TEXTURING;
    protected static final TexturingStateShard ARMOR_ENTITY_GLINT_TEXTURING;
-   protected static final TexturingStateShard SHIMMERING_GLINT_TEXTURING;
    protected static final LightmapStateShard LIGHTMAP;
    protected static final LightmapStateShard NO_LIGHTMAP;
    protected static final OverlayStateShard OVERLAY;
@@ -47,7 +42,6 @@ public abstract class RenderStateShard {
    protected static final OutputStateShard PARTICLES_TARGET;
    protected static final OutputStateShard WEATHER_TARGET;
    protected static final OutputStateShard ITEM_ENTITY_TARGET;
-   protected static final OutputStateShard SKY_TARGET;
    protected static final LineStateShard DEFAULT_LINE;
 
    public RenderStateShard(String var1, Runnable var2, Runnable var3) {
@@ -83,17 +77,15 @@ public abstract class RenderStateShard {
    }
 
    static {
-      BLOCK_SHEET_MIPPED = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, TriState.FALSE, true);
-      BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, TriState.FALSE, false);
+      BLOCK_SHEET_MIPPED = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, true);
+      BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false);
       NO_TEXTURE = new EmptyTextureStateShard();
-      BLOCKS_AND_SKY = new SkyTextureStateShard();
       DEFAULT_TEXTURING = new TexturingStateShard("default_texturing", () -> {
       }, () -> {
       });
       GLINT_TEXTURING = new TexturingStateShard("glint_texturing", () -> setupGlintTexturing(8.0F), RenderSystem::resetTextureMatrix);
       ENTITY_GLINT_TEXTURING = new TexturingStateShard("entity_glint_texturing", () -> setupGlintTexturing(0.5F), RenderSystem::resetTextureMatrix);
       ARMOR_ENTITY_GLINT_TEXTURING = new TexturingStateShard("armor_entity_glint_texturing", () -> setupGlintTexturing(0.16F), RenderSystem::resetTextureMatrix);
-      SHIMMERING_GLINT_TEXTURING = new TexturingStateShard("shimmering_glint_texturing", () -> setupGlintTexturing(0.01F), RenderSystem::resetTextureMatrix);
       LIGHTMAP = new LightmapStateShard(true);
       NO_LIGHTMAP = new LightmapStateShard(false);
       OVERLAY = new OverlayStateShard(true);
@@ -138,7 +130,6 @@ public abstract class RenderStateShard {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getItemEntityTarget();
          return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
       });
-      SKY_TARGET = new OutputStateShard("sky_target", () -> Minecraft.getInstance().levelRenderer.getSkyTarget());
       DEFAULT_LINE = new LineStateShard(OptionalDouble.of(1.0));
    }
 
@@ -167,7 +158,7 @@ public abstract class RenderStateShard {
                Entry var2 = (Entry)var1.get(var1x);
                TextureManager var3 = Minecraft.getInstance().getTextureManager();
                AbstractTexture var4 = var3.getTexture(var2.id);
-               var4.setFilter(var2.blur, var2.mipmap);
+               var4.setUseMipmaps(var2.mipmap);
                RenderSystem.setShaderTexture(var1x, var4.getTexture());
             }
 
@@ -184,16 +175,14 @@ public abstract class RenderStateShard {
          return new Builder();
       }
 
-      static record Entry(ResourceLocation id, boolean blur, boolean mipmap) {
+      static record Entry(ResourceLocation id, boolean mipmap) {
          final ResourceLocation id;
-         final boolean blur;
          final boolean mipmap;
 
-         Entry(ResourceLocation var1, boolean var2, boolean var3) {
+         Entry(ResourceLocation var1, boolean var2) {
             super();
             this.id = var1;
-            this.blur = var2;
-            this.mipmap = var3;
+            this.mipmap = var2;
          }
       }
 
@@ -204,8 +193,8 @@ public abstract class RenderStateShard {
             super();
          }
 
-         public Builder add(ResourceLocation var1, boolean var2, boolean var3) {
-            this.builder.add(new Entry(var1, var2, var3));
+         public Builder add(ResourceLocation var1, boolean var2) {
+            this.builder.add(new Entry(var1, var2));
             return this;
          }
 
@@ -217,55 +206,27 @@ public abstract class RenderStateShard {
 
    protected static class TextureStateShard extends EmptyTextureStateShard {
       private final Optional<ResourceLocation> texture;
-      private final TriState blur;
       private final boolean mipmap;
 
-      public TextureStateShard(ResourceLocation var1, TriState var2, boolean var3) {
+      public TextureStateShard(ResourceLocation var1, boolean var2) {
          super(() -> {
-            TextureManager var3x = Minecraft.getInstance().getTextureManager();
-            AbstractTexture var4 = var3x.getTexture(var1);
-            var4.setFilter(var2, var3);
-            RenderSystem.setShaderTexture(0, var4.getTexture());
+            TextureManager var2x = Minecraft.getInstance().getTextureManager();
+            AbstractTexture var3 = var2x.getTexture(var1);
+            var3.setUseMipmaps(var2);
+            RenderSystem.setShaderTexture(0, var3.getTexture());
          }, () -> {
          });
          this.texture = Optional.of(var1);
-         this.blur = var2;
-         this.mipmap = var3;
+         this.mipmap = var2;
       }
 
       public String toString() {
          String var10000 = this.name;
-         return var10000 + "[" + String.valueOf(this.texture) + "(blur=" + String.valueOf(this.blur) + ", mipmap=" + this.mipmap + ")]";
+         return var10000 + "[" + String.valueOf(this.texture) + "(mipmap=" + this.mipmap + ")]";
       }
 
       protected Optional<ResourceLocation> cutoutTexture() {
          return this.texture;
-      }
-   }
-
-   protected static class SkyTextureStateShard extends EmptyTextureStateShard {
-      public SkyTextureStateShard() {
-         super(() -> {
-            Minecraft var0 = Minecraft.getInstance();
-            TextureManager var1 = var0.getTextureManager();
-            AbstractTexture var2 = var1.getTexture(TextureAtlas.LOCATION_BLOCKS);
-            var2.setFilter(TriState.FALSE, true);
-            RenderSystem.setShaderTexture(0, var2.getTexture());
-            GpuTexture var3 = var0.levelRenderer.getSkyTarget().getColorTexture();
-            RenderSystem.setShaderTexture(1, var3);
-            AbstractTexture var4 = var1.getTexture(ItemRenderer.ENCHANTED_GLINT_ARMOR);
-            var4.setFilter(TriState.DEFAULT, false);
-            RenderSystem.setShaderTexture(2, var4.getTexture());
-         }, () -> {
-         });
-      }
-
-      public String toString() {
-         return this.name + "[]";
-      }
-
-      protected Optional<ResourceLocation> cutoutTexture() {
-         return Optional.empty();
       }
    }
 

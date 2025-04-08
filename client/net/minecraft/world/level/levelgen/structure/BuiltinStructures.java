@@ -39,9 +39,6 @@ public interface BuiltinStructures {
    ResourceKey<Structure> ANCIENT_CITY = createKey("ancient_city");
    ResourceKey<Structure> TRAIL_RUINS = createKey("trail_ruins");
    ResourceKey<Structure> TRIAL_CHAMBERS = createKey("trial_chambers");
-   ResourceKey<Structure> CAVE_MINE_EXIT = createKey("cave_mine_exit");
-   ResourceKey<Structure> SURFACE_MINE_EXIT = createKey("surface_mine_exit");
-   ResourceKey<Structure> RARE_SURFACE_MINE_EXIT = createKey("rare_surface_mine_exit");
 
    private static ResourceKey<Structure> createKey(String var0) {
       return ResourceKey.create(Registries.STRUCTURE, ResourceLocation.withDefaultNamespace(var0));

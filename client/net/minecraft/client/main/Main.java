@@ -120,7 +120,7 @@ public class Main {
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS, var39);
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var88);
          SharedConstants.tryDetectVersion();
-         TracyClient.reportAppInfo("Minecraft Java Edition " + SharedConstants.getCurrentVersion().getName());
+         TracyClient.reportAppInfo("Minecraft Java Edition " + SharedConstants.getCurrentVersion().name());
          CompletableFuture var91 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
          CrashReport.preload();
          var36 = LogUtils.getLogger();

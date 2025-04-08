@@ -198,7 +198,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       this.uploadStatus.refreshBytesPerSecond();
       if (this.narrationRateLimiter.tryAcquire(1)) {
          Component var1 = this.createProgressNarrationMessage();
-         this.minecraft.getNarrator().sayNow(var1);
+         this.minecraft.getNarrator().saySystemNow(var1);
       }
 
    }

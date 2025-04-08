@@ -13,6 +13,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -41,7 +42,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class Ocelot extends Animal {
@@ -211,7 +215,23 @@ public class Ocelot extends Animal {
    }
 
    public static boolean checkOcelotSpawnRules(EntityType<Ocelot> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return true;
+      return var4.nextInt(3) != 0;
+   }
+
+   public boolean checkSpawnObstruction(LevelReader var1) {
+      if (var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox())) {
+         BlockPos var2 = this.blockPosition();
+         if (var2.getY() < var1.getSeaLevel()) {
+            return false;
+         }
+
+         BlockState var3 = var1.getBlockState(var2.below());
+         if (var3.is(Blocks.GRASS_BLOCK) || var3.is(BlockTags.LEAVES)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    @Nullable

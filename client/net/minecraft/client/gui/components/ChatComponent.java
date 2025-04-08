@@ -13,6 +13,7 @@ import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
@@ -64,12 +65,13 @@ public class ChatComponent {
          if (var7 > 0) {
             ProfilerFiller var8 = Profiler.get();
             var8.push("chat");
+            var1.pushGuiLayer(GuiLayer.SCREEN_CHAT);
             float var9 = (float)this.getScale();
             int var10 = Mth.ceil((float)this.getWidth() / var9);
             int var11 = var1.guiHeight();
-            var1.pose().pushPose();
-            var1.pose().scale(var9, var9, 1.0F);
-            var1.pose().translate(4.0F, 0.0F, 0.0F);
+            var1.pose().pushMatrix();
+            var1.pose().scale(var9, var9);
+            var1.pose().translate(4.0F, 0.0F);
             int var12 = Mth.floor((float)(var11 - 40) / var9);
             int var13 = this.getMessageEndIndexAt(this.screenToChatX((double)var3), this.screenToChatY((double)var4));
             double var14 = (Double)this.minecraft.options.chatOpacity().get() * 0.9 + 0.1;
@@ -106,10 +108,9 @@ public class ChatComponent {
                            }
                         }
 
-                        var1.pose().pushPose();
-                        var1.pose().translate(0.0F, 0.0F, 50.0F);
+                        var1.pushGuiLayer(GuiLayer.SCREEN_CHAT_TEXT);
                         var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, ARGB.color(var29, -1));
-                        var1.pose().popPose();
+                        var1.popGuiLayer();
                      }
                   }
                }
@@ -119,12 +120,13 @@ public class ChatComponent {
             if (var38 > 0L) {
                int var39 = (int)(128.0 * var14);
                int var41 = (int)(255.0 * var16);
-               var1.pose().pushPose();
-               var1.pose().translate(0.0F, (float)var12, 0.0F);
+               var1.pose().pushMatrix();
+               var1.pose().translate(0.0F, (float)var12);
                var1.fill(-2, 0, var10 + 4, 9, var41 << 24);
-               var1.pose().translate(0.0F, 0.0F, 50.0F);
+               var1.pushGuiLayer(GuiLayer.SCREEN_CHAT_TEXT);
                var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var38), 0, 1, 16777215 + (var39 << 24));
-               var1.pose().popPose();
+               var1.popGuiLayer();
+               var1.pose().popMatrix();
             }
 
             if (var5) {
@@ -137,12 +139,13 @@ public class ChatComponent {
                   int var45 = var28 > 0 ? 170 : 96;
                   int var46 = this.newMessageSinceScroll ? 13382451 : 3355562;
                   int var47 = var10 + 4;
-                  var1.fill(var47, -var28, var47 + 2, -var28 - var44, 100, var46 + (var45 << 24));
-                  var1.fill(var47 + 2, -var28, var47 + 1, -var28 - var44, 100, 13421772 + (var45 << 24));
+                  var1.fill(var47, -var28, var47 + 2, -var28 - var44, var46 + (var45 << 24));
+                  var1.fill(var47 + 2, -var28, var47 + 1, -var28 - var44, 13421772 + (var45 << 24));
                }
             }
 
-            var1.pose().popPose();
+            var1.popGuiLayer();
+            var1.pose().popMatrix();
             var8.pop();
          }
       }

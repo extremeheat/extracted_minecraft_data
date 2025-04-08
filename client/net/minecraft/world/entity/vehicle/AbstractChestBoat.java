@@ -143,7 +143,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       if (this.lootTable != null && var3.isSpectator()) {
          return null;
       } else {
-         this.unpackLootTable(var2.getPlayer());
+         this.unpackLootTable(var2.player);
          return ChestMenu.threeRows(var1, var2, this);
       }
    }

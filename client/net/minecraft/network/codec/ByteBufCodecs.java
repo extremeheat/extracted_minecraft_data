@@ -41,6 +41,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -418,6 +419,27 @@ public interface ByteBufCodecs {
       // $FF: synthetic method
       public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (GameProfile)var2);
+      }
+
+      // $FF: synthetic method
+      public Object decode(final Object var1) {
+         return this.decode((ByteBuf)var1);
+      }
+   };
+   StreamCodec<ByteBuf, Integer> RGB_COLOR = new StreamCodec<ByteBuf, Integer>() {
+      public Integer decode(ByteBuf var1) {
+         return ARGB.color(var1.readByte() & 255, var1.readByte() & 255, var1.readByte() & 255);
+      }
+
+      public void encode(ByteBuf var1, Integer var2) {
+         var1.writeByte(ARGB.red(var2));
+         var1.writeByte(ARGB.green(var2));
+         var1.writeByte(ARGB.blue(var2));
+      }
+
+      // $FF: synthetic method
+      public void encode(final Object var1, final Object var2) {
+         this.encode((ByteBuf)var1, (Integer)var2);
       }
 
       // $FF: synthetic method

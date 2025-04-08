@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -44,8 +44,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private static final Component SERVER_CLOSED_TOOLTIP = Component.translatable("mco.selectServer.closed");
    private static final int DEFAULT_BUTTON_WIDTH = 80;
    private static final int DEFAULT_BUTTON_OFFSET = 5;
-   @Nullable
-   private Component toolTip;
    private final RealmsMainScreen lastScreen;
    @Nullable
    private RealmsServer serverData;
@@ -151,7 +149,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.toolTip = null;
       var1.drawCenteredString(this.font, (Component)WORLD_LIST_TITLE, this.width / 2, row(4), -1);
       if (this.serverData == null) {
          var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
@@ -277,7 +274,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var6, var2, var3, 10, 28);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var2, var3, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.setTooltipForNextRenderPass((Component)var7.get());
       }

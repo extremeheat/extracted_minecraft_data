@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -117,13 +118,14 @@ public class LootContext {
 
       public LootContext create(Optional<ResourceLocation> var1) {
          ServerLevel var2 = this.getLevel();
+         MinecraftServer var3 = var2.getServer();
          Optional var10000 = Optional.ofNullable(this.random).or(() -> {
             Objects.requireNonNull(var2);
             return var1.map(var2::getRandomSequence);
          });
          Objects.requireNonNull(var2);
-         RandomSource var3 = (RandomSource)var10000.orElseGet(var2::getRandom);
-         return new LootContext(this.params, var3, var2.theGame().reloadableRegistries().lookup());
+         RandomSource var4 = (RandomSource)var10000.orElseGet(var2::getRandom);
+         return new LootContext(this.params, var4, var3.reloadableRegistries().lookup());
       }
    }
 

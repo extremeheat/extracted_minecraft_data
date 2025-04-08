@@ -3,18 +3,18 @@ package net.minecraft.server.dedicated;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
-import net.minecraft.server.TheGame;
+import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import org.slf4j.Logger;
 
 public class DedicatedPlayerList extends PlayerList {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final DedicatedServer dedicatedServer;
 
-   public DedicatedPlayerList(DedicatedServer var1, TheGame var2, PlayerDataStorage var3) {
-      super(var2, var3, var1.getProperties().maxPlayers);
-      this.dedicatedServer = var1;
+   public DedicatedPlayerList(DedicatedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
+      super(var1, var2, var3, var1.getProperties().maxPlayers);
       DedicatedServerProperties var4 = var1.getProperties();
       this.setViewDistance(var4.viewDistance);
       this.setSimulationDistance(var4.simulationDistance);
@@ -34,7 +34,7 @@ public class DedicatedPlayerList extends PlayerList {
 
    public void setUsingWhiteList(boolean var1) {
       super.setUsingWhiteList(var1);
-      this.dedicatedServer.storeUsingWhiteList(this.theGame(), var1);
+      this.getServer().storeUsingWhiteList(var1);
    }
 
    public void op(GameProfile var1) {
@@ -127,7 +127,16 @@ public class DedicatedPlayerList extends PlayerList {
       return !this.isUsingWhitelist() || this.isOp(var1) || this.getWhiteList().isWhiteListed(var1);
    }
 
+   public DedicatedServer getServer() {
+      return (DedicatedServer)super.getServer();
+   }
+
    public boolean canBypassPlayerLimit(GameProfile var1) {
       return this.getOps().canBypassPlayerLimit(var1);
+   }
+
+   // $FF: synthetic method
+   public MinecraftServer getServer() {
+      return this.getServer();
    }
 }

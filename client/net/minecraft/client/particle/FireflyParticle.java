@@ -11,8 +11,8 @@ public class FireflyParticle extends TextureSheetParticle {
    private static final float PARTICLE_FADE_IN_LIGHT_TIME = 0.1F;
    private static final float PARTICLE_FADE_OUT_ALPHA_TIME = 0.5F;
    private static final float PARTICLE_FADE_IN_ALPHA_TIME = 0.3F;
-   private static final int PARTICLE_MIN_LIFETIME = 36;
-   private static final int PARTICLE_MAX_LIFETIME = 180;
+   private static final int PARTICLE_MIN_LIFETIME = 200;
+   private static final int PARTICLE_MAX_LIFETIME = 300;
 
    FireflyParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       super(var1, var2, var4, var6, var8, var10, var12);
@@ -67,7 +67,7 @@ public class FireflyParticle extends TextureSheetParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          FireflyParticle var15 = new FireflyParticle(var2, var3, var5, var7, 0.5 - var2.random.nextDouble(), var2.random.nextBoolean() ? var11 : -var11, 0.5 - var2.random.nextDouble());
-         var15.setLifetime(var2.random.nextIntBetweenInclusive(36, 180));
+         var15.setLifetime(var2.random.nextIntBetweenInclusive(200, 300));
          var15.scale(1.5F);
          var15.pickSprite(this.sprite);
          var15.setAlpha(0.0F);

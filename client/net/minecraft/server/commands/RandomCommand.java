@@ -66,7 +66,7 @@ public class RandomCommand {
       } else {
          int var9 = Mth.randomBetweenInclusive(var4, var5, var6);
          if (var3) {
-            var0.playerList().broadcastSystemMessage(Component.translatable("commands.random.roll", var0.getDisplayName(), var9, var5, var6), false);
+            var0.getServer().getPlayerList().broadcastSystemMessage(Component.translatable("commands.random.roll", var0.getDisplayName(), var9, var5, var6), false);
          } else {
             var0.sendSuccess(() -> Component.translatable("commands.random.sample.success", var9), false);
          }

@@ -253,7 +253,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       } else {
          LootParams var3 = var2.withParameter(LootContextParams.BLOCK_STATE, var1).create(LootContextParamSets.BLOCK);
          ServerLevel var4 = var3.getLevel();
-         LootTable var5 = var4.theGame().reloadableRegistries().getLootTable((ResourceKey)this.drops.get());
+         LootTable var5 = var4.getServer().reloadableRegistries().getLootTable((ResourceKey)this.drops.get());
          return var5.getRandomItems(var3);
       }
    }

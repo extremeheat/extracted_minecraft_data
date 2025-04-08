@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -27,7 +26,7 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
       var2.pushPose();
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot + 90.0F));
-      VertexConsumer var5 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil ? ItemStackRenderState.FoilType.STANDARD : ItemStackRenderState.FoilType.NONE);
+      VertexConsumer var5 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
       this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
       var2.popPose();
       super.render(var1, var2, var3, var4);

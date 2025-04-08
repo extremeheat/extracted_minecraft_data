@@ -17,7 +17,6 @@ import net.minecraft.SuppressForbidden;
 import net.minecraft.Util;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.progress.LoggerChunkProgressListener;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -71,7 +70,7 @@ public class GameTestMainUtil {
 
          LevelStorageSource.LevelStorageAccess var6 = LevelStorageSource.createDefault(Paths.get(var3)).createAccess("gametestworld");
          PackRepository var5 = ServerPacksSource.createPackRepository(var6);
-         MinecraftServer.spin(var5, GameTestServer.createWorldStem(var5), (var0x, var1x, var2x, var3x) -> var2x, LoggerChunkProgressListener::createFromGameruleRadius, (var2x) -> GameTestServer.create(var2x, var6, optionalFromOption(var2, tests), var2.has(verify)));
+         MinecraftServer.spin((var3x) -> GameTestServer.create(var3x, var6, var5, optionalFromOption(var2, tests), var2.has(verify)));
       }
    }
 
