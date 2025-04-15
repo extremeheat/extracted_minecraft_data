@@ -2,25 +2,23 @@ package com.mojang.blaze3d.systems;
 
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import org.joml.Matrix4f;
 
 @DontObfuscate
 public interface RenderPass extends AutoCloseable {
    void setPipeline(RenderPipeline var1);
 
-   void bindSampler(String var1, GpuTexture var2);
+   void bindSampler(String var1, @Nullable GpuTexture var2);
 
-   void setUniform(String var1, int... var2);
+   void setUniform(String var1, GpuBuffer var2);
 
-   void setUniform(String var1, float... var2);
-
-   void setUniform(String var1, Matrix4f var2);
+   void setUniform(String var1, GpuBufferSlice var2);
 
    void enableScissor(int var1, int var2, int var3, int var4);
 
@@ -32,7 +30,9 @@ public interface RenderPass extends AutoCloseable {
 
    void drawIndexed(int var1, int var2);
 
-   void drawMultipleIndexed(Collection<Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3);
+   void drawIndexed(int var1, int var2, int var3);
+
+   void drawMultipleIndexed(Collection<Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4);
 
    void draw(int var1, int var2);
 
@@ -56,6 +56,6 @@ public interface RenderPass extends AutoCloseable {
    }
 
    public interface UniformUploader {
-      void upload(String var1, float... var2);
+      void upload(String var1, GpuBufferSlice var2);
    }
 }

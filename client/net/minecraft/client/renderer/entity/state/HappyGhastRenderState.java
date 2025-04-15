@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 public class HappyGhastRenderState extends LivingEntityRenderState {
    public ItemStack bodyItem;
    public boolean isRidden;
+   public boolean isLeashHolder;
 
    public HappyGhastRenderState() {
       super();

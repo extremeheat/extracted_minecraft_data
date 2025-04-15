@@ -27,7 +27,9 @@ public class TooltipRenderUtil {
       int var8 = var3 + 3 + 3 + 18;
       int var9 = var4 + 3 + 3 + 18;
       var0.blitSprite(RenderPipelines.GUI_TEXTURED, getBackgroundSprite(var5), var6, var7, var8, var9);
+      var0.depthTreeUp();
       var0.blitSprite(RenderPipelines.GUI_TEXTURED, getFrameSprite(var5), var6, var7, var8, var9);
+      var0.depthTreeBack();
    }
 
    private static ResourceLocation getBackgroundSprite(@Nullable ResourceLocation var0) {

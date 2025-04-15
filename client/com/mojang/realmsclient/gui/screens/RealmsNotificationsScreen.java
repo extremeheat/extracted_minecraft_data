@@ -106,7 +106,9 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if ((Boolean)this.validClient.getNow(false)) {
+         var1.depthTreeUp();
          this.drawIcons(var1);
+         var1.depthTreeBack();
       }
 
    }

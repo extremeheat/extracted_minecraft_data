@@ -167,9 +167,10 @@ public class ChatScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
+      var1.depthTreeUp();
       this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       this.input.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
+      var1.nextStratum();
       this.commandSuggestions.render(var1, var2, var3);
       GuiMessageTag var5 = this.minecraft.gui.getChat().getMessageTagAt((double)var2, (double)var3);
       if (var5 != null && var5.text() != null) {
@@ -177,6 +178,7 @@ public class ChatScreen extends Screen {
       } else {
          Style var6 = this.getComponentStyleAt((double)var2, (double)var3);
          if (var6 != null && var6.getHoverEvent() != null) {
+            var1.nextStratum();
             var1.renderComponentHoverEffect(this.font, var6, var2, var3);
          }
       }

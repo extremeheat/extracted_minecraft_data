@@ -293,10 +293,12 @@ public class LayerDefinitions {
       var0.put(ModelLayers.GOAT, var38);
       var0.put(ModelLayers.GOAT_BABY, var38.apply(GoatModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.GUARDIAN, GuardianModel.createBodyLayer());
-      var0.put(ModelLayers.HAPPY_GHAST, HappyGhastModel.createBodyLayer(false));
-      var0.put(ModelLayers.HAPPY_GHAST_BABY, HappyGhastModel.createBodyLayer(true).apply(HappyGhastModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.HAPPY_GHAST, HappyGhastModel.createBodyLayer(false, CubeDeformation.NONE));
+      var0.put(ModelLayers.HAPPY_GHAST_BABY, HappyGhastModel.createBodyLayer(true, CubeDeformation.NONE).apply(HappyGhastModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.HAPPY_GHAST_HARNESS, HappyGhastHarnessModel.createHarnessLayer(false));
-      var0.put(ModelLayers.HAPPY_GHAST_BABY_HARNESS, HappyGhastHarnessModel.createHarnessLayer(true));
+      var0.put(ModelLayers.HAPPY_GHAST_BABY_HARNESS, HappyGhastHarnessModel.createHarnessLayer(true).apply(HappyGhastModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.HAPPY_GHAST_ROPES, HappyGhastModel.createBodyLayer(false, new CubeDeformation(0.2F)));
+      var0.put(ModelLayers.HAPPY_GHAST_BABY_ROPES, HappyGhastModel.createBodyLayer(true, new CubeDeformation(0.2F)).apply(HappyGhastModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.HOGLIN, var29);
       var0.put(ModelLayers.HOGLIN_BABY, var30);
       var0.put(ModelLayers.HOPPER_MINECART, var5);

@@ -3,8 +3,6 @@ package com.mojang.blaze3d.vertex;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.DontObfuscate;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -114,14 +112,14 @@ public class VertexFormat {
    public GpuBuffer uploadImmediateVertexBuffer(ByteBuffer var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       if (this.immediateDrawVertexBuffer == null) {
-         this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, var1);
+         this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), 40, var1);
       } else {
          CommandEncoder var3 = var2.createCommandEncoder();
          if (this.immediateDrawVertexBuffer.size() < var1.remaining()) {
             this.immediateDrawVertexBuffer.close();
-            this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, var1);
+            this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), 40, var1);
          } else {
-            var3.writeToBuffer(this.immediateDrawVertexBuffer, var1, 0);
+            var3.writeToBuffer(this.immediateDrawVertexBuffer.slice(), var1);
          }
       }
 
@@ -131,14 +129,14 @@ public class VertexFormat {
    public GpuBuffer uploadImmediateIndexBuffer(ByteBuffer var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       if (this.immediateDrawIndexBuffer == null) {
-         this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, var1);
+         this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), 72, var1);
       } else {
          CommandEncoder var3 = var2.createCommandEncoder();
          if (this.immediateDrawIndexBuffer.size() < var1.remaining()) {
             this.immediateDrawIndexBuffer.close();
-            this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, var1);
+            this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), 72, var1);
          } else {
-            var3.writeToBuffer(this.immediateDrawIndexBuffer, var1, 0);
+            var3.writeToBuffer(this.immediateDrawIndexBuffer.slice(), var1);
          }
       }
 

@@ -375,6 +375,10 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return 2.0;
    }
 
+   public boolean supportQuadLeash() {
+      return false;
+   }
+
    protected void followMommy(ServerLevel var1) {
       if (!this.inCaravan() && this.isBaby()) {
          super.followMommy(var1);

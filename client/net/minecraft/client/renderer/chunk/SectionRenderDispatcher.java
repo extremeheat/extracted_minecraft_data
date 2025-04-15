@@ -3,8 +3,6 @@ package net.minecraft.client.renderer.chunk;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -195,6 +193,7 @@ public class SectionRenderDispatcher {
       volatile long sectionNode;
       final BlockPos.MutableBlockPos renderOrigin;
       private boolean playerChanged;
+      private int dynamicTransformIndex;
 
       public RenderSection(final int var2, final long var3) {
          super();
@@ -247,15 +246,15 @@ public class SectionRenderDispatcher {
                         var10.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
                            String var10000 = var1.getName();
                            return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
-                        }, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer()));
+                        }, 40, var2.vertexBuffer()));
                      } else if (!var10.vertexBuffer.isClosed()) {
-                        var4.writeToBuffer(var10.vertexBuffer, var2.vertexBuffer(), 0);
+                        var4.writeToBuffer(var10.vertexBuffer.slice(), var2.vertexBuffer());
                      }
 
                      if (var2.indexBuffer() != null) {
                         if (var10.indexBuffer != null && var10.indexBuffer.size() >= var2.indexBuffer().remaining()) {
                            if (!var10.indexBuffer.isClosed()) {
-                              var4.writeToBuffer(var10.indexBuffer, var2.indexBuffer(), 0);
+                              var4.writeToBuffer(var10.indexBuffer.slice(), var2.indexBuffer());
                            }
                         } else {
                            if (var10.indexBuffer != null) {
@@ -265,7 +264,7 @@ public class SectionRenderDispatcher {
                            var10.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
                               String var10000 = var1.getName();
                               return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
-                           }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var2.indexBuffer()));
+                           }, 72, var2.indexBuffer()));
                         }
                      } else if (var10.indexBuffer != null) {
                         var10.indexBuffer.close();
@@ -278,11 +277,11 @@ public class SectionRenderDispatcher {
                      GpuBuffer var5 = RenderSystem.getDevice().createBuffer(() -> {
                         String var10000 = var1.getName();
                         return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
-                     }, BufferType.VERTICES, BufferUsage.STATIC_WRITE, var2.vertexBuffer());
+                     }, 40, var2.vertexBuffer());
                      GpuBuffer var6 = var2.indexBuffer() != null ? RenderSystem.getDevice().createBuffer(() -> {
                         String var10000 = var1.getName();
                         return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
-                     }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var2.indexBuffer()) : null;
+                     }, 72, var2.indexBuffer()) : null;
                      SectionBuffers var7 = new SectionBuffers(var5, var6, var2.drawState().indexCount(), var2.drawState().indexType());
                      this.buffers.put(var1, var7);
                   }
@@ -310,11 +309,11 @@ public class SectionRenderDispatcher {
                         var4.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
                            String var10000 = var2.getName();
                            return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(this.sectionNode) + ", " + SectionPos.y(this.sectionNode) + ", " + SectionPos.z(this.sectionNode);
-                        }, BufferType.INDICES, BufferUsage.STATIC_WRITE, var1.byteBuffer()));
+                        }, 72, var1.byteBuffer()));
                      } else {
                         CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
                         if (!var4.indexBuffer.isClosed()) {
-                           var5.writeToBuffer(var4.indexBuffer, var1.byteBuffer(), 0);
+                           var5.writeToBuffer(var4.indexBuffer.slice(), var1.byteBuffer());
                         }
                      }
 
@@ -352,6 +351,14 @@ public class SectionRenderDispatcher {
 
       public CompiledSection getCompiled() {
          return (CompiledSection)this.compiled.get();
+      }
+
+      public void setDynamicTransformIndex(int var1) {
+         this.dynamicTransformIndex = var1;
+      }
+
+      public int getDynamicTransformIndex() {
+         return this.dynamicTransformIndex;
       }
 
       public void reset() {

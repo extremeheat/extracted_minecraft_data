@@ -2,22 +2,20 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
-import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,36 +23,38 @@ import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import org.joml.Matrix4f;
 
-public class PostChain {
+public class PostChain implements AutoCloseable {
    public static final ResourceLocation MAIN_TARGET_ID = ResourceLocation.withDefaultNamespace("main");
    private final List<PostPass> passes;
    private final Map<ResourceLocation, PostChainConfig.InternalTarget> internalTargets;
    private final Set<ResourceLocation> externalTargets;
+   private final Map<ResourceLocation, RenderTarget> persistentTargets = new HashMap();
+   private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer;
 
-   private PostChain(List<PostPass> var1, Map<ResourceLocation, PostChainConfig.InternalTarget> var2, Set<ResourceLocation> var3) {
+   private PostChain(List<PostPass> var1, Map<ResourceLocation, PostChainConfig.InternalTarget> var2, Set<ResourceLocation> var3, CachedOrthoProjectionMatrixBuffer var4) {
       super();
       this.passes = var1;
       this.internalTargets = var2;
       this.externalTargets = var3;
+      this.projectionMatrixBuffer = var4;
    }
 
-   public static PostChain load(PostChainConfig var0, TextureManager var1, Set<ResourceLocation> var2, ResourceLocation var3) throws ShaderManager.CompilationException {
-      Stream var4 = var0.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
-      Set var5 = (Set)var4.filter((var1x) -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
-      Sets.SetView var6 = Sets.difference(var5, var2);
-      if (!var6.isEmpty()) {
-         throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + String.valueOf(var6));
+   public static PostChain load(PostChainConfig var0, TextureManager var1, Set<ResourceLocation> var2, ResourceLocation var3, CachedOrthoProjectionMatrixBuffer var4) throws ShaderManager.CompilationException {
+      Stream var5 = var0.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
+      Set var6 = (Set)var5.filter((var1x) -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
+      Sets.SetView var7 = Sets.difference(var6, var2);
+      if (!var7.isEmpty()) {
+         throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + String.valueOf(var7));
       } else {
-         ImmutableList.Builder var7 = ImmutableList.builder();
+         ImmutableList.Builder var8 = ImmutableList.builder();
 
-         for(int var8 = 0; var8 < var0.passes().size(); ++var8) {
-            PostChainConfig.Pass var9 = (PostChainConfig.Pass)var0.passes().get(var8);
-            var7.add(createPass(var1, var9, var3.withSuffix("/" + var8)));
+         for(int var9 = 0; var9 < var0.passes().size(); ++var9) {
+            PostChainConfig.Pass var10 = (PostChainConfig.Pass)var0.passes().get(var9);
+            var8.add(createPass(var1, var10, var3.withSuffix("/" + var9)));
          }
 
-         return new PostChain(var7.build(), var0.internalTargets(), var5);
+         return new PostChain(var8.build(), var0.internalTargets(), var6, var4);
       }
    }
 
@@ -63,210 +63,193 @@ public class PostChain {
 
       for(PostChainConfig.Input var5 : var1.inputs()) {
          var3.withSampler(var5.samplerName() + "Sampler");
-         var3.withUniform(var5.samplerName() + "Size", UniformType.VEC2);
       }
 
-      for(PostChainConfig.Uniform var34 : var1.uniforms()) {
-         var3.withUniform(var34.name(), (UniformType)Objects.requireNonNull(UniformType.CODEC.byName(var34.type())));
+      var3.withUniform("SamplerInfo", UniformType.UNIFORM_BUFFER);
+
+      for(String var33 : var1.uniforms().keySet()) {
+         var3.withUniform(var33, UniformType.UNIFORM_BUFFER);
       }
 
-      RenderPipeline var33 = var3.build();
-      CompiledRenderPipeline var35 = RenderSystem.getDevice().precompilePipeline(var33);
+      RenderPipeline var32 = var3.build();
+      ArrayList var34 = new ArrayList();
 
-      for(PostChainConfig.Uniform var7 : var1.uniforms()) {
-         String var8 = var7.name();
-         if (!var35.containsUniform(var8)) {
-            throw new ShaderManager.CompilationException("Uniform '" + var8 + "' does not exist for " + String.valueOf(var2));
-         }
-      }
-
-      PostPass var36 = new PostPass(var33, var1.outputTarget(), var1.uniforms());
-
-      for(PostChainConfig.Input var38 : var1.inputs()) {
-         Objects.requireNonNull(var38);
-         byte var10 = 0;
-         //$FF: var10->value
+      for(PostChainConfig.Input var7 : var1.inputs()) {
+         Objects.requireNonNull(var7);
+         byte var9 = 0;
+         //$FF: var9->value
          //0->net/minecraft/client/renderer/PostChainConfig$TextureInput
          //1->net/minecraft/client/renderer/PostChainConfig$TargetInput
-         switch (var38.typeSwitch<invokedynamic>(var38, var10)) {
+         switch (var7.typeSwitch<invokedynamic>(var7, var9)) {
             case 0:
-               PostChainConfig.TextureInput var11 = (PostChainConfig.TextureInput)var38;
-               PostChainConfig.TextureInput var55 = var11;
+               PostChainConfig.TextureInput var10 = (PostChainConfig.TextureInput)var7;
+               PostChainConfig.TextureInput var51 = var10;
 
                try {
-                  var56 = var55.samplerName();
-               } catch (Throwable var31) {
-                  throw new MatchException(var31.toString(), var31);
-               }
-
-               String var39 = var56;
-               String var12 = var39;
-               var55 = var11;
-
-               try {
-                  var58 = var55.location();
+                  var52 = var51.samplerName();
                } catch (Throwable var30) {
                   throw new MatchException(var30.toString(), var30);
                }
 
-               ResourceLocation var40 = var58;
-               ResourceLocation var13 = var40;
-               var55 = var11;
+               String var35 = var52;
+               String var11 = var35;
+               var51 = var10;
 
                try {
-                  var60 = var55.width();
+                  var54 = var51.location();
                } catch (Throwable var29) {
                   throw new MatchException(var29.toString(), var29);
                }
 
-               int var41 = var60;
-               int var14 = var41;
-               var55 = var11;
+               ResourceLocation var36 = var54;
+               ResourceLocation var12 = var36;
+               var51 = var10;
 
                try {
-                  var62 = var55.height();
+                  var56 = var51.width();
                } catch (Throwable var28) {
                   throw new MatchException(var28.toString(), var28);
                }
 
-               var41 = var62;
-               int var15 = var41;
-               var55 = var11;
+               int var37 = var56;
+               int var13 = var37;
+               var51 = var10;
 
                try {
-                  var64 = var55.bilinear();
+                  var58 = var51.height();
                } catch (Throwable var27) {
                   throw new MatchException(var27.toString(), var27);
                }
 
-               var41 = var64;
-               boolean var16 = (boolean)var41;
-               AbstractTexture var44 = var0.getTexture(var13.withPath((UnaryOperator)((var0x) -> "textures/effect/" + var0x + ".png")));
-               var44.setFilter(var16, false);
-               var36.addInput(new PostPass.TextureInput(var12, var44, var14, var15));
-               break;
-            case 1:
-               PostChainConfig.TargetInput var17 = (PostChainConfig.TargetInput)var38;
-               PostChainConfig.TargetInput var10000 = var17;
+               var37 = var58;
+               int var14 = var37;
+               var51 = var10;
 
                try {
-                  var48 = var10000.samplerName();
+                  var60 = var51.bilinear();
                } catch (Throwable var26) {
                   throw new MatchException(var26.toString(), var26);
                }
 
-               String var22 = var48;
-               String var18 = var22;
-               var10000 = var17;
+               var37 = var60;
+               boolean var15 = (boolean)var37;
+               AbstractTexture var40 = var0.getTexture(var12.withPath((UnaryOperator)((var0x) -> "textures/effect/" + var0x + ".png")));
+               var40.setFilter(var15, false);
+               var34.add(new PostPass.TextureInput(var11, var40, var13, var14));
+               break;
+            case 1:
+               PostChainConfig.TargetInput var16 = (PostChainConfig.TargetInput)var7;
+               PostChainConfig.TargetInput var10000 = var16;
 
                try {
-                  var50 = var10000.targetId();
+                  var44 = var10000.samplerName();
                } catch (Throwable var25) {
                   throw new MatchException(var25.toString(), var25);
                }
 
-               ResourceLocation var45 = var50;
-               ResourceLocation var19 = var45;
-               var10000 = var17;
+               String var21 = var44;
+               String var17 = var21;
+               var10000 = var16;
 
                try {
-                  var52 = var10000.useDepthBuffer();
+                  var46 = var10000.targetId();
                } catch (Throwable var24) {
                   throw new MatchException(var24.toString(), var24);
                }
 
-               boolean var46 = var52;
-               boolean var20 = var46;
-               var10000 = var17;
+               ResourceLocation var41 = var46;
+               ResourceLocation var18 = var41;
+               var10000 = var16;
 
                try {
-                  var54 = var10000.bilinear();
+                  var48 = var10000.useDepthBuffer();
                } catch (Throwable var23) {
                   throw new MatchException(var23.toString(), var23);
                }
 
-               var46 = var54;
-               var36.addInput(new PostPass.TargetInput(var18, var19, var20, var46));
+               boolean var42 = var48;
+               boolean var19 = var42;
+               var10000 = var16;
+
+               try {
+                  var50 = var10000.bilinear();
+               } catch (Throwable var22) {
+                  throw new MatchException(var22.toString(), var22);
+               }
+
+               var42 = var50;
+               var34.add(new PostPass.TargetInput(var17, var18, var19, var42));
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
          }
       }
 
-      return var36;
+      return new PostPass(var32, var1.outputTarget(), var1.uniforms(), var34);
    }
 
-   public void addToFrame(FrameGraphBuilder var1, int var2, int var3, TargetBundle var4, @Nullable Consumer<RenderPass> var5) {
-      Matrix4f var6 = (new Matrix4f()).setOrtho(0.0F, (float)var2, 0.0F, (float)var3, 0.1F, 1000.0F);
-      HashMap var7 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
+   public void addToFrame(FrameGraphBuilder var1, int var2, int var3, TargetBundle var4) {
+      GpuBufferSlice var5 = this.projectionMatrixBuffer.getBuffer((float)var2, (float)var3);
+      HashMap var6 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
 
-      for(ResourceLocation var9 : this.externalTargets) {
-         var7.put(var9, var4.getOrThrow(var9));
+      for(ResourceLocation var8 : this.externalTargets) {
+         var6.put(var8, var4.getOrThrow(var8));
       }
 
-      for(Map.Entry var23 : this.internalTargets.entrySet()) {
-         ResourceLocation var10 = (ResourceLocation)var23.getKey();
-         PostChainConfig.InternalTarget var10000 = (PostChainConfig.InternalTarget)var23.getValue();
-         Objects.requireNonNull(var10000);
-         PostChainConfig.InternalTarget var12 = var10000;
-         byte var13 = 0;
-         RenderTargetDescriptor var28;
-         //$FF: var13->value
-         //0->net/minecraft/client/renderer/PostChainConfig$FixedSizedTarget
-         //1->net/minecraft/client/renderer/PostChainConfig$FullScreenTarget
-         switch (var12.typeSwitch<invokedynamic>(var12, var13)) {
-            case 0:
-               PostChainConfig.FixedSizedTarget var14 = (PostChainConfig.FixedSizedTarget)var12;
-               PostChainConfig.FixedSizedTarget var29 = var14;
-
-               try {
-                  var30 = var29.width();
-               } catch (Throwable var19) {
-                  throw new MatchException(var19.toString(), var19);
-               }
-
-               int var26 = var30;
-               int var15 = var26;
-               var29 = var14;
-
-               try {
-                  var32 = var29.height();
-               } catch (Throwable var18) {
-                  throw new MatchException(var18.toString(), var18);
-               }
-
-               var26 = var32;
-               var28 = new RenderTargetDescriptor(var15, var26, true, 0);
-               break;
-            case 1:
-               PostChainConfig.FullScreenTarget var17 = (PostChainConfig.FullScreenTarget)var12;
-               var28 = new RenderTargetDescriptor(var2, var3, true, 0);
-               break;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
+      for(Map.Entry var16 : this.internalTargets.entrySet()) {
+         ResourceLocation var9 = (ResourceLocation)var16.getKey();
+         PostChainConfig.InternalTarget var10 = (PostChainConfig.InternalTarget)var16.getValue();
+         RenderTargetDescriptor var11 = new RenderTargetDescriptor((Integer)var10.width().orElse(var2), (Integer)var10.height().orElse(var3), true, var10.clearColor());
+         if (var10.persistent()) {
+            RenderTarget var12 = this.getOrCreatePersistentTarget(var9, var11);
+            var6.put(var9, var1.importExternal(var9.toString(), var12));
+         } else {
+            var6.put(var9, var1.createInternal(var9.toString(), var11));
          }
-
-         RenderTargetDescriptor var11 = var28;
-         var7.put(var10, var1.createInternal(var10.toString(), var11));
       }
 
-      for(PostPass var24 : this.passes) {
-         var24.addToFrame(var1, var7, var6, var5);
+      for(PostPass var17 : this.passes) {
+         var17.addToFrame(var1, var6, var5);
       }
 
-      for(ResourceLocation var25 : this.externalTargets) {
-         var4.replace(var25, (ResourceHandle)var7.get(var25));
+      for(ResourceLocation var18 : this.externalTargets) {
+         var4.replace(var18, (ResourceHandle)var6.get(var18));
       }
 
    }
 
    /** @deprecated */
    @Deprecated
-   public void process(RenderTarget var1, GraphicsResourceAllocator var2, @Nullable Consumer<RenderPass> var3) {
-      FrameGraphBuilder var4 = new FrameGraphBuilder();
-      TargetBundle var5 = PostChain.TargetBundle.of(MAIN_TARGET_ID, var4.importExternal("main", var1));
-      this.addToFrame(var4, var1.width, var1.height, var5, var3);
-      var4.execute(var2);
+   public void process(RenderTarget var1, GraphicsResourceAllocator var2) {
+      FrameGraphBuilder var3 = new FrameGraphBuilder();
+      TargetBundle var4 = PostChain.TargetBundle.of(MAIN_TARGET_ID, var3.importExternal("main", var1));
+      this.addToFrame(var3, var1.width, var1.height, var4);
+      var3.execute(var2);
+   }
+
+   private RenderTarget getOrCreatePersistentTarget(ResourceLocation var1, RenderTargetDescriptor var2) {
+      RenderTarget var3 = (RenderTarget)this.persistentTargets.get(var1);
+      if (var3 == null || var3.width != var2.width() || var3.height != var2.height()) {
+         if (var3 != null) {
+            var3.destroyBuffers();
+         }
+
+         var3 = var2.allocate();
+         var2.prepare(var3);
+         this.persistentTargets.put(var1, var3);
+      }
+
+      return var3;
+   }
+
+   public void close() {
+      this.persistentTargets.values().forEach(RenderTarget::destroyBuffers);
+      this.persistentTargets.clear();
+
+      for(PostPass var2 : this.passes) {
+         var2.close();
+      }
+
    }
 
    public interface TargetBundle {

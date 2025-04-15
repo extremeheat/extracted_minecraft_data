@@ -27,6 +27,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -155,7 +156,7 @@ public class Sheep extends Animal implements Shearable {
             if (this.readyForShearing()) {
                this.shear(var4, SoundSource.PLAYERS, var3);
                this.gameEvent(GameEvent.SHEAR, var1);
-               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
                return InteractionResult.SUCCESS_SERVER;
             }
          }

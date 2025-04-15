@@ -171,7 +171,9 @@ public class AdvancementWidget {
          }
 
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+         var1.depthTreeUp();
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
+         var1.depthTreeBack();
       }
 
       for(AdvancementWidget var7 : this.children) {
@@ -240,6 +242,7 @@ public class AdvancementWidget {
          var23 = var2 + this.x;
       }
 
+      var1.depthTreePushCheckpoint();
       int var24 = var8 + var12;
       if (!this.description.isEmpty()) {
          if (var16) {
@@ -249,6 +252,7 @@ public class AdvancementWidget {
          }
       }
 
+      var1.depthTreeUp();
       if (var18 != var19) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), 200, var8, 0, 0, var23, var9, var21, var8);
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var19.boxSprite(), 200, var8, 200 - var22, 0, var23 + var21, var9, var22, var8);
@@ -256,8 +260,10 @@ public class AdvancementWidget {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), var23, var9, this.width, var8);
       }
 
+      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       int var25 = var23 + 5;
+      var1.depthTreeUp();
       if (var13) {
          this.drawMultilineText(var1, this.titleLines, var25, var9 + 9, -1);
          if (var14 != null) {
@@ -276,7 +282,9 @@ public class AdvancementWidget {
          this.drawMultilineText(var1, this.description, var25, var10, -16711936);
       }
 
+      var1.depthTreeUp();
       var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
+      var1.depthTreeBackToCheckpoint();
    }
 
    private void drawMultilineText(GuiGraphics var1, List<FormattedCharSequence> var2, int var3, int var4, int var5) {

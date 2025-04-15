@@ -68,7 +68,6 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(GlBuffer var1) {
-         var1.ensureBufferExists();
          Supplier var2 = var1.label;
          if (var2 != null) {
             KHRDebug.glObjectLabel(33504, var1.handle, StringUtil.truncateStringIfNecessary((String)var2.get(), this.maxLabelLength, true));
@@ -103,7 +102,6 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(GlBuffer var1) {
-         var1.ensureBufferExists();
          Supplier var2 = var1.label;
          if (var2 != null) {
             EXTDebugLabel.glLabelObjectEXT(37201, var1.handle, StringUtil.truncateStringIfNecessary((String)var2.get(), 256, true));

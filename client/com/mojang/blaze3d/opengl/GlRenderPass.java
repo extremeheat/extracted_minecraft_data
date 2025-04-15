@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -11,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import org.joml.Matrix4f;
 
 public class GlRenderPass implements RenderPass {
    protected static final int MAX_VERTEX_BUFFERS = 1;
@@ -26,10 +26,9 @@ public class GlRenderPass implements RenderPass {
    protected GpuBuffer indexBuffer;
    protected VertexFormat.IndexType indexType;
    private final ScissorState scissorState;
-   protected final HashMap<String, Object> uniforms;
+   protected final HashMap<String, GpuBufferSlice> uniforms;
    protected final HashMap<String, GpuTexture> samplers;
    protected final Set<String> dirtyUniforms;
-   protected final Set<String> dirtySamplers;
 
    public GlRenderPass(GlCommandEncoder var1, boolean var2) {
       super();
@@ -38,7 +37,6 @@ public class GlRenderPass implements RenderPass {
       this.uniforms = new HashMap();
       this.samplers = new HashMap();
       this.dirtyUniforms = new HashSet();
-      this.dirtySamplers = new HashSet();
       this.encoder = var1;
       this.hasDepthTexture = var2;
    }
@@ -50,30 +48,35 @@ public class GlRenderPass implements RenderPass {
    public void setPipeline(RenderPipeline var1) {
       if (this.pipeline == null || this.pipeline.info() != var1) {
          this.dirtyUniforms.addAll(this.uniforms.keySet());
-         this.dirtySamplers.addAll(this.samplers.keySet());
+         this.dirtyUniforms.addAll(this.samplers.keySet());
       }
 
       this.pipeline = this.encoder.getDevice().getOrCompilePipeline(var1);
    }
 
-   public void bindSampler(String var1, GpuTexture var2) {
-      this.samplers.put(var1, var2);
-      this.dirtySamplers.add(var1);
-   }
+   public void bindSampler(String var1, @Nullable GpuTexture var2) {
+      if (var2 == null) {
+         this.samplers.remove(var1);
+      } else {
+         this.samplers.put(var1, var2);
+      }
 
-   public void setUniform(String var1, int... var2) {
-      this.uniforms.put(var1, var2);
       this.dirtyUniforms.add(var1);
    }
 
-   public void setUniform(String var1, float... var2) {
-      this.uniforms.put(var1, var2);
+   public void setUniform(String var1, GpuBuffer var2) {
+      this.uniforms.put(var1, var2.slice());
       this.dirtyUniforms.add(var1);
    }
 
-   public void setUniform(String var1, Matrix4f var2) {
-      this.uniforms.put(var1, var2.get(new float[16]));
-      this.dirtyUniforms.add(var1);
+   public void setUniform(String var1, GpuBufferSlice var2) {
+      int var3 = this.encoder.getDevice().getUniformOffsetAlignment();
+      if (var2.offset() % var3 > 0) {
+         throw new IllegalArgumentException("Uniform buffer offset must be aligned to " + var3);
+      } else {
+         this.uniforms.put(var1, var2);
+         this.dirtyUniforms.add(var1);
+      }
    }
 
    public void enableScissor(int var1, int var2, int var3, int var4) {
@@ -121,15 +124,23 @@ public class GlRenderPass implements RenderPass {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDraw(this, var1, var2, this.indexType);
+         this.encoder.executeDraw(this, var1, var2, this.indexType, 1);
       }
    }
 
-   public void drawMultipleIndexed(Collection<RenderPass.Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3) {
+   public void drawIndexed(int var1, int var2, int var3) {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDrawMultiple(this, var1, var2, var3);
+         this.encoder.executeDraw(this, var1, var2, this.indexType, var3);
+      }
+   }
+
+   public void drawMultipleIndexed(Collection<RenderPass.Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4) {
+      if (this.closed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else {
+         this.encoder.executeDrawMultiple(this, var1, var2, var3, var4);
       }
    }
 
@@ -137,7 +148,7 @@ public class GlRenderPass implements RenderPass {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDraw(this, var1, var2, (VertexFormat.IndexType)null);
+         this.encoder.executeDraw(this, var1, var2, (VertexFormat.IndexType)null, 1);
       }
    }
 

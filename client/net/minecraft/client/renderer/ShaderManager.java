@@ -50,10 +50,12 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    final TextureManager textureManager;
    private final Consumer<Exception> recoveryHandler;
    private CompilationCache compilationCache;
+   final CachedOrthoProjectionMatrixBuffer postChainProjectionMatrixBuffer;
 
    public ShaderManager(TextureManager var1, Consumer<Exception> var2) {
       super();
       this.compilationCache = new CompilationCache(ShaderManager.Configs.EMPTY);
+      this.postChainProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("post", 0.1F, 1000.0F, false);
       this.textureManager = var1;
       this.recoveryHandler = var2;
    }
@@ -247,6 +249,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    public void close() {
       this.compilationCache.close();
+      this.postChainProjectionMatrixBuffer.close();
    }
 
    public String getShader(ResourceLocation var1, ShaderType var2) {
@@ -297,11 +300,12 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          if (var3 == null) {
             throw new CompilationException("Could not find post chain with id: " + String.valueOf(var1));
          } else {
-            return PostChain.load(var3, ShaderManager.this.textureManager, var2, var1);
+            return PostChain.load(var3, ShaderManager.this.textureManager, var2, var1, ShaderManager.this.postChainProjectionMatrixBuffer);
          }
       }
 
       public void close() {
+         this.postChains.values().forEach((var0) -> var0.ifPresent(PostChain::close));
          this.postChains.clear();
       }
 

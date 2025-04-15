@@ -349,14 +349,15 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    public Vec3 getLeashOffset() {
-      return new Vec3(0.0, (double)(0.88F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.64F));
+      return new Vec3(0.0, (double)(0.88F * this.getBbHeight()), (double)(0.64F * this.getBbWidth()));
    }
 
-   public void elasticRangeLeashBehaviour(Entity var1, float var2) {
-      Vec3 var3 = var1.position().subtract(this.position()).normalize().scale((double)var2 - 6.0);
-      Vec3 var4 = this.getDeltaMovement();
-      boolean var5 = var4.dot(var3) > 0.0;
-      this.setDeltaMovement(var4.add(var3.scale(var5 ? 0.15000000596046448 : 0.20000000298023224)));
+   public boolean supportQuadLeash() {
+      return true;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.0, 0.64, 0.382, 0.88);
    }
 
    private Status getStatus() {

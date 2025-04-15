@@ -8,7 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
@@ -84,11 +83,13 @@ public class PopupScreen extends Screen {
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.backgroundScreen.renderBackground(var1, var2, var3, var4);
+      var1.nextStratum();
       this.backgroundScreen.render(var1, -1, -1, var4);
-      var1.pushGuiLayer(GuiLayer.SCREEN_POPUP);
+      var1.nextStratum();
       this.renderTransparentBackground(var1);
+      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
-      var1.popGuiLayer();
    }
 
    public Component getNarrationMessage() {

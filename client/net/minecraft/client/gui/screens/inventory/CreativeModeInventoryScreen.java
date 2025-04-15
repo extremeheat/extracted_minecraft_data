@@ -628,8 +628,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.effects.renderEffects(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.render(var1, var2, var3, var4);
+      this.effects.renderTooltip(var1, var2, var3);
 
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (this.checkTabHovering(var1, var6, var2, var3)) {
@@ -689,21 +690,28 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          }
       }
 
+      var1.depthTreePushCheckpoint();
+      var1.depthTreeUp();
       var1.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.depthTreeUp();
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
          ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
+      var1.depthTreeUp();
       this.renderTabButton(var1, selectedTab);
       if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
+         var1.depthTreeUp();
          InventoryScreen.renderEntityInInventoryFollowsMouse(var1, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)var3, (float)var4, this.minecraft.player);
       }
 
+      var1.depthTreeBackToCheckpoint();
    }
 
    private int getTabX(CreativeModeTab var1) {
@@ -762,8 +770,11 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       var6 += 5;
       var7 += 8 + (var4 ? 1 : -1);
       ItemStack var9 = var2.getIconItem();
+      var1.depthTreeUp();
       var1.renderItem(var9, var6, var7);
+      var1.depthTreeUp();
       var1.renderItemDecorations(this.font, var9, var6, var7);
+      var1.depthTreeBack(2);
    }
 
    public boolean isInventoryOpen() {

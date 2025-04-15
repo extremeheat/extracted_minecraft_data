@@ -78,6 +78,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
+import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
@@ -125,7 +126,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.profiling.ClientMetricsSamplersProvider;
 import net.minecraft.client.quickplay.QuickPlay;
 import net.minecraft.client.quickplay.QuickPlayLog;
-import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -446,7 +446,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       boolean var6 = this.options.startedCleanly;
       this.options.startedCleanly = false;
       this.options.save();
-      RenderSystem.setShaderGlintAlpha((Double)this.options.glintStrength().get());
       this.running = true;
       this.tutorial = new Tutorial(this, this.options);
       this.hotbarManager = new HotbarManager(var3, this.fixerUpper);
@@ -666,53 +665,56 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private Runnable buildInitialScreens(@Nullable GameLoadCookie var1) {
       ArrayList var2 = new ArrayList();
-      this.addInitialScreens(var2);
-      Runnable var3 = () -> {
+      boolean var3 = this.addInitialScreens(var2);
+      Runnable var4 = () -> {
          if (var1 != null && var1.quickPlayData().isEnabled()) {
             QuickPlay.connect(this, var1.quickPlayData(), var1.realmsClient());
          } else {
-            this.setScreen(new TitleScreen(true));
+            this.setScreen(new TitleScreen(true, new LogoRenderer(var3)));
          }
 
       };
 
-      for(Function var5 : Lists.reverse(var2)) {
-         Screen var6 = (Screen)var5.apply(var3);
-         var3 = () -> this.setScreen(var6);
+      for(Function var6 : Lists.reverse(var2)) {
+         Screen var7 = (Screen)var6.apply(var4);
+         var4 = () -> this.setScreen(var7);
       }
 
-      return var3;
+      return var4;
    }
 
-   private void addInitialScreens(List<Function<Runnable, Screen>> var1) {
+   private boolean addInitialScreens(List<Function<Runnable, Screen>> var1) {
+      boolean var2 = false;
       if (this.options.onboardAccessibility) {
          var1.add((Function)(var1x) -> new AccessibilityOnboardingScreen(this.options, var1x));
+         var2 = true;
       }
 
-      BanDetails var2 = this.multiplayerBan();
-      if (var2 != null) {
+      BanDetails var3 = this.multiplayerBan();
+      if (var3 != null) {
          var1.add((Function)(var1x) -> BanNoticeScreens.create((var1) -> {
                if (var1) {
                   Util.getPlatform().openUri(CommonLinks.SUSPENSION_HELP);
                }
 
                var1x.run();
-            }, var2));
+            }, var3));
       }
 
-      ProfileResult var3 = (ProfileResult)this.profileFuture.join();
-      if (var3 != null) {
-         GameProfile var4 = var3.profile();
-         Set var5 = var3.actions();
-         if (var5.contains(ProfileActionType.FORCED_NAME_CHANGE)) {
-            var1.add((Function)(var1x) -> BanNoticeScreens.createNameBan(var4.getName(), var1x));
+      ProfileResult var4 = (ProfileResult)this.profileFuture.join();
+      if (var4 != null) {
+         GameProfile var5 = var4.profile();
+         Set var6 = var4.actions();
+         if (var6.contains(ProfileActionType.FORCED_NAME_CHANGE)) {
+            var1.add((Function)(var1x) -> BanNoticeScreens.createNameBan(var5.getName(), var1x));
          }
 
-         if (var5.contains(ProfileActionType.USING_BANNED_SKIN)) {
+         if (var6.contains(ProfileActionType.USING_BANNED_SKIN)) {
             var1.add(BanNoticeScreens::createSkinBan);
          }
       }
 
+      return var2;
    }
 
    private static boolean countryEqualsISO3(Object var0) {
@@ -1223,7 +1225,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       RenderTarget var8 = this.getMainRenderTarget();
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var8.getColorTexture(), 0, var8.getDepthTexture(), 1.0);
-      RenderSystem.setShaderFog(FogParameters.NO_FOG);
       var4.push("mouse");
       this.mouseHandler.handleAccumulatedMovement();
       var4.pop();
@@ -2123,6 +2124,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.levelRenderer.setLevel(var1);
       this.particleEngine.setLevel(var1);
       this.blockEntityRenderDispatcher.setLevel(var1);
+      this.gameRenderer.setLevel(var1);
       this.updateTitle();
    }
 

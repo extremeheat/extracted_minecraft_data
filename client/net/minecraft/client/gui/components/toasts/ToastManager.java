@@ -72,6 +72,9 @@ public class ToastManager {
    public void render(GuiGraphics var1) {
       if (!this.minecraft.options.hideGui) {
          int var2 = var1.guiWidth();
+         if (!this.visibleToasts.isEmpty()) {
+            var1.nextStratum();
+         }
 
          for(ToastInstance var4 : this.visibleToasts) {
             var4.render(var1, var2);

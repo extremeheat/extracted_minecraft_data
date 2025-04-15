@@ -10,7 +10,6 @@ import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -92,19 +91,26 @@ public class AddRealmPopupScreen extends RealmsScreen {
 
    public static void renderDiamond(GuiGraphics var0, Button var1) {
       boolean var2 = true;
+      var0.depthTreeUp();
       var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
+      var0.depthTreeBack();
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.backgroundScreen.renderBackground(var1, -1, -1, var4);
+      var1.nextStratum();
       this.backgroundScreen.render(var1, -1, -1, var4);
-      var1.pushGuiLayer(GuiLayer.SCREEN_POPUP);
+      var1.nextStratum();
       this.renderTransparentBackground(var1);
+      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
+         var1.depthTreeUp();
          var1.blit(RenderPipelines.GUI_TEXTURED, (ResourceLocation)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
+         var1.depthTreeBack();
       }
 
-      var1.popGuiLayer();
+      var1.depthTreeBack();
    }
 
    private int left() {

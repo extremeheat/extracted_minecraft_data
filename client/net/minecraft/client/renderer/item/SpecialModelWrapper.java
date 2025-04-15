@@ -31,15 +31,17 @@ public class SpecialModelWrapper<T> implements ItemModel {
       var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
-         var8.setFoilType(ItemStackRenderState.FoilType.STANDARD);
+         ItemStackRenderState.FoilType var9 = ItemStackRenderState.FoilType.STANDARD;
+         var8.setFoilType(var9);
          var1.setAnimated();
+         var1.appendModelIdentityElement(var9);
       }
 
       var8.setExtents(() -> EXTENTS);
-      Object var9 = this.specialRenderer.extractArgument(var2);
-      var8.setupSpecialModel(this.specialRenderer, var9);
-      if (var9 != null) {
-         var1.appendModelIdentityElement(var9);
+      Object var10 = this.specialRenderer.extractArgument(var2);
+      var8.setupSpecialModel(this.specialRenderer, var10);
+      if (var10 != null) {
+         var1.appendModelIdentityElement(var10);
       }
 
       this.properties.applyToLayer(var8, var4);

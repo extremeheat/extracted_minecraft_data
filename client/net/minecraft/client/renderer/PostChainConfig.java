@@ -1,13 +1,10 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,54 +24,24 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
       this.passes = var2;
    }
 
-   public sealed interface InternalTarget permits PostChainConfig.FullScreenTarget, PostChainConfig.FixedSizedTarget {
-      Codec<InternalTarget> CODEC = Codec.either(PostChainConfig.FixedSizedTarget.CODEC, PostChainConfig.FullScreenTarget.CODEC).xmap((var0) -> (InternalTarget)var0.map(Function.identity(), Function.identity()), (var0) -> {
-         Objects.requireNonNull(var0);
-         byte var2 = 0;
-         Either var10000;
-         //$FF: var2->value
-         //0->net/minecraft/client/renderer/PostChainConfig$FixedSizedTarget
-         //1->net/minecraft/client/renderer/PostChainConfig$FullScreenTarget
-         switch (var0.typeSwitch<invokedynamic>(var0, var2)) {
-            case 0:
-               FixedSizedTarget var3 = (FixedSizedTarget)var0;
-               var10000 = Either.left(var3);
-               break;
-            case 1:
-               FullScreenTarget var4 = (FullScreenTarget)var0;
-               var10000 = Either.right(var4);
-               break;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
-         }
+   public static record InternalTarget(Optional<Integer> width, Optional<Integer> height, boolean persistent, int clearColor) {
+      public static final Codec<InternalTarget> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("width").forGetter(InternalTarget::width), ExtraCodecs.POSITIVE_INT.optionalFieldOf("height").forGetter(InternalTarget::height), Codec.BOOL.optionalFieldOf("persistent", false).forGetter(InternalTarget::persistent), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("clear_color", 0).forGetter(InternalTarget::clearColor)).apply(var0, InternalTarget::new));
 
-         return var10000;
-      });
-   }
-
-   public static record FullScreenTarget() implements InternalTarget {
-      public static final Codec<FullScreenTarget> CODEC = Codec.unit(FullScreenTarget::new);
-
-      public FullScreenTarget() {
-         super();
-      }
-   }
-
-   public static record FixedSizedTarget(int width, int height) implements InternalTarget {
-      public static final Codec<FixedSizedTarget> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(FixedSizedTarget::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(FixedSizedTarget::height)).apply(var0, FixedSizedTarget::new));
-
-      public FixedSizedTarget(int var1, int var2) {
+      public InternalTarget(Optional<Integer> var1, Optional<Integer> var2, boolean var3, int var4) {
          super();
          this.width = var1;
          this.height = var2;
+         this.persistent = var3;
+         this.clearColor = var4;
       }
    }
 
-   public static record Pass(ResourceLocation vertexShaderId, ResourceLocation fragmentShaderId, List<Input> inputs, ResourceLocation outputTarget, List<Uniform> uniforms) {
+   public static record Pass(ResourceLocation vertexShaderId, ResourceLocation fragmentShaderId, List<Input> inputs, ResourceLocation outputTarget, Map<String, List<UniformValue>> uniforms) {
       private static final Codec<List<Input>> INPUTS_CODEC;
+      private static final Codec<Map<String, List<UniformValue>>> UNIFORM_BLOCKS_CODEC;
       public static final Codec<Pass> CODEC;
 
-      public Pass(ResourceLocation var1, ResourceLocation var2, List<Input> var3, ResourceLocation var4, List<Uniform> var5) {
+      public Pass(ResourceLocation var1, ResourceLocation var2, List<Input> var3, ResourceLocation var4, Map<String, List<UniformValue>> var5) {
          super();
          this.vertexShaderId = var1;
          this.fragmentShaderId = var2;
@@ -100,7 +67,8 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
 
             return DataResult.success(var0);
          });
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("vertex_shader").forGetter(Pass::vertexShaderId), ResourceLocation.CODEC.fieldOf("fragment_shader").forGetter(Pass::fragmentShaderId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), PostChainConfig.Uniform.CODEC.listOf().optionalFieldOf("uniforms", List.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new));
+         UNIFORM_BLOCKS_CODEC = Codec.unboundedMap(Codec.STRING, UniformValue.CODEC.listOf());
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("vertex_shader").forGetter(Pass::vertexShaderId), ResourceLocation.CODEC.fieldOf("fragment_shader").forGetter(Pass::fragmentShaderId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), UNIFORM_BLOCKS_CODEC.optionalFieldOf("uniforms", Map.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new));
       }
    }
 
@@ -163,39 +131,6 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
 
       public Set<ResourceLocation> referencedTargets() {
          return Set.of(this.targetId);
-      }
-   }
-
-   public static record Uniform(String name, String type, Optional<List<Float>> values) {
-      public static final Codec<Uniform> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(Uniform::name), Codec.STRING.fieldOf("type").forGetter(Uniform::type), Codec.FLOAT.sizeLimitedListOf(4).optionalFieldOf("values").forGetter(Uniform::values)).apply(var0, Uniform::new));
-
-      public Uniform(String var1, String var2, Optional<List<Float>> var3) {
-         super();
-         this.name = var1;
-         this.type = var2;
-         this.values = var3;
-      }
-
-      public void setOnRenderPass(RenderPass var1) {
-         UniformType var2 = UniformType.CODEC.byName(this.type);
-         if (!this.values.isEmpty() && var2 != null && !((List)this.values.get()).isEmpty()) {
-            List var3 = (List)this.values.get();
-            if (var2.isIntStorage()) {
-               var1.setUniform(this.name, (int)(Float)var3.getFirst());
-            } else {
-               float[] var4 = new float[var2.getCount()];
-               if (var3.size() == 1) {
-                  Arrays.fill(var4, (Float)var3.getFirst());
-               } else {
-                  for(int var5 = 0; var5 < Math.min(var3.size(), var2.getCount()); ++var5) {
-                     var4[var5] = (Float)var3.get(var5);
-                  }
-               }
-
-               var1.setUniform(this.name, var4);
-            }
-
-         }
       }
    }
 }

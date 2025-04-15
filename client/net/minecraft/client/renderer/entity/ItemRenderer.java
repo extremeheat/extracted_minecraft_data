@@ -24,12 +24,9 @@ import net.minecraft.world.level.Level;
 public class ItemRenderer {
    public static final ResourceLocation ENCHANTED_GLINT_ARMOR = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
    public static final ResourceLocation ENCHANTED_GLINT_ITEM = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
-   public static final int GUI_SLOT_CENTER_X = 8;
-   public static final int GUI_SLOT_CENTER_Y = 8;
-   public static final int ITEM_DECORATION_BLIT_OFFSET = 200;
-   public static final float COMPASS_FOIL_UI_SCALE = 0.5F;
-   public static final float COMPASS_FOIL_FIRST_PERSON_SCALE = 0.75F;
-   public static final float COMPASS_FOIL_TEXTURE_SCALE = 0.0078125F;
+   public static final float SPECIAL_FOIL_UI_SCALE = 0.5F;
+   public static final float SPECIAL_FOIL_FIRST_PERSON_SCALE = 0.75F;
+   public static final float SPECIAL_FOIL_TEXTURE_SCALE = 0.0078125F;
    public static final int NO_TINT = -1;
    private final ItemModelResolver resolver;
    private final ItemStackRenderState scratchItemStackRenderState = new ItemStackRenderState();
@@ -49,7 +46,7 @@ public class ItemRenderer {
             MatrixUtil.mulComponentWise(var10.pose(), 0.75F);
          }
 
-         var9 = getCompassFoilBuffer(var2, var7, var10);
+         var9 = getSpecialFoilBuffer(var2, var7, var10);
       } else {
          var9 = getFoilBuffer(var2, var7, true, var8 != ItemStackRenderState.FoilType.NONE);
       }
@@ -61,16 +58,20 @@ public class ItemRenderer {
       return var2 ? VertexMultiConsumer.create(var0.getBuffer(RenderType.armorEntityGlint()), var0.getBuffer(var1)) : var0.getBuffer(var1);
    }
 
-   private static VertexConsumer getCompassFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
+   private static VertexConsumer getSpecialFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
+      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(useTransparentGlint(var1) ? RenderType.glintTranslucent() : RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
    }
 
    public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
       if (var3) {
-         return Minecraft.useShaderTransparency() && var1 == Sheets.translucentItemSheet() ? VertexMultiConsumer.create(var0.getBuffer(RenderType.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlint()), var0.getBuffer(var1));
+         return useTransparentGlint(var1) ? VertexMultiConsumer.create(var0.getBuffer(RenderType.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlint()), var0.getBuffer(var1));
       } else {
          return var0.getBuffer(var1);
       }
+   }
+
+   private static boolean useTransparentGlint(RenderType var0) {
+      return Minecraft.useShaderTransparency() && var0 == Sheets.translucentItemSheet();
    }
 
    private static int getLayerColorSafe(int[] var0, int var1) {

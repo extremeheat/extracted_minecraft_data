@@ -13,7 +13,6 @@ import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
@@ -65,7 +64,6 @@ public class ChatComponent {
          if (var7 > 0) {
             ProfilerFiller var8 = Profiler.get();
             var8.push("chat");
-            var1.pushGuiLayer(GuiLayer.SCREEN_CHAT);
             float var9 = (float)this.getScale();
             int var10 = Mth.ceil((float)this.getWidth() / var9);
             int var11 = var1.guiHeight();
@@ -86,6 +84,7 @@ public class ChatComponent {
                GuiMessage.Line var25 = (GuiMessage.Line)this.trimmedMessages.get(var24);
                if (var25 != null) {
                   int var26 = var2 - var25.addedTime();
+                  var1.depthTreePushCheckpoint();
                   if (var26 < 200 || var5) {
                      double var27 = var5 ? 1.0 : getTimeFactor(var26);
                      int var29 = (int)(255.0 * var27 * var14);
@@ -99,20 +98,23 @@ public class ChatComponent {
                         GuiMessageTag var34 = var25.tag();
                         if (var34 != null) {
                            int var35 = var34.indicatorColor() | var29 << 24;
+                           var1.depthTreeUp();
                            var1.fill(-4, var32 - var20, -2, var32, var35);
                            if (var24 == var13 && var34.icon() != null) {
                               int var36 = this.getTagIconLeft(var25);
                               Objects.requireNonNull(this.minecraft.font);
                               int var37 = var33 + 9;
+                              var1.depthTreeUp();
                               this.drawTagIcon(var1, var36, var37, var34.icon());
                            }
                         }
 
-                        var1.pushGuiLayer(GuiLayer.SCREEN_CHAT_TEXT);
+                        var1.depthTreeUp();
                         var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, ARGB.color(var29, -1));
-                        var1.popGuiLayer();
                      }
                   }
+
+                  var1.depthTreeBackToCheckpoint();
                }
             }
 
@@ -123,9 +125,9 @@ public class ChatComponent {
                var1.pose().pushMatrix();
                var1.pose().translate(0.0F, (float)var12);
                var1.fill(-2, 0, var10 + 4, 9, var41 << 24);
-               var1.pushGuiLayer(GuiLayer.SCREEN_CHAT_TEXT);
+               var1.depthTreeUp();
                var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var38), 0, 1, 16777215 + (var39 << 24));
-               var1.popGuiLayer();
+               var1.depthTreeBack();
                var1.pose().popMatrix();
             }
 
@@ -144,7 +146,6 @@ public class ChatComponent {
                }
             }
 
-            var1.popGuiLayer();
             var1.pose().popMatrix();
             var8.pop();
          }

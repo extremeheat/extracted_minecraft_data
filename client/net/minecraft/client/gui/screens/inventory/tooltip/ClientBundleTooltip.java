@@ -140,12 +140,16 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_BACKGROUND_SPRITE, var2, var3, 24, 24);
       }
 
+      var7.depthTreeUp();
       var7.renderItem(var10, var2 + 4, var3 + 4, var5);
       var7.renderItemDecorations(var6, var10, var2 + 4, var3 + 4);
       if (var9) {
+         var7.depthTreeUp();
          var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, var2, var3, 24, 24);
+         var7.depthTreeBack();
       }
 
+      var7.depthTreeBack();
    }
 
    private static void renderCount(int var0, int var1, int var2, Font var3, GuiGraphics var4) {
@@ -165,12 +169,16 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
 
    private void drawProgressbar(int var1, int var2, Font var3, GuiGraphics var4) {
       var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getProgressBarTexture(), var1 + 1, var2, this.getProgressBarFill(), 13);
+      var4.depthTreeUp();
       var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PROGRESSBAR_BORDER_SPRITE, var1, var2, 96, 13);
       Component var5 = this.getProgressBarFillText();
       if (var5 != null) {
+         var4.depthTreeUp();
          var4.drawCenteredString(var3, var5, var1 + 48, var2 + 3, 16777215);
+         var4.depthTreeBack();
       }
 
+      var4.depthTreeBack();
    }
 
    private static void drawEmptyBundleDescriptionText(int var0, int var1, Font var2, GuiGraphics var3) {

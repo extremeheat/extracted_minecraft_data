@@ -35,7 +35,6 @@ import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.CubeMap;
@@ -109,18 +108,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public final void renderWithTooltip(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.pushGuiLayer(GuiLayer.SCREEN_BACKGROUND);
       this.renderBackground(var1, var2, var3, var4);
-      var1.popPushGuiLayer(GuiLayer.SCREEN);
+      var1.nextStratum();
       this.render(var1, var2, var3, var4);
       if (this.deferredTooltipRendering != null) {
-         var1.pushGuiLayer(GuiLayer.SCREEN_TOOLTIP);
          var1.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(), this.deferredTooltipRendering.positioner(), var2, var3);
          this.deferredTooltipRendering = null;
-         var1.popGuiLayer();
       }
 
-      var1.popGuiLayer();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -422,7 +417,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
 
       this.renderBlurredBackground();
+      var1.depthTreeUp();
       this.renderMenuBackground(var1);
+      var1.depthTreeBack();
    }
 
    protected void renderBlurredBackground() {
@@ -430,7 +427,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
+      PANORAMA.render(var1, this.width, this.height, true);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {

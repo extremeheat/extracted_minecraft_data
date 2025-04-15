@@ -10,7 +10,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -115,7 +114,7 @@ public class RealmsWorldSlotButton extends Button {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var5, var6, 80, 80, ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F));
          }
 
-         var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_ICON_ABOVE_HIGHLIGHT);
+         var1.depthTreeUp();
          if (this.state.isCurrentlyActiveSlot) {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)CHECKMARK_SPRITE, var5 + 67, var6 + 4, 9, 8);
          }
@@ -124,7 +123,7 @@ public class RealmsWorldSlotButton extends Button {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var5 + 3, var6 + 4, 9, 8);
          }
 
-         var1.popGuiLayer();
+         var1.depthTreeBack();
          Font var10 = Minecraft.getInstance().font;
          String var11 = this.state.slotName;
          if (var10.width(var11) > 64) {

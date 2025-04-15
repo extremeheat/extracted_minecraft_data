@@ -1,6 +1,8 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -24,11 +26,13 @@ public class LightTexture implements AutoCloseable {
    public static final int FULL_SKY = 15728640;
    public static final int FULL_BLOCK = 240;
    private static final int TEXTURE_SIZE = 16;
+   private static final int LIGHTMAP_UBO_SIZE = 48;
    private final GpuTexture texture;
    private boolean updateLightTexture;
    private float blockLightRedFlicker;
    private final GameRenderer renderer;
    private final Minecraft minecraft;
+   private final MappableRingBuffer ubo;
 
    public LightTexture(GameRenderer var1, Minecraft var2) {
       super();
@@ -38,6 +42,7 @@ public class LightTexture implements AutoCloseable {
       this.texture = var3.createTexture("Light Texture", TextureFormat.RGBA8, 16, 16, 1);
       this.texture.setTextureFilter(FilterMode.LINEAR, false);
       var3.createCommandEncoder().clearColorTexture(this.texture, -1);
+      this.ubo = new MappableRingBuffer("Lightmap UBO", 130, 48);
    }
 
    public GpuTexture getTexture() {
@@ -46,6 +51,7 @@ public class LightTexture implements AutoCloseable {
 
    public void close() {
       this.texture.close();
+      this.ubo.close();
    }
 
    public void tick() {
@@ -102,23 +108,22 @@ public class LightTexture implements AutoCloseable {
             float var15 = ((Double)this.minecraft.options.gamma().get()).floatValue();
             RenderSystem.AutoStorageIndexBuffer var16 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
             GpuBuffer var17 = var16.getBuffer(6);
+            CommandEncoder var18 = RenderSystem.getDevice().createCommandEncoder();
 
-            try (RenderPass var18 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(this.texture, OptionalInt.empty())) {
-               var18.setPipeline(RenderPipelines.LIGHTMAP);
-               var18.setUniform("AmbientLightFactor", var13);
-               var18.setUniform("SkyFactor", var5);
-               var18.setUniform("BlockFactor", var12);
-               var18.setUniform("UseBrightLightmap", var14 ? 1 : 0);
-               var18.setUniform("SkyLightColor", var11.x, var11.y, var11.z);
-               var18.setUniform("NightVisionFactor", var9);
-               var18.setUniform("DarknessScale", var8);
-               var18.setUniform("DarkenWorldFactor", this.renderer.getDarkenWorldAmount(var1));
-               var18.setUniform("BrightnessFactor", Math.max(0.0F, var15 - var7));
-               var18.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-               var18.setIndexBuffer(var17, var16.type());
-               var18.drawIndexed(0, 6);
+            try (GpuBuffer.MappedView var19 = var18.mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var19.data()).putFloat(var13).putFloat(var5).putFloat(var12).putInt(var14 ? 1 : 0).putFloat(var9).putFloat(var8).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var7)).putVec3(var11);
             }
 
+            try (RenderPass var26 = var18.createRenderPass(this.texture, OptionalInt.empty())) {
+               var26.setPipeline(RenderPipelines.LIGHTMAP);
+               RenderSystem.bindDefaultUniforms(var26);
+               var26.setUniform("LightmapInfo", this.ubo.currentBuffer());
+               var26.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
+               var26.setIndexBuffer(var17, var16.type());
+               var26.drawIndexed(0, 6);
+            }
+
+            this.ubo.rotate();
             var2.pop();
          }
       }

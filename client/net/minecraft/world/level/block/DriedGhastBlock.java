@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.HappyGhast;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -160,23 +161,27 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
    }
 
    public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
-      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.getType() == Fluids.FLOWING_WATER) {
+      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.is(FluidTags.WATER)) {
          if (!var1.isClientSide()) {
-            Block.dropResources(var3, var1, var2, (BlockEntity)null);
-            var1.setBlock(var2, var4.createLegacyBlock(), 3);
+            if (var4.getType() == Fluids.FLOWING_WATER) {
+               Block.dropResources(var3, var1, var2, (BlockEntity)null);
+               var1.setBlock(var2, var4.createLegacyBlock(), 3);
+            } else {
+               var1.setBlock(var2, (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, true), 3);
+               var1.scheduleTick(var2, var4.getType(), var4.getType().getTickDelay(var1));
+               var1.playSound((Entity)null, var2, SoundEvents.DRIED_GHAST_PLACE_IN_WATER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
          }
 
          return true;
       } else {
-         return SimpleWaterloggedBlock.super.placeLiquid(var1, var2, var3, var4);
+         return false;
       }
    }
 
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if ((Integer)var1.getValue(HYDRATION_LEVEL) == 0) {
-         var2.playSound((Entity)null, (BlockPos)var3, (Boolean)var1.getValue(WATERLOGGED) ? SoundEvents.DRIED_GHAST_PLACE_IN_WATER : SoundEvents.DRIED_GHAST_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-      }
-
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
+      super.setPlacedBy(var1, var2, var3, var4, var5);
+      var1.playSound((Entity)null, (BlockPos)var2, (Boolean)var3.getValue(WATERLOGGED) ? SoundEvents.DRIED_GHAST_PLACE_IN_WATER : SoundEvents.DRIED_GHAST_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    public boolean isPathfindable(BlockState var1, PathComputationType var2) {

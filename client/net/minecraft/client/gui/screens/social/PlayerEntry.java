@@ -44,7 +44,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    private boolean isRemoved;
    private boolean hasRecentMessages;
    private final boolean reportingEnabled;
-   private final boolean hasDraftReport;
+   private boolean hasDraftReport;
    private final boolean chatReportable;
    @Nullable
    private Button hideButton;
@@ -80,7 +80,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       ReportingContext var7 = var1.getReportingContext();
       this.reportingEnabled = var7.sender().isEnabled();
       this.chatReportable = var6;
-      this.hasDraftReport = var7.hasDraftReportFor(var3);
+      this.refreshHasDraftReport(var7);
       MutableComponent var8 = Component.translatable("gui.socialInteractions.narration.hide", var4);
       MutableComponent var9 = Component.translatable("gui.socialInteractions.narration.show", var4);
       PlayerSocialManager var10 = var1.getPlayerSocialManager();
@@ -125,6 +125,10 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
 
    }
 
+   public void refreshHasDraftReport(ReportingContext var1) {
+      this.hasDraftReport = var1.hasDraftReportFor(this.id);
+   }
+
    private Tooltip createReportButtonTooltip() {
       return !this.reportingEnabled ? Tooltip.create(REPORT_DISABLED_TOOLTIP) : Tooltip.create(REPORT_PLAYER_TOOLTIP, Component.translatable("gui.socialInteractions.narration.report", this.playerName));
    }
@@ -137,6 +141,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       int var14;
       if (var15 == CommonComponents.EMPTY) {
          var1.fill(var4, var3, var4 + var5, var3 + var6, BG_FILL);
+         var1.depthTreeUp();
          Objects.requireNonNull(this.minecraft.font);
          var14 = var3 + (var6 - 9) / 2;
       } else {
@@ -144,6 +149,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          Objects.requireNonNull(this.minecraft.font);
          Objects.requireNonNull(this.minecraft.font);
          var14 = var3 + (var6 - (9 + 9)) / 2;
+         var1.depthTreeUp();
          var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR);
       }
 
@@ -170,9 +176,12 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       }
 
       if (this.hasDraftReport && this.reportButton != null) {
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
+         var1.depthTreeBack();
       }
 
+      var1.depthTreeBack();
    }
 
    public List<? extends GuiEventListener> children() {

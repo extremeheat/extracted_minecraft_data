@@ -228,8 +228,8 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       if (var3.getCount() == var2.getCount()) {
          var1.renderItemDecorations(this.font, var2, var4, var5);
       } else {
-         var1.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, this.font, var3, var4, var5, var3.getCount() == 1 ? "1" : null);
-         var1.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, this.font, var2, var4 + 14, var5, var2.getCount() == 1 ? "1" : null);
+         var1.renderItemDecorations(this.font, var3, var4, var5, var3.getCount() == 1 ? "1" : null);
+         var1.renderItemDecorations(this.font, var2, var4 + 14, var5, var2.getCount() == 1 ? "1" : null);
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 9, 2);
       }
 

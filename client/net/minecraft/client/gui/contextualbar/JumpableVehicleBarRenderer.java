@@ -26,6 +26,7 @@ public class JumpableVehicleBarRenderer implements ContextualBarRenderer {
       int var3 = this.left(this.minecraft.getWindow());
       int var4 = this.top(this.minecraft.getWindow());
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)JUMP_BAR_BACKGROUND_SPRITE, var3, var4, 182, 5);
+      var1.depthTreeUp();
       if (this.playerJumpableVehicle.getJumpCooldown() > 0) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)JUMP_BAR_COOLDOWN_SPRITE, var3, var4, 182, 5);
       } else {

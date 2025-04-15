@@ -2,6 +2,7 @@ package net.minecraft.client.gui.render.pip;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.state.pip.GuiEntityRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -22,7 +23,7 @@ public class GuiEntityRenderer extends PictureInPictureRenderer<GuiEntityRenderS
    }
 
    protected void renderToTexture(GuiEntityRenderState var1, PoseStack var2) {
-      Lighting.setupForEntityInInventory();
+      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
       Vector3f var3 = var1.translation();
       var2.translate(var3.x, var3.y, var3.z);
       var2.mulPose((Quaternionfc)var1.rotation());

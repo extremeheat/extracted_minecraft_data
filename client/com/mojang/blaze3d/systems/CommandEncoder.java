@@ -2,6 +2,8 @@ package com.mojang.blaze3d.systems;
 
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
 import java.nio.ByteBuffer;
@@ -24,11 +26,11 @@ public interface CommandEncoder {
 
    void clearDepthTexture(GpuTexture var1, double var2);
 
-   void writeToBuffer(GpuBuffer var1, ByteBuffer var2, int var3);
+   void writeToBuffer(GpuBufferSlice var1, ByteBuffer var2);
 
-   GpuBuffer.ReadView readBuffer(GpuBuffer var1);
+   GpuBuffer.MappedView mapBuffer(GpuBuffer var1, boolean var2, boolean var3);
 
-   GpuBuffer.ReadView readBuffer(GpuBuffer var1, int var2, int var3);
+   GpuBuffer.MappedView mapBuffer(GpuBufferSlice var1, boolean var2, boolean var3);
 
    void writeToTexture(GpuTexture var1, NativeImage var2);
 
@@ -43,4 +45,6 @@ public interface CommandEncoder {
    void copyTextureToTexture(GpuTexture var1, GpuTexture var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9);
 
    void presentTexture(GpuTexture var1);
+
+   GpuFence createFence();
 }

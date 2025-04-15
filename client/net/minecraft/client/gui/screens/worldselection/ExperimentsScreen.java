@@ -139,14 +139,11 @@ public class ExperimentsScreen extends Screen {
 
       protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          var1.enableScissor(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height);
-         var1.pose().pushMatrix();
-         var1.pose().translate(0.0F, (float)(-this.scrollAmount()));
 
          for(AbstractWidget var6 : this.children) {
             var6.render(var1, var2, var3, var4);
          }
 
-         var1.pose().popMatrix();
          var1.disableScissor();
          this.renderScrollbar(var1);
       }
@@ -160,11 +157,11 @@ public class ExperimentsScreen extends Screen {
 
       public void setFocused(@Nullable GuiEventListener var1) {
          super.setFocused(var1);
-         if (var1 != null) {
+         if (var1 != null && ExperimentsScreen.this.minecraft.getLastInputType().isKeyboard()) {
             ScreenRectangle var2 = this.getRectangle();
             ScreenRectangle var3 = var1.getRectangle();
-            int var4 = (int)((double)var3.top() - this.scrollAmount() - (double)var2.top());
-            int var5 = (int)((double)var3.bottom() - this.scrollAmount() - (double)var2.bottom());
+            int var4 = var3.top() - var2.top();
+            int var5 = var3.bottom() - var2.bottom();
             if (var4 < 0) {
                this.setScrollAmount(this.scrollAmount() + (double)var4 - 14.0);
             } else if (var5 > 0) {
@@ -172,6 +169,12 @@ public class ExperimentsScreen extends Screen {
             }
 
          }
+      }
+
+      public void setScrollAmount(double var1) {
+         super.setScrollAmount(var1);
+         this.layout.setY(this.getRectangle().top() - (int)this.scrollAmount());
+         this.layout.arrangeElements();
       }
 
       public List<? extends GuiEventListener> children() {

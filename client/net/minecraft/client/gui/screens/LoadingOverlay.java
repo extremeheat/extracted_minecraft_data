@@ -10,7 +10,6 @@ import java.util.function.IntSupplier;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.ReloadableTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
@@ -61,7 +60,6 @@ public class LoadingOverlay extends Overlay {
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.pushGuiLayer(GuiLayer.LOADING_OVERLAY);
       int var5 = var1.guiWidth();
       int var6 = var1.guiHeight();
       long var7 = Util.getMillis();
@@ -78,6 +76,7 @@ public class LoadingOverlay extends Overlay {
          }
 
          int var12 = Mth.ceil((1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F)) * 255.0F);
+         var1.nextStratum();
          var1.fill(0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var12));
          var11 = 1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
@@ -86,6 +85,7 @@ public class LoadingOverlay extends Overlay {
          }
 
          int var25 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);
+         var1.nextStratum();
          var1.fill(0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var25));
          var11 = Mth.clamp(var10, 0.0F, 1.0F);
       } else {
@@ -101,10 +101,10 @@ public class LoadingOverlay extends Overlay {
       double var17 = var14 * 4.0;
       int var19 = (int)(var17 * 0.5);
       int var20 = ARGB.white(var11);
-      var1.pushGuiLayer(GuiLayer.MOJANG_LOGO);
+      var1.depthTreeUp();
       var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var27 - var19, var13 - var16, -0.0625F, 0.0F, var19, (int)var14, 120, 60, 120, 120, var20);
       var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var27, var13 - var16, 0.0625F, 60.0F, var19, (int)var14, 120, 60, 120, 120, var20);
-      var1.popGuiLayer();
+      var1.depthTreeBack();
       int var21 = (int)((double)var1.guiHeight() * 0.8325);
       float var22 = this.reload.getActualProgress();
       this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);
@@ -130,18 +130,19 @@ public class LoadingOverlay extends Overlay {
          }
       }
 
-      var1.popGuiLayer();
    }
 
    private void drawProgressBar(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
       int var7 = Mth.ceil((float)(var4 - var2 - 2) * this.currentProgress);
       int var8 = Math.round(var6 * 255.0F);
       int var9 = ARGB.color(var8, 255, 255, 255);
+      var1.depthTreeUp();
       var1.fill(var2 + 2, var3 + 2, var2 + var7, var5 - 2, var9);
       var1.fill(var2 + 1, var3, var4 - 1, var3 + 1, var9);
       var1.fill(var2 + 1, var5, var4 - 1, var5 - 1, var9);
       var1.fill(var2, var3, var2 + 1, var5, var9);
       var1.fill(var4, var3, var4 - 1, var5, var9);
+      var1.depthTreeBack();
    }
 
    public boolean isPauseScreen() {

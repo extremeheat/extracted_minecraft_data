@@ -16,6 +16,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -74,7 +75,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
             ServerLevel var4 = (ServerLevel)var5;
             this.shear(var4, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
          }
 
          return InteractionResult.SUCCESS;

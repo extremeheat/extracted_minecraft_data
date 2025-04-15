@@ -4,6 +4,7 @@ import com.mojang.datafixers.DSL;
 
 public class References {
    public static final DSL.TypeReference LEVEL = reference("level");
+   public static final DSL.TypeReference LIGHTWEIGHT_LEVEL = reference("lightweight_level");
    public static final DSL.TypeReference PLAYER = reference("player");
    public static final DSL.TypeReference CHUNK = reference("chunk");
    public static final DSL.TypeReference HOTBAR = reference("hotbar");

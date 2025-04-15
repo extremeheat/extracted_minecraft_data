@@ -19,7 +19,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -32,7 +31,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.pip.GuiBannerResultRenderer;
 import net.minecraft.client.gui.render.pip.GuiBookModelRenderer;
@@ -41,6 +39,7 @@ import net.minecraft.client.gui.render.pip.GuiProfilerChartRenderer;
 import net.minecraft.client.gui.render.pip.GuiSignRenderer;
 import net.minecraft.client.gui.render.pip.GuiSkinRenderer;
 import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -91,6 +90,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    public static final int MAX_BLUR_RADIUS = 10;
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final float PROJECTION_Z_NEAR = 0.05F;
+   public static final float PROJECTION_3D_HUD_Z_FAR = 100.0F;
    private static final float PORTAL_SPINNING_SPEED = 20.0F;
    private static final float NAUSEA_SPINNING_SPEED = 7.0F;
    private final Minecraft minecraft;
@@ -119,6 +119,10 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private ResourceLocation postEffectId;
    private boolean effectActive;
    private final Camera mainCamera = new Camera();
+   private final Lighting lighting = new Lighting();
+   private final GlobalSettingsUniform globalSettingsUniform = new GlobalSettingsUniform();
+   private final PerspectiveProjectionMatrixBuffer levelProjectionMatrixBuffer = new PerspectiveProjectionMatrixBuffer("level");
+   private final CachedPerspectiveProjectionMatrixBuffer hud3dProjectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer("3d hud", 0.05F, 100.0F);
 
    public GameRenderer(Minecraft var1, ItemInHandRenderer var2, RenderBuffers var3) {
       super();
@@ -133,10 +137,14 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    }
 
    public void close() {
+      this.globalSettingsUniform.close();
       this.lightTexture.close();
       this.overlayTexture.close();
       this.resourcePool.close();
       this.guiRenderer.close();
+      this.levelProjectionMatrixBuffer.close();
+      this.hud3dProjectionMatrixBuffer.close();
+      this.lighting.close();
    }
 
    public void setRenderBlockOutline(boolean var1) {
@@ -181,7 +189,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       if (!(var1 < 1.0F)) {
          PostChain var2 = this.minecraft.getShaderManager().getPostChain(BLUR_POST_CHAIN_ID, LevelTargetBundle.MAIN_TARGETS);
          if (var2 != null) {
-            var2.process(this.minecraft.getMainRenderTarget(), this.resourcePool, (var1x) -> var1x.setUniform("Radius", var1));
+            var2.process(this.minecraft.getMainRenderTarget(), this.resourcePool);
          }
 
       }
@@ -438,7 +446,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    }
 
    public float getDepthFar() {
-      return this.renderDistance * 4.0F;
+      return Math.max(this.renderDistance * 4.0F, 2048.0F);
    }
 
    public static float getNightVisionScale(LivingEntity var0, float var1) {
@@ -456,6 +464,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       }
 
       if (!this.minecraft.noRender) {
+         this.globalSettingsUniform.update(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), (Double)this.minecraft.options.glintStrength().get(), this.minecraft.level == null ? 0L : this.minecraft.level.getGameTime(), var1, this.minecraft.options.getMenuBackgroundBlurriness());
          ProfilerFiller var3 = Profiler.get();
          boolean var4 = this.minecraft.isGameLoadFinished();
          int var5 = (int)this.minecraft.mouseHandler.getScaledXPos(this.minecraft.getWindow());
@@ -469,19 +478,19 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
                RenderSystem.resetTextureMatrix();
                PostChain var7 = this.minecraft.getShaderManager().getPostChain(this.postEffectId, LevelTargetBundle.MAIN_TARGETS);
                if (var7 != null) {
-                  var7.process(this.minecraft.getMainRenderTarget(), this.resourcePool, (Consumer)null);
+                  var7.process(this.minecraft.getMainRenderTarget(), this.resourcePool);
                }
             }
          }
 
          RenderTarget var17 = this.minecraft.getMainRenderTarget();
          RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
-         Lighting.setupFor3DItems();
+         this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
          GuiGraphics var8 = new GuiGraphics(this.minecraft, this.guiRenderState);
          if (var4 && var2 && this.minecraft.level != null) {
             var3.popPush("gui");
             this.minecraft.gui.render(var8, var1);
-            this.guiRenderer.render();
+            this.guiRenderer.render(this.minecraft.levelRenderer.getFogRenderer().getBuffer(FogRenderer.FogMode.NONE));
             RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
             var3.pop();
          }
@@ -524,13 +533,11 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
          if (var4) {
             try (Zone var9 = var3.zone("toasts")) {
-               var8.pushGuiLayer(GuiLayer.SCREEN);
                this.minecraft.getToastManager().render(var8);
-               var8.popGuiLayer();
             }
          }
 
-         this.guiRenderer.render();
+         this.guiRenderer.render(this.minecraft.levelRenderer.getFogRenderer().getBuffer(FogRenderer.FogMode.NONE));
          this.guiRenderer.incrementFrameNumber();
          this.resourcePool.endFrame();
       }
@@ -668,13 +675,13 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
       float var23 = Math.max(var9, (float)(Integer)this.minecraft.options.fov().get());
       Matrix4f var24 = this.getProjectionMatrix(var23);
-      RenderSystem.setProjectionMatrix(var10, ProjectionType.PERSPECTIVE);
+      RenderSystem.setProjectionMatrix(this.levelProjectionMatrixBuffer.getBuffer(var10), ProjectionType.PERSPECTIVE);
       Quaternionf var25 = var6.rotation().conjugate(new Quaternionf());
       Matrix4f var19 = (new Matrix4f()).rotation(var25);
       this.minecraft.levelRenderer.prepareCullFrustum(var6.getPosition(), var19, var24);
       this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, var6, this, var19, var10);
       boolean var20 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
-      RenderSystem.setProjectionMatrix(this.getProjectionMatrix(this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
+      RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
       var4.popPush("hand");
       RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
       this.renderItemInHand(var2, var20, var19);
@@ -745,5 +752,20 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          float var2 = this.getFov(this.mainCamera, 0.0F, true);
          return Math.tan((double)(var1 * 0.017453292F)) / Math.tan((double)(var2 / 2.0F * 0.017453292F));
       }
+   }
+
+   public GlobalSettingsUniform getGlobalSettingsUniform() {
+      return this.globalSettingsUniform;
+   }
+
+   public Lighting getLighting() {
+      return this.lighting;
+   }
+
+   public void setLevel(@Nullable ClientLevel var1) {
+      if (var1 != null) {
+         this.lighting.updateLevel(var1.effects().constantAmbientLight());
+      }
+
    }
 }

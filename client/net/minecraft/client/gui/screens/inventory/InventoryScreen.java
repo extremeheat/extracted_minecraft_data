@@ -57,8 +57,9 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.effects.renderEffects(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.render(var1, var2, var3, var4);
+      this.effects.renderTooltip(var1, var2, var3);
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;
    }
@@ -113,6 +114,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       EntityRenderDispatcher var10 = Minecraft.getInstance().getEntityRenderDispatcher();
       EntityRenderer var11 = var10.getRenderer(var9);
       EntityRenderState var12 = var11.createRenderState(var9, 1.0F);
+      var12.hitboxesRenderState = null;
       var0.submitEntityRenderState(var12, var5, var6, var7, var8, var1, var2, var3, var4);
    }
 

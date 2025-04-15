@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.state.pip.GuiSignRenderState;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -21,7 +22,7 @@ public class GuiSignRenderer extends PictureInPictureRenderer<GuiSignRenderState
    }
 
    protected void renderToTexture(GuiSignRenderState var1, PoseStack var2) {
-      Lighting.setupForFlatItems();
+      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
       var2.translate(0.0F, -0.75F, 0.0F);
       Material var3 = Sheets.getSignMaterial(var1.woodType());
       Model var4 = var1.signModel();

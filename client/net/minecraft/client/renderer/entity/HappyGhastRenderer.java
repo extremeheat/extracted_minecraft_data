@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.HappyGhastHarnessModel;
 import net.minecraft.client.model.HappyGhastModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.layers.RopesLayer;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HappyGhastRenderState;
@@ -16,10 +17,12 @@ import net.minecraft.world.phys.AABB;
 public class HappyGhastRenderer extends AgeableMobRenderer<HappyGhast, HappyGhastRenderState, HappyGhastModel> {
    private static final ResourceLocation GHAST_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast.png");
    private static final ResourceLocation GHAST_BABY_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast_baby.png");
+   private static final ResourceLocation GHAST_ROPES = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast_ropes.png");
 
    public HappyGhastRenderer(EntityRendererProvider.Context var1) {
       super(var1, new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST)), new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_BABY)), 1.5F);
       this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HAPPY_GHAST_BODY, (var0) -> var0.bodyItem, new HappyGhastHarnessModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_HARNESS)), new HappyGhastHarnessModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_BABY_HARNESS))));
+      this.addLayer(new RopesLayer(this, var1.getModelSet(), GHAST_ROPES));
    }
 
    public ResourceLocation getTextureLocation(HappyGhastRenderState var1) {
@@ -40,6 +43,7 @@ public class HappyGhastRenderer extends AgeableMobRenderer<HappyGhast, HappyGhas
       super.extractRenderState(var1, var2, var3);
       var2.bodyItem = var1.getItemBySlot(EquipmentSlot.BODY).copy();
       var2.isRidden = var1.isVehicle();
+      var2.isLeashHolder = var1.isLeashHolder();
    }
 
    // $FF: synthetic method

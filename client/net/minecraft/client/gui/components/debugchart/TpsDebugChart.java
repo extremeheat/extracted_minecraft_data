@@ -27,12 +27,15 @@ public class TpsDebugChart extends AbstractDebugChart {
    protected void drawAdditionalDimensions(GuiGraphics var1, int var2, int var3, int var4) {
       long var5 = this.sampleStorage.get(var4, TpsDebugDimensions.TICK_SERVER_METHOD.ordinal());
       int var7 = this.getSampleHeight((double)var5);
+      var1.depthTreeUp();
       var1.fill(var3, var2 - var7, var3 + 1, var2, -6745839);
       long var8 = this.sampleStorage.get(var4, TpsDebugDimensions.SCHEDULED_TASKS.ordinal());
       int var10 = this.getSampleHeight((double)var8);
+      var1.depthTreeUp();
       var1.fill(var3, var2 - var7 - var10, var3 + 1, var2 - var7, -4548257);
       long var11 = this.sampleStorage.get(var4) - this.sampleStorage.get(var4, TpsDebugDimensions.IDLE.ordinal()) - var5 - var8;
       int var13 = this.getSampleHeight((double)var11);
+      var1.depthTreeUp();
       var1.fill(var3, var2 - var13 - var10 - var7, var3 + 1, var2 - var10 - var7, -10547572);
    }
 

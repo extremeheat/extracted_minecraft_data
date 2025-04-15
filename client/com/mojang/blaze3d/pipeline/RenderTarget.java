@@ -118,6 +118,7 @@ public abstract class RenderTarget {
 
       try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, OptionalInt.empty())) {
          var5.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
+         RenderSystem.bindDefaultUniforms(var5);
          var5.setVertexBuffer(0, var4);
          var5.setIndexBuffer(var3, var2.type());
          var5.bindSampler("InSampler", this.colorTexture);

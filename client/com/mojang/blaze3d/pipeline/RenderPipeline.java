@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.LogicOp;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.ResourceLocation;
 
@@ -256,8 +258,25 @@ public class RenderPipeline {
             this.uniforms = Optional.of(new ArrayList());
          }
 
-         ((List)this.uniforms.get()).add(new UniformDescription(var1, var2));
-         return this;
+         if (var2 == UniformType.TEXEL_BUFFER) {
+            throw new IllegalArgumentException("Cannot use texel buffer without specifying texture format");
+         } else {
+            ((List)this.uniforms.get()).add(new UniformDescription(var1, var2));
+            return this;
+         }
+      }
+
+      public Builder withUniform(String var1, UniformType var2, TextureFormat var3) {
+         if (this.uniforms.isEmpty()) {
+            this.uniforms = Optional.of(new ArrayList());
+         }
+
+         if (var2 != UniformType.TEXEL_BUFFER) {
+            throw new IllegalArgumentException("Only texel buffer can specify texture format");
+         } else {
+            ((List)this.uniforms.get()).add(new UniformDescription(var1, var3));
+            return this;
+         }
       }
 
       public Builder withDepthTestFunction(DepthTestFunction var1) {
@@ -420,11 +439,23 @@ public class RenderPipeline {
    }
 
    @DontObfuscate
-   public static record UniformDescription(String name, UniformType type) {
+   public static record UniformDescription(String name, UniformType type, @Nullable TextureFormat textureFormat) {
       public UniformDescription(String var1, UniformType var2) {
+         this(var1, var2, (TextureFormat)null);
+         if (var2 == UniformType.TEXEL_BUFFER) {
+            throw new IllegalArgumentException("Texel buffer needs a texture format");
+         }
+      }
+
+      public UniformDescription(String var1, TextureFormat var2) {
+         this(var1, UniformType.TEXEL_BUFFER, var2);
+      }
+
+      public UniformDescription(String var1, UniformType var2, @Nullable TextureFormat var3) {
          super();
          this.name = var1;
          this.type = var2;
+         this.textureFormat = var3;
       }
    }
 

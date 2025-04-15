@@ -116,7 +116,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean lastOnGround;
    private boolean lastHorizontalCollision;
    private boolean crouching;
-   private boolean wasShiftKeyDown;
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
@@ -137,24 +136,20 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Nullable
    private InteractionHand usingItemHand;
    private boolean handsBusy;
-   private boolean autoJumpEnabled;
+   private boolean autoJumpEnabled = true;
    private int autoJumpTime;
    private boolean wasFallFlying;
    private int waterVisionTime;
-   private boolean showDeathScreen;
-   private boolean doLimitedCrafting;
+   private boolean showDeathScreen = true;
+   private boolean doLimitedCrafting = false;
 
-   public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, boolean var6, boolean var7) {
+   public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, Input var6, boolean var7) {
       super(var2, var3.getLocalGameProfile());
-      this.lastSentInput = Input.EMPTY;
-      this.autoJumpEnabled = true;
-      this.showDeathScreen = true;
-      this.doLimitedCrafting = false;
       this.minecraft = var1;
       this.connection = var3;
       this.stats = var4;
       this.recipeBook = var5;
-      this.wasShiftKeyDown = var6;
+      this.lastSentInput = var6;
       this.wasSprinting = var7;
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, var1.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
@@ -197,7 +192,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
-         this.sendShiftKeyState();
          if (!this.lastSentInput.equals(this.input.keyPresses)) {
             this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
             this.lastSentInput = this.input.keyPresses;
@@ -267,16 +261,6 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.lastOnGround = this.onGround();
          this.lastHorizontalCollision = this.horizontalCollision;
          this.autoJumpEnabled = (Boolean)this.minecraft.options.autoJump().get();
-      }
-
-   }
-
-   private void sendShiftKeyState() {
-      boolean var1 = this.isShiftKeyDown();
-      if (var1 != this.wasShiftKeyDown) {
-         ServerboundPlayerCommandPacket.Action var2 = var1 ? ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY : ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY;
-         this.connection.send(new ServerboundPlayerCommandPacket(this, var2));
-         this.wasShiftKeyDown = var1;
       }
 
    }
@@ -1110,5 +1094,9 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public TickThrottler getDropSpamThrottler() {
       return this.dropSpamThrottler;
+   }
+
+   public Input getLastSentInput() {
+      return this.lastSentInput;
    }
 }

@@ -76,9 +76,12 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(RenderPipelines.GUI_TEXTURED, ENCHANTING_TABLE_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.depthTreeUp();
       this.renderBook(var1, var5, var6);
+      var1.depthTreeBack();
       EnchantmentNames.getInstance().initSeed((long)((EnchantmentMenu)this.menu).getEnchantmentSeed());
       int var7 = ((EnchantmentMenu)this.menu).getGoldCount();
+      var1.depthTreeUp();
 
       for(int var8 = 0; var8 < 3; ++var8) {
          int var9 = var5 + 60;
@@ -93,6 +96,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
             int var15 = 6839882;
             if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.hasInfiniteMaterials()) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+               var1.depthTreeUp();
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1, false);
                var15 = 4226832;
@@ -106,15 +110,18 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                }
 
+               var1.depthTreeUp();
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15, false);
                var15 = 8453920;
             }
 
             var1.drawString(this.font, var12, var10 + 86 - this.font.width(var12), var6 + 16 + 19 * var8 + 7, var15);
+            var1.depthTreeBack();
          }
       }
 
+      var1.depthTreeBack();
    }
 
    private void renderBook(GuiGraphics var1, int var2, int var3) {

@@ -2776,16 +2776,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
          this.resetFallDistance();
       }
 
-      label122: {
+      label124: {
          LivingEntity var18 = this.getControllingPassenger();
          if (var18 instanceof Player var15) {
             if (this.isAlive()) {
                this.travelRidden(var15, var10);
-               break label122;
+               break label124;
             }
          }
 
-         if (this.canSimulateMovement()) {
+         if (this.canSimulateMovement() && this.isEffectiveAi()) {
             this.travel(var10);
          }
       }
@@ -2846,7 +2846,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
    }
 
    protected void updateFallFlying() {
-      this.checkSlowFallDistance();
+      this.checkFallDistanceAccumulation();
       if (!this.level().isClientSide) {
          if (!this.canGlide()) {
             this.setSharedFlag(7, false);
@@ -2859,7 +2859,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
             if (var2 % 2 == 0) {
                List var3 = EquipmentSlot.VALUES.stream().filter((var1x) -> canGlideUsing(this.getItemBySlot(var1x), var1x)).toList();
                EquipmentSlot var4 = (EquipmentSlot)Util.getRandom(var3, this.random);
-               this.getItemBySlot(var4).hurtAndBreak(1, this, var4);
+               this.getItemBySlot(var4).hurtAndBreak(1, this, (EquipmentSlot)var4);
             }
 
             this.gameEvent(GameEvent.ELYTRA_GLIDE);

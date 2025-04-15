@@ -53,12 +53,16 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       var1.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int var7 = (int)(41.0F * this.scrollOffs);
       ResourceLocation var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var5 + 119, var6 + 15 + var7, 12, 15);
+      var1.depthTreeBack();
       int var9 = this.leftPos + 52;
       int var10 = this.topPos + 14;
       int var11 = this.startIndex + 12;
       this.renderButtons(var1, var3, var4, var9, var10, var11);
+      var1.depthTreeUp();
       this.renderRecipes(var1, var9, var10, var11);
+      var1.depthTreeBack();
    }
 
    protected void renderTooltip(GuiGraphics var1, int var2, int var3) {

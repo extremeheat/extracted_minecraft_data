@@ -44,6 +44,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       boolean var10 = var7.is(Items.GLASS_PANE);
       ItemStack var11 = ((CartographyTableMenu)this.menu).getSlot(0).getItem();
       MapId var12 = (MapId)var11.get(DataComponents.MAP_ID);
+      var1.depthTreeUp();
       boolean var14 = false;
       MapItemSavedData var13;
       if (var12 != null) {
@@ -77,6 +78,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       } else if (var4) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DUPLICATED_MAP_SPRITE, var8 + 67 + 16, var9 + 13, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 86, var9 + 16, 0.34F);
+         var1.nextStratum();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DUPLICATED_MAP_SPRITE, var8 + 67, var9 + 13 + 16, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 70, var9 + 32, 0.34F);
       } else if (var6) {

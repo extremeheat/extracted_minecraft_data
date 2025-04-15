@@ -6,6 +6,7 @@ import com.mojang.blaze3d.DontObfuscate;
 public enum TextureFormat {
    RGBA8(4),
    RED8(1),
+   RED8I(1),
    DEPTH32(4);
 
    private final int pixelSize;
@@ -28,6 +29,6 @@ public enum TextureFormat {
 
    // $FF: synthetic method
    private static TextureFormat[] $values() {
-      return new TextureFormat[]{RGBA8, RED8, DEPTH32};
+      return new TextureFormat[]{RGBA8, RED8, RED8I, DEPTH32};
    }
 }

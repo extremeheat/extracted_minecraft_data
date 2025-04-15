@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
+import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
@@ -27,7 +28,7 @@ public class EntityRenderState {
    @Nullable
    public Vec3 nameTagAttachment;
    @Nullable
-   public LeashState leashState;
+   public List<LeashState> leashStates;
    @Nullable
    public HitboxesRenderState hitboxesRenderState;
    @Nullable
@@ -50,6 +51,7 @@ public class EntityRenderState {
       public int endBlockLight;
       public int startSkyLight;
       public int endSkyLight;
+      public boolean slack;
 
       public LeashState() {
          super();
@@ -60,6 +62,7 @@ public class EntityRenderState {
          this.endBlockLight = 0;
          this.startSkyLight = 15;
          this.endSkyLight = 15;
+         this.slack = true;
       }
    }
 }

@@ -111,7 +111,6 @@ public class SkinTextureDownloader {
       return CompletableFuture.supplyAsync(() -> {
          Objects.requireNonNull(var0);
          DynamicTexture var3 = new DynamicTexture(var0::toString, var1);
-         var3.setFilter(false, true);
          var2.getTextureManager().register(var0, var3);
          return var0;
       }, var2);

@@ -155,8 +155,11 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       }
 
       if (this.uploadStatus.uploadStarted() && !this.cancelled) {
+         var1.depthTreePushCheckpoint();
          this.drawProgressBar(var1);
+         var1.depthTreeUp();
          this.drawUploadSpeed(var1);
+         var1.depthTreeBackToCheckpoint();
       }
 
       Component[] var5 = this.errorMessage;
@@ -174,7 +177,9 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       int var4 = (this.width - 200) / 2;
       int var5 = var4 + (int)Math.round(200.0 * var2);
       var1.fill(var4 - 1, 79, var5 + 1, 96, -1);
+      var1.depthTreeUp();
       var1.fill(var4, 80, var5, 95, -8355712);
+      var1.depthTreeUp();
       var1.drawCenteredString(this.font, (Component)Component.translatable("mco.upload.percent", this.progress), this.width / 2, 84, -1);
    }
 

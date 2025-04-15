@@ -120,6 +120,7 @@ public class RecipeBookPage {
 
       this.backButton.render(var1, var4, var5, var6);
       this.forwardButton.render(var1, var4, var5, var6);
+      var1.nextStratum();
       this.overlay.render(var1, var4, var5, var6);
    }
 

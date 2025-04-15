@@ -68,15 +68,19 @@ public class BlockModelWrapper implements ItemModel {
       var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
-         var8.setFoilType(hasSpecialAnimatedTexture(var2) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD);
+         ItemStackRenderState.FoilType var9 = hasSpecialAnimatedTexture(var2) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD;
+         var8.setFoilType(var9);
          var1.setAnimated();
+         var1.appendModelIdentityElement(var9);
       }
 
-      int var9 = this.tints.size();
-      int[] var10 = var8.prepareTintLayers(var9);
+      int var13 = this.tints.size();
+      int[] var10 = var8.prepareTintLayers(var13);
 
-      for(int var11 = 0; var11 < var9; ++var11) {
-         var10[var11] = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6);
+      for(int var11 = 0; var11 < var13; ++var11) {
+         int var12 = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6);
+         var10[var11] = var12;
+         var1.appendModelIdentityElement(var12);
       }
 
       var8.setExtents(this.extents);

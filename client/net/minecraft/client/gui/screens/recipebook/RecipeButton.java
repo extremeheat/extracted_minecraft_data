@@ -108,16 +108,19 @@ public class RecipeButton extends AbstractWidget {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
       ItemStack var9 = this.getDisplayStack();
       int var8 = 4;
+      var1.depthTreeUp();
       if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {
          var1.renderItem(var9, this.getX() + var8 + 1, this.getY() + var8 + 1, 0);
          --var8;
       }
 
+      var1.depthTreeDown();
       var1.renderFakeItem(var9, this.getX() + var8, this.getY() + var8);
       if (var6) {
          var1.pose().popMatrix();
       }
 
+      var1.depthTreeBack(2);
    }
 
    private boolean hasMultipleRecipes() {

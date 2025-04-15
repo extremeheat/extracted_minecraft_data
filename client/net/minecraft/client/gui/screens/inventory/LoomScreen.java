@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -91,6 +90,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       Slot var8 = ((LoomMenu)this.menu).getDyeSlot();
       Slot var9 = ((LoomMenu)this.menu).getPatternSlot();
       Slot var10 = ((LoomMenu)this.menu).getResultSlot();
+      var1.depthTreeUp();
       if (!var7.hasItem()) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
       }
@@ -148,7 +148,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          }
       }
 
-      Lighting.setupFor3DItems();
+      var1.depthTreeBack();
+      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
    }
 
    private void renderBannerOnButton(GuiGraphics var1, int var2, int var3, TextureAtlasSprite var4) {
@@ -161,10 +162,11 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       float var9 = var8 + var7 * 40.0F / 64.0F;
       boolean var10 = true;
       boolean var11 = true;
+      var1.depthTreeUp();
       var1.fill(0, 0, 5, 10, DyeColor.GRAY.getTextureDiffuseColor());
-      var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_DECORATION);
+      var1.depthTreeUp();
       var1.blit(var4.atlasLocation(), 0, 0, 5, 10, var5, var6, var8, var9);
-      var1.popGuiLayer();
+      var1.depthTreeBack(2);
       var1.pose().popMatrix();
    }
 

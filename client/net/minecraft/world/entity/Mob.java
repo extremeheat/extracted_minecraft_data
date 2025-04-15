@@ -1198,10 +1198,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return var3;
    }
 
-   public boolean canSimulateMovement() {
-      return super.canSimulateMovement() && !this.isNoAi();
-   }
-
    public boolean isEffectiveAi() {
       return super.isEffectiveAi() && !this.isNoAi();
    }

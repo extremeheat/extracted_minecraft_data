@@ -6,7 +6,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
@@ -46,9 +45,9 @@ public class GhostSlots {
 
    public void render(GuiGraphics var1, Minecraft var2, boolean var3) {
       this.ingredients.forEach((var4, var5) -> {
+         var1.depthTreePushCheckpoint();
          int var6 = var4.x;
          int var7 = var4.y;
-         var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_BACK_GHOST);
          if (var5.isResultSlot && var3) {
             var1.fill(var6 - 4, var7 - 4, var6 + 20, var7 + 20, 822018048);
          } else {
@@ -56,15 +55,16 @@ public class GhostSlots {
          }
 
          ItemStack var8 = var5.getItem(this.slotSelectTime.currentIndex());
-         var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT);
+         var1.depthTreeUp();
          var1.renderFakeItem(var8, var6, var7);
-         var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_FRONT_GHOST);
+         var1.depthTreeUp();
          var1.fill(var6, var7, var6 + 16, var7 + 16, 822083583);
-         var1.popGuiLayer();
          if (var5.isResultSlot) {
+            var1.depthTreeUp();
             var1.renderItemDecorations(var2.font, var8, var6, var7);
          }
 
+         var1.depthTreeBackToCheckpoint();
       });
    }
 

@@ -40,6 +40,7 @@ public class PoiTypes {
    public static final ResourceKey<PoiType> NETHER_PORTAL = createKey("nether_portal");
    public static final ResourceKey<PoiType> LODESTONE = createKey("lodestone");
    public static final ResourceKey<PoiType> LIGHTNING_ROD = createKey("lightning_rod");
+   public static final ResourceKey<PoiType> TEST_INSTANCE = createKey("test_instance");
    private static final Set<BlockState> BEDS;
    private static final Set<BlockState> CAULDRONS;
    private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE;
@@ -100,6 +101,7 @@ public class PoiTypes {
       register(var0, BEE_NEST, getBlockStates(Blocks.BEE_NEST), 0, 1);
       register(var0, NETHER_PORTAL, getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
       register(var0, LODESTONE, getBlockStates(Blocks.LODESTONE), 0, 1);
+      register(var0, TEST_INSTANCE, getBlockStates(Blocks.TEST_INSTANCE_BLOCK), 0, 1);
       return register(var0, LIGHTNING_ROD, getBlockStates(Blocks.LIGHTNING_ROD), 0, 1);
    }
 

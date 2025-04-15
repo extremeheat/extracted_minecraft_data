@@ -39,7 +39,9 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
          var1.enableScissor(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1);
          var1.pose().pushMatrix();
          var1.pose().translate(0.0F, (float)(-this.scrollAmount()));
+         var1.depthTreeUp();
          this.renderContents(var1, var2, var3, var4);
+         var1.depthTreeBack();
          var1.pose().popMatrix();
          var1.disableScissor();
          this.renderDecorations(var1);

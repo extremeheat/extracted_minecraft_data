@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.state.pip.GuiBookModelRenderState;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,7 +23,7 @@ public class GuiBookModelRenderer extends PictureInPictureRenderer<GuiBookModelR
    }
 
    protected void renderToTexture(GuiBookModelRenderState var1, PoseStack var2) {
-      Lighting.setupForEntityInInventory();
+      Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ENTITY_IN_UI);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
       var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(25.0F));
       float var3 = var1.open();

@@ -11,7 +11,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
@@ -387,8 +386,10 @@ public class EditBox extends AbstractWidget {
          if (!var7.isEmpty()) {
             String var14 = var8 ? var7.substring(0, var6) : var7;
             FormattedCharSequence var15 = (FormattedCharSequence)this.formatter.apply(var14, this.displayPos);
+            var1.depthTreeUp();
             var1.drawString(this.font, var15, var10, var11, var17);
-            var12 = var10 + this.font.width(var15);
+            var1.depthTreeBack();
+            var12 = var10 + this.font.width(var15) + 1;
          }
 
          boolean var18 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
@@ -401,38 +402,48 @@ public class EditBox extends AbstractWidget {
          }
 
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
+            var1.depthTreeUp();
             var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var12, var11, var17);
+            var1.depthTreeBack();
          }
 
          if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
+            var1.depthTreeUp();
             var1.drawString(this.font, this.hint, var12, var11, var17);
+            var1.depthTreeBack();
          }
 
          if (!var18 && this.suggestion != null) {
+            var1.depthTreeUp();
             var1.drawString(this.font, this.suggestion, var19 - 1, var11, -8355712);
+            var1.depthTreeBack();
+         }
+
+         var1.depthTreePushCheckpoint();
+         if (var13 != var6) {
+            int var16 = var10 + this.font.width(var7.substring(0, var13));
+            var1.depthTreeUp();
+            int var10003 = var11 - 1;
+            int var10004 = var16 - 1;
+            int var10005 = var11 + 1;
+            Objects.requireNonNull(this.font);
+            this.renderHighlight(var1, var19, var10003, var10004, var10005 + 9);
          }
 
          if (var9) {
+            var1.depthTreeUp();
             if (var18) {
                int var10002 = var11 - 1;
-               int var10003 = var19 + 1;
-               int var10004 = var11 + 1;
+               int var20 = var19 + 1;
+               int var21 = var11 + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var19, var10002, var10003, var10004 + 9, -3092272);
+               var1.fill(var19, var10002, var20, var21 + 9, -3092272);
             } else {
                var1.drawString(this.font, "_", var19, var11, var17);
             }
          }
 
-         if (var13 != var6) {
-            int var16 = var10 + this.font.width(var7.substring(0, var13));
-            int var20 = var11 - 1;
-            int var21 = var16 - 1;
-            int var10005 = var11 + 1;
-            Objects.requireNonNull(this.font);
-            this.renderHighlight(var1, var19, var20, var21, var10005 + 9);
-         }
-
+         var1.depthTreeBackToCheckpoint();
       }
    }
 
@@ -457,9 +468,7 @@ public class EditBox extends AbstractWidget {
          var2 = this.getX() + this.width;
       }
 
-      var1.pushGuiLayer(GuiLayer.SCREEN_TEXT_HIGHLIGHT);
       var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
-      var1.popGuiLayer();
    }
 
    public void setMaxLength(int var1) {

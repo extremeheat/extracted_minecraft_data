@@ -36,6 +36,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.PlayerRideableJumping;
@@ -196,12 +197,20 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.isJumping = var1;
    }
 
-   public boolean handleLeashAtDistance(Entity var1, float var2) {
-      if (var2 > 6.0F && this.isEating()) {
+   public void onElasticLeashPull() {
+      super.onElasticLeashPull();
+      if (this.isEating()) {
          this.setEating(false);
       }
 
+   }
+
+   public boolean supportQuadLeash() {
       return true;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.04, 0.52, 0.23, 0.87);
    }
 
    public boolean isEating() {

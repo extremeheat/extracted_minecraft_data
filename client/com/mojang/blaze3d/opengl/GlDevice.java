@@ -1,8 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GpuOutOfMemoryException;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -32,6 +30,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
@@ -42,6 +41,7 @@ public class GlDevice implements GpuDevice {
    protected static boolean USE_GL_EXT_debug_label = true;
    protected static boolean USE_GL_ARB_debug_output = true;
    protected static boolean USE_GL_ARB_direct_state_access = true;
+   protected static boolean USE_GL_ARB_buffer_storage = true;
    private final CommandEncoder encoder;
    @Nullable
    private final GlDebug debugLog;
@@ -52,7 +52,9 @@ public class GlDevice implements GpuDevice {
    private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
    private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
    private final VertexArrayCache vertexArrayCache;
+   private final BufferStorage bufferStorage;
    private final Set<String> enabledExtensions = new HashSet();
+   private final int uniformOffsetAlignment;
 
    public GlDevice(long var1, int var3, boolean var4, BiFunction<ResourceLocation, ShaderType, String> var5, boolean var6) {
       super();
@@ -63,10 +65,12 @@ public class GlDevice implements GpuDevice {
       this.debugLog = GlDebug.enableDebugCallback(var3, var4, this.enabledExtensions);
       this.debugLabels = GlDebugLabel.create(var7, var6, this.enabledExtensions);
       this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels, this.enabledExtensions);
+      this.bufferStorage = BufferStorage.create(var7, this.enabledExtensions);
       this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions);
       this.maxSupportedTextureSize = var8;
       this.defaultShaderSource = var5;
       this.encoder = new GlCommandEncoder(this);
+      this.uniformOffsetAlignment = GL11.glGetInteger(35380);
    }
 
    public GlDebugLabel debugLabels() {
@@ -116,21 +120,23 @@ public class GlDevice implements GpuDevice {
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, BufferType var2, BufferUsage var3, int var4) {
-      if (var4 <= 0) {
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, int var3) {
+      if (var3 <= 0) {
          throw new IllegalArgumentException("Buffer size must be greater than zero");
       } else {
-         return new GlBuffer(this.debugLabels, var1, var2, var3, var4, GlStateManager._glGenBuffers());
+         GlBuffer var4 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
+         this.debugLabels.applyLabel(var4);
+         return var4;
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, BufferType var2, BufferUsage var3, ByteBuffer var4) {
-      if (!var4.hasRemaining()) {
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, ByteBuffer var3) {
+      if (!var3.hasRemaining()) {
          throw new IllegalArgumentException("Buffer source must not be empty");
       } else {
-         GlBuffer var5 = new GlBuffer(this.debugLabels, var1, var2, var3, var4.remaining(), GlStateManager._glGenBuffers());
-         this.encoder.writeToBuffer(var5, var4, 0);
-         return var5;
+         GlBuffer var4 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
+         this.debugLabels.applyLabel(var4);
+         return var4;
       }
    }
 
@@ -185,6 +191,10 @@ public class GlDevice implements GpuDevice {
 
    public int getMaxTextureSize() {
       return this.maxSupportedTextureSize;
+   }
+
+   public int getUniformOffsetAlignment() {
+      return this.uniformOffsetAlignment;
    }
 
    public void clearPipelineCache() {
@@ -279,6 +289,10 @@ public class GlDevice implements GpuDevice {
 
    public VertexArrayCache vertexArrayCache() {
       return this.vertexArrayCache;
+   }
+
+   public BufferStorage getBufferStorage() {
+      return this.bufferStorage;
    }
 
    // $FF: synthetic method

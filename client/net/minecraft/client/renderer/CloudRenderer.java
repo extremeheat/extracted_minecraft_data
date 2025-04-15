@@ -1,28 +1,26 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -30,12 +28,23 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.slf4j.Logger;
 
 public class CloudRenderer extends SimplePreparableReloadListener<Optional<TextureData>> implements AutoCloseable {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/clouds.png");
+   public static final int FLAG_INSIDE_FACE = 16;
+   public static final int FLAG_USE_TOP_COLOR = 32;
    private static final float CELL_SIZE_IN_BLOCKS = 12.0F;
+   public static final int RADIUS_BLOCKS = 2048;
+   private static final int CELL_RADIUS = Mth.ceil(170.66667F);
+   public static final int MAX_FACES_PER_CELL = 4;
+   public static final int MAX_CELLS;
+   public static final int MAX_FACES;
+   public static final int UBO_SIZE = 48;
+   private static final Logger LOGGER;
+   private static final ResourceLocation TEXTURE_LOCATION;
    private static final float BLOCKS_PER_SECOND = 0.6F;
    private static final long EMPTY_CELL = 0L;
    private static final int COLOR_OFFSET = 4;
@@ -51,17 +60,18 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    private CloudStatus prevType;
    @Nullable
    private TextureData texture;
-   @Nullable
-   private GpuBuffer vertexBuffer;
-   private int indexCount;
+   private int instanceCount;
    private final RenderSystem.AutoStorageIndexBuffer indices;
+   private final MappableRingBuffer ubo;
+   private final MappableRingBuffer utb;
 
    public CloudRenderer() {
       super();
       this.prevRelativeCameraPos = CloudRenderer.RelativeCameraPos.INSIDE_CLOUDS;
-      this.vertexBuffer = null;
-      this.indexCount = 0;
+      this.instanceCount = 0;
       this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+      this.ubo = new MappableRingBuffer("Cloud UBO", 130, 48);
+      this.utb = new MappableRingBuffer("Cloud UTB", 258, MAX_FACES * 3);
    }
 
    protected Optional<TextureData> prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -126,10 +136,6 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       return (long)var0 << 4 | (long)((var1 ? 1 : 0) << 3) | (long)((var2 ? 1 : 0) << 2) | (long)((var3 ? 1 : 0) << 1) | (long)((var4 ? 1 : 0) << 0);
    }
 
-   private static int getColor(long var0) {
-      return (int)(var0 >> 4 & 4294967295L);
-   }
-
    private static boolean isNorthEmpty(long var0) {
       return (var0 >> 3 & 1L) != 0L;
    }
@@ -177,95 +183,71 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
             this.prevCellZ = var18;
             this.prevRelativeCameraPos = var8;
             this.prevType = var2;
+            this.utb.rotate();
 
-            try (MeshData var23 = this.buildMesh(Tesselator.getInstance(), var17, var18, var2, var8, var22)) {
-               if (var23 == null) {
-                  this.indexCount = 0;
-               } else {
-                  if (this.vertexBuffer != null && this.vertexBuffer.size >= var23.vertexBuffer().remaining()) {
-                     CommandEncoder var24 = RenderSystem.getDevice().createCommandEncoder();
-                     var24.writeToBuffer(this.vertexBuffer, var23.vertexBuffer(), 0);
-                  } else {
-                     if (this.vertexBuffer != null) {
-                        this.vertexBuffer.close();
-                     }
+            try (GpuBuffer.MappedView var23 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.utb.currentBuffer(), false, true)) {
+               this.buildMesh(var8, var23.data(), var17, var18, var21);
+               this.instanceCount = var23.data().position() / 3;
+            }
+         }
 
-                     this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "Cloud vertex buffer", BufferType.VERTICES, BufferUsage.DYNAMIC_WRITE, var23.vertexBuffer());
-                  }
+         if (this.instanceCount != 0) {
+            try (GpuBuffer.MappedView var40 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var40.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var19, var6, -var20).putVec3(12.0F, 4.0F, 12.0F);
+            }
 
-                  this.indexCount = var23.drawState().indexCount();
+            GpuBufferSlice var41 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+            RenderTarget var24 = Minecraft.getInstance().getMainRenderTarget();
+            RenderTarget var25 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+            GpuTexture var26;
+            GpuTexture var27;
+            if (var25 != null) {
+               var26 = var25.getColorTexture();
+               var27 = var25.getDepthTexture();
+            } else {
+               var26 = var24.getColorTexture();
+               var27 = var24.getDepthTexture();
+            }
+
+            GpuBuffer var28 = this.indices.getBuffer(6);
+
+            try (RenderPass var29 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var26, OptionalInt.empty(), var27, OptionalDouble.empty())) {
+               var29.setPipeline(var22);
+               RenderSystem.bindDefaultUniforms(var29);
+               var29.setUniform("DynamicTransforms", var41);
+               var29.setIndexBuffer(var28, this.indices.type());
+               var29.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
+               var29.setUniform("CloudInfo", this.ubo.currentBuffer());
+               var29.setUniform("CloudFaces", this.utb.currentBuffer());
+               if (var21) {
+                  var29.setPipeline(RenderPipelines.CLOUDS_DEPTH_ONLY);
+                  var29.drawIndexed(0, 6, this.instanceCount);
                }
-            }
-         }
 
-         if (this.indexCount != 0) {
-            RenderSystem.setShaderColor(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F);
-            if (var21) {
-               this.draw(RenderPipelines.CLOUDS_DEPTH_ONLY, var19, var6, var20);
+               var29.setPipeline(var22);
+               var29.drawIndexed(0, 6, this.instanceCount);
             }
 
-            this.draw(var22, var19, var6, var20);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          }
       }
    }
 
-   private void draw(RenderPipeline var1, float var2, float var3, float var4) {
-      RenderSystem.setModelOffset(-var2, var3, -var4);
-      RenderTarget var5 = Minecraft.getInstance().getMainRenderTarget();
-      RenderTarget var6 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
-      GpuTexture var7;
-      GpuTexture var8;
-      if (var6 != null) {
-         var7 = var6.getColorTexture();
-         var8 = var6.getDepthTexture();
-      } else {
-         var7 = var5.getColorTexture();
-         var8 = var5.getDepthTexture();
-      }
-
-      GpuBuffer var9 = this.indices.getBuffer(this.indexCount);
-
-      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var7, OptionalInt.empty(), var8, OptionalDouble.empty())) {
-         var10.setPipeline(var1);
-         var10.setIndexBuffer(var9, this.indices.type());
-         var10.setVertexBuffer(0, this.vertexBuffer);
-         var10.drawIndexed(0, this.indexCount);
-      }
-
-      RenderSystem.resetModelOffset();
-   }
-
-   @Nullable
-   private MeshData buildMesh(Tesselator var1, int var2, int var3, CloudStatus var4, RelativeCameraPos var5, RenderPipeline var6) {
-      float var7 = 0.8F;
-      int var8 = ARGB.colorFromFloat(0.8F, 1.0F, 1.0F, 1.0F);
-      int var9 = ARGB.colorFromFloat(0.8F, 0.9F, 0.9F, 0.9F);
-      int var10 = ARGB.colorFromFloat(0.8F, 0.7F, 0.7F, 0.7F);
-      int var11 = ARGB.colorFromFloat(0.8F, 0.8F, 0.8F, 0.8F);
-      BufferBuilder var12 = var1.begin(var6.getVertexFormatMode(), var6.getVertexFormat());
-      this.buildMesh(var5, var12, var2, var3, var10, var8, var9, var11, var4 == CloudStatus.FANCY);
-      return var12.build();
-   }
-
-   private void buildMesh(RelativeCameraPos var1, BufferBuilder var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9) {
+   private void buildMesh(RelativeCameraPos var1, ByteBuffer var2, int var3, int var4, boolean var5) {
       if (this.texture != null) {
-         boolean var10 = true;
-         long[] var11 = this.texture.cells;
-         int var12 = this.texture.width;
-         int var13 = this.texture.height;
+         long[] var6 = this.texture.cells;
+         int var7 = this.texture.width;
+         int var8 = this.texture.height;
 
-         for(int var14 = -32; var14 <= 32; ++var14) {
-            for(int var15 = -32; var15 <= 32; ++var15) {
-               int var16 = Math.floorMod(var3 + var15, var12);
-               int var17 = Math.floorMod(var4 + var14, var13);
-               long var18 = var11[var16 + var17 * var12];
-               if (var18 != 0L) {
-                  int var20 = getColor(var18);
-                  if (var9) {
-                     this.buildExtrudedCell(var1, var2, ARGB.multiply(var5, var20), ARGB.multiply(var6, var20), ARGB.multiply(var7, var20), ARGB.multiply(var8, var20), var15, var14, var18);
+         for(int var9 = -CELL_RADIUS; var9 <= CELL_RADIUS; ++var9) {
+            for(int var10 = -CELL_RADIUS; var10 <= CELL_RADIUS; ++var10) {
+               int var11 = Math.floorMod(var3 + var10, var7);
+               int var12 = Math.floorMod(var4 + var9, var8);
+               long var13 = var6[var11 + var12 * var7];
+               if (var13 != 0L) {
+                  if (var5) {
+                     this.buildExtrudedCell(var1, var2, var10, var9, var13);
                   } else {
-                     this.buildFlatCell(var2, ARGB.multiply(var6, var20), var15, var14);
+                     this.buildFlatCell(var2, var10, var9);
                   }
                }
             }
@@ -274,92 +256,47 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       }
    }
 
-   private void buildFlatCell(BufferBuilder var1, int var2, int var3, int var4) {
-      float var5 = (float)var3 * 12.0F;
-      float var6 = var5 + 12.0F;
-      float var7 = (float)var4 * 12.0F;
-      float var8 = var7 + 12.0F;
-      var1.addVertex(var5, 0.0F, var7).setColor(var2);
-      var1.addVertex(var5, 0.0F, var8).setColor(var2);
-      var1.addVertex(var6, 0.0F, var8).setColor(var2);
-      var1.addVertex(var6, 0.0F, var7).setColor(var2);
+   private void buildFlatCell(ByteBuffer var1, int var2, int var3) {
+      this.encodeFace(var1, var2, var3, Direction.DOWN, 32);
    }
 
-   private void buildExtrudedCell(RelativeCameraPos var1, BufferBuilder var2, int var3, int var4, int var5, int var6, int var7, int var8, long var9) {
-      float var11 = (float)var7 * 12.0F;
-      float var12 = var11 + 12.0F;
-      float var13 = 0.0F;
-      float var14 = 4.0F;
-      float var15 = (float)var8 * 12.0F;
-      float var16 = var15 + 12.0F;
+   private void encodeFace(ByteBuffer var1, int var2, int var3, Direction var4, int var5) {
+      int var6 = var4.get3DDataValue() | var5;
+      var6 |= (var2 & 1) << 7;
+      var6 |= (var3 & 1) << 6;
+      var1.put((byte)(var2 >> 1)).put((byte)(var3 >> 1)).put((byte)var6);
+   }
+
+   private void buildExtrudedCell(RelativeCameraPos var1, ByteBuffer var2, int var3, int var4, long var5) {
       if (var1 != CloudRenderer.RelativeCameraPos.BELOW_CLOUDS) {
-         var2.addVertex(var11, 4.0F, var15).setColor(var4);
-         var2.addVertex(var11, 4.0F, var16).setColor(var4);
-         var2.addVertex(var12, 4.0F, var16).setColor(var4);
-         var2.addVertex(var12, 4.0F, var15).setColor(var4);
+         this.encodeFace(var2, var3, var4, Direction.UP, 0);
       }
 
       if (var1 != CloudRenderer.RelativeCameraPos.ABOVE_CLOUDS) {
-         var2.addVertex(var12, 0.0F, var15).setColor(var3);
-         var2.addVertex(var12, 0.0F, var16).setColor(var3);
-         var2.addVertex(var11, 0.0F, var16).setColor(var3);
-         var2.addVertex(var11, 0.0F, var15).setColor(var3);
+         this.encodeFace(var2, var3, var4, Direction.DOWN, 0);
       }
 
-      if (isNorthEmpty(var9) && var8 > 0) {
-         var2.addVertex(var11, 0.0F, var15).setColor(var6);
-         var2.addVertex(var11, 4.0F, var15).setColor(var6);
-         var2.addVertex(var12, 4.0F, var15).setColor(var6);
-         var2.addVertex(var12, 0.0F, var15).setColor(var6);
+      if (isNorthEmpty(var5) && var4 > 0) {
+         this.encodeFace(var2, var3, var4, Direction.NORTH, 0);
       }
 
-      if (isSouthEmpty(var9) && var8 < 0) {
-         var2.addVertex(var12, 0.0F, var16).setColor(var6);
-         var2.addVertex(var12, 4.0F, var16).setColor(var6);
-         var2.addVertex(var11, 4.0F, var16).setColor(var6);
-         var2.addVertex(var11, 0.0F, var16).setColor(var6);
+      if (isSouthEmpty(var5) && var4 < 0) {
+         this.encodeFace(var2, var3, var4, Direction.SOUTH, 0);
       }
 
-      if (isWestEmpty(var9) && var7 > 0) {
-         var2.addVertex(var11, 0.0F, var16).setColor(var5);
-         var2.addVertex(var11, 4.0F, var16).setColor(var5);
-         var2.addVertex(var11, 4.0F, var15).setColor(var5);
-         var2.addVertex(var11, 0.0F, var15).setColor(var5);
+      if (isWestEmpty(var5) && var3 > 0) {
+         this.encodeFace(var2, var3, var4, Direction.WEST, 0);
       }
 
-      if (isEastEmpty(var9) && var7 < 0) {
-         var2.addVertex(var12, 0.0F, var15).setColor(var5);
-         var2.addVertex(var12, 4.0F, var15).setColor(var5);
-         var2.addVertex(var12, 4.0F, var16).setColor(var5);
-         var2.addVertex(var12, 0.0F, var16).setColor(var5);
+      if (isEastEmpty(var5) && var3 < 0) {
+         this.encodeFace(var2, var3, var4, Direction.EAST, 0);
       }
 
-      boolean var17 = Math.abs(var7) <= 1 && Math.abs(var8) <= 1;
-      if (var17) {
-         var2.addVertex(var12, 4.0F, var15).setColor(var4);
-         var2.addVertex(var12, 4.0F, var16).setColor(var4);
-         var2.addVertex(var11, 4.0F, var16).setColor(var4);
-         var2.addVertex(var11, 4.0F, var15).setColor(var4);
-         var2.addVertex(var11, 0.0F, var15).setColor(var3);
-         var2.addVertex(var11, 0.0F, var16).setColor(var3);
-         var2.addVertex(var12, 0.0F, var16).setColor(var3);
-         var2.addVertex(var12, 0.0F, var15).setColor(var3);
-         var2.addVertex(var12, 0.0F, var15).setColor(var6);
-         var2.addVertex(var12, 4.0F, var15).setColor(var6);
-         var2.addVertex(var11, 4.0F, var15).setColor(var6);
-         var2.addVertex(var11, 0.0F, var15).setColor(var6);
-         var2.addVertex(var11, 0.0F, var16).setColor(var6);
-         var2.addVertex(var11, 4.0F, var16).setColor(var6);
-         var2.addVertex(var12, 4.0F, var16).setColor(var6);
-         var2.addVertex(var12, 0.0F, var16).setColor(var6);
-         var2.addVertex(var11, 0.0F, var15).setColor(var5);
-         var2.addVertex(var11, 4.0F, var15).setColor(var5);
-         var2.addVertex(var11, 4.0F, var16).setColor(var5);
-         var2.addVertex(var11, 0.0F, var16).setColor(var5);
-         var2.addVertex(var12, 0.0F, var16).setColor(var5);
-         var2.addVertex(var12, 4.0F, var16).setColor(var5);
-         var2.addVertex(var12, 4.0F, var15).setColor(var5);
-         var2.addVertex(var12, 0.0F, var15).setColor(var5);
+      boolean var7 = Math.abs(var3) <= 1 && Math.abs(var4) <= 1;
+      if (var7) {
+         for(Direction var11 : Direction.values()) {
+            this.encodeFace(var2, var3, var4, var11, 16);
+         }
       }
 
    }
@@ -368,16 +305,25 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       this.needsRebuild = true;
    }
 
-   public void close() {
-      if (this.vertexBuffer != null) {
-         this.vertexBuffer.close();
-      }
+   public void endFrame() {
+      this.ubo.rotate();
+   }
 
+   public void close() {
+      this.ubo.close();
+      this.utb.close();
    }
 
    // $FF: synthetic method
    protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
       return this.prepare(var1, var2);
+   }
+
+   static {
+      MAX_CELLS = (CELL_RADIUS + 1) * 2 * (CELL_RADIUS + 1) * 2 / 2;
+      MAX_FACES = MAX_CELLS * 4 + 54;
+      LOGGER = LogUtils.getLogger();
+      TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/clouds.png");
    }
 
    static enum RelativeCameraPos {

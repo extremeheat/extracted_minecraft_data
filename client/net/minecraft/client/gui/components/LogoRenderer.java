@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -40,8 +39,12 @@ public class LogoRenderer {
       var1.blit(RenderPipelines.GUI_TEXTURED, this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, var5, var4, 0.0F, 0.0F, 256, 44, 256, 64, var7);
       int var8 = var2 / 2 - 64;
       int var9 = var4 + 44 - 7;
-      var1.pushGuiLayer(GuiLayer.TITLE_SCREEN_JAVA_EDITION);
+      var1.depthTreeUp();
       var1.blit(RenderPipelines.GUI_TEXTURED, MINECRAFT_EDITION, var8, var9, 0.0F, 0.0F, 128, 14, 128, 16, var7);
-      var1.popGuiLayer();
+      var1.depthTreeBack();
+   }
+
+   public boolean keepLogoThroughFade() {
+      return this.keepLogoThroughFade;
    }
 }

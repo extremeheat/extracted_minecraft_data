@@ -178,6 +178,7 @@ public class PlayerTabOverlay {
          int var10005 = var19.size();
          Objects.requireNonNull(this.minecraft.font);
          var1.fill(var10001, var10002, var10003, var40 + var10005 * 9, -2147483648);
+         var1.depthTreeUp();
 
          for(FormattedCharSequence var47 : var19) {
             int var23 = this.minecraft.font.width(var47);
@@ -186,10 +187,12 @@ public class PlayerTabOverlay {
             var40 += 9;
          }
 
+         var1.depthTreeBack();
          ++var40;
       }
 
       var1.fill(var2 / 2 - var42 / 2 - 1, var40 - 1, var2 / 2 + var42 / 2 + 1, var40 + var34 * 9, -2147483648);
+      var1.depthTreeUp();
       int var46 = this.minecraft.options.getBackgroundColor(553648127);
 
       for(int var48 = 0; var48 < var33; ++var48) {
@@ -201,6 +204,7 @@ public class PlayerTabOverlay {
          if (var48 < var5.size()) {
             PlayerInfo var27 = (PlayerInfo)var5.get(var48);
             ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var48);
+            var1.depthTreeUp();
             GameProfile var29 = var27.getProfile();
             if (var36) {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
@@ -219,9 +223,11 @@ public class PlayerTabOverlay {
             }
 
             this.renderPingIcon(var1, var38, var25 - (var36 ? 9 : 0), var26, var27);
+            var1.depthTreeBack();
          }
       }
 
+      var1.depthTreeBack();
       if (var43 != null) {
          var40 += var34 * 9 + 1;
          int var55 = var2 / 2 - var42 / 2 - 1;
@@ -230,6 +236,7 @@ public class PlayerTabOverlay {
          int var58 = var43.size();
          Objects.requireNonNull(this.minecraft.font);
          var1.fill(var55, var56, var57, var40 + var58 * 9, -2147483648);
+         var1.depthTreeUp();
 
          for(FormattedCharSequence var51 : var43) {
             int var52 = this.minecraft.font.width(var51);
@@ -237,6 +244,8 @@ public class PlayerTabOverlay {
             Objects.requireNonNull(this.minecraft.font);
             var40 += 9;
          }
+
+         var1.depthTreeBack();
       }
 
    }

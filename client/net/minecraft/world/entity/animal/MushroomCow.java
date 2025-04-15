@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -116,7 +117,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
             ServerLevel var8 = (ServerLevel)var11;
             this.shear(var8, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
          }
 
          return InteractionResult.SUCCESS;

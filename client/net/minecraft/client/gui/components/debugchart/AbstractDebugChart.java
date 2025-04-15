@@ -30,6 +30,7 @@ public abstract class AbstractDebugChart {
    }
 
    public void drawChart(GuiGraphics var1, int var2, int var3) {
+      var1.depthTreePushCheckpoint();
       int var4 = var1.guiHeight();
       var1.fill(var2, var4 - 60, var2 + var3, var4, -1873784752);
       long var5 = 0L;
@@ -37,6 +38,7 @@ public abstract class AbstractDebugChart {
       long var9 = -2147483648L;
       int var11 = Math.max(0, this.sampleStorage.capacity() - (var3 - 2));
       int var12 = this.sampleStorage.size() - var11;
+      var1.depthTreeUp();
 
       for(int var13 = 0; var13 < var12; ++var13) {
          int var14 = var2 + var13 + 1;
@@ -48,6 +50,7 @@ public abstract class AbstractDebugChart {
          this.drawDimensions(var1, var4, var14, var15);
       }
 
+      var1.depthTreeUp();
       var1.hLine(var2, var2 + var3 - 1, var4 - 60, -1);
       var1.hLine(var2, var2 + var3 - 1, var4 - 1, -1);
       var1.vLine(var2, var4 - 60, var4, -1);
@@ -59,6 +62,7 @@ public abstract class AbstractDebugChart {
          String var19 = var10000 + " avg";
          var10000 = this.toDisplayString((double)var9);
          String var20 = var10000 + " max";
+         var1.depthTreeUp();
          Font var10001 = this.font;
          int var10003 = var2 + 2;
          int var10004 = var4 - 60;
@@ -76,7 +80,9 @@ public abstract class AbstractDebugChart {
          var1.drawString(var10001, var20, var10003, var10004 - 9, 14737632);
       }
 
+      var1.depthTreeUp();
       this.renderAdditionalLinesAndLabels(var1, var2, var3, var4);
+      var1.depthTreeBackToCheckpoint();
    }
 
    protected void drawDimensions(GuiGraphics var1, int var2, int var3, int var4) {
@@ -105,7 +111,9 @@ public abstract class AbstractDebugChart {
       int var10003 = var3 + this.font.width(var2) + 1;
       Objects.requireNonNull(this.font);
       var1.fill(var3, var4, var10003, var4 + 9, -1873784752);
+      var1.depthTreeUp();
       var1.drawString(this.font, var2, var3 + 1, var4 + 1, 14737632, false);
+      var1.depthTreeBack();
    }
 
    protected abstract String toDisplayString(double var1);

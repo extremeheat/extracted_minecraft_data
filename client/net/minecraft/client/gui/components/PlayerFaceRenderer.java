@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
@@ -33,13 +32,13 @@ public class PlayerFaceRenderer {
    public static void draw(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5, boolean var6, int var7) {
       int var8 = 8 + (var6 ? 8 : 0);
       int var9 = 8 * (var6 ? -1 : 1);
-      var0.pushGuiLayer(GuiLayer.SCREEN);
       var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, 8.0F, (float)var8, var4, var4, 8, var9, 64, 64, var7);
       if (var5) {
+         var0.depthTreeUp();
          drawHat(var0, var1, var2, var3, var4, var6, var7);
+         var0.depthTreeBack();
       }
 
-      var0.popGuiLayer();
    }
 
    private static void drawHat(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5, int var6) {

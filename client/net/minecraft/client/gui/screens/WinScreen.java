@@ -251,6 +251,7 @@ public class WinScreen extends Screen {
       float var7 = -this.scroll;
       var1.pose().pushMatrix();
       var1.pose().translate(0.0F, var7);
+      var1.nextStratum();
       this.logoRenderer.renderLogo(var1, this.width, 1.0F, var6);
       int var8 = var6 + 100;
 

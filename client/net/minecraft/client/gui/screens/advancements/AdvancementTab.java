@@ -101,8 +101,11 @@ public class AdvancementTab {
          }
       }
 
+      var1.depthTreeUp();
       this.root.drawConnectivity(var1, var5, var6, true);
+      var1.depthTreeUp();
       this.root.drawConnectivity(var1, var5, var6, false);
+      var1.depthTreeUp();
       this.root.draw(var1, var5, var6);
       var1.pose().popMatrix();
       var1.disableScissor();
@@ -114,6 +117,8 @@ public class AdvancementTab {
       int var7 = Mth.floor(this.scrollX);
       int var8 = Mth.floor(this.scrollY);
       if (var2 > 0 && var2 < 234 && var3 > 0 && var3 < 113) {
+         var1.depthTreeUp();
+
          for(AdvancementWidget var10 : this.widgets.values()) {
             if (var10.isMouseOver(var7, var8, var2, var3)) {
                var6 = true;
@@ -121,6 +126,8 @@ public class AdvancementTab {
                break;
             }
          }
+
+         var1.depthTreeBack();
       }
 
       if (var6) {

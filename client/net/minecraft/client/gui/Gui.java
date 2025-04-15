@@ -1,10 +1,8 @@
 package net.minecraft.client.gui;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.platform.Window;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
@@ -16,6 +14,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -29,7 +28,6 @@ import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
 import net.minecraft.client.gui.contextualbar.ExperienceBarRenderer;
 import net.minecraft.client.gui.contextualbar.JumpableVehicleBarRenderer;
 import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
@@ -198,31 +196,26 @@ public class Gui {
 
    public void render(GuiGraphics var1, DeltaTracker var2) {
       if (!this.minecraft.options.hideGui) {
-         this.renderOnLayer(var1, var2, this::renderCameraOverlays, GuiLayer.GAMEPLAY_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderCrosshair, GuiLayer.HUD);
-         this.renderOnLayer(var1, var2, this::renderHotbarAndDecorations, GuiLayer.HUD);
-         this.renderOnLayer(var1, var2, this::renderEffects, GuiLayer.HUD);
-         this.renderOnLayer(var1, var2, this::renderBossOverlay, GuiLayer.HUD);
+         this.renderCameraOverlays(var1, var2);
+         this.renderCrosshair(var1, var2);
+         var1.nextStratum();
+         this.renderHotbarAndDecorations(var1, var2);
+         this.renderEffects(var1, var2);
+         this.renderBossOverlay(var1, var2);
       }
 
-      this.renderOnLayer(var1, var2, this::renderSleepOverlay, GuiLayer.SLEEP_OVERLAY);
+      this.renderSleepOverlay(var1, var2);
       if (!this.minecraft.options.hideGui) {
-         this.renderOnLayer(var1, var2, this::renderDemoOverlay, GuiLayer.DEMO_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderDebugOverlay, GuiLayer.DEBUG_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderScoreboardSidebar, GuiLayer.SCOREBOARD_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderOverlayMessage, GuiLayer.OVERLAY_MESSAGE);
-         this.renderOnLayer(var1, var2, this::renderTitle, GuiLayer.TITLE_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderChat, GuiLayer.CHAT_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderTabList, GuiLayer.TABLIST_OVERLAY);
-         this.renderOnLayer(var1, var2, this::renderSubtitleOverlay, GuiLayer.SUBTITLE_OVERLAY);
+         this.renderDemoOverlay(var1, var2);
+         this.renderDebugOverlay(var1, var2);
+         this.renderScoreboardSidebar(var1, var2);
+         this.renderOverlayMessage(var1, var2);
+         this.renderTitle(var1, var2);
+         this.renderChat(var1, var2);
+         this.renderTabList(var1, var2);
+         this.renderSubtitleOverlay(var1, var2);
       }
 
-   }
-
-   private void renderOnLayer(GuiGraphics var1, DeltaTracker var2, RenderFunction var3, GuiLayer var4) {
-      var1.pushGuiLayer(var4);
-      var3.render(var1, var2);
-      var1.popGuiLayer();
    }
 
    private void renderBossOverlay(GuiGraphics var1, DeltaTracker var2) {
@@ -231,6 +224,7 @@ public class Gui {
 
    private void renderDebugOverlay(GuiGraphics var1, DeltaTracker var2) {
       if (this.debugOverlay.showDebugScreen()) {
+         var1.nextStratum();
          this.debugOverlay.render(var1);
       }
 
@@ -241,7 +235,6 @@ public class Gui {
    }
 
    private void renderCameraOverlays(GuiGraphics var1, DeltaTracker var2) {
-      var1.pushGuiLayer(GuiLayer.GAMEPLAY_OVERLAY);
       if (Minecraft.useFancyGraphics()) {
          this.renderVignette(var1, this.minecraft.getCameraEntity());
       }
@@ -251,6 +244,7 @@ public class Gui {
       this.scopeScale = Mth.lerp(0.5F * var4, this.scopeScale, 1.125F);
       if (this.minecraft.options.getCameraType().isFirstPerson()) {
          if (var3.isScoping()) {
+            var1.depthTreeUp();
             this.renderSpyglassOverlay(var1, this.scopeScale);
          } else {
             this.scopeScale = 0.5F;
@@ -259,6 +253,7 @@ public class Gui {
                ItemStack var9 = var3.getItemBySlot(var8);
                Equippable var10 = (Equippable)var9.get(DataComponents.EQUIPPABLE);
                if (var10 != null && var10.slot() == var8 && var10.cameraOverlay().isPresent()) {
+                  var1.depthTreeUp();
                   this.renderTextureOverlay(var1, ((ResourceLocation)var10.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
                }
             }
@@ -266,6 +261,7 @@ public class Gui {
       }
 
       if (var3.getTicksFrozen() > 0) {
+         var1.depthTreeUp();
          this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, var3.getPercentFrozen());
       }
 
@@ -273,21 +269,23 @@ public class Gui {
       float var12 = Mth.lerp(var11, var3.oPortalEffectIntensity, var3.portalEffectIntensity);
       float var13 = var3.getEffectBlendFactor(MobEffects.NAUSEA, var11);
       if (var12 > 0.0F) {
+         var1.depthTreeUp();
          this.renderPortalOverlay(var1, var12);
       } else if (var13 > 0.0F) {
          float var14 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
          if (var14 < 1.0F) {
             float var15 = var13 * (1.0F - var14);
+            var1.depthTreeUp();
             this.renderConfusionOverlay(var1, var15);
          }
       }
 
-      var1.popGuiLayer();
    }
 
    private void renderSleepOverlay(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.player.getSleepTimer() > 0) {
          Profiler.get().push("sleep");
+         var1.nextStratum();
          float var3 = (float)this.minecraft.player.getSleepTimer();
          float var4 = var3 / 100.0F;
          if (var4 > 1.0F) {
@@ -295,9 +293,7 @@ public class Gui {
          }
 
          int var5 = (int)(220.0F * var4) << 24 | 1052704;
-         var1.pushGuiLayer(GuiLayer.GAMEPLAY_OVERLAY);
          var1.fill(0, 0, var1.guiWidth(), var1.guiHeight(), var5);
-         var1.popGuiLayer();
          Profiler.get().pop();
       }
    }
@@ -313,6 +309,7 @@ public class Gui {
          }
 
          if (var5 > 8) {
+            var1.nextStratum();
             var1.pose().pushMatrix();
             var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() - 68));
             int var6;
@@ -348,6 +345,7 @@ public class Gui {
 
          var5 = Mth.clamp(var5, 0, 255);
          if (var5 > 8) {
+            var1.nextStratum();
             var1.pose().pushMatrix();
             var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2));
             var1.pose().pushMatrix();
@@ -376,6 +374,7 @@ public class Gui {
          Window var3 = this.minecraft.getWindow();
          int var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var3));
          int var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var3));
+         var1.nextStratum();
          this.chat.render(var1, this.tickCount, var4, var5, false);
       }
 
@@ -394,6 +393,7 @@ public class Gui {
 
       Objective var7 = var4 != null ? var4 : var3.getDisplayObjective(DisplaySlot.SIDEBAR);
       if (var7 != null) {
+         var1.nextStratum();
          this.displayScoreboardSidebar(var1, var7);
       }
 
@@ -406,6 +406,7 @@ public class Gui {
          this.tabList.setVisible(false);
       } else {
          this.tabList.setVisible(true);
+         var1.nextStratum();
          this.tabList.render(var1, var1.guiWidth(), var3, var4);
       }
 
@@ -416,6 +417,7 @@ public class Gui {
       if (var3.getCameraType().isFirstPerson()) {
          if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
             if (!this.shouldRenderDebugCrosshair()) {
+               var1.nextStratum();
                boolean var4 = true;
                var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
                if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
@@ -433,6 +435,7 @@ public class Gui {
                   } else if (var5 < 1.0F) {
                      int var9 = (int)(var5 * 17.0F);
                      var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var7, 16, 4);
+                     var1.depthTreeUp();
                      var1.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, var8, var7, var9, 4);
                   }
                }
@@ -443,7 +446,7 @@ public class Gui {
    }
 
    public boolean shouldRenderDebugCrosshair() {
-      return this.debugOverlay.showDebugScreen() && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)this.minecraft.options.reducedDebugInfo().get();
+      return this.debugOverlay.showDebugScreen() && this.minecraft.options.getCameraType() == CameraType.FIRST_PERSON && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)this.minecraft.options.reducedDebugInfo().get();
    }
 
    private boolean canRenderCrosshairForSpectator(@Nullable HitResult var1) {
@@ -466,48 +469,44 @@ public class Gui {
          int var4 = 0;
          int var5 = 0;
          MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
-         ArrayList var7 = Lists.newArrayListWithExpectedSize(var3.size());
 
-         for(MobEffectInstance var9 : Ordering.natural().reverse().sortedCopy(var3)) {
-            Holder var10 = var9.getEffect();
-            if (var9.showIcon()) {
-               int var11 = var1.guiWidth();
-               int var12 = 1;
+         for(MobEffectInstance var8 : Ordering.natural().reverse().sortedCopy(var3)) {
+            Holder var9 = var8.getEffect();
+            if (var8.showIcon()) {
+               int var10 = var1.guiWidth();
+               int var11 = 1;
                if (this.minecraft.isDemo()) {
-                  var12 += 15;
+                  var11 += 15;
                }
 
-               if (((MobEffect)var10.value()).isBeneficial()) {
+               if (((MobEffect)var9.value()).isBeneficial()) {
                   ++var4;
-                  var11 -= 25 * var4;
+                  var10 -= 25 * var4;
                } else {
                   ++var5;
-                  var11 -= 25 * var5;
-                  var12 += 26;
+                  var10 -= 25 * var5;
+                  var11 += 26;
                }
 
-               float var13 = 1.0F;
-               if (var9.isAmbient()) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var11, var12, 24, 24);
+               float var12 = 1.0F;
+               if (var8.isAmbient()) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var10, var11, 24, 24);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var11, var12, 24, 24);
-                  if (var9.endsWithin(200)) {
-                     int var14 = var9.getDuration();
-                     int var15 = 10 - var14 / 20;
-                     var13 = Mth.clamp((float)var14 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((float)var14 * 3.1415927F / 5.0F) * Mth.clamp((float)var15 / 10.0F * 0.25F, 0.0F, 0.25F);
-                     var13 = Mth.clamp(var13, 0.0F, 1.0F);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var10, var11, 24, 24);
+                  if (var8.endsWithin(200)) {
+                     int var13 = var8.getDuration();
+                     int var14 = 10 - var13 / 20;
+                     var12 = Mth.clamp((float)var13 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((float)var13 * 3.1415927F / 5.0F) * Mth.clamp((float)var14 / 10.0F * 0.25F, 0.0F, 0.25F);
+                     var12 = Mth.clamp(var12, 0.0F, 1.0F);
                   }
                }
 
-               TextureAtlasSprite var20 = var6.get(var10);
-               var7.add((Runnable)() -> {
-                  int var5 = ARGB.white(var13);
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var20, var11 + 3, var12 + 3, 18, 18, var5);
-               });
+               var1.depthTreeUp();
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var6.get(var9), var10 + 3, var11 + 3, 18, 18, ARGB.white(var12));
+               var1.depthTreeBack();
             }
          }
 
-         var7.forEach(Runnable::run);
       }
    }
 
@@ -528,18 +527,23 @@ public class Gui {
          this.contextualInfoBar = Pair.of(var3, (ContextualBarRenderer)((Supplier)this.contextualInfoBarRenderers.get(var3)).get());
       }
 
+      var1.depthTreePushCheckpoint();
       ((ContextualBarRenderer)this.contextualInfoBar.getValue()).renderBackground(var1, var2);
+      var1.depthTreeUp();
       if (this.minecraft.gameMode.hasExperience() && this.minecraft.player.experienceLevel > 0) {
          ContextualBarRenderer.renderExperienceLevel(var1, this.minecraft.font, this.minecraft.player.experienceLevel);
       }
 
+      var1.depthTreeUp();
       ((ContextualBarRenderer)this.contextualInfoBar.getValue()).render(var1, var2);
+      var1.depthTreeUp();
       if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
          this.renderSelectedItemName(var1);
       } else if (this.minecraft.player.isSpectator()) {
-         this.spectatorGui.renderTooltip(var1);
+         this.spectatorGui.renderAction(var1);
       }
 
+      var1.depthTreeBackToCheckpoint();
    }
 
    private void renderItemHotbar(GuiGraphics var1, DeltaTracker var2) {
@@ -551,7 +555,9 @@ public class Gui {
          boolean var7 = true;
          boolean var8 = true;
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
+         var1.depthTreeBack();
          if (!var4.isEmpty()) {
             if (var5 == HumanoidArm.LEFT) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
@@ -561,6 +567,7 @@ public class Gui {
          }
 
          int var9 = 1;
+         var1.depthTreeUp();
 
          for(int var10 = 0; var10 < 9; ++var10) {
             int var11 = var6 - 90 + var10 * 20 + 2;
@@ -577,6 +584,7 @@ public class Gui {
             }
          }
 
+         var1.depthTreeBack();
          if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
             float var17 = this.minecraft.player.getAttackStrengthScale(0.0F);
             if (var17 < 1.0F) {
@@ -588,7 +596,9 @@ public class Gui {
 
                int var13 = (int)(var17 * 19.0F);
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
+               var1.depthTreeUp();
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var19, var18 + 18 - var13, 18, var13);
+               var1.depthTreeBack();
             }
          }
 
@@ -626,6 +636,7 @@ public class Gui {
    private void renderDemoOverlay(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.isDemo()) {
          Profiler.get().push("demo");
+         var1.nextStratum();
          Object var3;
          if (this.minecraft.level.getGameTime() >= 120500L) {
             var3 = DEMO_EXPIRED_TEXT;
@@ -690,6 +701,7 @@ public class Gui {
       Objects.requireNonNull(this.getFont());
       var1.fill(var10001, var19 - 9 - 1, var16, var19 - 1, var18);
       var1.fill(var15 - 2, var19 - 1, var16, var25, var17);
+      var1.depthTreeUp();
       Font var26 = this.getFont();
       int var10003 = var15 + var8 / 2 - var7 / 2;
       Objects.requireNonNull(this.getFont());
@@ -704,6 +716,7 @@ public class Gui {
          var1.drawString(this.getFont(), (Component)var21.score, var16 - var21.scoreWidth, var22, -1, false);
       }
 
+      var1.depthTreeBack();
    }
 
    @Nullable
@@ -850,6 +863,7 @@ public class Gui {
             var21 -= 2;
          }
 
+         var1.depthTreePushCheckpoint();
          this.renderHeart(var1, Gui.HeartType.CONTAINER, var20, var21, var13, var11, false);
          int var22 = var17 * 2;
          boolean var23 = var17 >= var14;
@@ -857,19 +871,24 @@ public class Gui {
             int var24 = var22 - var16;
             if (var24 < var10) {
                boolean var25 = var24 + 1 == var10;
+               var1.depthTreeUp();
                this.renderHeart(var1, var12 == Gui.HeartType.WITHERED ? var12 : Gui.HeartType.ABSORBING, var20, var21, var13, false, var25);
             }
          }
 
          if (var11 && var22 < var9) {
             boolean var26 = var22 + 1 == var9;
+            var1.depthTreeUp();
             this.renderHeart(var1, var12, var20, var21, var13, true, var26);
          }
 
          if (var22 < var8) {
             boolean var27 = var22 + 1 == var8;
+            var1.depthTreeUp();
             this.renderHeart(var1, var12, var20, var21, var13, false, var27);
          }
+
+         var1.depthTreeBackToCheckpoint();
       }
 
    }
@@ -957,6 +976,7 @@ public class Gui {
 
          int var12 = var4 - var7 * 8 - 9;
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var9, var12, var8, 9, 9);
+         var1.depthTreeUp();
          if (var7 * 2 + 1 < var6) {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var11, var12, var8, 9, 9);
          }
@@ -964,6 +984,8 @@ public class Gui {
          if (var7 * 2 + 1 == var6) {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var10, var12, var8, 9, 9);
          }
+
+         var1.depthTreeBack();
       }
 
    }
@@ -986,6 +1008,7 @@ public class Gui {
                for(int var10 = 0; var10 < var9; ++var10) {
                   int var11 = var6 - var10 * 8 - 9;
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_CONTAINER_SPRITE, var11, var7, 9, 9);
+                  var1.depthTreeUp();
                   if (var10 * 2 + 1 + var8 < var4) {
                      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_FULL_SPRITE, var11, var7, 9, 9);
                   }
@@ -993,6 +1016,8 @@ public class Gui {
                   if (var10 * 2 + 1 + var8 == var4) {
                      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_HALF_SPRITE, var11, var7, 9, 9);
                   }
+
+                  var1.depthTreeBack();
                }
 
                var7 -= 10;
@@ -1093,15 +1118,12 @@ public class Gui {
             var1.pose().translate((float)(-(var2 + 8)), (float)(-(var3 + 12)));
          }
 
-         var1.pushGuiLayer(GuiLayer.HUD_ITEM);
          var1.renderItem(var5, var6, var2, var3, var7);
          if (var8 > 0.0F) {
             var1.pose().popMatrix();
          }
 
-         var1.popPushGuiLayer(GuiLayer.HUD_ITEM_DECORATION);
-         var1.renderItemDecorations(GuiGraphics.ItemSlotContext.HUD, this.minecraft.font, var6, var2, var3);
-         var1.popGuiLayer();
+         var1.renderItemDecorations(this.minecraft.font, var6, var2, var3);
       }
    }
 
@@ -1265,9 +1287,8 @@ public class Gui {
             int var10000 = var1.guiHeight();
             Objects.requireNonNull(var4);
             int var8 = var10000 - 9 - 5;
-            var1.pushGuiLayer(GuiLayer.SCREEN);
+            var1.nextStratum();
             var1.drawStringWithBackdrop(var4, SAVING_TEXT, var7, var8, var5, var6);
-            var1.popGuiLayer();
          }
       }
 

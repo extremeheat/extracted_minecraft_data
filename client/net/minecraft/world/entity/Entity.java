@@ -2065,33 +2065,109 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (this.isAlive() && this instanceof Leashable var3) {
-         if (var3.getLeashHolder() == var1) {
-            if (!this.level().isClientSide()) {
-               if (var1.hasInfiniteMaterials()) {
-                  var3.removeLeash();
-               } else {
-                  var3.dropLeash();
+      if (this.isAlive() && var1.isSecondaryUseActive() && this instanceof Leashable var3) {
+         if (var3.canBeLeashed()) {
+            label70: {
+               if (this instanceof LivingEntity) {
+                  LivingEntity var4 = (LivingEntity)this;
+                  if (var4.isBaby()) {
+                     break label70;
+                  }
                }
 
-               this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
+               List var5 = Leashable.leashableInArea(this, (var1x) -> var1x.getLeashHolder() == var1);
+               if (!var5.isEmpty()) {
+                  boolean var6 = false;
+
+                  for(Leashable var8 : var5) {
+                     if (var8.canHaveALeashAttachedTo(this)) {
+                        var8.setLeashedTo(this, true);
+                        var6 = true;
+                     }
+                  }
+
+                  if (var6) {
+                     this.level().gameEvent(GameEvent.ENTITY_ACTION, this.blockPosition(), GameEvent.Context.of((Entity)var1));
+                     return InteractionResult.SUCCESS.withoutItem();
+                  }
+               }
             }
-
-            return InteractionResult.SUCCESS.withoutItem();
-         }
-
-         ItemStack var4 = var1.getItemInHand(var2);
-         if (var4.is(Items.LEAD) && var3.canHaveALeashAttachedToIt()) {
-            if (!this.level().isClientSide()) {
-               var3.setLeashedTo(var1, true);
-            }
-
-            var4.shrink(1);
-            return InteractionResult.SUCCESS;
          }
       }
 
-      return InteractionResult.PASS;
+      ItemStack var9 = var1.getItemInHand(var2);
+      if (var9.is(Items.SHEARS) && this.shearOffAllLeashConnections(var1)) {
+         var9.hurtAndBreak(1, var1, (InteractionHand)var2);
+         return InteractionResult.SUCCESS;
+      } else {
+         if (this.isAlive() && this instanceof Leashable) {
+            Leashable var10 = (Leashable)this;
+            if (var10.getLeashHolder() == var1) {
+               if (!this.level().isClientSide()) {
+                  if (var1.hasInfiniteMaterials()) {
+                     var10.removeLeash();
+                  } else {
+                     var10.dropLeash();
+                  }
+
+                  this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
+               }
+
+               return InteractionResult.SUCCESS.withoutItem();
+            }
+
+            ItemStack var11 = var1.getItemInHand(var2);
+            if (var11.is(Items.LEAD) && var10.canHaveALeashAttachedTo(var1) && !(var10.getLeashHolder() instanceof Player)) {
+               if (!this.level().isClientSide()) {
+                  if (var10.isLeashed()) {
+                     var10.dropLeash();
+                  }
+
+                  var10.setLeashedTo(var1, true);
+               }
+
+               var11.shrink(1);
+               return InteractionResult.SUCCESS;
+            }
+         }
+
+         return InteractionResult.PASS;
+      }
+   }
+
+   public boolean shearOffAllLeashConnections(@Nullable Player var1) {
+      boolean var2 = this.dropAllLeashConnections(var1);
+      if (var2) {
+         Level var4 = this.level();
+         if (var4 instanceof ServerLevel) {
+            ServerLevel var3 = (ServerLevel)var4;
+            var3.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, var1 != null ? var1.getSoundSource() : this.getSoundSource());
+         }
+      }
+
+      return var2;
+   }
+
+   public boolean dropAllLeashConnections(@Nullable Player var1) {
+      List var2 = Leashable.leashableLeashedTo(this);
+      boolean var3 = !var2.isEmpty();
+      if (this instanceof Leashable var4) {
+         if (var4.isLeashed()) {
+            var4.dropLeash();
+            var3 = true;
+         }
+      }
+
+      for(Leashable var5 : var2) {
+         var5.dropLeash();
+      }
+
+      if (var3) {
+         this.gameEvent(GameEvent.BLOCK_ATTACH, var1);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public boolean canCollideWith(Entity var1) {
@@ -2602,7 +2678,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return true;
    }
 
-   public void checkSlowFallDistance() {
+   public void checkFallDistanceAccumulation() {
       if (this.getDeltaMovement().y() > -0.5 && this.fallDistance > 1.0) {
          this.fallDistance = 1.0;
       }
@@ -3108,14 +3184,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this.eyeHeight;
    }
 
-   public Vec3 getLeashOffset(float var1) {
-      return this.getLeashOffset();
-   }
-
-   protected Vec3 getLeashOffset() {
-      return new Vec3(0.0, (double)this.getEyeHeight(), (double)(this.getBbWidth() * 0.4F));
-   }
-
    public SlotAccess getSlot(int var1) {
       return SlotAccess.NULL;
    }
@@ -3578,6 +3646,20 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public void checkDespawn() {
    }
 
+   public Vec3[] getQuadLeashHolderOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.0, 0.5, 0.5, 0.0);
+   }
+
+   public boolean supportQuadLeashAsHolder() {
+      return false;
+   }
+
+   public void notifyLeashHolder(Leashable var1) {
+   }
+
+   public void notifyLeasheeRemoved(Leashable var1) {
+   }
+
    public Vec3 getRopeHoldPosition(float var1) {
       return this.getPosition(var1).add(0.0, (double)this.eyeHeight * 0.7, 0.0);
    }
@@ -3698,6 +3780,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public boolean mayInteract(ServerLevel var1, BlockPos var2) {
       return true;
+   }
+
+   public boolean isFlyingVehicle() {
+      return false;
    }
 
    public Level level() {

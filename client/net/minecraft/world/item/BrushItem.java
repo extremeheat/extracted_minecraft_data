@@ -86,7 +86,7 @@ public class BrushItem extends Item {
                         boolean var20 = var19.brush(var1.getGameTime(), var18, var5, var7.getDirection(), var3);
                         if (var20) {
                            EquipmentSlot var17 = var3.equals(var5.getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
-                           var3.hurtAndBreak(1, var5, var17);
+                           var3.hurtAndBreak(1, var5, (EquipmentSlot)var17);
                         }
                      }
                   }

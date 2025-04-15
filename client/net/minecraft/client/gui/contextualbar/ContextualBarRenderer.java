@@ -43,6 +43,7 @@ public interface ContextualBarRenderer {
       var0.drawString(var1, (Component)var3, var4 - 1, var5, 0, false);
       var0.drawString(var1, (Component)var3, var4, var5 + 1, 0, false);
       var0.drawString(var1, (Component)var3, var4, var5 - 1, 0, false);
+      var0.depthTreeUp();
       var0.drawString(var1, (Component)var3, var4, var5, 8453920, false);
    }
 }

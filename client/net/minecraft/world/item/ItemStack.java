@@ -492,6 +492,10 @@ public final class ItemStack implements DataComponentHolder {
 
    }
 
+   public void hurtAndBreak(int var1, LivingEntity var2, InteractionHand var3) {
+      this.hurtAndBreak(var1, var2, LivingEntity.getSlotForHand(var3));
+   }
+
    public void hurtAndBreak(int var1, LivingEntity var2, EquipmentSlot var3) {
       Level var5 = var2.level();
       if (var5 instanceof ServerLevel var4) {

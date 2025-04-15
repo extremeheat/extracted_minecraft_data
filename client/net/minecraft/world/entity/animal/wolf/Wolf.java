@@ -382,7 +382,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          ItemStack var4 = this.getBodyArmorItem();
          int var5 = var4.getDamageValue();
          int var6 = var4.getMaxDamage();
-         var4.hurtAndBreak(Mth.ceil(var3), this, EquipmentSlot.BODY);
+         var4.hurtAndBreak(Mth.ceil(var3), this, (EquipmentSlot)EquipmentSlot.BODY);
          if (Crackiness.WOLF_ARMOR.byDamage(var5, var6) != Crackiness.WOLF_ARMOR.byDamage(this.getBodyArmorItem())) {
             this.playSound(SoundEvents.WOLF_ARMOR_CRACK);
             var1.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, Items.ARMADILLO_SCUTE.getDefaultInstance()), this.getX(), this.getY() + 1.0, this.getZ(), 20, 0.2, 0.1, 0.2, 0.1);
@@ -459,7 +459,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
                   }
                }
             } else {
-               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
                this.playSound(SoundEvents.ARMOR_UNEQUIP_WOLF);
                ItemStack var6 = this.getBodyArmorItem();
                this.setBodyArmorItem(ItemStack.EMPTY);

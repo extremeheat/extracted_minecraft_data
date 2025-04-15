@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -19,20 +20,30 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
    public DynamicTexture(Supplier<String> var1, NativeImage var2) {
       super();
       this.pixels = var2;
-      this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.createTexture(var1);
       this.upload();
    }
 
    public DynamicTexture(String var1, int var2, int var3, boolean var4) {
       super();
       this.pixels = new NativeImage(var2, var3, var4);
-      this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.createTexture(var1);
    }
 
    public DynamicTexture(Supplier<String> var1, int var2, int var3, boolean var4) {
       super();
       this.pixels = new NativeImage(var2, var3, var4);
+      this.createTexture(var1);
+   }
+
+   private void createTexture(Supplier<String> var1) {
       this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+   }
+
+   private void createTexture(String var1) {
+      this.texture = RenderSystem.getDevice().createTexture(var1, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      this.texture.setTextureFilter(FilterMode.NEAREST, false);
    }
 
    public void upload() {

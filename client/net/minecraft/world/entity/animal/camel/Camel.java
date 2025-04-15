@@ -32,6 +32,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -338,12 +339,16 @@ public class Camel extends AbstractHorse {
       }
    }
 
-   public boolean handleLeashAtDistance(Entity var1, float var2) {
-      if (var2 > 6.0F && this.isCamelSitting() && !this.isInPoseTransition() && this.canCamelChangePose()) {
+   public void onElasticLeashPull() {
+      super.onElasticLeashPull();
+      if (this.isCamelSitting() && !this.isInPoseTransition() && this.canCamelChangePose()) {
          this.standUp();
       }
 
-      return true;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.02, 0.48, 0.25, 0.82);
    }
 
    public boolean canCamelChangePose() {

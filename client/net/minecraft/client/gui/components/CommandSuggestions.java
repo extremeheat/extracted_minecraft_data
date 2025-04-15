@@ -364,7 +364,9 @@ public class CommandSuggestions {
       for(FormattedCharSequence var4 : this.commandUsage) {
          int var5 = this.anchorToBottom ? this.screen.height - 14 - 13 - 12 * var2 : 72 + 12 * var2;
          var1.fill(this.commandUsagePosition - 1, var5, this.commandUsagePosition + this.commandUsageWidth + 1, var5 + 12, this.fillColor);
+         var1.depthTreeUp();
          var1.drawString(this.font, (FormattedCharSequence)var4, this.commandUsagePosition, var5 + 2, -1);
+         var1.depthTreeBack();
          ++var2;
       }
 
@@ -416,9 +418,12 @@ public class CommandSuggestions {
             this.lastMouse = new Vec2((float)var2, (float)var3);
          }
 
+         var1.depthTreePushCheckpoint();
          if (var8) {
             var1.fill(this.rect.getX(), this.rect.getY() - 1, this.rect.getX() + this.rect.getWidth(), this.rect.getY(), CommandSuggestions.this.fillColor);
+            var1.depthTreeUp();
             var1.fill(this.rect.getX(), this.rect.getY() + this.rect.getHeight(), this.rect.getX() + this.rect.getWidth(), this.rect.getY() + this.rect.getHeight() + 1, CommandSuggestions.this.fillColor);
+            var1.depthTreeUp();
             if (var6) {
                for(int var10 = 0; var10 < this.rect.getWidth(); ++var10) {
                   if (var10 % 2 == 0) {
@@ -449,9 +454,11 @@ public class CommandSuggestions {
                var14 = true;
             }
 
+            var1.depthTreeUp();
             var1.drawString(CommandSuggestions.this.font, var12.getText(), this.rect.getX() + 1, this.rect.getY() + 2 + 12 * var11, var11 + this.offset == this.current ? -256 : -5592406);
          }
 
+         var1.depthTreeBackToCheckpoint();
          if (var14) {
             Message var15 = ((Suggestion)this.suggestionList.get(this.current)).getTooltip();
             if (var15 != null) {

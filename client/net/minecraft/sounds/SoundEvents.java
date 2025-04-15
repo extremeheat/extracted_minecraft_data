@@ -1208,7 +1208,6 @@ public class SoundEvents {
    public static final SoundEvent POWDER_SNOW_HIT = register("block.powder_snow.hit");
    public static final SoundEvent POWDER_SNOW_PLACE = register("block.powder_snow.place");
    public static final SoundEvent POWDER_SNOW_STEP = register("block.powder_snow.step");
-   public static final SoundEvent PUFFER_FISH_AMBIENT = register("entity.puffer_fish.ambient");
    public static final SoundEvent PUFFER_FISH_BLOW_OUT = register("entity.puffer_fish.blow_out");
    public static final SoundEvent PUFFER_FISH_BLOW_UP = register("entity.puffer_fish.blow_up");
    public static final SoundEvent PUFFER_FISH_DEATH = register("entity.puffer_fish.death");
@@ -1301,6 +1300,7 @@ public class SoundEvents {
    public static final SoundEvent SHEEP_HURT = register("entity.sheep.hurt");
    public static final SoundEvent SHEEP_SHEAR = register("entity.sheep.shear");
    public static final SoundEvent SHEEP_STEP = register("entity.sheep.step");
+   public static final SoundEvent SHEARS_SNIP = register("item.shears.snip");
    public static final Holder.Reference<SoundEvent> SHIELD_BLOCK = registerForHolder("item.shield.block");
    public static final Holder.Reference<SoundEvent> SHIELD_BREAK = registerForHolder("item.shield.break");
    public static final SoundEvent SHROOMLIGHT_BREAK = register("block.shroomlight.break");

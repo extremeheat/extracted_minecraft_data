@@ -491,6 +491,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
       this.minecraft.options.setServerRenderDistance(var1.chunkRadius());
       this.chatSession = null;
+      this.signedMessageEncoder = SignedMessageChain.Encoder.UNSIGNED;
       this.nextChatIndex = 0;
       this.lastSeenMessages = new LastSeenMessagesTracker(20);
       this.messageSignatureCache = MessageSignatureCache.createDefault();
@@ -1124,7 +1125,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       LocalPlayer var14;
       if (var1.shouldKeep((byte)2)) {
-         var14 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook(), var5.isShiftKeyDown(), var5.isSprinting());
+         var14 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook(), var5.getLastSentInput(), var5.isSprinting());
       } else {
          var14 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
       }

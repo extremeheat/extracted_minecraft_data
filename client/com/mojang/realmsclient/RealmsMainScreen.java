@@ -649,7 +649,9 @@ public class RealmsMainScreen extends RealmsScreen {
       var1.pose().translate((float)(this.width / 2 - 25), 20.0F);
       var1.pose().rotate(-0.34906584F);
       var1.pose().scale(1.5F, 1.5F);
+      var1.depthTreeUp();
       var1.drawString(this.font, (String)var2, 0, 0, var3);
+      var1.depthTreeBack();
       var1.pose().popMatrix();
    }
 
@@ -766,6 +768,34 @@ public class RealmsMainScreen extends RealmsScreen {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var2, var3, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)var4, (double)var5) && var4 >= var2 && var4 <= var2 + 10 && var5 >= var3 && var5 <= var3 + 28) {
             RealmsMainScreen.this.setTooltipForNextRenderPass((Component)var7.get());
+         }
+
+      }
+
+      protected void renderFirstLine(GuiGraphics var1, int var2, int var3, int var4, int var5, RealmsServer var6) {
+         int var7 = this.textX(var3);
+         int var8 = this.firstLineY(var2);
+         Component var9 = RealmsMainScreen.getVersionComponent(var6.activeVersion, var6.isCompatible());
+         int var10 = this.versionTextX(var3, var4, var9);
+         this.renderClampedString(var1, var6.getName(), var7, var8, var10, var5);
+         if (var9 != CommonComponents.EMPTY && !var6.isMinigameActive()) {
+            var1.drawString(RealmsMainScreen.this.font, var9, var10, var8, -8355712);
+         }
+
+      }
+
+      protected void renderSecondLine(GuiGraphics var1, int var2, int var3, int var4, RealmsServer var5) {
+         int var6 = this.textX(var3);
+         int var7 = this.firstLineY(var2);
+         int var8 = this.secondLineY(var7);
+         String var9 = var5.getMinigameName();
+         boolean var10 = var5.isMinigameActive();
+         if (var10 && var9 != null) {
+            MutableComponent var12 = Component.literal(var9).withStyle(ChatFormatting.GRAY);
+            var1.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.selectServer.minigameName", var12).withColor(-171), var6, var8, -1);
+         } else {
+            int var11 = this.renderGameMode(var5, var1, var3, var4, var7);
+            this.renderClampedString(var1, var5.getDescription(), var6, this.secondLineY(var7), var11, -8355712);
          }
 
       }
@@ -909,7 +939,9 @@ public class RealmsMainScreen extends RealmsScreen {
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.gridLayout.setPosition(var4, var3);
          this.updateEntryWidth(var5 - 4);
+         var1.depthTreeUp();
          this.children.forEach((var4x) -> var4x.render(var1, var7, var8, var10));
+         var1.depthTreeBack();
       }
 
       public boolean mouseClicked(double var1, double var3, int var5) {
@@ -1030,24 +1062,11 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = this.textX(var4);
-         int var12 = this.firstLineY(var3);
-         RealmsUtil.renderPlayerFace(var1, var4, var3, 32, this.server.ownerUUID);
-         Component var13 = RealmsMainScreen.getVersionComponent(this.server.activeVersion, -8355712);
-         int var14 = this.versionTextX(var4, var5, var13);
-         this.renderClampedString(var1, this.server.getName(), var11, var12, var14, -8355712);
-         if (var13 != CommonComponents.EMPTY) {
-            var1.drawString(RealmsMainScreen.this.font, var13, var14, var12, -8355712);
-         }
-
-         int var15 = var4;
-         if (!this.server.isMinigameActive()) {
-            var15 = this.renderGameMode(this.server, var1, var4, var5, var12);
-         }
-
-         this.renderClampedString(var1, this.server.getDescription(), var11, this.secondLineY(var12), var15, -8355712);
-         this.renderThirdLine(var1, var3, var4, this.server);
          this.renderStatusLights(this.server, var1, var4 + var5, var3, var7, var8);
+         RealmsUtil.renderPlayerFace(var1, var4, var3, 32, this.server.ownerUUID);
+         this.renderFirstLine(var1, var3, var4, var5, -8355712, this.server);
+         this.renderSecondLine(var1, var3, var4, var5, this.server);
+         this.renderThirdLine(var1, var3, var4, this.server);
          this.tooltip.refreshTooltipForNextRenderPass(var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
       }
 
@@ -1083,10 +1102,9 @@ public class RealmsMainScreen extends RealmsScreen {
             int var12 = var10000 - 9 / 2;
             var1.drawString(RealmsMainScreen.this.font, RealmsMainScreen.SERVER_UNITIALIZED_TEXT, var4 + 40 - 2, var12, 8388479);
          } else {
-            this.renderStatusLights(this.serverData, var1, var4 + 36, var3, var7, var8);
             RealmsUtil.renderPlayerFace(var1, var4, var3, 32, this.serverData.ownerUUID);
-            this.renderFirstLine(var1, var3, var4, var5);
-            this.renderSecondLine(var1, var3, var4, var5);
+            this.renderFirstLine(var1, var3, var4, var5, -1, this.serverData);
+            this.renderSecondLine(var1, var3, var4, var5, this.serverData);
             this.renderThirdLine(var1, var3, var4, this.serverData);
             boolean var11 = this.renderOnlinePlayers(var1, var3, var4, var5, var6, var7, var8);
             this.renderStatusLights(this.serverData, var1, var4 + var5, var3, var7, var8);
@@ -1095,34 +1113,6 @@ public class RealmsMainScreen extends RealmsScreen {
             }
 
          }
-      }
-
-      private void renderFirstLine(GuiGraphics var1, int var2, int var3, int var4) {
-         int var5 = this.textX(var3);
-         int var6 = this.firstLineY(var2);
-         Component var7 = RealmsMainScreen.getVersionComponent(this.serverData.activeVersion, this.serverData.isCompatible());
-         int var8 = this.versionTextX(var3, var4, var7);
-         this.renderClampedString(var1, this.serverData.getName(), var5, var6, var8, -1);
-         if (var7 != CommonComponents.EMPTY && !this.serverData.isMinigameActive()) {
-            var1.drawString(RealmsMainScreen.this.font, var7, var8, var6, -8355712);
-         }
-
-      }
-
-      private void renderSecondLine(GuiGraphics var1, int var2, int var3, int var4) {
-         int var5 = this.textX(var3);
-         int var6 = this.firstLineY(var2);
-         int var7 = this.secondLineY(var6);
-         String var8 = this.serverData.getMinigameName();
-         boolean var9 = this.serverData.isMinigameActive();
-         if (var9 && var8 != null) {
-            MutableComponent var11 = Component.literal(var8).withStyle(ChatFormatting.GRAY);
-            var1.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.selectServer.minigameName", var11).withColor(-171), var5, var7, -1);
-         } else {
-            int var10 = this.renderGameMode(this.serverData, var1, var3, var4, var6);
-            this.renderClampedString(var1, this.serverData.getDescription(), var5, this.secondLineY(var6), var10, -8355712);
-         }
-
       }
 
       private boolean renderOnlinePlayers(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7) {
@@ -1218,7 +1208,9 @@ public class RealmsMainScreen extends RealmsScreen {
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          super.renderWidget(var1, var2, var3, var4);
          if (this.active && this.notificationCount != 0) {
+            var1.depthTreeUp();
             this.drawNotificationCounter(var1);
+            var1.depthTreeBack();
          }
 
       }

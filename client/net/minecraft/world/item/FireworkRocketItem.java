@@ -24,15 +24,21 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
 
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
-      if (var2 instanceof ServerLevel var3) {
-         ItemStack var4 = var1.getItemInHand();
-         Vec3 var5 = var1.getClickLocation();
-         Direction var6 = var1.getClickedFace();
-         Projectile.spawnProjectile(new FireworkRocketEntity(var2, var1.getPlayer(), var5.x + (double)var6.getStepX() * 0.15, var5.y + (double)var6.getStepY() * 0.15, var5.z + (double)var6.getStepZ() * 0.15, var4), var3, var4);
-         var4.shrink(1);
-      }
+      Player var3 = var1.getPlayer();
+      if (var3 != null && var3.isFallFlying()) {
+         return InteractionResult.PASS;
+      } else {
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var4 = (ServerLevel)var2;
+            ItemStack var5 = var1.getItemInHand();
+            Vec3 var6 = var1.getClickLocation();
+            Direction var7 = var1.getClickedFace();
+            Projectile.spawnProjectile(new FireworkRocketEntity(var2, var1.getPlayer(), var6.x + (double)var7.getStepX() * 0.15, var6.y + (double)var7.getStepY() * 0.15, var6.z + (double)var7.getStepZ() * 0.15, var5), var4, var5);
+            var5.shrink(1);
+         }
 
-      return InteractionResult.SUCCESS;
+         return InteractionResult.SUCCESS;
+      }
    }
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
@@ -40,6 +46,7 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
          ItemStack var4 = var2.getItemInHand(var3);
          if (var1 instanceof ServerLevel) {
             ServerLevel var5 = (ServerLevel)var1;
+            var2.dropAllLeashConnections((Player)null);
             Projectile.spawnProjectile(new FireworkRocketEntity(var1, var4, var2), var5, var4);
             var4.consume(1, var2);
             var2.awardStat(Stats.ITEM_USED.get(this));

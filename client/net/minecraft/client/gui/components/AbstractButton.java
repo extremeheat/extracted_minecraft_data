@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.CommonInputs;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -24,10 +23,10 @@ public abstract class AbstractButton extends AbstractWidget {
    protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-      var1.pushGuiLayer(GuiLayer.SCREEN_WIDGET_TEXT);
+      var1.depthTreeUp();
       int var6 = this.active ? 16777215 : 10526880;
       this.renderString(var1, var5.font, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
-      var1.popGuiLayer();
+      var1.depthTreeBack();
    }
 
    public void renderString(GuiGraphics var1, Font var2, int var3) {

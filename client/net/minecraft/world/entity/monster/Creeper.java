@@ -18,6 +18,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -203,7 +204,7 @@ public class Creeper extends Monster {
             if (!var3.isDamageableItem()) {
                var3.shrink(1);
             } else {
-               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
             }
          }
 

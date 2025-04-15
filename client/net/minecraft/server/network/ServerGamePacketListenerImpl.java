@@ -384,6 +384,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handlePlayerInput(ServerboundPlayerInputPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.setLastClientInput(var1.input());
+      if (this.player.hasClientLoaded()) {
+         this.player.resetLastActionTime();
+         this.player.setShiftKeyDown(var1.input().shift());
+      }
+
    }
 
    private static boolean containsInvalidValues(double var0, double var2, double var4, float var6, float var7) {
@@ -468,7 +473,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             var2.setOnGroundWithMovement(var1.onGround(), var34);
             var2.doCheckFallDamage(var34.x, var34.y, var34.z, var1.onGround());
             this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
-            this.clientVehicleIsFloating = var42 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
+            this.clientVehicleIsFloating = var42 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isFlyingVehicle() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
             this.vehicleLastGoodY = var2.getY();
             this.vehicleLastGoodZ = var2.getZ();
@@ -1536,12 +1541,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (this.player.hasClientLoaded()) {
          this.player.resetLastActionTime();
          switch (var1.getAction()) {
-            case PRESS_SHIFT_KEY:
-               this.player.setShiftKeyDown(true);
-               break;
-            case RELEASE_SHIFT_KEY:
-               this.player.setShiftKeyDown(false);
-               break;
             case START_SPRINTING:
                this.player.setSprinting(true);
                break;

@@ -4,6 +4,7 @@ import com.google.common.collect.Ordering;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -23,15 +24,13 @@ public class EffectsInInventory {
    private static final ResourceLocation EFFECT_BACKGROUND_SMALL_SPRITE = ResourceLocation.withDefaultNamespace("container/inventory/effect_background_small");
    private final AbstractContainerScreen<?> screen;
    private final Minecraft minecraft;
+   @Nullable
+   private MobEffectInstance hoveredEffect;
 
    public EffectsInInventory(AbstractContainerScreen<?> var1) {
       super();
       this.screen = var1;
       this.minecraft = Minecraft.getInstance();
-   }
-
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderEffects(var1, var2, var3);
    }
 
    public boolean canSeeEffects() {
@@ -40,7 +39,8 @@ public class EffectsInInventory {
       return var2 >= 32;
    }
 
-   private void renderEffects(GuiGraphics var1, int var2, int var3) {
+   public void renderEffects(GuiGraphics var1, int var2, int var3) {
+      this.hoveredEffect = null;
       int var4 = this.screen.leftPos + this.screen.imageWidth + 2;
       int var5 = this.screen.width - var4;
       Collection var6 = this.minecraft.player.getActiveEffects();
@@ -53,28 +53,31 @@ public class EffectsInInventory {
 
          List var9 = Ordering.natural().sortedCopy(var6);
          this.renderBackgrounds(var1, var4, var8, var9, var7);
+         var1.depthTreeUp();
          this.renderIcons(var1, var4, var8, var9, var7);
          if (var7) {
             this.renderLabels(var1, var4, var8, var9);
          } else if (var2 >= var4 && var2 <= var4 + 33) {
             int var10 = this.screen.topPos;
-            MobEffectInstance var11 = null;
 
-            for(MobEffectInstance var13 : var9) {
+            for(MobEffectInstance var12 : var9) {
                if (var3 >= var10 && var3 <= var10 + var8) {
-                  var11 = var13;
+                  this.hoveredEffect = var12;
                }
 
                var10 += var8;
             }
-
-            if (var11 != null) {
-               List var14 = List.of(this.getEffectName(var11), MobEffectUtil.formatDuration(var11, 1.0F, this.minecraft.level.tickRateManager().tickrate()));
-               var1.renderTooltip(this.screen.getFont(), var14, Optional.empty(), var2, var3);
-            }
          }
 
       }
+   }
+
+   public void renderTooltip(GuiGraphics var1, int var2, int var3) {
+      if (this.hoveredEffect != null) {
+         List var4 = List.of(this.getEffectName(this.hoveredEffect), MobEffectUtil.formatDuration(this.hoveredEffect, 1.0F, this.minecraft.level.tickRateManager().tickrate()));
+         var1.renderTooltip(this.screen.getFont(), var4, Optional.empty(), var2, var3);
+      }
+
    }
 
    private void renderBackgrounds(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {

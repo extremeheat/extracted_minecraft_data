@@ -146,6 +146,18 @@ public class Ghast extends Mob implements Enemy {
       this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
    }
 
+   public boolean supportQuadLeashAsHolder() {
+      return true;
+   }
+
+   public double leashElasticDistance() {
+      return 10.0;
+   }
+
+   public double leashSnapDistance() {
+      return 16.0;
+   }
+
    public static void faceMovementDirection(Mob var0) {
       if (var0.getTarget() == null) {
          Vec3 var1 = var0.getDeltaMovement();
@@ -205,15 +217,18 @@ public class Ghast extends Mob implements Enemy {
       }
 
       private boolean canReach(Vec3 var1, int var2) {
-         AABB var3 = this.ghast.getBoundingBox();
+         boolean var3 = !this.ghast.level().noBlockCollision(this.ghast, this.ghast.getBoundingBox());
+         AABB var4 = this.ghast.getBoundingBox();
 
-         for(int var4 = 1; var4 < var2; ++var4) {
-            var3 = var3.move(var1);
-            if (var4 == var2 - 1 && this.careful) {
-               var3 = var3.inflate(1.0);
+         for(int var5 = 1; var5 < var2; ++var5) {
+            var4 = var4.move(var1);
+            if (var5 == var2 - 1 && this.careful) {
+               var4 = var4.inflate(1.0);
+            } else if (var3 && var5 < var2 - 1) {
+               continue;
             }
 
-            if (!this.ghast.level().noCollision(this.ghast, var3, this.careful && !this.ghast.isInLiquid())) {
+            if (!this.ghast.level().noCollision(this.ghast, var4, this.careful && !this.ghast.isInLiquid())) {
                return false;
             }
          }

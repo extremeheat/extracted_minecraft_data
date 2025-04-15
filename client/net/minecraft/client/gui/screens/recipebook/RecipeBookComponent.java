@@ -310,13 +310,18 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
          int var5 = this.getXOrigin();
          int var6 = this.getYOrigin();
          var1.blit(RenderPipelines.GUI_TEXTURED, RECIPE_BOOK_LOCATION, var5, var6, 1.0F, 1.0F, 147, 166, 256, 256);
+         var1.depthTreeUp();
          this.searchBox.render(var1, var2, var3, var4);
+         var1.depthTreeBack();
 
          for(RecipeBookTabButton var8 : this.tabButtons) {
             var8.render(var1, var2, var3, var4);
          }
 
+         var1.depthTreeUp();
          this.filterButton.render(var1, var2, var3, var4);
+         var1.depthTreeBack();
+         var1.depthTreeUp();
          this.recipeBookPage.render(var1, var5, var6, var2, var3, var4);
       }
    }

@@ -55,6 +55,7 @@ public class SocialInteractionsScreen extends Screen {
    private final HeaderAndFooterLayout layout;
    @Nullable
    private final Screen lastScreen;
+   @Nullable
    SocialInteractionsPlayerList socialInteractionsPlayerList;
    EditBox searchBox;
    private String lastSearch;
@@ -128,6 +129,13 @@ public class SocialInteractionsScreen extends Screen {
       this.repositionElements();
    }
 
+   public void added() {
+      if (this.socialInteractionsPlayerList != null) {
+         this.socialInteractionsPlayerList.refreshHasDraftReport();
+      }
+
+   }
+
    protected void repositionElements() {
       this.layout.arrangeElements();
       this.socialInteractionsPlayerList.updateSizeAndPosition(this.width, this.listEnd() - 88, 88);
@@ -194,7 +202,9 @@ public class SocialInteractionsScreen extends Screen {
       super.renderBackground(var1, var2, var3, var4);
       int var5 = this.marginX() + 3;
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
+      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
+      var1.depthTreeBack();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

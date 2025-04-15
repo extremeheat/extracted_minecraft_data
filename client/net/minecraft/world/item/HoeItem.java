@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
@@ -43,7 +44,7 @@ public class HoeItem extends Item {
             if (!var2.isClientSide) {
                var6.accept(var1);
                if (var7 != null) {
-                  var1.getItemInHand().hurtAndBreak(1, var7, LivingEntity.getSlotForHand(var1.getHand()));
+                  var1.getItemInHand().hurtAndBreak(1, var7, (EquipmentSlot)LivingEntity.getSlotForHand(var1.getHand()));
                }
             }
 

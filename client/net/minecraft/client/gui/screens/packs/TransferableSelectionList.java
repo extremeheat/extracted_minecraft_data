@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -136,21 +135,19 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          PackCompatibility var11 = this.pack.getCompatibility();
          if (!var11.isCompatible()) {
+            var1.depthTreeDown();
             int var12 = var4 + var5 - 3 - (this.parent.scrollbarVisible() ? 7 : 0);
-            var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_BACK);
             var1.fill(var4 - 1, var3 - 1, var12, var3 + var6 + 1, -8978432);
-            var1.popGuiLayer();
+            var1.depthTreeBack();
          }
 
-         var1.pushGuiLayer(GuiLayer.SCREEN_SLOT);
+         var1.depthTreePushCheckpoint();
          var1.blit(RenderPipelines.GUI_TEXTURED, this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
-         var1.popGuiLayer();
          FormattedCharSequence var16 = this.nameDisplayCache;
          MultiLineLabel var13 = this.descriptionDisplayCache;
          if (this.showHoverOverlay() && ((Boolean)this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
-            var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_FRONT);
+            var1.depthTreeUp();
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
-            var1.popGuiLayer();
             int var14 = var7 - var4;
             int var15 = var8 - var3;
             if (!this.pack.getCompatibility().isCompatible()) {
@@ -158,7 +155,7 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
                var13 = this.incompatibleDescriptionDisplayCache;
             }
 
-            var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_ICON_ABOVE_HIGHLIGHT);
+            var1.depthTreeUp();
             if (this.pack.canSelect()) {
                if (var14 < 32) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
@@ -190,10 +187,9 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
                   }
                }
             }
-
-            var1.popGuiLayer();
          }
 
+         var1.depthTreeBackToCheckpoint();
          var1.drawString(this.minecraft.font, var16, var4 + 32 + 2, var3 + 1, 16777215);
          var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, -8355712);
       }

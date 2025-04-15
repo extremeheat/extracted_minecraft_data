@@ -79,18 +79,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return true;
    }
 
-   public boolean handleLeashAtDistance(Entity var1, float var2) {
-      if (this.isInSittingPose()) {
-         if (var2 > 10.0F) {
-            this.dropLeash();
-         }
-
-         return false;
-      } else {
-         return super.handleLeashAtDistance(var1, var2);
-      }
-   }
-
    protected void spawnTamingParticles(boolean var1) {
       SimpleParticleType var2 = ParticleTypes.HEART;
       if (!var1) {

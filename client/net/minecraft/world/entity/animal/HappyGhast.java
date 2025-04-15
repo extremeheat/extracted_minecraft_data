@@ -4,6 +4,9 @@ import com.mojang.serialization.Dynamic;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -20,6 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -58,6 +62,8 @@ public class HappyGhast extends Animal {
    private static final float FLY_SPEED = 0.09F;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
    public static final Predicate<ItemStack> IS_FOOD = (var0) -> var0.is(ItemTags.HAPPY_GHAST_FOOD);
+   private int leashHolderTime = 0;
+   private static final EntityDataAccessor<Boolean> IS_LEASH_HOLDER;
 
    public HappyGhast(EntityType<? extends HappyGhast> var1, Level var2) {
       super(var1, var2);
@@ -137,6 +143,9 @@ public class HappyGhast extends Animal {
       return false;
    }
 
+   protected void playStepSound(BlockPos var1, BlockState var2) {
+   }
+
    public float getVoicePitch() {
       return 1.0F;
    }
@@ -160,10 +169,6 @@ public class HappyGhast extends Animal {
 
    protected SoundEvent getDeathSound() {
       return this.isBaby() ? SoundEvents.GHASTLING_DEATH : SoundEvents.HAPPY_GHAST_DEATH;
-   }
-
-   protected float getSoundVolume() {
-      return 5.0F;
    }
 
    public int getMaxSpawnClusterSize() {
@@ -214,7 +219,7 @@ public class HappyGhast extends Animal {
                return super.mobInteract(var1, var2);
             }
          } else {
-            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
             this.playSound(SoundEvents.HARNESS_UNEQUIP);
             ItemStack var7 = this.getBodyArmorItem();
             this.setBodyArmorItem(ItemStack.EMPTY);
@@ -323,6 +328,11 @@ public class HappyGhast extends Animal {
       }
 
       this.checkRestriction();
+      if (this.leashHolderTime > 0) {
+         --this.leashHolderTime;
+      }
+
+      this.setLeashHolder(this.leashHolderTime > 0);
       super.customServerAiStep(var1);
    }
 
@@ -364,12 +374,53 @@ public class HappyGhast extends Animal {
       DebugPackets.sendEntityBrain(this);
    }
 
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(IS_LEASH_HOLDER, false);
+   }
+
+   private void setLeashHolder(boolean var1) {
+      this.entityData.set(IS_LEASH_HOLDER, var1);
+   }
+
+   public boolean isLeashHolder() {
+      return (Boolean)this.entityData.get(IS_LEASH_HOLDER);
+   }
+
+   public boolean supportQuadLeashAsHolder() {
+      return true;
+   }
+
+   public Vec3[] getQuadLeashHolderOffsets() {
+      return Leashable.createQuadLeashOffsets(this, -0.03125, 0.4375, 0.46875, 0.03125);
+   }
+
+   public double leashElasticDistance() {
+      return 10.0;
+   }
+
+   public double leashSnapDistance() {
+      return 16.0;
+   }
+
+   public void onElasticLeashPull() {
+      super.onElasticLeashPull();
+      this.getMoveControl().setWait();
+   }
+
+   public void notifyLeashHolder(Leashable var1) {
+      if (var1.supportQuadLeash()) {
+         this.leashHolderTime = 5;
+      }
+
+   }
+
    public boolean isPlayerAboveGhast() {
       AABB var1 = this.getBoundingBox();
       AABB var2 = new AABB(var1.minX - 1.0, var1.maxY, var1.minZ - 1.0, var1.maxX + 1.0, var1.maxY + var1.getYsize() / 2.0, var1.maxZ + 1.0);
 
       for(Player var4 : this.level().players()) {
-         if (var2.contains(var4.getX(), var4.getY(), var4.getZ())) {
+         if (!var4.isSpectator() && var2.contains(var4.getX(), var4.getY(), var4.getZ())) {
             return true;
          }
       }
@@ -383,6 +434,14 @@ public class HappyGhast extends Animal {
 
    public boolean canBeCollidedWith() {
       return !this.isBaby() && this.isPlayerAboveGhast();
+   }
+
+   public boolean isFlyingVehicle() {
+      return !this.isBaby();
+   }
+
+   static {
+      IS_LEASH_HOLDER = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class BabyFlyingPathNavigation extends FlyingPathNavigation {

@@ -148,10 +148,6 @@ public class Pufferfish extends AbstractFish {
 
    }
 
-   protected SoundEvent getAmbientSound() {
-      return SoundEvents.PUFFER_FISH_AMBIENT;
-   }
-
    protected SoundEvent getDeathSound() {
       return SoundEvents.PUFFER_FISH_DEATH;
    }

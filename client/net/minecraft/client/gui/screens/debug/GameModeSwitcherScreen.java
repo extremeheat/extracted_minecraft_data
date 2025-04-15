@@ -69,7 +69,7 @@ public class GameModeSwitcherScreen extends Screen {
          int var5 = this.width / 2 - 62;
          int var6 = this.height / 2 - 31 - 27;
          var1.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
-         super.render(var1, var2, var3, var4);
+         var1.depthTreeUp();
          var1.drawCenteredString(this.font, (Component)this.currentlyHovered.getName(), this.width / 2, this.height / 2 - 31 - 20, -1);
          var1.drawCenteredString(this.font, SELECT_KEY, this.width / 2, this.height / 2 + 5, 16777215);
          if (!this.setFirstMousePos) {
@@ -210,11 +210,15 @@ public class GameModeSwitcherScreen extends Screen {
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          this.drawSlot(var1);
+         var1.depthTreeUp();
          this.icon.drawIcon(var1, this.getX() + 5, this.getY() + 5);
          if (this.isSelected) {
+            var1.depthTreeUp();
             this.drawSelection(var1);
+            var1.depthTreeBack();
          }
 
+         var1.depthTreeBack();
       }
 
       public void updateWidgetNarration(NarrationElementOutput var1) {

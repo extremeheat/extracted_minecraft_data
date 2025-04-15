@@ -3,7 +3,6 @@ package net.minecraft.client.gui;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -17,7 +16,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.render.state.ColoredRectangleRenderState;
@@ -73,22 +71,16 @@ import org.joml.Vector2ic;
 import org.joml.Vector3f;
 
 public class GuiGraphics {
-   private static final float START_DEPTH = 0.0F;
-   private static final float DEPTH_STEP = 0.01F;
    private static final int EXTRA_SPACE_AFTER_FIRST_TOOLTIP_LINE = 2;
    private final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
    private final GuiSpriteManager sprites;
    private final GuiRenderState guiRenderState;
-   private final List<GuiLayer> layerStack;
-   private float currentDepth;
 
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
       super();
       this.scissorStack = new ScissorStack();
-      this.layerStack = new ArrayList(5);
-      this.currentDepth = 0.0F;
       this.minecraft = var1;
       this.pose = var2;
       this.sprites = var1.getGuiSprites();
@@ -107,26 +99,39 @@ public class GuiGraphics {
       return this.minecraft.getWindow().getGuiScaledHeight();
    }
 
-   public void pushGuiLayer(GuiLayer var1) {
-      this.layerStack.add(var1);
+   public void depthTreeUp() {
+      this.guiRenderState.up();
    }
 
-   public void popPushGuiLayer(GuiLayer var1) {
-      this.popGuiLayer();
-      this.pushGuiLayer(var1);
+   public void depthTreeUpToTop() {
+      this.guiRenderState.upToTop();
    }
 
-   public void popGuiLayer() {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to pop empty GuiLayer stack");
-      } else {
-         this.layerStack.removeLast();
+   public void nextStratum() {
+      this.guiRenderState.nextStratum();
+   }
+
+   public void depthTreeDown() {
+      this.guiRenderState.down();
+   }
+
+   public void depthTreeBack() {
+      this.guiRenderState.back();
+   }
+
+   public void depthTreeBack(int var1) {
+      for(int var2 = 0; var2 < var1; ++var2) {
+         this.guiRenderState.back();
       }
+
    }
 
-   private float getNextDepth() {
-      this.currentDepth += 0.01F;
-      return this.currentDepth;
+   public void depthTreePushCheckpoint() {
+      this.guiRenderState.pushCheckpoint();
+   }
+
+   public void depthTreeBackToCheckpoint() {
+      this.guiRenderState.backToCheckpoint();
    }
 
    public Matrix3x2fStack pose() {
@@ -195,7 +200,7 @@ public class GuiGraphics {
    }
 
    private void submitColoredRectangle(RenderPipeline var1, TextureSetup var2, int var3, int var4, int var5, int var6, int var7, @Nullable Integer var8) {
-      this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, var6, this.getNextDepth(), var7, var8 != null ? var8 : var7, (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
+      this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8 != null ? var8 : var7, this.scissorStack.peek()));
    }
 
    public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
@@ -232,11 +237,7 @@ public class GuiGraphics {
    }
 
    private void submitText(TextRenderState var1, int var2, int var3) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit text with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitText(new GuiTextRenderState(var1, new Matrix3x2f(this.pose), var2, var3, this.getNextDepth(), this.getNextDepth(), this.getNextDepth(), this.getNextDepth(), this.getNextDepth(), (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitText(new GuiTextRenderState(var1, new Matrix3x2f(this.pose), var2, var3, this.scissorStack.peek()));
    }
 
    public void drawString(Font var1, Component var2, int var3, int var4, int var5) {
@@ -271,7 +272,9 @@ public class GuiGraphics {
          this.fill(var10001, var10002, var10003, var4 + 9 + 2, ARGB.multiply(var7, var6));
       }
 
+      this.depthTreeUp();
       this.drawString(var1, var2, var3, var4, var6, true);
+      this.depthTreeBack();
    }
 
    public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
@@ -417,11 +420,7 @@ public class GuiGraphics {
    }
 
    private void submitBlit(RenderPipeline var1, GpuTexture var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit a blit with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, this.getNextDepth(), var7, var8, var9, var10, var11, (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, this.scissorStack.peek()));
    }
 
    public void renderItem(ItemStack var1, int var2, int var3) {
@@ -450,11 +449,7 @@ public class GuiGraphics {
          this.minecraft.getItemModelResolver().updateForTopItem(var7, var3, ItemDisplayContext.GUI, var2, var1, var6);
 
          try {
-            if (this.layerStack.isEmpty()) {
-               throw new IllegalStateException("Trying to submit an item with an empty GuiLayer stack");
-            } else {
-               this.guiRenderState.submitItem(new GuiItemRenderState(var3.getItem().getName().toString(), new Matrix3x2f(this.pose), var7, var4, var5, this.getNextDepth(), (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-            }
+            this.guiRenderState.submitItem(new GuiItemRenderState(var3.getItem().getName().toString(), new Matrix3x2f(this.pose), var7, var4, var5, this.scissorStack.peek()));
          } catch (Throwable var11) {
             CrashReport var9 = CrashReport.forThrowable(var11, "Rendering item");
             CrashReportCategory var10 = var9.addCategory("Item being rendered");
@@ -467,30 +462,20 @@ public class GuiGraphics {
    }
 
    public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4) {
-      this.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, var1, var2, var3, var4, (String)null);
+      this.renderItemDecorations(var1, var2, var3, var4, (String)null);
    }
 
-   public void renderItemDecorations(ItemSlotContext var1, Font var2, ItemStack var3, int var4, int var5) {
-      this.renderItemDecorations(var1, var2, var3, var4, var5, (String)null);
-   }
-
-   public void renderItemDecorations(ItemSlotContext var1, Font var2, ItemStack var3, int var4, int var5, @Nullable String var6) {
-      if (!var3.isEmpty()) {
+   public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
+      if (!var2.isEmpty()) {
          this.pose.pushMatrix();
-         switch (var1.ordinal()) {
-            case 0 -> this.pushGuiLayer(GuiLayer.HUD_ITEM_DECORATION);
-            case 1 -> this.pushGuiLayer(GuiLayer.SCREEN_SLOT_DECORATION);
-         }
-
-         this.renderItemBar(var3, var4, var5);
-         this.renderItemCooldown(var3, var4, var5);
-         switch (var1.ordinal()) {
-            case 0 -> this.popPushGuiLayer(GuiLayer.HUD_ITEM_COUNT);
-            case 1 -> this.popPushGuiLayer(GuiLayer.SCREEN_SLOT_COUNT);
-         }
-
-         this.renderItemCount(var2, var3, var4, var5, var6);
-         this.popGuiLayer();
+         this.depthTreePushCheckpoint();
+         this.depthTreeUp();
+         this.renderItemBar(var2, var3, var4);
+         this.depthTreeUp();
+         this.renderItemCooldown(var2, var3, var4);
+         this.depthTreeUp();
+         this.renderItemCount(var1, var2, var3, var4, var5);
+         this.depthTreeBackToCheckpoint();
          this.pose.popMatrix();
       }
    }
@@ -539,6 +524,7 @@ public class GuiGraphics {
 
    private void renderTooltipInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6) {
       if (!var2.isEmpty()) {
+         this.nextStratum();
          int var7 = 0;
          int var8 = var2.size() == 1 ? -2 : 0;
 
@@ -558,6 +544,7 @@ public class GuiGraphics {
          int var13 = var19.y();
          this.pose.pushMatrix();
          TooltipRenderUtil.renderTooltipBackground(this, var12, var13, var7, var8, var6);
+         this.depthTreeUp();
          int var14 = var13;
 
          for(int var15 = 0; var15 < var2.size(); ++var15) {
@@ -583,6 +570,7 @@ public class GuiGraphics {
          int var4 = var2 + 2;
          int var5 = var3 + 13;
          this.fill(RenderPipelines.GUI, var4, var5, var4 + 13, var5 + 2, -16777216);
+         this.depthTreeUp();
          this.fill(RenderPipelines.GUI, var4, var5, var4 + var1.getBarWidth(), var5 + 1, ARGB.opaque(var1.getBarColor()));
       }
 
@@ -667,8 +655,8 @@ public class GuiGraphics {
       Minecraft var2 = Minecraft.getInstance();
       TextureManager var3 = var2.getTextureManager();
       GpuTexture var4 = var3.getTexture(var1.texture).getTexture();
+      this.depthTreeUp();
       this.submitBlit(RenderPipelines.GUI_TEXTURED, var4, 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
-      this.pushGuiLayer(GuiLayer.SCREEN_MAP_DECORATION);
 
       for(MapRenderState.MapDecorationRenderState var6 : var1.decorations) {
          if (var6.renderOnFrame) {
@@ -677,9 +665,11 @@ public class GuiGraphics {
             this.pose.rotate(0.017453292F * (float)var6.rot * 360.0F / 16.0F);
             this.pose.scale(4.0F, 4.0F);
             this.pose.translate(-0.125F, 0.125F);
+            this.depthTreePushCheckpoint();
             TextureAtlasSprite var7 = var6.atlasSprite;
             if (var7 != null) {
                GpuTexture var8 = var3.getTexture(var7.atlasLocation()).getTexture();
+               this.depthTreeUp();
                this.submitBlit(RenderPipelines.GUI_TEXTURED, var8, -1, -1, 1, 1, var7.getU0(), var7.getU1(), var7.getV1(), var7.getV0(), -1);
             }
 
@@ -694,74 +684,40 @@ public class GuiGraphics {
                this.pose.translate((float)var6.x / 2.0F + 64.0F - var9 * var10 / 2.0F, (float)var6.y / 2.0F + 64.0F + 4.0F);
                this.pose.scale(var10, var10);
                TextRenderState var11 = var12.extractTextRenderState((FormattedCharSequence)var6.name.getVisualOrderText(), 0.0F, 0.0F, -1, false, Font.DisplayMode.NORMAL, -2147483648, 15728880);
+               this.depthTreeUp();
                this.submitText(var11, 0, 0);
                this.pose.popMatrix();
             }
+
+            this.depthTreeBackToCheckpoint();
          }
       }
 
-      this.popGuiLayer();
+      this.depthTreeBack();
    }
 
    public void submitEntityRenderState(EntityRenderState var1, float var2, Vector3f var3, Quaternionf var4, @Nullable Quaternionf var5, int var6, int var7, int var8, int var9) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit an entity with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitPicturesInPictureState(new GuiEntityRenderState(var1, var3, var4, var5, var6, var7, var8, var9, this.getNextDepth(), var2, (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitPicturesInPictureState(new GuiEntityRenderState(var1, var3, var4, var5, var6, var7, var8, var9, var2, this.scissorStack.peek()));
    }
 
    public void submitSkinRenderState(PlayerModel var1, ResourceLocation var2, float var3, float var4, float var5, float var6, int var7, int var8, int var9, int var10) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit a skin with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitPicturesInPictureState(new GuiSkinRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var10, this.getNextDepth(), var3, (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitPicturesInPictureState(new GuiSkinRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var10, var3, this.scissorStack.peek()));
    }
 
    public void submitBookModelRenderState(BookModel var1, ResourceLocation var2, float var3, float var4, float var5, int var6, int var7, int var8, int var9) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit a book model with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(var1, var2, var4, var5, var6, var7, var8, var9, this.getNextDepth(), var3, (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var3, this.scissorStack.peek()));
    }
 
    public void submitBannerPatternRenderState(ModelPart var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit a banner result with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(var1, var2, var3, var4, var5, var6, var7, this.getNextDepth(), (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(var1, var2, var3, var4, var5, var6, var7, this.scissorStack.peek()));
    }
 
    public void submitSignRenderState(Model var1, float var2, WoodType var3, int var4, int var5, int var6, int var7) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit a sign result with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitPicturesInPictureState(new GuiSignRenderState(var1, var3, var4, var5, var6, var7, this.getNextDepth(), var2, (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
+      this.guiRenderState.submitPicturesInPictureState(new GuiSignRenderState(var1, var3, var4, var5, var6, var7, var2, this.scissorStack.peek()));
    }
 
    public void submitProfilerChartRenderState(List<ResultField> var1, int var2, int var3, int var4, int var5) {
-      if (this.layerStack.isEmpty()) {
-         throw new IllegalStateException("Trying to submit a profiler chart with an empty GuiLayer stack");
-      } else {
-         this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(var1, var2, var3, var4, var5, this.getNextDepth(), (GuiLayer)this.layerStack.getLast(), this.scissorStack.peek()));
-      }
-   }
-
-   public static enum ItemSlotContext {
-      HUD,
-      SCREEN;
-
-      private ItemSlotContext() {
-      }
-
-      // $FF: synthetic method
-      private static ItemSlotContext[] $values() {
-         return new ItemSlotContext[]{HUD, SCREEN};
-      }
+      this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(var1, var2, var3, var4, var5, this.scissorStack.peek()));
    }
 
    static class ScissorStack {

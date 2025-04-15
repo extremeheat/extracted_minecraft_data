@@ -33,6 +33,7 @@ public class BossHealthOverlay {
 
    public void render(GuiGraphics var1) {
       if (!this.events.isEmpty()) {
+         var1.nextStratum();
          ProfilerFiller var2 = Profiler.get();
          var2.push("bossHealth");
          int var3 = var1.guiWidth();
@@ -40,7 +41,9 @@ public class BossHealthOverlay {
 
          for(LerpingBossEvent var6 : this.events.values()) {
             int var7 = var3 / 2 - 91;
+            var1.depthTreePushCheckpoint();
             this.drawBar(var1, var7, var4, var6);
+            var1.depthTreeBackToCheckpoint();
             Component var9 = var6.getName();
             int var10 = this.minecraft.font.width((FormattedText)var9);
             int var11 = var3 / 2 - var10 / 2;
@@ -61,6 +64,7 @@ public class BossHealthOverlay {
       this.drawBar(var1, var2, var3, var4, 182, BAR_BACKGROUND_SPRITES, OVERLAY_BACKGROUND_SPRITES);
       int var5 = Mth.lerpDiscrete(var4.getProgress(), 0, 182);
       if (var5 > 0) {
+         var1.depthTreeUp();
          this.drawBar(var1, var2, var3, var4, var5, BAR_PROGRESS_SPRITES, OVERLAY_PROGRESS_SPRITES);
       }
 
@@ -69,6 +73,7 @@ public class BossHealthOverlay {
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
       }
 

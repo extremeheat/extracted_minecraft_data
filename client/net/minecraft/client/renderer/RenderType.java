@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
@@ -19,6 +20,7 @@ import net.minecraft.Util;
 import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector4f;
 
 public abstract class RenderType extends RenderStateShard {
    private static final int MEGABYTE = 1048576;
@@ -685,49 +687,52 @@ public abstract class RenderType extends RenderStateShard {
       public void draw(MeshData var1) {
          RenderPipeline var2 = this.getRenderPipeline();
          this.setupRenderState();
-         MeshData var3 = var1;
+         GpuBufferSlice var3 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
+         MeshData var4 = var1;
 
          try {
-            GpuBuffer var4 = var2.getVertexFormat().uploadImmediateVertexBuffer(var1.vertexBuffer());
-            GpuBuffer var5;
-            VertexFormat.IndexType var6;
+            GpuBuffer var5 = var2.getVertexFormat().uploadImmediateVertexBuffer(var1.vertexBuffer());
+            GpuBuffer var6;
+            VertexFormat.IndexType var7;
             if (var1.indexBuffer() == null) {
-               RenderSystem.AutoStorageIndexBuffer var7 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
-               var5 = var7.getBuffer(var1.drawState().indexCount());
-               var6 = var7.type();
+               RenderSystem.AutoStorageIndexBuffer var8 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
+               var6 = var8.getBuffer(var1.drawState().indexCount());
+               var7 = var8.type();
             } else {
-               var5 = var2.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
-               var6 = var1.drawState().indexType();
+               var6 = var2.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
+               var7 = var1.drawState().indexType();
             }
 
-            RenderTarget var17 = this.state.outputState.getRenderTarget();
-            GpuTexture var8 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var17.getColorTexture();
-            GpuTexture var9 = var17.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var17.getDepthTexture()) : null;
+            RenderTarget var18 = this.state.outputState.getRenderTarget();
+            GpuTexture var9 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var18.getColorTexture();
+            GpuTexture var10 = var18.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var18.getDepthTexture()) : null;
 
-            try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var8, OptionalInt.empty(), var9, OptionalDouble.empty())) {
-               var10.setPipeline(var2);
-               var10.setVertexBuffer(0, var4);
+            try (RenderPass var11 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var9, OptionalInt.empty(), var10, OptionalDouble.empty())) {
+               var11.setPipeline(var2);
+               RenderSystem.bindDefaultUniforms(var11);
+               var11.setUniform("DynamicTransforms", var3);
+               var11.setVertexBuffer(0, var5);
 
-               for(int var11 = 0; var11 < 12; ++var11) {
-                  GpuTexture var12 = RenderSystem.getShaderTexture(var11);
-                  if (var12 != null) {
-                     var10.bindSampler("Sampler" + var11, var12);
+               for(int var12 = 0; var12 < 12; ++var12) {
+                  GpuTexture var13 = RenderSystem.getShaderTexture(var12);
+                  if (var13 != null) {
+                     var11.bindSampler("Sampler" + var12, var13);
                   }
                }
 
-               var10.setIndexBuffer(var5, var6);
-               var10.drawIndexed(0, var1.drawState().indexCount());
+               var11.setIndexBuffer(var6, var7);
+               var11.drawIndexed(0, var1.drawState().indexCount());
             }
-         } catch (Throwable var16) {
+         } catch (Throwable var17) {
             if (var1 != null) {
                try {
-                  var3.close();
-               } catch (Throwable var13) {
-                  var16.addSuppressed(var13);
+                  var4.close();
+               } catch (Throwable var14) {
+                  var17.addSuppressed(var14);
                }
             }
 
-            throw var16;
+            throw var17;
          }
 
          if (var1 != null) {

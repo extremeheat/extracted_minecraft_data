@@ -33,6 +33,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -293,7 +294,7 @@ public class Armadillo extends Animal {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BRUSH) && this.brushOffScute()) {
-         var3.hurtAndBreak(16, var1, getSlotForHand(var2));
+         var3.hurtAndBreak(16, var1, (EquipmentSlot)getSlotForHand(var2));
          return InteractionResult.SUCCESS;
       } else {
          return (InteractionResult)(this.isScared() ? InteractionResult.FAIL : super.mobInteract(var1, var2));

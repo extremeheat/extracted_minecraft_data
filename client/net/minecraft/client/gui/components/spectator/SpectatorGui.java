@@ -63,7 +63,9 @@ public class SpectatorGui implements SpectatorMenuListener {
       int var6 = ARGB.white(var2);
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
       if (var5.getSelectedSlot() >= 0) {
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
+         var1.depthTreeBack();
       }
 
       for(int var7 = 0; var7 < 9; ++var7) {
@@ -77,18 +79,23 @@ public class SpectatorGui implements SpectatorMenuListener {
          var1.pose().pushMatrix();
          var1.pose().translate((float)var3, var4);
          float var7 = var6.isEnabled() ? 1.0F : 0.25F;
+         var1.depthTreeUp();
          var6.renderIcon(var1, var7, var5);
          var1.pose().popMatrix();
          int var8 = (int)(var5 * 255.0F);
          if (var8 > 3 && var6.isEnabled()) {
             Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
+            var1.depthTreeUp();
             var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var9), (int)var4 + 6 + 3, 16777215 + (var8 << 24));
+            var1.depthTreeBack();
          }
+
+         var1.depthTreeBack();
       }
 
    }
 
-   public void renderTooltip(GuiGraphics var1) {
+   public void renderAction(GuiGraphics var1) {
       int var2 = (int)(this.getHotbarAlpha() * 255.0F);
       if (var2 > 3 && this.menu != null) {
          SpectatorMenuItem var3 = this.menu.getSelectedItem();

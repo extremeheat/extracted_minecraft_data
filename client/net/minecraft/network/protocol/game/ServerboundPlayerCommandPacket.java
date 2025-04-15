@@ -57,8 +57,6 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
    }
 
    public static enum Action {
-      PRESS_SHIFT_KEY,
-      RELEASE_SHIFT_KEY,
       STOP_SLEEPING,
       START_SPRINTING,
       STOP_SPRINTING,
@@ -72,7 +70,7 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
 
       // $FF: synthetic method
       private static Action[] $values() {
-         return new Action[]{PRESS_SHIFT_KEY, RELEASE_SHIFT_KEY, STOP_SLEEPING, START_SPRINTING, STOP_SPRINTING, START_RIDING_JUMP, STOP_RIDING_JUMP, OPEN_INVENTORY, START_FALL_FLYING};
+         return new Action[]{STOP_SLEEPING, START_SPRINTING, STOP_SPRINTING, START_RIDING_JUMP, STOP_RIDING_JUMP, OPEN_INVENTORY, START_FALL_FLYING};
       }
    }
 }

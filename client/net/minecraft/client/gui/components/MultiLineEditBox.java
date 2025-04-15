@@ -187,7 +187,9 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    }
 
    private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      var1.depthTreeUp();
       var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
+      var1.depthTreeBack();
    }
 
    private void scrollToCursor() {

@@ -70,7 +70,7 @@ public class NetherFossilPieces {
             int var8 = var3.minZ() + var5.nextInt(var3.getZSpan());
             BlockPos var9 = new BlockPos(var6, var7, var8);
             if (var1.getBlockState(var9).isAir() && var4.isInside(var9)) {
-               var1.setBlock(var9, Blocks.DRIED_GHAST.defaultBlockState(), 2);
+               var1.setBlock(var9, Blocks.DRIED_GHAST.defaultBlockState().rotate(Rotation.getRandom(var5)), 2);
             }
          }
 

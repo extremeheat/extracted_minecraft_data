@@ -61,13 +61,17 @@ import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.joml.Vector4f;
 
 public class ExtraCodecs {
    public static final Codec<JsonElement> JSON;
    public static final Codec<Object> JAVA;
+   public static final Codec<Vector2f> VECTOR2F;
    public static final Codec<Vector3f> VECTOR3F;
+   public static final Codec<Vector3i> VECTOR3I;
    public static final Codec<Vector4f> VECTOR4F;
    public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS;
    public static final Codec<AxisAngle4f> AXISANGLE4F;
@@ -425,7 +429,9 @@ public class ExtraCodecs {
    static {
       JSON = converter(JsonOps.INSTANCE);
       JAVA = converter(JavaOps.INSTANCE);
+      VECTOR2F = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 2).map((var0x) -> new Vector2f((Float)var0x.get(0), (Float)var0x.get(1))), (var0) -> List.of(var0.x(), var0.y()));
       VECTOR3F = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 3).map((var0x) -> new Vector3f((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2))), (var0) -> List.of(var0.x(), var0.y(), var0.z()));
+      VECTOR3I = Codec.INT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 3).map((var0x) -> new Vector3i((Integer)var0x.get(0), (Integer)var0x.get(1), (Integer)var0x.get(2))), (var0) -> List.of(var0.x(), var0.y(), var0.z()));
       VECTOR4F = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> new Vector4f((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))), (var0) -> List.of(var0.x(), var0.y(), var0.z(), var0.w()));
       QUATERNIONF_COMPONENTS = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> (new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))).normalize()), (var0) -> List.of(var0.x, var0.y, var0.z, var0.w));
       AXISANGLE4F = RecordCodecBuilder.create((var0) -> var0.group(Codec.FLOAT.fieldOf("angle").forGetter((var0x) -> var0x.angle), VECTOR3F.fieldOf("axis").forGetter((var0x) -> new Vector3f(var0x.x, var0x.y, var0x.z))).apply(var0, AxisAngle4f::new));

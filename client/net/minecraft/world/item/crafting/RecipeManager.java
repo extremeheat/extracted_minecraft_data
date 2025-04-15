@@ -151,7 +151,8 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
 
    @Nullable
    public ServerDisplayInfo getRecipeFromDisplay(RecipeDisplayId var1) {
-      return (ServerDisplayInfo)this.allDisplays.get(var1.index());
+      int var2 = var1.index();
+      return var2 >= 0 && var2 < this.allDisplays.size() ? (ServerDisplayInfo)this.allDisplays.get(var2) : null;
    }
 
    public void listDisplaysForRecipe(ResourceKey<Recipe<?>> var1, Consumer<RecipeDisplayEntry> var2) {

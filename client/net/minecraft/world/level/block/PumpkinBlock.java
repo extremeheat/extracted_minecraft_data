@@ -9,6 +9,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -44,7 +45,7 @@ public class PumpkinBlock extends Block {
          ItemEntity var10 = new ItemEntity(var3, (double)var4.getX() + 0.5 + (double)var9.getStepX() * 0.65, (double)var4.getY() + 0.1, (double)var4.getZ() + 0.5 + (double)var9.getStepZ() * 0.65, new ItemStack(Items.PUMPKIN_SEEDS, 4));
          var10.setDeltaMovement(0.05 * (double)var9.getStepX() + var3.random.nextDouble() * 0.02, 0.05, 0.05 * (double)var9.getStepZ() + var3.random.nextDouble() * 0.02);
          var3.addFreshEntity(var10);
-         var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
+         var1.hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var6));
          var3.gameEvent(var5, GameEvent.SHEAR, var4);
          var5.awardStat(Stats.ITEM_USED.get(Items.SHEARS));
          return InteractionResult.SUCCESS;

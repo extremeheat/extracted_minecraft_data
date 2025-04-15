@@ -34,12 +34,16 @@ public class TabButton extends AbstractWidget {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
       Font var5 = Minecraft.getInstance().font;
       int var6 = this.active ? -1 : -6250336;
+      var1.depthTreeUp();
       if (this.isSelected()) {
          this.renderMenuBackground(var1, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
+         var1.depthTreeUp();
          this.renderFocusUnderline(var1, var5, var6);
+         var1.depthTreeBack();
       }
 
       this.renderString(var1, var5, var6);
+      var1.depthTreeBack();
    }
 
    protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {

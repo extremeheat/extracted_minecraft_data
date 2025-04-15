@@ -34,16 +34,14 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.renderFg(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
-   }
-
-   protected void renderFg(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       var1.blit(RenderPipelines.GUI_TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.depthTreeUp();
       this.renderErrorIcon(var1, this.leftPos, this.topPos);
+      var1.depthTreeBack();
    }
 
    protected abstract void renderErrorIcon(GuiGraphics var1, int var2, int var3);

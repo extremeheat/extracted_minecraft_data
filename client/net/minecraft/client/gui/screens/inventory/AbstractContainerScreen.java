@@ -12,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.BundleMouseActions;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.ItemSlotMouseAction;
-import net.minecraft.client.gui.render.GuiLayer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -25,6 +24,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector2i;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
    public static final ResourceLocation INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory.png");
@@ -48,19 +48,15 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    @Nullable
    private Slot clickedSlot;
    @Nullable
-   private Slot snapbackEnd;
-   @Nullable
    private Slot quickdropSlot;
    @Nullable
    private Slot lastClickSlot;
+   @Nullable
+   private SnapbackData snapbackData;
    protected int leftPos;
    protected int topPos;
    private boolean isSplittingStack;
    private ItemStack draggingItem;
-   private int snapbackStartX;
-   private int snapbackStartY;
-   private long snapbackTime;
-   private ItemStack snapbackItem;
    private long quickdropTime;
    protected final Set<Slot> quickCraftSlots;
    protected boolean isQuickCrafting;
@@ -76,7 +72,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    public AbstractContainerScreen(T var1, Inventory var2, Component var3) {
       super(var3);
       this.draggingItem = ItemStack.EMPTY;
-      this.snapbackItem = ItemStack.EMPTY;
       this.quickCraftSlots = Sets.newHashSet();
       this.lastQuickMoved = ItemStack.EMPTY;
       this.menu = var1;
@@ -101,6 +96,12 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderContents(var1, var2, var3, var4);
+      this.renderCarriedItem(var1, var2, var3);
+      this.renderSnapbackItem(var1);
+   }
+
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
       super.render(var1, var2, var3, var4);
@@ -108,50 +109,58 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().translate((float)var5, (float)var6);
       Slot var7 = this.hoveredSlot;
       this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
-      var1.pushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_BACK);
+      var1.depthTreePushCheckpoint();
+      var1.depthTreeUp();
       this.renderSlotHighlightBack(var1);
-      var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT);
+      var1.depthTreeUp();
       this.renderSlots(var1);
-      var1.popPushGuiLayer(GuiLayer.SCREEN_SLOT_HIGHLIGHT_FRONT);
+      var1.depthTreeUpToTop();
       this.renderSlotHighlightFront(var1);
-      var1.popGuiLayer();
       if (var7 != null && var7 != this.hoveredSlot) {
          this.onStopHovering(var7);
       }
 
+      var1.depthTreeUp();
       this.renderLabels(var1, var2, var3);
-      ItemStack var8 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
-      if (!var8.isEmpty()) {
-         boolean var9 = true;
-         int var10 = this.draggingItem.isEmpty() ? 8 : 16;
-         String var11 = null;
+      var1.depthTreeBackToCheckpoint();
+      var1.pose().popMatrix();
+   }
+
+   public void renderCarriedItem(GuiGraphics var1, int var2, int var3) {
+      ItemStack var4 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
+      if (!var4.isEmpty()) {
+         boolean var5 = true;
+         int var6 = this.draggingItem.isEmpty() ? 8 : 16;
+         String var7 = null;
          if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
-            var8 = var8.copyWithCount(Mth.ceil((float)var8.getCount() / 2.0F));
+            var4 = var4.copyWithCount(Mth.ceil((float)var4.getCount() / 2.0F));
          } else if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
-            var8 = var8.copyWithCount(this.quickCraftingRemainder);
-            if (var8.isEmpty()) {
-               var11 = String.valueOf(ChatFormatting.YELLOW) + "0";
+            var4 = var4.copyWithCount(this.quickCraftingRemainder);
+            if (var4.isEmpty()) {
+               var7 = String.valueOf(ChatFormatting.YELLOW) + "0";
             }
          }
 
-         this.renderFloatingItem(var1, var8, var2 - var5 - 8, var3 - var6 - var10, var11);
+         var1.nextStratum();
+         this.renderFloatingItem(var1, var4, var2 - 8, var3 - var6, var7);
       }
 
-      if (!this.snapbackItem.isEmpty()) {
-         float var14 = (float)(Util.getMillis() - this.snapbackTime) / 100.0F;
-         if (var14 >= 1.0F) {
-            var14 = 1.0F;
-            this.snapbackItem = ItemStack.EMPTY;
+   }
+
+   public void renderSnapbackItem(GuiGraphics var1) {
+      if (this.snapbackData != null) {
+         float var2 = Mth.clamp((float)(Util.getMillis() - this.snapbackData.time) / 100.0F, 0.0F, 1.0F);
+         int var3 = this.snapbackData.end.x - this.snapbackData.start.x;
+         int var4 = this.snapbackData.end.y - this.snapbackData.start.y;
+         int var5 = this.snapbackData.start.x + (int)((float)var3 * var2);
+         int var6 = this.snapbackData.start.y + (int)((float)var4 * var2);
+         var1.nextStratum();
+         this.renderFloatingItem(var1, this.snapbackData.item, var5, var6, (String)null);
+         if (var2 >= 1.0F) {
+            this.snapbackData = null;
          }
-
-         int var15 = this.snapbackEnd.x - this.snapbackStartX;
-         int var16 = this.snapbackEnd.y - this.snapbackStartY;
-         int var12 = this.snapbackStartX + (int)((float)var15 * var14);
-         int var13 = this.snapbackStartY + (int)((float)var16 * var14);
-         this.renderFloatingItem(var1, this.snapbackItem, var12, var13, (String)null);
       }
 
-      var1.pose().popMatrix();
    }
 
    protected void renderSlots(GuiGraphics var1) {
@@ -164,7 +173,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.depthTreeDown();
       this.renderTransparentBackground(var1);
+      var1.depthTreeBack();
       this.renderBg(var1, var4, var2, var3);
    }
 
@@ -214,7 +225,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
       var1.renderItem(var2, var3, var4);
-      var1.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
+      var1.depthTreeUp();
+      var1.renderItemDecorations(this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
+      var1.depthTreeBack();
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
@@ -265,21 +278,25 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          }
       }
 
+      var1.depthTreePushCheckpoint();
       if (!var7) {
          if (var6) {
+            var1.depthTreeUp();
             var1.fill(var3, var4, var3 + 16, var4 + 16, -2130706433);
          }
 
          int var14 = var2.x + var2.y * this.imageWidth;
+         var1.depthTreeUp();
          if (var2.isFake()) {
             var1.renderFakeItem(var5, var3, var4, var14);
          } else {
             var1.renderItem(var5, var3, var4, var14);
          }
 
-         var1.renderItemDecorations(GuiGraphics.ItemSlotContext.SCREEN, this.font, var5, var3, var4, var9);
+         var1.renderItemDecorations(this.font, var5, var3, var4, var9);
       }
 
+      var1.depthTreeBackToCheckpoint();
    }
 
    private void recalculateQuickCraftRemaining() {
@@ -498,21 +515,13 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                   this.slotClicked(this.clickedSlot, this.clickedSlot.index, var5, ClickType.PICKUP);
                   this.slotClicked(var6, var10, 0, ClickType.PICKUP);
                   if (this.menu.getCarried().isEmpty()) {
-                     this.snapbackItem = ItemStack.EMPTY;
+                     this.snapbackData = null;
                   } else {
                      this.slotClicked(this.clickedSlot, this.clickedSlot.index, var5, ClickType.PICKUP);
-                     this.snapbackStartX = Mth.floor(var1 - (double)var7);
-                     this.snapbackStartY = Mth.floor(var3 - (double)var8);
-                     this.snapbackEnd = this.clickedSlot;
-                     this.snapbackItem = this.draggingItem;
-                     this.snapbackTime = Util.getMillis();
+                     this.snapbackData = new SnapbackData(this.draggingItem, new Vector2i((int)var1, (int)var3), new Vector2i(this.clickedSlot.x + var7, this.clickedSlot.y + var8), Util.getMillis());
                   }
                } else if (!this.draggingItem.isEmpty()) {
-                  this.snapbackStartX = Mth.floor(var1 - (double)var7);
-                  this.snapbackStartY = Mth.floor(var3 - (double)var8);
-                  this.snapbackEnd = this.clickedSlot;
-                  this.snapbackItem = this.draggingItem;
-                  this.snapbackTime = Util.getMillis();
+                  this.snapbackData = new SnapbackData(this.draggingItem, new Vector2i((int)var1, (int)var3), new Vector2i(this.clickedSlot.x + var7, this.clickedSlot.y + var8), Util.getMillis());
                }
 
                this.clearDraggingState();
@@ -671,5 +680,20 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       }
 
       super.onClose();
+   }
+
+   static record SnapbackData(ItemStack item, Vector2i start, Vector2i end, long time) {
+      final ItemStack item;
+      final Vector2i start;
+      final Vector2i end;
+      final long time;
+
+      SnapbackData(ItemStack var1, Vector2i var2, Vector2i var3, long var4) {
+         super();
+         this.item = var1;
+         this.start = var2;
+         this.end = var3;
+         this.time = var4;
+      }
    }
 }

@@ -12,10 +12,10 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix3x2f;
-import org.joml.Matrix4f;
 
 public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderState> implements AutoCloseable {
    private static final Matrix3x2f IDENTITY_POSE = new Matrix3x2f();
@@ -24,7 +24,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    private GpuTexture texture;
    @Nullable
    private GpuTexture depthTexture;
-   private final Matrix4f projectionMatrix = new Matrix4f();
+   private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName(), -1000.0F, 1000.0F, true);
 
    protected PictureInPictureRenderer(MultiBufferSource.BufferSource var1) {
       super();
@@ -45,7 +45,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       this.bufferSource.endBatch();
       RenderSystem.outputColorTextureOverride = null;
       RenderSystem.outputDepthTextureOverride = null;
-      var2.submitGuiElement(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.texture), IDENTITY_POSE, var1.x0(), var1.y0(), var1.x1(), var1.y1(), var1.z(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.layer(), var1.scissorArea()));
+      var2.submitGuiElement(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.texture), IDENTITY_POSE, var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea()));
    }
 
    private void prepareTexturesAndProjection(int var1, int var2) {
@@ -60,11 +60,10 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          this.texture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), TextureFormat.RGBA8, var1, var2, 1);
          this.texture.setTextureFilter(FilterMode.NEAREST, false);
          this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), TextureFormat.DEPTH32, var1, var2, 1);
-         this.projectionMatrix.setOrtho(0.0F, (float)var1, (float)var2, 0.0F, -1000.0F, 1000.0F);
       }
 
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);
-      RenderSystem.setProjectionMatrix(this.projectionMatrix, ProjectionType.ORTHOGRAPHIC);
+      RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer((float)var1, (float)var2), ProjectionType.ORTHOGRAPHIC);
    }
 
    protected float getTranslateY(int var1, int var2) {
@@ -80,6 +79,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          this.depthTexture.close();
       }
 
+      this.projectionMatrixBuffer.close();
    }
 
    public abstract Class<T> getRenderStateClass();

@@ -10,10 +10,6 @@ public record GlRenderPipeline(RenderPipeline info, GlProgram program) implement
       this.program = var2;
    }
 
-   public boolean containsUniform(String var1) {
-      return this.program.getUniform(var1) != null;
-   }
-
    public boolean isValid() {
       return this.program != GlProgram.INVALID_PROGRAM;
    }

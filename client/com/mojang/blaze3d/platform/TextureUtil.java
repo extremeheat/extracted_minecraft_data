@@ -1,8 +1,6 @@
 package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.DontObfuscate;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -64,10 +62,10 @@ public class TextureUtil {
          var5 += var2.getFormat().pixelSize() * var2.getWidth(var6) * var2.getHeight(var6);
       }
 
-      GpuBuffer var12 = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, var5);
+      GpuBuffer var12 = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", 9, var5);
       CommandEncoder var7 = RenderSystem.getDevice().createCommandEncoder();
       Runnable var8 = () -> {
-         try (GpuBuffer.ReadView var7x = var7.readBuffer(var12)) {
+         try (GpuBuffer.MappedView var7x = var7.mapBuffer(var12, true, false)) {
             int var8 = 0;
 
             for(int var9 = 0; var9 <= var3; ++var9) {

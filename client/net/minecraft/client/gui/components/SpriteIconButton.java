@@ -32,7 +32,9 @@ public abstract class SpriteIconButton extends Button {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
+         var1.depthTreeBack();
       }
 
       public void renderString(GuiGraphics var1, Font var2, int var3) {
@@ -48,7 +50,9 @@ public abstract class SpriteIconButton extends Button {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() - this.spriteWidth - 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
+         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
+         var1.depthTreeBack();
       }
 
       public void renderString(GuiGraphics var1, Font var2, int var3) {
