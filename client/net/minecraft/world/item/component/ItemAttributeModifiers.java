@@ -277,7 +277,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
       final AttributeModifier modifier;
       final EquipmentSlotGroup slot;
       final Display display;
-      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Attribute.CODEC.fieldOf("type").forGetter(Entry::attribute), AttributeModifier.MAP_CODEC.forGetter(Entry::modifier), EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(Entry::slot), ItemAttributeModifiers.Display.CODEC.fieldOf("display").forGetter(Entry::display)).apply(var0, Entry::new));
+      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Attribute.CODEC.fieldOf("type").forGetter(Entry::attribute), AttributeModifier.MAP_CODEC.forGetter(Entry::modifier), EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(Entry::slot), ItemAttributeModifiers.Display.CODEC.optionalFieldOf("display", ItemAttributeModifiers.Display.Default.INSTANCE).forGetter(Entry::display)).apply(var0, Entry::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
       public Entry(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3) {

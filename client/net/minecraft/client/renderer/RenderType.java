@@ -707,7 +707,7 @@ public abstract class RenderType extends RenderStateShard {
             GpuTexture var9 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var18.getColorTexture();
             GpuTexture var10 = var18.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var18.getDepthTexture()) : null;
 
-            try (RenderPass var11 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var9, OptionalInt.empty(), var10, OptionalDouble.empty())) {
+            try (RenderPass var11 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.getName(), var9, OptionalInt.empty(), var10, OptionalDouble.empty())) {
                var11.setPipeline(var2);
                RenderSystem.bindDefaultUniforms(var11);
                var11.setUniform("DynamicTransforms", var3);
@@ -721,7 +721,7 @@ public abstract class RenderType extends RenderStateShard {
                }
 
                var11.setIndexBuffer(var6, var7);
-               var11.drawIndexed(0, var1.drawState().indexCount());
+               var11.drawIndexed(0, 0, var1.drawState().indexCount(), 1);
             }
          } catch (Throwable var17) {
             if (var1 != null) {

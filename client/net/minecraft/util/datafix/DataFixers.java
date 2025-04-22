@@ -854,9 +854,9 @@ public class DataFixers {
       Map var174 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var173, "Rename british shorthair", References.ENTITY, "minecraft:cat", var174));
       var0.addFixer(new CriteriaRenameFix(var173, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var174.getOrDefault(var1x, var1x)));
-      Set var277 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var277);
-      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var277::contains));
+      Set var278 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var278);
+      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var278::contains));
       Schema var175 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var175));
       Schema var176 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1084,6 +1084,8 @@ public class DataFixers {
       var0.addFixer(new NamedEntityConvertUncheckedFix(var274, "AreaEffectCloudCustomParticleFix", References.ENTITY, "minecraft:area_effect_cloud"));
       Schema var275 = var0.addSchema(4421, V4421::new);
       var0.addFixer(new AddNewChoices(var275, "Added Happy Ghast", References.ENTITY));
+      Schema var276 = var0.addSchema(4424, SAME_NAMESPACED);
+      var0.addFixer(new FeatureFlagRemoveFix(var276, "Remove Locator Bar experimental feature flag", Set.of("minecraft:locator_bar")));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

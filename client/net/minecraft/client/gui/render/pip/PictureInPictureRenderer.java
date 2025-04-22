@@ -57,9 +57,9 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       }
 
       if (this.texture == null) {
-         this.texture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), TextureFormat.RGBA8, var1, var2, 1);
+         this.texture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), 12, TextureFormat.RGBA8, var1, var2, 1);
          this.texture.setTextureFilter(FilterMode.NEAREST, false);
-         this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), TextureFormat.DEPTH32, var1, var2, 1);
+         this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), 8, TextureFormat.DEPTH32, var1, var2, 1);
       }
 
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);

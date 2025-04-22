@@ -88,7 +88,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.renderRedstone(var1);
       this.renderTooltip(var1, var2, var3);
       if (this.hoveredSlot instanceof CrafterSlot && !((CrafterMenu)this.menu).isSlotDisabled(this.hoveredSlot.index) && ((CrafterMenu)this.menu).getCarried().isEmpty() && !this.hoveredSlot.hasItem() && !this.player.isSpectator()) {
-         var1.renderTooltip(this.font, DISABLED_SLOT_TOOLTIP, var2, var3);
+         var1.setTooltipForNextFrame(this.font, DISABLED_SLOT_TOOLTIP, var2, var3);
       }
 
    }

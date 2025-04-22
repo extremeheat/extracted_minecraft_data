@@ -163,7 +163,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
          }
       }
 
-      var4.ifPresent((var4x) -> var1.renderTooltip(this.font, this.font.split(var4x, 115), var2, var3));
+      var4.ifPresent((var4x) -> var1.setTooltipForNextFrame(this.font, this.font.split(var4x, 115), var2, var3));
    }
 
    private boolean hasRecipeError() {

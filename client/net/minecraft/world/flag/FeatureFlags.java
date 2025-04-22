@@ -10,7 +10,6 @@ public class FeatureFlags {
    public static final FeatureFlag TRADE_REBALANCE;
    public static final FeatureFlag REDSTONE_EXPERIMENTS;
    public static final FeatureFlag MINECART_IMPROVEMENTS;
-   public static final FeatureFlag LOCATOR_BAR;
    public static final FeatureFlagRegistry REGISTRY;
    public static final Codec<FeatureFlagSet> CODEC;
    public static final FeatureFlagSet VANILLA_SET;
@@ -40,7 +39,6 @@ public class FeatureFlags {
       TRADE_REBALANCE = var0.createVanilla("trade_rebalance");
       REDSTONE_EXPERIMENTS = var0.createVanilla("redstone_experiments");
       MINECART_IMPROVEMENTS = var0.createVanilla("minecart_improvements");
-      LOCATOR_BAR = var0.createVanilla("locator_bar");
       REGISTRY = var0.build();
       CODEC = REGISTRY.codec();
       VANILLA_SET = FeatureFlagSet.of(VANILLA);

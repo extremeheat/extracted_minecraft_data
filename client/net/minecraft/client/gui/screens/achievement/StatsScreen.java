@@ -344,7 +344,7 @@ public class StatsScreen extends Screen {
                }
 
                Item var6 = var4.getItem();
-               var1.renderTooltip(StatsScreen.this.font, var6.getName(), var2, var3, (ResourceLocation)var6.components().get(DataComponents.TOOLTIP_STYLE));
+               var1.setTooltipForNextFrame(StatsScreen.this.font, var6.getName(), var2, var3, (ResourceLocation)var6.components().get(DataComponents.TOOLTIP_STYLE));
             } else {
                Component var10 = null;
                int var7 = var2 - var5;
@@ -358,7 +358,7 @@ public class StatsScreen extends Screen {
                }
 
                if (var10 != null) {
-                  var1.renderTooltip(StatsScreen.this.font, var10, var2, var3);
+                  var1.setTooltipForNextFrame(StatsScreen.this.font, var10, var2, var3);
                }
             }
 

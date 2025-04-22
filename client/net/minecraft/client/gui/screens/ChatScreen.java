@@ -170,15 +170,13 @@ public class ChatScreen extends Screen {
       var1.depthTreeUp();
       this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       this.input.render(var1, var2, var3, var4);
-      var1.nextStratum();
       this.commandSuggestions.render(var1, var2, var3);
       GuiMessageTag var5 = this.minecraft.gui.getChat().getMessageTagAt((double)var2, (double)var3);
       if (var5 != null && var5.text() != null) {
-         var1.renderTooltip(this.font, this.font.split(var5.text(), 210), var2, var3);
+         var1.setTooltipForNextFrame(this.font, this.font.split(var5.text(), 210), var2, var3);
       } else {
          Style var6 = this.getComponentStyleAt((double)var2, (double)var3);
          if (var6 != null && var6.getHoverEvent() != null) {
-            var1.nextStratum();
             var1.renderComponentHoverEffect(this.font, var6, var2, var3);
          }
       }

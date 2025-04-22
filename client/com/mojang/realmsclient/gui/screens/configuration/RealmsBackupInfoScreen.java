@@ -1,4 +1,4 @@
-package com.mojang.realmsclient.gui.screens;
+package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.Backup;
 import java.util.Locale;

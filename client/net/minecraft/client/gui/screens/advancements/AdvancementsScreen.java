@@ -215,7 +215,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       if (this.tabs.size() > 1) {
          for(AdvancementTab var7 : this.tabs.values()) {
             if (var7.isMouseOver(var4, var5, (double)var2, (double)var3)) {
-               var1.renderTooltip(this.font, var7.getTitle(), var2, var3);
+               var1.setTooltipForNextFrame(this.font, var7.getTitle(), var2, var3);
             }
          }
       }

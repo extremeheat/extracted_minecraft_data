@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -29,8 +30,10 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
@@ -204,10 +207,8 @@ public class Ghast extends Mob implements Enemy {
             if (this.floatDuration-- <= 0) {
                this.floatDuration += this.ghast.getRandom().nextInt(5) + 2;
                Vec3 var1 = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
-               double var2 = var1.length();
-               var1 = var1.normalize();
-               if (this.canReach(var1, Mth.ceil(var2))) {
-                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(var1.scale(this.speed)));
+               if (this.canReach(var1)) {
+                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(var1.normalize().scale(this.speed)));
                } else {
                   this.operation = MoveControl.Operation.WAIT;
                }
@@ -216,24 +217,37 @@ public class Ghast extends Mob implements Enemy {
          }
       }
 
-      private boolean canReach(Vec3 var1, int var2) {
-         boolean var3 = !this.ghast.level().noBlockCollision(this.ghast, this.ghast.getBoundingBox());
-         AABB var4 = this.ghast.getBoundingBox();
-
-         for(int var5 = 1; var5 < var2; ++var5) {
-            var4 = var4.move(var1);
-            if (var5 == var2 - 1 && this.careful) {
-               var4 = var4.inflate(1.0);
-            } else if (var3 && var5 < var2 - 1) {
-               continue;
-            }
-
-            if (!this.ghast.level().noCollision(this.ghast, var4, this.careful && !this.ghast.isInLiquid())) {
-               return false;
+      private boolean canReach(Vec3 var1) {
+         AABB var2 = this.ghast.getBoundingBox();
+         AABB var3 = var2.move(var1);
+         if (this.careful) {
+            for(BlockPos var5 : BlockPos.betweenClosed(var3.inflate(1.0))) {
+               if (!this.blockTraversalPossible(this.ghast.level(), var5, false, false)) {
+                  return false;
+               }
             }
          }
 
-         return true;
+         boolean var8 = this.ghast.isInWater();
+         boolean var9 = this.ghast.isInLava();
+         Vec3 var6 = this.ghast.position();
+         Vec3 var7 = var6.add(var1);
+         return BlockGetter.forEachBlockIntersectedBetween(var6, var7, var3, (var4, var5x) -> var2.intersects(var4) ? true : this.blockTraversalPossible(this.ghast.level(), var4, var8, var9));
+      }
+
+      private boolean blockTraversalPossible(BlockGetter var1, BlockPos var2, boolean var3, boolean var4) {
+         BlockState var5 = var1.getBlockState(var2);
+         if (var5.isAir()) {
+            return true;
+         } else if (!this.careful) {
+            return var5.getCollisionShape(var1, var2).isEmpty();
+         } else if (var5.is(Blocks.WATER)) {
+            return var3;
+         } else if (var5.is(Blocks.LAVA)) {
+            return var4;
+         } else {
+            return var5.is(BlockTags.HAPPY_GHAST_AVOIDS) ? false : var5.getCollisionShape(var1, var2).isEmpty();
+         }
       }
    }
 

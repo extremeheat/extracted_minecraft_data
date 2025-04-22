@@ -24,7 +24,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabOrderedElement;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -35,8 +34,6 @@ import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.CubeMap;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -45,7 +42,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -85,8 +81,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    protected CycleButton<NarratorStatus> narratorButton;
    @Nullable
    private NarratableEntry lastNarratable;
-   @Nullable
-   private DeferredTooltipRendering deferredTooltipRendering;
    protected final Executor screenExecutor = (var1x) -> this.minecraft.execute(() -> {
          if (this.minecraft.screen == this) {
             var1x.run();
@@ -108,14 +102,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public final void renderWithTooltip(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.nextStratum();
       this.renderBackground(var1, var2, var3, var4);
       var1.nextStratum();
       this.render(var1, var2, var3, var4);
-      if (this.deferredTooltipRendering != null) {
-         var1.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(), this.deferredTooltipRendering.positioner(), var2, var3);
-         this.deferredTooltipRendering = null;
-      }
-
+      var1.renderDeferredTooltip();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -416,14 +407,18 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.renderPanorama(var1, var4);
       }
 
-      this.renderBlurredBackground();
+      this.renderBlurredBackground(var1);
       var1.depthTreeUp();
       this.renderMenuBackground(var1);
       var1.depthTreeBack();
    }
 
-   protected void renderBlurredBackground() {
-      this.minecraft.gameRenderer.processBlurEffect();
+   protected void renderBlurredBackground(GuiGraphics var1) {
+      float var2 = (float)this.minecraft.options.getMenuBackgroundBlurriness();
+      if (var2 >= 1.0F) {
+         var1.blurBeforeThisStratum();
+      }
+
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
@@ -643,29 +638,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    }
 
-   protected void clearTooltipForNextRenderPass() {
-      this.deferredTooltipRendering = null;
-   }
-
-   public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1) {
-      this.setTooltipForNextRenderPass(var1, DefaultTooltipPositioner.INSTANCE, true);
-   }
-
-   public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1, ClientTooltipPositioner var2, boolean var3) {
-      if (this.deferredTooltipRendering == null || var3) {
-         this.deferredTooltipRendering = new DeferredTooltipRendering(var1, var2);
-      }
-
-   }
-
-   public void setTooltipForNextRenderPass(Component var1) {
-      this.setTooltipForNextRenderPass(Tooltip.splitTooltip(this.minecraft, var1));
-   }
-
-   public void setTooltipForNextRenderPass(Tooltip var1, ClientTooltipPositioner var2, boolean var3) {
-      this.setTooltipForNextRenderPass(var1.toCharSequence(this.minecraft), var2, var3);
-   }
-
    public Font getFont() {
       return this.font;
    }
@@ -705,14 +677,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.entry = var1;
          this.index = var2;
          this.priority = var3;
-      }
-   }
-
-   static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
-         super();
-         this.tooltip = var1;
-         this.positioner = var2;
       }
    }
 }

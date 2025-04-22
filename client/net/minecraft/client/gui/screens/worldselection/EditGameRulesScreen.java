@@ -259,7 +259,7 @@ public class EditGameRulesScreen extends Screen {
          super.renderWidget(var1, var2, var3, var4);
          RuleEntry var5 = (RuleEntry)this.getHovered();
          if (var5 != null && var5.tooltip != null) {
-            EditGameRulesScreen.this.setTooltipForNextRenderPass(var5.tooltip);
+            var1.setTooltipForNextFrame(var5.tooltip, var2, var3);
          }
 
       }

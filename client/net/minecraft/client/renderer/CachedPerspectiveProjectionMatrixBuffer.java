@@ -23,8 +23,8 @@ public class CachedPerspectiveProjectionMatrixBuffer implements AutoCloseable {
       this.zNear = var2;
       this.zFar = var3;
       GpuDevice var4 = RenderSystem.getDevice();
-      this.buffer = var4.createBuffer(() -> "Projection matrix UBO " + var1, 136, 64);
-      this.bufferSlice = this.buffer.slice(0, 64);
+      this.buffer = var4.createBuffer(() -> "Projection matrix UBO " + var1, 136, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+      this.bufferSlice = this.buffer.slice(0, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
    }
 
    public GpuBufferSlice getBuffer(int var1, int var2, float var3) {
@@ -33,7 +33,7 @@ public class CachedPerspectiveProjectionMatrixBuffer implements AutoCloseable {
          MemoryStack var5 = MemoryStack.stackPush();
 
          try {
-            ByteBuffer var6 = Std140Builder.onStack(var5, 64).putMat4f(var4).get();
+            ByteBuffer var6 = Std140Builder.onStack(var5, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(var4).get();
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), var6);
          } catch (Throwable var9) {
             if (var5 != null) {

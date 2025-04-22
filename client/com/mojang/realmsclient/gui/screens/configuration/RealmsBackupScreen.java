@@ -1,11 +1,13 @@
-package com.mojang.realmsclient.gui.screens;
+package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.Backup;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsWorldOptions;
+import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.exception.RealmsServiceException;
+import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
+import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.DownloadTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
@@ -135,7 +137,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          long var10009 = this.serverData.id;
          int var10010 = this.slotId;
          String var10011 = (String)Objects.requireNonNullElse(this.serverData.name, "");
-         var10004[0] = new DownloadTask(var10009, var10010, var10011 + " (" + ((RealmsWorldOptions)this.serverData.slots.get(this.serverData.activeSlot)).getSlotName(this.serverData.activeSlot) + ")", this);
+         var10004[0] = new DownloadTask(var10009, var10010, var10011 + " (" + ((RealmsSlot)this.serverData.slots.get(this.serverData.activeSlot)).options.getSlotName(this.serverData.activeSlot) + ")", this);
          var10000.setScreen(new RealmsLongRunningMcoTaskScreen(var10003, var10004));
       }));
    }

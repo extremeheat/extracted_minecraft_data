@@ -94,7 +94,7 @@ public class GameRules {
    public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
    public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
    public static final Key<BooleanValue> RULE_TNT_EXPLODES;
-   public static final Key<BooleanValue> RULE_USE_LOCATOR_BAR;
+   public static final Key<BooleanValue> RULE_LOCATOR_BAR;
    private final Map<Key<?>, Value<?>> rules;
    private final FeatureFlagSet enabledFeatures;
 
@@ -268,7 +268,7 @@ public class GameRules {
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
       RULE_TNT_EXPLODES = register("tntExplodes", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
-      RULE_USE_LOCATOR_BAR = register("useLocatorBar", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true, (var0, var1) -> var0.getAllLevels().forEach((var1x) -> {
+      RULE_LOCATOR_BAR = register("locatorBar", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true, (var0, var1) -> var0.getAllLevels().forEach((var1x) -> {
             ServerWaypointManager var2 = var1x.getWaypointManager();
             if (var1.get()) {
                List var10000 = var1x.players();
@@ -278,7 +278,7 @@ public class GameRules {
                var2.breakAllConnections();
             }
 
-         }), FeatureFlagSet.of(FeatureFlags.LOCATOR_BAR)));
+         })));
    }
 
    public static enum Category {
@@ -525,7 +525,7 @@ public class GameRules {
    public static class BooleanValue extends Value<BooleanValue> {
       private boolean value;
 
-      static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1, FeatureFlagSet var2) {
+      private static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1, FeatureFlagSet var2) {
          return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, BooleanValue.class, var2);
       }
 

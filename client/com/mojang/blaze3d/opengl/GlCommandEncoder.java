@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.util.ARGB;
 import org.lwjgl.opengl.GL11;
@@ -50,48 +51,59 @@ public class GlCommandEncoder implements CommandEncoder {
       this.drawFbo = var1.directStateAccess().createFrameBufferObject();
    }
 
-   public RenderPass createRenderPass(GpuTexture var1, OptionalInt var2) {
-      return this.createRenderPass(var1, var2, (GpuTexture)null, OptionalDouble.empty());
+   public RenderPass createRenderPass(Supplier<String> var1, GpuTexture var2, OptionalInt var3) {
+      return this.createRenderPass(var1, var2, var3, (GpuTexture)null, OptionalDouble.empty());
    }
 
-   public RenderPass createRenderPass(GpuTexture var1, OptionalInt var2, @Nullable GpuTexture var3, OptionalDouble var4) {
+   public RenderPass createRenderPass(Supplier<String> var1, GpuTexture var2, OptionalInt var3, @Nullable GpuTexture var4, OptionalDouble var5) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before creating a new one!");
       } else {
-         if (var4.isPresent() && var3 == null) {
+         if (var5.isPresent() && var4 == null) {
             LOGGER.warn("Depth clear value was provided but no depth texture is being used");
          }
 
-         if (var1.isClosed()) {
+         if (var2.isClosed()) {
             throw new IllegalStateException("Color texture is closed");
-         } else if (var3 != null && var3.isClosed()) {
-            throw new IllegalStateException("Depth texture is closed");
+         } else if ((var2.usage() & 8) == 0) {
+            throw new IllegalStateException("Color texture must have USAGE_RENDER_ATTACHMENT");
          } else {
+            if (var4 != null) {
+               if (var4.isClosed()) {
+                  throw new IllegalStateException("Depth texture is closed");
+               }
+
+               if ((var4.usage() & 8) == 0) {
+                  throw new IllegalStateException("Depth texture must have USAGE_RENDER_ATTACHMENT");
+               }
+            }
+
             this.inRenderPass = true;
-            int var5 = ((GlTexture)var1).getFbo(this.device.directStateAccess(), var3);
-            GlStateManager._glBindFramebuffer(36160, var5);
-            int var6 = 0;
-            if (var2.isPresent()) {
-               int var7 = var2.getAsInt();
-               GL11.glClearColor(ARGB.redFloat(var7), ARGB.greenFloat(var7), ARGB.blueFloat(var7), ARGB.alphaFloat(var7));
-               var6 |= 16384;
+            this.device.debugLabels().pushDebugGroup(var1);
+            int var6 = ((GlTexture)var2).getFbo(this.device.directStateAccess(), var4);
+            GlStateManager._glBindFramebuffer(36160, var6);
+            int var7 = 0;
+            if (var3.isPresent()) {
+               int var8 = var3.getAsInt();
+               GL11.glClearColor(ARGB.redFloat(var8), ARGB.greenFloat(var8), ARGB.blueFloat(var8), ARGB.alphaFloat(var8));
+               var7 |= 16384;
             }
 
-            if (var3 != null && var4.isPresent()) {
-               GL11.glClearDepth(var4.getAsDouble());
-               var6 |= 256;
+            if (var4 != null && var5.isPresent()) {
+               GL11.glClearDepth(var5.getAsDouble());
+               var7 |= 256;
             }
 
-            if (var6 != 0) {
+            if (var7 != 0) {
                GlStateManager._disableScissorTest();
                GlStateManager._depthMask(true);
                GlStateManager._colorMask(true, true, true, true);
-               GlStateManager._clear(var6);
+               GlStateManager._clear(var7);
             }
 
-            GlStateManager._viewport(0, 0, var1.getWidth(0), var1.getHeight(0));
+            GlStateManager._viewport(0, 0, var2.getWidth(0), var2.getHeight(0));
             this.lastPipeline = null;
-            return new GlRenderPass(this, var3 != null);
+            return new GlRenderPass(this, var4 != null);
          }
       }
    }
@@ -191,6 +203,8 @@ public class GlCommandEncoder implements CommandEncoder {
          throw new IllegalStateException("Trying to clear a non-color texture as color");
       } else if (var1.isClosed()) {
          throw new IllegalStateException("Color texture is closed");
+      } else if ((var1.usage() & 8) == 0) {
+         throw new IllegalStateException("Color texture must have USAGE_RENDER_ATTACHMENT");
       }
    }
 
@@ -199,6 +213,8 @@ public class GlCommandEncoder implements CommandEncoder {
          throw new IllegalStateException("Trying to clear a non-depth texture as depth");
       } else if (var1.isClosed()) {
          throw new IllegalStateException("Depth texture is closed");
+      } else if ((var1.usage() & 8) == 0) {
+         throw new IllegalStateException("Depth texture must have USAGE_RENDER_ATTACHMENT");
       }
    }
 
@@ -265,6 +281,8 @@ public class GlCommandEncoder implements CommandEncoder {
       if (var2.getWidth() == var3 && var2.getHeight() == var4) {
          if (var1.isClosed()) {
             throw new IllegalStateException("Destination texture is closed");
+         } else if ((var1.usage() & 1) == 0) {
+            throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
          } else {
             this.writeToTexture(var1, var2, 0, 0, 0, var3, var4, 0, 0);
          }
@@ -281,6 +299,8 @@ public class GlCommandEncoder implements CommandEncoder {
             if (var4 + var6 <= var1.getWidth(var3) && var5 + var7 <= var1.getHeight(var3)) {
                if (var1.isClosed()) {
                   throw new IllegalStateException("Destination texture is closed");
+               } else if ((var1.usage() & 1) == 0) {
+                  throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
                } else {
                   GlStateManager._bindTexture(((GlTexture)var1).id);
                   GlStateManager._pixelStore(3314, var2.getWidth());
@@ -310,6 +330,8 @@ public class GlCommandEncoder implements CommandEncoder {
          } else if (var5 + var7 <= var1.getWidth(var4) && var6 + var8 <= var1.getHeight(var4)) {
             if (var1.isClosed()) {
                throw new IllegalStateException("Destination texture is closed");
+            } else if ((var1.usage() & 1) == 0) {
+               throw new IllegalStateException("Color texture must have USAGE_COPY_DST to be a destination for a write");
             } else {
                GlStateManager._bindTexture(((GlTexture)var1).id);
                GlStateManager._pixelStore(3314, var7);
@@ -341,8 +363,10 @@ public class GlCommandEncoder implements CommandEncoder {
          if (var1.getWidth(var5) * var1.getHeight(var5) * var1.getFormat().pixelSize() + var3 > var2.size()) {
             int var11 = var2.size();
             throw new IllegalArgumentException("Buffer of size " + var11 + " is not large enough to hold " + var8 + "x" + var9 + " pixels (" + var1.getFormat().pixelSize() + " bytes each) starting from offset " + var3);
+         } else if ((var1.usage() & 2) == 0) {
+            throw new IllegalArgumentException("Texture needs USAGE_COPY_SRC to be a source for a copy");
          } else if ((var2.usage() & 8) == 0) {
-            throw new IllegalArgumentException("Buffer of cannot be used to copied from a texture");
+            throw new IllegalArgumentException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
          } else if (var6 + var8 <= var1.getWidth(var5) && var7 + var9 <= var1.getHeight(var5)) {
             if (var1.isClosed()) {
                throw new IllegalStateException("Source texture is closed");
@@ -382,6 +406,10 @@ public class GlCommandEncoder implements CommandEncoder {
                   throw new IllegalStateException("Source texture is closed");
                } else if (var2.isClosed()) {
                   throw new IllegalStateException("Destination texture is closed");
+               } else if ((var1.usage() & 2) == 0) {
+                  throw new IllegalArgumentException("Texture needs USAGE_COPY_SRC to be a source for a copy");
+               } else if ((var2.usage() & 1) == 0) {
+                  throw new IllegalArgumentException("Texture needs USAGE_COPY_DST to be a destination for a copy");
                } else {
                   GlStateManager.clearGlErrors();
                   GlStateManager._disableScissorTest();
@@ -413,6 +441,8 @@ public class GlCommandEncoder implements CommandEncoder {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (!var1.getFormat().hasColorAspect()) {
          throw new IllegalStateException("Cannot present a non-color texture!");
+      } else if ((var1.usage() & 8) == 0) {
+         throw new IllegalStateException("Color texture must have USAGE_RENDER_ATTACHMENT to presented to the screen");
       } else {
          GlStateManager._disableScissorTest();
          GlStateManager._viewport(0, 0, var1.getWidth(0), var1.getHeight(0));
@@ -479,16 +509,16 @@ public class GlCommandEncoder implements CommandEncoder {
                });
             }
 
-            this.drawFromBuffers(var1, var7.firstIndex(), var7.indexCount(), var8, var1.pipeline, 1);
+            this.drawFromBuffers(var1, 0, var7.firstIndex(), var7.indexCount(), var8, var1.pipeline, 1);
          }
 
       }
    }
 
-   protected void executeDraw(GlRenderPass var1, int var2, int var3, @Nullable VertexFormat.IndexType var4, int var5) {
+   protected void executeDraw(GlRenderPass var1, int var2, int var3, int var4, @Nullable VertexFormat.IndexType var5, int var6) {
       if (this.trySetup(var1, Collections.emptyList())) {
          if (GlRenderPass.VALIDATION) {
-            if (var4 != null) {
+            if (var5 != null) {
                if (var1.indexBuffer == null) {
                   throw new IllegalStateException("Missing index buffer");
                }
@@ -515,23 +545,29 @@ public class GlCommandEncoder implements CommandEncoder {
             }
          }
 
-         this.drawFromBuffers(var1, var2, var3, var4, var1.pipeline, var5);
+         this.drawFromBuffers(var1, var2, var3, var4, var5, var1.pipeline, var6);
       }
    }
 
-   private void drawFromBuffers(GlRenderPass var1, int var2, int var3, @Nullable VertexFormat.IndexType var4, GlRenderPipeline var5, int var6) {
-      this.device.vertexArrayCache().bindVertexArray(var5.info().getVertexFormat(), (GlBuffer)var1.vertexBuffers[0]);
-      if (var4 != null) {
+   private void drawFromBuffers(GlRenderPass var1, int var2, int var3, int var4, @Nullable VertexFormat.IndexType var5, GlRenderPipeline var6, int var7) {
+      this.device.vertexArrayCache().bindVertexArray(var6.info().getVertexFormat(), (GlBuffer)var1.vertexBuffers[0]);
+      if (var5 != null) {
          GlStateManager._glBindBuffer(34963, ((GlBuffer)var1.indexBuffer).handle);
-         if (var6 > 1) {
-            GL31.glDrawElementsInstanced(GlConst.toGl(var5.info().getVertexFormatMode()), var3, GlConst.toGl(var4), (long)var2 * (long)var4.bytes, var6);
+         if (var7 > 1) {
+            if (var2 > 0) {
+               GL32.glDrawElementsInstancedBaseVertex(GlConst.toGl(var6.info().getVertexFormatMode()), var4, GlConst.toGl(var5), (long)var3 * (long)var5.bytes, var7, var2);
+            } else {
+               GL31.glDrawElementsInstanced(GlConst.toGl(var6.info().getVertexFormatMode()), var4, GlConst.toGl(var5), (long)var3 * (long)var5.bytes, var7);
+            }
+         } else if (var2 > 0) {
+            GL32.glDrawElementsBaseVertex(GlConst.toGl(var6.info().getVertexFormatMode()), var4, GlConst.toGl(var5), (long)var3 * (long)var5.bytes, var2);
          } else {
-            GlStateManager._drawElements(GlConst.toGl(var5.info().getVertexFormatMode()), var3, GlConst.toGl(var4), (long)var2 * (long)var4.bytes);
+            GlStateManager._drawElements(GlConst.toGl(var6.info().getVertexFormatMode()), var4, GlConst.toGl(var5), (long)var3 * (long)var5.bytes);
          }
-      } else if (var6 > 1) {
-         GL31.glDrawArraysInstanced(GlConst.toGl(var5.info().getVertexFormatMode()), var2, var3, var6);
+      } else if (var7 > 1) {
+         GL31.glDrawArraysInstanced(GlConst.toGl(var6.info().getVertexFormatMode()), var2, var4, var7);
       } else {
-         GlStateManager._drawArrays(GlConst.toGl(var5.info().getVertexFormatMode()), var2, var3);
+         GlStateManager._drawArrays(GlConst.toGl(var6.info().getVertexFormatMode()), var2, var4);
       }
 
    }
@@ -589,7 +625,11 @@ public class GlCommandEncoder implements CommandEncoder {
                }
 
                if (var6.isClosed()) {
-                  throw new IllegalStateException("Sampler " + var34 + " has been closed!");
+                  throw new IllegalStateException("Sampler " + var34 + " (" + var6.getLabel() + ") has been closed!");
+               }
+
+               if ((var6.usage() & 4) == 0) {
+                  throw new IllegalStateException("Sampler " + var34 + " (" + var6.getLabel() + ") must have USAGE_TEXTURE_BINDING!");
                }
             }
          }
@@ -789,6 +829,7 @@ public class GlCommandEncoder implements CommandEncoder {
    public void finishRenderPass() {
       this.inRenderPass = false;
       GlStateManager._glBindFramebuffer(36160, 0);
+      this.device.debugLabels().popDebugGroup();
    }
 
    protected GlDevice getDevice() {

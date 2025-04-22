@@ -115,13 +115,15 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.toolTip = null;
       super.render(var1, var2, var3, var4);
+      var1.depthTreeUp();
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 12, -1);
-      if (this.toolTip != null) {
-         var1.renderTooltip(this.font, this.toolTip, var2, var3);
-      }
-
       if (this.pendingInvites.isDone() && this.pendingInvitationSelectionList.hasPendingInvites()) {
          var1.drawCenteredString(this.font, (Component)NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, -1);
+      }
+
+      var1.depthTreeBack();
+      if (this.toolTip != null) {
+         var1.setTooltipForNextFrame(this.font, this.toolTip, var2, var3);
       }
 
    }

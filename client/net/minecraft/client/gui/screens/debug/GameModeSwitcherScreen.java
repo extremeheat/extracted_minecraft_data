@@ -66,10 +66,6 @@ public class GameModeSwitcherScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (!this.checkToClose()) {
-         int var5 = this.width / 2 - 62;
-         int var6 = this.height / 2 - 31 - 27;
-         var1.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
-         var1.depthTreeUp();
          var1.drawCenteredString(this.font, (Component)this.currentlyHovered.getName(), this.width / 2, this.height / 2 - 31 - 20, -1);
          var1.drawCenteredString(this.font, SELECT_KEY, this.width / 2, this.height / 2 + 5, 16777215);
          if (!this.setFirstMousePos) {
@@ -78,13 +74,13 @@ public class GameModeSwitcherScreen extends Screen {
             this.setFirstMousePos = true;
          }
 
-         boolean var7 = this.firstMouseX == var2 && this.firstMouseY == var3;
+         boolean var5 = this.firstMouseX == var2 && this.firstMouseY == var3;
 
-         for(GameModeSlot var9 : this.slots) {
-            var9.render(var1, var2, var3, var4);
-            var9.setSelected(this.currentlyHovered == var9.icon);
-            if (!var7 && var9.isHoveredOrFocused()) {
-               this.currentlyHovered = var9.icon;
+         for(GameModeSlot var7 : this.slots) {
+            var7.render(var1, var2, var3, var4);
+            var7.setSelected(this.currentlyHovered == var7.icon);
+            if (!var5 && var7.isHoveredOrFocused()) {
+               this.currentlyHovered = var7.icon;
             }
          }
 
@@ -92,6 +88,9 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      int var5 = this.width / 2 - 62;
+      int var6 = this.height / 2 - 31 - 27;
+      var1.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
    }
 
    private void switchToHoveredGameMode() {
@@ -210,15 +209,15 @@ public class GameModeSwitcherScreen extends Screen {
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          this.drawSlot(var1);
-         var1.depthTreeUp();
-         this.icon.drawIcon(var1, this.getX() + 5, this.getY() + 5);
+         var1.depthTreePushCheckpoint();
          if (this.isSelected) {
             var1.depthTreeUp();
             this.drawSelection(var1);
-            var1.depthTreeBack();
          }
 
-         var1.depthTreeBack();
+         var1.depthTreeUp();
+         this.icon.drawIcon(var1, this.getX() + 5, this.getY() + 5);
+         var1.depthTreeBackToCheckpoint();
       }
 
       public void updateWidgetNarration(NarrationElementOutput var1) {

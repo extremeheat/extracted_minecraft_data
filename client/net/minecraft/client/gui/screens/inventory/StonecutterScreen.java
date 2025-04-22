@@ -80,7 +80,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
                ContextMap var12 = SlotDisplayContext.fromLevel(this.minecraft.level);
                SlotDisplay var13 = ((SelectableRecipe.SingleInputEntry)var7.entries().get(var8)).recipe().optionDisplay();
-               var1.renderTooltip(this.font, var13.resolveForFirstStack(var12), var2, var3);
+               var1.setTooltipForNextFrame(this.font, var13.resolveForFirstStack(var12), var2, var3);
             }
          }
       }

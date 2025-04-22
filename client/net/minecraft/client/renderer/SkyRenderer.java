@@ -118,7 +118,7 @@ public class SkyRenderer implements AutoCloseable {
       GpuTexture var5 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
       GpuTexture var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
 
-      try (RenderPass var7 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+      try (RenderPass var7 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky disc", var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
          var7.setPipeline(RenderPipelines.SKY);
          RenderSystem.bindDefaultUniforms(var7);
          var7.setUniform("DynamicTransforms", var4);
@@ -136,7 +136,7 @@ public class SkyRenderer implements AutoCloseable {
       GpuTexture var3 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
       GpuTexture var4 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
 
-      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
+      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky dark", var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
          var5.setPipeline(RenderPipelines.SKY);
          RenderSystem.bindDefaultUniforms(var5);
          var5.setUniform("DynamicTransforms", var2);
@@ -201,13 +201,13 @@ public class SkyRenderer implements AutoCloseable {
       GpuBuffer var7 = this.starIndices.getBuffer(this.starIndexCount);
       GpuBufferSlice var8 = RenderSystem.getDynamicUniforms().writeTransform(var3, new Vector4f(var1, var1, var1, var1), new Vector3f(), new Matrix4f(), 0.0F);
 
-      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Stars", var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
          var9.setPipeline(var4);
          RenderSystem.bindDefaultUniforms(var9);
          var9.setUniform("DynamicTransforms", var8);
          var9.setVertexBuffer(0, this.starBuffer);
          var9.setIndexBuffer(var7, this.starIndices.type());
-         var9.drawIndexed(0, this.starIndexCount);
+         var9.drawIndexed(0, 0, this.starIndexCount, 1);
       }
 
       var3.popMatrix();
@@ -275,14 +275,14 @@ public class SkyRenderer implements AutoCloseable {
       GpuTexture var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
       GpuBufferSlice var7 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
 
-      try (RenderPass var8 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+      try (RenderPass var8 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End sky", var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
          var8.setPipeline(RenderPipelines.END_SKY);
          RenderSystem.bindDefaultUniforms(var8);
          var8.setUniform("DynamicTransforms", var7);
          var8.bindSampler("Sampler0", var2.getTexture());
          var8.setVertexBuffer(0, this.endSkyBuffer);
          var8.setIndexBuffer(var4, var3.type());
-         var8.drawIndexed(0, 36);
+         var8.drawIndexed(0, 0, 36, 1);
       }
 
    }

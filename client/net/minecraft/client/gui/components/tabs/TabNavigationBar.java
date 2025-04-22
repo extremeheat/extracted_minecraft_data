@@ -98,6 +98,10 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       return this.tabButtons;
    }
 
+   public List<Tab> getTabs() {
+      return this.tabs;
+   }
+
    public NarratableEntry.NarrationPriority narrationPriority() {
       return (NarratableEntry.NarrationPriority)this.tabButtons.stream().map(AbstractWidget::narrationPriority).max(Comparator.naturalOrder()).orElse(NarratableEntry.NarrationPriority.NONE);
    }

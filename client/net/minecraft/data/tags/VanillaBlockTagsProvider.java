@@ -209,10 +209,12 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.ENCHANTMENT_POWER_TRANSMITTER).addTag(BlockTags.REPLACEABLE);
       this.tag(BlockTags.MAINTAINS_FARMLAND).add(Blocks.PUMPKIN_STEM, Blocks.ATTACHED_PUMPKIN_STEM, Blocks.MELON_STEM, Blocks.ATTACHED_MELON_STEM, Blocks.BEETROOTS, Blocks.CARROTS, Blocks.POTATOES, Blocks.TORCHFLOWER_CROP, Blocks.TORCHFLOWER, Blocks.PITCHER_CROP, Blocks.WHEAT);
       this.tag(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS).addTag(BlockTags.SAND).addTag(BlockTags.CONCRETE_POWDER);
+      this.tag(BlockTags.HAPPY_GHAST_AVOIDS).add(Blocks.SWEET_BERRY_BUSH, Blocks.CACTUS, Blocks.WITHER_ROSE, Blocks.MAGMA_BLOCK, Blocks.FIRE, Blocks.POINTED_DRIPSTONE);
       this.tag(BlockTags.DOES_NOT_BLOCK_HOPPERS).addTag(BlockTags.BEEHIVES);
       this.tag(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).add(Blocks.BARRIER, Blocks.BEDROCK);
       this.tag(BlockTags.TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS).add(Blocks.SAND, Blocks.RED_SAND);
       this.tag(BlockTags.TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS).addTag(BlockTags.TERRACOTTA).add(Blocks.SAND, Blocks.RED_SAND);
+      this.tag(BlockTags.TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS).add(Blocks.SOUL_SAND, Blocks.SOUL_SOIL);
       this.tag(BlockTags.AIR).add(Blocks.AIR, Blocks.VOID_AIR, Blocks.CAVE_AIR);
    }
 }

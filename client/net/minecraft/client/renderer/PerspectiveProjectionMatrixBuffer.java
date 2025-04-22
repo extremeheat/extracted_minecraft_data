@@ -16,15 +16,15 @@ public class PerspectiveProjectionMatrixBuffer implements AutoCloseable {
    public PerspectiveProjectionMatrixBuffer(String var1) {
       super();
       GpuDevice var2 = RenderSystem.getDevice();
-      this.buffer = var2.createBuffer(() -> "Projection matrix UBO " + var1, 136, 64);
-      this.bufferSlice = this.buffer.slice(0, 64);
+      this.buffer = var2.createBuffer(() -> "Projection matrix UBO " + var1, 136, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+      this.bufferSlice = this.buffer.slice(0, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
    }
 
    public GpuBufferSlice getBuffer(Matrix4f var1) {
       MemoryStack var2 = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var3 = Std140Builder.onStack(var2, 64).putMat4f(var1).get();
+         ByteBuffer var3 = Std140Builder.onStack(var2, RenderSystem.PROJECTION_MATRIX_UBO_SIZE).putMat4f(var1).get();
          RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), var3);
       } catch (Throwable var6) {
          if (var2 != null) {

@@ -640,15 +640,15 @@ public class DebugScreenOverlay {
       GpuBuffer var8 = this.crosshairIndicies.getBuffer(18);
       GpuBufferSlice[] var9 = RenderSystem.getDynamicUniforms().writeTransforms(new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(0.0F, 0.0F, 0.0F, 1.0F), new Vector3f(), new Matrix4f(), 4.0F), new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 2.0F));
 
-      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
+      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
          var10.setPipeline(var4);
          RenderSystem.bindDefaultUniforms(var10);
          var10.setVertexBuffer(0, this.crosshairBuffer);
          var10.setIndexBuffer(var8, this.crosshairIndicies.type());
          var10.setUniform("DynamicTransforms", var9[0]);
-         var10.drawIndexed(0, 18);
+         var10.drawIndexed(0, 0, 18, 1);
          var10.setUniform("DynamicTransforms", var9[1]);
-         var10.drawIndexed(0, 18);
+         var10.drawIndexed(0, 0, 18, 1);
       }
 
       var2.popMatrix();

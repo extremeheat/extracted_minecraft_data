@@ -155,6 +155,7 @@ import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.resources.PaintingTextureManager;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.client.resources.SplashManager;
+import net.minecraft.client.resources.WaypointStyleManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
@@ -322,6 +323,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final MapTextureManager mapTextureManager;
    private final MapDecorationTextureManager mapDecorationTextures;
    private final GuiSpriteManager guiSprites;
+   private final WaypointStyleManager waypointStyles;
    private final ToastManager toastManager;
    private final Tutorial tutorial;
    private final PlayerSocialManager playerSocialManager;
@@ -560,6 +562,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.mobEffectTextures);
       this.guiSprites = new GuiSpriteManager(this.textureManager);
       this.resourceManager.registerReloadListener(this.guiSprites);
+      this.waypointStyles = new WaypointStyleManager();
+      this.resourceManager.registerReloadListener(this.waypointStyles);
       this.gameRenderer = new GameRenderer(this, this.entityRenderDispatcher.getItemInHandRenderer(), this.renderBuffers);
       this.levelRenderer = new LevelRenderer(this, this.entityRenderDispatcher, this.blockEntityRenderDispatcher, this.renderBuffers);
       this.resourceManager.registerReloadListener(this.levelRenderer);
@@ -2562,6 +2566,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public GuiSpriteManager getGuiSprites() {
       return this.guiSprites;
+   }
+
+   public WaypointStyleManager getWaypointStyles() {
+      return this.waypointStyles;
    }
 
    public void setWindowActive(boolean var1) {

@@ -20,6 +20,10 @@ public class GridLayoutTab implements Tab {
       return this.title;
    }
 
+   public Component getTabExtraNarration() {
+      return Component.empty();
+   }
+
    public void visitChildren(Consumer<AbstractWidget> var1) {
       this.layout.visitWidgets(var1);
    }

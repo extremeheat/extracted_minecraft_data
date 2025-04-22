@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 
@@ -29,6 +30,7 @@ public class GlRenderPass implements RenderPass {
    protected final HashMap<String, GpuBufferSlice> uniforms;
    protected final HashMap<String, GpuTexture> samplers;
    protected final Set<String> dirtyUniforms;
+   protected int pushedDebugGroups;
 
    public GlRenderPass(GlCommandEncoder var1, boolean var2) {
       super();
@@ -43,6 +45,26 @@ public class GlRenderPass implements RenderPass {
 
    public boolean hasDepthTexture() {
       return this.hasDepthTexture;
+   }
+
+   public void pushDebugGroup(Supplier<String> var1) {
+      if (this.closed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else {
+         ++this.pushedDebugGroups;
+         this.encoder.getDevice().debugLabels().pushDebugGroup(var1);
+      }
+   }
+
+   public void popDebugGroup() {
+      if (this.closed) {
+         throw new IllegalStateException("Can't use a closed render pass");
+      } else if (this.pushedDebugGroups == 0) {
+         throw new IllegalStateException("Can't pop more debug groups than was pushed!");
+      } else {
+         --this.pushedDebugGroups;
+         this.encoder.getDevice().debugLabels().popDebugGroup();
+      }
    }
 
    public void setPipeline(RenderPipeline var1) {
@@ -120,19 +142,11 @@ public class GlRenderPass implements RenderPass {
       this.indexType = var2;
    }
 
-   public void drawIndexed(int var1, int var2) {
+   public void drawIndexed(int var1, int var2, int var3, int var4) {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDraw(this, var1, var2, this.indexType, 1);
-      }
-   }
-
-   public void drawIndexed(int var1, int var2, int var3) {
-      if (this.closed) {
-         throw new IllegalStateException("Can't use a closed render pass");
-      } else {
-         this.encoder.executeDraw(this, var1, var2, this.indexType, var3);
+         this.encoder.executeDraw(this, var1, var2, var3, this.indexType, var4);
       }
    }
 
@@ -148,12 +162,16 @@ public class GlRenderPass implements RenderPass {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDraw(this, var1, var2, (VertexFormat.IndexType)null, 1);
+         this.encoder.executeDraw(this, var1, 0, var2, (VertexFormat.IndexType)null, 1);
       }
    }
 
    public void close() {
       if (!this.closed) {
+         if (this.pushedDebugGroups > 0) {
+            throw new IllegalStateException("Render pass had debug groups left open!");
+         }
+
          this.closed = true;
          this.encoder.finishRenderPass();
       }

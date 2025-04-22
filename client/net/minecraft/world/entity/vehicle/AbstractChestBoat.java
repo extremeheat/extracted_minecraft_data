@@ -69,27 +69,23 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (!var1.isSecondaryUseActive()) {
-         InteractionResult var3 = super.interact(var1, var2);
-         if (var3 != InteractionResult.PASS) {
-            return var3;
-         }
-      }
-
-      if (this.canAddPassenger(var1) && !var1.isSecondaryUseActive()) {
+      InteractionResult var3 = super.interact(var1, var2);
+      if (var3 != InteractionResult.PASS) {
+         return var3;
+      } else if (this.canAddPassenger(var1) && !var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
       } else {
-         InteractionResult var6 = this.interactWithContainerVehicle(var1);
-         if (var6.consumesAction()) {
-            Level var5 = var1.level();
-            if (var5 instanceof ServerLevel) {
-               ServerLevel var4 = (ServerLevel)var5;
+         InteractionResult var4 = this.interactWithContainerVehicle(var1);
+         if (var4.consumesAction()) {
+            Level var6 = var1.level();
+            if (var6 instanceof ServerLevel) {
+               ServerLevel var5 = (ServerLevel)var6;
                this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-               PiglinAi.angerNearbyPiglins(var4, var1, true);
+               PiglinAi.angerNearbyPiglins(var5, var1, true);
             }
          }
 
-         return var6;
+         return var4;
       }
    }
 

@@ -771,11 +771,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public boolean isSaddled() {
-      return this.hasItemInSlot(EquipmentSlot.SADDLE);
+      return this.hasValidEquippableItemForSlot(EquipmentSlot.SADDLE);
    }
 
    public boolean isWearingBodyArmor() {
-      return this.hasItemInSlot(EquipmentSlot.BODY);
+      return this.hasValidEquippableItemForSlot(EquipmentSlot.BODY);
+   }
+
+   private boolean hasValidEquippableItemForSlot(EquipmentSlot var1) {
+      return this.hasItemInSlot(var1) && this.isEquippableInSlot(this.getItemBySlot(var1), var1);
    }
 
    public void setBodyArmorItem(ItemStack var1) {

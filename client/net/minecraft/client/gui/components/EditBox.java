@@ -383,12 +383,12 @@ public class EditBox extends AbstractWidget {
          int var11 = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
          int var12 = var10;
          int var13 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
+         var1.depthTreePushCheckpoint();
          if (!var7.isEmpty()) {
             String var14 = var8 ? var7.substring(0, var6) : var7;
             FormattedCharSequence var15 = (FormattedCharSequence)this.formatter.apply(var14, this.displayPos);
             var1.depthTreeUp();
             var1.drawString(this.font, var15, var10, var11, var17);
-            var1.depthTreeBack();
             var12 = var10 + this.font.width(var15) + 1;
          }
 
@@ -404,22 +404,18 @@ public class EditBox extends AbstractWidget {
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
             var1.depthTreeUp();
             var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var12, var11, var17);
-            var1.depthTreeBack();
          }
 
          if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
             var1.depthTreeUp();
             var1.drawString(this.font, this.hint, var12, var11, var17);
-            var1.depthTreeBack();
          }
 
          if (!var18 && this.suggestion != null) {
             var1.depthTreeUp();
             var1.drawString(this.font, this.suggestion, var19 - 1, var11, -8355712);
-            var1.depthTreeBack();
          }
 
-         var1.depthTreePushCheckpoint();
          if (var13 != var6) {
             int var16 = var10 + this.font.width(var7.substring(0, var13));
             var1.depthTreeUp();

@@ -142,7 +142,5 @@ public class Main {
       var18.addProvider((var0x) -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.redstone_experiments.description"), FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS)));
       var18 = var0.getBuiltinDatapack(var2, "minecart_improvements");
       var18.addProvider((var0x) -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.minecart_improvements.description"), FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS)));
-      var18 = var0.getBuiltinDatapack(var2, "locator_bar");
-      var18.addProvider((var0x) -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.locator_bar.description"), FeatureFlagSet.of(FeatureFlags.LOCATOR_BAR)));
    }
 }

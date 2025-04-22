@@ -4,10 +4,15 @@ import com.mojang.blaze3d.DontObfuscate;
 
 @DontObfuscate
 public abstract class GpuTexture implements AutoCloseable {
+   public static final int USAGE_COPY_DST = 1;
+   public static final int USAGE_COPY_SRC = 2;
+   public static final int USAGE_TEXTURE_BINDING = 4;
+   public static final int USAGE_RENDER_ATTACHMENT = 8;
    private final TextureFormat format;
    private final int width;
    private final int height;
    private final int mipLevels;
+   private final int usage;
    private final String label;
    protected AddressMode addressModeU;
    protected AddressMode addressModeV;
@@ -15,18 +20,19 @@ public abstract class GpuTexture implements AutoCloseable {
    protected FilterMode magFilter;
    protected boolean useMipmaps;
 
-   public GpuTexture(String var1, TextureFormat var2, int var3, int var4, int var5) {
+   public GpuTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6) {
       super();
       this.addressModeU = AddressMode.REPEAT;
       this.addressModeV = AddressMode.REPEAT;
       this.minFilter = FilterMode.NEAREST;
       this.magFilter = FilterMode.LINEAR;
       this.useMipmaps = true;
-      this.label = var1;
-      this.format = var2;
-      this.width = var3;
-      this.height = var4;
-      this.mipLevels = var5;
+      this.usage = var1;
+      this.label = var2;
+      this.format = var3;
+      this.width = var4;
+      this.height = var5;
+      this.mipLevels = var6;
    }
 
    public int getWidth(int var1) {
@@ -43,6 +49,10 @@ public abstract class GpuTexture implements AutoCloseable {
 
    public TextureFormat getFormat() {
       return this.format;
+   }
+
+   public int usage() {
+      return this.usage;
    }
 
    public void setAddressMode(AddressMode var1) {

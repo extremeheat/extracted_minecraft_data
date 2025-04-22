@@ -162,7 +162,8 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          Component var7 = var6.getStyledHoverName();
          int var8 = var1.width(var7.getVisualOrderText());
          int var9 = var3 + var5 / 2 - 12;
-         var2.renderTooltip(var1, var7, var9 - var8 / 2, var4 - 15, (ResourceLocation)var6.get(DataComponents.TOOLTIP_STYLE));
+         ClientTooltipComponent var10 = ClientTooltipComponent.create(var7.getVisualOrderText());
+         var2.renderTooltip(var1, List.of(var10), var9 - var8 / 2, var4 - 15, DefaultTooltipPositioner.INSTANCE, (ResourceLocation)var6.get(DataComponents.TOOLTIP_STYLE));
       }
 
    }

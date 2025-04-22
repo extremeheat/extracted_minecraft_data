@@ -23,7 +23,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       super();
       this.colored = var3;
       this.root = new Node(0, 0, 256, 256);
-      this.texture = RenderSystem.getDevice().createTexture(var1, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1);
+      this.texture = RenderSystem.getDevice().createTexture(var1, 7, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1);
       this.texture.setTextureFilter(FilterMode.NEAREST, false);
       this.renderTypes = var2;
    }

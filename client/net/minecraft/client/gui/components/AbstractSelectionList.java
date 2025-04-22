@@ -158,6 +158,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.hovered = this.isMouseOver((double)var2, (double)var3) ? this.getEntryAtPosition((double)var2, (double)var3) : null;
       this.renderListBackground(var1);
       this.enableScissor(var1);
+      var1.depthTreeUp();
       if (this.renderHeader) {
          int var5 = this.getRowLeft();
          int var6 = this.getY() + 4 - (int)this.scrollAmount();
@@ -169,6 +170,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.renderListSeparators(var1);
       this.renderScrollbar(var1);
       this.renderDecorations(var1, var2, var3);
+      var1.depthTreeBack();
    }
 
    protected void renderListSeparators(GuiGraphics var1) {
@@ -325,6 +327,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       var1.fill(var7, var2 - 2, var8, var2 + var4 + 2, var5);
       var1.depthTreeUp();
       var1.fill(var7 + 1, var2 - 1, var8 - 1, var2 + var4 + 1, var6);
+      var1.depthTreeBack(2);
    }
 
    public int getRowLeft() {

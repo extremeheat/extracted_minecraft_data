@@ -38,6 +38,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
@@ -132,6 +133,7 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -960,20 +962,17 @@ public class ServerPlayer extends Player {
       return this.getAttributeValue(Attributes.WAYPOINT_RECEIVE_RANGE) > 0.0;
    }
 
-   public void onAttributeModified(AttributeInstance var1) {
-      super.onAttributeModified(var1);
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         if (!this.firstTick && var1.getAttribute() == Attributes.WAYPOINT_RECEIVE_RANGE) {
-            ServerWaypointManager var4 = var2.getWaypointManager();
-            if (var1.getValue() > 0.0) {
-               var4.addPlayer(this);
-            } else {
-               var4.removePlayer(this);
-            }
+   protected void onAttributeUpdated(Holder<Attribute> var1) {
+      if (var1.is(Attributes.WAYPOINT_RECEIVE_RANGE)) {
+         ServerWaypointManager var2 = this.serverLevel().getWaypointManager();
+         if (this.getAttributes().getValue(var1) > 0.0) {
+            var2.addPlayer(this);
+         } else {
+            var2.removePlayer(this);
          }
       }
 
+      super.onAttributeUpdated(var1);
    }
 
    private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(ServerLevel var0, RespawnConfig var1, boolean var2) {

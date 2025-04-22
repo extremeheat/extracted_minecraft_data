@@ -12,6 +12,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 
 public class GuiRenderState {
    private final List<Node> strata = new ArrayList();
+   private int firstStratumAfterBlur = 2147483647;
    private Node current;
    private final List<Node> checkpointStack = new ArrayList();
    private final Set<Object> itemModelIdentities = new HashSet();
@@ -27,6 +28,14 @@ public class GuiRenderState {
       } else {
          this.current = new Node((Node)null);
          this.strata.add(this.current);
+      }
+   }
+
+   public void blurBeforeThisStratum() {
+      if (this.firstStratumAfterBlur != 2147483647) {
+         throw new IllegalStateException("Can only blur once per frame");
+      } else {
+         this.firstStratumAfterBlur = this.strata.size() - 1;
       }
    }
 
@@ -96,28 +105,28 @@ public class GuiRenderState {
       return this.itemModelIdentities;
    }
 
-   public void forEachElement(LayeredElementConsumer var1) {
+   public void forEachElement(LayeredElementConsumer var1, TraverseRange var2) {
       if (!this.checkpointStack.isEmpty()) {
          throw new IllegalStateException("Unused checkpoints in checkpoint stack. The GUI tree is most likely corrupted.");
       } else {
-         MutableInt var2 = new MutableInt(0);
-         this.traverse((var2x) -> {
+         MutableInt var3 = new MutableInt(0);
+         this.traverse((Consumer)((var2x) -> {
             if (var2x.elementStates != null) {
-               var2.increment();
-               int var3 = var2.intValue();
+               var3.increment();
+               int var3x = var3.intValue();
 
                for(GuiElementRenderState var5 : var2x.elementStates) {
-                  var1.accept(var5, var3);
+                  var1.accept(var5, var3x);
                }
             }
 
-         });
+         }), var2);
       }
    }
 
    public void forEachItem(Consumer<GuiItemRenderState> var1) {
       Node var2 = this.current;
-      this.traverse((var2x) -> {
+      this.traverse((Consumer)((var2x) -> {
          if (var2x.itemStates != null) {
             this.current = var2x;
 
@@ -126,13 +135,13 @@ public class GuiRenderState {
             }
          }
 
-      });
+      }), GuiRenderState.TraverseRange.ALL);
       this.current = var2;
    }
 
    public void forEachText(Consumer<GuiTextRenderState> var1) {
       Node var2 = this.current;
-      this.traverse((var2x) -> {
+      this.traverse((Consumer)((var2x) -> {
          if (var2x.textStates != null) {
             this.current = var2x;
 
@@ -141,13 +150,13 @@ public class GuiRenderState {
             }
          }
 
-      });
+      }), GuiRenderState.TraverseRange.ALL);
       this.current = var2;
    }
 
    public void forEachPictureInPicture(Consumer<PictureInPictureRenderState> var1) {
       Node var2 = this.current;
-      this.traverse((var2x) -> {
+      this.traverse((Consumer)((var2x) -> {
          if (var2x.picturesInPictureStates != null) {
             this.current = var2x;
 
@@ -156,22 +165,31 @@ public class GuiRenderState {
             }
          }
 
-      });
+      }), GuiRenderState.TraverseRange.ALL);
       this.current = var2;
    }
 
    public void sortElements(Comparator<GuiElementRenderState> var1) {
-      this.traverse((var1x) -> {
+      this.traverse((Consumer)((var1x) -> {
          if (var1x.elementStates != null) {
             var1x.elementStates.sort(var1);
          }
 
-      });
+      }), GuiRenderState.TraverseRange.ALL);
    }
 
-   private void traverse(Consumer<Node> var1) {
-      for(Node var3 : this.strata) {
-         this.traverse(var3, var1);
+   private void traverse(Consumer<Node> var1, TraverseRange var2) {
+      int var3 = 0;
+      int var4 = this.strata.size();
+      if (var2 == GuiRenderState.TraverseRange.BEFORE_BLUR) {
+         var4 = Math.min(this.firstStratumAfterBlur, this.strata.size());
+      } else if (var2 == GuiRenderState.TraverseRange.AFTER_BLUR) {
+         var3 = this.firstStratumAfterBlur;
+      }
+
+      for(int var5 = var3; var5 < var4; ++var5) {
+         Node var6 = (Node)this.strata.get(var5);
+         this.traverse(var6, var1);
       }
 
    }
@@ -191,6 +209,7 @@ public class GuiRenderState {
    public void reset() {
       this.itemModelIdentities.clear();
       this.strata.clear();
+      this.firstStratumAfterBlur = 2147483647;
       this.nextStratum();
    }
 
@@ -245,6 +264,20 @@ public class GuiRenderState {
          }
 
          this.elementStates.add(var1);
+      }
+   }
+
+   public static enum TraverseRange {
+      ALL,
+      BEFORE_BLUR,
+      AFTER_BLUR;
+
+      private TraverseRange() {
+      }
+
+      // $FF: synthetic method
+      private static TraverseRange[] $values() {
+         return new TraverseRange[]{ALL, BEFORE_BLUR, AFTER_BLUR};
       }
    }
 

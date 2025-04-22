@@ -108,7 +108,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -256,12 +255,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.sleepStatus = new SleepStatus();
       this.gameEventDispatcher = new GameEventDispatcher(this);
       this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var13, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.TYPE));
-      if (this.enabledFeatures().contains(FeatureFlags.LOCATOR_BAR)) {
-         this.waypointManager = new ServerWaypointManager();
-      } else {
-         this.waypointManager = ServerWaypointManager.DISABLED;
-      }
-
+      this.waypointManager = new ServerWaypointManager();
    }
 
    /** @deprecated */

@@ -75,7 +75,7 @@ public class EffectsInInventory {
    public void renderTooltip(GuiGraphics var1, int var2, int var3) {
       if (this.hoveredEffect != null) {
          List var4 = List.of(this.getEffectName(this.hoveredEffect), MobEffectUtil.formatDuration(this.hoveredEffect, 1.0F, this.minecraft.level.tickRateManager().tickrate()));
-         var1.renderTooltip(this.screen.getFont(), var4, Optional.empty(), var2, var3);
+         var1.setTooltipForNextFrame(this.screen.getFont(), var4, Optional.empty(), var2, var3);
       }
 
    }

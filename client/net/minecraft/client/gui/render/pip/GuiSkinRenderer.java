@@ -29,7 +29,7 @@ public class GuiSkinRenderer extends PictureInPictureRenderer<GuiSkinRenderState
       float var5 = var1.scale() * (float)var3;
       var4.rotateAround(Axis.XP.rotationDegrees(var1.rotationX()), 0.0F, var5 * -var1.pivotY(), 0.0F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var1.rotationY()));
-      var2.translate(0.0F, -1.501F, 0.0F);
+      var2.translate(0.0F, -1.6010001F, 0.0F);
       RenderType var6 = var1.playerModel().renderType(var1.texture());
       var1.playerModel().renderToBuffer(var2, this.bufferSource.getBuffer(var6), 15728880, OverlayTexture.NO_OVERLAY);
       this.bufferSource.endBatch();

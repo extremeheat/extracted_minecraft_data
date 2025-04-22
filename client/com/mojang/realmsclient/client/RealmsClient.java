@@ -12,16 +12,23 @@ import com.mojang.realmsclient.dto.PendingInvite;
 import com.mojang.realmsclient.dto.PendingInvitesList;
 import com.mojang.realmsclient.dto.PingResult;
 import com.mojang.realmsclient.dto.PlayerInfo;
+import com.mojang.realmsclient.dto.PreferredRegionsDto;
+import com.mojang.realmsclient.dto.RealmsConfigurationDto;
 import com.mojang.realmsclient.dto.RealmsDescriptionDto;
 import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
+import com.mojang.realmsclient.dto.RealmsRegion;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerAddress;
 import com.mojang.realmsclient.dto.RealmsServerList;
 import com.mojang.realmsclient.dto.RealmsServerPlayerLists;
+import com.mojang.realmsclient.dto.RealmsSetting;
+import com.mojang.realmsclient.dto.RealmsSlotUpdateDto;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
 import com.mojang.realmsclient.dto.RealmsWorldResetDto;
 import com.mojang.realmsclient.dto.ReflectionBasedSerialization;
+import com.mojang.realmsclient.dto.RegionDataDto;
+import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
 import com.mojang.realmsclient.dto.ServerActivityList;
 import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.dto.UploadInfo;
@@ -63,6 +70,7 @@ public class RealmsClient {
    private static final String ACTIVITIES_RESOURCE = "activities";
    private static final String OPS_RESOURCE = "ops";
    private static final String REGIONS_RESOURCE = "regions/ping/stat";
+   private static final String PREFERRED_REGION_RESOURCE = "regions/preferredRegions";
    private static final String TRIALS_RESOURCE = "trial";
    private static final String NOTIFICATIONS_RESOURCE = "notifications";
    private static final String FEATURE_FLAGS_RESOURCE = "feature/v1";
@@ -86,7 +94,7 @@ public class RealmsClient {
    private static final String PATH_ACCEPT_INVITE = "/accept/$INVITATION_ID";
    private static final String PATH_REJECT_INVITE = "/reject/$INVITATION_ID";
    private static final String PATH_UNINVITE_MYSELF = "/$WORLD_ID";
-   private static final String PATH_WORLD_UPDATE = "/$WORLD_ID";
+   private static final String PATH_WORLD_CONFIGURE = "/$WORLD_ID/configuration";
    private static final String PATH_SLOT = "/$WORLD_ID/slot/$SLOT_ID";
    private static final String PATH_WORLD_OPEN = "/$WORLD_ID/open";
    private static final String PATH_WORLD_CLOSE = "/$WORLD_ID/close";
@@ -165,19 +173,19 @@ public class RealmsClient {
       }
 
       String var2 = this.execute(Request.get(var1));
-      return RealmsServerList.parse(var2);
+      return RealmsServerList.parse(GSON, var2);
    }
 
    public List<RealmsServer> listSnapshotEligibleRealms() throws RealmsServiceException {
       String var1 = this.url("worlds/listPrereleaseEligibleWorlds");
       String var2 = this.execute(Request.get(var1));
-      return RealmsServerList.parse(var2).servers;
+      return RealmsServerList.parse(GSON, var2).servers;
    }
 
    public RealmsServer createSnapshotRealm(Long var1) throws RealmsServiceException {
       String var2 = String.valueOf(var1);
       String var3 = this.url("worlds" + "/$PARENT_WORLD_ID/createPrereleaseRealm".replace("$PARENT_WORLD_ID", var2));
-      return RealmsServer.parse(this.execute(Request.post(var3, var2)));
+      return RealmsServer.parse(GSON, this.execute(Request.post(var3, var2)));
    }
 
    public List<RealmsNotification> getNotifications() throws RealmsServiceException {
@@ -211,7 +219,32 @@ public class RealmsClient {
    public RealmsServer getOwnRealm(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/$ID".replace("$ID", String.valueOf(var1)));
       String var4 = this.execute(Request.get(var3));
-      return RealmsServer.parse(var4);
+      return RealmsServer.parse(GSON, var4);
+   }
+
+   public PreferredRegionsDto getPreferredRegionSelections() throws RealmsServiceException {
+      String var1 = this.url("regions/preferredRegions");
+      String var2 = this.execute(Request.get(var1));
+
+      try {
+         PreferredRegionsDto var3 = (PreferredRegionsDto)GSON.fromJson(var2, PreferredRegionsDto.class);
+         if (var3 == null) {
+            return PreferredRegionsDto.empty();
+         } else {
+            Set var4 = (Set)var3.regionData().stream().map(RegionDataDto::region).collect(Collectors.toSet());
+
+            for(RealmsRegion var8 : RealmsRegion.values()) {
+               if (var8 != RealmsRegion.INVALID_REGION && !var4.contains(var8)) {
+                  LOGGER.debug("No realms region matching {} in server response", var8);
+               }
+            }
+
+            return var3;
+         }
+      } catch (Exception var9) {
+         LOGGER.error("Could not parse PreferredRegionSelections: {}", var9.getMessage());
+         return PreferredRegionsDto.empty();
+      }
    }
 
    public ServerActivityList getActivity(long var1) throws RealmsServiceException {
@@ -272,7 +305,7 @@ public class RealmsClient {
       var4.setName(var3);
       String var5 = this.url("invites" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
       String var6 = this.execute(Request.post(var5, GSON.toJson((ReflectionBasedSerialization)var4)));
-      return RealmsServer.parse(var6);
+      return RealmsServer.parse(GSON, var6);
    }
 
    public BackupList backupsFor(long var1) throws RealmsServiceException {
@@ -281,16 +314,19 @@ public class RealmsClient {
       return BackupList.parse(var4);
    }
 
-   public void update(long var1, String var3, String var4) throws RealmsServiceException {
-      RealmsDescriptionDto var5 = new RealmsDescriptionDto(var3, var4);
-      String var6 = this.url("worlds" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
-      this.execute(Request.post(var6, GSON.toJson((ReflectionBasedSerialization)var5)));
+   public void updateConfiguration(long var1, String var3, String var4, @Nullable RegionSelectionPreferenceDto var5, int var6, RealmsWorldOptions var7, List<RealmsSetting> var8) throws RealmsServiceException {
+      RegionSelectionPreferenceDto var9 = var5 != null ? var5 : new RegionSelectionPreferenceDto(RegionSelectionPreferenceDto.RegionSelectionPreference.DEFAULT_SELECTION, (RealmsRegion)null);
+      RealmsDescriptionDto var10 = new RealmsDescriptionDto(var3, var4);
+      RealmsSlotUpdateDto var11 = new RealmsSlotUpdateDto(var6, var7, RealmsSetting.isHardcore(var8));
+      RealmsConfigurationDto var12 = new RealmsConfigurationDto(var11, var8, var9, var10);
+      String var13 = this.url("worlds" + "/$WORLD_ID/configuration".replace("$WORLD_ID", String.valueOf(var1)));
+      this.execute(Request.post(var13, GSON.toJson((ReflectionBasedSerialization)var12)));
    }
 
-   public void updateSlot(long var1, int var3, RealmsWorldOptions var4) throws RealmsServiceException {
-      String var5 = this.url("worlds" + "/$WORLD_ID/slot/$SLOT_ID".replace("$WORLD_ID", String.valueOf(var1)).replace("$SLOT_ID", String.valueOf(var3)));
-      String var6 = var4.toJson();
-      this.execute(Request.post(var5, var6));
+   public void updateSlot(long var1, int var3, RealmsWorldOptions var4, List<RealmsSetting> var5) throws RealmsServiceException {
+      String var6 = this.url("worlds" + "/$WORLD_ID/slot/$SLOT_ID".replace("$WORLD_ID", String.valueOf(var1)).replace("$SLOT_ID", String.valueOf(var3)));
+      String var7 = GSON.toJson((ReflectionBasedSerialization)(new RealmsSlotUpdateDto(var3, var4, RealmsSetting.isHardcore(var5))));
+      this.execute(Request.post(var6, var7));
    }
 
    public boolean switchSlot(long var1, int var3) throws RealmsServiceException {

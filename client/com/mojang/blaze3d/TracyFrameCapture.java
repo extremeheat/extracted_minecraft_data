@@ -31,7 +31,7 @@ public class TracyFrameCapture implements AutoCloseable {
       this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
       this.width = 320;
       this.height = 180;
-      this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", TextureFormat.RGBA8, this.width, this.height, 1);
+      this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, this.width, this.height, 1);
       this.pixelbuffer = RenderSystem.getDevice().createBuffer(() -> "Tracy Frame Capture buffer", 9, this.width * this.height * 4);
    }
 
@@ -53,7 +53,7 @@ public class TracyFrameCapture implements AutoCloseable {
          this.width = var1;
          this.height = var2;
          this.frameBuffer.close();
-         this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", TextureFormat.RGBA8, var1, var2, 1);
+         this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, var1, var2, 1);
          this.pixelbuffer.close();
          this.pixelbuffer = RenderSystem.getDevice().createBuffer(() -> "Tracy Frame Capture buffer", 9, var1 * var2 * 4);
       }
@@ -74,12 +74,12 @@ public class TracyFrameCapture implements AutoCloseable {
          RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
          GpuBuffer var4 = var3.getBuffer(6);
 
-         try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(this.frameBuffer, OptionalInt.empty())) {
+         try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBuffer, OptionalInt.empty())) {
             var5.setPipeline(RenderPipelines.TRACY_BLIT);
             var5.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
             var5.setIndexBuffer(var4, var3.type());
             var5.bindSampler("InSampler", var1.getColorTexture());
-            var5.drawIndexed(0, 6);
+            var5.drawIndexed(0, 0, 6, 1);
          }
 
          var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);

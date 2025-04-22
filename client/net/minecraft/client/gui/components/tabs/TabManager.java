@@ -13,15 +13,25 @@ import net.minecraft.sounds.SoundEvents;
 public class TabManager {
    private final Consumer<AbstractWidget> addWidget;
    private final Consumer<AbstractWidget> removeWidget;
+   private final Consumer<Tab> onSelected;
+   private final Consumer<Tab> onDeselected;
    @Nullable
    private Tab currentTab;
    @Nullable
    private ScreenRectangle tabArea;
 
    public TabManager(Consumer<AbstractWidget> var1, Consumer<AbstractWidget> var2) {
+      this(var1, var2, (var0) -> {
+      }, (var0) -> {
+      });
+   }
+
+   public TabManager(Consumer<AbstractWidget> var1, Consumer<AbstractWidget> var2, Consumer<Tab> var3, Consumer<Tab> var4) {
       super();
       this.addWidget = var1;
       this.removeWidget = var2;
+      this.onSelected = var3;
+      this.onDeselected = var4;
    }
 
    public void setTabArea(ScreenRectangle var1) {
@@ -39,6 +49,7 @@ public class TabManager {
             this.currentTab.visitChildren(this.removeWidget);
          }
 
+         Tab var3 = this.currentTab;
          this.currentTab = var1;
          var1.visitChildren(this.addWidget);
          if (this.tabArea != null) {
@@ -48,6 +59,9 @@ public class TabManager {
          if (var2) {
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
          }
+
+         this.onDeselected.accept(var3);
+         this.onSelected.accept(this.currentTab);
       }
 
    }

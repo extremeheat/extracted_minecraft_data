@@ -3,13 +3,16 @@ package com.mojang.realmsclient.client.worldupload;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
+import com.mojang.realmsclient.dto.RealmsSetting;
+import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
-import com.mojang.realmsclient.gui.screens.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
+import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nullable;
@@ -39,21 +42,22 @@ public class RealmsCreateWorldFlow {
          Path var10;
          try {
             var10 = createTemporaryWorldFolder(var7, var8, var9);
-         } catch (IOException var13) {
+         } catch (IOException var14) {
             LOGGER.warn("Failed to create temporary world folder.");
             var0.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
             return true;
          }
 
          RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), var8.getLevelSettings().allowCommands(), SharedConstants.getCurrentVersion().name());
-         RealmsWorldUpload var12 = new RealmsWorldUpload(var10, var11, var0.getUser(), var4.id, var3, RealmsWorldUploadStatusTracker.noOp());
-         Objects.requireNonNull(var12);
-         var0.forceSetScreen(new AlertScreen(var12::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));
+         RealmsSlot var12 = new RealmsSlot(var3, var11, List.of(RealmsSetting.hardcoreSetting(var8.getLevelSettings().hardcore())));
+         RealmsWorldUpload var13 = new RealmsWorldUpload(var10, var12, var0.getUser(), var4.id, RealmsWorldUploadStatusTracker.noOp());
+         Objects.requireNonNull(var13);
+         var0.forceSetScreen(new AlertScreen(var13::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));
          if (var5 != null) {
             var5.run();
          }
 
-         var12.packAndUpload().handleAsync((var5x, var6x) -> {
+         var13.packAndUpload().handleAsync((var5x, var6x) -> {
             if (var6x != null) {
                if (var6x instanceof CompletionException) {
                   CompletionException var7 = (CompletionException)var6x;

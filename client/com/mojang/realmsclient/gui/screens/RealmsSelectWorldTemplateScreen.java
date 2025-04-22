@@ -229,7 +229,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             var1.drawString(this.font, var13, var9, var7, var12);
             int var14 = var9 + this.font.width(var13);
             if (var11.isLink() && var2 > var9 && var2 < var14 && var3 > var7 - 3 && var3 < var7 + 8) {
-               this.setTooltipForNextRenderPass(Component.literal(var11.getLinkUrl()));
+               var1.setTooltipForNextFrame(Component.literal(var11.getLinkUrl()), var2, var3);
                this.currentLink = var11.getLinkUrl();
             }
 

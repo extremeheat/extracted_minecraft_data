@@ -128,7 +128,7 @@ public class RecipeBookPage {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          ItemStack var4 = this.hoveredButton.getDisplayStack();
          ResourceLocation var5 = (ResourceLocation)var4.get(DataComponents.TOOLTIP_STYLE);
-         var1.renderComponentTooltip(this.minecraft.font, this.hoveredButton.getTooltipText(var4), var2, var3, var5);
+         var1.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(var4), var2, var3, var5);
       }
 
    }

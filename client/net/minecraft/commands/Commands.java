@@ -217,10 +217,7 @@ public class Commands {
       TimeCommand.register(this.dispatcher);
       TitleCommand.register(this.dispatcher, var2);
       TriggerCommand.register(this.dispatcher);
-      if (var2.enabledFeatures().contains(FeatureFlags.LOCATOR_BAR)) {
-         WaypointCommand.register(this.dispatcher, var2);
-      }
-
+      WaypointCommand.register(this.dispatcher, var2);
       WeatherCommand.register(this.dispatcher);
       WorldBorderCommand.register(this.dispatcher);
       if (JvmProfiler.INSTANCE.isAvailable()) {

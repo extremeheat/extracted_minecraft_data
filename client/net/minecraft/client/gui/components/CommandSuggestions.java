@@ -462,7 +462,7 @@ public class CommandSuggestions {
          if (var14) {
             Message var15 = ((Suggestion)this.suggestionList.get(this.current)).getTooltip();
             if (var15 != null) {
-               var1.renderTooltip(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
+               var1.setTooltipForNextFrame(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
             }
          }
 

@@ -29,7 +29,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
       this.blockSize = Mth.roundToward(var2, var4.getUniformOffsetAlignment());
       this.capacity = Mth.smallestEncompassingPowerOfTwo(var3);
       this.nextBlock = 0;
-      this.ringBuffer = new MappableRingBuffer(var1 + " x" + this.blockSize, 130, this.blockSize * this.capacity);
+      this.ringBuffer = new MappableRingBuffer(() -> var1 + " x" + this.blockSize, 130, this.blockSize * this.capacity);
       this.label = var1;
    }
 
@@ -52,7 +52,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
       this.nextBlock = 0;
       this.lastUniform = null;
       this.oldBuffers.add(this.ringBuffer);
-      this.ringBuffer = new MappableRingBuffer(this.label + " x" + this.blockSize, 130, this.blockSize * this.capacity);
+      this.ringBuffer = new MappableRingBuffer(() -> this.label + " x" + this.blockSize, 130, this.blockSize * this.capacity);
    }
 
    public GpuBufferSlice writeUniform(T var1) {

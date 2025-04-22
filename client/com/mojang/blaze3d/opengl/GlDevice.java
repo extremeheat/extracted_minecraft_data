@@ -81,41 +81,41 @@ public class GlDevice implements GpuDevice {
       return this.encoder;
    }
 
-   public GpuTexture createTexture(@Nullable Supplier<String> var1, TextureFormat var2, int var3, int var4, int var5) {
-      return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5);
+   public GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6) {
+      return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5, var6);
    }
 
-   public GpuTexture createTexture(@Nullable String var1, TextureFormat var2, int var3, int var4, int var5) {
-      if (var5 < 1) {
+   public GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6) {
+      if (var6 < 1) {
          throw new IllegalArgumentException("mipLevels must be at least 1");
       } else {
          GlStateManager.clearGlErrors();
-         int var6 = GlStateManager._genTexture();
+         int var7 = GlStateManager._genTexture();
          if (var1 == null) {
-            var1 = String.valueOf(var6);
+            var1 = String.valueOf(var7);
          }
 
-         GlStateManager._bindTexture(var6);
-         GlStateManager._texParameter(3553, 33085, var5 - 1);
+         GlStateManager._bindTexture(var7);
+         GlStateManager._texParameter(3553, 33085, var6 - 1);
          GlStateManager._texParameter(3553, 33082, 0);
-         GlStateManager._texParameter(3553, 33083, var5 - 1);
-         if (var2.hasDepthAspect()) {
+         GlStateManager._texParameter(3553, 33083, var6 - 1);
+         if (var3.hasDepthAspect()) {
             GlStateManager._texParameter(3553, 34892, 0);
          }
 
-         for(int var7 = 0; var7 < var5; ++var7) {
-            GlStateManager._texImage2D(3553, var7, GlConst.toGlInternalId(var2), var3 >> var7, var4 >> var7, 0, GlConst.toGlExternalId(var2), GlConst.toGlType(var2), (IntBuffer)null);
+         for(int var8 = 0; var8 < var6; ++var8) {
+            GlStateManager._texImage2D(3553, var8, GlConst.toGlInternalId(var3), var4 >> var8, var5 >> var8, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
          }
 
-         int var9 = GlStateManager._getError();
-         if (var9 == 1285) {
-            throw new GpuOutOfMemoryException("Could not allocate texture of " + var3 + "x" + var4 + " for " + var1);
-         } else if (var9 != 0) {
-            throw new IllegalStateException("OpenGL error " + var9);
+         int var10 = GlStateManager._getError();
+         if (var10 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate texture of " + var4 + "x" + var5 + " for " + var1);
+         } else if (var10 != 0) {
+            throw new IllegalStateException("OpenGL error " + var10);
          } else {
-            GlTexture var8 = new GlTexture(var1, var2, var3, var4, var5, var6);
-            this.debugLabels.applyLabel(var8);
-            return var8;
+            GlTexture var9 = new GlTexture(var2, var1, var3, var4, var5, var6, var7);
+            this.debugLabels.applyLabel(var9);
+            return var9;
          }
       }
    }

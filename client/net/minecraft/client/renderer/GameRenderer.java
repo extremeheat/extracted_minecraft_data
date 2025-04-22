@@ -185,14 +185,11 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    }
 
    public void processBlurEffect() {
-      float var1 = (float)this.minecraft.options.getMenuBackgroundBlurriness();
-      if (!(var1 < 1.0F)) {
-         PostChain var2 = this.minecraft.getShaderManager().getPostChain(BLUR_POST_CHAIN_ID, LevelTargetBundle.MAIN_TARGETS);
-         if (var2 != null) {
-            var2.process(this.minecraft.getMainRenderTarget(), this.resourcePool);
-         }
-
+      PostChain var1 = this.minecraft.getShaderManager().getPostChain(BLUR_POST_CHAIN_ID, LevelTargetBundle.MAIN_TARGETS);
+      if (var1 != null) {
+         var1.process(this.minecraft.getMainRenderTarget(), this.resourcePool);
       }
+
    }
 
    public void preloadUiShader(ResourceProvider var1) {
@@ -446,7 +443,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    }
 
    public float getDepthFar() {
-      return Math.max(this.renderDistance * 4.0F, 2048.0F);
+      return Math.max(this.renderDistance * 4.0F, (float)((Integer)this.minecraft.options.cloudRange().get() * 16));
    }
 
    public static float getNightVisionScale(LivingEntity var0, float var1) {
@@ -490,8 +487,6 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          if (var4 && var2 && this.minecraft.level != null) {
             var3.popPush("gui");
             this.minecraft.gui.render(var8, var1);
-            this.guiRenderer.render(this.minecraft.levelRenderer.getFogRenderer().getBuffer(FogRenderer.FogMode.NONE));
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
             var3.pop();
          }
 

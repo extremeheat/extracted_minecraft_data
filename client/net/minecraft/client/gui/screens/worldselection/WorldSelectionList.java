@@ -394,29 +394,29 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             if (this.summary.isLocked()) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                if (var17) {
-                  this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.WORLD_LOCKED_TOOLTIP, 175));
+                  var1.setTooltipForNextFrame(this.minecraft.font.split(WorldSelectionList.WORLD_LOCKED_TOOLTIP, 175), var7, var8);
                }
             } else if (this.summary.requiresManualConversion()) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                if (var17) {
-                  this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.WORLD_REQUIRES_CONVERSION, 175));
+                  var1.setTooltipForNextFrame(this.minecraft.font.split(WorldSelectionList.WORLD_REQUIRES_CONVERSION, 175), var7, var8);
                }
             } else if (!this.summary.isCompatible()) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                if (var17) {
-                  this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.INCOMPATIBLE_VERSION_TOOLTIP, 175));
+                  var1.setTooltipForNextFrame(this.minecraft.font.split(WorldSelectionList.INCOMPATIBLE_VERSION_TOOLTIP, 175), var7, var8);
                }
             } else if (this.summary.shouldBackup()) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var21, var4, var3, 32, 32);
                if (this.summary.isDowngrade()) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20, var4, var3, 32, 32);
                   if (var17) {
-                     this.screen.setTooltipForNextRenderPass(ImmutableList.of(WorldSelectionList.FROM_NEWER_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.FROM_NEWER_TOOLTIP_2.getVisualOrderText()));
+                     var1.setTooltipForNextFrame((List)ImmutableList.of(WorldSelectionList.FROM_NEWER_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.FROM_NEWER_TOOLTIP_2.getVisualOrderText()), var7, var8);
                   }
                } else if (!SharedConstants.getCurrentVersion().stable()) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var19, var4, var3, 32, 32);
                   if (var17) {
-                     this.screen.setTooltipForNextRenderPass(ImmutableList.of(WorldSelectionList.SNAPSHOT_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.SNAPSHOT_TOOLTIP_2.getVisualOrderText()));
+                     var1.setTooltipForNextFrame((List)ImmutableList.of(WorldSelectionList.SNAPSHOT_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.SNAPSHOT_TOOLTIP_2.getVisualOrderText()), var7, var8);
                   }
                }
             } else {

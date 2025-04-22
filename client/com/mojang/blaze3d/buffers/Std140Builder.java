@@ -15,10 +15,12 @@ import org.lwjgl.system.MemoryStack;
 @DontObfuscate
 public class Std140Builder {
    private final ByteBuffer buffer;
+   private final int start;
 
    private Std140Builder(ByteBuffer var1) {
       super();
       this.buffer = var1;
+      this.start = var1.position();
    }
 
    public static Std140Builder intoBuffer(ByteBuffer var0) {
@@ -35,7 +37,7 @@ public class Std140Builder {
 
    public Std140Builder align(int var1) {
       int var2 = this.buffer.position();
-      this.buffer.position(Mth.roundToward(var2, var1));
+      this.buffer.position(this.start + Mth.roundToward(var2 - this.start, var1));
       return this;
    }
 

@@ -942,7 +942,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       GpuBuffer var17 = var9 == 0 ? null : var8.getBuffer(var9);
       VertexFormat.IndexType var18 = var9 == 0 ? null : var8.type();
 
-      try (RenderPass var19 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1.getRenderTarget().getColorTexture(), OptionalInt.empty(), var1.getRenderTarget().getDepthTexture(), OptionalDouble.empty())) {
+      try (RenderPass var19 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.getName(), var1.getRenderTarget().getColorTexture(), OptionalInt.empty(), var1.getRenderTarget().getDepthTexture(), OptionalDouble.empty())) {
          var19.setPipeline(var6);
          RenderSystem.bindDefaultUniforms(var19);
 

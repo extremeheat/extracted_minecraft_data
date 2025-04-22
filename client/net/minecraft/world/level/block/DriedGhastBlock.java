@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -120,7 +121,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
       double var7 = (double)var3.getY() + 0.5;
       double var9 = (double)var3.getZ() + 0.5;
       if (!(Boolean)var1.getValue(WATERLOGGED)) {
-         if (var4.nextInt(40) == 0) {
+         if (var4.nextInt(40) == 0 && var2.getBlockState(var3.below()).is(BlockTags.TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS)) {
             var2.playLocalSound(var5, var7, var9, SoundEvents.DRIED_GHAST_AMBIENT, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
 

@@ -14,12 +14,12 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.RealmsServerList;
 import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
-import com.mojang.realmsclient.gui.screens.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsCreateRealmScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPendingInvitesScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
+import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import com.mojang.realmsclient.util.RealmsPersistence;
 import com.mojang.realmsclient.util.RealmsUtil;
@@ -307,7 +307,7 @@ public class RealmsMainScreen extends RealmsScreen {
       LinearLayout var1 = LinearLayout.vertical().spacing(8);
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(ImageWidget.texture(130, 64, NO_REALMS_LOCATION, 130, 64));
-      FocusableTextWidget var2 = new FocusableTextWidget(308, NO_REALMS_TEXT, this.font, false, 4);
+      FocusableTextWidget var2 = new FocusableTextWidget(308, NO_REALMS_TEXT, this.font, false, true, 4);
       var1.addChild(var2);
       return var1;
    }
@@ -767,7 +767,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var2, var3, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)var4, (double)var5) && var4 >= var2 && var4 <= var2 + 10 && var5 >= var3 && var5 <= var3 + 28) {
-            RealmsMainScreen.this.setTooltipForNextRenderPass((Component)var7.get());
+            var1.setTooltipForNextFrame((Component)var7.get(), var4, var5);
          }
 
       }
@@ -1021,7 +1021,7 @@ public class RealmsMainScreen extends RealmsScreen {
          int var11 = var10000 - 9 / 2;
          var1.drawString(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, var4 + 40 - 2, var11 - 5, 8388479);
          var1.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server")), var4 + 40 - 2, var11 + 5, -8355712);
-         this.tooltip.refreshTooltipForNextRenderPass(var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
+         this.tooltip.refreshTooltipForNextRenderPass(var1, var7, var8, var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
       }
 
       public boolean mouseClicked(double var1, double var3, int var5) {
@@ -1067,7 +1067,7 @@ public class RealmsMainScreen extends RealmsScreen {
          this.renderFirstLine(var1, var3, var4, var5, -8355712, this.server);
          this.renderSecondLine(var1, var3, var4, var5, this.server);
          this.renderThirdLine(var1, var3, var4, this.server);
-         this.tooltip.refreshTooltipForNextRenderPass(var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
+         this.tooltip.refreshTooltipForNextRenderPass(var1, var7, var8, var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
       }
 
       public Component getNarration() {
@@ -1106,29 +1106,29 @@ public class RealmsMainScreen extends RealmsScreen {
             this.renderFirstLine(var1, var3, var4, var5, -1, this.serverData);
             this.renderSecondLine(var1, var3, var4, var5, this.serverData);
             this.renderThirdLine(var1, var3, var4, this.serverData);
-            boolean var11 = this.renderOnlinePlayers(var1, var3, var4, var5, var6, var7, var8);
             this.renderStatusLights(this.serverData, var1, var4 + var5, var3, var7, var8);
+            boolean var11 = this.renderOnlinePlayers(var1, var3, var4, var5, var6, var7, var8, var10);
             if (!var11) {
-               this.tooltip.refreshTooltipForNextRenderPass(var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
+               this.tooltip.refreshTooltipForNextRenderPass(var1, var7, var8, var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
             }
 
          }
       }
 
-      private boolean renderOnlinePlayers(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-         List var8 = RealmsMainScreen.this.onlinePlayersPerRealm.getProfileResultsFor(this.serverData.id);
-         if (!var8.isEmpty()) {
-            int var9 = var3 + var4 - 21;
-            int var10 = var2 + var5 - 9 - 2;
-            int var11 = var9;
+      private boolean renderOnlinePlayers(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, float var8) {
+         List var9 = RealmsMainScreen.this.onlinePlayersPerRealm.getProfileResultsFor(this.serverData.id);
+         if (!var9.isEmpty()) {
+            int var10 = var3 + var4 - 21;
+            int var11 = var2 + var5 - 9 - 2;
+            int var12 = var10;
 
-            for(int var12 = 0; var12 < var8.size(); ++var12) {
-               var11 -= 9 + (var12 == 0 ? 0 : 3);
-               PlayerFaceRenderer.draw(var1, Minecraft.getInstance().getSkinManager().getInsecureSkin(((ProfileResult)var8.get(var12)).profile()), var11, var10, 9);
+            for(int var13 = 0; var13 < var9.size(); ++var13) {
+               var12 -= 9 + (var13 == 0 ? 0 : 3);
+               PlayerFaceRenderer.draw(var1, Minecraft.getInstance().getSkinManager().getInsecureSkin(((ProfileResult)var9.get(var13)).profile()), var12, var11, 9);
             }
 
-            if (var6 >= var11 && var6 <= var9 && var7 >= var10 && var7 <= var10 + 9) {
-               var1.renderTooltip(RealmsMainScreen.this.font, List.of(ONLINE_PLAYERS_TOOLTIP_HEADER), Optional.of(new ClientActivePlayersTooltip.ActivePlayersTooltip(var8)), var6, var7);
+            if (var6 >= var12 && var6 <= var10 && var7 >= var11 && var7 <= var11 + 9) {
+               var1.setTooltipForNextFrame(RealmsMainScreen.this.font, List.of(ONLINE_PLAYERS_TOOLTIP_HEADER), Optional.of(new ClientActivePlayersTooltip.ActivePlayersTooltip(var9)), var6, var7);
                return true;
             }
          }

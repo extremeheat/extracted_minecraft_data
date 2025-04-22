@@ -8,10 +8,15 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 @DontObfuscate
 public interface RenderPass extends AutoCloseable {
+   void pushDebugGroup(Supplier<String> var1);
+
+   void popDebugGroup();
+
    void setPipeline(RenderPipeline var1);
 
    void bindSampler(String var1, @Nullable GpuTexture var2);
@@ -28,9 +33,7 @@ public interface RenderPass extends AutoCloseable {
 
    void setIndexBuffer(GpuBuffer var1, VertexFormat.IndexType var2);
 
-   void drawIndexed(int var1, int var2);
-
-   void drawIndexed(int var1, int var2, int var3);
+   void drawIndexed(int var1, int var2, int var3, int var4);
 
    void drawMultipleIndexed(Collection<Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4);
 

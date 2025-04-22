@@ -11,11 +11,17 @@ import net.minecraft.world.phys.Vec3;
 public class EntityTracker implements PositionTracker {
    private final Entity entity;
    private final boolean trackEyeHeight;
+   private final boolean targetEyeHeight;
 
    public EntityTracker(Entity var1, boolean var2) {
+      this(var1, var2, false);
+   }
+
+   public EntityTracker(Entity var1, boolean var2, boolean var3) {
       super();
       this.entity = var1;
       this.trackEyeHeight = var2;
+      this.targetEyeHeight = var3;
    }
 
    public Vec3 currentPosition() {
@@ -23,7 +29,7 @@ public class EntityTracker implements PositionTracker {
    }
 
    public BlockPos currentBlockPosition() {
-      return this.entity.blockPosition();
+      return this.targetEyeHeight ? BlockPos.containing(this.entity.getEyePosition()) : this.entity.blockPosition();
    }
 
    public boolean isVisibleBy(LivingEntity var1) {

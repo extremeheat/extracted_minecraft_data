@@ -2169,7 +2169,7 @@ public class Items {
       BLACK_CONCRETE_POWDER = registerBlock(Blocks.BLACK_CONCRETE_POWDER);
       TURTLE_EGG = registerBlock(Blocks.TURTLE_EGG);
       SNIFFER_EGG = registerBlock(Blocks.SNIFFER_EGG, (UnaryOperator)((var0) -> var0.rarity(Rarity.UNCOMMON)));
-      DRIED_GHAST = registerBlock(Blocks.DRIED_GHAST, (UnaryOperator)((var0) -> var0.rarity(Rarity.UNCOMMON)));
+      DRIED_GHAST = registerBlock(Blocks.DRIED_GHAST);
       DEAD_TUBE_CORAL_BLOCK = registerBlock(Blocks.DEAD_TUBE_CORAL_BLOCK);
       DEAD_BRAIN_CORAL_BLOCK = registerBlock(Blocks.DEAD_BRAIN_CORAL_BLOCK);
       DEAD_BUBBLE_CORAL_BLOCK = registerBlock(Blocks.DEAD_BUBBLE_CORAL_BLOCK);

@@ -18,9 +18,9 @@ import net.minecraft.resources.ResourceLocation;
 public interface GpuDevice {
    CommandEncoder createCommandEncoder();
 
-   GpuTexture createTexture(@Nullable Supplier<String> var1, TextureFormat var2, int var3, int var4, int var5);
+   GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6);
 
-   GpuTexture createTexture(@Nullable String var1, TextureFormat var2, int var3, int var4, int var5);
+   GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6);
 
    GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, int var3);
 

@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import java.nio.ByteBuffer;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -11,12 +12,13 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 public class DynamicUniforms implements AutoCloseable {
-   public static final int TRANSFORM_UBO_SIZE = 164;
+   public static final int TRANSFORM_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putVec4().putVec3().putMat4f().putFloat().get();
    private static final int INITIAL_CAPACITY = 2;
-   private final DynamicUniformStorage<Transform> transforms = new DynamicUniformStorage<Transform>("Dynamic Transforms UBO", 164, 2);
+   private final DynamicUniformStorage<Transform> transforms;
 
    public DynamicUniforms() {
       super();
+      this.transforms = new DynamicUniformStorage<Transform>("Dynamic Transforms UBO", TRANSFORM_UBO_SIZE, 2);
    }
 
    public void reset() {

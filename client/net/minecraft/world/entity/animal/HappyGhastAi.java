@@ -25,8 +25,8 @@ public class HappyGhastAi {
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 1.0F;
    private static final float SPEED_MULTIPLIER_WHEN_TEMPTED = 1.25F;
    private static final float SPEED_MULTIPLIER_WHEN_FOLLOWING_ADULT = 1.1F;
-   private static final double BABY_GHAST_CLOSE_ENOUGH_DIST = 5.0;
-   private static final UniformInt ADULT_FOLLOW_RANGE = UniformInt.of(5, 16);
+   private static final double BABY_GHAST_CLOSE_ENOUGH_DIST = 3.0;
+   private static final UniformInt ADULT_FOLLOW_RANGE = UniformInt.of(3, 16);
    private static final ImmutableList<SensorType<? extends Sensor<? super HappyGhast>>> SENSOR_TYPES;
    private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -53,7 +53,7 @@ public class HappyGhastAi {
    }
 
    private static void initIdleActivity(Brain<HappyGhast> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(1, new FollowTemptation((var0x) -> 1.25F, (var0x) -> 5.0, true)), Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, (var0x) -> 1.1F, MemoryModuleType.NEAREST_VISIBLE_PLAYER)), Pair.of(3, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, (var0x) -> 1.1F, MemoryModuleType.NEAREST_VISIBLE_ADULT)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 1), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1))))));
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(1, new FollowTemptation((var0x) -> 1.25F, (var0x) -> 3.0, true)), Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, (var0x) -> 1.1F, MemoryModuleType.NEAREST_VISIBLE_PLAYER, true)), Pair.of(3, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, (var0x) -> 1.1F, MemoryModuleType.NEAREST_VISIBLE_ADULT, true)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 1), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1))))));
    }
 
    private static void initPanicActivity(Brain<HappyGhast> var0) {

@@ -33,13 +33,15 @@ public abstract class ImageWidget extends AbstractWidget {
       return false;
    }
 
+   public abstract void updateResource(ResourceLocation var1);
+
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 
    static class Sprite extends ImageWidget {
-      private final ResourceLocation sprite;
+      private ResourceLocation sprite;
 
       public Sprite(int var1, int var2, int var3, int var4, ResourceLocation var5) {
          super(var1, var2, var3, var4);
@@ -49,10 +51,14 @@ public abstract class ImageWidget extends AbstractWidget {
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
+
+      public void updateResource(ResourceLocation var1) {
+         this.sprite = var1;
+      }
    }
 
    static class Texture extends ImageWidget {
-      private final ResourceLocation texture;
+      private ResourceLocation texture;
       private final int textureWidth;
       private final int textureHeight;
 
@@ -65,6 +71,10 @@ public abstract class ImageWidget extends AbstractWidget {
 
       protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
+      }
+
+      public void updateResource(ResourceLocation var1) {
+         this.texture = var1;
       }
    }
 }

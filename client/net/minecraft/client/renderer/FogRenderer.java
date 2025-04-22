@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -12,6 +13,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -34,7 +36,7 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 public class FogRenderer implements AutoCloseable {
-   public static final int FOG_UBO_SIZE = 36;
+   public static final int FOG_UBO_SIZE = (new Std140SizeCalculator()).putVec4().putInt().putFloat().putFloat().putFloat().putFloat().get();
    private static final int WATER_FOG_DISTANCE = 96;
    private static final List<MobEffectFogFunction> MOB_EFFECT_FOG = Lists.newArrayList(new MobEffectFogFunction[]{new BlindnessFogFunction(), new DarknessFogFunction()});
    public static final float BIOME_FOG_TRANSITION_TIME = 5000.0F;
@@ -48,11 +50,11 @@ public class FogRenderer implements AutoCloseable {
    public FogRenderer() {
       super();
       GpuDevice var1 = RenderSystem.getDevice();
-      this.regularBuffer = new MappableRingBuffer("Fog UBO", 130, 36);
+      this.regularBuffer = new MappableRingBuffer(() -> "Fog UBO", 130, FOG_UBO_SIZE);
       MemoryStack var2 = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var3 = var2.malloc(36);
+         ByteBuffer var3 = var2.malloc(FOG_UBO_SIZE);
          this.updateBuffer(var3, 0, new Vector4f(0.0F), FogShape.SPHERE, 3.4028235E38F, 0.0F, 0.0F, 0.0F);
          this.emptyBuffer = var1.createBuffer(() -> "Empty fog", 128, var3.flip());
       } catch (Throwable var6) {
@@ -85,12 +87,12 @@ public class FogRenderer implements AutoCloseable {
 
    public GpuBufferSlice getBuffer(FogMode var1) {
       if (!fogEnabled) {
-         return this.emptyBuffer.slice(0, 36);
+         return this.emptyBuffer.slice(0, FOG_UBO_SIZE);
       } else {
          GpuBufferSlice var10000;
          switch (var1.ordinal()) {
-            case 0 -> var10000 = this.emptyBuffer.slice(0, 36);
-            case 1 -> var10000 = this.regularBuffer.currentBuffer().slice(0, 36);
+            case 0 -> var10000 = this.emptyBuffer.slice(0, FOG_UBO_SIZE);
+            case 1 -> var10000 = this.regularBuffer.currentBuffer().slice(0, FOG_UBO_SIZE);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
@@ -329,7 +331,7 @@ public class FogRenderer implements AutoCloseable {
          var8.end = var3;
          var8.shape = FogShape.CYLINDER;
          var8.skyEnd = var8.end;
-         var8.cloudEnd = 2048.0F;
+         var8.cloudEnd = (float)((Integer)Minecraft.getInstance().options.cloudRange().get() * 16);
       }
 
       try (GpuBuffer.MappedView var17 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.regularBuffer.currentBuffer(), false, true)) {

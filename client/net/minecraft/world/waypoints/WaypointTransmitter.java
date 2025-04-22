@@ -11,6 +11,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 
 public interface WaypointTransmitter extends Waypoint {
+   int REALLY_FAR_DISTANCE = 332;
+
    boolean isTransmittingWaypoint();
 
    Optional<Connection> makeWaypointConnectionWith(ServerPlayer var1);
@@ -33,7 +35,7 @@ public interface WaypointTransmitter extends Waypoint {
    }
 
    static boolean isReallyFar(LivingEntity var0, ServerPlayer var1) {
-      return var0.distanceTo(var1) > (float)var0.waypointIcon().alphaFade.farDist();
+      return var0.distanceTo(var1) > 332.0F;
    }
 
    public interface BlockConnection extends Connection {

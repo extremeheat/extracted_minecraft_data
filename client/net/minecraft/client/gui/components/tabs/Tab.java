@@ -8,6 +8,8 @@ import net.minecraft.network.chat.Component;
 public interface Tab {
    Component getTabTitle();
 
+   Component getTabExtraNarration();
+
    void visitChildren(Consumer<AbstractWidget> var1);
 
    void doLayout(ScreenRectangle var1);

@@ -77,6 +77,8 @@ public class GuiGraphics {
    private final ScissorStack scissorStack;
    private final GuiSpriteManager sprites;
    private final GuiRenderState guiRenderState;
+   @Nullable
+   private Runnable deferredTooltip;
 
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
       super();
@@ -109,6 +111,10 @@ public class GuiGraphics {
 
    public void nextStratum() {
       this.guiRenderState.nextStratum();
+   }
+
+   public void blurBeforeThisStratum() {
+      this.guiRenderState.blurBeforeThisStratum();
    }
 
    public void depthTreeDown() {
@@ -480,89 +486,112 @@ public class GuiGraphics {
       }
    }
 
-   public void renderTooltip(Font var1, ItemStack var2, int var3, int var4) {
-      this.renderTooltip(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4, (ResourceLocation)var2.get(DataComponents.TOOLTIP_STYLE));
+   public void setTooltipForNextFrame(Component var1, int var2, int var3) {
+      this.setTooltipForNextFrame(List.of(var1.getVisualOrderText()), var2, var3);
    }
 
-   public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      this.renderTooltip(var1, var2, var3, var4, var5, (ResourceLocation)null);
+   public void setTooltipForNextFrame(List<FormattedCharSequence> var1, int var2, int var3) {
+      this.setTooltipForNextFrame(this.minecraft.font, var1, DefaultTooltipPositioner.INSTANCE, var2, var3, false);
    }
 
-   public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable ResourceLocation var6) {
+   public void setTooltipForNextFrame(Font var1, ItemStack var2, int var3, int var4) {
+      this.setTooltipForNextFrame(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4, (ResourceLocation)var2.get(DataComponents.TOOLTIP_STYLE));
+   }
+
+   public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
+      this.setTooltipForNextFrame(var1, var2, var3, var4, var5, (ResourceLocation)null);
+   }
+
+   public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable ResourceLocation var6) {
       List var7 = (List)var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
       var3.ifPresent((var1x) -> var7.add(var7.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
-      this.renderTooltipInternal(var1, var7, var4, var5, DefaultTooltipPositioner.INSTANCE, var6);
+      this.setTooltipForNextFrameInternal(var1, var7, var4, var5, DefaultTooltipPositioner.INSTANCE, var6, false);
    }
 
-   public void renderTooltip(Font var1, Component var2, int var3, int var4) {
-      this.renderTooltip(var1, var2, var3, var4, (ResourceLocation)null);
+   public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4) {
+      this.setTooltipForNextFrame(var1, var2, var3, var4, (ResourceLocation)null);
    }
 
-   public void renderTooltip(Font var1, Component var2, int var3, int var4, @Nullable ResourceLocation var5) {
-      this.renderTooltip(var1, List.of(var2.getVisualOrderText()), var3, var4, var5);
+   public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4, @Nullable ResourceLocation var5) {
+      this.setTooltipForNextFrame(var1, List.of(var2.getVisualOrderText()), var3, var4, var5);
    }
 
-   public void renderComponentTooltip(Font var1, List<Component> var2, int var3, int var4) {
-      this.renderComponentTooltip(var1, var2, var3, var4, (ResourceLocation)null);
+   public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4) {
+      this.setComponentTooltipForNextFrame(var1, var2, var3, var4, (ResourceLocation)null);
    }
 
-   public void renderComponentTooltip(Font var1, List<Component> var2, int var3, int var4, @Nullable ResourceLocation var5) {
-      this.renderTooltipInternal(var1, var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList(), var3, var4, DefaultTooltipPositioner.INSTANCE, var5);
+   public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4, @Nullable ResourceLocation var5) {
+      this.setTooltipForNextFrameInternal(var1, var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList(), var3, var4, DefaultTooltipPositioner.INSTANCE, var5, false);
    }
 
-   public void renderTooltip(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4) {
-      this.renderTooltip(var1, (List)var2, var3, var4, (ResourceLocation)null);
+   public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4) {
+      this.setTooltipForNextFrame(var1, (List)var2, var3, var4, (ResourceLocation)null);
    }
 
-   public void renderTooltip(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4, @Nullable ResourceLocation var5) {
-      this.renderTooltipInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var3, var4, DefaultTooltipPositioner.INSTANCE, var5);
+   public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4, @Nullable ResourceLocation var5) {
+      this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var3, var4, DefaultTooltipPositioner.INSTANCE, var5, false);
    }
 
-   public void renderTooltip(Font var1, List<FormattedCharSequence> var2, ClientTooltipPositioner var3, int var4, int var5) {
-      this.renderTooltipInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3, (ResourceLocation)null);
+   public void setTooltipForNextFrame(Font var1, List<FormattedCharSequence> var2, ClientTooltipPositioner var3, int var4, int var5, boolean var6) {
+      this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3, (ResourceLocation)null, var6);
    }
 
-   private void renderTooltipInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6) {
+   private void setTooltipForNextFrameInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6, boolean var7) {
       if (!var2.isEmpty()) {
-         this.nextStratum();
-         int var7 = 0;
-         int var8 = var2.size() == 1 ? -2 : 0;
-
-         for(ClientTooltipComponent var10 : var2) {
-            int var11 = var10.getWidth(var1);
-            if (var11 > var7) {
-               var7 = var11;
-            }
-
-            var8 += var10.getHeight(var1);
+         if (this.deferredTooltip == null || var7) {
+            this.deferredTooltip = () -> this.renderTooltip(var1, var2, var3, var4, var5, var6);
          }
 
-         int var17 = var7;
-         int var18 = var8;
-         Vector2ic var19 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var7, var8);
-         int var12 = var19.x();
-         int var13 = var19.y();
-         this.pose.pushMatrix();
-         TooltipRenderUtil.renderTooltipBackground(this, var12, var13, var7, var8, var6);
-         this.depthTreeUp();
-         int var14 = var13;
-
-         for(int var15 = 0; var15 < var2.size(); ++var15) {
-            ClientTooltipComponent var16 = (ClientTooltipComponent)var2.get(var15);
-            var16.renderText(this, var1, var12, var14);
-            var14 += var16.getHeight(var1) + (var15 == 0 ? 2 : 0);
-         }
-
-         var14 = var13;
-
-         for(int var21 = 0; var21 < var2.size(); ++var21) {
-            ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
-            var22.renderImage(var1, var12, var14, var17, var18, this);
-            var14 += var22.getHeight(var1) + (var21 == 0 ? 2 : 0);
-         }
-
-         this.pose.popMatrix();
       }
+   }
+
+   public void renderTooltip(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6) {
+      int var7 = 0;
+      int var8 = var2.size() == 1 ? -2 : 0;
+
+      for(ClientTooltipComponent var10 : var2) {
+         int var11 = var10.getWidth(var1);
+         if (var11 > var7) {
+            var7 = var11;
+         }
+
+         var8 += var10.getHeight(var1);
+      }
+
+      int var17 = var7;
+      int var18 = var8;
+      Vector2ic var19 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var7, var8);
+      int var12 = var19.x();
+      int var13 = var19.y();
+      this.pose.pushMatrix();
+      TooltipRenderUtil.renderTooltipBackground(this, var12, var13, var7, var8, var6);
+      this.depthTreeUp();
+      int var14 = var13;
+
+      for(int var15 = 0; var15 < var2.size(); ++var15) {
+         ClientTooltipComponent var16 = (ClientTooltipComponent)var2.get(var15);
+         var16.renderText(this, var1, var12, var14);
+         var14 += var16.getHeight(var1) + (var15 == 0 ? 2 : 0);
+      }
+
+      var14 = var13;
+
+      for(int var21 = 0; var21 < var2.size(); ++var21) {
+         ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
+         var22.renderImage(var1, var12, var14, var17, var18, this);
+         var14 += var22.getHeight(var1) + (var21 == 0 ? 2 : 0);
+      }
+
+      this.pose.popMatrix();
+   }
+
+   public void renderDeferredTooltip() {
+      if (this.deferredTooltip != null) {
+         this.nextStratum();
+         this.deferredTooltip.run();
+         this.deferredTooltip = null;
+      }
+
    }
 
    private void renderItemBar(ItemStack var1, int var2, int var3) {
@@ -617,7 +646,7 @@ public class GuiGraphics {
                }
 
                ItemStack var17 = var24;
-               this.renderTooltip(var1, var17, var3, var4);
+               this.setTooltipForNextFrame(var1, var17, var3, var4);
                break;
             case 1:
                HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
@@ -631,7 +660,7 @@ public class GuiGraphics {
 
                HoverEvent.EntityTooltipInfo var18 = var22;
                if (this.minecraft.options.advancedItemTooltips) {
-                  this.renderComponentTooltip(var1, var18.getTooltipLines(), var3, var4);
+                  this.setComponentTooltipForNextFrame(var1, var18.getTooltipLines(), var3, var4);
                }
                break;
             case 2:
@@ -645,7 +674,7 @@ public class GuiGraphics {
                }
 
                Component var13 = var20;
-               this.renderTooltip(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+               this.setTooltipForNextFrame(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
          }
 
       }

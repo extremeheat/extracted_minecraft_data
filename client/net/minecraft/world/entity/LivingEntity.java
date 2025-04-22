@@ -90,7 +90,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.AttributeReceiver;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
@@ -141,7 +140,7 @@ import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
-public abstract class LivingEntity extends Entity implements Attackable, AttributeReceiver, WaypointTransmitter {
+public abstract class LivingEntity extends Entity implements Attackable, WaypointTransmitter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_ACTIVE_EFFECTS = "active_effects";
    private static final ResourceLocation SPEED_MODIFIER_POWDER_SNOW_ID = ResourceLocation.withDefaultNamespace("powder_snow");
@@ -250,7 +249,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
       this.lastClimbablePos = Optional.empty();
       this.activeLocationDependentEnchantments = new EnumMap(EquipmentSlot.class);
       this.locatorBarIcon = new Waypoint.Icon();
-      this.attributes = new AttributeMap(DefaultAttributes.getSupplier(var1), this);
+      this.attributes = new AttributeMap(DefaultAttributes.getSupplier(var1));
       this.setHealth(this.getMaxHealth());
       this.equipment = this.createEquipment();
       this.blocksBuilding = true;
@@ -714,7 +713,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
          var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
       }
 
-      var1.store("locator_bar_icon", Waypoint.Icon.CODEC, var2, this.locatorBarIcon);
+      if (this.locatorBarIcon.hasData()) {
+         var1.store("locator_bar_icon", Waypoint.Icon.CODEC, var2, this.locatorBarIcon);
+      }
+
    }
 
    @Nullable
@@ -1072,12 +1074,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
             this.setHealth(var2);
          }
       } else if (var1.is(Attributes.MAX_ABSORPTION)) {
-         float var3 = this.getMaxAbsorption();
-         if (this.getAbsorptionAmount() > var3) {
-            this.setAbsorptionAmount(var3);
+         float var4 = this.getMaxAbsorption();
+         if (this.getAbsorptionAmount() > var4) {
+            this.setAbsorptionAmount(var4);
          }
       } else if (var1.is(Attributes.SCALE)) {
          this.refreshDimensions();
+      } else if (var1.is(Attributes.WAYPOINT_TRANSMIT_RANGE)) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var5 = (ServerLevel)var3;
+            ServerWaypointManager var6 = var5.getWaypointManager();
+            if (this.attributes.getValue(var1) > 0.0) {
+               var6.trackWaypoint((WaypointTransmitter)this);
+            } else {
+               var6.untrackWaypoint((WaypointTransmitter)this);
+            }
+         }
       }
 
    }
@@ -3675,10 +3688,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
       if (!this.firstTick && var1 != this) {
          if (WaypointTransmitter.doesSourceIgnoreReceiver(this, var1)) {
             return Optional.empty();
-         } else if (WaypointTransmitter.isReallyFar(this, var1)) {
-            return Optional.of(new WaypointTransmitter.EntityAzimuthConnection(this, this.locatorBarIcon, var1));
          } else {
-            return !WaypointTransmitter.isChunkVisible(this.chunkPosition(), var1) ? Optional.of(new WaypointTransmitter.EntityChunkConnection(this, this.locatorBarIcon, var1)) : Optional.of(new WaypointTransmitter.EntityBlockConnection(this, this.locatorBarIcon, var1));
+            Waypoint.Icon var2 = this.locatorBarIcon.cloneAndAssignStyle(this);
+            if (WaypointTransmitter.isReallyFar(this, var1)) {
+               return Optional.of(new WaypointTransmitter.EntityAzimuthConnection(this, var2, var1));
+            } else {
+               return !WaypointTransmitter.isChunkVisible(this.chunkPosition(), var1) ? Optional.of(new WaypointTransmitter.EntityChunkConnection(this, var2, var1)) : Optional.of(new WaypointTransmitter.EntityBlockConnection(this, var2, var1));
+            }
          }
       } else {
          return Optional.empty();
@@ -3687,21 +3703,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Attribu
 
    public Waypoint.Icon waypointIcon() {
       return this.locatorBarIcon;
-   }
-
-   public void onAttributeModified(AttributeInstance var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         if (!this.firstTick && var1.getAttribute() == Attributes.WAYPOINT_TRANSMIT_RANGE) {
-            ServerWaypointManager var4 = var2.getWaypointManager();
-            if (var1.getValue() > 0.0) {
-               var4.trackWaypoint((WaypointTransmitter)this);
-            } else {
-               var4.untrackWaypoint((WaypointTransmitter)this);
-            }
-         }
-      }
-
    }
 
    static {

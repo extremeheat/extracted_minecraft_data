@@ -78,7 +78,7 @@ public class CubeMap {
 
       GpuBufferSlice[] var19 = RenderSystem.getDynamicUniforms().writeTransforms(var12);
 
-      try (RenderPass var20 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var8, OptionalInt.empty(), var9, OptionalDouble.empty())) {
+      try (RenderPass var20 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", var8, OptionalInt.empty(), var9, OptionalDouble.empty())) {
          var20.setPipeline(var6);
          RenderSystem.bindDefaultUniforms(var20);
          var20.setVertexBuffer(0, this.cubeMapBuffer);
@@ -89,7 +89,7 @@ public class CubeMap {
 
             for(int var22 = 0; var22 < 6; ++var22) {
                var20.bindSampler("Sampler0", var1.getTextureManager().getTexture((ResourceLocation)this.sides.get(var22)).getTexture());
-               var20.drawIndexed(6 * var22, 6);
+               var20.drawIndexed(0, 6 * var22, 6, 1);
             }
          }
       }

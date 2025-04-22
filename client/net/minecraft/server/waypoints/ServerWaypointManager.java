@@ -15,7 +15,6 @@ import net.minecraft.world.waypoints.WaypointManager;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 
 public class ServerWaypointManager implements WaypointManager<WaypointTransmitter> {
-   public static final ServerWaypointManager DISABLED = new NullWaypointManager();
    private final Set<WaypointTransmitter> waypoints = Sets.newHashSet();
    private final Set<ServerPlayer> players = Sets.newHashSet();
    private final Table<ServerPlayer, WaypointTransmitter, WaypointTransmitter.Connection> connections = HashBasedTable.create();
@@ -120,7 +119,7 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
 
    private void createConnection(ServerPlayer var1, WaypointTransmitter var2) {
       if (var1 != var2) {
-         boolean var3 = var1.server.getGameRules().getBoolean(GameRules.RULE_USE_LOCATOR_BAR);
+         boolean var3 = var1.server.getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
          if (var3) {
             var2.makeWaypointConnectionWith(var1).ifPresentOrElse((var3x) -> {
                this.connections.put(var1, var2, var3x);
@@ -138,7 +137,7 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
 
    private void updateConnection(ServerPlayer var1, WaypointTransmitter var2, WaypointTransmitter.Connection var3) {
       if (var1 != var2) {
-         boolean var4 = var1.server.getGameRules().getBoolean(GameRules.RULE_USE_LOCATOR_BAR);
+         boolean var4 = var1.server.getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
          if (var4) {
             if (!var3.isBroken()) {
                var3.update();
@@ -166,7 +165,7 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
    }
 
    static final class NullWaypointManager extends ServerWaypointManager {
-      NullWaypointManager() {
+      private NullWaypointManager() {
          super();
       }
 

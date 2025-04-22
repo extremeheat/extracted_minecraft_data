@@ -53,7 +53,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       GpuDevice var10001 = RenderSystem.getDevice();
       ResourceLocation var10002 = this.location;
       Objects.requireNonNull(var10002);
-      this.texture = var10001.createTexture(var10002::toString, TextureFormat.RGBA8, var1.width(), var1.height(), var1.mipLevel() + 1);
+      this.texture = var10001.createTexture(var10002::toString, 7, TextureFormat.RGBA8, var1.width(), var1.height(), var1.mipLevel() + 1);
       this.width = var1.width();
       this.height = var1.height();
       this.mipLevel = var1.mipLevel();

@@ -27,7 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryStack;
 
 public class PostPass implements AutoCloseable {
-   private static final int UBO_SIZE_PER_SAMPLER = 8;
+   private static final int UBO_SIZE_PER_SAMPLER = (new Std140SizeCalculator()).putVec2().get();
    private final String name;
    private final RenderPipeline pipeline;
    private final ResourceLocation outputTargetId;
@@ -83,7 +83,7 @@ public class PostPass implements AutoCloseable {
          }
       }
 
-      this.infoUbo = new MappableRingBuffer(this.name + " SamplerInfo", 130, (var4.size() + 1) * 8);
+      this.infoUbo = new MappableRingBuffer(() -> this.name + " SamplerInfo", 130, (var4.size() + 1) * UBO_SIZE_PER_SAMPLER);
    }
 
    public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, GpuBufferSlice var3) {
@@ -117,7 +117,7 @@ public class PostPass implements AutoCloseable {
             RenderSystem.AutoStorageIndexBuffer var18 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
             GpuBuffer var19 = var18.getBuffer(6);
 
-            try (RenderPass var20 = var5.createRenderPass(var4.getColorTexture(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTexture() : null, OptionalDouble.empty())) {
+            try (RenderPass var20 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTexture(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTexture() : null, OptionalDouble.empty())) {
                var20.setPipeline(this.pipeline);
                RenderSystem.bindDefaultUniforms(var20);
                var20.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
@@ -133,7 +133,7 @@ public class PostPass implements AutoCloseable {
                   var20.bindSampler((String)var24.getFirst() + "Sampler", (GpuTexture)var24.getSecond());
                }
 
-               var20.drawIndexed(0, 6);
+               var20.drawIndexed(0, 0, 6, 1);
             }
 
             this.infoUbo.rotate();

@@ -1,8 +1,6 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import java.util.Optional;
@@ -17,16 +15,20 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ColorArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.HexColorArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.WaypointArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.waypoints.Waypoint;
+import net.minecraft.world.waypoints.WaypointStyleAsset;
+import net.minecraft.world.waypoints.WaypointStyleAssets;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 
 public class WaypointCommand {
@@ -35,12 +37,12 @@ public class WaypointCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("waypoint").requires((var0x) -> var0x.hasPermission(2))).then(Commands.literal("list").executes((var0x) -> listWaypoints((CommandSourceStack)var0x.getSource())))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)Commands.argument("waypoint", EntityArgument.entity()).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("color").then(Commands.argument("color", ColorArgument.color()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ColorArgument.getColor(var0x, "color"))))).then(Commands.literal("hex").then(Commands.argument("color", HexColorArgument.hexColor()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), HexColorArgument.getHexColor(var0x, "color")))))).then(Commands.literal("reset").executes((var0x) -> resetWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint")))))).then(((LiteralArgumentBuilder)Commands.literal("fade").then(Commands.literal("reset").executes((var0x) -> setWaypointAlphaFade((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), Waypoint.Icon.Fade.DEFAULT)))).then(Commands.argument("fade_start", IntegerArgumentType.integer(0, 60000000)).then(Commands.argument("alpha_start", FloatArgumentType.floatArg(0.0F, 1.0F)).then(Commands.argument("fade_end", IntegerArgumentType.integer(0, 60000000)).then(Commands.argument("alpha_end", FloatArgumentType.floatArg(0.0F, 1.0F)).executes((var0x) -> setWaypointAlphaFade((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), new Waypoint.Icon.Fade(IntegerArgumentType.getInteger(var0x, "fade_start"), IntegerArgumentType.getInteger(var0x, "fade_end"), FloatArgumentType.getFloat(var0x, "alpha_start"), FloatArgumentType.getFloat(var0x, "alpha_end"))))))))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("waypoint").requires((var0x) -> var0x.hasPermission(2))).then(Commands.literal("list").executes((var0x) -> listWaypoints((CommandSourceStack)var0x.getSource())))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)Commands.argument("waypoint", EntityArgument.entity()).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("color").then(Commands.argument("color", ColorArgument.color()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ColorArgument.getColor(var0x, "color"))))).then(Commands.literal("hex").then(Commands.argument("color", HexColorArgument.hexColor()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), HexColorArgument.getHexColor(var0x, "color")))))).then(Commands.literal("reset").executes((var0x) -> resetWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint")))))).then(((LiteralArgumentBuilder)Commands.literal("style").then(Commands.literal("reset").executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), WaypointStyleAssets.DEFAULT)))).then(Commands.literal("set").then(Commands.argument("style", ResourceLocationArgument.id()).executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ResourceKey.create(WaypointStyleAssets.ROOT_ID, ResourceLocationArgument.getId(var0x, "style"))))))))));
    }
 
-   private static int setWaypointAlphaFade(CommandSourceStack var0, WaypointTransmitter var1, Waypoint.Icon.Fade var2) {
-      mutateIcon(var0, var1, (var1x) -> var1x.alphaFade = var2);
-      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.fade"), false);
+   private static int setWaypointStyle(CommandSourceStack var0, WaypointTransmitter var1, ResourceKey<WaypointStyleAsset> var2) {
+      mutateIcon(var0, var1, (var1x) -> var1x.style = var2);
+      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.style"), false);
       return 0;
    }
 

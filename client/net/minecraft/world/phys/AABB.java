@@ -242,6 +242,10 @@ public class AABB {
       return this.intersects(Math.min(var1.x, var2.x), Math.min(var1.y, var2.y), Math.min(var1.z, var2.z), Math.max(var1.x, var2.x), Math.max(var1.y, var2.y), Math.max(var1.z, var2.z));
    }
 
+   public boolean intersects(BlockPos var1) {
+      return this.intersects((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 1), (double)(var1.getZ() + 1));
+   }
+
    public boolean contains(Vec3 var1) {
       return this.contains(var1.x, var1.y, var1.z);
    }

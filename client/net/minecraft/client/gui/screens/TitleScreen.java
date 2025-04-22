@@ -228,18 +228,19 @@ public class TitleScreen extends Screen {
       int var9 = Mth.ceil(var5 * 255.0F) << 24;
       if ((var9 & -67108864) == 0) {
          if (this.logoRenderer.keepLogoThroughFade()) {
+            var1.depthTreeUp();
             this.logoRenderer.renderLogo(var1, this.width, 1.0F);
+            var1.depthTreeBack();
          }
 
       } else {
+         var1.depthTreePushCheckpoint();
+         var1.depthTreeUp();
          super.render(var1, var2, var3, var4);
-         var1.depthTreeDown();
          this.logoRenderer.renderLogo(var1, this.width, var5);
-         var1.depthTreeBack();
          if (this.splash != null && !(Boolean)this.minecraft.options.hideSplashTexts().get()) {
             var1.depthTreeUp();
             this.splash.render(var1, this.width, this.font, var9);
-            var1.depthTreeBack();
          }
 
          String var7 = "Minecraft " + SharedConstants.getCurrentVersion().name();
@@ -258,6 +259,7 @@ public class TitleScreen extends Screen {
             this.realmsNotificationsScreen.render(var1, var2, var3, var4);
          }
 
+         var1.depthTreeBackToCheckpoint();
       }
    }
 

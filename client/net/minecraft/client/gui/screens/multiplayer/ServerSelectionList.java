@@ -330,12 +330,12 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          int var16 = var20 - var15 - 5;
          var1.drawString(this.minecraft.font, (Component)var14, var16, var3 + 1, -8355712);
          if (this.statusIconTooltip != null && var7 >= var20 && var7 <= var20 + 10 && var8 >= var3 && var8 <= var3 + 8) {
-            this.screen.setTooltipForNextRenderPass(this.statusIconTooltip);
+            var1.setTooltipForNextFrame(this.statusIconTooltip, var7, var8);
          } else if (this.onlinePlayersTooltip != null && var7 >= var16 && var7 <= var16 + var15 && var8 >= var3) {
             int var22 = var3 - 1;
             Objects.requireNonNull(this.minecraft.font);
             if (var8 <= var22 + 9) {
-               this.screen.setTooltipForNextRenderPass(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText));
+               var1.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), var7, var8);
             }
          }
 

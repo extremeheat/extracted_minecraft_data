@@ -10,13 +10,14 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 @DontObfuscate
 public interface CommandEncoder {
-   RenderPass createRenderPass(GpuTexture var1, OptionalInt var2);
+   RenderPass createRenderPass(Supplier<String> var1, GpuTexture var2, OptionalInt var3);
 
-   RenderPass createRenderPass(GpuTexture var1, OptionalInt var2, @Nullable GpuTexture var3, OptionalDouble var4);
+   RenderPass createRenderPass(Supplier<String> var1, GpuTexture var2, OptionalInt var3, @Nullable GpuTexture var4, OptionalDouble var5);
 
    void clearColorTexture(GpuTexture var1, int var2);
 

@@ -59,8 +59,11 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
          int var9 = this.getRight() - 6 - 1;
          int var10 = var2 - 2;
          int var11 = var2 + var4 + 2;
+         var1.depthTreeDown();
          var1.fill(var8, var10, var9, var11, var5);
+         var1.depthTreeUp();
          var1.fill(var8 + 1, var10 + 1, var9 - 1, var11 - 1, var6);
+         var1.depthTreeBack(2);
       } else {
          super.renderSelection(var1, var2, var3, var4, var5, var6);
       }

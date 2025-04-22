@@ -73,12 +73,12 @@ public abstract class RenderTarget {
          this.width = var1;
          this.height = var2;
          if (this.useDepth) {
-            this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), TextureFormat.DEPTH32, var1, var2, 1);
+            this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1, var2, 1);
             this.depthTexture.setTextureFilter(FilterMode.NEAREST, false);
             this.depthTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          }
 
-         this.colorTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), TextureFormat.RGBA8, var1, var2, 1);
+         this.colorTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1, var2, 1);
          this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          this.setFilterMode(FilterMode.NEAREST, true);
       } else {
@@ -116,13 +116,13 @@ public abstract class RenderTarget {
       GpuBuffer var3 = var2.getBuffer(6);
       GpuBuffer var4 = RenderSystem.getQuadVertexBuffer();
 
-      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, OptionalInt.empty())) {
+      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", var1, OptionalInt.empty())) {
          var5.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
          RenderSystem.bindDefaultUniforms(var5);
          var5.setVertexBuffer(0, var4);
          var5.setIndexBuffer(var3, var2.type());
          var5.bindSampler("InSampler", this.colorTexture);
-         var5.drawIndexed(0, 6);
+         var5.drawIndexed(0, 0, 6, 1);
       }
 
    }

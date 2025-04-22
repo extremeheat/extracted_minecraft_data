@@ -199,6 +199,10 @@ public class HappyGhast extends Animal {
       }
    }
 
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.BODY;
+   }
+
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       if (this.isBaby()) {
          return super.mobInteract(var1, var2);
@@ -212,7 +216,7 @@ public class HappyGhast extends Animal {
          }
 
          if (!var3.is(Items.SHEARS) || this.isVehicle() || !this.isWearingBodyArmor() || EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) && !var1.isCreative()) {
-            if (this.isWearingBodyArmor()) {
+            if (this.isWearingBodyArmor() && !var1.isSecondaryUseActive()) {
                this.doPlayerRide(var1);
                return InteractionResult.SUCCESS;
             } else {

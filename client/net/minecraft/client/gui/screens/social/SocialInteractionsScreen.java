@@ -200,11 +200,13 @@ public class SocialInteractionsScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderBackground(var1, var2, var3, var4);
+      var1.depthTreePushCheckpoint();
+      var1.depthTreeUpToTop();
       int var5 = this.marginX() + 3;
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
       var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
-      var1.depthTreeBack();
+      var1.depthTreeBackToCheckpoint();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

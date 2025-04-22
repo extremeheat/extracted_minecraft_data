@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 
 public record TextureSetup(@Nullable GpuTexture texure0, @Nullable GpuTexture texure1, @Nullable GpuTexture texure2) {
    private static final TextureSetup NO_TEXTURE_SETUP = new TextureSetup((GpuTexture)null, (GpuTexture)null, (GpuTexture)null);
+   private static int sortKeySeed;
 
    public TextureSetup(@Nullable GpuTexture var1, @Nullable GpuTexture var2, @Nullable GpuTexture var3) {
       super();
@@ -28,5 +29,13 @@ public record TextureSetup(@Nullable GpuTexture texure0, @Nullable GpuTexture te
 
    public static TextureSetup noTexture() {
       return NO_TEXTURE_SETUP;
+   }
+
+   public int getSortKey() {
+      return this.hashCode();
+   }
+
+   public static void updateSortKeySeed() {
+      sortKeySeed = Math.round(100000.0F * (float)Math.random());
    }
 }

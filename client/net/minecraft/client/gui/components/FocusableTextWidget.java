@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 public class FocusableTextWidget extends MultiLineTextWidget {
    private static final int DEFAULT_PADDING = 4;
    private final boolean alwaysShowBorder;
+   private final boolean fillBackground;
    private final int padding;
 
    public FocusableTextWidget(int var1, Component var2, Font var3) {
@@ -17,16 +18,17 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    public FocusableTextWidget(int var1, Component var2, Font var3, int var4) {
-      this(var1, var2, var3, true, var4);
+      this(var1, var2, var3, true, true, var4);
    }
 
-   public FocusableTextWidget(int var1, Component var2, Font var3, boolean var4, int var5) {
+   public FocusableTextWidget(int var1, Component var2, Font var3, boolean var4, boolean var5, int var6) {
       super(var2, var3);
       this.setMaxWidth(var1);
       this.setCentered(true);
       this.active = true;
       this.alwaysShowBorder = var4;
-      this.padding = var5;
+      this.fillBackground = var5;
+      this.padding = var6;
    }
 
    public void containWithin(int var1) {
@@ -45,7 +47,10 @@ public class FocusableTextWidget extends MultiLineTextWidget {
          int var7 = this.getWidth() + this.padding * 2;
          int var8 = this.getHeight() + this.padding * 2;
          int var9 = this.alwaysShowBorder ? (this.isFocused() ? -1 : -6250336) : -1;
-         var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, -16777216);
+         if (this.fillBackground) {
+            var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, -16777216);
+         }
+
          var1.depthTreeUp();
          var1.renderOutline(var5, var6, var7, var8, var9);
       }

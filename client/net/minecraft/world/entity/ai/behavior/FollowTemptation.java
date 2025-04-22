@@ -84,7 +84,7 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
       if (var2.distanceToSqr(var5) < Mth.square(var7)) {
          var6.eraseMemory(MemoryModuleType.WALK_TARGET);
       } else {
-         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, this.lookInTheEyes), this.getSpeedModifier(var2), 2));
+         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, this.lookInTheEyes, this.lookInTheEyes), this.getSpeedModifier(var2), 2));
       }
 
    }

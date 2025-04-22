@@ -73,9 +73,9 @@ public abstract class TrackedWaypoint implements Waypoint {
       return new EmptyWaypoint(var0);
    }
 
-   public abstract double yawAngleToEntity(Entity var1);
+   public abstract double yawAngleToCamera(Level var1, Camera var2);
 
-   public abstract int pitchDirectionToEntity(Entity var1, Projector var2);
+   public abstract int pitchDirectionToCamera(Level var1, Projector var2);
 
    public abstract double distanceSquared(Entity var1);
 
@@ -116,11 +116,11 @@ public abstract class TrackedWaypoint implements Waypoint {
       public void writeContents(ByteBuf var1) {
       }
 
-      public double yawAngleToEntity(Entity var1) {
+      public double yawAngleToCamera(Level var1, Camera var2) {
          return 0.0 / 0.0;
       }
 
-      public int pitchDirectionToEntity(Entity var1, Projector var2) {
+      public int pitchDirectionToCamera(Level var1, Projector var2) {
          return 0;
       }
 
@@ -163,15 +163,14 @@ public abstract class TrackedWaypoint implements Waypoint {
          return (Vec3)var10000.map(var1::getEntity).map((var1x) -> var1x.blockPosition().distManhattan(this.vector) > 3 ? null : var1x.getEyePosition()).orElseGet(() -> Vec3.atCenterOf(this.vector));
       }
 
-      public double yawAngleToEntity(Entity var1) {
-         Vec3 var2 = var1.getEyePosition().subtract(this.position(var1.level())).rotateClockwise90();
-         float var3 = Mth.wrapDegrees(var1.getYRot());
-         float var4 = (float)Mth.atan2(var2.z(), var2.x()) * 57.295776F;
-         return (double)Mth.degreesDifference(var3, var4);
+      public double yawAngleToCamera(Level var1, Camera var2) {
+         Vec3 var3 = var2.position().subtract(this.position(var1)).rotateClockwise90();
+         float var4 = (float)Mth.atan2(var3.z(), var3.x()) * 57.295776F;
+         return (double)Mth.degreesDifference(var2.yaw(), var4);
       }
 
-      public int pitchDirectionToEntity(Entity var1, Projector var2) {
-         Vec3 var3 = var2.projectPointToScreen(this.position(var1.level()));
+      public int pitchDirectionToCamera(Level var1, Projector var2) {
+         Vec3 var3 = var2.projectPointToScreen(this.position(var1));
          boolean var4 = var3.z > 1.0;
          double var5 = var4 ? -var3.y : var3.y;
          if (var5 < -1.0) {
@@ -215,18 +214,18 @@ public abstract class TrackedWaypoint implements Waypoint {
          VarInt.write(var1, this.chunkPos.z);
       }
 
-      private Vec3 position(Entity var1) {
-         return Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition(var1.getBlockY()));
+      private Vec3 position(double var1) {
+         return Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition((int)var1));
       }
 
-      public double yawAngleToEntity(Entity var1) {
-         Vec3 var2 = var1.getEyePosition().subtract(this.position(var1)).rotateClockwise90();
-         float var3 = Mth.wrapDegrees(var1.getYRot());
-         float var4 = (float)Mth.atan2(var2.z(), var2.x()) * 57.295776F;
-         return (double)Mth.degreesDifference(var3, var4);
+      public double yawAngleToCamera(Level var1, Camera var2) {
+         Vec3 var3 = var2.position();
+         Vec3 var4 = var3.subtract(this.position(var3.y())).rotateClockwise90();
+         float var5 = (float)Mth.atan2(var4.z(), var4.x()) * 57.295776F;
+         return (double)Mth.degreesDifference(var2.yaw(), var5);
       }
 
-      public int pitchDirectionToEntity(Entity var1, Projector var2) {
+      public int pitchDirectionToCamera(Level var1, Projector var2) {
          double var3 = var2.projectHorizonToScreen();
          if (var3 < -1.0) {
             return -1;
@@ -266,11 +265,11 @@ public abstract class TrackedWaypoint implements Waypoint {
          var1.writeFloat(this.angle);
       }
 
-      public double yawAngleToEntity(Entity var1) {
-         return (double)Mth.degreesDifference(Mth.wrapDegrees(var1.getYRot()), this.angle * 57.295776F);
+      public double yawAngleToCamera(Level var1, Camera var2) {
+         return (double)Mth.degreesDifference(var2.yaw(), this.angle * 57.295776F);
       }
 
-      public int pitchDirectionToEntity(Entity var1, Projector var2) {
+      public int pitchDirectionToCamera(Level var1, Projector var2) {
          double var3 = var2.projectHorizonToScreen();
          if (var3 < -1.0) {
             return -1;
@@ -282,6 +281,12 @@ public abstract class TrackedWaypoint implements Waypoint {
       public double distanceSquared(Entity var1) {
          return 1.0 / 0.0;
       }
+   }
+
+   public interface Camera {
+      float yaw();
+
+      Vec3 position();
    }
 
    public interface Projector {

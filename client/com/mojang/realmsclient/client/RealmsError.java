@@ -133,6 +133,10 @@ public interface RealmsError {
          return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.unknownCompatibility", var0));
       }
 
+      public static CustomError configurationError() {
+         return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.configurationError"));
+      }
+
       public static CustomError connectivityError(RealmsHttpException var0) {
          return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.connectivity", var0.getMessage()));
       }

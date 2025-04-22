@@ -20,10 +20,11 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.waypoints.TrackedWaypoint;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class Camera {
+public class Camera implements TrackedWaypoint.Camera {
    private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
    private static final Vector3f FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
    private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
@@ -262,6 +263,14 @@ public class Camera {
 
    public float getPartialTickTime() {
       return this.partialTickTime;
+   }
+
+   public float yaw() {
+      return Mth.wrapDegrees(this.getYRot());
+   }
+
+   public Vec3 position() {
+      return this.getPosition();
    }
 
    public static class NearPlane {

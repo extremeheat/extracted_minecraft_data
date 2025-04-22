@@ -177,7 +177,9 @@ public class BookViewScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
+      var1.depthTreeUp();
       var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
+      var1.depthTreeBack();
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {

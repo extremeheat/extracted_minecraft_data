@@ -161,25 +161,32 @@ public interface BlockGetter extends LevelHeightAccessor {
       }
    }
 
-   static void forEachBlockIntersectedBetween(Vec3 var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
+   static boolean forEachBlockIntersectedBetween(Vec3 var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
       Vec3 var4 = var1.subtract(var0);
-      if (!(var4.lengthSqr() < (double)Mth.square(0.99999F))) {
-         LongOpenHashSet var11 = new LongOpenHashSet();
-         Vec3 var12 = var2.getMinPosition();
-         Vec3 var7 = var12.subtract(var4);
-         int var8 = addCollisionsAlongTravel(var11, var7, var12, var2, var3);
-
-         for(BlockPos var10 : BlockPos.betweenClosed(var2)) {
-            if (!var11.contains(var10.asLong())) {
-               var3.visit(var10, var8 + 1);
+      if (var4.lengthSqr() < (double)Mth.square(0.99999F)) {
+         for(BlockPos var12 : BlockPos.betweenClosed(var2)) {
+            if (!var3.visit(var12, 0)) {
+               return false;
             }
          }
 
+         return true;
       } else {
-         for(BlockPos var6 : BlockPos.betweenClosed(var2)) {
-            var3.visit(var6, 0);
-         }
+         LongOpenHashSet var5 = new LongOpenHashSet();
+         Vec3 var6 = var2.getMinPosition();
+         Vec3 var7 = var6.subtract(var4);
+         int var8 = addCollisionsAlongTravel(var5, var7, var6, var2, var3);
+         if (var8 < 0) {
+            return false;
+         } else {
+            for(BlockPos var10 : BlockPos.betweenClosed(var2)) {
+               if (!var5.contains(var10.asLong()) && !var3.visit(var10, var8 + 1)) {
+                  return false;
+               }
+            }
 
+            return true;
+         }
       }
    }
 
@@ -234,8 +241,8 @@ public interface BlockGetter extends LevelHeightAccessor {
             for(int var37 = var6; var37 <= var34; ++var37) {
                for(int var38 = var7; var38 <= var35; ++var38) {
                   for(int var39 = var8; var39 <= var36; ++var39) {
-                     if (var0.add(BlockPos.asLong(var37, var38, var39))) {
-                        var4.visit(var25.set(var37, var38, var39), var24);
+                     if (var0.add(BlockPos.asLong(var37, var38, var39)) && !var4.visit(var25.set(var37, var38, var39), var24)) {
+                        return -1;
                      }
                   }
                }
@@ -248,6 +255,6 @@ public interface BlockGetter extends LevelHeightAccessor {
 
    @FunctionalInterface
    public interface BlockStepVisitor {
-      void visit(BlockPos var1, int var2);
+      boolean visit(BlockPos var1, int var2);
    }
 }

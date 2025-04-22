@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsWorldOptions;
+import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.WorldDownload;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsWorldSlotButton;
@@ -73,7 +73,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
          Button var5;
          if (var4) {
             var5 = Button.builder(Component.translatable("mco.brokenworld.play"), (var2x) -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, var3, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
-            var5.active = !((RealmsWorldOptions)this.serverData.slots.get(var3)).empty;
+            var5.active = !((RealmsSlot)this.serverData.slots.get(var3)).options.empty;
          } else {
             var5 = Button.builder(Component.translatable("mco.brokenworld.download"), (var2x) -> this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> this.downloadWorld(var3)))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
          }
@@ -102,10 +102,10 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
       if (this.serverData != null) {
          for(Map.Entry var6 : this.serverData.slots.entrySet()) {
-            if (((RealmsWorldOptions)var6.getValue()).templateImage != null && ((RealmsWorldOptions)var6.getValue()).templateId != -1L) {
-               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsWorldOptions)var6.getValue()).templateId, ((RealmsWorldOptions)var6.getValue()).templateImage, ((RealmsWorldOptions)var6.getValue()).empty);
+            if (((RealmsSlot)var6.getValue()).options.templateImage != null && ((RealmsSlot)var6.getValue()).options.templateId != -1L) {
+               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsSlot)var6.getValue()).options.getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsSlot)var6.getValue()).options.templateId, ((RealmsSlot)var6.getValue()).options.templateImage, ((RealmsSlot)var6.getValue()).options.empty);
             } else {
-               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsWorldOptions)var6.getValue()).empty);
+               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsSlot)var6.getValue()).options.getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsSlot)var6.getValue()).options.empty);
             }
          }
 

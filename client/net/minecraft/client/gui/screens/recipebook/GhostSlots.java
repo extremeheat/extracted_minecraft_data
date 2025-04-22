@@ -73,7 +73,7 @@ public class GhostSlots {
          GhostSlot var6 = (GhostSlot)this.ingredients.get(var5);
          if (var6 != null) {
             ItemStack var7 = var6.getItem(this.slotSelectTime.currentIndex());
-            var1.renderComponentTooltip(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4, (ResourceLocation)var7.get(DataComponents.TOOLTIP_STYLE));
+            var1.setComponentTooltipForNextFrame(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4, (ResourceLocation)var7.get(DataComponents.TOOLTIP_STYLE));
          }
 
       }

@@ -3,6 +3,7 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -34,17 +35,13 @@ import org.joml.Vector4f;
 import org.slf4j.Logger;
 
 public class CloudRenderer extends SimplePreparableReloadListener<Optional<TextureData>> implements AutoCloseable {
-   public static final int FLAG_INSIDE_FACE = 16;
-   public static final int FLAG_USE_TOP_COLOR = 32;
+   private static final int FLAG_INSIDE_FACE = 16;
+   private static final int FLAG_USE_TOP_COLOR = 32;
+   private static final int MAX_RADIUS_CHUNKS = 128;
    private static final float CELL_SIZE_IN_BLOCKS = 12.0F;
-   public static final int RADIUS_BLOCKS = 2048;
-   private static final int CELL_RADIUS = Mth.ceil(170.66667F);
-   public static final int MAX_FACES_PER_CELL = 4;
-   public static final int MAX_CELLS;
-   public static final int MAX_FACES;
-   public static final int UBO_SIZE = 48;
-   private static final Logger LOGGER;
-   private static final ResourceLocation TEXTURE_LOCATION;
+   private static final int UBO_SIZE = (new Std140SizeCalculator()).putVec4().putVec3().putVec3().get();
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/clouds.png");
    private static final float BLOCKS_PER_SECOND = 0.6F;
    private static final long EMPTY_CELL = 0L;
    private static final int COLOR_OFFSET = 4;
@@ -63,15 +60,15 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    private int instanceCount;
    private final RenderSystem.AutoStorageIndexBuffer indices;
    private final MappableRingBuffer ubo;
-   private final MappableRingBuffer utb;
+   @Nullable
+   private MappableRingBuffer utb;
 
    public CloudRenderer() {
       super();
       this.prevRelativeCameraPos = CloudRenderer.RelativeCameraPos.INSIDE_CLOUDS;
       this.instanceCount = 0;
       this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      this.ubo = new MappableRingBuffer("Cloud UBO", 130, 48);
-      this.utb = new MappableRingBuffer("Cloud UTB", 258, MAX_FACES * 3);
+      this.ubo = new MappableRingBuffer(() -> "Cloud UBO", 130, UBO_SIZE);
    }
 
    protected Optional<TextureData> prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -123,6 +120,13 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       }
    }
 
+   private static int getSizeForCloudDistance(int var0) {
+      boolean var1 = true;
+      int var2 = (var0 + 1) * 2 * (var0 + 1) * 2 / 2;
+      int var3 = var2 * 4 + 54;
+      return var3 * 3;
+   }
+
    protected void apply(Optional<TextureData> var1, ResourceManager var2, ProfilerFiller var3) {
       this.texture = (TextureData)var1.orElse((Object)null);
       this.needsRebuild = true;
@@ -154,100 +158,111 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
 
    public void render(int var1, CloudStatus var2, float var3, Vec3 var4, float var5) {
       if (this.texture != null) {
-         float var6 = (float)((double)var3 - var4.y);
-         float var7 = var6 + 4.0F;
-         RelativeCameraPos var8;
-         if (var7 < 0.0F) {
-            var8 = CloudRenderer.RelativeCameraPos.ABOVE_CLOUDS;
-         } else if (var6 > 0.0F) {
-            var8 = CloudRenderer.RelativeCameraPos.BELOW_CLOUDS;
-         } else {
-            var8 = CloudRenderer.RelativeCameraPos.INSIDE_CLOUDS;
+         int var6 = Math.min((Integer)Minecraft.getInstance().options.cloudRange().get(), 128) * 16;
+         int var7 = Mth.ceil((float)var6 / 12.0F);
+         int var8 = getSizeForCloudDistance(var7);
+         if (this.utb == null || this.utb.currentBuffer().size() != var8) {
+            if (this.utb != null) {
+               this.utb.close();
+            }
+
+            this.utb = new MappableRingBuffer(() -> "Cloud UTB", 258, var8);
          }
 
-         double var9 = var4.x + (double)(var5 * 0.030000001F);
-         double var11 = var4.z + 3.9600000381469727;
-         double var13 = (double)this.texture.width * 12.0;
-         double var15 = (double)this.texture.height * 12.0;
-         var9 -= (double)Mth.floor(var9 / var13) * var13;
-         var11 -= (double)Mth.floor(var11 / var15) * var15;
-         int var17 = Mth.floor(var9 / 12.0);
-         int var18 = Mth.floor(var11 / 12.0);
-         float var19 = (float)(var9 - (double)((float)var17 * 12.0F));
-         float var20 = (float)(var11 - (double)((float)var18 * 12.0F));
-         boolean var21 = var2 == CloudStatus.FANCY;
-         RenderPipeline var22 = var21 ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
-         if (this.needsRebuild || var17 != this.prevCellX || var18 != this.prevCellZ || var8 != this.prevRelativeCameraPos || var2 != this.prevType) {
+         float var9 = (float)((double)var3 - var4.y);
+         float var10 = var9 + 4.0F;
+         RelativeCameraPos var11;
+         if (var10 < 0.0F) {
+            var11 = CloudRenderer.RelativeCameraPos.ABOVE_CLOUDS;
+         } else if (var9 > 0.0F) {
+            var11 = CloudRenderer.RelativeCameraPos.BELOW_CLOUDS;
+         } else {
+            var11 = CloudRenderer.RelativeCameraPos.INSIDE_CLOUDS;
+         }
+
+         double var12 = var4.x + (double)(var5 * 0.030000001F);
+         double var14 = var4.z + 3.9600000381469727;
+         double var16 = (double)this.texture.width * 12.0;
+         double var18 = (double)this.texture.height * 12.0;
+         var12 -= (double)Mth.floor(var12 / var16) * var16;
+         var14 -= (double)Mth.floor(var14 / var18) * var18;
+         int var20 = Mth.floor(var12 / 12.0);
+         int var21 = Mth.floor(var14 / 12.0);
+         float var22 = (float)(var12 - (double)((float)var20 * 12.0F));
+         float var23 = (float)(var14 - (double)((float)var21 * 12.0F));
+         boolean var24 = var2 == CloudStatus.FANCY;
+         RenderPipeline var25 = var24 ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
+         if (this.needsRebuild || var20 != this.prevCellX || var21 != this.prevCellZ || var11 != this.prevRelativeCameraPos || var2 != this.prevType) {
             this.needsRebuild = false;
-            this.prevCellX = var17;
-            this.prevCellZ = var18;
-            this.prevRelativeCameraPos = var8;
+            this.prevCellX = var20;
+            this.prevCellZ = var21;
+            this.prevRelativeCameraPos = var11;
             this.prevType = var2;
             this.utb.rotate();
 
-            try (GpuBuffer.MappedView var23 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.utb.currentBuffer(), false, true)) {
-               this.buildMesh(var8, var23.data(), var17, var18, var21);
-               this.instanceCount = var23.data().position() / 3;
+            try (GpuBuffer.MappedView var26 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.utb.currentBuffer(), false, true)) {
+               this.buildMesh(var11, var26.data(), var20, var21, var24, var7);
+               this.instanceCount = var26.data().position() / 3;
             }
          }
 
          if (this.instanceCount != 0) {
-            try (GpuBuffer.MappedView var40 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var40.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var19, var6, -var20).putVec3(12.0F, 4.0F, 12.0F);
+            try (GpuBuffer.MappedView var43 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var43.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
             }
 
-            GpuBufferSlice var41 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
-            RenderTarget var24 = Minecraft.getInstance().getMainRenderTarget();
-            RenderTarget var25 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
-            GpuTexture var26;
-            GpuTexture var27;
-            if (var25 != null) {
-               var26 = var25.getColorTexture();
-               var27 = var25.getDepthTexture();
+            GpuBufferSlice var44 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+            RenderTarget var27 = Minecraft.getInstance().getMainRenderTarget();
+            RenderTarget var28 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+            GpuTexture var29;
+            GpuTexture var30;
+            if (var28 != null) {
+               var29 = var28.getColorTexture();
+               var30 = var28.getDepthTexture();
             } else {
-               var26 = var24.getColorTexture();
-               var27 = var24.getDepthTexture();
+               var29 = var27.getColorTexture();
+               var30 = var27.getDepthTexture();
             }
 
-            GpuBuffer var28 = this.indices.getBuffer(6);
+            GpuBuffer var31 = this.indices.getBuffer(6);
 
-            try (RenderPass var29 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var26, OptionalInt.empty(), var27, OptionalDouble.empty())) {
-               var29.setPipeline(var22);
-               RenderSystem.bindDefaultUniforms(var29);
-               var29.setUniform("DynamicTransforms", var41);
-               var29.setIndexBuffer(var28, this.indices.type());
-               var29.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-               var29.setUniform("CloudInfo", this.ubo.currentBuffer());
-               var29.setUniform("CloudFaces", this.utb.currentBuffer());
-               if (var21) {
-                  var29.setPipeline(RenderPipelines.CLOUDS_DEPTH_ONLY);
-                  var29.drawIndexed(0, 6, this.instanceCount);
+            try (RenderPass var32 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", var29, OptionalInt.empty(), var30, OptionalDouble.empty())) {
+               var32.setPipeline(var25);
+               RenderSystem.bindDefaultUniforms(var32);
+               var32.setUniform("DynamicTransforms", var44);
+               var32.setIndexBuffer(var31, this.indices.type());
+               var32.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
+               var32.setUniform("CloudInfo", this.ubo.currentBuffer());
+               var32.setUniform("CloudFaces", this.utb.currentBuffer());
+               if (var24) {
+                  var32.setPipeline(RenderPipelines.CLOUDS_DEPTH_ONLY);
+                  var32.drawIndexed(0, 0, 6, this.instanceCount);
                }
 
-               var29.setPipeline(var22);
-               var29.drawIndexed(0, 6, this.instanceCount);
+               var32.setPipeline(var25);
+               var32.drawIndexed(0, 0, 6, this.instanceCount);
             }
 
          }
       }
    }
 
-   private void buildMesh(RelativeCameraPos var1, ByteBuffer var2, int var3, int var4, boolean var5) {
+   private void buildMesh(RelativeCameraPos var1, ByteBuffer var2, int var3, int var4, boolean var5, int var6) {
       if (this.texture != null) {
-         long[] var6 = this.texture.cells;
-         int var7 = this.texture.width;
-         int var8 = this.texture.height;
+         long[] var7 = this.texture.cells;
+         int var8 = this.texture.width;
+         int var9 = this.texture.height;
 
-         for(int var9 = -CELL_RADIUS; var9 <= CELL_RADIUS; ++var9) {
-            for(int var10 = -CELL_RADIUS; var10 <= CELL_RADIUS; ++var10) {
-               int var11 = Math.floorMod(var3 + var10, var7);
-               int var12 = Math.floorMod(var4 + var9, var8);
-               long var13 = var6[var11 + var12 * var7];
-               if (var13 != 0L) {
+         for(int var10 = -var6; var10 <= var6; ++var10) {
+            for(int var11 = -var6; var11 <= var6; ++var11) {
+               int var12 = Math.floorMod(var3 + var11, var8);
+               int var13 = Math.floorMod(var4 + var10, var9);
+               long var14 = var7[var12 + var13 * var8];
+               if (var14 != 0L) {
                   if (var5) {
-                     this.buildExtrudedCell(var1, var2, var10, var9, var13);
+                     this.buildExtrudedCell(var1, var2, var11, var10, var14);
                   } else {
-                     this.buildFlatCell(var2, var10, var9);
+                     this.buildFlatCell(var2, var11, var10);
                   }
                }
             }
@@ -311,19 +326,15 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
 
    public void close() {
       this.ubo.close();
-      this.utb.close();
+      if (this.utb != null) {
+         this.utb.close();
+      }
+
    }
 
    // $FF: synthetic method
    protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
       return this.prepare(var1, var2);
-   }
-
-   static {
-      MAX_CELLS = (CELL_RADIUS + 1) * 2 * (CELL_RADIUS + 1) * 2 / 2;
-      MAX_FACES = MAX_CELLS * 4 + 54;
-      LOGGER = LogUtils.getLogger();
-      TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/clouds.png");
    }
 
    static enum RelativeCameraPos {

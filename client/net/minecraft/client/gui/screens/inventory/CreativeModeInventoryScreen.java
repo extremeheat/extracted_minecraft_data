@@ -639,7 +639,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
 
       if (this.destroyItemSlot != null && selectedTab.getType() == CreativeModeTab.Type.INVENTORY && this.isHovering(this.destroyItemSlot.x, this.destroyItemSlot.y, 16, 16, (double)var2, (double)var3)) {
-         var1.renderTooltip(this.font, TRASH_SLOT_TOOLTIP, var2, var3);
+         var1.setTooltipForNextFrame(this.font, TRASH_SLOT_TOOLTIP, var2, var3);
       }
 
       this.renderTooltip(var1, var2, var3);
@@ -746,7 +746,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       int var5 = this.getTabX(var2);
       int var6 = this.getTabY(var2);
       if (this.isHovering(var5 + 3, var6 + 3, 21, 27, (double)var3, (double)var4)) {
-         var1.renderTooltip(this.font, var2.getDisplayName(), var3, var4);
+         var1.setTooltipForNextFrame(this.font, var2.getDisplayName(), var3, var4);
          return true;
       } else {
          return false;

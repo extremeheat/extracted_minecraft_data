@@ -106,6 +106,7 @@ public class Options {
    private static final Component INACTIVITY_FPS_LIMIT_TOOLTIP_AFK = Component.translatable("options.inactivityFpsLimit.afk.tooltip");
    private final OptionInstance<InactivityFpsLimit> inactivityFpsLimit;
    private final OptionInstance<CloudStatus> cloudStatus;
+   private final OptionInstance<Integer> cloudRange;
    private static final Component GRAPHICS_TOOLTIP_FAST = Component.translatable("options.graphics.fast.tooltip");
    private static final Component GRAPHICS_TOOLTIP_FABULOUS;
    private static final Component GRAPHICS_TOOLTIP_FANCY;
@@ -291,6 +292,10 @@ public class Options {
 
    public OptionInstance<CloudStatus> cloudStatus() {
       return this.cloudStatus;
+   }
+
+   public OptionInstance<Integer> cloudRange() {
+      return this.cloudRange;
    }
 
    public OptionInstance<GraphicsStatus> graphicsMode() {
@@ -643,6 +648,7 @@ public class Options {
       });
       this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var0) -> {
       });
+      this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var0) -> Minecraft.getInstance().levelRenderer.getCloudRenderer().markForRebuild());
       this.graphicsMode = new OptionInstance<GraphicsStatus>("options.graphics", (var0) -> {
          Tooltip var10000;
          switch (var0) {
@@ -929,6 +935,7 @@ public class Options {
       var1.process("particles", this.particles);
       var1.process("reducedDebugInfo", this.reducedDebugInfo);
       var1.process("renderClouds", this.cloudStatus);
+      var1.process("cloudRange", this.cloudRange);
       var1.process("renderDistance", this.renderDistance);
       var1.process("simulationDistance", this.simulationDistance);
       var1.process("screenEffectScale", this.screenEffectScale);
@@ -1298,7 +1305,7 @@ public class Options {
    }
 
    public CloudStatus getCloudsType() {
-      return this.getEffectiveRenderDistance() >= 4 ? (CloudStatus)this.cloudStatus.get() : CloudStatus.OFF;
+      return this.cloudStatus.get();
    }
 
    public boolean useNativeTransport() {

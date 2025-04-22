@@ -1137,34 +1137,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             Vec3 var7 = var5.to();
             AABB var8 = this.makeBoundingBox(var7).deflate(9.999999747378752E-6);
             BlockGetter.forEachBlockIntersectedBetween(var6, var7, var8, (var5x, var6x) -> {
-               if (this.isAlive()) {
+               if (!this.isAlive()) {
+                  return false;
+               } else {
                   BlockState var7x = this.level().getBlockState(var5x);
-                  if (!var7x.isAir()) {
-                     if (var3.add(var5x.asLong())) {
-                        VoxelShape var8 = var7x.getEntityInsideCollisionShape(this.level(), var5x, this);
-                        boolean var9 = var8 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var8.move(new Vec3(var5x)).toAabbs());
-                        if (var9) {
-                           try {
-                              var2.advanceStep(var6x);
-                              var7x.entityInside(this.level(), var5x, this, var2);
-                              this.onInsideBlock(var7x);
-                           } catch (Throwable var14) {
-                              CrashReport var11 = CrashReport.forThrowable(var14, "Colliding entity with block");
-                              CrashReportCategory var12 = var11.addCategory("Block being collided with");
-                              CrashReportCategory.populateBlockDetails(var12, this.level(), var5x, var7x);
-                              CrashReportCategory var13 = var11.addCategory("Entity being checked for collision");
-                              this.fillCrashReportCategory(var13);
-                              throw new ReportedException(var11);
-                           }
-                        }
-
-                        boolean var10 = this.collidedWithFluid(var7x.getFluidState(), var5x, var6, var7);
-                        if (var10) {
+                  if (var7x.isAir()) {
+                     return true;
+                  } else if (!var3.add(var5x.asLong())) {
+                     return true;
+                  } else {
+                     VoxelShape var8 = var7x.getEntityInsideCollisionShape(this.level(), var5x, this);
+                     boolean var9 = var8 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var8.move(new Vec3(var5x)).toAabbs());
+                     if (var9) {
+                        try {
                            var2.advanceStep(var6x);
-                           var7x.getFluidState().entityInside(this.level(), var5x, this, var2);
+                           var7x.entityInside(this.level(), var5x, this, var2);
+                           this.onInsideBlock(var7x);
+                        } catch (Throwable var14) {
+                           CrashReport var11 = CrashReport.forThrowable(var14, "Colliding entity with block");
+                           CrashReportCategory var12 = var11.addCategory("Block being collided with");
+                           CrashReportCategory.populateBlockDetails(var12, this.level(), var5x, var7x);
+                           CrashReportCategory var13 = var11.addCategory("Entity being checked for collision");
+                           this.fillCrashReportCategory(var13);
+                           throw new ReportedException(var11);
                         }
-
                      }
+
+                     boolean var10 = this.collidedWithFluid(var7x.getFluidState(), var5x, var6, var7);
+                     if (var10) {
+                        var2.advanceStep(var6x);
+                        var7x.getFluidState().entityInside(this.level(), var5x, this, var2);
+                     }
+
+                     return true;
                   }
                }
             });
@@ -2163,7 +2168,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       }
 
       if (var3) {
-         this.gameEvent(GameEvent.BLOCK_ATTACH, var1);
+         this.gameEvent(GameEvent.SHEAR, var1);
          return true;
       } else {
          return false;

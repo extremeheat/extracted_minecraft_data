@@ -55,7 +55,7 @@ public class ReceivingLevelScreen extends Screen {
             break;
          case 2:
             this.renderPanorama(var1, var4);
-            this.renderBlurredBackground();
+            this.renderBlurredBackground(var1);
             this.renderMenuBackground(var1);
       }
 

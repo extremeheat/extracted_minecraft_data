@@ -35,7 +35,7 @@ public abstract class ReloadableTexture extends AbstractTexture {
       GpuDevice var4 = RenderSystem.getDevice();
       ResourceLocation var10002 = this.resourceId;
       Objects.requireNonNull(var10002);
-      this.texture = var4.createTexture(var10002::toString, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1);
+      this.texture = var4.createTexture(var10002::toString, 5, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1);
       this.setFilter(var2, false);
       this.setClamp(var3);
       var4.createCommandEncoder().writeToTexture(this.texture, var1);

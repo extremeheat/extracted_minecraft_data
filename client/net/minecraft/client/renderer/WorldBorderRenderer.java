@@ -136,7 +136,7 @@ public class WorldBorderRenderer {
          GpuBuffer var36 = this.indices.getBuffer(6);
          GpuBufferSlice var37 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(var23, var24, var25, (float)var15), new Vector3f((float)(this.lastMinX - var17), (float)(-var2.y), (float)(this.lastMinZ - var19)), (new Matrix4f()).translation(var26, var26, 0.0F), 0.0F);
 
-         try (RenderPass var38 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var34, OptionalInt.empty(), var35, OptionalDouble.empty())) {
+         try (RenderPass var38 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "World border", var34, OptionalInt.empty(), var35, OptionalDouble.empty())) {
             var38.setPipeline(var31);
             RenderSystem.bindDefaultUniforms(var38);
             var38.setUniform("DynamicTransforms", var37);
