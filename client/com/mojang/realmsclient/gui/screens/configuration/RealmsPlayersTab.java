@@ -38,7 +38,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    private static final int PADDING = 8;
    final RealmsConfigureWorldScreen configurationScreen;
    final Minecraft minecraft;
-   final RealmsServer serverData;
+   RealmsServer serverData;
    private final InvitedObjectSelectionList invitedList;
 
    RealmsPlayersTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3) {
@@ -62,6 +62,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    }
 
    public void updateData(RealmsServer var1) {
+      this.serverData = var1;
       this.invitedList.children().clear();
 
       for(PlayerInfo var3 : var1.players) {

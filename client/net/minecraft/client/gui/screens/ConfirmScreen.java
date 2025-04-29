@@ -58,7 +58,7 @@ public class ConfirmScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, this.titleTop(), 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, this.titleTop(), -1);
       this.multilineMessage.renderCentered(var1, this.width / 2, this.messageTop());
    }
 

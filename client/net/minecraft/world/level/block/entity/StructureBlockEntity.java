@@ -32,6 +32,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProce
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class StructureBlockEntity extends BlockEntity implements BoundingBoxRenderable {
    private static final int SCAN_CORNER_BLOCKS_RANGE = 5;
@@ -84,8 +86,8 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       this.mode = (StructureMode)var2.getValue(StructureBlock.MODE);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putString("name", this.getStructureName());
       var1.putString("author", this.author);
       var1.putString("metadata", this.metaData);
@@ -107,19 +109,19 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       var1.putLong("seed", this.seed);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.setStructureName(var1.getStringOr("name", ""));
       this.author = var1.getStringOr("author", "");
       this.metaData = var1.getStringOr("metadata", "");
-      int var3 = Mth.clamp(var1.getIntOr("posX", DEFAULT_POS.getX()), -48, 48);
-      int var4 = Mth.clamp(var1.getIntOr("posY", DEFAULT_POS.getY()), -48, 48);
-      int var5 = Mth.clamp(var1.getIntOr("posZ", DEFAULT_POS.getZ()), -48, 48);
-      this.structurePos = new BlockPos(var3, var4, var5);
-      int var6 = Mth.clamp(var1.getIntOr("sizeX", DEFAULT_SIZE.getX()), 0, 48);
-      int var7 = Mth.clamp(var1.getIntOr("sizeY", DEFAULT_SIZE.getY()), 0, 48);
-      int var8 = Mth.clamp(var1.getIntOr("sizeZ", DEFAULT_SIZE.getZ()), 0, 48);
-      this.structureSize = new Vec3i(var6, var7, var8);
+      int var2 = Mth.clamp(var1.getIntOr("posX", DEFAULT_POS.getX()), -48, 48);
+      int var3 = Mth.clamp(var1.getIntOr("posY", DEFAULT_POS.getY()), -48, 48);
+      int var4 = Mth.clamp(var1.getIntOr("posZ", DEFAULT_POS.getZ()), -48, 48);
+      this.structurePos = new BlockPos(var2, var3, var4);
+      int var5 = Mth.clamp(var1.getIntOr("sizeX", DEFAULT_SIZE.getX()), 0, 48);
+      int var6 = Mth.clamp(var1.getIntOr("sizeY", DEFAULT_SIZE.getY()), 0, 48);
+      int var7 = Mth.clamp(var1.getIntOr("sizeZ", DEFAULT_SIZE.getZ()), 0, 48);
+      this.structureSize = new Vec3i(var5, var6, var7);
       this.rotation = (Rotation)var1.read("rotation", Rotation.LEGACY_CODEC).orElse(DEFAULT_ROTATION);
       this.mirror = (Mirror)var1.read("mirror", Mirror.LEGACY_CODEC).orElse(DEFAULT_MIRROR);
       this.mode = (StructureMode)var1.read("mode", StructureMode.LEGACY_CODEC).orElse(StructureMode.DATA);

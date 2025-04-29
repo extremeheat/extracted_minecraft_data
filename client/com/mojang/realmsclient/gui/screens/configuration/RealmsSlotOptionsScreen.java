@@ -102,7 +102,7 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
             var2 = Component.translatable("mco.configure.world.edit.subscreen.experience");
          }
 
-         this.addLabel(new RealmsLabel(var2, this.width / 2, 26, 16711680));
+         this.addLabel(new RealmsLabel(var2, this.width / 2, 26, -65536));
       }
 
       this.nameEdit = (EditBox)this.addWidget(new EditBox(this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, (EditBox)null, Component.translatable("mco.configure.world.edit.slot.name")));

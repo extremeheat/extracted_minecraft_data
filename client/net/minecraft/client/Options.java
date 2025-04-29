@@ -9,9 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
@@ -25,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +65,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.HumanoidArm;
@@ -1105,9 +1103,8 @@ public class Options {
             public <T> void process(String var1, OptionInstance<T> var2) {
                String var3 = this.getValue(var1);
                if (var3 != null) {
-                  JsonReader var4 = new JsonReader(new StringReader(var3.isEmpty() ? "\"\"" : var3));
-                  JsonElement var5 = JsonParser.parseReader(var4);
-                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var5).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
+                  JsonElement var4 = LenientJsonParser.parse(var3.isEmpty() ? "\"\"" : var3);
+                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var4).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
                   Objects.requireNonNull(var2);
                   var10000.ifSuccess(var2::set);
                }

@@ -233,7 +233,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          int var13 = var11 + 2;
          int var14 = this.backup.isUploadedVersion() ? -8388737 : -1;
          var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), var4, var12, var14);
-         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var13, 5000268);
+         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var13, -11776948);
          int var15 = 0;
          int var16 = var3 + var6 / 2 - 10;
          if (this.restoreButton != null) {

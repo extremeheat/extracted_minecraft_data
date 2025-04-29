@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -20,6 +19,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class PatrollingMonster extends Monster {
@@ -39,14 +40,14 @@ public abstract class PatrollingMonster extends Monster {
       this.goalSelector.addGoal(4, new LongDistancePatrolGoal(this, 0.7, 0.595));
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.storeNullable("patrol_target", BlockPos.CODEC, this.patrolTarget);
       var1.putBoolean("PatrolLeader", this.patrolLeader);
       var1.putBoolean("Patrolling", this.patrolling);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.patrolTarget = (BlockPos)var1.read("patrol_target", BlockPos.CODEC).orElse((Object)null);
       this.patrolLeader = var1.getBooleanOr("PatrolLeader", false);

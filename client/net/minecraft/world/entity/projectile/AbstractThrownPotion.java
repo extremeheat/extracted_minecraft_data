@@ -2,7 +2,6 @@ package net.minecraft.world.entity.projectile;
 
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -25,7 +24,6 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
@@ -78,7 +76,7 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
          if (var4.is(Potions.WATER)) {
             this.onHitAsWater(var2);
          } else if (var4.hasEffects()) {
-            this.onHitAsPotion(var2, var6, var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
+            this.onHitAsPotion(var2, var6, var1);
          }
 
          int var5 = var4.potion().isPresent() && ((Potion)((Holder)var4.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
@@ -109,7 +107,7 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
 
    }
 
-   protected abstract void onHitAsPotion(ServerLevel var1, ItemStack var2, @Nullable Entity var3);
+   protected abstract void onHitAsPotion(ServerLevel var1, ItemStack var2, HitResult var3);
 
    private void dowseFire(BlockPos var1) {
       BlockState var2 = this.level().getBlockState(var1);

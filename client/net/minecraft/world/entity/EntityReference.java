@@ -7,12 +7,13 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.UUIDLookup;
 import net.minecraft.world.level.entity.UniquelyIdentifyable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    private static final Codec<? extends EntityReference<?>> CODEC;
@@ -74,7 +75,7 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
       return this.getUUID().equals(var1.getUUID());
    }
 
-   public void store(CompoundTag var1, String var2) {
+   public void store(ValueOutput var1, String var2) {
       var1.store(var2, UUIDUtil.CODEC, this.getUUID());
    }
 
@@ -84,12 +85,12 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    }
 
    @Nullable
-   public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> read(CompoundTag var0, String var1) {
+   public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> read(ValueInput var0, String var1) {
       return (EntityReference)var0.read(var1, codec()).orElse((Object)null);
    }
 
    @Nullable
-   public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> readWithOldOwnerConversion(CompoundTag var0, String var1, Level var2) {
+   public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> readWithOldOwnerConversion(ValueInput var0, String var1, Level var2) {
       Optional var3 = var0.read(var1, UUIDUtil.CODEC);
       return var3.isPresent() ? new EntityReference((UUID)var3.get()) : (EntityReference)var0.getString(var1).map((var1x) -> OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var1x)).map(EntityReference::new).orElse((Object)null);
    }

@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -30,6 +29,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -86,7 +87,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return (Entity)MoreObjects.firstNonNull(this.getOwner(), this);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
       if (this.leftOwner) {
          var1.putBoolean("LeftOwner", true);
@@ -99,7 +100,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return var1.getUUID().equals(this.ownerUUID);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.setOwnerThroughUUID((UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null));
       this.leftOwner = var1.getBooleanOr("LeftOwner", false);
       this.hasBeenShot = var1.getBooleanOr("HasBeenShot", false);

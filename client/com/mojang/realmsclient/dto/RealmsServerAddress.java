@@ -1,10 +1,10 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import javax.annotation.Nullable;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class RealmsServerAddress extends ValueObject {
@@ -24,7 +24,7 @@ public class RealmsServerAddress extends ValueObject {
       RealmsServerAddress var1 = new RealmsServerAddress();
 
       try {
-         JsonObject var2 = JsonParser.parseString(var0).getAsJsonObject();
+         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
          var1.address = JsonUtils.getStringOr("address", var2, (String)null);
          var1.resourcePackUrl = JsonUtils.getStringOr("resourcePackUrl", var2, (String)null);
          var1.resourcePackHash = JsonUtils.getStringOr("resourcePackHash", var2, (String)null);

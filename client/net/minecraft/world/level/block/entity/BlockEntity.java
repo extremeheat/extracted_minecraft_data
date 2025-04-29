@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -19,18 +18,21 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 public abstract class BlockEntity {
@@ -92,61 +94,73 @@ public abstract class BlockEntity {
       return this.level != null;
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(ValueInput var1) {
    }
 
-   public final void loadWithComponents(CompoundTag var1, HolderLookup.Provider var2) {
-      this.loadAdditional(var1, var2);
-      this.components = (DataComponentMap)var1.read((MapCodec)BlockEntity.ComponentHelper.COMPONENTS_CODEC, var2.createSerializationContext(NbtOps.INSTANCE)).orElse(DataComponentMap.EMPTY);
+   public final void loadWithComponents(ValueInput var1) {
+      this.loadAdditional(var1);
+      this.components = (DataComponentMap)var1.read("components", DataComponentMap.CODEC).orElse(DataComponentMap.EMPTY);
    }
 
-   public final void loadCustomOnly(CompoundTag var1, HolderLookup.Provider var2) {
-      this.loadAdditional(var1, var2);
+   public final void loadCustomOnly(ValueInput var1) {
+      this.loadAdditional(var1);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void saveAdditional(ValueOutput var1) {
    }
 
    public final CompoundTag saveWithFullMetadata(HolderLookup.Provider var1) {
-      CompoundTag var2 = this.saveWithoutMetadata(var1);
-      this.saveMetadata(var2);
-      return var2;
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
+         this.saveWithFullMetadata((ValueOutput)var3);
+         return var3.buildResult();
+      }
    }
 
-   public final CompoundTag saveWithId(HolderLookup.Provider var1) {
-      CompoundTag var2 = this.saveWithoutMetadata(var1);
-      this.saveId(var2);
-      return var2;
+   public void saveWithFullMetadata(ValueOutput var1) {
+      this.saveWithoutMetadata(var1);
+      this.saveMetadata(var1);
+   }
+
+   public void saveWithId(ValueOutput var1) {
+      this.saveWithoutMetadata(var1);
+      this.saveId(var1);
    }
 
    public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
-      CompoundTag var2 = new CompoundTag();
-      this.saveAdditional(var2, var1);
-      var2.store((MapCodec)BlockEntity.ComponentHelper.COMPONENTS_CODEC, var1.createSerializationContext(NbtOps.INSTANCE), this.components);
-      return var2;
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
+         this.saveWithoutMetadata((ValueOutput)var3);
+         return var3.buildResult();
+      }
+   }
+
+   public void saveWithoutMetadata(ValueOutput var1) {
+      this.saveAdditional(var1);
+      var1.store("components", DataComponentMap.CODEC, this.components);
    }
 
    public final CompoundTag saveCustomOnly(HolderLookup.Provider var1) {
-      CompoundTag var2 = new CompoundTag();
-      this.saveAdditional(var2, var1);
-      return var2;
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
+         this.saveCustomOnly((ValueOutput)var3);
+         return var3.buildResult();
+      }
    }
 
-   public final CompoundTag saveCustomAndMetadata(HolderLookup.Provider var1) {
-      CompoundTag var2 = this.saveCustomOnly(var1);
-      this.saveMetadata(var2);
-      return var2;
+   public void saveCustomOnly(ValueOutput var1) {
+      this.saveAdditional(var1);
    }
 
-   private void saveId(CompoundTag var1) {
+   private void saveId(ValueOutput var1) {
       addEntityType(var1, this.getType());
    }
 
-   public static void addEntityType(CompoundTag var0, BlockEntityType<?> var1) {
+   public static void addEntityType(ValueOutput var0, BlockEntityType<?> var1) {
       var0.store("id", TYPE_CODEC, var1);
    }
 
-   private void saveMetadata(CompoundTag var1) {
+   private void saveMetadata(ValueOutput var1) {
       this.saveId(var1);
       var1.putInt("x", this.worldPosition.getX());
       var1.putInt("y", this.worldPosition.getY());
@@ -163,16 +177,16 @@ public abstract class BlockEntity {
          BlockEntity var5;
          try {
             var5 = var4.create(var0, var1);
-         } catch (Throwable var8) {
-            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{var4, var0, var1, var8});
+         } catch (Throwable var12) {
+            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{var4, var0, var1, var12});
             return null;
          }
 
-         try {
-            var5.loadWithComponents(var2, var3);
+         try (ProblemReporter.ScopedCollector var6 = new ProblemReporter.ScopedCollector(var5.problemPath(), LOGGER)) {
+            var5.loadWithComponents(TagValueInput.create(var6, var3, var2));
             return var5;
-         } catch (Throwable var7) {
-            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{var4, var0, var1, var7});
+         } catch (Throwable var11) {
+            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{var4, var0, var1, var11});
             return null;
          }
       }
@@ -251,7 +265,7 @@ public abstract class BlockEntity {
 
    }
 
-   private String getNameForReporting() {
+   public String getNameForReporting() {
       String var10000 = String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()));
       return var10000 + " // " + this.getClass().getCanonicalName();
    }
@@ -301,7 +315,7 @@ public abstract class BlockEntity {
 
    /** @deprecated */
    @Deprecated
-   public void removeComponentsFromTag(CompoundTag var1) {
+   public void removeComponentsFromTag(ValueOutput var1) {
    }
 
    public final DataComponentMap collectComponents() {
@@ -320,8 +334,12 @@ public abstract class BlockEntity {
    }
 
    @Nullable
-   public static Component parseCustomNameSafe(@Nullable Tag var0, HolderLookup.Provider var1) {
-      return var0 == null ? null : (Component)ComponentSerialization.CODEC.parse(var1.createSerializationContext(NbtOps.INSTANCE), var0).resultOrPartial((var0x) -> LOGGER.warn("Failed to parse custom name, discarding: {}", var0x)).orElse((Object)null);
+   public static Component parseCustomNameSafe(ValueInput var0, String var1) {
+      return (Component)var0.read(var1, ComponentSerialization.CODEC).orElse((Object)null);
+   }
+
+   public ProblemReporter.PathElement problemPath() {
+      return new BlockEntityPathElement(this);
    }
 
    static {
@@ -329,15 +347,15 @@ public abstract class BlockEntity {
       LOGGER = LogUtils.getLogger();
    }
 
-   static class ComponentHelper {
-      public static final MapCodec<DataComponentMap> COMPONENTS_CODEC;
-
-      private ComponentHelper() {
+   static record BlockEntityPathElement(BlockEntity blockEntity) implements ProblemReporter.PathElement {
+      BlockEntityPathElement(BlockEntity var1) {
          super();
+         this.blockEntity = var1;
       }
 
-      static {
-         COMPONENTS_CODEC = DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY);
+      public String get() {
+         String var10000 = this.blockEntity.getNameForReporting();
+         return var10000 + "@" + String.valueOf(this.blockEntity.getBlockPos());
       }
    }
 }

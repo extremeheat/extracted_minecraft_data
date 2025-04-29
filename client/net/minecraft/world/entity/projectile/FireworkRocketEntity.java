@@ -7,12 +7,9 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -29,6 +26,8 @@ import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -262,21 +261,19 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       super.handleEntityEvent(var1);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Life", this.life);
       var1.putInt("LifeTime", this.lifetime);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("FireworksItem", ItemStack.CODEC, var2, this.getItem());
+      var1.store("FireworksItem", ItemStack.CODEC, this.getItem());
       var1.putBoolean("ShotAtAngle", (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE));
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.life = var1.getIntOr("Life", 0);
       this.lifetime = var1.getIntOr("LifeTime", 0);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)var1.read("FireworksItem", ItemStack.CODEC, var2).orElse(getDefaultItem()));
+      this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)var1.read("FireworksItem", ItemStack.CODEC).orElse(getDefaultItem()));
       this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBooleanOr("ShotAtAngle", false));
    }
 

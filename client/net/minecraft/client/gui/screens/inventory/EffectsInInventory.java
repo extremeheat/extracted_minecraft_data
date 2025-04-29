@@ -53,7 +53,6 @@ public class EffectsInInventory {
 
          List var9 = Ordering.natural().sortedCopy(var6);
          this.renderBackgrounds(var1, var4, var8, var9, var7);
-         var1.depthTreeUp();
          this.renderIcons(var1, var4, var8, var9, var7);
          if (var7) {
             this.renderLabels(var1, var4, var8, var9);
@@ -113,9 +112,9 @@ public class EffectsInInventory {
 
       for(MobEffectInstance var7 : var4) {
          Component var8 = this.getEffectName(var7);
-         var1.drawString(this.screen.getFont(), var8, var2 + 10 + 18, var5 + 6, 16777215);
+         var1.drawString(this.screen.getFont(), (Component)var8, var2 + 10 + 18, var5 + 6, -1);
          Component var9 = MobEffectUtil.formatDuration(var7, 1.0F, this.minecraft.level.tickRateManager().tickrate());
-         var1.drawString(this.screen.getFont(), var9, var2 + 10 + 18, var5 + 6 + 10, 8355711);
+         var1.drawString(this.screen.getFont(), var9, var2 + 10 + 18, var5 + 6 + 10, -8421505);
          var5 += var3;
       }
 

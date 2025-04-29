@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -30,6 +31,6 @@ public class FilteredFunction extends LootItemConditionalFunction {
 
    public void validate(ValidationContext var1) {
       super.validate(var1);
-      this.modifier.validate(var1.forChild(".modifier"));
+      this.modifier.validate(var1.forChild(new ProblemReporter.FieldPathElement("modifier")));
    }
 }

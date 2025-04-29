@@ -53,7 +53,7 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<TriggerInstanc
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.source, ".source");
+         var1.validateEntity(this.source, "source");
       }
    }
 }

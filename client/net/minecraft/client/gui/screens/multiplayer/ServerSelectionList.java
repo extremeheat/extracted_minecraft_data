@@ -193,9 +193,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          var1.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, -1);
          var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
-            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, 3158064);
+            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, -13619152);
          } else {
-            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, 3158064);
+            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, -13619152);
          }
 
       }
@@ -276,7 +276,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             });
          }
 
-         var1.depthTreePushCheckpoint();
          var1.drawString(this.minecraft.font, (String)this.serverData.name, var4 + 32 + 3, var3 + 1, -1);
          List var11 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
 
@@ -289,7 +288,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             var1.drawString(var10001, var10002, var10003, var10004 + 9 * var12, -8355712);
          }
 
-         var1.depthTreeUp();
          this.drawIcon(var1, var4, var3, this.icon.textureLocation());
          if (this.serverData.state() == ServerData.State.PINGING) {
             int var19 = (int)(Util.getMillis() / 100L + (long)(var2 * 2) & 7L);
@@ -311,7 +309,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
          int var20 = var4 + var5 - 10 - 5;
          if (this.statusIcon != null) {
-            var1.depthTreeUp();
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var20, var3, 10, 8);
          }
 
@@ -340,11 +337,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          }
 
          if ((Boolean)this.minecraft.options.touchscreen().get() || var9) {
-            var1.depthTreeUp();
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var17 = var7 - var4;
             int var18 = var8 - var3;
-            var1.depthTreeUp();
             if (this.canJoin()) {
                if (var17 < 32 && var17 > 16) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
@@ -370,7 +365,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             }
          }
 
-         var1.depthTreeBackToCheckpoint();
       }
 
       private void refreshStatus() {

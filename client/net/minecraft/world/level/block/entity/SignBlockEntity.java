@@ -11,14 +11,12 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.FilteredText;
 import net.minecraft.sounds.SoundEvent;
@@ -30,6 +28,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -94,19 +94,17 @@ public class SignBlockEntity extends BlockEntity {
       return 90;
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.store("front_text", SignText.DIRECT_CODEC, var3, this.frontText);
-      var1.store("back_text", SignText.DIRECT_CODEC, var3, this.backText);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      var1.store("front_text", SignText.DIRECT_CODEC, this.frontText);
+      var1.store("back_text", SignText.DIRECT_CODEC, this.backText);
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
-      this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC).map(this::loadLines).orElseGet(SignText::new);
+      this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC).map(this::loadLines).orElseGet(SignText::new);
       this.isWaxed = var1.getBooleanOr("is_waxed", false);
    }
 

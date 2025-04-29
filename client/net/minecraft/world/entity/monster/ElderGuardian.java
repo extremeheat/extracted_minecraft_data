@@ -63,8 +63,8 @@ public class ElderGuardian extends Guardian {
          var3.forEach((var1x) -> var1x.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F)));
       }
 
-      if (!this.hasRestriction()) {
-         this.restrictTo(this.blockPosition(), 16);
+      if (!this.hasHome()) {
+         this.setHomeTo(this.blockPosition(), 16);
       }
 
    }

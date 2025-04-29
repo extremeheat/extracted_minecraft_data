@@ -30,6 +30,7 @@ public class TestInstanceBlockEditScreen extends Screen {
    private static final Component ROTATION_LABEL = Component.translatable("test_instance_block.rotation");
    private static final int BUTTON_PADDING = 8;
    private static final int WIDTH = 316;
+   private static final int COLOR_SILVER = -4144960;
    private final TestInstanceBlockEntity blockEntity;
    @Nullable
    private EditBox idEdit;
@@ -156,11 +157,11 @@ public class TestInstanceBlockEditScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       int var5 = this.width / 2 - 158;
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, 16777215);
-      var1.drawString(this.font, (Component)ID_LABEL, var5, 30, 12632256);
-      var1.drawString(this.font, (Component)SIZE_LABEL, var5, 150, 12632256);
-      var1.drawString(this.font, (Component)ROTATION_LABEL, this.rotationButton.getX(), 150, 12632256);
-      var1.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.includeEntitiesButton.getX(), 150, 12632256);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
+      var1.drawString(this.font, (Component)ID_LABEL, var5, 30, -4144960);
+      var1.drawString(this.font, (Component)SIZE_LABEL, var5, 150, -4144960);
+      var1.drawString(this.font, (Component)ROTATION_LABEL, this.rotationButton.getX(), 150, -4144960);
+      var1.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.includeEntitiesButton.getX(), 150, -4144960);
    }
 
    private void updateTestInfo(boolean var1) {

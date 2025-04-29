@@ -2,12 +2,9 @@ package net.minecraft.world.entity;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -20,6 +17,8 @@ import net.minecraft.world.item.ProjectileItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class OminousItemSpawner extends Entity {
@@ -108,16 +107,14 @@ public class OminousItemSpawner extends Entity {
       var1.define(DATA_ITEM, ItemStack.EMPTY);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setItem((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
+   protected void readAdditionalSaveData(ValueInput var1) {
+      this.setItem((ItemStack)var1.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
       this.spawnItemAfterTicks = var1.getLongOr("spawn_item_after_ticks", 0L);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       if (!this.getItem().isEmpty()) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("item", ItemStack.CODEC, var2, this.getItem());
+         var1.store("item", ItemStack.CODEC, this.getItem());
       }
 
       var1.putLong("spawn_item_after_ticks", this.spawnItemAfterTicks);

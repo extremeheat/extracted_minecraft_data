@@ -39,11 +39,10 @@ public interface ContextualBarRenderer {
       int var10000 = var0.guiHeight() - 24;
       Objects.requireNonNull(var1);
       int var5 = var10000 - 9 - 2;
-      var0.drawString(var1, (Component)var3, var4 + 1, var5, 0, false);
-      var0.drawString(var1, (Component)var3, var4 - 1, var5, 0, false);
-      var0.drawString(var1, (Component)var3, var4, var5 + 1, 0, false);
-      var0.drawString(var1, (Component)var3, var4, var5 - 1, 0, false);
-      var0.depthTreeUp();
-      var0.drawString(var1, (Component)var3, var4, var5, 8453920, false);
+      var0.drawString(var1, (Component)var3, var4 + 1, var5, -16777216, false);
+      var0.drawString(var1, (Component)var3, var4 - 1, var5, -16777216, false);
+      var0.drawString(var1, (Component)var3, var4, var5 + 1, -16777216, false);
+      var0.drawString(var1, (Component)var3, var4, var5 - 1, -16777216, false);
+      var0.drawString(var1, (Component)var3, var4, var5, -8323296, false);
    }
 }

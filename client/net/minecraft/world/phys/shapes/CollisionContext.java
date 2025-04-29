@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,20 +41,24 @@ public interface CollisionContext {
       return new EntityCollisionContext(var0, var1, false);
    }
 
-   static CollisionContext placementContext(@Nullable Entity var0) {
+   static CollisionContext placementContext(@Nullable Player var0) {
+      return new EntityCollisionContext(var0 != null ? var0.isDescending() : false, true, var0 != null ? var0.getY() : -1.7976931348623157E308, var0 instanceof LivingEntity ? ((LivingEntity)var0).getMainHandItem() : ItemStack.EMPTY, var0 instanceof LivingEntity ? (var1) -> var0.canStandOnFluid(var1) : (var0x) -> false, var0);
+   }
+
+   static CollisionContext withPosition(@Nullable Entity var0, double var1) {
       EntityCollisionContext var10000 = new EntityCollisionContext;
       boolean var10002 = var0 != null ? var0.isDescending() : false;
-      double var10004 = var0 != null ? var0.getY() : -1.7976931348623157E308;
+      double var10004 = var0 != null ? var1 : -1.7976931348623157E308;
       ItemStack var10005;
-      if (var0 instanceof LivingEntity var1) {
-         var10005 = var1.getMainHandItem();
+      if (var0 instanceof LivingEntity var3) {
+         var10005 = var3.getMainHandItem();
       } else {
          var10005 = ItemStack.EMPTY;
       }
 
       Predicate var10006;
-      if (var0 instanceof LivingEntity var2) {
-         var10006 = (var1x) -> var2.canStandOnFluid(var1x);
+      if (var0 instanceof LivingEntity var4) {
+         var10006 = (var1x) -> var4.canStandOnFluid(var1x);
       } else {
          var10006 = (var0x) -> false;
       }

@@ -10,8 +10,6 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -49,6 +47,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID;
@@ -78,20 +78,20 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       var1.define(DATA_VILLAGER_DATA, Villager.createDefaultVillagerData());
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
-      var1.storeNullable("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers);
+      var1.storeNullable("Offers", MerchantOffers.CODEC, this.tradeOffers);
       var1.storeNullable("Gossips", GossipContainer.CODEC, this.gossips);
       var1.putInt("ConversionTime", this.isConverting() ? this.villagerConversionTime : -1);
       var1.storeNullable("ConversionPlayer", UUIDUtil.CODEC, this.conversionStarter);
       var1.putInt("Xp", this.villagerXp);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
-      this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse((Object)null);
+      this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC).orElse((Object)null);
       this.gossips = (GossipContainer)var1.read("Gossips", GossipContainer.CODEC).orElse((Object)null);
       int var2 = var1.getIntOr("ConversionTime", -1);
       if (var2 != -1) {

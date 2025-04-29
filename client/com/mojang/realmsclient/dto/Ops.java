@@ -3,8 +3,8 @@ package com.mojang.realmsclient.dto;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import java.util.Set;
+import net.minecraft.util.LenientJsonParser;
 
 public class Ops extends ValueObject {
    public Set<String> ops = Sets.newHashSet();
@@ -15,18 +15,16 @@ public class Ops extends ValueObject {
 
    public static Ops parse(String var0) {
       Ops var1 = new Ops();
-      JsonParser var2 = new JsonParser();
 
       try {
-         JsonElement var3 = var2.parse(var0);
-         JsonObject var4 = var3.getAsJsonObject();
-         JsonElement var5 = var4.get("ops");
-         if (var5.isJsonArray()) {
-            for(JsonElement var7 : var5.getAsJsonArray()) {
-               var1.ops.add(var7.getAsString());
+         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
+         JsonElement var3 = var2.get("ops");
+         if (var3.isJsonArray()) {
+            for(JsonElement var5 : var3.getAsJsonArray()) {
+               var1.ops.add(var5.getAsString());
             }
          }
-      } catch (Exception var8) {
+      } catch (Exception var6) {
       }
 
       return var1;

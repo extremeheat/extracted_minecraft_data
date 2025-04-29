@@ -79,7 +79,6 @@ public class TutorialToast implements Toast {
    public void render(GuiGraphics var1, Font var2, long var3) {
       int var5 = this.height();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
-      var1.depthTreeUp();
       this.icon.render(var1, 6, 6);
       int var6 = this.lines.size() * 11;
       int var7 = 7 + (this.contentHeight() - var6) / 2;
@@ -89,7 +88,6 @@ public class TutorialToast implements Toast {
       }
 
       if (this.progressable) {
-         var1.depthTreeUp();
          int var10 = var5 - 4;
          var1.fill(3, var10, 157, var10 + 1, -1);
          int var9;
@@ -100,10 +98,8 @@ public class TutorialToast implements Toast {
          }
 
          var1.fill(3, var10, (int)(3.0F + 154.0F * this.smoothedProgress), var10 + 1, var9);
-         var1.depthTreeBack();
       }
 
-      var1.depthTreeBack();
    }
 
    public void hide() {

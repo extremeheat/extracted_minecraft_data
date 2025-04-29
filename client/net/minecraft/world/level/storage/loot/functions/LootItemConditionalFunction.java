@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.Util;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -39,7 +40,7 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       LootItemFunction.super.validate(var1);
 
       for(int var2 = 0; var2 < this.predicates.size(); ++var2) {
-         ((LootItemCondition)this.predicates.get(var2)).validate(var1.forChild(".conditions[" + var2 + "]"));
+         ((LootItemCondition)this.predicates.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("conditions", var2)));
       }
 
    }

@@ -4,8 +4,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.internal.Streams;
-import com.google.gson.stream.JsonReader;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -15,7 +13,6 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,6 +26,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
 import org.apache.commons.io.FileUtils;
@@ -89,37 +87,17 @@ public class ServerStatsCounter extends StatsCounter {
 
    public void parseLocal(DataFixer var1, String var2) {
       try {
-         JsonReader var3 = new JsonReader(new StringReader(var2));
-
-         label35: {
-            try {
-               var3.setLenient(false);
-               JsonElement var4 = Streams.parse(var3);
-               if (!var4.isJsonNull()) {
-                  Dynamic var5 = new Dynamic(JsonOps.INSTANCE, var4);
-                  var5 = DataFixTypes.STATS.updateToCurrentVersion(var1, var5, NbtUtils.getDataVersion((Dynamic)var5, 1343));
-                  this.stats.putAll((Map)STATS_CODEC.parse(var5.get("stats").orElseEmptyMap()).resultOrPartial((var1x) -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, var1x)).orElse(Map.of()));
-                  break label35;
-               }
-
-               LOGGER.error("Unable to parse Stat data from {}", this.file);
-            } catch (Throwable var7) {
-               try {
-                  var3.close();
-               } catch (Throwable var6) {
-                  var7.addSuppressed(var6);
-               }
-
-               throw var7;
-            }
-
-            var3.close();
+         JsonElement var3 = StrictJsonParser.parse(var2);
+         if (var3.isJsonNull()) {
+            LOGGER.error("Unable to parse Stat data from {}", this.file);
             return;
          }
 
-         var3.close();
-      } catch (IOException | JsonParseException var8) {
-         LOGGER.error("Unable to parse Stat data from {}", this.file, var8);
+         Dynamic var4 = new Dynamic(JsonOps.INSTANCE, var3);
+         var4 = DataFixTypes.STATS.updateToCurrentVersion(var1, var4, NbtUtils.getDataVersion((Dynamic)var4, 1343));
+         this.stats.putAll((Map)STATS_CODEC.parse(var4.get("stats").orElseEmptyMap()).resultOrPartial((var1x) -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, var1x)).orElse(Map.of()));
+      } catch (JsonParseException var5) {
+         LOGGER.error("Unable to parse Stat data from {}", this.file, var5);
       }
 
    }

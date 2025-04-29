@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
@@ -33,15 +34,17 @@ public class PlayerDataStorage {
    }
 
    public void save(Player var1) {
-      try {
-         CompoundTag var2 = var1.saveWithoutId(new CompoundTag());
-         Path var3 = this.playerDir.toPath();
-         Path var4 = Files.createTempFile(var3, var1.getStringUUID() + "-", ".dat");
-         NbtIo.writeCompressed(var2, var4);
-         Path var5 = var3.resolve(var1.getStringUUID() + ".dat");
-         Path var6 = var3.resolve(var1.getStringUUID() + ".dat_old");
-         Util.safeReplaceFile(var5, var4, var6);
-      } catch (Exception var7) {
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
+         var1.saveWithoutId(var3);
+         Path var4 = this.playerDir.toPath();
+         Path var5 = Files.createTempFile(var4, var1.getStringUUID() + "-", ".dat");
+         CompoundTag var6 = var3.buildResult();
+         NbtIo.writeCompressed(var6, var5);
+         Path var7 = var4.resolve(var1.getStringUUID() + ".dat");
+         Path var8 = var4.resolve(var1.getStringUUID() + ".dat_old");
+         Util.safeReplaceFile(var7, var5, var8);
+      } catch (Exception var11) {
          LOGGER.warn("Failed to save player data for {}", var1.getName().getString());
       }
 
@@ -78,17 +81,18 @@ public class PlayerDataStorage {
       return Optional.empty();
    }
 
-   public Optional<CompoundTag> load(Player var1) {
-      Optional var2 = this.load(var1, ".dat");
-      if (var2.isEmpty()) {
+   public Optional<ValueInput> load(Player var1, ProblemReporter var2) {
+      Optional var3 = this.load(var1, ".dat");
+      if (var3.isEmpty()) {
          this.backup(var1, ".dat");
       }
 
-      return var2.or(() -> this.load(var1, ".dat_old")).map((var2x) -> {
-         int var3 = NbtUtils.getDataVersion(var2x, -1);
-         var2x = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, var2x, var3);
-         var1.load(var2x);
-         return var2x;
+      return var3.or(() -> this.load(var1, ".dat_old")).map((var3x) -> {
+         int var4 = NbtUtils.getDataVersion(var3x, -1);
+         var3x = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, var3x, var4);
+         ValueInput var5 = TagValueInput.create(var2, var1.registryAccess(), var3x);
+         var1.load(var5);
+         return var5;
       });
    }
 }

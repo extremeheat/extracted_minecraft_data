@@ -84,9 +84,7 @@ public class ReportReasonSelectionScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.fill(this.descriptionLeft(), this.descriptionTop(), this.descriptionRight(), this.descriptionBottom(), -16777216);
-      var1.depthTreeUp();
       var1.renderOutline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
-      var1.depthTreeUp();
       var1.drawString(this.font, (Component)REASON_DESCRIPTION, this.descriptionLeft() + 4, this.descriptionTop() + 4, -1);
       ReasonSelectionList.Entry var5 = (ReasonSelectionList.Entry)this.reasonSelectionList.getSelected();
       if (var5 != null) {
@@ -99,12 +97,9 @@ public class ReportReasonSelectionScreen extends Screen {
          int var10 = var7 - var6;
          int var11 = var9 - var8;
          int var12 = this.font.wordWrapHeight((FormattedText)var5.reason.description(), var10);
-         var1.depthTreeUp();
          var1.drawWordWrap(this.font, var5.reason.description(), var6, var8 + (var11 - var12) / 2, var10, -1);
-         var1.depthTreeBack();
       }
 
-      var1.depthTreeBack(2);
    }
 
    private int descriptionLeft() {

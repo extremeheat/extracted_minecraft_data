@@ -130,13 +130,11 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          int var7 = Mth.ceil((float)this.recipeButtons.size() / (float)var5);
          boolean var8 = true;
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, OVERLAY_RECIPE_SPRITE, this.x, this.y, var6 * 25 + 8, var7 * 25 + 8);
-         var1.depthTreeUp();
 
          for(OverlayRecipeButton var10 : this.recipeButtons) {
             var10.render(var1, var2, var3, var4);
          }
 
-         var1.depthTreeBack();
       }
    }
 
@@ -265,7 +263,6 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
          float var5 = (float)(this.getX() + 2);
          float var6 = (float)(this.getY() + 2);
-         var1.depthTreeUp();
 
          for(Pos var8 : this.slots) {
             var1.pose().pushMatrix();
@@ -276,7 +273,6 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
             var1.pose().popMatrix();
          }
 
-         var1.depthTreeBack();
       }
 
       protected static record Pos(int x, int y, List<ItemStack> ingredients) {

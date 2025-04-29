@@ -3,7 +3,6 @@ package net.minecraft.world.entity;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -21,8 +20,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
@@ -31,6 +28,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Bee;
@@ -172,6 +170,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.pathfinder.NodeEvaluator;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -565,7 +565,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (T)(!this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1));
    }
 
-   public static Optional<Entity> create(CompoundTag var0, Level var1, EntitySpawnReason var2) {
+   public static Optional<Entity> create(ValueInput var0, Level var1, EntitySpawnReason var2) {
       return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getStringOr("id", "[invalid]")));
    }
 
@@ -589,17 +589,22 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.dimensions;
    }
 
-   public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return var0.read("id", CODEC);
+   public static Optional<EntityType<?>> by(ValueInput var0) {
+      return var0.<EntityType<?>>read("id", CODEC);
    }
 
    @Nullable
    public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
-      return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> {
-         ListTag var5 = var0.getListOrEmpty("Passengers");
+      try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(LOGGER)) {
+         return loadEntityRecursive(TagValueInput.create(var4, var1.registryAccess(), var0), var1, var2, var3);
+      }
+   }
 
-         for(int var6 = 0; var6 < var5.size(); ++var6) {
-            Entity var7 = loadEntityRecursive(var5.getCompoundOrEmpty(var6), var1, var2, var3);
+   @Nullable
+   public static Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
+      return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> {
+         for(ValueInput var6 : var0.childrenListOrEmpty("Passengers")) {
+            Entity var7 = loadEntityRecursive(var6, var1, var2, var3);
             if (var7 != null) {
                var7.startRiding(var4, true);
             }
@@ -609,14 +614,14 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       }).orElse((Object)null);
    }
 
-   public static Stream<Entity> loadEntitiesRecursive(List<? extends Tag> var0, Level var1, EntitySpawnReason var2) {
-      return var0.stream().flatMap((var0x) -> var0x.asCompound().stream()).mapMulti((var2x, var3) -> loadEntityRecursive(var2x, var1, var2, (var1x) -> {
+   public static Stream<Entity> loadEntitiesRecursive(ValueInput.ValueInputList var0, Level var1, EntitySpawnReason var2) {
+      return var0.stream().mapMulti((var2x, var3) -> loadEntityRecursive((ValueInput)var2x, var1, var2, (var1x) -> {
             var3.accept(var1x);
             return var1x;
          }));
    }
 
-   private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1, EntitySpawnReason var2) {
+   private static Optional<Entity> loadStaticEntity(ValueInput var0, Level var1, EntitySpawnReason var2) {
       try {
          return create(var0, var1, var2);
       } catch (RuntimeException var4) {

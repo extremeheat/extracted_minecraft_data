@@ -3,7 +3,6 @@ package net.minecraft.world.entity.boss.enderdragon;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -18,6 +17,8 @@ import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class EndCrystal extends Entity {
    private static final EntityDataAccessor<Optional<BlockPos>> DATA_BEAM_TARGET;
@@ -58,12 +59,12 @@ public class EndCrystal extends Entity {
 
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.storeNullable("beam_target", BlockPos.CODEC, this.getBeamTarget());
       var1.putBoolean("ShowBottom", this.showsBottom());
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.setBeamTarget((BlockPos)var1.read("beam_target", BlockPos.CODEC).orElse((Object)null));
       this.setShowBottom(var1.getBooleanOr("ShowBottom", true));
    }

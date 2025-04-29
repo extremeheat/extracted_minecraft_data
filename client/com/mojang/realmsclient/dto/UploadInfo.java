@@ -2,7 +2,6 @@ package com.mojang.realmsclient.dto;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.net.URI;
@@ -10,6 +9,7 @@ import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class UploadInfo extends ValueObject {
@@ -32,20 +32,19 @@ public class UploadInfo extends ValueObject {
    @Nullable
    public static UploadInfo parse(String var0) {
       try {
-         JsonParser var1 = new JsonParser();
-         JsonObject var2 = var1.parse(var0).getAsJsonObject();
-         String var3 = JsonUtils.getStringOr("uploadEndpoint", var2, (String)null);
-         if (var3 != null) {
-            int var4 = JsonUtils.getIntOr("port", var2, -1);
-            URI var5 = assembleUri(var3, var4);
-            if (var5 != null) {
-               boolean var6 = JsonUtils.getBooleanOr("worldClosed", var2, false);
-               String var7 = JsonUtils.getStringOr("token", var2, (String)null);
-               return new UploadInfo(var6, var7, var5);
+         JsonObject var1 = LenientJsonParser.parse(var0).getAsJsonObject();
+         String var2 = JsonUtils.getStringOr("uploadEndpoint", var1, (String)null);
+         if (var2 != null) {
+            int var3 = JsonUtils.getIntOr("port", var1, -1);
+            URI var4 = assembleUri(var2, var3);
+            if (var4 != null) {
+               boolean var5 = JsonUtils.getBooleanOr("worldClosed", var1, false);
+               String var6 = JsonUtils.getStringOr("token", var1, (String)null);
+               return new UploadInfo(var5, var6, var4);
             }
          }
-      } catch (Exception var8) {
-         LOGGER.error("Could not parse UploadInfo: {}", var8.getMessage());
+      } catch (Exception var7) {
+         LOGGER.error("Could not parse UploadInfo: {}", var7.getMessage());
       }
 
       return null;

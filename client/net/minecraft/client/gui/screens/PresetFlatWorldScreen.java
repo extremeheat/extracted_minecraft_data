@@ -208,9 +208,9 @@ public class PresetFlatWorldScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 8, 16777215);
-      var1.drawString(this.font, (Component)this.shareText, 51, 30, 10526880);
-      var1.drawString(this.font, (Component)this.listText, 51, 68, 10526880);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 8, -1);
+      var1.drawString(this.font, (Component)this.shareText, 51, 30, -6250336);
+      var1.drawString(this.font, (Component)this.listText, 51, 68, -6250336);
       this.export.render(var1, var2, var3, var4);
    }
 

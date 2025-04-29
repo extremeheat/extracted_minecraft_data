@@ -44,7 +44,7 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.cause(), ".cause");
+         var1.validateEntity(this.cause(), "cause");
       }
 
       public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3, @Nullable LootContext var4) {

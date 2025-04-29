@@ -8,12 +8,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -60,6 +57,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
@@ -169,21 +168,19 @@ public class EnderMan extends Monster implements NeutralMob {
       super.onSyncedDataUpdated(var1);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       BlockState var2 = this.getCarriedBlock();
       if (var2 != null) {
-         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("carriedBlockState", BlockState.CODEC, var3, var2);
+         var1.store("carriedBlockState", BlockState.CODEC, var2);
       }
 
       this.addPersistentAngerSaveData(var1);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setCarriedBlock((BlockState)var1.read("carriedBlockState", BlockState.CODEC, var2).filter((var0) -> !var0.isAir()).orElse((Object)null));
+      this.setCarriedBlock((BlockState)var1.read("carriedBlockState", BlockState.CODEC).filter((var0) -> !var0.isAir()).orElse((Object)null));
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 

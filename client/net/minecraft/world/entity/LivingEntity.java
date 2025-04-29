@@ -3,13 +3,14 @@ package net.minecraft.world.entity;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JavaOps;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
@@ -42,9 +43,7 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
@@ -55,7 +54,6 @@ import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
@@ -124,6 +122,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -177,6 +177,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public static final float DEFAULT_BABY_SCALE = 0.5F;
    public static final String ATTRIBUTES_FIELD = "attributes";
    public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM;
+   private static final Dynamic<?> EMPTY_BRAIN;
    private final AttributeMap attributes;
    private final CombatTracker combatTracker = new CombatTracker(this);
    private final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
@@ -256,8 +257,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.reapplyPosition();
       this.setYRot((float)(Math.random() * 6.2831854820251465));
       this.yHeadRot = this.getYRot();
-      NbtOps var3 = NbtOps.INSTANCE;
-      this.brain = this.makeBrain(new Dynamic(var3, (Tag)var3.createMap(ImmutableMap.of(var3.createString("memories"), (Tag)var3.emptyMap()))));
+      this.brain = this.makeBrain(EMPTY_BRAIN);
    }
 
    @Contract(
@@ -681,24 +681,23 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.activeEffects.clear();
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.putFloat("Health", this.getHealth());
       var1.putShort("HurtTime", (short)this.hurtTime);
       var1.putInt("HurtByTimestamp", this.lastHurtByMobTimestamp);
       var1.putShort("DeathTime", (short)this.deathTime);
       var1.putFloat("AbsorptionAmount", this.getAbsorptionAmount());
-      var1.put("attributes", this.getAttributes().save());
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.store("attributes", AttributeInstance.Packed.LIST_CODEC, this.getAttributes().pack());
       if (!this.activeEffects.isEmpty()) {
-         var1.store("active_effects", MobEffectInstance.CODEC.listOf(), var2, List.copyOf(this.activeEffects.values()));
+         var1.store("active_effects", MobEffectInstance.CODEC.listOf(), List.copyOf(this.activeEffects.values()));
       }
 
       var1.putBoolean("FallFlying", this.isFallFlying());
       this.getSleepingPos().ifPresent((var1x) -> var1.store("sleeping_pos", BlockPos.CODEC, var1x));
-      DataResult var3 = this.brain.serializeStart(NbtOps.INSTANCE);
+      DataResult var2 = this.brain.serializeStart(NbtOps.INSTANCE).map((var0) -> new Dynamic(NbtOps.INSTANCE, var0));
       Logger var10001 = LOGGER;
       java.util.Objects.requireNonNull(var10001);
-      var3.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("Brain", var1x));
+      var2.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.store("Brain", Codec.PASSTHROUGH, var1x));
       if (this.lastHurtByPlayer != null) {
          this.lastHurtByPlayer.store(var1, "last_hurt_by_player");
          var1.putInt("last_hurt_by_player_memory_time", this.lastHurtByPlayerMemoryTime);
@@ -710,11 +709,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       if (!this.equipment.isEmpty()) {
-         var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
+         var1.store("equipment", EntityEquipment.CODEC, this.equipment);
       }
 
       if (this.locatorBarIcon.hasData()) {
-         var1.store("locator_bar_icon", Waypoint.Icon.CODEC, var2, this.locatorBarIcon);
+         var1.store("locator_bar_icon", Waypoint.Icon.CODEC, this.locatorBarIcon);
       }
 
    }
@@ -736,21 +735,20 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.internalSetAbsorptionAmount(var1.getFloatOr("AbsorptionAmount", 0.0F));
       if (this.level() != null && !this.level().isClientSide) {
-         Optional var10000 = var1.getList("attributes");
+         Optional var10000 = var1.read("attributes", AttributeInstance.Packed.LIST_CODEC);
          AttributeMap var10001 = this.getAttributes();
          java.util.Objects.requireNonNull(var10001);
-         var10000.ifPresent(var10001::load);
+         var10000.ifPresent(var10001::apply);
       }
 
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      List var3 = (List)var1.read("active_effects", MobEffectInstance.CODEC.listOf(), var2).orElse(List.of());
+      List var2 = (List)var1.read("active_effects", MobEffectInstance.CODEC.listOf()).orElse(List.of());
       this.activeEffects.clear();
 
-      for(MobEffectInstance var5 : var3) {
-         this.activeEffects.put(var5.getEffect(), var5);
+      for(MobEffectInstance var4 : var2) {
+         this.activeEffects.put(var4.getEffect(), var4);
       }
 
       this.setHealth(var1.getFloatOr("Health", this.getMaxHealth()));
@@ -775,13 +773,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
 
       }, this::clearSleepingPos);
-      var1.getCompound("Brain").ifPresent((var1x) -> this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1x)));
+      var1.read("Brain", Codec.PASSTHROUGH).ifPresent((var1x) -> this.brain = this.makeBrain(var1x));
       this.lastHurtByPlayer = EntityReference.<Player>read(var1, "last_hurt_by_player");
       this.lastHurtByPlayerMemoryTime = var1.getIntOr("last_hurt_by_player_memory_time", 0);
       this.lastHurtByMob = EntityReference.<LivingEntity>read(var1, "last_hurt_by_mob");
       this.lastHurtByMobTimestamp = var1.getIntOr("ticks_since_last_hurt_by_mob", 0) + this.tickCount;
-      this.equipment.setAll((EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new));
-      this.locatorBarIcon = (Waypoint.Icon)var1.read("locator_bar_icon", Waypoint.Icon.CODEC, var2).orElseGet(Waypoint.Icon::new);
+      this.equipment.setAll((EntityEquipment)var1.read("equipment", EntityEquipment.CODEC).orElseGet(EntityEquipment::new));
+      this.locatorBarIcon = (Waypoint.Icon)var1.read("locator_bar_icon", Waypoint.Icon.CODEC).orElseGet(Waypoint.Icon::new);
    }
 
    protected void tickEffects() {
@@ -3723,6 +3721,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             return true;
          }
       };
+      EMPTY_BRAIN = new Dynamic(JavaOps.INSTANCE, Map.of("memories", Map.of()));
    }
 
    public static record Fallsounds(SoundEvent small, SoundEvent big) {

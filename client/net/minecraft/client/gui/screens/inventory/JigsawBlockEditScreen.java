@@ -186,20 +186,20 @@ public class JigsawBlockEditScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawString(this.font, (Component)POOL_LABEL, this.width / 2 - 153, 10, 10526880);
+      var1.drawString(this.font, (Component)POOL_LABEL, this.width / 2 - 153, 10, -6250336);
       this.poolEdit.render(var1, var2, var3, var4);
-      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 45, 10526880);
+      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 45, -6250336);
       this.nameEdit.render(var1, var2, var3, var4);
-      var1.drawString(this.font, (Component)TARGET_LABEL, this.width / 2 - 153, 80, 10526880);
+      var1.drawString(this.font, (Component)TARGET_LABEL, this.width / 2 - 153, 80, -6250336);
       this.targetEdit.render(var1, var2, var3, var4);
-      var1.drawString(this.font, (Component)FINAL_STATE_LABEL, this.width / 2 - 153, 115, 10526880);
+      var1.drawString(this.font, (Component)FINAL_STATE_LABEL, this.width / 2 - 153, 115, -6250336);
       this.finalStateEdit.render(var1, var2, var3, var4);
-      var1.drawString(this.font, (Component)SELECTION_PRIORITY_LABEL, this.width / 2 - 153, 150, 10526880);
+      var1.drawString(this.font, (Component)SELECTION_PRIORITY_LABEL, this.width / 2 - 153, 150, -6250336);
       this.placementPriorityEdit.render(var1, var2, var3, var4);
-      var1.drawString(this.font, (Component)PLACEMENT_PRIORITY_LABEL, this.width / 2 - 50, 150, 10526880);
+      var1.drawString(this.font, (Component)PLACEMENT_PRIORITY_LABEL, this.width / 2 - 50, 150, -6250336);
       this.selectionPriorityEdit.render(var1, var2, var3, var4);
       if (JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical()) {
-         var1.drawString(this.font, (Component)JOINT_LABEL, this.width / 2 + 53, 150, 10526880);
+         var1.drawString(this.font, (Component)JOINT_LABEL, this.width / 2 + 53, 150, -6250336);
       }
 
    }

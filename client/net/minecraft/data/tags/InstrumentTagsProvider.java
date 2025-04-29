@@ -8,7 +8,7 @@ import net.minecraft.tags.InstrumentTags;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.Instruments;
 
-public class InstrumentTagsProvider extends TagsProvider<Instrument> {
+public class InstrumentTagsProvider extends KeyTagProvider<Instrument> {
    public InstrumentTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super(var1, Registries.INSTRUMENT, var2);
    }

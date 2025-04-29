@@ -99,7 +99,7 @@ import org.joml.Vector4f;
 public class DebugScreenOverlay {
    private static final float CROSSHAIR_SCALE = 0.007F;
    private static final int CROSHAIR_INDEX_COUNT = 18;
-   private static final int COLOR_GREY = 14737632;
+   private static final int COLOR_GREY = -2039584;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
    private static final int MARGIN_TOP = 2;
@@ -240,19 +240,16 @@ public class DebugScreenOverlay {
          }
       }
 
-      var1.depthTreeUp();
-
       for(int var10 = 0; var10 < var2.size(); ++var10) {
          String var11 = (String)var2.get(var10);
          if (!Strings.isNullOrEmpty(var11)) {
             int var12 = this.font.width(var11);
             int var13 = var3 ? 2 : var1.guiWidth() - 2 - var12;
             int var14 = 2 + var4 * var10;
-            var1.drawString(this.font, var11, var13, var14, 14737632, false);
+            var1.drawString(this.font, var11, var13, var14, -2039584, false);
          }
       }
 
-      var1.depthTreeBack();
    }
 
    protected List<String> getGameInformation() {

@@ -97,7 +97,6 @@ public class SubtitleOverlay implements SoundEventListener {
                   var1.pose().translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var29 * (var23 + 1)) * 1.0F);
                   var1.pose().scale(1.0F, 1.0F);
                   var1.fill(-var22 - 1, -var24 - 1, var22 + 1, var24 + 1, this.minecraft.options.getBackgroundColor(0.8F));
-                  var1.depthTreeUp();
                   int var28 = ARGB.color(255, var27, var27, var27);
                   if (!var21) {
                      if (var17 > 0.0) {
@@ -108,7 +107,6 @@ public class SubtitleOverlay implements SoundEventListener {
                   }
 
                   var1.drawString(this.minecraft.font, var14, -var26 / 2, -var24, var28);
-                  var1.depthTreeBack();
                   var1.pose().popMatrix();
                   ++var29;
                }

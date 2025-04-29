@@ -1,14 +1,15 @@
 package net.minecraft.world.level.chunk.status;
 
+import com.mojang.logging.LogUtils;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
 import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -20,8 +21,13 @@ import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
+import org.slf4j.Logger;
 
 public class ChunkStatusTasks {
+   private static final Logger LOGGER = LogUtils.getLogger();
+
    public ChunkStatusTasks() {
       super();
    }
@@ -138,7 +144,12 @@ public class ChunkStatusTasks {
          if (var3x instanceof ImposterProtoChunk var6) {
             var4 = var6.getWrapped();
          } else {
-            var4 = new LevelChunk(var5x, var3x, (var2) -> postLoadProtoChunk(var5x, var3x.getEntities()));
+            var4 = new LevelChunk(var5x, var3x, (var3xx) -> {
+               try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(var3.problemPath(), LOGGER)) {
+                  postLoadProtoChunk(var5x, TagValueInput.create(var4, var5x.registryAccess(), (List)var3x.getEntities()));
+               }
+
+            });
             var5.replaceProtoChunk(new ImposterProtoChunk(var4, false));
          }
 
@@ -153,7 +164,7 @@ public class ChunkStatusTasks {
       }, var0.mainThreadExecutor());
    }
 
-   private static void postLoadProtoChunk(ServerLevel var0, List<CompoundTag> var1) {
+   private static void postLoadProtoChunk(ServerLevel var0, ValueInput.ValueInputList var1) {
       if (!var1.isEmpty()) {
          var0.addWorldGenChunkEntities(EntityType.loadEntitiesRecursive(var1, var0, EntitySpawnReason.LOAD));
       }

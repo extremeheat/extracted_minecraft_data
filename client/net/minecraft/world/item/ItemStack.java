@@ -23,7 +23,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
@@ -34,8 +33,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -275,10 +272,6 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public static Optional<ItemStack> parse(HolderLookup.Provider var0, Tag var1) {
-      return CODEC.parse(var0.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0x) -> LOGGER.error("Tried to load invalid item: '{}'", var0x));
-   }
-
    public boolean isEmpty() {
       return this == EMPTY || this.item == Items.AIR || this.count <= 0;
    }
@@ -392,22 +385,6 @@ public final class ItemStack implements DataComponentHolder {
       }
 
       return var6;
-   }
-
-   public Tag save(HolderLookup.Provider var1, Tag var2) {
-      if (this.isEmpty()) {
-         throw new IllegalStateException("Cannot encode empty ItemStack");
-      } else {
-         return (Tag)CODEC.encode(this, var1.createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow();
-      }
-   }
-
-   public Tag save(HolderLookup.Provider var1) {
-      if (this.isEmpty()) {
-         throw new IllegalStateException("Cannot encode empty ItemStack");
-      } else {
-         return (Tag)CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this).getOrThrow();
-      }
    }
 
    public int getMaxStackSize() {

@@ -20,10 +20,10 @@ public class MoveTowardsRestrictionGoal extends Goal {
    }
 
    public boolean canUse() {
-      if (this.mob.isWithinRestriction()) {
+      if (this.mob.isWithinHome()) {
          return false;
       } else {
-         Vec3 var1 = DefaultRandomPos.getPosTowards(this.mob, 16, 7, Vec3.atBottomCenterOf(this.mob.getRestrictCenter()), 1.5707963705062866);
+         Vec3 var1 = DefaultRandomPos.getPosTowards(this.mob, 16, 7, Vec3.atBottomCenterOf(this.mob.getHomePosition()), 1.5707963705062866);
          if (var1 == null) {
             return false;
          } else {

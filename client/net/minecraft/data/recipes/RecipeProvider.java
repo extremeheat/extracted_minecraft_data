@@ -223,7 +223,7 @@ public abstract class RecipeProvider {
    }
 
    protected void dryGhast(ItemLike var1) {
-      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 1).define('#', Items.GHAST_TEAR).define('X', Items.BONE_BLOCK).pattern("###").pattern("#X#").pattern("###").group("dry_ghast").unlockedBy(getHasName(Items.GHAST_TEAR), this.has(Items.GHAST_TEAR)).save(this.output);
+      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 1).define('#', Items.GHAST_TEAR).define('X', Items.SOUL_SAND).pattern("###").pattern("#X#").pattern("###").group("dry_ghast").unlockedBy(getHasName(Items.GHAST_TEAR), this.has(Items.GHAST_TEAR)).save(this.output);
    }
 
    protected void harness(ItemLike var1, ItemLike var2) {

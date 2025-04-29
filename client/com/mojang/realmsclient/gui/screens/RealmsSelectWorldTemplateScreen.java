@@ -224,7 +224,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var9 = this.width / 2 - var8 / 2;
 
          for(TextRenderingUtils.LineSegment var11 : var6.segments) {
-            int var12 = var11.isLink() ? 3368635 : -1;
+            int var12 = var11.isLink() ? -13408581 : -1;
             String var13 = var11.renderedText();
             var1.drawString(this.font, var13, var9, var7, var12);
             int var14 = var9 + this.font.width(var13);
@@ -349,7 +349,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var13 = var4 + 45 + 20;
          int var14 = var3 + 5;
          var1.drawString(RealmsSelectWorldTemplateScreen.this.font, (String)this.template.name, var13, var14, -1);
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, var4 + var5 - var12 - 5, var14, 7105644);
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, var4 + var5 - var12 - 5, var14, -9671572);
          Font var10001 = RealmsSelectWorldTemplateScreen.this.font;
          String var10002 = this.template.author;
          Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
@@ -359,7 +359,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             var10002 = this.template.recommendedPlayers;
             int var10004 = var3 + var6;
             Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
-            var1.drawString(var10001, var10002, var13, var10004 - 9 / 2 - 5, 5000268);
+            var1.drawString(var10001, var10002, var13, var10004 - 9 / 2 - 5, -11776948);
          }
 
       }

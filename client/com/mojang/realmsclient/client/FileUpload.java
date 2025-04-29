@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.worldupload.RealmsUploadCanceledException;
 import com.mojang.realmsclient.dto.UploadInfo;
@@ -20,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.User;
+import net.minecraft.util.LenientJsonParser;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
@@ -148,11 +148,10 @@ public class FileUpload {
          String var4 = EntityUtils.toString(var1.getEntity(), "UTF-8");
          if (var4 != null) {
             try {
-               JsonParser var5 = new JsonParser();
-               JsonElement var6 = var5.parse(var4).getAsJsonObject().get("errorMsg");
-               Optional var7 = Optional.ofNullable(var6).map(JsonElement::getAsString);
-               var2.withErrorMessage((String)var7.orElse((Object)null));
-            } catch (Exception var8) {
+               JsonElement var5 = LenientJsonParser.parse(var4).getAsJsonObject().get("errorMsg");
+               Optional var6 = Optional.ofNullable(var5).map(JsonElement::getAsString);
+               var2.withErrorMessage((String)var6.orElse((Object)null));
+            } catch (Exception var7) {
             }
          }
       }

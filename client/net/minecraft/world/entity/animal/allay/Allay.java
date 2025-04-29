@@ -12,13 +12,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -67,6 +64,8 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Allay extends PathfinderMob implements InventoryCarrier, VibrationSystem {
@@ -392,19 +391,17 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       return false;
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      this.writeInventoryToTag(var1, this.registryAccess());
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("listener", VibrationSystem.Data.CODEC, var2, this.vibrationData);
+      this.writeInventoryToTag(var1);
+      var1.store("listener", VibrationSystem.Data.CODEC, this.vibrationData);
       var1.putLong("DuplicationCooldown", this.duplicationCooldown);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.readInventoryFromTag(var1, this.registryAccess());
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var2).orElseGet(VibrationSystem.Data::new);
+      this.readInventoryFromTag(var1);
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC).orElseGet(VibrationSystem.Data::new);
       this.setDuplicationCooldown((long)var1.getIntOr("DuplicationCooldown", 0));
    }
 

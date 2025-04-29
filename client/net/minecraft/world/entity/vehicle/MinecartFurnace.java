@@ -2,7 +2,6 @@ package net.minecraft.world.entity.vehicle;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartFurnace extends AbstractMinecart {
@@ -111,14 +112,14 @@ public class MinecartFurnace extends AbstractMinecart {
       return InteractionResult.SUCCESS;
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putDouble("PushX", this.push.x);
       var1.putDouble("PushZ", this.push.z);
       var1.putShort("Fuel", (short)this.fuel);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       double var2 = var1.getDoubleOr("PushX", DEFAULT_PUSH.x);
       double var4 = var1.getDoubleOr("PushZ", DEFAULT_PUSH.z);

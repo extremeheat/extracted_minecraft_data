@@ -33,6 +33,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -481,11 +482,30 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.skyLightSources;
    }
 
+   public static ProblemReporter.PathElement problemPath(ChunkPos var0) {
+      return new ChunkPathElement(var0);
+   }
+
+   public ProblemReporter.PathElement problemPath() {
+      return problemPath(this.getPos());
+   }
+
    public static record PackedTicks(List<SavedTick<Block>> blocks, List<SavedTick<Fluid>> fluids) {
       public PackedTicks(List<SavedTick<Block>> var1, List<SavedTick<Fluid>> var2) {
          super();
          this.blocks = var1;
          this.fluids = var2;
+      }
+   }
+
+   static record ChunkPathElement(ChunkPos pos) implements ProblemReporter.PathElement {
+      ChunkPathElement(ChunkPos var1) {
+         super();
+         this.pos = var1;
+      }
+
+      public String get() {
+         return "chunk@" + String.valueOf(this.pos);
       }
    }
 }

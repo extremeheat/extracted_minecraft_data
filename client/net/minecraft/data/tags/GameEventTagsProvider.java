@@ -11,7 +11,7 @@ import net.minecraft.tags.GameEventTags;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 
-public class GameEventTagsProvider extends TagsProvider<GameEvent> {
+public class GameEventTagsProvider extends KeyTagProvider<GameEvent> {
    @VisibleForTesting
    static final List<ResourceKey<GameEvent>> VIBRATIONS_EXCEPT_FLAP;
 

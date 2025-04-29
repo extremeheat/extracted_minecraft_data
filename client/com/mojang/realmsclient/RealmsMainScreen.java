@@ -576,7 +576,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       switch (RealmsClient.ENVIRONMENT) {
          case STAGE -> this.renderEnvironment(var1, "STAGE!", -256);
-         case LOCAL -> this.renderEnvironment(var1, "LOCAL!", 8388479);
+         case LOCAL -> this.renderEnvironment(var1, "LOCAL!", -8388737);
       }
 
    }
@@ -649,9 +649,7 @@ public class RealmsMainScreen extends RealmsScreen {
       var1.pose().translate((float)(this.width / 2 - 25), 20.0F);
       var1.pose().rotate(-0.34906584F);
       var1.pose().scale(1.5F, 1.5F);
-      var1.depthTreeUp();
       var1.drawString(this.font, (String)var2, 0, 0, var3);
-      var1.depthTreeBack();
       var1.pose().popMatrix();
    }
 
@@ -939,9 +937,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.gridLayout.setPosition(var4, var3);
          this.updateEntryWidth(var5 - 4);
-         var1.depthTreeUp();
          this.children.forEach((var4x) -> var4x.render(var1, var7, var8, var10));
-         var1.depthTreeBack();
       }
 
       public boolean mouseClicked(double var1, double var3, int var5) {
@@ -1019,7 +1015,7 @@ public class RealmsMainScreen extends RealmsScreen {
          int var10000 = var3 + var6 / 2;
          Objects.requireNonNull(RealmsMainScreen.this.font);
          int var11 = var10000 - 9 / 2;
-         var1.drawString(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, var4 + 40 - 2, var11 - 5, 8388479);
+         var1.drawString(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, var4 + 40 - 2, var11 - 5, -8388737);
          var1.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server")), var4 + 40 - 2, var11 + 5, -8355712);
          this.tooltip.refreshTooltipForNextRenderPass(var1, var7, var8, var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
       }
@@ -1100,7 +1096,7 @@ public class RealmsMainScreen extends RealmsScreen {
             int var10000 = var3 + var6 / 2;
             Objects.requireNonNull(RealmsMainScreen.this.font);
             int var12 = var10000 - 9 / 2;
-            var1.drawString(RealmsMainScreen.this.font, RealmsMainScreen.SERVER_UNITIALIZED_TEXT, var4 + 40 - 2, var12, 8388479);
+            var1.drawString(RealmsMainScreen.this.font, RealmsMainScreen.SERVER_UNITIALIZED_TEXT, var4 + 40 - 2, var12, -8388737);
          } else {
             RealmsUtil.renderPlayerFace(var1, var4, var3, 32, this.serverData.ownerUUID);
             this.renderFirstLine(var1, var3, var4, var5, -1, this.serverData);
@@ -1208,9 +1204,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          super.renderWidget(var1, var2, var3, var4);
          if (this.active && this.notificationCount != 0) {
-            var1.depthTreeUp();
             this.drawNotificationCounter(var1);
-            var1.depthTreeBack();
          }
 
       }

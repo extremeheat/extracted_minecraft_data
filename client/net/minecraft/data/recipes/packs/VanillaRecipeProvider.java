@@ -425,7 +425,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.DECORATIONS, Blocks.JUKEBOX).define('#', ItemTags.PLANKS).define('X', Items.DIAMOND).pattern("###").pattern("#X#").pattern("###").unlockedBy("has_diamond", this.has(Items.DIAMOND)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.LADDER, 3).define('#', Items.STICK).pattern("# #").pattern("###").pattern("# #").unlockedBy("has_stick", this.has(Items.STICK)).save(this.output);
       this.nineBlockStorageRecipes(RecipeCategory.MISC, Items.LAPIS_LAZULI, RecipeCategory.BUILDING_BLOCKS, Items.LAPIS_BLOCK);
-      this.shaped(RecipeCategory.TOOLS, Items.LEAD, 2).define('~', Items.STRING).define('O', Items.SLIME_BALL).pattern("~~ ").pattern("~O ").pattern("  ~").unlockedBy("has_slime_ball", this.has(Items.SLIME_BALL)).save(this.output);
+      this.shaped(RecipeCategory.TOOLS, Items.LEAD, 2).define('~', Items.STRING).pattern("~~ ").pattern("~~ ").pattern("  ~").unlockedBy("has_string", this.has(Items.STRING)).save(this.output);
       this.twoByTwoPacker(RecipeCategory.MISC, Items.LEATHER, Items.RABBIT_HIDE);
       this.shaped(RecipeCategory.COMBAT, Items.LEATHER_BOOTS).define('X', Items.LEATHER).pattern("X X").pattern("X X").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.LEATHER_CHESTPLATE).define('X', Items.LEATHER).pattern("X X").pattern("XXX").pattern("XXX").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);

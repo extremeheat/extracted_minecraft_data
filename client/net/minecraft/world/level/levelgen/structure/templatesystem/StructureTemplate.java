@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,6 +29,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.Entity;
@@ -53,12 +55,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
+import org.slf4j.Logger;
 
 public class StructureTemplate {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final String PALETTE_TAG = "palette";
    public static final String PALETTE_LIST_TAG = "palettes";
    public static final String ENTITIES_TAG = "entities";
@@ -103,29 +109,33 @@ public class StructureTemplate {
          BlockPos var11 = new BlockPos(Math.max(var2.getX(), var6.getX()), Math.max(var2.getY(), var6.getY()), Math.max(var2.getZ(), var6.getZ()));
          this.size = var3;
 
-         for(BlockPos var13 : BlockPos.betweenClosed(var10, var11)) {
-            BlockPos var14 = var13.subtract(var10);
-            BlockState var15 = var1.getBlockState(var13);
-            if (var5 == null || !var15.is(var5)) {
-               BlockEntity var16 = var1.getBlockEntity(var13);
-               StructureBlockInfo var17;
-               if (var16 != null) {
-                  var17 = new StructureBlockInfo(var14, var15, var16.saveWithId(var1.registryAccess()));
-               } else {
-                  var17 = new StructureBlockInfo(var14, var15, (CompoundTag)null);
+         try (ProblemReporter.ScopedCollector var12 = new ProblemReporter.ScopedCollector(LOGGER)) {
+            for(BlockPos var14 : BlockPos.betweenClosed(var10, var11)) {
+               BlockPos var15 = var14.subtract(var10);
+               BlockState var16 = var1.getBlockState(var14);
+               if (var5 == null || !var16.is(var5)) {
+                  BlockEntity var17 = var1.getBlockEntity(var14);
+                  StructureBlockInfo var18;
+                  if (var17 != null) {
+                     TagValueOutput var19 = TagValueOutput.createWithContext(var12, var1.registryAccess());
+                     var17.saveWithId(var19);
+                     var18 = new StructureBlockInfo(var15, var16, var19.buildResult());
+                  } else {
+                     var18 = new StructureBlockInfo(var15, var16, (CompoundTag)null);
+                  }
+
+                  addToLists(var18, var7, var8, var9);
                }
-
-               addToLists(var17, var7, var8, var9);
             }
-         }
 
-         List var18 = buildInfoList(var7, var8, var9);
-         this.palettes.clear();
-         this.palettes.add(new Palette(var18));
-         if (var4) {
-            this.fillEntityList(var1, var10, var11);
-         } else {
-            this.entityInfoList.clear();
+            List var22 = buildInfoList(var7, var8, var9);
+            this.palettes.clear();
+            this.palettes.add(new Palette(var22));
+            if (var4) {
+               this.fillEntityList(var1, var10, var11, var12);
+            } else {
+               this.entityInfoList.clear();
+            }
          }
 
       }
@@ -154,22 +164,22 @@ public class StructureTemplate {
       return var4;
    }
 
-   private void fillEntityList(Level var1, BlockPos var2, BlockPos var3) {
-      List var4 = var1.getEntitiesOfClass(Entity.class, AABB.encapsulatingFullBlocks(var2, var3), (var0) -> !(var0 instanceof Player));
+   private void fillEntityList(Level var1, BlockPos var2, BlockPos var3, ProblemReporter var4) {
+      List var5 = var1.getEntitiesOfClass(Entity.class, AABB.encapsulatingFullBlocks(var2, var3), (var0) -> !(var0 instanceof Player));
       this.entityInfoList.clear();
 
-      for(Entity var6 : var4) {
-         Vec3 var7 = new Vec3(var6.getX() - (double)var2.getX(), var6.getY() - (double)var2.getY(), var6.getZ() - (double)var2.getZ());
-         CompoundTag var8 = new CompoundTag();
-         var6.save(var8);
-         BlockPos var9;
-         if (var6 instanceof Painting) {
-            var9 = ((Painting)var6).getPos().subtract(var2);
+      for(Entity var7 : var5) {
+         Vec3 var8 = new Vec3(var7.getX() - (double)var2.getX(), var7.getY() - (double)var2.getY(), var7.getZ() - (double)var2.getZ());
+         TagValueOutput var9 = TagValueOutput.createWithContext(var4.forChild(var7.problemPath()), var7.registryAccess());
+         var7.save(var9);
+         BlockPos var10;
+         if (var7 instanceof Painting var11) {
+            var10 = var11.getPos().subtract(var2);
          } else {
-            var9 = BlockPos.containing(var7);
+            var10 = BlockPos.containing(var8);
          }
 
-         this.entityInfoList.add(new StructureEntityInfo(var7, var9, var8.copy()));
+         this.entityInfoList.add(new StructureEntityInfo(var8, var10, var9.buildResult().copy()));
       }
 
    }
@@ -238,118 +248,121 @@ public class StructureTemplate {
             int var15 = -2147483648;
             int var16 = -2147483648;
             int var17 = -2147483648;
+            List var18 = processBlockInfos(var1, var2, var3, var4, var7);
 
-            for(StructureBlockInfo var20 : processBlockInfos(var1, var2, var3, var4, var7)) {
-               BlockPos var21 = var20.pos;
-               if (var8 == null || var8.isInside(var21)) {
-                  FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
-                  BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
-                  if (var20.nbt != null) {
-                     var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 820);
-                  }
+            try (ProblemReporter.ScopedCollector var19 = new ProblemReporter.ScopedCollector(LOGGER)) {
+               for(StructureBlockInfo var21 : var18) {
+                  BlockPos var22 = var21.pos;
+                  if (var8 == null || var8.isInside(var22)) {
+                     FluidState var23 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var22) : null;
+                     BlockState var24 = var21.state.mirror(var4.getMirror()).rotate(var4.getRotation());
+                     if (var21.nbt != null) {
+                        var1.setBlock(var22, Blocks.BARRIER.defaultBlockState(), 820);
+                     }
 
-                  if (var1.setBlock(var21, var23, var6)) {
-                     var12 = Math.min(var12, var21.getX());
-                     var13 = Math.min(var13, var21.getY());
-                     var14 = Math.min(var14, var21.getZ());
-                     var15 = Math.max(var15, var21.getX());
-                     var16 = Math.max(var16, var21.getY());
-                     var17 = Math.max(var17, var21.getZ());
-                     var11.add(Pair.of(var21, var20.nbt));
-                     if (var20.nbt != null) {
-                        BlockEntity var24 = var1.getBlockEntity(var21);
-                        if (var24 != null) {
-                           if (var24 instanceof RandomizableContainer) {
-                              var20.nbt.putLong("LootTableSeed", var5.nextLong());
+                     if (var1.setBlock(var22, var24, var6)) {
+                        var12 = Math.min(var12, var22.getX());
+                        var13 = Math.min(var13, var22.getY());
+                        var14 = Math.min(var14, var22.getZ());
+                        var15 = Math.max(var15, var22.getX());
+                        var16 = Math.max(var16, var22.getY());
+                        var17 = Math.max(var17, var22.getZ());
+                        var11.add(Pair.of(var22, var21.nbt));
+                        if (var21.nbt != null) {
+                           BlockEntity var25 = var1.getBlockEntity(var22);
+                           if (var25 != null) {
+                              if (var25 instanceof RandomizableContainer) {
+                                 var21.nbt.putLong("LootTableSeed", var5.nextLong());
+                              }
+
+                              var25.loadWithComponents(TagValueInput.create(var19.forChild(var25.problemPath()), var1.registryAccess(), var21.nbt));
                            }
+                        }
 
-                           var24.loadWithComponents(var20.nbt, var1.registryAccess());
+                        if (var23 != null) {
+                           if (var24.getFluidState().isSource()) {
+                              var10.add(var22);
+                           } else if (var24.getBlock() instanceof LiquidBlockContainer) {
+                              ((LiquidBlockContainer)var24.getBlock()).placeLiquid(var1, var22, var24, var23);
+                              if (!var23.isSource()) {
+                                 var9.add(var22);
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+
+               boolean var31 = true;
+               Direction[] var32 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+
+               while(var31 && !var9.isEmpty()) {
+                  var31 = false;
+                  Iterator var33 = var9.iterator();
+
+                  while(var33.hasNext()) {
+                     BlockPos var36 = (BlockPos)var33.next();
+                     FluidState var39 = var1.getFluidState(var36);
+
+                     for(int var42 = 0; var42 < var32.length && !var39.isSource(); ++var42) {
+                        BlockPos var26 = var36.relative(var32[var42]);
+                        FluidState var27 = var1.getFluidState(var26);
+                        if (var27.isSource() && !var10.contains(var26)) {
+                           var39 = var27;
                         }
                      }
 
-                     if (var22 != null) {
-                        if (var23.getFluidState().isSource()) {
-                           var10.add(var21);
-                        } else if (var23.getBlock() instanceof LiquidBlockContainer) {
-                           ((LiquidBlockContainer)var23.getBlock()).placeLiquid(var1, var21, var23, var22);
-                           if (!var22.isSource()) {
-                              var9.add(var21);
-                           }
+                     if (var39.isSource()) {
+                        BlockState var43 = var1.getBlockState(var36);
+                        Block var47 = var43.getBlock();
+                        if (var47 instanceof LiquidBlockContainer) {
+                           ((LiquidBlockContainer)var47).placeLiquid(var1, var36, var43, var39);
+                           var31 = true;
+                           var33.remove();
                         }
                      }
                   }
                }
-            }
 
-            boolean var28 = true;
-            Direction[] var29 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
-
-            while(var28 && !var9.isEmpty()) {
-               var28 = false;
-               Iterator var30 = var9.iterator();
-
-               while(var30.hasNext()) {
-                  BlockPos var33 = (BlockPos)var30.next();
-                  FluidState var36 = var1.getFluidState(var33);
-
-                  for(int var39 = 0; var39 < var29.length && !var36.isSource(); ++var39) {
-                     BlockPos var25 = var33.relative(var29[var39]);
-                     FluidState var26 = var1.getFluidState(var25);
-                     if (var26.isSource() && !var10.contains(var25)) {
-                        var36 = var26;
-                     }
-                  }
-
-                  if (var36.isSource()) {
-                     BlockState var40 = var1.getBlockState(var33);
-                     Block var44 = var40.getBlock();
-                     if (var44 instanceof LiquidBlockContainer) {
-                        ((LiquidBlockContainer)var44).placeLiquid(var1, var33, var40, var36);
-                        var28 = true;
-                        var30.remove();
-                     }
-                  }
-               }
-            }
-
-            if (var12 <= var15) {
-               if (!var4.getKnownShape()) {
-                  BitSetDiscreteVoxelShape var31 = new BitSetDiscreteVoxelShape(var15 - var12 + 1, var16 - var13 + 1, var17 - var14 + 1);
-                  int var34 = var12;
-                  int var37 = var13;
-                  int var41 = var14;
-
-                  for(Pair var47 : var11) {
-                     BlockPos var27 = (BlockPos)var47.getFirst();
-                     ((DiscreteVoxelShape)var31).fill(var27.getX() - var34, var27.getY() - var37, var27.getZ() - var41);
-                  }
-
-                  updateShapeAtEdge(var1, var6, var31, var34, var37, var41);
-               }
-
-               for(Pair var35 : var11) {
-                  BlockPos var38 = (BlockPos)var35.getFirst();
+               if (var12 <= var15) {
                   if (!var4.getKnownShape()) {
-                     BlockState var42 = var1.getBlockState(var38);
-                     BlockState var46 = Block.updateFromNeighbourShapes(var42, var1, var38);
-                     if (var42 != var46) {
-                        var1.setBlock(var38, var46, var6 & -2 | 16);
+                     BitSetDiscreteVoxelShape var34 = new BitSetDiscreteVoxelShape(var15 - var12 + 1, var16 - var13 + 1, var17 - var14 + 1);
+                     int var37 = var12;
+                     int var40 = var13;
+                     int var44 = var14;
+
+                     for(Pair var50 : var11) {
+                        BlockPos var28 = (BlockPos)var50.getFirst();
+                        ((DiscreteVoxelShape)var34).fill(var28.getX() - var37, var28.getY() - var40, var28.getZ() - var44);
                      }
 
-                     var1.updateNeighborsAt(var38, var46.getBlock());
+                     updateShapeAtEdge(var1, var6, var34, var37, var40, var44);
                   }
 
-                  if (var35.getSecond() != null) {
-                     BlockEntity var43 = var1.getBlockEntity(var38);
-                     if (var43 != null) {
-                        var43.setChanged();
+                  for(Pair var38 : var11) {
+                     BlockPos var41 = (BlockPos)var38.getFirst();
+                     if (!var4.getKnownShape()) {
+                        BlockState var45 = var1.getBlockState(var41);
+                        BlockState var49 = Block.updateFromNeighbourShapes(var45, var1, var41);
+                        if (var45 != var49) {
+                           var1.setBlock(var41, var49, var6 & -2 | 16);
+                        }
+
+                        var1.updateNeighborsAt(var41, var49.getBlock());
+                     }
+
+                     if (var38.getSecond() != null) {
+                        BlockEntity var46 = var1.getBlockEntity(var41);
+                        if (var46 != null) {
+                           var46.setChanged();
+                        }
                      }
                   }
                }
-            }
 
-            if (!var4.isIgnoreEntities()) {
-               this.placeEntities(var1, var2, var4.getMirror(), var4.getRotation(), var4.getRotationPivot(), var8, var4.shouldFinalizeEntities());
+               if (!var4.isIgnoreEntities()) {
+                  this.placeEntities(var1, var2, var4.getMirror(), var4.getRotation(), var4.getRotationPivot(), var8, var4.shouldFinalizeEntities(), var19);
+               }
             }
 
             return true;
@@ -408,25 +421,25 @@ public class StructureTemplate {
       return (List<StructureBlockInfo>)var6;
    }
 
-   private void placeEntities(ServerLevelAccessor var1, BlockPos var2, Mirror var3, Rotation var4, BlockPos var5, @Nullable BoundingBox var6, boolean var7) {
-      for(StructureEntityInfo var9 : this.entityInfoList) {
-         BlockPos var10 = transform(var9.blockPos, var3, var4, var5).offset(var2);
-         if (var6 == null || var6.isInside(var10)) {
-            CompoundTag var11 = var9.nbt.copy();
-            Vec3 var12 = transform(var9.pos, var3, var4, var5);
-            Vec3 var13 = var12.add((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-            ListTag var14 = new ListTag();
-            var14.add(DoubleTag.valueOf(var13.x));
-            var14.add(DoubleTag.valueOf(var13.y));
-            var14.add(DoubleTag.valueOf(var13.z));
-            var11.put("Pos", var14);
-            var11.remove("UUID");
-            createEntityIgnoreException(var1, var11).ifPresent((var5x) -> {
+   private void placeEntities(ServerLevelAccessor var1, BlockPos var2, Mirror var3, Rotation var4, BlockPos var5, @Nullable BoundingBox var6, boolean var7, ProblemReporter var8) {
+      for(StructureEntityInfo var10 : this.entityInfoList) {
+         BlockPos var11 = transform(var10.blockPos, var3, var4, var5).offset(var2);
+         if (var6 == null || var6.isInside(var11)) {
+            CompoundTag var12 = var10.nbt.copy();
+            Vec3 var13 = transform(var10.pos, var3, var4, var5);
+            Vec3 var14 = var13.add((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
+            ListTag var15 = new ListTag();
+            var15.add(DoubleTag.valueOf(var14.x));
+            var15.add(DoubleTag.valueOf(var14.y));
+            var15.add(DoubleTag.valueOf(var14.z));
+            var12.put("Pos", var15);
+            var12.remove("UUID");
+            createEntityIgnoreException(var8, var1, var12).ifPresent((var5x) -> {
                float var6 = var5x.rotate(var4);
                var6 += var5x.mirror(var3) - var5x.getYRot();
-               var5x.snapTo(var13.x, var13.y, var13.z, var6, var5x.getXRot());
+               var5x.snapTo(var14.x, var14.y, var14.z, var6, var5x.getXRot());
                if (var7 && var5x instanceof Mob) {
-                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
+                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var14)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                }
 
                var1.addFreshEntityWithPassengers(var5x);
@@ -436,10 +449,10 @@ public class StructureTemplate {
 
    }
 
-   private static Optional<Entity> createEntityIgnoreException(ServerLevelAccessor var0, CompoundTag var1) {
+   private static Optional<Entity> createEntityIgnoreException(ProblemReporter var0, ServerLevelAccessor var1, CompoundTag var2) {
       try {
-         return EntityType.create(var1, var0.getLevel(), EntitySpawnReason.STRUCTURE);
-      } catch (Exception var3) {
+         return EntityType.create(TagValueInput.create(var0, var1.registryAccess(), var2), var1.getLevel(), EntitySpawnReason.STRUCTURE);
+      } catch (Exception var4) {
          return Optional.empty();
       }
    }

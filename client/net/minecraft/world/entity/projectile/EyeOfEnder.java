@@ -2,12 +2,9 @@ package net.minecraft.world.entity.projectile;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -18,6 +15,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeOfEnder extends Entity implements ItemSupplier {
@@ -155,14 +154,12 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("Item", ItemStack.CODEC, var2, this.getItem());
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      var1.store("Item", ItemStack.CODEC, this.getItem());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(this.getDefaultItem()));
+   protected void readAdditionalSaveData(ValueInput var1) {
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {

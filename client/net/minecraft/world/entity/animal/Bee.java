@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -89,6 +88,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Bee extends Animal implements NeutralMob, FlyingAnimal {
@@ -193,7 +194,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       this.targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal(this, true));
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.storeNullable("hive_pos", BlockPos.CODEC, this.hivePos);
       var1.storeNullable("flower_pos", BlockPos.CODEC, this.savedFlowerPos);
@@ -205,7 +206,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       this.addPersistentAngerSaveData(var1);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setHasNectar(var1.getBooleanOr("HasNectar", false));
       this.setHasStung(var1.getBooleanOr("HasStung", false));
@@ -797,7 +798,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
 
       public boolean canBeeUse() {
-         return Bee.this.hivePos != null && !Bee.this.isTooFarAway(Bee.this.hivePos) && !Bee.this.hasRestriction() && Bee.this.wantsToEnterHive() && !this.hasReachedTarget(Bee.this.hivePos) && Bee.this.level().getBlockState(Bee.this.hivePos).is(BlockTags.BEEHIVES);
+         return Bee.this.hivePos != null && !Bee.this.isTooFarAway(Bee.this.hivePos) && !Bee.this.hasHome() && Bee.this.wantsToEnterHive() && !this.hasReachedTarget(Bee.this.hivePos) && Bee.this.level().getBlockState(Bee.this.hivePos).is(BlockTags.BEEHIVES);
       }
 
       public boolean canBeeContinueToUse() {
@@ -900,7 +901,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
 
       public boolean canBeeUse() {
-         return Bee.this.savedFlowerPos != null && !Bee.this.hasRestriction() && this.wantsToGoToKnownFlower() && !Bee.this.closerThan(Bee.this.savedFlowerPos, 2);
+         return Bee.this.savedFlowerPos != null && !Bee.this.hasHome() && this.wantsToGoToKnownFlower() && !Bee.this.closerThan(Bee.this.savedFlowerPos, 2);
       }
 
       public boolean canBeeContinueToUse() {

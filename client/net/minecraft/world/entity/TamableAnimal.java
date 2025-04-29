@@ -6,7 +6,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -24,6 +23,8 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.scores.PlayerTeam;
 
 public abstract class TamableAnimal extends Animal implements OwnableEntity {
@@ -46,7 +47,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       var1.define(DATA_OWNERUUID_ID, Optional.empty());
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       EntityReference var2 = this.getOwnerReference();
       if (var2 != null) {
@@ -56,7 +57,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       var1.putBoolean("Sitting", this.orderedToSit);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       EntityReference var2 = EntityReference.readWithOldOwnerConversion(var1, "Owner", this.level());
       if (var2 != null) {

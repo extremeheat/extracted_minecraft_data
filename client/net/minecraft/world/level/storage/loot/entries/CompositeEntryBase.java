@@ -6,11 +6,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public abstract class CompositeEntryBase extends LootPoolEntryContainer {
+   public static final ProblemReporter.Problem NO_CHILDREN_PROBLEM = new ProblemReporter.Problem() {
+      public String description() {
+         return "Empty children list";
+      }
+   };
    protected final List<LootPoolEntryContainer> children;
    private final ComposableEntryContainer composedChildren;
 
@@ -23,11 +29,11 @@ public abstract class CompositeEntryBase extends LootPoolEntryContainer {
    public void validate(ValidationContext var1) {
       super.validate(var1);
       if (this.children.isEmpty()) {
-         var1.reportProblem("Empty children list");
+         var1.reportProblem(NO_CHILDREN_PROBLEM);
       }
 
       for(int var2 = 0; var2 < this.children.size(); ++var2) {
-         ((LootPoolEntryContainer)this.children.get(var2)).validate(var1.forChild(".entry[" + var2 + "]"));
+         ((LootPoolEntryContainer)this.children.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("children", var2)));
       }
 
    }

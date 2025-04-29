@@ -1,12 +1,16 @@
 package net.minecraft.world.entity.animal;
 
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueOutput;
+import org.slf4j.Logger;
 
 public abstract class ShoulderRidingEntity extends TamableAnimal {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int RIDE_COOLDOWN = 100;
    private int rideCooldownCounter;
 
@@ -15,15 +19,17 @@ public abstract class ShoulderRidingEntity extends TamableAnimal {
    }
 
    public boolean setEntityOnShoulder(ServerPlayer var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.putString("id", this.getEncodeId());
-      this.saveWithoutId(var2);
-      if (var1.setEntityOnShoulder(var2)) {
-         this.discard();
-         return true;
-      } else {
-         return false;
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, this.registryAccess());
+         this.saveWithoutId(var3);
+         var3.putString("id", this.getEncodeId());
+         if (var1.setEntityOnShoulder(var3.buildResult())) {
+            this.discard();
+            return true;
+         }
       }
+
+      return false;
    }
 
    public void tick() {

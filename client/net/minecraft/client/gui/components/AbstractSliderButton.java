@@ -57,12 +57,9 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
-      int var6 = this.active ? 16777215 : 10526880;
-      var1.depthTreeUp();
-      this.renderScrollingString(var1, var5.font, 2, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
-      var1.depthTreeBack(2);
+      int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
+      this.renderScrollingString(var1, var5.font, 2, var6);
    }
 
    public void onClick(double var1, double var3) {

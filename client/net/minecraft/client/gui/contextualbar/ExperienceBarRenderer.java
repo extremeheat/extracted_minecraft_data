@@ -25,7 +25,6 @@ public class ExperienceBarRenderer implements ContextualBarRenderer {
       if (var6 > 0) {
          int var7 = (int)(var3.experienceProgress * 183.0F);
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EXPERIENCE_BAR_BACKGROUND_SPRITE, var4, var5, 182, 5);
-         var1.depthTreeUp();
          if (var7 > 0) {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var4, var5, var7, 5);
          }

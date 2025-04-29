@@ -1,21 +1,8 @@
 package net.minecraft.network.chat;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import com.google.gson.stream.JsonReader;
 import com.mojang.brigadier.Message;
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.JsonOps;
-import java.io.StringReader;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +12,6 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.selector.SelectorPattern;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
@@ -231,71 +217,5 @@ public interface Component extends Message, FormattedText {
 
    static Component translationArg(URI var0) {
       return literal(var0.toString());
-   }
-
-   public static class Serializer {
-      private static final Gson GSON = (new GsonBuilder()).disableHtmlEscaping().create();
-
-      private Serializer() {
-         super();
-      }
-
-      static MutableComponent deserialize(JsonElement var0, HolderLookup.Provider var1) {
-         return (MutableComponent)ComponentSerialization.CODEC.parse(var1.createSerializationContext(JsonOps.INSTANCE), var0).getOrThrow(JsonParseException::new);
-      }
-
-      static JsonElement serialize(Component var0, HolderLookup.Provider var1) {
-         return (JsonElement)ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0).getOrThrow(JsonParseException::new);
-      }
-
-      public static String toJson(Component var0, HolderLookup.Provider var1) {
-         return GSON.toJson(serialize(var0, var1));
-      }
-
-      @Nullable
-      public static MutableComponent fromJson(String var0, HolderLookup.Provider var1) {
-         JsonElement var2 = JsonParser.parseString(var0);
-         return var2 == null ? null : deserialize(var2, var1);
-      }
-
-      @Nullable
-      public static MutableComponent fromJson(@Nullable JsonElement var0, HolderLookup.Provider var1) {
-         return var0 == null ? null : deserialize(var0, var1);
-      }
-
-      @Nullable
-      public static MutableComponent fromJsonLenient(String var0, HolderLookup.Provider var1) {
-         JsonReader var2 = new JsonReader(new StringReader(var0));
-         var2.setLenient(true);
-         JsonElement var3 = JsonParser.parseReader(var2);
-         return var3 == null ? null : deserialize(var3, var1);
-      }
-   }
-
-   public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
-      private final HolderLookup.Provider registries;
-
-      public SerializerAdapter(HolderLookup.Provider var1) {
-         super();
-         this.registries = var1;
-      }
-
-      public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return Component.Serializer.deserialize(var1, this.registries);
-      }
-
-      public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
-         return Component.Serializer.serialize(var1, this.registries);
-      }
-
-      // $FF: synthetic method
-      public JsonElement serialize(final Object var1, final Type var2, final JsonSerializationContext var3) {
-         return this.serialize((Component)var1, var2, var3);
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
-      }
    }
 }

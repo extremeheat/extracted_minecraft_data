@@ -24,9 +24,13 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 public final class CustomData {
@@ -90,34 +94,43 @@ public final class CustomData {
    }
 
    public void loadInto(Entity var1) {
-      CompoundTag var2 = var1.saveWithoutId(new CompoundTag());
-      UUID var3 = var1.getUUID();
-      var2.merge(this.tag);
-      var1.load(var2);
-      var1.setUUID(var3);
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
+         var1.saveWithoutId(var3);
+         CompoundTag var4 = var3.buildResult();
+         UUID var5 = var1.getUUID();
+         var4.merge(this.tag);
+         var1.load(TagValueInput.create(var2, var1.registryAccess(), var4));
+         var1.setUUID(var5);
+      }
+
    }
 
    public boolean loadInto(BlockEntity var1, HolderLookup.Provider var2) {
-      CompoundTag var3 = var1.saveCustomOnly(var2);
-      CompoundTag var4 = var3.copy();
-      var3.merge(this.tag);
-      if (!var3.equals(var4)) {
-         try {
-            var1.loadCustomOnly(var3, var2);
-            var1.setChanged();
-            return true;
-         } catch (Exception var8) {
-            LOGGER.warn("Failed to apply custom data to block entity at {}", var1.getBlockPos(), var8);
-
+      try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
+         TagValueOutput var4 = TagValueOutput.createWithContext(var3, var2);
+         var1.saveCustomOnly((ValueOutput)var4);
+         CompoundTag var5 = var4.buildResult();
+         CompoundTag var6 = var5.copy();
+         var5.merge(this.tag);
+         if (!var5.equals(var6)) {
             try {
-               var1.loadCustomOnly(var4, var2);
-            } catch (Exception var7) {
-               LOGGER.warn("Failed to rollback block entity at {} after failure", var1.getBlockPos(), var7);
+               var1.loadCustomOnly(TagValueInput.create(var3, var2, var5));
+               var1.setChanged();
+               return true;
+            } catch (Exception var11) {
+               LOGGER.warn("Failed to apply custom data to block entity at {}", var1.getBlockPos(), var11);
+
+               try {
+                  var1.loadCustomOnly(TagValueInput.create(var3.forChild(() -> "(rollback)"), var2, var6));
+               } catch (Exception var10) {
+                  LOGGER.warn("Failed to rollback block entity at {} after failure", var1.getBlockPos(), var10);
+               }
             }
          }
-      }
 
-      return false;
+         return false;
+      }
    }
 
    public <T> DataResult<CustomData> update(DynamicOps<Tag> var1, MapEncoder<T> var2, T var3) {

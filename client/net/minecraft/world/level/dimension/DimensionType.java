@@ -1,8 +1,6 @@
 package net.minecraft.world.level.dimension;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.nio.file.Path;
@@ -68,28 +66,6 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
          this.cloudHeight = var16;
          this.monsterSettings = var17;
       }
-   }
-
-   /** @deprecated */
-   @Deprecated
-   public static DataResult<ResourceKey<Level>> parseLegacy(Dynamic<?> var0) {
-      Optional var1 = var0.asNumber().result();
-      if (var1.isPresent()) {
-         int var2 = ((Number)var1.get()).intValue();
-         if (var2 == -1) {
-            return DataResult.success(Level.NETHER);
-         }
-
-         if (var2 == 0) {
-            return DataResult.success(Level.OVERWORLD);
-         }
-
-         if (var2 == 1) {
-            return DataResult.success(Level.END);
-         }
-      }
-
-      return Level.RESOURCE_KEY_CODEC.parse(var0);
    }
 
    public static double getTeleportationScale(DimensionType var0, DimensionType var1) {

@@ -23,6 +23,7 @@ import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.network.chat.CommonComponents;
@@ -79,7 +80,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
       var4.addChild(SpacerElement.height(2));
       this.deleteButton = (Button)var4.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var3x) -> var2.setScreen(RealmsPopups.warningPopupScreen(var1, Component.translatable("mco.configure.world.delete.question.line1"), (var1x) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
       var4.addChild(SpacerElement.height(2));
-      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(new FocusableTextWidget(200, Component.empty(), var5, false, false, 4));
+      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(new FocusableTextWidget(200, Component.empty(), var5, true, true, 4), LayoutSettings.defaults().alignHorizontallyCenter());
       this.subscriptionInfo.setMaxWidth(200);
       this.subscriptionInfo.setCentered(false);
       this.updateData(var3);
@@ -154,7 +155,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
 
       this.daysLeftWidget.setMessage(this.daysLeft);
       boolean var2 = RealmsMainScreen.isSnapshot() && var1.parentWorldName != null;
-      this.deleteButton.active = !var1.expired;
+      this.deleteButton.active = var1.expired;
       if (var2) {
          this.subscriptionInfo.setMessage(Component.translatable("mco.snapshot.subscription.info", var1.parentWorldName));
       } else {

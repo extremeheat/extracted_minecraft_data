@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster.piglin;
 import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,11 +18,14 @@ import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public abstract class AbstractPiglin extends Monster {
    protected static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION;
    public static final int CONVERSION_TIME = 300;
    private static final boolean DEFAULT_IMMUNE_TO_ZOMBIFICATION = false;
+   private static final boolean DEFAULT_PICK_UP_LOOT = true;
    private static final int DEFAULT_TIME_IN_OVERWORLD = 0;
    protected int timeInOverworld = 0;
 
@@ -57,18 +59,15 @@ public abstract class AbstractPiglin extends Monster {
       var1.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("IsImmuneToZombification", this.isImmuneToZombification());
       var1.putInt("TimeInOverworld", this.timeInOverworld);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      if (!var1.contains("CanPickUpLoot")) {
-         this.setCanPickUpLoot(true);
-      }
-
+      this.setCanPickUpLoot(var1.getBooleanOr("CanPickUpLoot", true));
       this.setImmuneToZombification(var1.getBooleanOr("IsImmuneToZombification", false));
       this.timeInOverworld = var1.getIntOr("TimeInOverworld", 0);
    }

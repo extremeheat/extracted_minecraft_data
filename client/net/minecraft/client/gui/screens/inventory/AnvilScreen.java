@@ -88,17 +88,17 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       super.renderLabels(var1, var2, var3);
       int var4 = ((AnvilMenu)this.menu).getCost();
       if (var4 > 0) {
-         int var5 = 8453920;
+         int var5 = -8323296;
          Object var6;
          if (var4 >= 40 && !this.minecraft.player.hasInfiniteMaterials()) {
             var6 = TOO_EXPENSIVE_TEXT;
-            var5 = 16736352;
+            var5 = -40864;
          } else if (!((AnvilMenu)this.menu).getSlot(2).hasItem()) {
             var6 = null;
          } else {
             var6 = Component.translatable("container.repair.cost", var4);
             if (!((AnvilMenu)this.menu).getSlot(2).mayPickup(this.player)) {
-               var5 = 16736352;
+               var5 = -40864;
             }
          }
 
@@ -106,9 +106,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
             int var7 = this.imageWidth - 8 - this.font.width((FormattedText)var6) - 2;
             boolean var8 = true;
             var1.fill(var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
-            var1.depthTreeUp();
             var1.drawString(this.font, (Component)var6, var7, 69, var5);
-            var1.depthTreeBack();
          }
       }
 
@@ -116,9 +114,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
-      var1.depthTreeBack();
    }
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {

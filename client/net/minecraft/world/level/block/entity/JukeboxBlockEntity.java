@@ -4,11 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +14,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
@@ -72,23 +70,21 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       return (Integer)JukeboxSong.fromStack(this.level.registryAccess(), this.item).map(Holder::value).map(JukeboxSong::comparatorOutput).orElse(0);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      ItemStack var4 = (ItemStack)var1.read("RecordItem", ItemStack.CODEC, var3).orElse(ItemStack.EMPTY);
-      if (!this.item.isEmpty() && !ItemStack.isSameItemSameComponents(var4, this.item)) {
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      ItemStack var2 = (ItemStack)var1.read("RecordItem", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+      if (!this.item.isEmpty() && !ItemStack.isSameItemSameComponents(var2, this.item)) {
          this.jukeboxSongPlayer.stop(this.level, this.getBlockState());
       }
 
-      this.item = var4;
-      var1.getLong("ticks_since_song_started").ifPresent((var2x) -> JukeboxSong.fromStack(var2, this.item).ifPresent((var2xx) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2xx, var2x)));
+      this.item = var2;
+      var1.getLong("ticks_since_song_started").ifPresent((var2x) -> JukeboxSong.fromStack(var1.lookup(), this.item).ifPresent((var2) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2, var2x)));
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       if (!this.getTheItem().isEmpty()) {
-         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-         var1.store("RecordItem", ItemStack.CODEC, var3, this.getTheItem());
+         var1.store("RecordItem", ItemStack.CODEC, this.getTheItem());
       }
 
       if (this.jukeboxSongPlayer.getSong() != null) {

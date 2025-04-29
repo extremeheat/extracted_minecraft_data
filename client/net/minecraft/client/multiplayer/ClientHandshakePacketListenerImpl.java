@@ -192,7 +192,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    }
 
    public void handleDisconnect(ClientboundLoginDisconnectPacket var1) {
-      this.connection.disconnect(var1.getReason());
+      this.connection.disconnect(var1.reason());
    }
 
    public void handleCompression(ClientboundLoginCompressionPacket var1) {

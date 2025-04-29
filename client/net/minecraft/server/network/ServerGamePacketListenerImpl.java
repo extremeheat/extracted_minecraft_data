@@ -41,6 +41,7 @@ import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -146,6 +147,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.TickThrottler;
@@ -201,6 +203,8 @@ import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -656,10 +660,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private static void addBlockDataToItem(BlockState var0, ServerLevel var1, BlockPos var2, ItemStack var3) {
       BlockEntity var4 = var0.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
       if (var4 != null) {
-         CompoundTag var5 = var4.saveCustomOnly(var1.registryAccess());
-         var4.removeComponentsFromTag(var5);
-         BlockItem.setBlockEntityData(var3, var4.getType(), var5);
-         var3.applyComponents(var4.collectComponents());
+         try (ProblemReporter.ScopedCollector var5 = new ProblemReporter.ScopedCollector(var4.problemPath(), LOGGER)) {
+            TagValueOutput var6 = TagValueOutput.createWithContext(var5, var1.registryAccess());
+            var4.saveCustomOnly((ValueOutput)var6);
+            var4.removeComponentsFromTag(var6);
+            BlockItem.setBlockEntityData(var3, var4.getType(), var6);
+            var3.applyComponents(var4.collectComponents());
+         }
       }
 
    }
@@ -945,8 +952,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (this.player.hasPermissions(2)) {
          Entity var2 = this.player.level().getEntity(var1.getEntityId());
          if (var2 != null) {
-            CompoundTag var3 = var2.saveWithoutId(new CompoundTag());
-            this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
+            try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(var2.problemPath(), LOGGER)) {
+               TagValueOutput var4 = TagValueOutput.createWithContext(var3, var2.registryAccess());
+               var2.saveWithoutId(var4);
+               CompoundTag var5 = var4.buildResult();
+               this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var5));
+            }
          }
 
       }
@@ -972,7 +983,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2)) {
          BlockEntity var2 = this.player.level().getBlockEntity(var1.getPos());
-         CompoundTag var3 = var2 != null ? var2.saveWithoutMetadata(this.player.registryAccess()) : null;
+         CompoundTag var3 = var2 != null ? var2.saveWithoutMetadata((HolderLookup.Provider)this.player.registryAccess()) : null;
          this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
       }
    }
@@ -1125,7 +1136,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private boolean isPlayerCollidingWithAnythingNew(LevelReader var1, AABB var2, double var3, double var5, double var7) {
       AABB var9 = this.player.getBoundingBox().move(var3 - this.player.getX(), var5 - this.player.getY(), var7 - this.player.getZ());
-      Iterable var10 = var1.getCollisions(this.player, var9.deflate(9.999999747378752E-6));
+      Iterable var10 = var1.getPreMoveCollisions(this.player, var9.deflate(9.999999747378752E-6), var2.getBottomCenter());
       VoxelShape var11 = Shapes.create(var2.deflate(9.999999747378752E-6));
 
       for(VoxelShape var13 : var10) {

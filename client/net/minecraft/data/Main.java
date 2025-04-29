@@ -107,7 +107,7 @@ public class Main {
       var11.addProvider(bindRegistries(VanillaLootTableProvider::create, var14));
       var11.addProvider(bindRegistries(VanillaRecipeProvider.Runner::new, var14));
       TagsProvider var6 = (TagsProvider)var11.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var14));
-      TagsProvider var7 = (TagsProvider)var11.addProvider((var2x) -> new VanillaItemTagsProvider(var2x, var14, var6.contentsGetter()));
+      TagsProvider var7 = (TagsProvider)var11.addProvider(bindRegistries(VanillaItemTagsProvider::new, var14));
       TagsProvider var8 = (TagsProvider)var11.addProvider(bindRegistries(BiomeTagsProvider::new, var14));
       TagsProvider var9 = (TagsProvider)var11.addProvider(bindRegistries(BannerPatternTagsProvider::new, var14));
       TagsProvider var10 = (TagsProvider)var11.addProvider(bindRegistries(StructureTagsProvider::new, var14));

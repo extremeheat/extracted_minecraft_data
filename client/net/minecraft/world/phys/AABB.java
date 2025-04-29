@@ -385,6 +385,13 @@ public class AABB {
       return Mth.lengthSquared(var2, var4, var6);
    }
 
+   public double distanceToSqr(AABB var1) {
+      double var2 = Math.max(Math.max(this.minX - var1.maxX, var1.minX - this.maxX), 0.0);
+      double var4 = Math.max(Math.max(this.minY - var1.maxY, var1.minY - this.maxY), 0.0);
+      double var6 = Math.max(Math.max(this.minZ - var1.maxZ, var1.minZ - this.maxZ), 0.0);
+      return Mth.lengthSquared(var2, var4, var6);
+   }
+
    public String toString() {
       return "AABB[" + this.minX + ", " + this.minY + ", " + this.minZ + "] -> [" + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
    }

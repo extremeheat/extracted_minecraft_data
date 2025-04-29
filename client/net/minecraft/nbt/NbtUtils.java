@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 public final class NbtUtils {
@@ -546,6 +547,15 @@ public final class NbtUtils {
    public static CompoundTag addDataVersion(CompoundTag var0, int var1) {
       var0.putInt("DataVersion", var1);
       return var0;
+   }
+
+   public static void addCurrentDataVersion(ValueOutput var0) {
+      int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
+      addDataVersion(var0, var1);
+   }
+
+   public static void addDataVersion(ValueOutput var0, int var1) {
+      var0.putInt("DataVersion", var1);
    }
 
    public static int getDataVersion(CompoundTag var0, int var1) {

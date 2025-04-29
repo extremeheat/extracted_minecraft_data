@@ -19,7 +19,6 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
@@ -31,6 +30,8 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class SkullBlockEntity extends BlockEntity {
    private static final String TAG_PROFILE = "profile";
@@ -111,18 +112,18 @@ public class SkullBlockEntity extends BlockEntity {
       profileCacheById = null;
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.storeNullable("profile", ResolvableProfile.CODEC, this.owner);
       var1.storeNullable("note_block_sound", ResourceLocation.CODEC, this.noteBlockSound);
-      var1.storeNullable("custom_name", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.customName);
+      var1.storeNullable("custom_name", ComponentSerialization.CODEC, this.customName);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.setOwner((ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null));
       this.noteBlockSound = (ResourceLocation)var1.read("note_block_sound", ResourceLocation.CODEC).orElse((Object)null);
-      this.customName = parseCustomNameSafe(var1.get("custom_name"), var2);
+      this.customName = parseCustomNameSafe(var1, "custom_name");
    }
 
    public static void animation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
@@ -200,11 +201,11 @@ public class SkullBlockEntity extends BlockEntity {
       var1.set(DataComponents.CUSTOM_NAME, this.customName);
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
+   public void removeComponentsFromTag(ValueOutput var1) {
       super.removeComponentsFromTag(var1);
-      var1.remove("profile");
-      var1.remove("note_block_sound");
-      var1.remove("custom_name");
+      var1.discard("profile");
+      var1.discard("note_block_sound");
+      var1.discard("custom_name");
    }
 
    // $FF: synthetic method

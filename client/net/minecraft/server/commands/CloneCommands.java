@@ -9,6 +9,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,14 +26,20 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.slf4j.Logger;
 
 public class CloneCommands {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_OVERLAP = new SimpleCommandExceptionType(Component.translatable("commands.clone.overlap"));
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.clone.toobig", var0, var1));
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.clone.failed"));
@@ -94,87 +101,102 @@ public class CloneCommands {
                ArrayList var18 = Lists.newArrayList();
                ArrayList var19 = Lists.newArrayList();
                LinkedList var20 = Lists.newLinkedList();
-               BlockPos var21 = new BlockPos(var12.minX() - var9.minX(), var12.minY() - var9.minY(), var12.minZ() - var9.minZ());
+               int var21 = 0;
+               ProblemReporter.ScopedCollector var22 = new ProblemReporter.ScopedCollector(LOGGER);
 
-               for(int var22 = var9.minZ(); var22 <= var9.maxZ(); ++var22) {
-                  for(int var23 = var9.minY(); var23 <= var9.maxY(); ++var23) {
-                     for(int var24 = var9.minX(); var24 <= var9.maxX(); ++var24) {
-                        BlockPos var25 = new BlockPos(var24, var23, var22);
-                        BlockPos var26 = var25.offset(var21);
-                        BlockInWorld var27 = new BlockInWorld(var13, var25, false);
-                        BlockState var28 = var27.getState();
-                        if (var4.test(var27)) {
-                           BlockEntity var29 = var13.getBlockEntity(var25);
-                           if (var29 != null) {
-                              CloneBlockEntityInfo var30 = new CloneBlockEntityInfo(var29.saveCustomOnly(var0.registryAccess()), var29.components());
-                              var18.add(new CloneBlockInfo(var26, var28, var30, var14.getBlockState(var26)));
-                              var20.addLast(var25);
-                           } else if (!var28.isSolidRender() && !var28.isCollisionShapeFullBlock(var13, var25)) {
-                              var19.add(new CloneBlockInfo(var26, var28, (CloneBlockEntityInfo)null, var14.getBlockState(var26)));
-                              var20.addFirst(var25);
-                           } else {
-                              var17.add(new CloneBlockInfo(var26, var28, (CloneBlockEntityInfo)null, var14.getBlockState(var26)));
-                              var20.addLast(var25);
+               try {
+                  BlockPos var23 = new BlockPos(var12.minX() - var9.minX(), var12.minY() - var9.minY(), var12.minZ() - var9.minZ());
+
+                  for(int var24 = var9.minZ(); var24 <= var9.maxZ(); ++var24) {
+                     for(int var25 = var9.minY(); var25 <= var9.maxY(); ++var25) {
+                        for(int var26 = var9.minX(); var26 <= var9.maxX(); ++var26) {
+                           BlockPos var27 = new BlockPos(var26, var25, var24);
+                           BlockPos var28 = var27.offset(var23);
+                           BlockInWorld var29 = new BlockInWorld(var13, var27, false);
+                           BlockState var30 = var29.getState();
+                           if (var4.test(var29)) {
+                              BlockEntity var31 = var13.getBlockEntity(var27);
+                              if (var31 != null) {
+                                 TagValueOutput var32 = TagValueOutput.createWithContext(var22.forChild(var31.problemPath()), var0.registryAccess());
+                                 var31.saveCustomOnly((ValueOutput)var32);
+                                 CloneBlockEntityInfo var33 = new CloneBlockEntityInfo(var32.buildResult(), var31.components());
+                                 var18.add(new CloneBlockInfo(var28, var30, var33, var14.getBlockState(var28)));
+                                 var20.addLast(var27);
+                              } else if (!var30.isSolidRender() && !var30.isCollisionShapeFullBlock(var13, var27)) {
+                                 var19.add(new CloneBlockInfo(var28, var30, (CloneBlockEntityInfo)null, var14.getBlockState(var28)));
+                                 var20.addFirst(var27);
+                              } else {
+                                 var17.add(new CloneBlockInfo(var28, var30, (CloneBlockEntityInfo)null, var14.getBlockState(var28)));
+                                 var20.addLast(var27);
+                              }
                            }
                         }
                      }
                   }
-               }
 
-               int var31 = 2 | (var6 ? 816 : 0);
-               if (var5 == CloneCommands.Mode.MOVE) {
-                  for(BlockPos var35 : var20) {
-                     var13.setBlock(var35, Blocks.BARRIER.defaultBlockState(), var31 | 816);
+                  int var36 = 2 | (var6 ? 816 : 0);
+                  if (var5 == CloneCommands.Mode.MOVE) {
+                     for(BlockPos var40 : var20) {
+                        var13.setBlock(var40, Blocks.BARRIER.defaultBlockState(), var36 | 816);
+                     }
+
+                     int var38 = var6 ? var36 : 3;
+
+                     for(BlockPos var43 : var20) {
+                        var13.setBlock(var43, Blocks.AIR.defaultBlockState(), var38);
+                     }
                   }
 
-                  int var33 = var6 ? var31 : 3;
+                  ArrayList var39 = Lists.newArrayList();
+                  var39.addAll(var17);
+                  var39.addAll(var18);
+                  var39.addAll(var19);
+                  List var42 = Lists.reverse(var39);
 
-                  for(BlockPos var38 : var20) {
-                     var13.setBlock(var38, Blocks.AIR.defaultBlockState(), var33);
-                  }
-               }
-
-               ArrayList var34 = Lists.newArrayList();
-               var34.addAll(var17);
-               var34.addAll(var18);
-               var34.addAll(var19);
-               List var37 = Lists.reverse(var34);
-
-               for(CloneBlockInfo var41 : var37) {
-                  var14.setBlock(var41.pos, Blocks.BARRIER.defaultBlockState(), var31 | 816);
-               }
-
-               int var40 = 0;
-
-               for(CloneBlockInfo var45 : var34) {
-                  if (var14.setBlock(var45.pos, var45.state, var31)) {
-                     ++var40;
-                  }
-               }
-
-               for(CloneBlockInfo var46 : var18) {
-                  BlockEntity var48 = var14.getBlockEntity(var46.pos);
-                  if (var46.blockEntityInfo != null && var48 != null) {
-                     var48.loadCustomOnly(var46.blockEntityInfo.tag, var14.registryAccess());
-                     var48.setComponents(var46.blockEntityInfo.components);
-                     var48.setChanged();
+                  for(CloneBlockInfo var48 : var42) {
+                     var14.setBlock(var48.pos, Blocks.BARRIER.defaultBlockState(), var36 | 816);
                   }
 
-                  var14.setBlock(var46.pos, var46.state, var31);
-               }
-
-               if (!var6) {
-                  for(CloneBlockInfo var47 : var37) {
-                     var14.updateNeighboursOnBlockSet(var47.pos, var47.previousStateAtDestination);
+                  for(CloneBlockInfo var49 : var39) {
+                     if (var14.setBlock(var49.pos, var49.state, var36)) {
+                        ++var21;
+                     }
                   }
+
+                  for(CloneBlockInfo var50 : var18) {
+                     BlockEntity var52 = var14.getBlockEntity(var50.pos);
+                     if (var50.blockEntityInfo != null && var52 != null) {
+                        var52.loadCustomOnly(TagValueInput.create(var22.forChild(var52.problemPath()), var14.registryAccess(), var50.blockEntityInfo.tag));
+                        var52.setComponents(var50.blockEntityInfo.components);
+                        var52.setChanged();
+                     }
+
+                     var14.setBlock(var50.pos, var50.state, var36);
+                  }
+
+                  if (!var6) {
+                     for(CloneBlockInfo var51 : var42) {
+                        var14.updateNeighboursOnBlockSet(var51.pos, var51.previousStateAtDestination);
+                     }
+                  }
+
+                  var14.getBlockTicks().copyAreaFrom(var13.getBlockTicks(), var9, var23);
+               } catch (Throwable var35) {
+                  try {
+                     var22.close();
+                  } catch (Throwable var34) {
+                     var35.addSuppressed(var34);
+                  }
+
+                  throw var35;
                }
 
-               var14.getBlockTicks().copyAreaFrom(var13.getBlockTicks(), var9, var21);
-               if (var40 == 0) {
+               var22.close();
+               if (var21 == 0) {
                   throw ERROR_FAILED.create();
                } else {
-                  var0.sendSuccess(() -> Component.translatable("commands.clone.success", var40), true);
-                  return var40;
+                  var0.sendSuccess(() -> Component.translatable("commands.clone.success", var21), true);
+                  return var21;
                }
             }
          } else {

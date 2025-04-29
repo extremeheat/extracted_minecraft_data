@@ -281,14 +281,11 @@ public class StatsScreen extends Screen {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var2 + var6, var3 + 1, 18, 18);
          }
 
-         var1.depthTreeUp();
-
          for(int var7 = 0; var7 < this.iconSprites.length; ++var7) {
             int var9 = this.headerPressed == var7 ? 1 : 0;
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 18, 18);
          }
 
-         var1.depthTreeBack();
       }
 
       public boolean mouseClicked(double var1, double var3, int var5) {
@@ -425,7 +422,6 @@ public class StatsScreen extends Screen {
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)StatsScreen.SLOT_SPRITE, var4, var3, 18, 18);
-            var1.depthTreeUp();
             var1.renderFakeItem(this.item.getDefaultInstance(), var4 + 1, var3 + 1);
             if (StatsScreen.this.itemStatsList != null) {
                for(int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {
@@ -453,7 +449,6 @@ public class StatsScreen extends Screen {
                }
             }
 
-            var1.depthTreeBack();
          }
 
          protected void renderStat(GuiGraphics var1, @Nullable Stat<?> var2, int var3, int var4, boolean var5) {

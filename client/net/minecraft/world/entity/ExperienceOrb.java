@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -21,6 +20,8 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -43,14 +44,24 @@ public class ExperienceOrb extends Entity {
    private final InterpolationHandler interpolation;
 
    public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {
+      this(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8);
+   }
+
+   public ExperienceOrb(Level var1, Vec3 var2, Vec3 var3, int var4) {
       this(EntityType.EXPERIENCE_ORB, var1);
-      this.setPos(var2, var4, var6);
+      this.setPos(var2);
       if (!this.level().isClientSide) {
          this.setYRot((float)(this.random.nextDouble() * 360.0));
-         this.setDeltaMovement((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
+         Vec3 var5 = new Vec3((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
+         if (var3.lengthSqr() > 0.0 && var3.dot(var5) < 0.0) {
+            var5 = var5.scale(-1.0);
+         }
+
+         this.setDeltaMovement(var5);
+         this.setPos(var2.add(var3.normalize().scale(this.getBoundingBox().getSize() * 0.5)));
       }
 
-      this.setValue(var8);
+      this.setValue(var4);
    }
 
    public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
@@ -96,11 +107,14 @@ public class ExperienceOrb extends Entity {
 
          this.followNearbyPlayer();
          if (this.followingPlayer == null && !this.level().isClientSide && var1) {
-            this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
-            this.hasImpulse = true;
+            boolean var2 = !this.level().noCollision(this.getBoundingBox().move(this.getDeltaMovement()));
+            if (var2) {
+               this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
+               this.hasImpulse = true;
+            }
          }
 
-         double var2 = this.getDeltaMovement().y;
+         double var5 = this.getDeltaMovement().y;
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.applyEffectsFromBlocks();
          float var4 = 0.98F;
@@ -109,8 +123,8 @@ public class ExperienceOrb extends Entity {
          }
 
          this.setDeltaMovement(this.getDeltaMovement().scale((double)var4));
-         if (this.verticalCollisionBelow && var2 < -this.getGravity()) {
-            this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var2 * 0.4, this.getDeltaMovement().z));
+         if (this.verticalCollisionBelow && var5 < -this.getGravity()) {
+            this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var5 * 0.4, this.getDeltaMovement().z));
          }
 
          ++this.age;
@@ -154,11 +168,15 @@ public class ExperienceOrb extends Entity {
    }
 
    public static void award(ServerLevel var0, Vec3 var1, int var2) {
-      while(var2 > 0) {
-         int var3 = getExperienceValue(var2);
-         var2 -= var3;
-         if (!tryMergeToExisting(var0, var1, var3)) {
-            var0.addFreshEntity(new ExperienceOrb(var0, var1.x(), var1.y(), var1.z(), var3));
+      awardWithDirection(var0, var1, Vec3.ZERO, var2);
+   }
+
+   public static void awardWithDirection(ServerLevel var0, Vec3 var1, Vec3 var2, int var3) {
+      while(var3 > 0) {
+         int var4 = getExperienceValue(var3);
+         var3 -= var4;
+         if (!tryMergeToExisting(var0, var1, var4)) {
+            var0.addFreshEntity(new ExperienceOrb(var0, var1, var2, var4));
          }
       }
 
@@ -218,14 +236,14 @@ public class ExperienceOrb extends Entity {
       }
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
       var1.putShort("Value", (short)this.getValue());
       var1.putInt("Count", this.count);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.health = var1.getShortOr("Health", (short)5);
       this.age = var1.getShortOr("Age", (short)0);
       this.setValue(var1.getShortOr("Value", (short)0));

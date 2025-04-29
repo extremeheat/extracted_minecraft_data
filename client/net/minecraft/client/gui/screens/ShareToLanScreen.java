@@ -24,7 +24,7 @@ public class ShareToLanScreen extends Screen {
    private static final Component PORT_INFO_TEXT = Component.translatable("lanServer.port");
    private static final Component PORT_UNAVAILABLE = Component.translatable("lanServer.port.unavailable", 1024, 65535);
    private static final Component INVALID_PORT = Component.translatable("lanServer.port.invalid", 1024, 65535);
-   private static final int INVALID_PORT_COLOR = 16733525;
+   private static final int INVALID_PORT_COLOR = -43691;
    private final Screen lastScreen;
    private GameType gameMode;
    private boolean commands;
@@ -63,11 +63,11 @@ public class ShareToLanScreen extends Screen {
          Component var3 = this.tryParsePort(var2x);
          this.portEdit.setHint(Component.literal("" + this.port).withStyle(ChatFormatting.DARK_GRAY));
          if (var3 == null) {
-            this.portEdit.setTextColor(14737632);
+            this.portEdit.setTextColor(-2039584);
             this.portEdit.setTooltip((Tooltip)null);
             var2.active = true;
          } else {
-            this.portEdit.setTextColor(16733525);
+            this.portEdit.setTextColor(-43691);
             this.portEdit.setTooltip(Tooltip.create(var3));
             var2.active = false;
          }
@@ -105,8 +105,8 @@ public class ShareToLanScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 50, 16777215);
-      var1.drawCenteredString(this.font, (Component)INFO_TEXT, this.width / 2, 82, 16777215);
-      var1.drawCenteredString(this.font, (Component)PORT_INFO_TEXT, this.width / 2, 142, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 50, -1);
+      var1.drawCenteredString(this.font, (Component)INFO_TEXT, this.width / 2, 82, -1);
+      var1.drawCenteredString(this.font, (Component)PORT_INFO_TEXT, this.width / 2, 142, -1);
    }
 }

@@ -256,6 +256,7 @@ public class HappyGhast extends Animal {
    protected void removePassenger(Entity var1) {
       super.removePassenger(var1);
       if (!this.isVehicle()) {
+         this.clearHome();
          this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.HARNESS_GOGGLES_UP, this.getSoundSource(), 1.0F, 1.0F);
       }
 
@@ -352,8 +353,8 @@ public class HappyGhast extends Animal {
    private void checkRestriction() {
       if (!this.isLeashed() && !this.isVehicle()) {
          int var1 = this.getHappyGhastRestrictionRadius();
-         if (!this.hasRestriction() || !this.getRestrictCenter().closerThan(this.blockPosition(), (double)(var1 + 16))) {
-            this.restrictTo(this.blockPosition(), var1);
+         if (!this.hasHome() || !this.getHomePosition().closerThan(this.blockPosition(), (double)(var1 + 16)) || var1 != this.getHomeRadius()) {
+            this.setHomeTo(this.blockPosition(), var1);
          }
       }
    }

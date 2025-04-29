@@ -1,7 +1,6 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.base.Strings;
-import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.MinecraftClientException;
 import com.mojang.authlib.minecraft.InsecurePublicKeyException;
 import com.mojang.authlib.minecraft.UserApiService;
@@ -10,6 +9,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -26,6 +26,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import org.slf4j.Logger;
@@ -87,7 +88,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
 
             Optional var2;
             try {
-               var2 = ProfileKeyPair.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseReader(var1)).result();
+               var2 = ProfileKeyPair.CODEC.parse(JsonOps.INSTANCE, StrictJsonParser.parse((Reader)var1)).result();
             } catch (Throwable var5) {
                if (var1 != null) {
                   try {

@@ -90,14 +90,14 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          MutableComponent var5 = Component.translatable("merchant.title", this.title, Component.translatable("merchant.level." + var4));
          int var6 = this.font.width((FormattedText)var5);
          int var7 = 49 + this.imageWidth / 2 - var6 / 2;
-         var1.drawString(this.font, (Component)var5, var7, 6, 4210752, false);
+         var1.drawString(this.font, (Component)var5, var7, 6, -12566464, false);
       } else {
-         var1.drawString(this.font, (Component)this.title, 49 + this.imageWidth / 2 - this.font.width((FormattedText)this.title) / 2, 6, 4210752, false);
+         var1.drawString(this.font, (Component)this.title, 49 + this.imageWidth / 2 - this.font.width((FormattedText)this.title) / 2, 6, -12566464, false);
       }
 
-      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
+      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
       int var8 = this.font.width((FormattedText)TRADES_LABEL);
-      var1.drawString(this.font, (Component)TRADES_LABEL, 5 - var8 / 2 + 48, 6, 4210752, false);
+      var1.drawString(this.font, (Component)TRADES_LABEL, 5 - var8 / 2 + 48, 6, -12566464, false);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
@@ -176,7 +176,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
                ItemStack var15 = var12.getCostB();
                ItemStack var16 = var12.getResult();
                int var17 = var8 + 2;
-               var1.depthTreeUp();
                this.renderAndDecorateCostA(var1, var14, var13, var9, var17);
                if (!var15.isEmpty()) {
                   var1.renderFakeItem(var15, var6 + 5 + 35, var17);
@@ -186,7 +185,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
                this.renderButtonArrows(var1, var12, var6, var17);
                var1.renderFakeItem(var16, var6 + 5 + 68, var17);
                var1.renderItemDecorations(this.font, var16, var6 + 5 + 68, var17);
-               var1.depthTreeBack();
                var8 += 20;
                ++var10;
             } else {
@@ -232,10 +230,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       } else {
          var1.renderItemDecorations(this.font, var3, var4, var5, var3.getCount() == 1 ? "1" : null);
          var1.renderItemDecorations(this.font, var2, var4 + 14, var5, var2.getCount() == 1 ? "1" : null);
-         var1.depthTreePushCheckpoint();
-         var1.depthTreeUpToTop();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 9, 2);
-         var1.depthTreeBackToCheckpoint();
       }
 
    }

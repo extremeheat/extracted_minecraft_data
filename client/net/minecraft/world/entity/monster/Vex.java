@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
 import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -38,6 +37,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Vex extends Monster implements TraceableEntity {
@@ -99,7 +100,7 @@ public class Vex extends Monster implements TraceableEntity {
       var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.boundOrigin = (BlockPos)var1.read("bound_pos", BlockPos.CODEC).orElse((Object)null);
       var1.getInt("life_ticks").ifPresentOrElse(this::setLimitedLife, () -> this.hasLimitedLife = false);
@@ -113,7 +114,7 @@ public class Vex extends Monster implements TraceableEntity {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.storeNullable("bound_pos", BlockPos.CODEC, this.boundOrigin);
       if (this.hasLimitedLife) {

@@ -88,7 +88,6 @@ public class PopupScreen extends Screen {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.nextStratum();
       this.renderTransparentBackground(var1);
-      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
    }
 

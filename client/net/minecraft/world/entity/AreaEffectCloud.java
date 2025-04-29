@@ -15,12 +15,9 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -30,6 +27,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final int TIME_BETWEEN_APPLICATIONS = 5;
@@ -351,7 +350,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       }
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.tickCount = var1.getIntOr("Age", 0);
       this.duration = var1.getIntOr("Duration", -1);
       this.waitTime = var1.getIntOr("WaitTime", 20);
@@ -361,13 +360,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.radiusPerTick = var1.getFloatOr("RadiusPerTick", 0.0F);
       this.setRadius(var1.getFloatOr("Radius", 3.0F));
       this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setCustomParticle((ParticleOptions)var1.read("custom_particle", ParticleTypes.CODEC, var2).orElse((Object)null));
-      this.setPotionContents((PotionContents)var1.read("potion_contents", PotionContents.CODEC, var2).orElse(PotionContents.EMPTY));
+      this.setCustomParticle((ParticleOptions)var1.read("custom_particle", ParticleTypes.CODEC).orElse((Object)null));
+      this.setPotionContents((PotionContents)var1.read("potion_contents", PotionContents.CODEC).orElse(PotionContents.EMPTY));
       this.potionDurationScale = var1.getFloatOr("potion_duration_scale", 1.0F);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.putInt("Age", this.tickCount);
       var1.putInt("Duration", this.duration);
       var1.putInt("WaitTime", this.waitTime);
@@ -376,11 +374,10 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       var1.putFloat("RadiusOnUse", this.radiusOnUse);
       var1.putFloat("RadiusPerTick", this.radiusPerTick);
       var1.putFloat("Radius", this.getRadius());
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.storeNullable("custom_particle", ParticleTypes.CODEC, var2, this.customParticle);
+      var1.storeNullable("custom_particle", ParticleTypes.CODEC, this.customParticle);
       var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
-         var1.store("potion_contents", PotionContents.CODEC, var2, this.potionContents);
+         var1.store("potion_contents", PotionContents.CODEC, this.potionContents);
       }
 
       if (this.potionDurationScale != 1.0F) {

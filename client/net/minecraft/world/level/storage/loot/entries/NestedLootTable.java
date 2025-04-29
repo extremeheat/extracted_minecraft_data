@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -18,6 +19,11 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class NestedLootTable extends LootPoolSingletonContainer {
    public static final MapCodec<NestedLootTable> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.either(LootTable.KEY_CODEC, LootTable.DIRECT_CODEC).fieldOf("value").forGetter((var0x) -> var0x.contents)).and(singletonFields(var0)).apply(var0, NestedLootTable::new));
+   public static final ProblemReporter.PathElement INLINE_LOOT_TABLE_PATH_ELEMENT = new ProblemReporter.PathElement() {
+      public String get() {
+         return "->{inline}";
+      }
+   };
    private final Either<ResourceKey<LootTable>, LootTable> contents;
 
    private NestedLootTable(Either<ResourceKey<LootTable>, LootTable> var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {
@@ -38,18 +44,18 @@ public class NestedLootTable extends LootPoolSingletonContainer {
       if (var2.isPresent()) {
          ResourceKey var3 = (ResourceKey)var2.get();
          if (!var1.allowsReferences()) {
-            var1.reportProblem("Uses reference to " + String.valueOf(var3.location()) + ", but references are not allowed");
+            var1.reportProblem(new ValidationContext.ReferenceNotAllowedProblem(var3));
             return;
          }
 
          if (var1.hasVisitedElement(var3)) {
-            var1.reportProblem("Table " + String.valueOf(var3.location()) + " is recursively called");
+            var1.reportProblem(new ValidationContext.RecursiveReferenceProblem(var3));
             return;
          }
       }
 
       super.validate(var1);
-      this.contents.ifLeft((var1x) -> var1.resolver().get(var1x).ifPresentOrElse((var2) -> ((LootTable)var2.value()).validate(var1.enterElement("->{" + String.valueOf(var1x.location()) + "}", var1x)), () -> var1.reportProblem("Unknown loot table called " + String.valueOf(var1x.location())))).ifRight((var1x) -> var1x.validate(var1.forChild("->{inline}")));
+      this.contents.ifLeft((var1x) -> var1.resolver().get(var1x).ifPresentOrElse((var2) -> ((LootTable)var2.value()).validate(var1.enterElement(new ProblemReporter.ElementReferencePathElement(var1x), var1x)), () -> var1.reportProblem(new ValidationContext.MissingReferenceProblem(var1x)))).ifRight((var1x) -> var1x.validate(var1.forChild(INLINE_LOOT_TABLE_PATH_ELEMENT)));
    }
 
    public static LootPoolSingletonContainer.Builder<?> lootTableReference(ResourceKey<LootTable> var0) {

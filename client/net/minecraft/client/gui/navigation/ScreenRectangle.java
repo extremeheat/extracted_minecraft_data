@@ -87,6 +87,14 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return var2 < var4 && var3 < var5 ? new ScreenRectangle(var2, var3, var4 - var2, var5 - var3) : null;
    }
 
+   public boolean intersects(ScreenRectangle var1) {
+      return this.left() < var1.right() && this.right() > var1.left() && this.top() < var1.bottom() && this.bottom() > var1.top();
+   }
+
+   public boolean encompasses(ScreenRectangle var1) {
+      return var1.left() >= this.left() && var1.top() >= this.top() && var1.right() <= this.right() && var1.bottom() <= this.bottom();
+   }
+
    public int top() {
       return this.position.y();
    }
@@ -111,5 +119,17 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       Vector2f var2 = var1.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
       Vector2f var3 = var1.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
       return new ScreenRectangle(Mth.floor(var2.x), Mth.floor(var2.y), Mth.floor(var3.x - var2.x), Mth.floor(var3.y - var2.y));
+   }
+
+   public ScreenRectangle transformMaxBounds(Matrix3x2f var1) {
+      Vector2f var2 = var1.transformPosition((float)this.left(), (float)this.top(), new Vector2f());
+      Vector2f var3 = var1.transformPosition((float)this.right(), (float)this.top(), new Vector2f());
+      Vector2f var4 = var1.transformPosition((float)this.left(), (float)this.bottom(), new Vector2f());
+      Vector2f var5 = var1.transformPosition((float)this.right(), (float)this.bottom(), new Vector2f());
+      float var6 = Math.min(Math.min(var2.x(), var4.x()), Math.min(var3.x(), var5.x()));
+      float var7 = Math.max(Math.max(var2.x(), var4.x()), Math.max(var3.x(), var5.x()));
+      float var8 = Math.min(Math.min(var2.y(), var4.y()), Math.min(var3.y(), var5.y()));
+      float var9 = Math.max(Math.max(var2.y(), var4.y()), Math.max(var3.y(), var5.y()));
+      return new ScreenRectangle(Mth.floor(var6), Mth.floor(var8), Mth.ceil(var7 - var6), Mth.ceil(var9 - var8));
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.world.level.chunk;
 
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -13,6 +14,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -33,11 +35,14 @@ import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import net.minecraft.world.ticks.TickContainerAccess;
+import org.slf4j.Logger;
 
 public class ProtoChunk extends ChunkAccess {
+   private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
    private volatile LevelLightEngine lightEngine;
    private volatile ChunkStatus status;
@@ -170,9 +175,12 @@ public class ProtoChunk extends ChunkAccess {
 
    public void addEntity(Entity var1) {
       if (!var1.isPassenger()) {
-         CompoundTag var2 = new CompoundTag();
-         var1.save(var2);
-         this.addEntity(var2);
+         try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
+            TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
+            var1.save(var3);
+            this.addEntity(var3.buildResult());
+         }
+
       }
    }
 

@@ -25,9 +25,7 @@ public class GrindstoneScreen extends AbstractContainerScreen<GrindstoneMenu> {
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(RenderPipelines.GUI_TEXTURED, GRINDSTONE_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if ((((GrindstoneMenu)this.menu).getSlot(0).hasItem() || ((GrindstoneMenu)this.menu).getSlot(1).hasItem()) && !((GrindstoneMenu)this.menu).getSlot(2).hasItem()) {
-         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var5 + 92, var6 + 31, 28, 21);
-         var1.depthTreeBack();
       }
 
    }

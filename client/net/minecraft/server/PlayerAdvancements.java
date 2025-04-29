@@ -5,14 +5,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
-import com.google.gson.internal.Streams;
-import com.google.gson.stream.JsonReader;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -43,6 +43,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.advancements.AdvancementVisibilityEvaluator;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.GameRules;
 import org.slf4j.Logger;
@@ -118,24 +119,27 @@ public class PlayerAdvancements {
    private void load(ServerAdvancementManager var1) {
       if (Files.isRegularFile(this.playerSavePath, new LinkOption[0])) {
          try {
-            JsonReader var2 = new JsonReader(Files.newBufferedReader(this.playerSavePath, StandardCharsets.UTF_8));
+            BufferedReader var2 = Files.newBufferedReader(this.playerSavePath, StandardCharsets.UTF_8);
 
             try {
-               var2.setLenient(false);
-               JsonElement var3 = Streams.parse(var2);
+               JsonElement var3 = StrictJsonParser.parse((Reader)var2);
                Data var4 = (Data)this.codec.parse(JsonOps.INSTANCE, var3).getOrThrow(JsonParseException::new);
                this.applyFrom(var1, var4);
             } catch (Throwable var6) {
-               try {
-                  var2.close();
-               } catch (Throwable var5) {
-                  var6.addSuppressed(var5);
+               if (var2 != null) {
+                  try {
+                     ((Reader)var2).close();
+                  } catch (Throwable var5) {
+                     var6.addSuppressed(var5);
+                  }
                }
 
                throw var6;
             }
 
-            var2.close();
+            if (var2 != null) {
+               ((Reader)var2).close();
+            }
          } catch (JsonIOException | IOException var7) {
             LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, var7);
          } catch (JsonParseException var8) {

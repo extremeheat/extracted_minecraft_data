@@ -26,6 +26,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -178,7 +179,6 @@ public class PlayerTabOverlay {
          int var10005 = var19.size();
          Objects.requireNonNull(this.minecraft.font);
          var1.fill(var10001, var10002, var10003, var40 + var10005 * 9, -2147483648);
-         var1.depthTreeUp();
 
          for(FormattedCharSequence var47 : var19) {
             int var23 = this.minecraft.font.width(var47);
@@ -187,12 +187,10 @@ public class PlayerTabOverlay {
             var40 += 9;
          }
 
-         var1.depthTreeBack();
          ++var40;
       }
 
       var1.fill(var2 / 2 - var42 / 2 - 1, var40 - 1, var2 / 2 + var42 / 2 + 1, var40 + var34 * 9, -2147483648);
-      var1.depthTreeUp();
       int var46 = this.minecraft.options.getBackgroundColor(553648127);
 
       for(int var48 = 0; var48 < var33; ++var48) {
@@ -204,7 +202,6 @@ public class PlayerTabOverlay {
          if (var48 < var5.size()) {
             PlayerInfo var27 = (PlayerInfo)var5.get(var48);
             ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var48);
-            var1.depthTreeUp();
             GameProfile var29 = var27.getProfile();
             if (var36) {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
@@ -223,11 +220,9 @@ public class PlayerTabOverlay {
             }
 
             this.renderPingIcon(var1, var38, var25 - (var36 ? 9 : 0), var26, var27);
-            var1.depthTreeBack();
          }
       }
 
-      var1.depthTreeBack();
       if (var43 != null) {
          var40 += var34 * 9 + 1;
          int var55 = var2 / 2 - var42 / 2 - 1;
@@ -236,7 +231,6 @@ public class PlayerTabOverlay {
          int var58 = var43.size();
          Objects.requireNonNull(this.minecraft.font);
          var1.fill(var55, var56, var57, var40 + var58 * 9, -2147483648);
-         var1.depthTreeUp();
 
          for(FormattedCharSequence var51 : var43) {
             int var52 = this.minecraft.font.width(var51);
@@ -244,8 +238,6 @@ public class PlayerTabOverlay {
             Objects.requireNonNull(this.minecraft.font);
             var40 += 9;
          }
-
-         var1.depthTreeBack();
       }
 
    }
@@ -273,7 +265,7 @@ public class PlayerTabOverlay {
       if (var1.getRenderType() == ObjectiveCriteria.RenderType.HEARTS) {
          this.renderTablistHearts(var2, var4, var5, var6, var7, var3.score);
       } else if (var3.formattedScore != null) {
-         var7.drawString(this.minecraft.font, var3.formattedScore, var5 - var3.scoreWidth, var2, 16777215);
+         var7.drawString(this.minecraft.font, (Component)var3.formattedScore, var5 - var3.scoreWidth, var2, -1);
       }
 
    }
@@ -298,7 +290,7 @@ public class PlayerTabOverlay {
                var16 = Component.literal(Float.toString(var14));
             }
 
-            var5.drawString(this.minecraft.font, (Component)var16, (var3 + var2 - this.minecraft.font.width((FormattedText)var16)) / 2, var1, var19);
+            var5.drawString(this.minecraft.font, (Component)var16, (var3 + var2 - this.minecraft.font.width((FormattedText)var16)) / 2, var1, ARGB.opaque(var19));
          } else {
             ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
 

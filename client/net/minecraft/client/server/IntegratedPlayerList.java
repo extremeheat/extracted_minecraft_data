@@ -1,6 +1,7 @@
 package net.minecraft.client.server;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.logging.LogUtils;
 import java.net.SocketAddress;
 import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
@@ -10,9 +11,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.PlayerDataStorage;
+import net.minecraft.world.level.storage.TagValueOutput;
+import org.slf4j.Logger;
 
 public class IntegratedPlayerList extends PlayerList {
+   private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
    private CompoundTag playerData;
 
@@ -23,7 +28,11 @@ public class IntegratedPlayerList extends PlayerList {
 
    protected void save(ServerPlayer var1) {
       if (this.getServer().isSingleplayerOwner(var1.getGameProfile())) {
-         this.playerData = var1.saveWithoutId(new CompoundTag());
+         try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
+            TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
+            var1.saveWithoutId(var3);
+            this.playerData = var3.buildResult();
+         }
       }
 
       super.save(var1);

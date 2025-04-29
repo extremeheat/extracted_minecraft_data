@@ -1,6 +1,5 @@
 package net.minecraft.data.loot;
 
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
@@ -69,13 +68,12 @@ public class LootTableProvider implements DataProvider {
       ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, var6);
 
       for(ResourceKey var10 : Sets.difference(this.requiredTables, var3.registryKeySet())) {
-         var5.report("Missing built-in table: " + String.valueOf(var10.location()));
+         var5.report(new MissingTableProblem(var10));
       }
 
-      var3.listElements().forEach((var1x) -> ((LootTable)var1x.value()).validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement("{" + String.valueOf(var1x.key().location()) + "}", var1x.key())));
-      Multimap var11 = var5.get();
-      if (!var11.isEmpty()) {
-         var11.forEach((var0, var1x) -> LOGGER.warn("Found validation problem in {}: {}", var0, var1x));
+      var3.listElements().forEach((var1x) -> ((LootTable)var1x.value()).validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement(new ProblemReporter.RootElementPathElement(var1x.key()), var1x.key())));
+      if (!var5.isEmpty()) {
+         var5.forEach((var0, var1x) -> LOGGER.warn("Found validation problem in {}: {}", var0, var1x.description()));
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {
          return CompletableFuture.allOf((CompletableFuture[])var3.entrySet().stream().map((var3x) -> {
@@ -102,6 +100,17 @@ public class LootTableProvider implements DataProvider {
          super();
          this.provider = var1;
          this.paramSet = var2;
+      }
+   }
+
+   public static record MissingTableProblem(ResourceKey<LootTable> id) implements ProblemReporter.Problem {
+      public MissingTableProblem(ResourceKey<LootTable> var1) {
+         super();
+         this.id = var1;
+      }
+
+      public String description() {
+         return "Missing built-in table: " + String.valueOf(this.id.location());
       }
    }
 }

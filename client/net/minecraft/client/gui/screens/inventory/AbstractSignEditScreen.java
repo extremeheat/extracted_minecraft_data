@@ -81,7 +81,7 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 40, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 40, -1);
       this.renderSign(var1);
    }
 
@@ -117,9 +117,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       var1.pose().pushMatrix();
       this.renderSignBackground(var1);
       var1.pose().popMatrix();
-      var1.depthTreeUp();
       this.renderSignText(var1);
-      var1.depthTreeBack();
       var1.pose().popMatrix();
    }
 
@@ -168,9 +166,7 @@ public abstract class AbstractSignEditScreen extends Screen {
                int var16 = this.font.width(var20.substring(0, var14)) - this.font.width(var20) / 2;
                int var17 = Math.min(var15, var16);
                int var18 = Math.max(var15, var16);
-               var1.depthTreeUp();
                var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var17, var8, var18, var8 + this.sign.getTextLineHeight(), -16776961);
-               var1.depthTreeBack();
             }
          }
       }

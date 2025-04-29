@@ -7,15 +7,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class GuiRenderState {
+   private static final int DEBUG_RECTANGLE_COLOR = 2000962815;
    private final List<Node> strata = new ArrayList();
    private int firstStratumAfterBlur = 2147483647;
    private Node current;
-   private final List<Node> checkpointStack = new ArrayList();
    private final Set<Object> itemModelIdentities = new HashSet();
+   @Nullable
+   private ScreenRectangle lastElementBounds;
 
    public GuiRenderState() {
       super();
@@ -23,12 +26,8 @@ public class GuiRenderState {
    }
 
    public void nextStratum() {
-      if (!this.checkpointStack.isEmpty()) {
-         throw new IllegalStateException("Checkpoint stack is not empty");
-      } else {
-         this.current = new Node((Node)null);
-         this.strata.add(this.current);
-      }
+      this.current = new Node((Node)null);
+      this.strata.add(this.current);
    }
 
    public void blurBeforeThisStratum() {
@@ -47,15 +46,6 @@ public class GuiRenderState {
       this.current = this.current.up;
    }
 
-   public void upToTop() {
-      while(this.current.up != null) {
-         this.current = this.current.up;
-      }
-
-      this.current.up = new Node(this.current);
-      this.current = this.current.up;
-   }
-
    public void down() {
       if (this.current.down == null) {
          this.current.down = new Node(this.current);
@@ -64,40 +54,93 @@ public class GuiRenderState {
       this.current = this.current.down;
    }
 
-   public void pushCheckpoint() {
-      this.checkpointStack.add(this.current);
-   }
-
-   public void backToCheckpoint() {
-      if (this.checkpointStack.isEmpty()) {
-         throw new IllegalStateException("Checkpoint stack is empty");
-      } else {
-         this.current = (Node)this.checkpointStack.removeLast();
-      }
-   }
-
-   public void back() {
-      if (this.current.parent == null) {
-         throw new IllegalStateException("Can not back out of the root node");
-      } else {
-         this.current = this.current.parent;
-      }
-   }
-
    public void submitItem(GuiItemRenderState var1) {
-      this.itemModelIdentities.add(var1.itemStackRenderState().getModelIdentity());
-      this.current.submitItem(var1);
+      if (this.findAppropriateNode(var1)) {
+         this.itemModelIdentities.add(var1.itemStackRenderState().getModelIdentity());
+         this.current.submitItem(var1);
+         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+      }
    }
 
    public void submitText(GuiTextRenderState var1) {
-      this.current.submitText(var1);
+      if (this.findAppropriateNode(var1)) {
+         this.current.submitText(var1);
+         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+      }
    }
 
    public void submitPicturesInPictureState(PictureInPictureRenderState var1) {
-      this.current.submitPicturesInPictureState(var1);
+      if (this.findAppropriateNode(var1)) {
+         this.current.submitPicturesInPictureState(var1);
+         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+      }
    }
 
    public void submitGuiElement(GuiElementRenderState var1) {
+      if (this.findAppropriateNode(var1)) {
+         this.current.submitGuiElement(var1);
+         this.sumbitDebugRectangleIfEnabled(var1.bounds());
+      }
+   }
+
+   private void sumbitDebugRectangleIfEnabled(@Nullable ScreenRectangle var1) {
+   }
+
+   private boolean findAppropriateNode(ScreenArea var1) {
+      ScreenRectangle var2 = var1.bounds();
+      if (var2 == null) {
+         return false;
+      } else {
+         if (this.lastElementBounds != null && this.lastElementBounds.encompasses(var2)) {
+            this.up();
+         } else {
+            this.navigateToAboveHighestElementWithIntersectingBounds(var2);
+         }
+
+         this.lastElementBounds = var2;
+         return true;
+      }
+   }
+
+   private void navigateToAboveHighestElementWithIntersectingBounds(ScreenRectangle var1) {
+      Node var2;
+      for(var2 = (Node)this.strata.getLast(); var2.up != null; var2 = var2.up) {
+      }
+
+      boolean var3 = false;
+
+      while(!var3) {
+         var3 = this.hasIntersection(var1, var2.elementStates) || this.hasIntersection(var1, var2.itemStates) || this.hasIntersection(var1, var2.textStates) || this.hasIntersection(var1, var2.picturesInPictureStates);
+         if (var2.parent == null) {
+            break;
+         }
+
+         if (!var3) {
+            var2 = var2.parent;
+         }
+      }
+
+      this.current = var2;
+      if (var3) {
+         this.up();
+      }
+
+   }
+
+   private boolean hasIntersection(ScreenRectangle var1, @Nullable List<? extends ScreenArea> var2) {
+      if (var2 != null) {
+         for(ScreenArea var4 : var2) {
+            ScreenRectangle var5 = var4.bounds();
+            if (var5 != null && var5.intersects(var1)) {
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
+   public void submitGuiElementToCurrentLayer(GuiElementRenderState var1) {
       this.current.submitGuiElement(var1);
    }
 
@@ -106,22 +149,18 @@ public class GuiRenderState {
    }
 
    public void forEachElement(LayeredElementConsumer var1, TraverseRange var2) {
-      if (!this.checkpointStack.isEmpty()) {
-         throw new IllegalStateException("Unused checkpoints in checkpoint stack. The GUI tree is most likely corrupted.");
-      } else {
-         MutableInt var3 = new MutableInt(0);
-         this.traverse((Consumer)((var2x) -> {
-            if (var2x.elementStates != null) {
-               var3.increment();
-               int var3x = var3.intValue();
+      MutableInt var3 = new MutableInt(0);
+      this.traverse((Consumer)((var2x) -> {
+         if (var2x.elementStates != null) {
+            var3.increment();
+            int var3x = var3.intValue();
 
-               for(GuiElementRenderState var5 : var2x.elementStates) {
-                  var1.accept(var5, var3x);
-               }
+            for(GuiElementRenderState var5 : var2x.elementStates) {
+               var1.accept(var5, var3x);
             }
+         }
 
-         }), var2);
-      }
+      }), var2);
    }
 
    public void forEachItem(Consumer<GuiItemRenderState> var1) {
@@ -143,9 +182,8 @@ public class GuiRenderState {
       Node var2 = this.current;
       this.traverse((Consumer)((var2x) -> {
          if (var2x.textStates != null) {
-            this.current = var2x;
-
             for(GuiTextRenderState var4 : var2x.textStates) {
+               this.current = var2x;
                var1.accept(var4);
             }
          }

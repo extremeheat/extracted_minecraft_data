@@ -6,9 +6,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -25,6 +23,8 @@ import net.minecraft.world.level.gameevent.BlockPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener.Provider<CatalystListener> {
@@ -39,14 +39,14 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
       var3.catalystListener.getSculkSpreader().updateCursors(var0, var1, var0.getRandom(), true);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.catalystListener.sculkSpreader.load(var1);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void saveAdditional(ValueOutput var1) {
       this.catalystListener.sculkSpreader.save(var1);
-      super.saveAdditional(var1, var2);
+      super.saveAdditional(var1);
    }
 
    public CatalystListener getListener() {

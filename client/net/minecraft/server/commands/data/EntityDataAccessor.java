@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.logging.LogUtils;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Function;
@@ -16,10 +17,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.TagValueInput;
+import org.slf4j.Logger;
 
 public class EntityDataAccessor implements DataAccessor {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(Component.translatable("commands.data.entity.invalid"));
    public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
@@ -42,8 +47,12 @@ public class EntityDataAccessor implements DataAccessor {
          throw ERROR_NO_PLAYERS.create();
       } else {
          UUID var2 = this.entity.getUUID();
-         this.entity.load(var1);
-         this.entity.setUUID(var2);
+
+         try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
+            this.entity.load(TagValueInput.create(var3, this.entity.registryAccess(), var1));
+            this.entity.setUUID(var2);
+         }
+
       }
    }
 

@@ -85,7 +85,6 @@ public class SystemToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
-      var1.depthTreeUp();
       if (this.messageLines.isEmpty()) {
          var1.drawString(var2, (Component)this.title, 18, 12, -256, false);
       } else {
@@ -96,7 +95,6 @@ public class SystemToast implements Toast {
          }
       }
 
-      var1.depthTreeBack();
    }
 
    public void reset(Component var1, @Nullable Component var2) {

@@ -72,7 +72,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
 
    public interface SimpleInstance extends CriterionTriggerInstance {
       default void validate(CriterionValidator var1) {
-         var1.validateEntity(this.player(), ".player");
+         var1.validateEntity(this.player(), "player");
       }
 
       Optional<ContextAwarePredicate> player();

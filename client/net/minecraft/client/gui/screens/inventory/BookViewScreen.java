@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,6 +15,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -30,6 +30,7 @@ public class BookViewScreen extends Screen {
    public static final int PAGE_TEXT_Y_OFFSET = 30;
    private static final int BACKGROUND_TEXTURE_WIDTH = 256;
    private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
+   private static final MutableComponent TITLE = Component.translatable("book.view.title");
    public static final BookAccess EMPTY_ACCESS = new BookAccess(List.of());
    public static final ResourceLocation BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
    protected static final int TEXT_WIDTH = 114;
@@ -54,7 +55,7 @@ public class BookViewScreen extends Screen {
    }
 
    private BookViewScreen(BookAccess var1, boolean var2) {
-      super(GameNarrator.NO_TITLE);
+      super(TITLE);
       this.cachedPageComponents = Collections.emptyList();
       this.cachedPage = -1;
       this.pageMsg = CommonComponents.EMPTY;
@@ -88,6 +89,14 @@ public class BookViewScreen extends Screen {
    protected void init() {
       this.createMenuControls();
       this.createPageControlButtons();
+   }
+
+   public Component getNarrationMessage() {
+      return CommonComponents.joinLines(super.getNarrationMessage(), this.getPageNumberMessage(), this.bookAccess.getPage(this.currentPage));
+   }
+
+   private Component getPageNumberMessage() {
+      return Component.translatable("book.pageIndicator", this.currentPage + 1, Math.max(this.getNumPages(), 1));
    }
 
    protected void createMenuControls() {
@@ -149,14 +158,14 @@ public class BookViewScreen extends Screen {
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
       if (this.cachedPage != this.currentPage) {
-         FormattedText var7 = this.bookAccess.getPage(this.currentPage);
+         Component var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);
-         this.pageMsg = Component.translatable("book.pageIndicator", this.currentPage + 1, Math.max(this.getNumPages(), 1));
+         this.pageMsg = this.getPageNumberMessage();
       }
 
       this.cachedPage = this.currentPage;
       int var11 = this.font.width((FormattedText)this.pageMsg);
-      var1.drawString(this.font, (Component)this.pageMsg, var5 - var11 + 192 - 44, 18, 0, false);
+      var1.drawString(this.font, (Component)this.pageMsg, var5 - var11 + 192 - 44, 18, -16777216, false);
       Objects.requireNonNull(this.font);
       int var8 = Math.min(128 / 9, this.cachedPageComponents.size());
 
@@ -165,7 +174,7 @@ public class BookViewScreen extends Screen {
          Font var10001 = this.font;
          int var10003 = var5 + 36;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (FormattedCharSequence)var10, var10003, 32 + var9 * 9, 0, false);
+         var1.drawString(var10001, var10, var10003, 32 + var9 * 9, -16777216, false);
       }
 
       Style var12 = this.getClickedComponentStyleAt((double)var2, (double)var3);
@@ -177,9 +186,7 @@ public class BookViewScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
-      var1.depthTreeUp();
       var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
-      var1.depthTreeBack();
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -264,8 +271,8 @@ public class BookViewScreen extends Screen {
          return this.pages.size();
       }
 
-      public FormattedText getPage(int var1) {
-         return var1 >= 0 && var1 < this.getPageCount() ? (FormattedText)this.pages.get(var1) : FormattedText.EMPTY;
+      public Component getPage(int var1) {
+         return var1 >= 0 && var1 < this.getPageCount() ? (Component)this.pages.get(var1) : CommonComponents.EMPTY;
       }
 
       @Nullable

@@ -103,7 +103,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
                this.serverLevelData.setWanderingTraderId(var9.getUUID());
                var9.setDespawnDelay(48000);
                var9.setWanderTarget(var7);
-               var9.restrictTo(var7, 16);
+               var9.setHomeTo(var7, 16);
                return true;
             }
          }

@@ -83,7 +83,7 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
 
    public void updateData(RealmsServer var1) {
       this.serverData = var1;
-      this.optionsButton.active = !var1.expired;
+      this.optionsButton.active = !var1.expired && !this.isMinigame();
       this.resetWorldButton.active = !var1.expired;
       if (this.isMinigame()) {
          this.resetWorldButton.setMessage(Component.translatable("mco.configure.world.buttons.switchminigame"));

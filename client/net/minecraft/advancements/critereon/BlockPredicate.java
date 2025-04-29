@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentGetter;
@@ -75,7 +76,7 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
    }
 
    private static boolean matchesBlockEntity(LevelReader var0, @Nullable BlockEntity var1, NbtPredicate var2) {
-      return var1 != null && var2.matches((Tag)var1.saveWithFullMetadata(var0.registryAccess()));
+      return var1 != null && var2.matches((Tag)var1.saveWithFullMetadata((HolderLookup.Provider)var0.registryAccess()));
    }
 
    private static boolean matchesComponents(@Nullable BlockEntity var0, DataComponentMatchers var1) {

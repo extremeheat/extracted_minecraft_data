@@ -19,7 +19,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public final class ProjectileUtil {
-   private static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
+   public static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
 
    public ProjectileUtil() {
       super();

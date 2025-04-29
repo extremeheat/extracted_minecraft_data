@@ -164,7 +164,6 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       if (var4 == null) {
          var1.fill(var2 + 9, var3 + 18, var2 + 9 + 234, var3 + 18 + 113, -16777216);
          int var5 = var2 + 9 + 117;
-         var1.depthTreeUp();
          Font var10001 = this.font;
          Component var10002 = NO_ADVANCEMENTS_LABEL;
          int var10004 = var3 + 18 + 56;
@@ -175,7 +174,6 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          var10004 = var3 + 18 + 113;
          Objects.requireNonNull(this.font);
          var1.drawCenteredString(var10001, (Component)var10002, var5, var10004 - 9, -1);
-         var1.depthTreeBack();
       } else {
          var4.drawContents(var1, var2 + 9, var3 + 18);
       }
@@ -183,24 +181,17 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    public void renderWindow(GuiGraphics var1, int var2, int var3) {
       var1.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
-      var1.depthTreePushCheckpoint();
       if (this.tabs.size() > 1) {
-         var1.depthTreeUp();
-
          for(AdvancementTab var5 : this.tabs.values()) {
             var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
          }
-
-         var1.depthTreeUp();
 
          for(AdvancementTab var7 : this.tabs.values()) {
             var7.drawIcon(var1, var2, var3);
          }
       }
 
-      var1.depthTreeUp();
-      var1.drawString(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, var2 + 8, var3 + 6, 4210752, false);
-      var1.depthTreeBackToCheckpoint();
+      var1.drawString(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, var2 + 8, var3 + 6, -12566464, false);
    }
 
    private void renderTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {

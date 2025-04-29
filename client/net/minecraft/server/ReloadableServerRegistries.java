@@ -77,7 +77,7 @@ public class ReloadableServerRegistries {
       ProblemReporter.Collector var1 = new ProblemReporter.Collector();
       ValidationContext var2 = new ValidationContext(var1, LootContextParamSets.ALL_PARAMS, var0);
       LootDataType.values().forEach((var2x) -> validateRegistry(var2, var2x, var0));
-      var1.get().forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x));
+      var1.forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x.description()));
    }
 
    private static LayeredRegistryAccess<RegistryLayer> createUpdatedRegistries(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {

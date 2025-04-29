@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
@@ -12,6 +11,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.Util;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class UnflattenTextComponentFix extends DataFix {
@@ -33,7 +33,7 @@ public class UnflattenTextComponentFix extends DataFix {
 
    private static <T> Dynamic<T> unflattenJson(DynamicOps<T> var0, String var1) {
       try {
-         JsonElement var2 = JsonParser.parseString(var1);
+         JsonElement var2 = LenientJsonParser.parse(var1);
          if (!var2.isJsonNull()) {
             return new Dynamic(var0, JsonOps.INSTANCE.convertTo(var0, var2));
          }

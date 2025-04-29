@@ -6,6 +6,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 
 public class FocusableTextWidget extends MultiLineTextWidget {
    private static final int DEFAULT_PADDING = 4;
@@ -40,24 +41,20 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.depthTreePushCheckpoint();
-      if (this.isFocused() || this.alwaysShowBorder) {
-         int var5 = this.getX() - this.padding;
-         int var6 = this.getY() - this.padding;
-         int var7 = this.getWidth() + this.padding * 2;
-         int var8 = this.getHeight() + this.padding * 2;
-         int var9 = this.alwaysShowBorder ? (this.isFocused() ? -1 : -6250336) : -1;
-         if (this.fillBackground) {
-            var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, -16777216);
-         }
+      int var5 = this.getX() - this.padding;
+      int var6 = this.getY() - this.padding;
+      int var7 = this.getWidth() + this.padding * 2;
+      int var8 = this.getHeight() + this.padding * 2;
+      int var9 = ARGB.color(this.alpha, this.alwaysShowBorder ? (this.isFocused() ? -1 : -6250336) : -1);
+      if (this.fillBackground) {
+         var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, ARGB.color(this.alpha, -16777216));
+      }
 
-         var1.depthTreeUp();
+      if (this.isFocused() || this.alwaysShowBorder) {
          var1.renderOutline(var5, var6, var7, var8, var9);
       }
 
-      var1.depthTreeUp();
       super.renderWidget(var1, var2, var3, var4);
-      var1.depthTreeBackToCheckpoint();
    }
 
    public void playDownSound(SoundManager var1) {

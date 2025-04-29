@@ -44,7 +44,7 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Trigg
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.BLOCK_USE, ".location"));
+         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.BLOCK_USE, "location"));
       }
    }
 }

@@ -2,7 +2,6 @@ package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
@@ -52,6 +51,7 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class RealmsClient {
@@ -153,7 +153,7 @@ public class RealmsClient {
 
       try {
          String var2 = this.execute(Request.get(var1, 5000, 10000));
-         JsonArray var3 = JsonParser.parseString(var2).getAsJsonArray();
+         JsonArray var3 = LenientJsonParser.parse(var2).getAsJsonArray();
          Set var4 = (Set)var3.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet());
          LOGGER.debug("Fetched Realms feature flags: {}", var4);
          return var4;

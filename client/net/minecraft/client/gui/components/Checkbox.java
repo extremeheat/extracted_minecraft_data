@@ -19,7 +19,7 @@ public class Checkbox extends AbstractButton {
    private static final ResourceLocation CHECKBOX_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_selected");
    private static final ResourceLocation CHECKBOX_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_highlighted");
    private static final ResourceLocation CHECKBOX_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox");
-   private static final int TEXT_COLOR = 14737632;
+   private static final int TEXT_COLOR = -2039584;
    private static final int SPACING = 4;
    private static final int BOX_PADDING = 8;
    private boolean selected;
@@ -29,7 +29,7 @@ public class Checkbox extends AbstractButton {
    Checkbox(int var1, int var2, int var3, Component var4, Font var5, boolean var6, OnValueChange var7) {
       super(var1, var2, 0, 0, var4);
       this.width = this.getAdjustedWidth(var3, var4, var5);
-      this.textWidget = (new MultiLineTextWidget(var4, var5)).setMaxWidth(this.width).setColor(14737632);
+      this.textWidget = (new MultiLineTextWidget(var4, var5)).setMaxWidth(this.width).setColor(-2039584);
       this.height = this.getAdjustedHeight(var5);
       this.selected = var6;
       this.onValueChange = var7;

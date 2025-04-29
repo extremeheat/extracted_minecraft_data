@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,6 +13,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public abstract class RandomizableContainerBlockEntity extends BaseContainerBlockEntity implements RandomizableContainer {
@@ -99,9 +99,9 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
 
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
+   public void removeComponentsFromTag(ValueOutput var1) {
       super.removeComponentsFromTag(var1);
-      var1.remove("LootTable");
-      var1.remove("LootTableSeed");
+      var1.discard("LootTable");
+      var1.discard("LootTableSeed");
    }
 }

@@ -49,7 +49,6 @@ public class RecipeToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
-      var1.depthTreeUp();
       var1.drawString(var2, (Component)TITLE_TEXT, 30, 7, -11534256, false);
       var1.drawString(var2, (Component)DESCRIPTION_TEXT, 30, 18, -16777216, false);
       Entry var5 = (Entry)this.recipeItems.get(this.displayedRecipeIndex);
@@ -58,7 +57,6 @@ public class RecipeToast implements Toast {
       var1.renderFakeItem(var5.categoryItem(), 3, 3);
       var1.pose().popMatrix();
       var1.renderFakeItem(var5.unlockedItem(), 8, 8);
-      var1.depthTreeBack();
    }
 
    private void addItem(ItemStack var1, ItemStack var2) {

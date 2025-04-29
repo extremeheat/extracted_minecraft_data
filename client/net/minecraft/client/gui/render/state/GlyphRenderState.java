@@ -34,4 +34,9 @@ public record GlyphRenderState(RenderPipeline pipeline, TextureSetup textureSetu
       var1.addVertexWith2DPose(this.pose(), this.x1() + this.shearY1(), this.y1(), var2).setUv(this.u1(), this.v1()).setLight(this.packedLightCoords()).setColor(this.color());
       var1.addVertexWith2DPose(this.pose(), this.x1() + this.shearY0(), this.y0(), var2).setUv(this.u1(), this.v0()).setLight(this.packedLightCoords()).setColor(this.color());
    }
+
+   @Nullable
+   public ScreenRectangle bounds() {
+      return null;
+   }
 }

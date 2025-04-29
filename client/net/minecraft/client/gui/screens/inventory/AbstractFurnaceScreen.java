@@ -41,15 +41,11 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       if (((AbstractFurnaceMenu)this.menu).isLit()) {
          boolean var7 = true;
          int var8 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
-         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
-         var1.depthTreeBack();
       }
 
       boolean var9 = true;
       int var10 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
-      var1.depthTreeUp();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
-      var1.depthTreeBack();
    }
 }

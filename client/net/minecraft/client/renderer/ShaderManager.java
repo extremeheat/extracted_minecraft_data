@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -37,6 +36,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -172,7 +172,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          BufferedReader var4 = var1.openAsReader();
 
          try {
-            JsonElement var5 = JsonParser.parseReader(var4);
+            JsonElement var5 = StrictJsonParser.parse((Reader)var4);
             var2.put(var3, (PostChainConfig)PostChainConfig.CODEC.parse(JsonOps.INSTANCE, var5).getOrThrow(JsonSyntaxException::new));
          } catch (Throwable var8) {
             if (var4 != null) {

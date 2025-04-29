@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.BiFunction;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -33,7 +34,7 @@ public class SequenceFunction implements LootItemFunction {
       LootItemFunction.super.validate(var1);
 
       for(int var2 = 0; var2 < this.functions.size(); ++var2) {
-         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(".function[" + var2 + "]"));
+         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("functions", var2)));
       }
 
    }

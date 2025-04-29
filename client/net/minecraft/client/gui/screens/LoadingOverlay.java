@@ -101,10 +101,8 @@ public class LoadingOverlay extends Overlay {
       double var17 = var14 * 4.0;
       int var19 = (int)(var17 * 0.5);
       int var20 = ARGB.white(var11);
-      var1.depthTreeUp();
       var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var27 - var19, var13 - var16, -0.0625F, 0.0F, var19, (int)var14, 120, 60, 120, 120, var20);
       var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var27, var13 - var16, 0.0625F, 60.0F, var19, (int)var14, 120, 60, 120, 120, var20);
-      var1.depthTreeBack();
       int var21 = (int)((double)var1.guiHeight() * 0.8325);
       float var22 = this.reload.getActualProgress();
       this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);
@@ -136,13 +134,11 @@ public class LoadingOverlay extends Overlay {
       int var7 = Mth.ceil((float)(var4 - var2 - 2) * this.currentProgress);
       int var8 = Math.round(var6 * 255.0F);
       int var9 = ARGB.color(var8, 255, 255, 255);
-      var1.depthTreeUp();
       var1.fill(var2 + 2, var3 + 2, var2 + var7, var5 - 2, var9);
       var1.fill(var2 + 1, var3, var4 - 1, var3 + 1, var9);
       var1.fill(var2 + 1, var5, var4 - 1, var5 - 1, var9);
       var1.fill(var2, var3, var2 + 1, var5, var9);
       var1.fill(var4, var3, var4 - 1, var5, var9);
-      var1.depthTreeBack();
    }
 
    public boolean isPauseScreen() {

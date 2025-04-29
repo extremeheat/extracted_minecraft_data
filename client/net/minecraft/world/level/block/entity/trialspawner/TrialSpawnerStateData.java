@@ -1,13 +1,11 @@
 package net.minecraft.world.level.block.entity.trialspawner;
 
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -42,41 +40,43 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 
-public class TrialSpawnerData {
-   public static final String TAG_SPAWN_DATA = "spawn_data";
+public class TrialSpawnerStateData {
+   private static final String TAG_SPAWN_DATA = "spawn_data";
    private static final String TAG_NEXT_MOB_SPAWNS_AT = "next_mob_spawns_at";
    private static final int DELAY_BETWEEN_PLAYER_SCANS = 20;
    private static final int TRIAL_OMEN_PER_BAD_OMEN_LEVEL = 18000;
-   public static MapCodec<TrialSpawnerData> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC_SET.lenientOptionalFieldOf("registered_players", Sets.newHashSet()).forGetter((var0x) -> var0x.detectedPlayers), UUIDUtil.CODEC_SET.lenientOptionalFieldOf("current_mobs", Sets.newHashSet()).forGetter((var0x) -> var0x.currentMobs), Codec.LONG.lenientOptionalFieldOf("cooldown_ends_at", 0L).forGetter((var0x) -> var0x.cooldownEndsAt), Codec.LONG.lenientOptionalFieldOf("next_mob_spawns_at", 0L).forGetter((var0x) -> var0x.nextMobSpawnsAt), Codec.intRange(0, 2147483647).lenientOptionalFieldOf("total_mobs_spawned", 0).forGetter((var0x) -> var0x.totalMobsSpawned), SpawnData.CODEC.lenientOptionalFieldOf("spawn_data").forGetter((var0x) -> var0x.nextSpawnData), LootTable.KEY_CODEC.lenientOptionalFieldOf("ejecting_loot_table").forGetter((var0x) -> var0x.ejectingLootTable)).apply(var0, TrialSpawnerData::new));
-   protected final Set<UUID> detectedPlayers;
-   protected final Set<UUID> currentMobs;
-   protected long cooldownEndsAt;
-   protected long nextMobSpawnsAt;
-   protected int totalMobsSpawned;
-   protected Optional<SpawnData> nextSpawnData;
-   protected Optional<ResourceKey<LootTable>> ejectingLootTable;
+   final Set<UUID> detectedPlayers = new HashSet();
+   final Set<UUID> currentMobs = new HashSet();
+   long cooldownEndsAt;
+   long nextMobSpawnsAt;
+   int totalMobsSpawned;
+   Optional<SpawnData> nextSpawnData = Optional.empty();
+   Optional<ResourceKey<LootTable>> ejectingLootTable = Optional.empty();
    @Nullable
-   protected Entity displayEntity;
+   private Entity displayEntity;
    @Nullable
    private WeightedList<ItemStack> dispensing;
-   protected double spin;
-   protected double oSpin;
+   double spin;
+   double oSpin;
 
-   public TrialSpawnerData() {
-      this(Collections.emptySet(), Collections.emptySet(), 0L, 0L, 0, Optional.empty(), Optional.empty());
+   public TrialSpawnerStateData() {
+      super();
    }
 
-   public TrialSpawnerData(Set<UUID> var1, Set<UUID> var2, long var3, long var5, int var7, Optional<SpawnData> var8, Optional<ResourceKey<LootTable>> var9) {
-      super();
-      this.detectedPlayers = new HashSet();
-      this.currentMobs = new HashSet();
-      this.detectedPlayers.addAll(var1);
-      this.currentMobs.addAll(var2);
-      this.cooldownEndsAt = var3;
-      this.nextMobSpawnsAt = var5;
-      this.totalMobsSpawned = var7;
-      this.nextSpawnData = var8;
-      this.ejectingLootTable = var9;
+   public Packed pack() {
+      return new Packed(Set.copyOf(this.detectedPlayers), Set.copyOf(this.currentMobs), this.cooldownEndsAt, this.nextMobSpawnsAt, this.totalMobsSpawned, this.nextSpawnData, this.ejectingLootTable);
+   }
+
+   public void apply(Packed var1) {
+      this.detectedPlayers.clear();
+      this.detectedPlayers.addAll(var1.detectedPlayers);
+      this.currentMobs.clear();
+      this.currentMobs.addAll(var1.currentMobs);
+      this.cooldownEndsAt = var1.cooldownEndsAt;
+      this.nextMobSpawnsAt = var1.nextMobSpawnsAt;
+      this.totalMobsSpawned = var1.totalMobsSpawned;
+      this.nextSpawnData = var1.nextSpawnData;
+      this.ejectingLootTable = var1.ejectingLootTable;
    }
 
    public void reset() {
@@ -94,7 +94,7 @@ public class TrialSpawnerData {
 
    public boolean hasMobToSpawn(TrialSpawner var1, RandomSource var2) {
       boolean var3 = this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().getString("id").isPresent();
-      return var3 || !var1.getConfig().spawnPotentialsDefinition().isEmpty();
+      return var3 || !var1.activeConfig().spawnPotentialsDefinition().isEmpty();
    }
 
    public boolean hasFinishedSpawningAllMobs(TrialSpawnerConfig var1, int var2) {
@@ -140,7 +140,7 @@ public class TrialSpawnerData {
             }
 
             if (!var3.getState().equals(TrialSpawnerState.COOLDOWN) || var6) {
-               boolean var10 = var3.getData().detectedPlayers.isEmpty();
+               boolean var10 = var3.getStateData().detectedPlayers.isEmpty();
                List var8 = var10 ? var5 : var3.getPlayerDetector().detect(var1, var3.getEntitySelector(), var2, (double)var3.getRequiredPlayerRange(), false);
                if (this.detectedPlayers.addAll(var8)) {
                   this.nextMobSpawnsAt = Math.max(var1.getGameTime() + 40L, this.nextMobSpawnsAt);
@@ -189,15 +189,15 @@ public class TrialSpawnerData {
             var1x.remove(Entity.RemovalReason.DISCARDED);
          }
       });
-      if (!var1.getOminousConfig().spawnPotentialsDefinition().isEmpty()) {
+      if (!var1.ominousConfig().spawnPotentialsDefinition().isEmpty()) {
          this.nextSpawnData = Optional.empty();
       }
 
       this.totalMobsSpawned = 0;
       this.currentMobs.clear();
-      this.nextMobSpawnsAt = var2.getGameTime() + (long)var1.getOminousConfig().ticksBetweenSpawn();
+      this.nextMobSpawnsAt = var2.getGameTime() + (long)var1.ominousConfig().ticksBetweenSpawn();
       var1.markUpdated();
-      this.cooldownEndsAt = var2.getGameTime() + var1.getOminousConfig().ticksBetweenItemSpawners();
+      this.cooldownEndsAt = var2.getGameTime() + var1.ominousConfig().ticksBetweenItemSpawners();
    }
 
    private static void transformBadOmenIntoTrialOmen(Player var0) {
@@ -228,7 +228,7 @@ public class TrialSpawnerData {
       if (this.nextSpawnData.isPresent()) {
          return (SpawnData)this.nextSpawnData.get();
       } else {
-         WeightedList var3 = var1.getConfig().spawnPotentialsDefinition();
+         WeightedList var3 = var1.activeConfig().spawnPotentialsDefinition();
          Optional var4 = var3.isEmpty() ? this.nextSpawnData : var3.getRandom(var2);
          this.nextSpawnData = Optional.of((SpawnData)var4.orElseGet(SpawnData::new));
          var1.markUpdated();
@@ -298,5 +298,27 @@ public class TrialSpawnerData {
    private static long lowResolutionPosition(ServerLevel var0, BlockPos var1) {
       BlockPos var2 = new BlockPos(Mth.floor((float)var1.getX() / 30.0F), Mth.floor((float)var1.getY() / 20.0F), Mth.floor((float)var1.getZ() / 30.0F));
       return var0.getSeed() + var2.asLong();
+   }
+
+   public static record Packed(Set<UUID> detectedPlayers, Set<UUID> currentMobs, long cooldownEndsAt, long nextMobSpawnsAt, int totalMobsSpawned, Optional<SpawnData> nextSpawnData, Optional<ResourceKey<LootTable>> ejectingLootTable) {
+      final Set<UUID> detectedPlayers;
+      final Set<UUID> currentMobs;
+      final long cooldownEndsAt;
+      final long nextMobSpawnsAt;
+      final int totalMobsSpawned;
+      final Optional<SpawnData> nextSpawnData;
+      final Optional<ResourceKey<LootTable>> ejectingLootTable;
+      public static final MapCodec<Packed> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC_SET.lenientOptionalFieldOf("registered_players", Set.of()).forGetter(Packed::detectedPlayers), UUIDUtil.CODEC_SET.lenientOptionalFieldOf("current_mobs", Set.of()).forGetter(Packed::currentMobs), Codec.LONG.lenientOptionalFieldOf("cooldown_ends_at", 0L).forGetter(Packed::cooldownEndsAt), Codec.LONG.lenientOptionalFieldOf("next_mob_spawns_at", 0L).forGetter(Packed::nextMobSpawnsAt), Codec.intRange(0, 2147483647).lenientOptionalFieldOf("total_mobs_spawned", 0).forGetter(Packed::totalMobsSpawned), SpawnData.CODEC.lenientOptionalFieldOf("spawn_data").forGetter(Packed::nextSpawnData), LootTable.KEY_CODEC.lenientOptionalFieldOf("ejecting_loot_table").forGetter(Packed::ejectingLootTable)).apply(var0, Packed::new));
+
+      public Packed(Set<UUID> var1, Set<UUID> var2, long var3, long var5, int var7, Optional<SpawnData> var8, Optional<ResourceKey<LootTable>> var9) {
+         super();
+         this.detectedPlayers = var1;
+         this.currentMobs = var2;
+         this.cooldownEndsAt = var3;
+         this.nextMobSpawnsAt = var5;
+         this.totalMobsSpawned = var7;
+         this.nextSpawnData = var8;
+         this.ejectingLootTable = var9;
+      }
    }
 }

@@ -109,21 +109,19 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawCenteredString(this.font, (Component)PRIMARY_EFFECT_LABEL, 62, 10, 14737632);
-      var1.drawCenteredString(this.font, (Component)SECONDARY_EFFECT_LABEL, 169, 10, 14737632);
+      var1.drawCenteredString(this.font, (Component)PRIMARY_EFFECT_LABEL, 62, 10, -2039584);
+      var1.drawCenteredString(this.font, (Component)SECONDARY_EFFECT_LABEL, 169, 10, -2039584);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(RenderPipelines.GUI_TEXTURED, BEACON_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      var1.depthTreeUp();
       var1.renderItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
       var1.renderItem(new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
       var1.renderItem(new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
       var1.renderItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
       var1.renderItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
-      var1.depthTreeBack();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -155,9 +153,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          }
 
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
-         var1.depthTreeUp();
          this.renderIcon(var1);
-         var1.depthTreeBack();
       }
 
       protected abstract void renderIcon(GuiGraphics var1);

@@ -109,7 +109,7 @@ public abstract class MoveToBlockGoal extends Goal {
             for(int var7 = 0; var7 <= var6; var7 = var7 > 0 ? -var7 : 1 - var7) {
                for(int var8 = var7 < var6 && var7 > -var6 ? var6 : 0; var8 <= var6; var8 = var8 > 0 ? -var8 : 1 - var8) {
                   var4.setWithOffset(var3, var7, var5 - 1, var8);
-                  if (this.mob.isWithinRestriction(var4) && this.isValidTarget(this.mob.level(), var4)) {
+                  if (this.mob.isWithinHome(var4) && this.isValidTarget(this.mob.level(), var4)) {
                      this.blockPos = var4;
                      return true;
                   }

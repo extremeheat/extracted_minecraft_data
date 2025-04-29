@@ -7,8 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -24,6 +22,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -320,10 +320,9 @@ public class PistonMovingBlockEntity extends BlockEntity {
       }
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.movedState = (BlockState)var1.read("blockState", BlockState.CODEC, var3).orElse(DEFAULT_BLOCK_STATE);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.movedState = (BlockState)var1.read("blockState", BlockState.CODEC).orElse(DEFAULT_BLOCK_STATE);
       this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN);
       this.progress = var1.getFloatOr("progress", 0.0F);
       this.progressO = this.progress;
@@ -331,10 +330,9 @@ public class PistonMovingBlockEntity extends BlockEntity {
       this.isSourcePiston = var1.getBooleanOr("source", false);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.store("blockState", BlockState.CODEC, var3, this.movedState);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      var1.store("blockState", BlockState.CODEC, this.movedState);
       var1.store("facing", Direction.LEGACY_ID_CODEC, this.direction);
       var1.putFloat("progress", this.progressO);
       var1.putBoolean("extending", this.extending);

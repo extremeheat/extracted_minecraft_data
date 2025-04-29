@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Collection;
@@ -14,14 +15,9 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class AttributeInstance {
-   private static final String BASE_FIELD = "base";
-   private static final String MODIFIERS_FIELD = "modifiers";
-   public static final String ID_FIELD = "id";
-   public static final Codec<Holder<Attribute>> TYPE_CODEC;
    private final Holder<Attribute> attribute;
    private final Map<AttributeModifier.Operation, Map<ResourceLocation, AttributeModifier>> modifiersByOperation = Maps.newEnumMap(AttributeModifier.Operation.class);
    private final Map<ResourceLocation, AttributeModifier> modifierById = new Object2ObjectArrayMap();
@@ -187,30 +183,37 @@ public class AttributeInstance {
       this.setDirty();
    }
 
-   public CompoundTag save() {
-      CompoundTag var1 = new CompoundTag();
-      var1.store("id", TYPE_CODEC, this.attribute);
-      var1.putDouble("base", this.baseValue);
-      if (!this.permanentModifiers.isEmpty()) {
-         var1.store("modifiers", AttributeModifier.CODEC.listOf(), List.copyOf(this.permanentModifiers.values()));
-      }
-
-      return var1;
+   public Packed pack() {
+      return new Packed(this.attribute, this.baseValue, List.copyOf(this.permanentModifiers.values()));
    }
 
-   public void load(CompoundTag var1) {
-      this.baseValue = var1.getDoubleOr("base", 0.0);
+   public void apply(Packed var1) {
+      this.baseValue = var1.baseValue;
 
-      for(AttributeModifier var4 : (List)var1.read("modifiers", AttributeModifier.CODEC.listOf()).orElse(List.of())) {
-         this.modifierById.put(var4.id(), var4);
-         this.getModifiers(var4.operation()).put(var4.id(), var4);
-         this.permanentModifiers.put(var4.id(), var4);
+      for(AttributeModifier var3 : var1.modifiers) {
+         this.modifierById.put(var3.id(), var3);
+         this.getModifiers(var3.operation()).put(var3.id(), var3);
+         this.permanentModifiers.put(var3.id(), var3);
       }
 
       this.setDirty();
    }
 
-   static {
-      TYPE_CODEC = BuiltInRegistries.ATTRIBUTE.holderByNameCodec();
+   public static record Packed(Holder<Attribute> attribute, double baseValue, List<AttributeModifier> modifiers) {
+      final double baseValue;
+      final List<AttributeModifier> modifiers;
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("id").forGetter(Packed::attribute), Codec.DOUBLE.fieldOf("base").orElse(0.0).forGetter(Packed::baseValue), AttributeModifier.CODEC.listOf().optionalFieldOf("modifiers", List.of()).forGetter(Packed::modifiers)).apply(var0, Packed::new));
+      public static final Codec<List<Packed>> LIST_CODEC;
+
+      public Packed(Holder<Attribute> var1, double var2, List<AttributeModifier> var4) {
+         super();
+         this.attribute = var1;
+         this.baseValue = var2;
+         this.modifiers = var4;
+      }
+
+      static {
+         LIST_CODEC = CODEC.listOf();
+      }
    }
 }

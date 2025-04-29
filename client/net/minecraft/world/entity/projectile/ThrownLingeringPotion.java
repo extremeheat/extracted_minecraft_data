@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
@@ -10,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 
 public class ThrownLingeringPotion extends AbstractThrownPotion {
    public ThrownLingeringPotion(EntityType<? extends ThrownLingeringPotion> var1, Level var2) {
@@ -28,7 +28,7 @@ public class ThrownLingeringPotion extends AbstractThrownPotion {
       return Items.LINGERING_POTION;
    }
 
-   public void onHitAsPotion(ServerLevel var1, ItemStack var2, @Nullable Entity var3) {
+   public void onHitAsPotion(ServerLevel var1, ItemStack var2, HitResult var3) {
       AreaEffectCloud var4 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
       Entity var6 = this.getOwner();
       if (var6 instanceof LivingEntity var5) {

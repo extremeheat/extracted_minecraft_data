@@ -9,6 +9,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -16,7 +17,7 @@ import net.minecraft.util.StringUtil;
 
 public class MultiLineEditBox extends AbstractTextAreaWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
-   private static final int CURSOR_INSERT_COLOR = -3092272;
+   private static final int CURSOR_COLOR = -3092272;
    private static final String CURSOR_APPEND_CHARACTER = "_";
    private static final int TEXT_COLOR = -2039584;
    private static final int PLACEHOLDER_TEXT_COLOR = -857677600;
@@ -24,11 +25,17 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    private final Font font;
    private final Component placeholder;
    private final MultilineTextField textField;
+   private final int textColor;
+   private final boolean textShadow;
+   private final int cursorColor;
    private long focusedTime = Util.getMillis();
 
-   public MultiLineEditBox(Font var1, int var2, int var3, int var4, int var5, Component var6, Component var7) {
-      super(var2, var3, var4, var5, var7);
+   MultiLineEditBox(Font var1, int var2, int var3, int var4, int var5, Component var6, Component var7, int var8, boolean var9, int var10, boolean var11, boolean var12) {
+      super(var2, var3, var4, var5, var7, var11, var12);
       this.font = var1;
+      this.textShadow = var9;
+      this.textColor = var8;
+      this.cursorColor = var10;
       this.placeholder = var6;
       this.textField = new MultilineTextField(var1, var4 - this.totalInnerPadding());
       this.textField.setCursorListener(this::scrollToCursor);
@@ -36,6 +43,10 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
 
    public void setCharacterLimit(int var1) {
       this.textField.setCharacterLimit(var1);
+   }
+
+   public void setLineLimit(int var1) {
+      this.textField.setLineLimit(var1);
    }
 
    public void setValueListener(Consumer<String> var1) {
@@ -97,20 +108,20 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
                   String var23 = var5.substring(var13.beginIndex(), var6);
-                  var1.drawString(this.font, var23, var15, var11, -2039584);
-                  var9 = var15 + this.font.width(var23);
+                  var1.drawString(this.font, var23, var15, var11, this.textColor, this.textShadow);
+                  var9 = var15 + this.font.width(var23) - (this.textShadow ? 1 : 0);
                   int var10002 = var11 - 1;
                   int var10003 = var9 + 1;
                   int var10004 = var11 + 1;
                   Objects.requireNonNull(this.font);
-                  var1.fill(var9, var10002, var10003, var10004 + 9, -3092272);
-                  var1.drawString(this.font, var5.substring(var6, var13.endIndex()), var9, var11, -2039584);
+                  var1.fill(var9, var10002, var10003, var10004 + 9, this.cursorColor);
+                  var1.drawString(this.font, var5.substring(var6, var13.endIndex()), var9, var11, this.textColor, this.textShadow);
                }
             } else {
                if (var14) {
                   String var16 = var5.substring(var13.beginIndex(), var13.endIndex());
-                  var1.drawString(this.font, var16, var15, var11, -2039584);
-                  var9 = var15 + this.font.width(var16);
+                  var1.drawString(this.font, var16, var15, var11, this.textColor, this.textShadow);
+                  var9 = var15 + this.font.width(var16) - 1;
                }
 
                var10 = var11;
@@ -123,7 +134,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          if (var7 && !var8) {
             Objects.requireNonNull(this.font);
             if (this.withinContentAreaTopBottom(var10, var10 + 9)) {
-               var1.drawString(this.font, "_", var9, var10, -3092272);
+               var1.drawString(this.font, "_", var9, var10, this.cursorColor, this.textShadow);
             }
          }
 
@@ -171,7 +182,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       if (this.textField.hasCharacterLimit()) {
          int var2 = this.textField.characterLimit();
          MutableComponent var3 = Component.translatable("gui.multiLineEditBox.character_limit", this.textField.value().length(), var2);
-         var1.drawString(this.font, (Component)var3, this.getX() + this.width - this.font.width((FormattedText)var3), this.getY() + this.height + 4, 10526880);
+         var1.drawString(this.font, (Component)var3, this.getX() + this.width - this.font.width((FormattedText)var3), this.getY() + this.height + 4, -6250336);
       }
 
    }
@@ -187,9 +198,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    }
 
    private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.depthTreeUp();
       var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
-      var1.depthTreeBack();
    }
 
    private void scrollToCursor() {
@@ -230,5 +239,74 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          this.focusedTime = Util.getMillis();
       }
 
+   }
+
+   public static Builder builder() {
+      return new Builder();
+   }
+
+   public static class Builder {
+      private int x;
+      private int y;
+      private Component placeholder;
+      private int textColor;
+      private boolean textShadow;
+      private int cursorColor;
+      private boolean showBackground;
+      private boolean showDecorations;
+
+      public Builder() {
+         super();
+         this.placeholder = CommonComponents.EMPTY;
+         this.textColor = -2039584;
+         this.textShadow = true;
+         this.cursorColor = -3092272;
+         this.showBackground = true;
+         this.showDecorations = true;
+      }
+
+      public Builder setX(int var1) {
+         this.x = var1;
+         return this;
+      }
+
+      public Builder setY(int var1) {
+         this.y = var1;
+         return this;
+      }
+
+      public Builder setPlaceholder(Component var1) {
+         this.placeholder = var1;
+         return this;
+      }
+
+      public Builder setTextColor(int var1) {
+         this.textColor = var1;
+         return this;
+      }
+
+      public Builder setTextShadow(boolean var1) {
+         this.textShadow = var1;
+         return this;
+      }
+
+      public Builder setCursorColor(int var1) {
+         this.cursorColor = var1;
+         return this;
+      }
+
+      public Builder setShowBackground(boolean var1) {
+         this.showBackground = var1;
+         return this;
+      }
+
+      public Builder setShowDecorations(boolean var1) {
+         this.showDecorations = var1;
+         return this;
+      }
+
+      public MultiLineEditBox build(Font var1, int var2, int var3, Component var4) {
+         return new MultiLineEditBox(var1, this.x, this.y, var2, var3, this.placeholder, var4, this.textColor, this.textShadow, this.cursorColor, this.showBackground, this.showDecorations);
+      }
    }
 }

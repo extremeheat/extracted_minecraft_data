@@ -13,7 +13,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -87,6 +86,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Wolf extends TamableAnimal implements NeutralMob {
@@ -220,7 +221,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.playSound(SoundEvents.WOLF_STEP, 0.15F, 1.0F);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
       VariantUtils.writeVariant(var1, this.getVariant());
@@ -228,9 +229,9 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.getSoundVariant().unwrapKey().ifPresent((var1x) -> var1.store("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT), var1x));
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      VariantUtils.readVariant(var1, this.registryAccess(), Registries.WOLF_VARIANT).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, Registries.WOLF_VARIANT).ifPresent(this::setVariant);
       this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
       this.readPersistentAngerSaveData(this.level(), var1);
       var1.read("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);

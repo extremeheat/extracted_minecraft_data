@@ -189,7 +189,7 @@ public class EditGameRulesScreen extends Screen {
          this.input.setValue(Integer.toString(var5.get()));
          this.input.setResponder((var2x) -> {
             if (var5.tryDeserialize(var2x)) {
-               this.input.setTextColor(14737632);
+               this.input.setTextColor(-2039584);
                EditGameRulesScreen.this.clearInvalid(this);
             } else {
                this.input.setTextColor(-65536);

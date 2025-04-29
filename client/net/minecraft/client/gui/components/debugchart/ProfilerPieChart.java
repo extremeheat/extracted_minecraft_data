@@ -49,8 +49,6 @@ public class ProfilerPieChart {
          boolean var10 = true;
          int var11 = var9 - 62 - 5;
          var1.fill(var5 - 5, var11 - 62 - 5, var6 + 5, var8 + 5, -1873784752);
-         var1.depthTreePushCheckpoint();
-         var1.depthTreeUp();
          var1.submitProfilerChartRenderState(var2, var5, var11 - 62 + 10, var6, var11 + 62);
          DecimalFormat var12 = new DecimalFormat("##0.00");
          var12.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
@@ -66,13 +64,12 @@ public class ProfilerPieChart {
             var14 = var14 + var13 + " ";
          }
 
-         int var15 = 16777215;
+         boolean var15 = true;
          int var16 = var11 - 62;
-         var1.depthTreeUp();
-         var1.drawString(this.font, var14, var5, var16, 16777215);
+         var1.drawString(this.font, (String)var14, var5, var16, -1);
          String var26 = var12.format(var3.globalPercentage);
          var14 = var26 + "%";
-         var1.drawString(this.font, var14, var6 - this.font.width(var14), var16, 16777215);
+         var1.drawString(this.font, (String)var14, var6 - this.font.width(var14), var16, -1);
 
          for(int var17 = 0; var17 < var2.size(); ++var17) {
             ResultField var18 = (ResultField)var2.get(var17);
@@ -95,7 +92,6 @@ public class ProfilerPieChart {
             var1.drawString(this.font, var20, var6 - this.font.width(var20), var21, var18.getColor());
          }
 
-         var1.depthTreeBackToCheckpoint();
       }
    }
 

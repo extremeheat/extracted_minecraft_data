@@ -3,7 +3,6 @@ package net.minecraft.world.entity.vehicle;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -23,6 +22,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public abstract class AbstractChestBoat extends AbstractBoat implements HasCustomInventoryScreen, ContainerEntity {
@@ -45,14 +46,14 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       return 1;
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1, this.registryAccess());
+      this.addChestVehicleSaveData(var1);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1, this.registryAccess());
+      this.readChestVehicleSaveData(var1);
    }
 
    public void destroy(ServerLevel var1, DamageSource var2) {

@@ -34,7 +34,6 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(RenderPipelines.GUI_TEXTURED, BREWING_STAND_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      var1.depthTreeUp();
       int var7 = ((BrewingStandMenu)this.menu).getFuel();
       int var8 = Mth.clamp((18 * var7 + 20 - 1) / 20, 0, 18);
       if (var8 > 0) {
@@ -54,6 +53,5 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
          }
       }
 
-      var1.depthTreeBack();
    }
 }

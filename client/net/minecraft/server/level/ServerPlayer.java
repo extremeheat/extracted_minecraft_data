@@ -46,8 +46,6 @@ import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -187,6 +185,8 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
@@ -448,12 +448,12 @@ public class ServerPlayer extends Player {
       return var1 <= 16 ? var1 - 1 : 17;
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.wardenSpawnTracker = (WardenSpawnTracker)var1.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
       this.enteredNetherPosition = (Vec3)var1.read("entered_nether_pos", Vec3.CODEC).orElse((Object)null);
       this.seenCredits = var1.getBooleanOr("seenCredits", false);
-      this.recipeBook.fromNbt(var1.getCompoundOrEmpty("recipeBook"), (var1x) -> this.server.getRecipeManager().byKey(var1x).isPresent());
+      var1.read("recipeBook", ServerRecipeBook.Packed.CODEC).ifPresent((var1x) -> this.recipeBook.loadUntrusted(var1x, (var1) -> this.server.getRecipeManager().byKey(var1).isPresent()));
       if (this.isSleeping()) {
          this.stopSleeping();
       }
@@ -463,14 +463,14 @@ public class ServerPlayer extends Player {
       this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("warden_spawn_tracker", WardenSpawnTracker.CODEC, this.wardenSpawnTracker);
       this.storeGameTypes(var1);
       var1.putBoolean("seenCredits", this.seenCredits);
       var1.storeNullable("entered_nether_pos", Vec3.CODEC, this.enteredNetherPosition);
       this.saveParentVehicle(var1);
-      var1.put("recipeBook", this.recipeBook.toNbt());
+      var1.store("recipeBook", ServerRecipeBook.Packed.CODEC, this.recipeBook.pack());
       var1.putString("Dimension", this.level().dimension().location().toString());
       var1.storeNullable("respawn", ServerPlayer.RespawnConfig.CODEC, this.respawnConfig);
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
@@ -478,27 +478,24 @@ public class ServerPlayer extends Player {
       this.saveEnderPearls(var1);
    }
 
-   private void saveParentVehicle(CompoundTag var1) {
+   private void saveParentVehicle(ValueOutput var1) {
       Entity var2 = this.getRootVehicle();
       Entity var3 = this.getVehicle();
       if (var3 != null && var2 != this && var2.hasExactlyOnePlayerPassenger()) {
-         CompoundTag var4 = new CompoundTag();
-         CompoundTag var5 = new CompoundTag();
-         var2.save(var5);
+         ValueOutput var4 = var1.child("RootVehicle");
          var4.store("Attach", UUIDUtil.CODEC, var3.getUUID());
-         var4.put("Entity", var5);
-         var1.put("RootVehicle", var4);
+         var2.save(var4.child("Entity"));
       }
 
    }
 
-   public void loadAndSpawnParentVehicle(CompoundTag var1) {
-      Optional var2 = var1.getCompound("RootVehicle");
+   public void loadAndSpawnParentVehicle(ValueInput var1) {
+      Optional var2 = var1.child("RootVehicle");
       if (!var2.isEmpty()) {
          ServerLevel var3 = this.serverLevel();
-         Entity var4 = EntityType.loadEntityRecursive(((CompoundTag)var2.get()).getCompoundOrEmpty("Entity"), var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
+         Entity var4 = EntityType.loadEntityRecursive((ValueInput)((ValueInput)var2.get()).childOrEmpty("Entity"), var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
          if (var4 != null) {
-            UUID var5 = (UUID)((CompoundTag)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
+            UUID var5 = (UUID)((ValueInput)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
             if (var4.getUUID().equals(var5)) {
                this.startRiding(var4, true);
             } else {
@@ -523,36 +520,33 @@ public class ServerPlayer extends Player {
       }
    }
 
-   private void saveEnderPearls(CompoundTag var1) {
+   private void saveEnderPearls(ValueOutput var1) {
       if (!this.enderPearls.isEmpty()) {
-         ListTag var2 = new ListTag();
+         ValueOutput.ValueOutputList var2 = var1.childrenList("ender_pearls");
 
          for(ThrownEnderpearl var4 : this.enderPearls) {
             if (var4.isRemoved()) {
                LOGGER.warn("Trying to save removed ender pearl, skipping");
             } else {
-               CompoundTag var5 = new CompoundTag();
+               ValueOutput var5 = var2.addChild();
                var4.save(var5);
                var5.store("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC, var4.level().dimension());
-               var2.add(var5);
             }
          }
-
-         var1.put("ender_pearls", var2);
       }
 
    }
 
-   public void loadAndSpawnEnderPearls(CompoundTag var1) {
-      var1.getList("ender_pearls").ifPresent((var1x) -> var1x.compoundStream().forEach(this::loadAndSpawnEnderPearl));
+   public void loadAndSpawnEnderPearls(ValueInput var1) {
+      var1.childrenListOrEmpty("ender_pearls").forEach(this::loadAndSpawnEnderPearl);
    }
 
-   private void loadAndSpawnEnderPearl(CompoundTag var1) {
+   private void loadAndSpawnEnderPearl(ValueInput var1) {
       Optional var2 = var1.read("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC);
       if (!var2.isEmpty()) {
          ServerLevel var3 = this.serverLevel().getServer().getLevel((ResourceKey)var2.get());
          if (var3 != null) {
-            Entity var4 = EntityType.loadEntityRecursive(var1, var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
+            Entity var4 = EntityType.loadEntityRecursive((ValueInput)var1, var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
             if (var4 != null) {
                placeEnderPearlTicket(var3, var4.chunkPosition());
             } else {
@@ -1848,7 +1842,7 @@ public class ServerPlayer extends Player {
    }
 
    @Nullable
-   private static GameType readPlayerMode(@Nullable CompoundTag var0, String var1) {
+   private static GameType readPlayerMode(@Nullable ValueInput var0, String var1) {
       return var0 != null ? (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null) : null;
    }
 
@@ -1861,11 +1855,11 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void loadGameTypes(@Nullable CompoundTag var1) {
+   public void loadGameTypes(@Nullable ValueInput var1) {
       this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
    }
 
-   private void storeGameTypes(CompoundTag var1) {
+   private void storeGameTypes(ValueOutput var1) {
       var1.store("playerGameType", GameType.LEGACY_ID_CODEC, this.gameMode.getGameModeForPlayer());
       GameType var2 = this.gameMode.getPreviousGameModeForPlayer();
       var1.storeNullable("previousPlayerGameType", GameType.LEGACY_ID_CODEC, var2);

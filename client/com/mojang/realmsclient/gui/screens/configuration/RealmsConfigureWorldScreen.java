@@ -26,6 +26,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
@@ -134,6 +135,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       var1.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
+   public boolean keyPressed(int var1, int var2, int var3) {
+      return this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+   }
+
    protected void renderMenuBackground(GuiGraphics var1) {
       var1.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
       this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
@@ -208,6 +213,13 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build();
          this.addRenderableWidget(this.tabNavigationBar);
          this.tabNavigationBar.selectTab(0, false);
+         this.tabNavigationBar.setTabActiveState(3, !this.serverData.expired);
+         if (this.serverData.expired) {
+            this.tabNavigationBar.setTabTooltip(3, Tooltip.create(Component.translatable("mco.configure.world.settings.expired")));
+         } else {
+            this.tabNavigationBar.setTabTooltip(3, (Tooltip)null);
+         }
+
          this.repositionElements();
       }
    }

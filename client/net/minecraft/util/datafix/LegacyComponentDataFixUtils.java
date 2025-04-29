@@ -3,11 +3,11 @@ package net.minecraft.util.datafix;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.Optional;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 
 public class LegacyComponentDataFixUtils {
    private static final String EMPTY_CONTENTS = createTextComponentJson("");
@@ -48,7 +48,7 @@ public class LegacyComponentDataFixUtils {
          char var2 = var0.charAt(var0.length() - 1);
          if (var1 == '"' && var2 == '"' || var1 == '{' && var2 == '}' || var1 == '[' && var2 == ']') {
             try {
-               JsonElement var3 = JsonParser.parseString(var0);
+               JsonElement var3 = LenientJsonParser.parse(var0);
                if (var3.isJsonPrimitive()) {
                   return createTextComponentJson(var3.getAsString());
                }
@@ -66,7 +66,7 @@ public class LegacyComponentDataFixUtils {
 
    public static Optional<String> extractTranslationString(String var0) {
       try {
-         JsonElement var1 = JsonParser.parseString(var0);
+         JsonElement var1 = LenientJsonParser.parse(var0);
          if (var1.isJsonObject()) {
             JsonObject var2 = var1.getAsJsonObject();
             JsonElement var3 = var2.get("translate");

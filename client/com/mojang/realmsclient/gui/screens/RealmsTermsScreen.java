@@ -87,7 +87,7 @@ public class RealmsTermsScreen extends RealmsScreen {
       Objects.requireNonNull(this.font);
       int var9 = var10000 + 9;
       this.onLink = var6 <= var2 && var2 <= var8 && var7 <= var3 && var3 <= var9;
-      var1.drawString(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + var5, row(5), this.onLink ? 7107012 : 3368635);
+      var1.drawString(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + var5, row(5), this.onLink ? -9670204 : -13408581);
    }
 
    static {

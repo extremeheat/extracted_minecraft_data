@@ -53,7 +53,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

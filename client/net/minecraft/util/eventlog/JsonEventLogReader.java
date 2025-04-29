@@ -3,6 +3,7 @@ package net.minecraft.util.eventlog;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -15,7 +16,7 @@ import javax.annotation.Nullable;
 public interface JsonEventLogReader<T> extends Closeable {
    static <T> JsonEventLogReader<T> create(final Codec<T> var0, Reader var1) {
       final JsonReader var2 = new JsonReader(var1);
-      var2.setLenient(true);
+      var2.setStrictness(Strictness.LENIENT);
       return new JsonEventLogReader<T>() {
          @Nullable
          public T next() throws IOException {

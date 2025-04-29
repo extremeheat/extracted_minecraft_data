@@ -66,7 +66,7 @@ public class GuiRenderer implements AutoCloseable {
    private static final float GUI_Z_NEAR = 1000.0F;
    public static final int GUI_3D_Z_FAR = 1000;
    public static final int GUI_3D_Z_NEAR = -1000;
-   private static final int DEFAULT_ITEM_SIZE = 16;
+   public static final int DEFAULT_ITEM_SIZE = 16;
    private static final int MINIMUM_ITEM_ATLAS_SIZE = 512;
    private static final int MAXIMUM_ITEM_ATLAS_SIZE = 2048;
    public static final int CLEAR_COLOR = 0;
@@ -359,7 +359,7 @@ public class GuiRenderer implements AutoCloseable {
    private void submitBlitFromItemAtlas(GuiItemRenderState var1, float var2, float var3, int var4, int var5) {
       float var6 = var2 + (float)var4 / (float)var5;
       float var7 = var3 + (float)(-var4) / (float)var5;
-      this.renderState.submitGuiElement(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlas), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea()));
+      this.renderState.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlas), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void createAtlasTextures(int var1) {

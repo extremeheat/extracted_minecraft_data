@@ -7,6 +7,7 @@ import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -29,12 +30,12 @@ public class FunctionReference extends LootItemConditionalFunction {
 
    public void validate(ValidationContext var1) {
       if (!var1.allowsReferences()) {
-         var1.reportProblem("Uses reference to " + String.valueOf(this.name.location()) + ", but references are not allowed");
+         var1.reportProblem(new ValidationContext.ReferenceNotAllowedProblem(this.name));
       } else if (var1.hasVisitedElement(this.name)) {
-         var1.reportProblem("Function " + String.valueOf(this.name.location()) + " is recursively called");
+         var1.reportProblem(new ValidationContext.RecursiveReferenceProblem(this.name));
       } else {
          super.validate(var1);
-         var1.resolver().get(this.name).ifPresentOrElse((var2) -> ((LootItemFunction)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name)), () -> var1.reportProblem("Unknown function table called " + String.valueOf(this.name.location())));
+         var1.resolver().get(this.name).ifPresentOrElse((var2) -> ((LootItemFunction)var2.value()).validate(var1.enterElement(new ProblemReporter.ElementReferencePathElement(this.name), this.name)), () -> var1.reportProblem(new ValidationContext.MissingReferenceProblem(this.name)));
       }
    }
 

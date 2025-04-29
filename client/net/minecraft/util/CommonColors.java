@@ -4,6 +4,7 @@ public class CommonColors {
    public static final int WHITE = -1;
    public static final int BLACK = -16777216;
    public static final int GRAY = -8355712;
+   public static final int DARK_GRAY = -12566464;
    public static final int LIGHT_GRAY = -6250336;
    public static final int LIGHTER_GRAY = -4539718;
    public static final int RED = -65536;

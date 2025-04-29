@@ -82,13 +82,13 @@ public class DeathScreen extends Screen {
       super.render(var1, var2, var3, var4);
       var1.pose().pushMatrix();
       var1.pose().scale(2.0F, 2.0F);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2 / 2, 30, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2 / 2, 30, -1);
       var1.pose().popMatrix();
       if (this.causeOfDeath != null) {
-         var1.drawCenteredString(this.font, (Component)this.causeOfDeath, this.width / 2, 85, 16777215);
+         var1.drawCenteredString(this.font, (Component)this.causeOfDeath, this.width / 2, 85, -1);
       }
 
-      var1.drawCenteredString(this.font, (Component)this.deathScore, this.width / 2, 100, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.deathScore, this.width / 2, 100, -1);
       if (this.causeOfDeath != null && var3 > 85) {
          Objects.requireNonNull(this.font);
          if (var3 < 85 + 9) {

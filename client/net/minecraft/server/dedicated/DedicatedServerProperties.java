@@ -2,6 +2,7 @@ package net.minecraft.server.dedicated;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
@@ -24,12 +25,14 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameType;
@@ -168,7 +171,8 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    private static Component parseResourcePackPrompt(String var0) {
       if (!Strings.isNullOrEmpty(var0)) {
          try {
-            return Component.Serializer.fromJson((String)var0, RegistryAccess.EMPTY);
+            JsonElement var1 = StrictJsonParser.parse(var0);
+            return (Component)ComponentSerialization.CODEC.parse(RegistryAccess.EMPTY.createSerializationContext(JsonOps.INSTANCE), var1).resultOrPartial((var1x) -> LOGGER.warn("Failed to parse resource pack prompt '{}': {}", var0, var1x)).orElse((Object)null);
          } catch (Exception var2) {
             LOGGER.warn("Failed to parse resource pack prompt '{}'", var0, var2);
          }

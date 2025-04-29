@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
@@ -76,12 +77,9 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(RenderPipelines.GUI_TEXTURED, ENCHANTING_TABLE_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      var1.depthTreeUp();
       this.renderBook(var1, var5, var6);
-      var1.depthTreeBack();
       EnchantmentNames.getInstance().initSeed((long)((EnchantmentMenu)this.menu).getEnchantmentSeed());
       int var7 = ((EnchantmentMenu)this.menu).getGoldCount();
-      var1.depthTreeUp();
 
       for(int var8 = 0; var8 < 3; ++var8) {
          int var9 = var5 + 60;
@@ -93,35 +91,31 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
             String var12 = "" + var11;
             int var13 = 86 - this.font.width(var12);
             FormattedText var14 = EnchantmentNames.getInstance().getRandomName(this.font, var13);
-            int var15 = 6839882;
+            int var15 = -9937334;
             if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.hasInfiniteMaterials()) {
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
-               var1.depthTreeUp();
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
-               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1, false);
-               var15 = 4226832;
+               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, ARGB.opaque((var15 & 16711422) >> 1), false);
+               var15 = -12550384;
             } else {
                int var16 = var3 - (var5 + 60);
                int var17 = var4 - (var6 + 14 + 19 * var8);
                if (var16 >= 0 && var17 >= 0 && var16 < 108 && var17 < 19) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
-                  var15 = 16777088;
+                  var15 = -128;
                } else {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENCHANTMENT_SLOT_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                }
 
-               var1.depthTreeUp();
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15, false);
-               var15 = 8453920;
+               var15 = -8323296;
             }
 
             var1.drawString(this.font, var12, var10 + 86 - this.font.width(var12), var6 + 16 + 19 * var8 + 7, var15);
-            var1.depthTreeBack();
          }
       }
 
-      var1.depthTreeBack();
    }
 
    private void renderBook(GuiGraphics var1, int var2, int var3) {

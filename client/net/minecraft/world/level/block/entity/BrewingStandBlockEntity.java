@@ -4,9 +4,7 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.ContainerHelper;
@@ -23,6 +21,8 @@ import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BrewingStandBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
    private static final int INGREDIENT_SLOT = 3;
@@ -185,10 +185,10 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       var0.levelEvent(1035, var1, 0);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      ContainerHelper.loadAllItems(var1, this.items, var2);
+      ContainerHelper.loadAllItems(var1, this.items);
       this.brewTime = var1.getShortOr("BrewTime", (short)0);
       if (this.brewTime > 0) {
          this.ingredient = ((ItemStack)this.items.get(3)).getItem();
@@ -197,10 +197,10 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       this.fuel = var1.getByteOr("Fuel", (byte)0);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putShort("BrewTime", (short)this.brewTime);
-      ContainerHelper.saveAllItems(var1, this.items, var2);
+      ContainerHelper.saveAllItems(var1, this.items);
       var1.putByte("Fuel", (byte)this.fuel);
    }
 

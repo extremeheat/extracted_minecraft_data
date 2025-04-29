@@ -49,8 +49,8 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerIn
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.zombie, ".zombie");
-         var1.validateEntity(this.villager, ".villager");
+         var1.validateEntity(this.zombie, "zombie");
+         var1.validateEntity(this.villager, "villager");
       }
    }
 }

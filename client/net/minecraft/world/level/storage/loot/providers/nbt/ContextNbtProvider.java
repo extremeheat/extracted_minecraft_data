@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,7 @@ public class ContextNbtProvider implements NbtProvider {
    private static final Getter BLOCK_ENTITY_PROVIDER = new Getter() {
       public Tag get(LootContext var1) {
          BlockEntity var2 = (BlockEntity)var1.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-         return var2 != null ? var2.saveWithFullMetadata(var2.getLevel().registryAccess()) : null;
+         return var2 != null ? var2.saveWithFullMetadata((HolderLookup.Provider)var2.getLevel().registryAccess()) : null;
       }
 
       public String getId() {

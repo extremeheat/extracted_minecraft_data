@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.horse;
 
 import java.util.EnumSet;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -21,6 +20,8 @@ import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class TraderLlama extends Llama {
    private static final int DEFAULT_DESPAWN_DELAY = 47999;
@@ -39,12 +40,12 @@ public class TraderLlama extends Llama {
       return EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("DespawnDelay", this.despawnDelay);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.despawnDelay = var1.getIntOr("DespawnDelay", 47999);
    }

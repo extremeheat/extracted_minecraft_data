@@ -7,6 +7,7 @@ import java.util.Set;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.util.context.ContextKeySet;
 
 public class ValidationContext {
@@ -31,11 +32,11 @@ public class ValidationContext {
       this.visitedElements = var4;
    }
 
-   public ValidationContext forChild(String var1) {
+   public ValidationContext forChild(ProblemReporter.PathElement var1) {
       return new ValidationContext(this.reporter.forChild(var1), this.contextKeySet, this.resolver, this.visitedElements);
    }
 
-   public ValidationContext enterElement(String var1, ResourceKey<?> var2) {
+   public ValidationContext enterElement(ProblemReporter.PathElement var1, ResourceKey<?> var2) {
       ImmutableSet var3 = ImmutableSet.builder().addAll(this.visitedElements).add(var2).build();
       return new ValidationContext(this.reporter.forChild(var1), this.contextKeySet, this.resolver, var3);
    }
@@ -44,7 +45,7 @@ public class ValidationContext {
       return this.visitedElements.contains(var1);
    }
 
-   public void reportProblem(String var1) {
+   public void reportProblem(ProblemReporter.Problem var1) {
       this.reporter.report(var1);
    }
 
@@ -52,7 +53,7 @@ public class ValidationContext {
       Set var2 = var1.getReferencedContextParams();
       Sets.SetView var3 = Sets.difference(var2, this.contextKeySet.allowed());
       if (!var3.isEmpty()) {
-         this.reporter.report("Parameters " + String.valueOf(var3) + " are not provided in this context");
+         this.reporter.report(new ParametersNotProvidedProblem(var3));
       }
 
    }
@@ -71,5 +72,52 @@ public class ValidationContext {
 
    public ProblemReporter reporter() {
       return this.reporter;
+   }
+
+   public static record ParametersNotProvidedProblem(Set<ContextKey<?>> notProvided) implements ProblemReporter.Problem {
+      public ParametersNotProvidedProblem(Set<ContextKey<?>> var1) {
+         super();
+         this.notProvided = var1;
+      }
+
+      public String description() {
+         return "Parameters " + String.valueOf(this.notProvided) + " are not provided in this context";
+      }
+   }
+
+   public static record ReferenceNotAllowedProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
+      public ReferenceNotAllowedProblem(ResourceKey<?> var1) {
+         super();
+         this.referenced = var1;
+      }
+
+      public String description() {
+         String var10000 = String.valueOf(this.referenced.location());
+         return "Reference to " + var10000 + " of type " + String.valueOf(this.referenced.registry()) + " was used, but references are not allowed";
+      }
+   }
+
+   public static record RecursiveReferenceProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
+      public RecursiveReferenceProblem(ResourceKey<?> var1) {
+         super();
+         this.referenced = var1;
+      }
+
+      public String description() {
+         String var10000 = String.valueOf(this.referenced.location());
+         return var10000 + " of type " + String.valueOf(this.referenced.registry()) + " is recursively called";
+      }
+   }
+
+   public static record MissingReferenceProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
+      public MissingReferenceProblem(ResourceKey<?> var1) {
+         super();
+         this.referenced = var1;
+      }
+
+      public String description() {
+         String var10000 = String.valueOf(this.referenced.location());
+         return "Missing element " + var10000 + " of type " + String.valueOf(this.referenced.registry());
+      }
    }
 }

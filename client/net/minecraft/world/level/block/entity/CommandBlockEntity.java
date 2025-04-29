@@ -3,11 +3,9 @@ package net.minecraft.world.level.block.entity;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +14,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CommandBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
@@ -59,17 +59,17 @@ public class CommandBlockEntity extends BlockEntity {
       super(BlockEntityType.COMMAND_BLOCK, var1, var2);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      this.commandBlock.save(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      this.commandBlock.save(var1);
       var1.putBoolean("powered", this.isPowered());
       var1.putBoolean("conditionMet", this.wasConditionMet());
       var1.putBoolean("auto", this.isAutomatic());
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      this.commandBlock.load(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.commandBlock.load(var1);
       this.powered = var1.getBooleanOr("powered", false);
       this.conditionMet = var1.getBooleanOr("conditionMet", false);
       this.setAutomatic(var1.getBooleanOr("auto", false));
@@ -162,11 +162,11 @@ public class CommandBlockEntity extends BlockEntity {
       var1.set(DataComponents.CUSTOM_NAME, this.commandBlock.getCustomName());
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
+   public void removeComponentsFromTag(ValueOutput var1) {
       super.removeComponentsFromTag(var1);
-      var1.remove("CustomName");
-      var1.remove("conditionMet");
-      var1.remove("powered");
+      var1.discard("CustomName");
+      var1.discard("conditionMet");
+      var1.discard("powered");
    }
 
    public static enum Mode {

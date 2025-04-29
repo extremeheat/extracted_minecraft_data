@@ -81,6 +81,10 @@ public class ARGB {
       return var0 << 24 | var1 & 16777215;
    }
 
+   public static int color(float var0, int var1) {
+      return as8BitChannel(var0) << 24 | var1 & 16777215;
+   }
+
    public static int white(float var0) {
       return as8BitChannel(var0) << 24 | 16777215;
    }

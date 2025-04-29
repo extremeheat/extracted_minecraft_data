@@ -2,11 +2,10 @@ package net.minecraft.world;
 
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class ContainerHelper {
    public static final String TAG_ITEMS = "Items";
@@ -23,37 +22,30 @@ public class ContainerHelper {
       return var1 >= 0 && var1 < var0.size() ? (ItemStack)var0.set(var1, ItemStack.EMPTY) : ItemStack.EMPTY;
    }
 
-   public static CompoundTag saveAllItems(CompoundTag var0, NonNullList<ItemStack> var1, HolderLookup.Provider var2) {
-      return saveAllItems(var0, var1, true, var2);
+   public static void saveAllItems(ValueOutput var0, NonNullList<ItemStack> var1) {
+      saveAllItems(var0, var1, true);
    }
 
-   public static CompoundTag saveAllItems(CompoundTag var0, NonNullList<ItemStack> var1, boolean var2, HolderLookup.Provider var3) {
-      ListTag var4 = new ListTag();
+   public static void saveAllItems(ValueOutput var0, NonNullList<ItemStack> var1, boolean var2) {
+      ValueOutput.TypedOutputList var3 = var0.list("Items", ItemStackWithSlot.CODEC);
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = (ItemStack)var1.get(var5);
-         if (!var6.isEmpty()) {
-            CompoundTag var7 = new CompoundTag();
-            var7.putByte("Slot", (byte)var5);
-            var4.add(var6.save(var3, var7));
+      for(int var4 = 0; var4 < var1.size(); ++var4) {
+         ItemStack var5 = (ItemStack)var1.get(var4);
+         if (!var5.isEmpty()) {
+            var3.add(new ItemStackWithSlot(var4, var5));
          }
       }
 
-      if (!var4.isEmpty() || var2) {
-         var0.put("Items", var4);
+      if (var3.isEmpty() && !var2) {
+         var0.discard("Items");
       }
 
-      return var0;
    }
 
-   public static void loadAllItems(CompoundTag var0, NonNullList<ItemStack> var1, HolderLookup.Provider var2) {
-      ListTag var3 = var0.getListOrEmpty("Items");
-
-      for(int var4 = 0; var4 < var3.size(); ++var4) {
-         CompoundTag var5 = var3.getCompoundOrEmpty(var4);
-         int var6 = var5.getByteOr("Slot", (byte)0) & 255;
-         if (var6 >= 0 && var6 < var1.size()) {
-            var1.set(var6, (ItemStack)ItemStack.parse(var2, var5).orElse(ItemStack.EMPTY));
+   public static void loadAllItems(ValueInput var0, NonNullList<ItemStack> var1) {
+      for(ItemStackWithSlot var3 : var0.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
+         if (var3.isValidInContainer(var1.size())) {
+            var1.set(var3.slot(), var3.stack());
          }
       }
 

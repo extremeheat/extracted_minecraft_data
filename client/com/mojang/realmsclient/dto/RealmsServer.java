@@ -52,7 +52,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    public boolean expired;
    @SerializedName("expiredTrial")
    public boolean expiredTrial;
-   @Exclude
+   @SerializedName("daysLeft")
    public int daysLeft;
    @SerializedName("worldType")
    public WorldType worldType;

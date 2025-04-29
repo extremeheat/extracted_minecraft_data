@@ -7,7 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
-import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerData;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerStateData;
 import net.minecraft.world.phys.Vec3;
 
 public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlockEntity> {
@@ -22,7 +22,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
       Level var8 = var1.getLevel();
       if (var8 != null) {
          TrialSpawner var9 = var1.getTrialSpawner();
-         TrialSpawnerData var10 = var9.getData();
+         TrialSpawnerStateData var10 = var9.getStateData();
          Entity var11 = var10.getOrCreateDisplayEntity(var9, var8, var9.getState());
          if (var11 != null) {
             SpawnerRenderer.renderEntityInSpawner(var2, var3, var4, var5, var11, this.entityRenderer, var10.getOSpin(), var10.getSpin());

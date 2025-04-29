@@ -21,6 +21,7 @@ import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabOrderedElement;
@@ -59,6 +60,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private static final ResourceLocation INWORLD_MENU_BACKGROUND;
    public static final ResourceLocation INWORLD_HEADER_SEPARATOR;
    public static final ResourceLocation INWORLD_FOOTER_SEPARATOR;
+   protected static final float FADE_IN_TIME = 2000.0F;
    protected final Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
    private final List<NarratableEntry> narratables = Lists.newArrayList();
@@ -386,6 +388,15 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.setInitialFocus();
    }
 
+   protected void fadeWidgets(float var1) {
+      for(GuiEventListener var3 : this.children()) {
+         if (var3 instanceof AbstractWidget var4) {
+            var4.setAlpha(var1);
+         }
+      }
+
+   }
+
    public List<? extends GuiEventListener> children() {
       return this.children;
    }
@@ -408,9 +419,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
 
       this.renderBlurredBackground(var1);
-      var1.depthTreeUp();
       this.renderMenuBackground(var1);
-      var1.depthTreeBack();
    }
 
    protected void renderBlurredBackground(GuiGraphics var1) {

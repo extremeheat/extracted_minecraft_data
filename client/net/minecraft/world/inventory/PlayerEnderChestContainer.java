@@ -1,13 +1,13 @@
 package net.minecraft.world.inventory;
 
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class PlayerEnderChestContainer extends SimpleContainer {
    @Nullable
@@ -25,34 +25,27 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       return this.activeChest == var1;
    }
 
-   public void fromTag(ListTag var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
-         this.setItem(var3, ItemStack.EMPTY);
+   public void fromSlots(ValueInput.TypedInputList<ItemStackWithSlot> var1) {
+      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
+         this.setItem(var2, ItemStack.EMPTY);
       }
 
-      for(int var6 = 0; var6 < var1.size(); ++var6) {
-         CompoundTag var4 = var1.getCompoundOrEmpty(var6);
-         int var5 = var4.getByteOr("Slot", (byte)0) & 255;
-         if (var5 >= 0 && var5 < this.getContainerSize()) {
-            this.setItem(var5, (ItemStack)ItemStack.parse(var2, var4).orElse(ItemStack.EMPTY));
+      for(ItemStackWithSlot var3 : var1) {
+         if (var3.isValidInContainer(this.getContainerSize())) {
+            this.setItem(var3.slot(), var3.stack());
          }
       }
 
    }
 
-   public ListTag createTag(HolderLookup.Provider var1) {
-      ListTag var2 = new ListTag();
-
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
-         ItemStack var4 = this.getItem(var3);
-         if (!var4.isEmpty()) {
-            CompoundTag var5 = new CompoundTag();
-            var5.putByte("Slot", (byte)var3);
-            var2.add(var4.save(var1, var5));
+   public void storeAsSlots(ValueOutput.TypedOutputList<ItemStackWithSlot> var1) {
+      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
+         ItemStack var3 = this.getItem(var2);
+         if (!var3.isEmpty()) {
+            var1.add(new ItemStackWithSlot(var2, var3));
          }
       }
 
-      return var2;
    }
 
    public boolean stillValid(Player var1) {

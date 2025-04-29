@@ -117,7 +117,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          }
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.drawString(RealmsPreferredRegionSelectionScreen.this.font, this.name, var4 + 5, var3 + 2, 16777215);
+            var1.drawString(RealmsPreferredRegionSelectionScreen.this.font, (Component)this.name, var4 + 5, var3 + 2, -1);
             if (this.regionSelection.region() != null && RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.containsKey(this.regionSelection.region())) {
                ServiceQuality var11 = (ServiceQuality)RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.getOrDefault(this.regionSelection.region(), ServiceQuality.UNKNOWN);
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var11.getIcon(), var4 + var5 - 18, var3 + 2, 10, 8);

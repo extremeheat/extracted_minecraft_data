@@ -5,12 +5,8 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
@@ -29,6 +25,8 @@ import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
@@ -189,19 +187,17 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, 2, var3, (Component)var4, var2.getServer(), var1);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.book = (ItemStack)var1.read("Book", ItemStack.CODEC, var3).map((var1x) -> this.resolveBook(var1x, (Player)null)).orElse(ItemStack.EMPTY);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.book = (ItemStack)var1.read("Book", ItemStack.CODEC).map((var1x) -> this.resolveBook(var1x, (Player)null)).orElse(ItemStack.EMPTY);
       this.pageCount = getPageCount(this.book);
       this.page = Mth.clamp(var1.getIntOr("Page", 0), 0, this.pageCount - 1);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       if (!this.getBook().isEmpty()) {
-         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-         var1.store("Book", ItemStack.CODEC, var3, this.getBook());
+         var1.store("Book", ItemStack.CODEC, this.getBook());
          var1.putInt("Page", this.page);
       }
 

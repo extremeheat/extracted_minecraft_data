@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,6 +13,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -33,9 +33,11 @@ import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -139,12 +141,12 @@ public class Ghast extends Mob implements Enemy {
       return 1;
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("ExplosionPower", (byte)this.explosionPower);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
    }
@@ -222,7 +224,7 @@ public class Ghast extends Mob implements Enemy {
          AABB var3 = var2.move(var1);
          if (this.careful) {
             for(BlockPos var5 : BlockPos.betweenClosed(var3.inflate(1.0))) {
-               if (!this.blockTraversalPossible(this.ghast.level(), var5, false, false)) {
+               if (!this.blockTraversalPossible(this.ghast.level(), (Vec3)null, (Vec3)null, var5, false, false)) {
                   return false;
                }
             }
@@ -232,21 +234,34 @@ public class Ghast extends Mob implements Enemy {
          boolean var9 = this.ghast.isInLava();
          Vec3 var6 = this.ghast.position();
          Vec3 var7 = var6.add(var1);
-         return BlockGetter.forEachBlockIntersectedBetween(var6, var7, var3, (var4, var5x) -> var2.intersects(var4) ? true : this.blockTraversalPossible(this.ghast.level(), var4, var8, var9));
+         return BlockGetter.forEachBlockIntersectedBetween(var6, var7, var3, (var6x, var7x) -> var2.intersects(var6x) ? true : this.blockTraversalPossible(this.ghast.level(), var6, var7, var6x, var8, var9));
       }
 
-      private boolean blockTraversalPossible(BlockGetter var1, BlockPos var2, boolean var3, boolean var4) {
-         BlockState var5 = var1.getBlockState(var2);
-         if (var5.isAir()) {
+      private boolean blockTraversalPossible(BlockGetter var1, @Nullable Vec3 var2, @Nullable Vec3 var3, BlockPos var4, boolean var5, boolean var6) {
+         BlockState var7 = var1.getBlockState(var4);
+         if (var7.isAir()) {
             return true;
-         } else if (!this.careful) {
-            return var5.getCollisionShape(var1, var2).isEmpty();
-         } else if (var5.is(Blocks.WATER)) {
-            return var3;
-         } else if (var5.is(Blocks.LAVA)) {
-            return var4;
          } else {
-            return var5.is(BlockTags.HAPPY_GHAST_AVOIDS) ? false : var5.getCollisionShape(var1, var2).isEmpty();
+            boolean var8 = var2 != null && var3 != null;
+            boolean var9 = var8 ? !this.ghast.collidedWithShapeMovingFrom(var2, var3, var7.getCollisionShape(var1, var4).move(new Vec3(var4)).toAabbs()) : var7.getCollisionShape(var1, var4).isEmpty();
+            if (!this.careful) {
+               return var9;
+            } else if (var7.is(BlockTags.HAPPY_GHAST_AVOIDS)) {
+               return false;
+            } else {
+               FluidState var10 = var1.getFluidState(var4);
+               if (!var10.isEmpty() && (!var8 || this.ghast.collidedWithFluid(var10, var4, var2, var3))) {
+                  if (var10.is(FluidTags.WATER)) {
+                     return var5;
+                  }
+
+                  if (var10.is(FluidTags.LAVA)) {
+                     return var6;
+                  }
+               }
+
+               return var9;
+            }
          }
       }
    }
@@ -347,7 +362,7 @@ public class Ghast extends Mob implements Enemy {
       @Nullable
       private static Vec3 chooseRandomPositionWithRestriction(Mob var0, Vec3 var1, RandomSource var2) {
          Vec3 var3 = chooseRandomPosition(var1, var2);
-         return var0.hasRestriction() && !var0.isWithinRestriction(var3) ? null : var3;
+         return var0.hasHome() && !var0.isWithinHome(var3) ? null : var3;
       }
    }
 

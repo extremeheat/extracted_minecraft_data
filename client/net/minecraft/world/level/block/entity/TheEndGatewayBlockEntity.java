@@ -23,6 +23,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -45,8 +47,8 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       super(BlockEntityType.END_GATEWAY, var1, var2);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putLong("Age", this.age);
       var1.storeNullable("exit_portal", BlockPos.CODEC, this.exitPortal);
       if (this.exactTeleport) {
@@ -55,8 +57,8 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
 
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.age = var1.getLongOr("Age", 0L);
       this.exitPortal = (BlockPos)var1.read("exit_portal", BlockPos.CODEC).filter(Level::isInSpawnableBounds).orElse((Object)null);
       this.exactTeleport = var1.getBooleanOr("ExactTeleport", false);

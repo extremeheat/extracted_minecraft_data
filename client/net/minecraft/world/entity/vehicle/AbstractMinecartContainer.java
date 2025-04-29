@@ -2,7 +2,6 @@ package net.minecraft.world.entity.vehicle;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -17,6 +16,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
@@ -71,14 +72,14 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
       super.remove(var1);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1, this.registryAccess());
+      this.addChestVehicleSaveData(var1);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1, this.registryAccess());
+      this.readChestVehicleSaveData(var1);
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {

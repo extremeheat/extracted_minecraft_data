@@ -45,7 +45,7 @@ public class AnyBlockInteractionTrigger extends SimpleCriterionTrigger<TriggerIn
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, ".location"));
+         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, "location"));
       }
    }
 }

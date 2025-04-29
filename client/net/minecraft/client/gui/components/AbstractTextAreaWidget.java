@@ -9,9 +9,19 @@ import net.minecraft.resources.ResourceLocation;
 public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
    private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
    private static final int INNER_PADDING = 4;
+   private boolean showBackground;
+   private boolean showDecorations;
 
    public AbstractTextAreaWidget(int var1, int var2, int var3, int var4, Component var5) {
       super(var1, var2, var3, var4, var5);
+      this.showBackground = true;
+      this.showDecorations = true;
+   }
+
+   public AbstractTextAreaWidget(int var1, int var2, int var3, int var4, Component var5, boolean var6, boolean var7) {
+      this(var1, var2, var3, var4, var5);
+      this.showBackground = var6;
+      this.showDecorations = var7;
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -35,21 +45,25 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
-         this.renderBackground(var1);
+         if (this.showBackground) {
+            this.renderBackground(var1);
+         }
+
          var1.enableScissor(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1);
          var1.pose().pushMatrix();
          var1.pose().translate(0.0F, (float)(-this.scrollAmount()));
-         var1.depthTreeUp();
          this.renderContents(var1, var2, var3, var4);
-         var1.depthTreeBack();
          var1.pose().popMatrix();
          var1.disableScissor();
-         this.renderDecorations(var1);
+         this.renderScrollbar(var1);
+         if (this.showDecorations) {
+            this.renderDecorations(var1);
+         }
+
       }
    }
 
    protected void renderDecorations(GuiGraphics var1) {
-      this.renderScrollbar(var1);
    }
 
    protected int innerPadding() {

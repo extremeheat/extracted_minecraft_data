@@ -363,43 +363,43 @@ public class StructureBlockEditScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       StructureMode var5 = this.structure.getMode();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
       if (var5 != StructureMode.DATA) {
-         var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 30, 10526880);
+         var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 30, -6250336);
          this.nameEdit.render(var1, var2, var3, var4);
       }
 
       if (var5 == StructureMode.LOAD || var5 == StructureMode.SAVE) {
-         var1.drawString(this.font, (Component)POSITION_LABEL, this.width / 2 - 153, 70, 10526880);
+         var1.drawString(this.font, (Component)POSITION_LABEL, this.width / 2 - 153, 70, -6250336);
          this.posXEdit.render(var1, var2, var3, var4);
          this.posYEdit.render(var1, var2, var3, var4);
          this.posZEdit.render(var1, var2, var3, var4);
-         var1.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)INCLUDE_ENTITIES_LABEL), 150, 10526880);
+         var1.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)INCLUDE_ENTITIES_LABEL), 150, -6250336);
       }
 
       if (var5 == StructureMode.SAVE) {
-         var1.drawString(this.font, (Component)SIZE_LABEL, this.width / 2 - 153, 110, 10526880);
+         var1.drawString(this.font, (Component)SIZE_LABEL, this.width / 2 - 153, 110, -6250336);
          this.sizeXEdit.render(var1, var2, var3, var4);
          this.sizeYEdit.render(var1, var2, var3, var4);
          this.sizeZEdit.render(var1, var2, var3, var4);
-         var1.drawString(this.font, (Component)DETECT_SIZE_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)DETECT_SIZE_LABEL), 110, 10526880);
-         var1.drawString(this.font, (Component)SHOW_AIR_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_AIR_LABEL), 70, 10526880);
+         var1.drawString(this.font, (Component)DETECT_SIZE_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)DETECT_SIZE_LABEL), 110, -6250336);
+         var1.drawString(this.font, (Component)SHOW_AIR_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_AIR_LABEL), 70, -6250336);
       }
 
       if (var5 == StructureMode.LOAD) {
-         var1.drawString(this.font, (Component)INTEGRITY_LABEL, this.width / 2 - 153, 110, 10526880);
+         var1.drawString(this.font, (Component)INTEGRITY_LABEL, this.width / 2 - 153, 110, -6250336);
          this.integrityEdit.render(var1, var2, var3, var4);
          this.seedEdit.render(var1, var2, var3, var4);
-         var1.drawString(this.font, (Component)STRICT_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)STRICT_LABEL), 110, 10526880);
-         var1.drawString(this.font, (Component)SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_BOUNDING_BOX_LABEL), 70, 10526880);
+         var1.drawString(this.font, (Component)STRICT_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)STRICT_LABEL), 110, -6250336);
+         var1.drawString(this.font, (Component)SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_BOUNDING_BOX_LABEL), 70, -6250336);
       }
 
       if (var5 == StructureMode.DATA) {
-         var1.drawString(this.font, (Component)CUSTOM_DATA_LABEL, this.width / 2 - 153, 110, 10526880);
+         var1.drawString(this.font, (Component)CUSTOM_DATA_LABEL, this.width / 2 - 153, 110, -6250336);
          this.dataEdit.render(var1, var2, var3, var4);
       }
 
-      var1.drawString(this.font, (Component)var5.getDisplayName(), this.width / 2 - 153, 174, 10526880);
+      var1.drawString(this.font, (Component)var5.getDisplayName(), this.width / 2 - 153, 174, -6250336);
    }
 
    public boolean isPauseScreen() {

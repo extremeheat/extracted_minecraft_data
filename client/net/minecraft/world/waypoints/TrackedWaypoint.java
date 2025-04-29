@@ -75,12 +75,26 @@ public abstract class TrackedWaypoint implements Waypoint {
 
    public abstract double yawAngleToCamera(Level var1, Camera var2);
 
-   public abstract int pitchDirectionToCamera(Level var1, Projector var2);
+   public abstract PitchDirection pitchDirectionToCamera(Level var1, Projector var2);
 
    public abstract double distanceSquared(Entity var1);
 
    public Waypoint.Icon icon() {
       return this.icon;
+   }
+
+   public static enum PitchDirection {
+      NONE,
+      UP,
+      DOWN;
+
+      private PitchDirection() {
+      }
+
+      // $FF: synthetic method
+      private static PitchDirection[] $values() {
+         return new PitchDirection[]{NONE, UP, DOWN};
+      }
    }
 
    static enum Type {
@@ -120,8 +134,8 @@ public abstract class TrackedWaypoint implements Waypoint {
          return 0.0 / 0.0;
       }
 
-      public int pitchDirectionToCamera(Level var1, Projector var2) {
-         return 0;
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
+         return TrackedWaypoint.PitchDirection.NONE;
       }
 
       public double distanceSquared(Entity var1) {
@@ -169,16 +183,26 @@ public abstract class TrackedWaypoint implements Waypoint {
          return (double)Mth.degreesDifference(var2.yaw(), var4);
       }
 
-      public int pitchDirectionToCamera(Level var1, Projector var2) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
          Vec3 var3 = var2.projectPointToScreen(this.position(var1));
          boolean var4 = var3.z > 1.0;
          double var5 = var4 ? -var3.y : var3.y;
          if (var5 < -1.0) {
-            return -1;
+            return TrackedWaypoint.PitchDirection.DOWN;
          } else if (var5 > 1.0) {
-            return 1;
+            return TrackedWaypoint.PitchDirection.UP;
          } else {
-            return var4 ? Mth.sign(var3.y) : 0;
+            if (var4) {
+               if (var3.y > 0.0) {
+                  return TrackedWaypoint.PitchDirection.UP;
+               }
+
+               if (var3.y < 0.0) {
+                  return TrackedWaypoint.PitchDirection.DOWN;
+               }
+            }
+
+            return TrackedWaypoint.PitchDirection.NONE;
          }
       }
 
@@ -225,12 +249,12 @@ public abstract class TrackedWaypoint implements Waypoint {
          return (double)Mth.degreesDifference(var2.yaw(), var5);
       }
 
-      public int pitchDirectionToCamera(Level var1, Projector var2) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
          double var3 = var2.projectHorizonToScreen();
          if (var3 < -1.0) {
-            return -1;
+            return TrackedWaypoint.PitchDirection.DOWN;
          } else {
-            return var3 > 1.0 ? 1 : 0;
+            return var3 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
          }
       }
 
@@ -269,12 +293,12 @@ public abstract class TrackedWaypoint implements Waypoint {
          return (double)Mth.degreesDifference(var2.yaw(), this.angle * 57.295776F);
       }
 
-      public int pitchDirectionToCamera(Level var1, Projector var2) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
          double var3 = var2.projectHorizonToScreen();
          if (var3 < -1.0) {
-            return -1;
+            return TrackedWaypoint.PitchDirection.DOWN;
          } else {
-            return var3 > 1.0 ? 1 : 0;
+            return var3 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
          }
       }
 

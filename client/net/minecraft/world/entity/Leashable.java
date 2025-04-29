@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
@@ -21,6 +20,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -71,7 +72,7 @@ public interface Leashable {
       dropLeash((Entity)this, false, false);
    }
 
-   default void readLeashData(CompoundTag var1) {
+   default void readLeashData(ValueInput var1) {
       LeashData var2 = (LeashData)var1.read("leash", Leashable.LeashData.CODEC).orElse((Object)null);
       if (this.getLeashData() != null && var2 == null) {
          this.removeLeash();
@@ -80,7 +81,7 @@ public interface Leashable {
       this.setLeashData(var2);
    }
 
-   default void writeLeashData(CompoundTag var1, @Nullable LeashData var2) {
+   default void writeLeashData(ValueOutput var1, @Nullable LeashData var2) {
       var1.storeNullable("leash", Leashable.LeashData.CODEC, var2);
    }
 

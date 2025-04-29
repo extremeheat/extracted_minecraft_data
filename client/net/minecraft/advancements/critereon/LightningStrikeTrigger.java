@@ -62,8 +62,8 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<TriggerInstan
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.lightning, ".lightning");
-         var1.validateEntity(this.bystander, ".bystander");
+         var1.validateEntity(this.lightning, "lightning");
+         var1.validateEntity(this.bystander, "bystander");
       }
    }
 }

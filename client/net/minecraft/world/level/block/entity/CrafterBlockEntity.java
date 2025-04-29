@@ -4,9 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -21,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class CrafterBlockEntity extends RandomizableContainerBlockEntity implements CraftingContainer {
    public static final int CONTAINER_WIDTH = 3;
@@ -115,16 +115,16 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return false;
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.craftingTicksRemaining = var1.getIntOr("crafting_ticks_remaining", 0);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items, var2);
+         ContainerHelper.loadAllItems(var1, this.items);
       }
 
-      for(int var3 = 0; var3 < 9; ++var3) {
-         this.containerData.set(var3, 0);
+      for(int var2 = 0; var2 < 9; ++var2) {
+         this.containerData.set(var2, 0);
       }
 
       var1.getIntArray("disabled_slots").ifPresent((var1x) -> {
@@ -138,11 +138,11 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       this.containerData.set(9, var1.getIntOr("triggered", 0));
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putInt("crafting_ticks_remaining", this.craftingTicksRemaining);
       if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items, var2);
+         ContainerHelper.saveAllItems(var1, this.items);
       }
 
       this.addDisabledSlots(var1);
@@ -202,7 +202,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
 
    }
 
-   private void addDisabledSlots(CompoundTag var1) {
+   private void addDisabledSlots(ValueOutput var1) {
       IntArrayList var2 = new IntArrayList();
 
       for(int var3 = 0; var3 < 9; ++var3) {
@@ -214,7 +214,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       var1.putIntArray("disabled_slots", var2.toIntArray());
    }
 
-   private void addTriggered(CompoundTag var1) {
+   private void addTriggered(ValueOutput var1) {
       var1.putInt("triggered", this.containerData.get(9));
    }
 

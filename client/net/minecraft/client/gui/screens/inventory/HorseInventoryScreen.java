@@ -29,7 +29,6 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      var1.depthTreeUp();
       if (this.inventoryColumns > 0) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
       }
@@ -44,7 +43,6 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
       }
 
       InventoryScreen.renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 18, var5 + 78, var6 + 70, 17, 0.25F, this.xMouse, this.yMouse, this.horse);
-      var1.depthTreeBack();
    }
 
    private void drawSlot(GuiGraphics var1, int var2, int var3) {

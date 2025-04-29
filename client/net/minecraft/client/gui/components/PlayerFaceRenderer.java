@@ -34,9 +34,7 @@ public class PlayerFaceRenderer {
       int var9 = 8 * (var6 ? -1 : 1);
       var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, 8.0F, (float)var8, var4, var4, 8, var9, 64, 64, var7);
       if (var5) {
-         var0.depthTreeUp();
          drawHat(var0, var1, var2, var3, var4, var6, var7);
-         var0.depthTreeBack();
       }
 
    }

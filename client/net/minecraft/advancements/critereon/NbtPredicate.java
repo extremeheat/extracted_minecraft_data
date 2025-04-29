@@ -1,5 +1,6 @@
 package net.minecraft.advancements.critereon;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import javax.annotation.Nullable;
@@ -11,14 +12,19 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.storage.TagValueOutput;
+import org.slf4j.Logger;
 
 public record NbtPredicate(CompoundTag tag) {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<NbtPredicate> CODEC;
    public static final StreamCodec<ByteBuf, NbtPredicate> STREAM_CODEC;
+   public static final String SELECTED_ITEM_TAG = "SelectedItem";
 
    public NbtPredicate(CompoundTag var1) {
       super();
@@ -39,15 +45,18 @@ public record NbtPredicate(CompoundTag tag) {
    }
 
    public static CompoundTag getEntityTagToCompare(Entity var0) {
-      CompoundTag var1 = var0.saveWithoutId(new CompoundTag());
-      if (var0 instanceof Player var2) {
-         ItemStack var3 = var2.getInventory().getSelectedItem();
-         if (!var3.isEmpty()) {
-            var1.put("SelectedItem", var3.save(var0.registryAccess()));
+      try (ProblemReporter.ScopedCollector var1 = new ProblemReporter.ScopedCollector(var0.problemPath(), LOGGER)) {
+         TagValueOutput var2 = TagValueOutput.createWithContext(var1, var0.registryAccess());
+         var0.saveWithoutId(var2);
+         if (var0 instanceof Player var3) {
+            ItemStack var4 = var3.getInventory().getSelectedItem();
+            if (!var4.isEmpty()) {
+               var2.store("SelectedItem", ItemStack.CODEC, var4);
+            }
          }
-      }
 
-      return var1;
+         return var2.buildResult();
+      }
    }
 
    static {

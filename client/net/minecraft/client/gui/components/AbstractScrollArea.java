@@ -92,9 +92,7 @@ public abstract class AbstractScrollArea extends AbstractWidget {
          int var3 = this.scrollerHeight();
          int var4 = this.scrollBarY();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_BACKGROUND_SPRITE, var2, this.getY(), 6, this.getHeight());
-         var1.depthTreeUp();
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_SPRITE, var2, var4, 6, var3);
-         var1.depthTreeBack();
       }
 
    }

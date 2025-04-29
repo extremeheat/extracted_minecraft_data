@@ -13,12 +13,9 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -41,6 +38,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -396,19 +395,15 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return var4;
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setCustomDisplayBlockState(var1.read("DisplayState", BlockState.CODEC, var2));
+   protected void readAdditionalSaveData(ValueInput var1) {
+      this.setCustomDisplayBlockState(var1.read("DisplayState", BlockState.CODEC));
       this.setDisplayOffset(var1.getIntOr("DisplayOffset", this.getDefaultDisplayOffset()));
       this.flipped = var1.getBooleanOr("FlippedRotation", false);
       this.firstTick = var1.getBooleanOr("HasTicked", false);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
-      this.getCustomDisplayBlockState().ifPresent((var2x) -> {
-         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("DisplayState", BlockState.CODEC, var3, var2x);
-      });
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      this.getCustomDisplayBlockState().ifPresent((var1x) -> var1.store("DisplayState", BlockState.CODEC, var1x));
       int var2 = this.getDisplayOffset();
       if (var2 != this.getDefaultDisplayOffset()) {
          var1.putInt("DisplayOffset", var2);

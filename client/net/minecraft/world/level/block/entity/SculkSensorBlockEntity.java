@@ -3,10 +3,6 @@ package net.minecraft.world.level.block.entity;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
@@ -17,6 +13,8 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class SculkSensorBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
    private static final int DEFAULT_LAST_VIBRATION_FREQUENCY = 0;
@@ -41,18 +39,16 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       return new VibrationUser(this.getBlockPos());
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.lastVibrationFrequency = var1.getIntOr("last_vibration_frequency", 0);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var3).orElseGet(VibrationSystem.Data::new);
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC).orElseGet(VibrationSystem.Data::new);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putInt("last_vibration_frequency", this.lastVibrationFrequency);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.store("listener", VibrationSystem.Data.CODEC, var3, this.vibrationData);
+      var1.store("listener", VibrationSystem.Data.CODEC, this.vibrationData);
    }
 
    public VibrationSystem.Data getVibrationData() {

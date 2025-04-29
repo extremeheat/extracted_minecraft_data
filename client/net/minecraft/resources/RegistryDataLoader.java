@@ -1,7 +1,6 @@
 package net.minecraft.resources;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -47,6 +46,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.tags.TagNetworkSerialization;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.ChickenVariant;
@@ -186,7 +186,7 @@ public class RegistryDataLoader {
       BufferedReader var6 = var4.openAsReader();
 
       try {
-         JsonElement var7 = JsonParser.parseReader(var6);
+         JsonElement var7 = StrictJsonParser.parse((Reader)var6);
          DataResult var8 = var1.parse(var2, var7);
          Object var9 = var8.getOrThrow();
          var0.register(var3, var9, var5);

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.ClipboardManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -26,6 +27,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -37,17 +39,21 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.VersionCommand;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public class KeyboardHandler {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int DEBUG_CRASH_TIME = 10000;
    private final Minecraft minecraft;
    private final ClipboardManager clipboardManager = new ClipboardManager();
@@ -272,23 +278,23 @@ public class KeyboardHandler {
       if (var3 != null) {
          switch (var3.getType()) {
             case BLOCK:
-               BlockPos var9 = ((BlockHitResult)var3).getBlockPos();
-               Level var10 = this.minecraft.player.level();
-               BlockState var11 = var10.getBlockState(var9);
+               BlockPos var11 = ((BlockHitResult)var3).getBlockPos();
+               Level var12 = this.minecraft.player.level();
+               BlockState var13 = var12.getBlockState(var11);
                if (var1) {
                   if (var2) {
-                     this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(var9, (var3x) -> {
-                        this.copyCreateBlockCommand(var11, var9, var3x);
+                     this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(var11, (var3x) -> {
+                        this.copyCreateBlockCommand(var13, var11, var3x);
                         this.debugFeedbackTranslated("debug.inspect.server.block");
                      });
                   } else {
-                     BlockEntity var7 = var10.getBlockEntity(var9);
-                     CompoundTag var8 = var7 != null ? var7.saveWithoutMetadata(var10.registryAccess()) : null;
-                     this.copyCreateBlockCommand(var11, var9, var8);
+                     BlockEntity var14 = var12.getBlockEntity(var11);
+                     CompoundTag var8 = var14 != null ? var14.saveWithoutMetadata((HolderLookup.Provider)var12.registryAccess()) : null;
+                     this.copyCreateBlockCommand(var13, var11, var8);
                      this.debugFeedbackTranslated("debug.inspect.client.block");
                   }
                } else {
-                  this.copyCreateBlockCommand(var11, var9, (CompoundTag)null);
+                  this.copyCreateBlockCommand(var13, var11, (CompoundTag)null);
                   this.debugFeedbackTranslated("debug.inspect.client.block");
                }
                break;
@@ -302,8 +308,12 @@ public class KeyboardHandler {
                         this.debugFeedbackTranslated("debug.inspect.server.entity");
                      });
                   } else {
-                     CompoundTag var6 = var4.saveWithoutId(new CompoundTag());
-                     this.copyCreateEntityCommand(var5, var4.position(), var6);
+                     try (ProblemReporter.ScopedCollector var6 = new ProblemReporter.ScopedCollector(var4.problemPath(), LOGGER)) {
+                        TagValueOutput var7 = TagValueOutput.createWithContext(var6, var4.registryAccess());
+                        var4.saveWithoutId(var7);
+                        this.copyCreateEntityCommand(var5, var4.position(), var7.buildResult());
+                     }
+
                      this.debugFeedbackTranslated("debug.inspect.client.entity");
                   }
                } else {

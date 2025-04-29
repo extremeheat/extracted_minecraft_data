@@ -101,43 +101,12 @@ public class GuiGraphics {
       return this.minecraft.getWindow().getGuiScaledHeight();
    }
 
-   public void depthTreeUp() {
-      this.guiRenderState.up();
-   }
-
-   public void depthTreeUpToTop() {
-      this.guiRenderState.upToTop();
-   }
-
    public void nextStratum() {
       this.guiRenderState.nextStratum();
    }
 
    public void blurBeforeThisStratum() {
       this.guiRenderState.blurBeforeThisStratum();
-   }
-
-   public void depthTreeDown() {
-      this.guiRenderState.down();
-   }
-
-   public void depthTreeBack() {
-      this.guiRenderState.back();
-   }
-
-   public void depthTreeBack(int var1) {
-      for(int var2 = 0; var2 < var1; ++var2) {
-         this.guiRenderState.back();
-      }
-
-   }
-
-   public void depthTreePushCheckpoint() {
-      this.guiRenderState.pushCheckpoint();
-   }
-
-   public void depthTreeBackToCheckpoint() {
-      this.guiRenderState.backToCheckpoint();
    }
 
    public Matrix3x2fStack pose() {
@@ -238,8 +207,10 @@ public class GuiGraphics {
    }
 
    public void drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5, boolean var6) {
-      TextRenderState var7 = var1.extractTextRenderState((FormattedCharSequence)var2, (float)var3, (float)var4, var5, var6, Font.DisplayMode.NORMAL, 0, 15728880);
-      this.submitText(var7, var3, var4);
+      if (ARGB.alpha(var5) != 0) {
+         TextRenderState var7 = var1.extractTextRenderState((FormattedCharSequence)var2, (float)var3, (float)var4, var5, var6, Font.DisplayMode.NORMAL, 0, 15728880);
+         this.submitText(var7, var3, var4);
+      }
    }
 
    private void submitText(TextRenderState var1, int var2, int var3) {
@@ -278,9 +249,7 @@ public class GuiGraphics {
          this.fill(var10001, var10002, var10003, var4 + 9 + 2, ARGB.multiply(var7, var6));
       }
 
-      this.depthTreeUp();
       this.drawString(var1, var2, var3, var4, var6, true);
-      this.depthTreeBack();
    }
 
    public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
@@ -292,6 +261,10 @@ public class GuiGraphics {
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6) {
       this.blitSprite(var1, (ResourceLocation)var2, var3, var4, var5, var6, -1);
+   }
+
+   public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, float var7) {
+      this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.color(var7, -1));
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7) {
@@ -474,14 +447,9 @@ public class GuiGraphics {
    public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
       if (!var2.isEmpty()) {
          this.pose.pushMatrix();
-         this.depthTreePushCheckpoint();
-         this.depthTreeUp();
          this.renderItemBar(var2, var3, var4);
-         this.depthTreeUp();
          this.renderItemCooldown(var2, var3, var4);
-         this.depthTreeUp();
          this.renderItemCount(var1, var2, var3, var4, var5);
-         this.depthTreeBackToCheckpoint();
          this.pose.popMatrix();
       }
    }
@@ -565,7 +533,6 @@ public class GuiGraphics {
       int var13 = var19.y();
       this.pose.pushMatrix();
       TooltipRenderUtil.renderTooltipBackground(this, var12, var13, var7, var8, var6);
-      this.depthTreeUp();
       int var14 = var13;
 
       for(int var15 = 0; var15 < var2.size(); ++var15) {
@@ -599,7 +566,6 @@ public class GuiGraphics {
          int var4 = var2 + 2;
          int var5 = var3 + 13;
          this.fill(RenderPipelines.GUI, var4, var5, var4 + 13, var5 + 2, -16777216);
-         this.depthTreeUp();
          this.fill(RenderPipelines.GUI, var4, var5, var4 + var1.getBarWidth(), var5 + 1, ARGB.opaque(var1.getBarColor()));
       }
 
@@ -684,7 +650,6 @@ public class GuiGraphics {
       Minecraft var2 = Minecraft.getInstance();
       TextureManager var3 = var2.getTextureManager();
       GpuTexture var4 = var3.getTexture(var1.texture).getTexture();
-      this.depthTreeUp();
       this.submitBlit(RenderPipelines.GUI_TEXTURED, var4, 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
 
       for(MapRenderState.MapDecorationRenderState var6 : var1.decorations) {
@@ -694,11 +659,9 @@ public class GuiGraphics {
             this.pose.rotate(0.017453292F * (float)var6.rot * 360.0F / 16.0F);
             this.pose.scale(4.0F, 4.0F);
             this.pose.translate(-0.125F, 0.125F);
-            this.depthTreePushCheckpoint();
             TextureAtlasSprite var7 = var6.atlasSprite;
             if (var7 != null) {
                GpuTexture var8 = var3.getTexture(var7.atlasLocation()).getTexture();
-               this.depthTreeUp();
                this.submitBlit(RenderPipelines.GUI_TEXTURED, var8, -1, -1, 1, 1, var7.getU0(), var7.getU1(), var7.getV1(), var7.getV0(), -1);
             }
 
@@ -713,16 +676,12 @@ public class GuiGraphics {
                this.pose.translate((float)var6.x / 2.0F + 64.0F - var9 * var10 / 2.0F, (float)var6.y / 2.0F + 64.0F + 4.0F);
                this.pose.scale(var10, var10);
                TextRenderState var11 = var12.extractTextRenderState((FormattedCharSequence)var6.name.getVisualOrderText(), 0.0F, 0.0F, -1, false, Font.DisplayMode.NORMAL, -2147483648, 15728880);
-               this.depthTreeUp();
                this.submitText(var11, 0, 0);
                this.pose.popMatrix();
             }
-
-            this.depthTreeBackToCheckpoint();
          }
       }
 
-      this.depthTreeBack();
    }
 
    public void submitEntityRenderState(EntityRenderState var1, float var2, Vector3f var3, Quaternionf var4, @Nullable Quaternionf var5, int var6, int var7, int var8, int var9) {

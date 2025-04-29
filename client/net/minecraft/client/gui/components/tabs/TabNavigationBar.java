@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -75,9 +76,11 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    }
 
    public void setFocused(@Nullable GuiEventListener var1) {
-      super.setFocused(var1);
       if (var1 instanceof TabButton var2) {
-         this.tabManager.setCurrentTab(var2.tab(), true);
+         if (var2.isActive()) {
+            super.setFocused(var1);
+            this.tabManager.setCurrentTab(var2.tab(), true);
+         }
       }
 
    }
@@ -163,8 +166,22 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    public void selectTab(int var1, boolean var2) {
       if (this.isFocused()) {
          this.setFocused((GuiEventListener)this.tabButtons.get(var1));
-      } else {
+      } else if (((TabButton)this.tabButtons.get(var1)).isActive()) {
          this.tabManager.setCurrentTab((Tab)this.tabs.get(var1), var2);
+      }
+
+   }
+
+   public void setTabActiveState(int var1, boolean var2) {
+      if (var1 >= 0 && var1 < this.tabButtons.size()) {
+         ((TabButton)this.tabButtons.get(var1)).active = var2;
+      }
+
+   }
+
+   public void setTabTooltip(int var1, @Nullable Tooltip var2) {
+      if (var1 >= 0 && var1 < this.tabButtons.size()) {
+         ((TabButton)this.tabButtons.get(var1)).setTooltip(var2);
       }
 
    }
@@ -182,17 +199,17 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    }
 
    private int getNextTabIndex(int var1) {
-      if (var1 >= 49 && var1 <= 57) {
-         return var1 - 49;
-      } else {
-         if (var1 == 258) {
-            int var2 = this.currentTabIndex();
-            if (var2 != -1) {
-               int var3 = Screen.hasShiftDown() ? var2 - 1 : var2 + 1;
-               return Math.floorMod(var3, this.tabs.size());
-            }
-         }
+      return this.getNextTabIndex(this.currentTabIndex(), var1);
+   }
 
+   private int getNextTabIndex(int var1, int var2) {
+      if (var2 >= 49 && var2 <= 57) {
+         return var2 - 49;
+      } else if (var2 == 258 && var1 != -1) {
+         int var3 = Screen.hasShiftDown() ? var1 - 1 : var1 + 1;
+         int var4 = Math.floorMod(var3, this.tabs.size());
+         return ((TabButton)this.tabButtons.get(var4)).active ? var4 : this.getNextTabIndex(var4, var2);
+      } else {
          return -1;
       }
    }

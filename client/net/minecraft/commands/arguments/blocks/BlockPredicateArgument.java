@@ -92,7 +92,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
                return true;
             } else {
                BlockEntity var5 = var1.getEntity();
-               return var5 != null && NbtUtils.compareNbt(this.nbt, var5.saveWithFullMetadata(var1.getLevel().registryAccess()), true);
+               return var5 != null && NbtUtils.compareNbt(this.nbt, var5.saveWithFullMetadata((HolderLookup.Provider)var1.getLevel().registryAccess()), true);
             }
          }
       }
@@ -145,7 +145,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
                return true;
             } else {
                BlockEntity var7 = var1.getEntity();
-               return var7 != null && NbtUtils.compareNbt(this.nbt, var7.saveWithFullMetadata(var1.getLevel().registryAccess()), true);
+               return var7 != null && NbtUtils.compareNbt(this.nbt, var7.saveWithFullMetadata((HolderLookup.Provider)var1.getLevel().registryAccess()), true);
             }
          }
       }

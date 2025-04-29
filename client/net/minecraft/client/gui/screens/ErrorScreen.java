@@ -20,8 +20,8 @@ public class ErrorScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 90, 16777215);
-      var1.drawCenteredString(this.font, (Component)this.message, this.width / 2, 110, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 90, -1);
+      var1.drawCenteredString(this.font, (Component)this.message, this.width / 2, 110, -1);
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {

@@ -115,13 +115,11 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.toolTip = null;
       super.render(var1, var2, var3, var4);
-      var1.depthTreeUp();
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 12, -1);
       if (this.pendingInvites.isDone() && this.pendingInvitationSelectionList.hasPendingInvites()) {
          var1.drawCenteredString(this.font, (Component)NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, -1);
       }
 
-      var1.depthTreeBack();
       if (this.toolTip != null) {
          var1.setTooltipForNextFrame(this.font, this.toolTip, var2, var3);
       }
@@ -179,8 +177,8 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
       private void renderPendingInvitationItem(GuiGraphics var1, PendingInvite var2, int var3, int var4, int var5, int var6) {
          var1.drawString(RealmsPendingInvitesScreen.this.font, (String)var2.realmName, var3 + 38, var4 + 1, -1);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, 7105644);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, 7105644);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, -9671572);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, -9671572);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
          RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.realmOwnerUuid);
       }

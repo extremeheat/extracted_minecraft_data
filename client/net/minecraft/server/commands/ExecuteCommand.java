@@ -18,6 +18,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,6 +93,7 @@ import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Attackable;
 import net.minecraft.world.entity.Entity;
@@ -110,6 +112,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -121,8 +125,10 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
+import org.slf4j.Logger;
 
 public class ExecuteCommand {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TEST_AREA = 32768;
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.execute.blocks.toobig", var0, var1));
    private static final SimpleCommandExceptionType ERROR_CONDITIONAL_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.execute.conditional.fail"));
@@ -403,49 +409,55 @@ public class ExecuteCommand {
       if (var8 > 32768) {
          throw ERROR_AREA_TOO_LARGE.create(32768, var8);
       } else {
-         RegistryAccess var9 = var0.registryAccess();
-         int var10 = 0;
+         int var9 = 0;
+         RegistryAccess var10 = var0.registryAccess();
 
-         for(int var11 = var5.minZ(); var11 <= var5.maxZ(); ++var11) {
-            for(int var12 = var5.minY(); var12 <= var5.maxY(); ++var12) {
-               for(int var13 = var5.minX(); var13 <= var5.maxX(); ++var13) {
-                  BlockPos var14 = new BlockPos(var13, var12, var11);
-                  BlockPos var15 = var14.offset(var7);
-                  BlockState var16 = var0.getBlockState(var14);
-                  if (!var4 || !var16.is(Blocks.AIR)) {
-                     if (var16 != var0.getBlockState(var15)) {
-                        return OptionalInt.empty();
+         try (ProblemReporter.ScopedCollector var11 = new ProblemReporter.ScopedCollector(LOGGER)) {
+            for(int var12 = var5.minZ(); var12 <= var5.maxZ(); ++var12) {
+               for(int var13 = var5.minY(); var13 <= var5.maxY(); ++var13) {
+                  for(int var14 = var5.minX(); var14 <= var5.maxX(); ++var14) {
+                     BlockPos var15 = new BlockPos(var14, var13, var12);
+                     BlockPos var16 = var15.offset(var7);
+                     BlockState var17 = var0.getBlockState(var15);
+                     if (!var4 || !var17.is(Blocks.AIR)) {
+                        if (var17 != var0.getBlockState(var16)) {
+                           return OptionalInt.empty();
+                        }
+
+                        BlockEntity var18 = var0.getBlockEntity(var15);
+                        BlockEntity var19 = var0.getBlockEntity(var16);
+                        if (var18 != null) {
+                           if (var19 == null) {
+                              return OptionalInt.empty();
+                           }
+
+                           if (var19.getType() != var18.getType()) {
+                              return OptionalInt.empty();
+                           }
+
+                           if (!var18.components().equals(var19.components())) {
+                              return OptionalInt.empty();
+                           }
+
+                           TagValueOutput var20 = TagValueOutput.createWithContext(var11.forChild(var18.problemPath()), var10);
+                           var18.saveCustomOnly((ValueOutput)var20);
+                           CompoundTag var21 = var20.buildResult();
+                           TagValueOutput var22 = TagValueOutput.createWithContext(var11.forChild(var19.problemPath()), var10);
+                           var19.saveCustomOnly((ValueOutput)var22);
+                           CompoundTag var23 = var22.buildResult();
+                           if (!var21.equals(var23)) {
+                              return OptionalInt.empty();
+                           }
+                        }
+
+                        ++var9;
                      }
-
-                     BlockEntity var17 = var0.getBlockEntity(var14);
-                     BlockEntity var18 = var0.getBlockEntity(var15);
-                     if (var17 != null) {
-                        if (var18 == null) {
-                           return OptionalInt.empty();
-                        }
-
-                        if (var18.getType() != var17.getType()) {
-                           return OptionalInt.empty();
-                        }
-
-                        if (!var17.components().equals(var18.components())) {
-                           return OptionalInt.empty();
-                        }
-
-                        CompoundTag var19 = var17.saveCustomOnly(var9);
-                        CompoundTag var20 = var18.saveCustomOnly(var9);
-                        if (!var19.equals(var20)) {
-                           return OptionalInt.empty();
-                        }
-                     }
-
-                     ++var10;
                   }
                }
             }
          }
 
-         return OptionalInt.of(var10);
+         return OptionalInt.of(var9);
       }
    }
 

@@ -61,8 +61,8 @@ public class RegionSelectionPreferenceDto extends ValueObject implements Reflect
    }
 
    public static enum RegionSelectionPreference {
-      AUTOMATIC_OWNER(0, "realms.configuration.region_preference.automatic_owner"),
-      AUTOMATIC_PLAYER(1, "realms.configuration.region_preference.automatic_player"),
+      AUTOMATIC_PLAYER(0, "realms.configuration.region_preference.automatic_player"),
+      AUTOMATIC_OWNER(1, "realms.configuration.region_preference.automatic_owner"),
       MANUAL(2, "");
 
       public static final RegionSelectionPreference DEFAULT_SELECTION = AUTOMATIC_PLAYER;
@@ -76,7 +76,7 @@ public class RegionSelectionPreferenceDto extends ValueObject implements Reflect
 
       // $FF: synthetic method
       private static RegionSelectionPreference[] $values() {
-         return new RegionSelectionPreference[]{AUTOMATIC_OWNER, AUTOMATIC_PLAYER, MANUAL};
+         return new RegionSelectionPreference[]{AUTOMATIC_PLAYER, AUTOMATIC_OWNER, MANUAL};
       }
    }
 

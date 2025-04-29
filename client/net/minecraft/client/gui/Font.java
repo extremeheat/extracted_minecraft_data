@@ -34,7 +34,6 @@ public class Font {
    private static final float EFFECT_DEPTH = 0.001F;
    public static final float SHADOW_DEPTH = 0.003F;
    public static final int NO_SHADOW = 0;
-   public static final int ALPHA_CUTOFF = 8;
    public final int lineHeight = 9;
    public final RandomSource random = RandomSource.create();
    private final Function<ResourceLocation, FontSet> fonts;
@@ -95,53 +94,44 @@ public class Font {
    }
 
    public void drawInBatch8xOutline(FormattedCharSequence var1, float var2, float var3, int var4, int var5, Matrix4f var6, MultiBufferSource var7, int var8) {
-      int var9 = adjustColor(var5);
-      StringRenderOutput var10 = new StringRenderOutput(0.0F, 0.0F, var9, false, Font.DisplayMode.NORMAL, var8);
+      StringRenderOutput var9 = new StringRenderOutput(0.0F, 0.0F, var5, false, Font.DisplayMode.NORMAL, var8);
 
-      for(int var11 = -1; var11 <= 1; ++var11) {
-         for(int var12 = -1; var12 <= 1; ++var12) {
-            if (var11 != 0 || var12 != 0) {
-               float[] var13 = new float[]{var2};
+      for(int var10 = -1; var10 <= 1; ++var10) {
+         for(int var11 = -1; var11 <= 1; ++var11) {
+            if (var10 != 0 || var11 != 0) {
+               float[] var12 = new float[]{var2};
                var1.accept((var7x, var8x, var9x) -> {
                   boolean var10x = var8x.isBold();
                   FontSet var11x = this.getFontSet(var8x.getFont());
                   GlyphInfo var12x = var11x.getGlyphInfo(var9x, this.filterFishyGlyphs);
-                  var10.x = var13[0] + (float)var11 * var12x.getShadowOffset();
-                  var10.y = var3 + (float)var12 * var12x.getShadowOffset();
-                  var13[0] += var12x.getAdvance(var10x);
-                  return var10.accept(var7x, var8x.withColor(var9), var9x);
+                  var9.x = var12[0] + (float)var10 * var12x.getShadowOffset();
+                  var9.y = var3 + (float)var11 * var12x.getShadowOffset();
+                  var12[0] += var12x.getAdvance(var10x);
+                  return var9.accept(var7x, var8x.withColor(var5), var9x);
                });
             }
          }
       }
 
-      var10.renderCharacters(var7, var6);
-      StringRenderOutput var16 = new StringRenderOutput(var2, var3, adjustColor(var4), false, Font.DisplayMode.POLYGON_OFFSET, var8);
-      var1.accept(var16);
-      var16.finish(var2, var7, var6);
-   }
-
-   private static int adjustColor(int var0) {
-      return (var0 & -67108864) == 0 ? ARGB.opaque(var0) : var0;
+      var9.renderCharacters(var7, var6);
+      StringRenderOutput var15 = new StringRenderOutput(var2, var3, var4, false, Font.DisplayMode.POLYGON_OFFSET, var8);
+      var1.accept(var15);
+      var15.finish(var2, var7, var6);
    }
 
    private void drawInternal(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
-      var4 = adjustColor(var4);
       this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
    }
 
    private TextRenderState extractInternal(String var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8, boolean var9) {
-      var4 = adjustColor(var4);
       return this.extractText(var1, var2, var3, var4, var5, var6, var7, var8, var9);
    }
 
    private void drawInternal(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
-      var4 = adjustColor(var4);
       this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
    }
 
    private TextRenderState extractInternal(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, DisplayMode var6, int var7, int var8, boolean var9) {
-      var4 = adjustColor(var4);
       return this.extractText(var1, var2, var3, var4, var5, var6, var7, var8, var9);
    }
 

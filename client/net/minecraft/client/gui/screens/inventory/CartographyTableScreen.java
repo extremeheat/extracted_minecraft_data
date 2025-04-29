@@ -44,7 +44,6 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       boolean var10 = var7.is(Items.GLASS_PANE);
       ItemStack var11 = ((CartographyTableMenu)this.menu).getSlot(0).getItem();
       MapId var12 = (MapId)var11.get(DataComponents.MAP_ID);
-      var1.depthTreeUp();
       boolean var14 = false;
       MapItemSavedData var13;
       if (var12 != null) {

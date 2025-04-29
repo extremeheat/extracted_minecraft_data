@@ -2,12 +2,9 @@ package net.minecraft.world.level.block.entity;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
@@ -16,6 +13,8 @@ import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class EnchantingTableBlockEntity extends BlockEntity implements Nameable {
    public int time;
@@ -36,17 +35,14 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
       super(BlockEntityType.ENCHANTING_TABLE, var1, var2);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      if (this.hasCustomName()) {
-         var1.store("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
-      }
-
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.name = parseCustomNameSafe(var1, "CustomName");
    }
 
    public static void bookAnimationTick(Level var0, BlockPos var1, BlockState var2, EnchantingTableBlockEntity var3) {
@@ -128,7 +124,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
       var1.set(DataComponents.CUSTOM_NAME, this.name);
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
-      var1.remove("CustomName");
+   public void removeComponentsFromTag(ValueOutput var1) {
+      var1.discard("CustomName");
    }
 }

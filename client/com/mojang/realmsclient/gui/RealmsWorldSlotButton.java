@@ -106,7 +106,6 @@ public class RealmsWorldSlotButton extends Button {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_FRAME_SPRITE, var5, var6, this.width, this.height, ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F));
       }
 
-      var1.depthTreeUp();
       if (this.state.hardcore) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var5 + 3, var6 + 4, 9, 8);
       }
@@ -119,7 +118,6 @@ public class RealmsWorldSlotButton extends Button {
       }
 
       var1.drawCenteredString(var10, (String)var11, var5 + this.width / 2, var6 + this.height - 14, -1);
-      var1.depthTreeBack();
       if (this.state.activeSlot) {
          var1.drawCenteredString(var10, (Component)RealmsMainScreen.getVersionComponent(this.state.slotVersion, this.state.compatibility.isCompatible()), var5 + this.width / 2, var6 + this.height + 2, -1);
       }

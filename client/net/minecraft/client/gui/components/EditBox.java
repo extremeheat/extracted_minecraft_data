@@ -29,7 +29,7 @@ public class EditBox extends AbstractWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
    private static final int CURSOR_INSERT_COLOR = -3092272;
    private static final String CURSOR_APPEND_CHARACTER = "_";
-   public static final int DEFAULT_TEXT_COLOR = 14737632;
+   public static final int DEFAULT_TEXT_COLOR = -2039584;
    private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private String value;
@@ -37,6 +37,8 @@ public class EditBox extends AbstractWidget {
    private boolean bordered;
    private boolean canLoseFocus;
    private boolean isEditable;
+   private boolean centered;
+   private boolean textShadow;
    private int displayPos;
    private int cursorPos;
    private int highlightPos;
@@ -51,6 +53,8 @@ public class EditBox extends AbstractWidget {
    @Nullable
    private Component hint;
    private long focusedTime;
+   private int textX;
+   private int textY;
 
    public EditBox(Font var1, int var2, int var3, Component var4) {
       this(var1, 0, 0, var2, var3, var4);
@@ -67,8 +71,10 @@ public class EditBox extends AbstractWidget {
       this.bordered = true;
       this.canLoseFocus = true;
       this.isEditable = true;
-      this.textColor = 14737632;
-      this.textColorUneditable = 7368816;
+      this.centered = false;
+      this.textShadow = true;
+      this.textColor = -2039584;
+      this.textColorUneditable = -9408400;
       this.filter = Objects::nonNull;
       this.formatter = (var0, var1x) -> FormattedCharSequence.forward(var0, Style.EMPTY);
       this.focusedTime = Util.getMillis();
@@ -77,6 +83,7 @@ public class EditBox extends AbstractWidget {
          this.setValue(var6.getValue());
       }
 
+      this.updateTextPosition();
    }
 
    public void setResponder(Consumer<String> var1) {
@@ -116,6 +123,16 @@ public class EditBox extends AbstractWidget {
       return this.value.substring(var1, var2);
    }
 
+   public void setX(int var1) {
+      super.setX(var1);
+      this.updateTextPosition();
+   }
+
+   public void setY(int var1) {
+      super.setY(var1);
+      this.updateTextPosition();
+   }
+
    public void setFilter(Predicate<String> var1) {
       this.filter = var1;
    }
@@ -151,6 +168,7 @@ public class EditBox extends AbstractWidget {
          this.responder.accept(var1);
       }
 
+      this.updateTextPosition();
    }
 
    private void deleteText(int var1) {
@@ -355,11 +373,7 @@ public class EditBox extends AbstractWidget {
    }
 
    public void onClick(double var1, double var3) {
-      int var5 = Mth.floor(var1) - this.getX();
-      if (this.bordered) {
-         var5 -= 4;
-      }
-
+      int var5 = Mth.floor(var1) - this.textX;
       String var6 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
       this.moveCursorTo(this.font.plainSubstrByWidth(var6, var5).length() + this.displayPos, Screen.hasShiftDown());
    }
@@ -374,72 +388,70 @@ public class EditBox extends AbstractWidget {
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
-         int var17 = this.isEditable ? this.textColor : this.textColorUneditable;
+         int var15 = this.isEditable ? this.textColor : this.textColorUneditable;
          int var6 = this.cursorPos - this.displayPos;
          String var7 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
          boolean var8 = var6 >= 0 && var6 <= var7.length();
          boolean var9 = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L && var8;
-         int var10 = this.bordered ? this.getX() + 4 : this.getX();
-         int var11 = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
-         int var12 = var10;
-         int var13 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
-         var1.depthTreePushCheckpoint();
+         int var10 = this.textX;
+         int var11 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
          if (!var7.isEmpty()) {
-            String var14 = var8 ? var7.substring(0, var6) : var7;
-            FormattedCharSequence var15 = (FormattedCharSequence)this.formatter.apply(var14, this.displayPos);
-            var1.depthTreeUp();
-            var1.drawString(this.font, var15, var10, var11, var17);
-            var12 = var10 + this.font.width(var15) + 1;
+            String var12 = var8 ? var7.substring(0, var6) : var7;
+            FormattedCharSequence var13 = (FormattedCharSequence)this.formatter.apply(var12, this.displayPos);
+            var1.drawString(this.font, var13, var10, this.textY, var15, this.textShadow);
+            var10 += this.font.width(var13) + 1;
          }
 
-         boolean var18 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
-         int var19 = var12;
+         boolean var16 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
+         int var17 = var10;
          if (!var8) {
-            var19 = var6 > 0 ? var10 + this.width : var10;
-         } else if (var18) {
-            var19 = var12 - 1;
-            --var12;
+            var17 = var6 > 0 ? this.textX + this.width : this.textX;
+         } else if (var16) {
+            var17 = var10 - 1;
+            --var10;
          }
 
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
-            var1.depthTreeUp();
-            var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var12, var11, var17);
+            var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var10, this.textY, var15, this.textShadow);
          }
 
          if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
-            var1.depthTreeUp();
-            var1.drawString(this.font, this.hint, var12, var11, var17);
+            var1.drawString(this.font, this.hint, var10, this.textY, var15);
          }
 
-         if (!var18 && this.suggestion != null) {
-            var1.depthTreeUp();
-            var1.drawString(this.font, this.suggestion, var19 - 1, var11, -8355712);
+         if (!var16 && this.suggestion != null) {
+            var1.drawString(this.font, this.suggestion, var17 - 1, this.textY, -8355712, this.textShadow);
          }
 
-         if (var13 != var6) {
-            int var16 = var10 + this.font.width(var7.substring(0, var13));
-            var1.depthTreeUp();
-            int var10003 = var11 - 1;
-            int var10004 = var16 - 1;
-            int var10005 = var11 + 1;
+         if (var11 != var6) {
+            int var14 = this.textX + this.font.width(var7.substring(0, var11));
+            int var10003 = this.textY - 1;
+            int var10004 = var14 - 1;
+            int var10005 = this.textY + 1;
             Objects.requireNonNull(this.font);
-            this.renderHighlight(var1, var19, var10003, var10004, var10005 + 9);
+            this.renderHighlight(var1, var17, var10003, var10004, var10005 + 9);
          }
 
          if (var9) {
-            var1.depthTreeUp();
-            if (var18) {
-               int var10002 = var11 - 1;
-               int var20 = var19 + 1;
-               int var21 = var11 + 1;
+            if (var16) {
+               int var10002 = this.textY - 1;
+               int var18 = var17 + 1;
+               int var19 = this.textY + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var19, var10002, var20, var21 + 9, -3092272);
+               var1.fill(var17, var10002, var18, var19 + 9, -3092272);
             } else {
-               var1.drawString(this.font, "_", var19, var11, var17);
+               var1.drawString(this.font, "_", var17, this.textY, var15, this.textShadow);
             }
          }
 
-         var1.depthTreeBackToCheckpoint();
+      }
+   }
+
+   private void updateTextPosition() {
+      if (this.font != null) {
+         String var1 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+         this.textX = this.getX() + (this.isCentered() ? (this.getWidth() - this.font.width(var1)) / 2 : (this.bordered ? 4 : 0));
+         this.textY = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
       }
    }
 
@@ -490,6 +502,7 @@ public class EditBox extends AbstractWidget {
 
    public void setBordered(boolean var1) {
       this.bordered = var1;
+      this.updateTextPosition();
    }
 
    public void setTextColor(int var1) {
@@ -516,6 +529,19 @@ public class EditBox extends AbstractWidget {
 
    public void setEditable(boolean var1) {
       this.isEditable = var1;
+   }
+
+   private boolean isCentered() {
+      return this.centered;
+   }
+
+   public void setCentered(boolean var1) {
+      this.centered = var1;
+      this.updateTextPosition();
+   }
+
+   public void setTextShadow(boolean var1) {
+      this.textShadow = var1;
    }
 
    public int getInnerWidth() {

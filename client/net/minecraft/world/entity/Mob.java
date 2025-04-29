@@ -14,13 +14,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -73,6 +70,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -120,8 +119,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private long lootTableSeed;
    @Nullable
    private Leashable.LeashData leashData;
-   private BlockPos restrictCenter;
-   private float restrictRadius;
+   private BlockPos homePosition;
+   private int homeRadius;
 
    protected Mob(EntityType<? extends Mob> var1, Level var2) {
       super(var1, var2);
@@ -130,8 +129,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.persistenceRequired = false;
       this.pathfindingMalus = Maps.newEnumMap(PathType.class);
       this.lootTable = Optional.empty();
-      this.restrictCenter = BlockPos.ZERO;
-      this.restrictRadius = -1.0F;
+      this.homePosition = BlockPos.ZERO;
+      this.homeRadius = -1;
       this.goalSelector = new GoalSelector();
       this.targetSelector = new GoalSelector();
       this.lookControl = new LookControl(this);
@@ -360,16 +359,20 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return null;
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("CanPickUpLoot", this.canPickUpLoot());
       var1.putBoolean("PersistenceRequired", this.persistenceRequired);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (!this.dropChances.equals(DropChances.DEFAULT)) {
-         var1.store("drop_chances", DropChances.CODEC, var2, this.dropChances);
+         var1.store("drop_chances", DropChances.CODEC, this.dropChances);
       }
 
       this.writeLeashData(var1, this.leashData);
+      if (this.hasHome()) {
+         var1.putInt("home_radius", this.homeRadius);
+         var1.store("home_pos", BlockPos.CODEC, this.homePosition);
+      }
+
       var1.putBoolean("LeftHanded", this.isLeftHanded());
       this.lootTable.ifPresent((var1x) -> var1.store("DeathLootTable", LootTable.KEY_CODEC, var1x));
       if (this.lootTableSeed != 0L) {
@@ -382,15 +385,19 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setCanPickUpLoot(var1.getBooleanOr("CanPickUpLoot", false));
       this.persistenceRequired = var1.getBooleanOr("PersistenceRequired", false);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC, var2).orElse(DropChances.DEFAULT);
+      this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC).orElse(DropChances.DEFAULT);
       this.readLeashData(var1);
+      this.homeRadius = var1.getIntOr("home_radius", -1);
+      if (this.homeRadius >= 0) {
+         this.homePosition = (BlockPos)var1.read("home_pos", BlockPos.CODEC).orElse(BlockPos.ZERO);
+      }
+
       this.setLeftHanded(var1.getBooleanOr("LeftHanded", false));
-      this.lootTable = var1.read("DeathLootTable", LootTable.KEY_CODEC);
+      this.lootTable = var1.<ResourceKey<LootTable>>read("DeathLootTable", LootTable.KEY_CODEC);
       this.lootTableSeed = var1.getLongOr("DeathLootTableSeed", 0L);
       this.setNoAi(var1.getBooleanOr("NoAI", false));
    }
@@ -1096,45 +1103,45 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return InteractionResult.PASS;
    }
 
-   public boolean isWithinRestriction() {
-      return this.isWithinRestriction(this.blockPosition());
+   public boolean isWithinHome() {
+      return this.isWithinHome(this.blockPosition());
    }
 
-   public boolean isWithinRestriction(BlockPos var1) {
-      if (this.restrictRadius == -1.0F) {
+   public boolean isWithinHome(BlockPos var1) {
+      if (this.homeRadius == -1) {
          return true;
       } else {
-         return this.restrictCenter.distSqr(var1) < (double)(this.restrictRadius * this.restrictRadius);
+         return this.homePosition.distSqr(var1) < (double)(this.homeRadius * this.homeRadius);
       }
    }
 
-   public boolean isWithinRestriction(Vec3 var1) {
-      if (this.restrictRadius == -1.0F) {
+   public boolean isWithinHome(Vec3 var1) {
+      if (this.homeRadius == -1) {
          return true;
       } else {
-         return this.restrictCenter.distToCenterSqr(var1) < (double)(this.restrictRadius * this.restrictRadius);
+         return this.homePosition.distToCenterSqr(var1) < (double)(this.homeRadius * this.homeRadius);
       }
    }
 
-   public void restrictTo(BlockPos var1, int var2) {
-      this.restrictCenter = var1;
-      this.restrictRadius = (float)var2;
+   public void setHomeTo(BlockPos var1, int var2) {
+      this.homePosition = var1;
+      this.homeRadius = var2;
    }
 
-   public BlockPos getRestrictCenter() {
-      return this.restrictCenter;
+   public BlockPos getHomePosition() {
+      return this.homePosition;
    }
 
-   public float getRestrictRadius() {
-      return this.restrictRadius;
+   public int getHomeRadius() {
+      return this.homeRadius;
    }
 
-   public void clearRestriction() {
-      this.restrictRadius = -1.0F;
+   public void clearHome() {
+      this.homeRadius = -1;
    }
 
-   public boolean hasRestriction() {
-      return this.restrictRadius != -1.0F;
+   public boolean hasHome() {
+      return this.homeRadius != -1;
    }
 
    @Nullable
@@ -1179,7 +1186,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void onLeashRemoved() {
       if (this.getLeashData() == null) {
-         this.clearRestriction();
+         this.clearHome();
       }
 
    }

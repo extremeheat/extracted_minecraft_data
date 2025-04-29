@@ -109,20 +109,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().translate((float)var5, (float)var6);
       Slot var7 = this.hoveredSlot;
       this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
-      var1.depthTreePushCheckpoint();
-      var1.depthTreeUp();
       this.renderSlotHighlightBack(var1);
-      var1.depthTreeUp();
       this.renderSlots(var1);
-      var1.depthTreeUpToTop();
       this.renderSlotHighlightFront(var1);
       if (var7 != null && var7 != this.hoveredSlot) {
          this.onStopHovering(var7);
       }
 
-      var1.depthTreeUp();
       this.renderLabels(var1, var2, var3);
-      var1.depthTreeBackToCheckpoint();
       var1.pose().popMatrix();
    }
 
@@ -173,9 +167,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.depthTreeDown();
       this.renderTransparentBackground(var1);
-      var1.depthTreeBack();
       this.renderBg(var1, var4, var2, var3);
    }
 
@@ -225,14 +217,12 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
       var1.renderItem(var2, var3, var4);
-      var1.depthTreeUp();
       var1.renderItemDecorations(this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
-      var1.depthTreeBack();
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
-      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
+      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
+      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
    }
 
    protected abstract void renderBg(GuiGraphics var1, float var2, int var3, int var4);
@@ -278,15 +268,12 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          }
       }
 
-      var1.depthTreePushCheckpoint();
       if (!var7) {
          if (var6) {
-            var1.depthTreeUp();
             var1.fill(var3, var4, var3 + 16, var4 + 16, -2130706433);
          }
 
          int var14 = var2.x + var2.y * this.imageWidth;
-         var1.depthTreeUp();
          if (var2.isFake()) {
             var1.renderFakeItem(var5, var3, var4, var14);
          } else {
@@ -296,7 +283,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          var1.renderItemDecorations(this.font, var5, var3, var4, var9);
       }
 
-      var1.depthTreeBackToCheckpoint();
    }
 
    private void recalculateQuickCraftRemaining() {

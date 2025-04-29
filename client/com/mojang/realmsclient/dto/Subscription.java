@@ -1,9 +1,9 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class Subscription extends ValueObject {
@@ -21,13 +21,12 @@ public class Subscription extends ValueObject {
       Subscription var1 = new Subscription();
 
       try {
-         JsonParser var2 = new JsonParser();
-         JsonObject var3 = var2.parse(var0).getAsJsonObject();
-         var1.startDate = JsonUtils.getLongOr("startDate", var3, 0L);
-         var1.daysLeft = JsonUtils.getIntOr("daysLeft", var3, 0);
-         var1.type = typeFrom(JsonUtils.getStringOr("subscriptionType", var3, Subscription.SubscriptionType.NORMAL.name()));
-      } catch (Exception var4) {
-         LOGGER.error("Could not parse Subscription: {}", var4.getMessage());
+         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
+         var1.startDate = JsonUtils.getLongOr("startDate", var2, 0L);
+         var1.daysLeft = JsonUtils.getIntOr("daysLeft", var2, 0);
+         var1.type = typeFrom(JsonUtils.getStringOr("subscriptionType", var2, Subscription.SubscriptionType.NORMAL.name()));
+      } catch (Exception var3) {
+         LOGGER.error("Could not parse Subscription: {}", var3.getMessage());
       }
 
       return var1;

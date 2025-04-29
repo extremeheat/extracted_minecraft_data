@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
@@ -51,9 +52,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -68,7 +66,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -85,6 +82,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -129,6 +127,10 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -144,8 +146,10 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
+import org.slf4j.Logger;
 
 public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess, ScoreHolder, DataComponentGetter {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final String ID_TAG = "id";
    public static final String PASSENGERS_TAG = "Passengers";
    private static final String DATA_TAG = "data";
@@ -1179,12 +1183,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       }
    }
 
-   private boolean collidedWithFluid(FluidState var1, BlockPos var2, Vec3 var3, Vec3 var4) {
+   public boolean collidedWithFluid(FluidState var1, BlockPos var2, Vec3 var3, Vec3 var4) {
       AABB var5 = var1.getAABB(this.level(), var2);
       return var5 != null && this.collidedWithShapeMovingFrom(var3, var4, List.of(var5));
    }
 
-   private boolean collidedWithShapeMovingFrom(Vec3 var1, Vec3 var2, List<AABB> var3) {
+   public boolean collidedWithShapeMovingFrom(Vec3 var1, Vec3 var2, List<AABB> var3) {
       AABB var4 = this.makeBoundingBox(var1);
       Vec3 var5 = var2.subtract(var1);
       return var4.collidedAlongVector(var5, var3);
@@ -1849,7 +1853,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return var1 < var3 * var3;
    }
 
-   public boolean saveAsPassenger(CompoundTag var1) {
+   public boolean saveAsPassenger(ValueOutput var1) {
       if (this.removalReason != null && !this.removalReason.shouldSave()) {
          return false;
       } else {
@@ -1864,11 +1868,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       }
    }
 
-   public boolean save(CompoundTag var1) {
+   public boolean save(ValueOutput var1) {
       return this.isPassenger() ? false : this.saveAsPassenger(var1);
    }
 
-   public CompoundTag saveWithoutId(CompoundTag var1) {
+   public void saveWithoutId(ValueOutput var1) {
       try {
          if (this.vehicle != null) {
             var1.store("Pos", Vec3.CODEC, new Vec3(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
@@ -1885,12 +1889,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          var1.putBoolean("Invulnerable", this.invulnerable);
          var1.putInt("PortalCooldown", this.portalCooldown);
          var1.store("UUID", UUIDUtil.CODEC, this.getUUID());
-         Component var2 = this.getCustomName();
-         if (var2 != null) {
-            RegistryOps var9 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            var1.store("CustomName", ComponentSerialization.CODEC, var9, var2);
-         }
-
+         var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.getCustomName());
          if (this.isCustomNameVisible()) {
             var1.putBoolean("CustomNameVisible", this.isCustomNameVisible());
          }
@@ -1907,8 +1906,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             var1.putBoolean("Glowing", true);
          }
 
-         int var10 = this.getTicksFrozen();
-         if (var10 > 0) {
+         int var2 = this.getTicksFrozen();
+         if (var2 > 0) {
             var1.putInt("TicksFrozen", this.getTicksFrozen());
          }
 
@@ -1926,40 +1925,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
          this.addAdditionalSaveData(var1);
          if (this.isVehicle()) {
-            ListTag var11 = new ListTag();
+            ValueOutput.ValueOutputList var8 = var1.childrenList("Passengers");
 
-            for(Entity var6 : this.getPassengers()) {
-               CompoundTag var7 = new CompoundTag();
-               if (var6.saveAsPassenger(var7)) {
-                  var11.add(var7);
+            for(Entity var5 : this.getPassengers()) {
+               ValueOutput var6 = var8.addChild();
+               if (!var5.saveAsPassenger(var6)) {
+                  var8.discardLast();
                }
             }
 
-            if (!var11.isEmpty()) {
-               var1.put("Passengers", var11);
+            if (var8.isEmpty()) {
+               var1.discard("Passengers");
             }
          }
 
-         return var1;
-      } catch (Throwable var8) {
-         CrashReport var3 = CrashReport.forThrowable(var8, "Saving entity NBT");
+      } catch (Throwable var7) {
+         CrashReport var3 = CrashReport.forThrowable(var7, "Saving entity NBT");
          CrashReportCategory var4 = var3.addCategory("Entity being saved");
          this.fillCrashReportCategory(var4);
          throw new ReportedException(var3);
       }
    }
 
-   public void load(CompoundTag var1) {
+   public void load(ValueInput var1) {
       try {
          Vec3 var2 = (Vec3)var1.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
-         Vec3 var9 = (Vec3)var1.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
-         Vec2 var10 = (Vec2)var1.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
-         this.setDeltaMovement(Math.abs(var9.x) > 10.0 ? 0.0 : var9.x, Math.abs(var9.y) > 10.0 ? 0.0 : var9.y, Math.abs(var9.z) > 10.0 ? 0.0 : var9.z);
+         Vec3 var8 = (Vec3)var1.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
+         Vec2 var9 = (Vec2)var1.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
+         this.setDeltaMovement(Math.abs(var8.x) > 10.0 ? 0.0 : var8.x, Math.abs(var8.y) > 10.0 ? 0.0 : var8.y, Math.abs(var8.z) > 10.0 ? 0.0 : var8.z);
          this.hasImpulse = true;
          double var5 = 3.0000512E7;
          this.setPosRaw(Mth.clamp(var2.x, -3.0000512E7, 3.0000512E7), Mth.clamp(var2.y, -2.0E7, 2.0E7), Mth.clamp(var2.z, -3.0000512E7, 3.0000512E7));
-         this.setYRot(var10.x);
-         this.setXRot(var10.y);
+         this.setYRot(var9.x);
+         this.setXRot(var9.y);
          this.setOldPosAndRot();
          this.setYHeadRot(this.getYRot());
          this.setYBodyRot(this.getYRot());
@@ -1977,8 +1975,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             if (Double.isFinite((double)this.getYRot()) && Double.isFinite((double)this.getXRot())) {
                this.reapplyPosition();
                this.setRot(this.getYRot(), this.getXRot());
-               RegistryOps var7 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-               this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC, var7).orElse((Object)null));
+               this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC).orElse((Object)null));
                this.setCustomNameVisible(var1.getBooleanOr("CustomNameVisible", false));
                this.setSilent(var1.getBooleanOr("Silent", false));
                this.setNoGravity(var1.getBooleanOr("NoGravity", false));
@@ -2002,8 +1999,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          } else {
             throw new IllegalStateException("Entity has invalid position");
          }
-      } catch (Throwable var8) {
-         CrashReport var3 = CrashReport.forThrowable(var8, "Loading entity NBT");
+      } catch (Throwable var7) {
+         CrashReport var3 = CrashReport.forThrowable(var7, "Loading entity NBT");
          CrashReportCategory var4 = var3.addCategory("Entity being loaded");
          this.fillCrashReportCategory(var4);
          throw new ReportedException(var3);
@@ -2021,9 +2018,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return var1.canSerialize() && var2 != null ? var2.toString() : null;
    }
 
-   protected abstract void readAdditionalSaveData(CompoundTag var1);
+   protected abstract void readAdditionalSaveData(ValueInput var1);
 
-   protected abstract void addAdditionalSaveData(CompoundTag var1);
+   protected abstract void addAdditionalSaveData(ValueOutput var1);
 
    @Nullable
    public ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2) {
@@ -2794,9 +2791,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void restoreFrom(Entity var1) {
-      CompoundTag var2 = var1.saveWithoutId(new CompoundTag());
-      var2.remove("Dimension");
-      this.load(var2);
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
+         var1.saveWithoutId(var3);
+         var3.discard("Dimension");
+         this.load(TagValueInput.create(var2, this.registryAccess(), var3.buildResult()));
+      }
+
       this.portalCooldown = var1.portalCooldown;
       this.portalProcess = var1.portalProcess;
    }
@@ -3887,6 +3888,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return var3 != null ? this.applyImplicitComponent(var2, var3) : false;
    }
 
+   public ProblemReporter.PathElement problemPath() {
+      return new EntityPathElement(this);
+   }
+
    static {
       TAG_LIST_CODEC = Codec.STRING.sizeLimitedListOf(1024);
       YXZ_AXIS_ORDER = ImmutableList.of(Direction.Axis.Y, Direction.Axis.X, Direction.Axis.Z);
@@ -3971,6 +3976,17 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       // $FF: synthetic method
       private static RemovalReason[] $values() {
          return new RemovalReason[]{KILLED, DISCARDED, UNLOADED_TO_CHUNK, UNLOADED_WITH_PLAYER, CHANGED_DIMENSION};
+      }
+   }
+
+   static record EntityPathElement(Entity entity) implements ProblemReporter.PathElement {
+      EntityPathElement(Entity var1) {
+         super();
+         this.entity = var1;
+      }
+
+      public String get() {
+         return this.entity.toString();
       }
    }
 

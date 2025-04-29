@@ -84,7 +84,6 @@ public class ChatComponent {
                GuiMessage.Line var25 = (GuiMessage.Line)this.trimmedMessages.get(var24);
                if (var25 != null) {
                   int var26 = var2 - var25.addedTime();
-                  var1.depthTreePushCheckpoint();
                   if (var26 < 200 || var5) {
                      double var27 = var5 ? 1.0 : getTimeFactor(var26);
                      int var29 = (int)(255.0 * var27 * var14);
@@ -98,23 +97,18 @@ public class ChatComponent {
                         GuiMessageTag var34 = var25.tag();
                         if (var34 != null) {
                            int var35 = var34.indicatorColor() | var29 << 24;
-                           var1.depthTreeUp();
                            var1.fill(-4, var32 - var20, -2, var32, var35);
                            if (var24 == var13 && var34.icon() != null) {
                               int var36 = this.getTagIconLeft(var25);
                               Objects.requireNonNull(this.minecraft.font);
                               int var37 = var33 + 9;
-                              var1.depthTreeUp();
                               this.drawTagIcon(var1, var36, var37, var34.icon());
                            }
                         }
 
-                        var1.depthTreeUp();
                         var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, ARGB.color(var29, -1));
                      }
                   }
-
-                  var1.depthTreeBackToCheckpoint();
                }
             }
 
@@ -125,9 +119,7 @@ public class ChatComponent {
                var1.pose().pushMatrix();
                var1.pose().translate(0.0F, (float)var12);
                var1.fill(-2, 0, var10 + 4, 9, var41 << 24);
-               var1.depthTreeUp();
-               var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var38), 0, 1, 16777215 + (var39 << 24));
-               var1.depthTreeBack();
+               var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var38), 0, 1, ARGB.color(var39, -1));
                var1.pose().popMatrix();
             }
 
@@ -141,8 +133,8 @@ public class ChatComponent {
                   int var45 = var28 > 0 ? 170 : 96;
                   int var46 = this.newMessageSinceScroll ? 13382451 : 3355562;
                   int var47 = var10 + 4;
-                  var1.fill(var47, -var28, var47 + 2, -var28 - var44, var46 + (var45 << 24));
-                  var1.fill(var47 + 2, -var28, var47 + 1, -var28 - var44, 13421772 + (var45 << 24));
+                  var1.fill(var47, -var28, var47 + 2, -var28 - var44, ARGB.color(var45, var46));
+                  var1.fill(var47 + 2, -var28, var47 + 1, -var28 - var44, ARGB.color(var45, 13421772));
                }
             }
 

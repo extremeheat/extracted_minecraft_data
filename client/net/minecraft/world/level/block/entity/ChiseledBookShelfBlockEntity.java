@@ -4,12 +4,10 @@ import com.mojang.logging.LogUtils;
 import java.util.Objects;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -21,6 +19,8 @@ import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 public class ChiseledBookShelfBlockEntity extends BlockEntity implements Container {
@@ -54,16 +54,16 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       }
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.items.clear();
-      ContainerHelper.loadAllItems(var1, this.items, var2);
+      ContainerHelper.loadAllItems(var1, this.items);
       this.lastInteractedSlot = var1.getIntOr("last_interacted_slot", -1);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      ContainerHelper.saveAllItems(var1, this.items, true, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      ContainerHelper.saveAllItems(var1, this.items, true);
       var1.putInt("last_interacted_slot", this.lastInteractedSlot);
    }
 
@@ -147,7 +147,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
-      var1.remove("Items");
+   public void removeComponentsFromTag(ValueOutput var1) {
+      var1.discard("Items");
    }
 }

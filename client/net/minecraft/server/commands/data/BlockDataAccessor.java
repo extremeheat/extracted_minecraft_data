@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.logging.LogUtils;
 import java.util.Locale;
 import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
@@ -11,14 +12,19 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import org.slf4j.Logger;
 
 public class BlockDataAccessor implements DataAccessor {
+   private static final Logger LOGGER = LogUtils.getLogger();
    static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(Component.translatable("commands.data.block.invalid"));
    public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
@@ -46,13 +52,17 @@ public class BlockDataAccessor implements DataAccessor {
 
    public void setData(CompoundTag var1) {
       BlockState var2 = this.entity.getLevel().getBlockState(this.pos);
-      this.entity.loadWithComponents(var1, this.entity.getLevel().registryAccess());
-      this.entity.setChanged();
-      this.entity.getLevel().sendBlockUpdated(this.pos, var2, var2, 3);
+
+      try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
+         this.entity.loadWithComponents(TagValueInput.create(var3, this.entity.getLevel().registryAccess(), var1));
+         this.entity.setChanged();
+         this.entity.getLevel().sendBlockUpdated(this.pos, var2, var2, 3);
+      }
+
    }
 
    public CompoundTag getData() {
-      return this.entity.saveWithFullMetadata(this.entity.getLevel().registryAccess());
+      return this.entity.saveWithFullMetadata((HolderLookup.Provider)this.entity.getLevel().registryAccess());
    }
 
    public Component getModifiedSuccess() {

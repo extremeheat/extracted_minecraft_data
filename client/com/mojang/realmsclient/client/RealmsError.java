@@ -2,7 +2,6 @@ package com.mojang.realmsclient.client;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.exception.RealmsHttpException;
 import java.util.Locale;
@@ -10,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public interface RealmsError {
@@ -29,7 +29,7 @@ public interface RealmsError {
          return RealmsError.CustomError.noPayload(var0);
       } else {
          try {
-            JsonObject var2 = JsonParser.parseString(var1).getAsJsonObject();
+            JsonObject var2 = LenientJsonParser.parse(var1).getAsJsonObject();
             String var3 = GsonHelper.getAsString(var2, "reason", (String)null);
             String var4 = GsonHelper.getAsString(var2, "errorMsg", (String)null);
             int var5 = GsonHelper.getAsInt(var2, "errorCode", -1);

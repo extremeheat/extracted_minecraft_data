@@ -1,12 +1,12 @@
 package net.minecraft.world.entity.npc;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public interface InventoryCarrier {
    String TAG_INVENTORY = "Inventory";
@@ -35,11 +35,11 @@ public interface InventoryCarrier {
 
    }
 
-   default void readInventoryFromTag(CompoundTag var1, HolderLookup.Provider var2) {
-      var1.getList("Inventory").ifPresent((var2x) -> this.getInventory().fromTag(var2x, var2));
+   default void readInventoryFromTag(ValueInput var1) {
+      var1.list("Inventory", ItemStack.CODEC).ifPresent((var1x) -> this.getInventory().fromItemList(var1x));
    }
 
-   default void writeInventoryToTag(CompoundTag var1, HolderLookup.Provider var2) {
-      var1.put("Inventory", this.getInventory().createTag(var2));
+   default void writeInventoryToTag(ValueOutput var1) {
+      this.getInventory().storeAsItemList(var1.list("Inventory", ItemStack.CODEC));
    }
 }

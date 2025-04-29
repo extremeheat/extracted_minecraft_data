@@ -211,6 +211,6 @@ public class ConnectScreen extends Screen {
          this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("narrator.joining"));
       }
 
-      var1.drawCenteredString(this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.status, this.width / 2, this.height / 2 - 50, -1);
    }
 }

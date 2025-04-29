@@ -64,9 +64,9 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> 
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.parent, ".parent");
-         var1.validateEntity(this.partner, ".partner");
-         var1.validateEntity(this.child, ".child");
+         var1.validateEntity(this.parent, "parent");
+         var1.validateEntity(this.partner, "partner");
+         var1.validateEntity(this.child, "child");
       }
    }
 }

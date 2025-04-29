@@ -54,9 +54,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
          }
 
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, var6, this.getY(), this.width, this.height);
-         var1.depthTreeUp();
          this.renderIcon(var1);
-         var1.depthTreeBack();
          if (this.animationTime > 0.0F) {
             var1.pose().popMatrix();
             this.animationTime -= var4;
@@ -69,9 +67,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       int var2 = this.isStateTriggered ? -2 : 0;
       if (this.tabInfo.secondaryIcon().isPresent()) {
          var1.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 3 + var2, this.getY() + 5);
-         var1.depthTreeUp();
          var1.renderFakeItem((ItemStack)this.tabInfo.secondaryIcon().get(), this.getX() + 14 + var2, this.getY() + 5);
-         var1.depthTreeBack();
       } else {
          var1.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 9 + var2, this.getY() + 5);
       }

@@ -45,7 +45,6 @@ public class GhostSlots {
 
    public void render(GuiGraphics var1, Minecraft var2, boolean var3) {
       this.ingredients.forEach((var4, var5) -> {
-         var1.depthTreePushCheckpoint();
          int var6 = var4.x;
          int var7 = var4.y;
          if (var5.isResultSlot && var3) {
@@ -55,16 +54,12 @@ public class GhostSlots {
          }
 
          ItemStack var8 = var5.getItem(this.slotSelectTime.currentIndex());
-         var1.depthTreeUp();
          var1.renderFakeItem(var8, var6, var7);
-         var1.depthTreeUp();
          var1.fill(var6, var7, var6 + 16, var7 + 16, 822083583);
          if (var5.isResultSlot) {
-            var1.depthTreeUp();
             var1.renderItemDecorations(var2.font, var8, var6, var7);
          }
 
-         var1.depthTreeBackToCheckpoint();
       });
    }
 

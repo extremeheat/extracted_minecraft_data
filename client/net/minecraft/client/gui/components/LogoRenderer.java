@@ -36,9 +36,7 @@ public class LogoRenderer {
       int var5 = var2 / 2 - 128;
       float var6 = this.keepLogoThroughFade ? 1.0F : var3;
       int var7 = ARGB.white(var6);
-      var1.depthTreeDown();
       var1.blit(RenderPipelines.GUI_TEXTURED, this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, var5, var4, 0.0F, 0.0F, 256, 44, 256, 64, var7);
-      var1.depthTreeBack();
       int var8 = var2 / 2 - 64;
       int var9 = var4 + 44 - 7;
       var1.blit(RenderPipelines.GUI_TEXTURED, MINECRAFT_EDITION, var8, var9, 0.0F, 0.0F, 128, 14, 128, 16, var7);

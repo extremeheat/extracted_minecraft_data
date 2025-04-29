@@ -112,8 +112,8 @@ public class RandomPos {
    public static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, RandomSource var2, BlockPos var3) {
       int var4 = var3.getX();
       int var5 = var3.getZ();
-      if (var0.hasRestriction() && var1 > 1) {
-         BlockPos var6 = var0.getRestrictCenter();
+      if (var0.hasHome() && var1 > 1) {
+         BlockPos var6 = var0.getHomePosition();
          if (var0.getX() > (double)var6.getX()) {
             var4 -= var2.nextInt(var1 / 2);
          } else {

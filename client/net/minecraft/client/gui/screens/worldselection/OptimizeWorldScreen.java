@@ -89,7 +89,7 @@ public class OptimizeWorldScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, -1);
       int var5 = this.width / 2 - 150;
       int var6 = this.width / 2 + 150;
       int var7 = this.height / 4 + 100;
@@ -98,18 +98,18 @@ public class OptimizeWorldScreen extends Screen {
       Component var10002 = this.upgrader.getStatus();
       int var10003 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var1.drawCenteredString(var10001, var10002, var10003, var7 - 9 - 2, 10526880);
+      var1.drawCenteredString(var10001, var10002, var10003, var7 - 9 - 2, -6250336);
       if (this.upgrader.getTotalChunks() > 0) {
          var1.fill(var5 - 1, var7 - 1, var6 + 1, var8 + 1, -16777216);
-         var1.drawString(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), var5, 40, 10526880);
+         var1.drawString(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), var5, 40, -6250336);
          var10001 = this.font;
          MutableComponent var20 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var20, var5, 40 + 9 + 3, 10526880);
+         var1.drawString(var10001, (Component)var20, var5, 40 + 9 + 3, -6250336);
          var10001 = this.font;
          var20 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var20, var5, 40 + (9 + 3) * 2, 10526880);
+         var1.drawString(var10001, (Component)var20, var5, 40 + (9 + 3) * 2, -6250336);
          int var9 = 0;
 
          for(ResourceKey var11 : this.upgrader.levels()) {
@@ -124,12 +124,12 @@ public class OptimizeWorldScreen extends Screen {
          var10001 = this.font;
          var10003 = this.width / 2;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var14, var10003, var7 + 2 * 9 + 2, 10526880);
+         var1.drawCenteredString(var10001, (Component)var14, var10003, var7 + 2 * 9 + 2, -6250336);
          var10001 = this.font;
          var10003 = this.width / 2;
          int var10004 = var7 + (var8 - var7) / 2;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var15, var10003, var10004 - 9 / 2, 10526880);
+         var1.drawCenteredString(var10001, (Component)var15, var10003, var10004 - 9 / 2, -6250336);
       }
 
    }

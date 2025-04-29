@@ -1,11 +1,16 @@
 package net.minecraft.network.codec;
 
 import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
@@ -42,6 +47,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -542,11 +548,35 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0) {
-      return fromCodec(var0, () -> NbtAccounter.create(2097152L));
+      return fromCodec(var0, (Supplier)(() -> NbtAccounter.create(2097152L)));
+   }
+
+   static <T, B extends ByteBuf, V> StreamCodec.CodecOperation<B, T, V> fromCodec(DynamicOps<T> var0, Codec<V> var1) {
+      return (var2) -> new StreamCodec<B, V>() {
+            public V decode(B var1x) {
+               Object var2x = var2.decode(var1x);
+               return (V)var1.parse(var0, var2x).getOrThrow((var1xx) -> new DecoderException("Failed to decode: " + var1xx + " " + String.valueOf(var2x)));
+            }
+
+            public void encode(B var1x, V var2x) {
+               Object var3 = var1.encodeStart(var0, var2x).getOrThrow((var1xx) -> new EncoderException("Failed to encode: " + var1xx + " " + String.valueOf(var2x)));
+               var2.encode(var1x, var3);
+            }
+
+            // $FF: synthetic method
+            public void encode(final Object var1x, final Object var2x) {
+               this.encode((ByteBuf)var1x, var2x);
+            }
+
+            // $FF: synthetic method
+            public Object decode(final Object var1x) {
+               return this.decode((ByteBuf)var1x);
+            }
+         };
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0, Supplier<NbtAccounter> var1) {
-      return tagCodec(var1).map((var1x) -> var0.parse(NbtOps.INSTANCE, var1x).getOrThrow((var1) -> new DecoderException("Failed to decode: " + var1 + " " + String.valueOf(var1x))), (var1x) -> (Tag)var0.encodeStart(NbtOps.INSTANCE, var1x).getOrThrow((var1) -> new EncoderException("Failed to encode: " + var1 + " " + String.valueOf(var1x))));
+      return tagCodec(var1).apply(fromCodec(NbtOps.INSTANCE, var0));
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistriesTrusted(Codec<T> var0) {
@@ -943,6 +973,37 @@ public interface ByteBufCodecs {
          // $FF: synthetic method
          public Object decode(final Object var1) {
             return this.decode((RegistryFriendlyByteBuf)var1);
+         }
+      };
+   }
+
+   static StreamCodec<ByteBuf, JsonElement> lenientJson(final int var0) {
+      return new StreamCodec<ByteBuf, JsonElement>() {
+         private static final Gson GSON = (new GsonBuilder()).disableHtmlEscaping().create();
+
+         public JsonElement decode(ByteBuf var1) {
+            String var2 = Utf8String.read(var1, var0);
+
+            try {
+               return LenientJsonParser.parse(var2);
+            } catch (JsonSyntaxException var4) {
+               throw new DecoderException("Failed to parse JSON", var4);
+            }
+         }
+
+         public void encode(ByteBuf var1, JsonElement var2) {
+            String var3 = GSON.toJson(var2);
+            Utf8String.write(var1, var3, var0);
+         }
+
+         // $FF: synthetic method
+         public void encode(final Object var1, final Object var2) {
+            this.encode((ByteBuf)var1, (JsonElement)var2);
+         }
+
+         // $FF: synthetic method
+         public Object decode(final Object var1) {
+            return this.decode((ByteBuf)var1);
          }
       };
    }

@@ -4,15 +4,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -38,6 +35,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
@@ -316,12 +315,11 @@ public class ItemFrame extends HangingEntity {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       ItemStack var2 = this.getItem();
       if (!var2.isEmpty()) {
-         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("Item", ItemStack.CODEC, var3, var2);
+         var1.store("Item", ItemStack.CODEC, var2);
       }
 
       var1.putByte("ItemRotation", (byte)this.getRotation());
@@ -331,16 +329,15 @@ public class ItemFrame extends HangingEntity {
       var1.putBoolean("Fixed", this.fixed);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      ItemStack var3 = (ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY);
-      ItemStack var4 = this.getItem();
-      if (!var4.isEmpty() && !ItemStack.matches(var3, var4)) {
-         this.removeFramedMap(var4);
+      ItemStack var2 = (ItemStack)var1.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+      ItemStack var3 = this.getItem();
+      if (!var3.isEmpty() && !ItemStack.matches(var2, var3)) {
+         this.removeFramedMap(var3);
       }
 
-      this.setItem(var3, false);
+      this.setItem(var2, false);
       this.setRotation(var1.getByteOr("ItemRotation", (byte)0), false);
       this.dropChance = var1.getFloatOr("ItemDropChance", 1.0F);
       this.setDirection((Direction)var1.read("Facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));

@@ -61,7 +61,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    protected MultiLineEditBox createCommentBox(int var1, int var2, Consumer<String> var3) {
       AbuseReportLimits var4 = this.reportingContext.sender().reportLimits();
-      MultiLineEditBox var5 = new MultiLineEditBox(this.font, 0, 0, var1, var2, DESCRIBE_PLACEHOLDER, MORE_COMMENTS_NARRATION);
+      MultiLineEditBox var5 = MultiLineEditBox.builder().setPlaceholder(DESCRIBE_PLACEHOLDER).build(this.font, var1, var2, MORE_COMMENTS_NARRATION);
       var5.setValue(this.reportBuilder.comments());
       var5.setCharacterLimit(var4.maxOpinionCommentsLength());
       var5.setValueListener(var3);

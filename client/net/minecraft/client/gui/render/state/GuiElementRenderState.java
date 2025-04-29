@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 
-public interface GuiElementRenderState {
+public interface GuiElementRenderState extends ScreenArea {
    void buildVertices(VertexConsumer var1, float var2);
 
    RenderPipeline pipeline();

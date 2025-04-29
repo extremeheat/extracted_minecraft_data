@@ -26,6 +26,7 @@ public class WaypointStyleProvider implements DataProvider {
 
    private static void bootstrap(BiConsumer<ResourceKey<WaypointStyleAsset>, WaypointStyle> var0) {
       var0.accept(WaypointStyleAssets.DEFAULT, new WaypointStyle(128, 332, List.of(ResourceLocation.withDefaultNamespace("default_0"), ResourceLocation.withDefaultNamespace("default_1"), ResourceLocation.withDefaultNamespace("default_2"), ResourceLocation.withDefaultNamespace("default_3"))));
+      var0.accept(WaypointStyleAssets.BOWTIE, new WaypointStyle(64, 332, List.of(ResourceLocation.withDefaultNamespace("bowtie"), ResourceLocation.withDefaultNamespace("default_0"), ResourceLocation.withDefaultNamespace("default_1"), ResourceLocation.withDefaultNamespace("default_2"), ResourceLocation.withDefaultNamespace("default_3"))));
    }
 
    public CompletableFuture<?> run(CachedOutput var1) {

@@ -94,7 +94,6 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.depthTreeUp();
       this.templateIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       this.baseIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       this.additionalIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
@@ -103,7 +102,6 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       int var7 = this.leftPos + 161;
       int var8 = this.topPos + 80;
       InventoryScreen.renderEntityInInventory(var1, var5, var6, var7, var8, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, this.armorStandPreview);
-      var1.depthTreeBack();
    }
 
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {

@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
@@ -58,7 +59,6 @@ public class AdvancementToast implements Toast {
       if (var5 != null) {
          List var6 = var2.split(var5.getTitle(), 125);
          int var7 = var5.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
-         var1.depthTreeUp();
          if (var6.size() == 1) {
             var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 7, var7, false);
             var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)var6.get(0)), 30, 18, -1, false);
@@ -66,17 +66,17 @@ public class AdvancementToast implements Toast {
             boolean var8 = true;
             float var9 = 300.0F;
             if (var3 < 1500L) {
-               int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | 67108864;
-               var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 11, var7 | var10, false);
+               int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F);
+               var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 11, ARGB.color(var10, var7), false);
             } else {
-               int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | 67108864;
+               int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
                int var10000 = this.height() / 2;
                int var10001 = var6.size();
                Objects.requireNonNull(var2);
                int var11 = var10000 - var10001 * 9 / 2;
 
                for(FormattedCharSequence var13 : var6) {
-                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, 16777215 | var14, false);
+                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.color(var14, -1), false);
                   Objects.requireNonNull(var2);
                   var11 += 9;
                }
@@ -84,7 +84,6 @@ public class AdvancementToast implements Toast {
          }
 
          var1.renderFakeItem(var5.getIcon(), 8, 8);
-         var1.depthTreeBack();
       }
    }
 }

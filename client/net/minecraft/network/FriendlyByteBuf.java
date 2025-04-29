@@ -60,7 +60,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.BlockHitResult;
@@ -104,10 +104,10 @@ public class FriendlyByteBuf extends ByteBuf {
       return this;
    }
 
-   public <T> T readJsonWithCodec(Codec<T> var1) {
-      JsonElement var2 = (JsonElement)GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
+   public <T> T readLenientJsonWithCodec(Codec<T> var1) {
+      JsonElement var2 = LenientJsonParser.parse(this.readUtf());
       DataResult var3 = var1.parse(JsonOps.INSTANCE, var2);
-      return (T)var3.getOrThrow((var0) -> new DecoderException("Failed to decode json: " + var0));
+      return (T)var3.getOrThrow((var0) -> new DecoderException("Failed to decode JSON: " + var0));
    }
 
    public <T> void writeJsonWithCodec(Codec<T> var1, T var2) {
