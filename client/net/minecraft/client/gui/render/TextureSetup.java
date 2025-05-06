@@ -1,30 +1,30 @@
 package net.minecraft.client.gui.render;
 
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 
-public record TextureSetup(@Nullable GpuTexture texure0, @Nullable GpuTexture texure1, @Nullable GpuTexture texure2) {
-   private static final TextureSetup NO_TEXTURE_SETUP = new TextureSetup((GpuTexture)null, (GpuTexture)null, (GpuTexture)null);
+public record TextureSetup(@Nullable GpuTextureView texure0, @Nullable GpuTextureView texure1, @Nullable GpuTextureView texure2) {
+   private static final TextureSetup NO_TEXTURE_SETUP = new TextureSetup((GpuTextureView)null, (GpuTextureView)null, (GpuTextureView)null);
    private static int sortKeySeed;
 
-   public TextureSetup(@Nullable GpuTexture var1, @Nullable GpuTexture var2, @Nullable GpuTexture var3) {
+   public TextureSetup(@Nullable GpuTextureView var1, @Nullable GpuTextureView var2, @Nullable GpuTextureView var3) {
       super();
       this.texure0 = var1;
       this.texure1 = var2;
       this.texure2 = var3;
    }
 
-   public static TextureSetup singleTexture(GpuTexture var0) {
-      return new TextureSetup(var0, (GpuTexture)null, (GpuTexture)null);
+   public static TextureSetup singleTexture(GpuTextureView var0) {
+      return new TextureSetup(var0, (GpuTextureView)null, (GpuTextureView)null);
    }
 
-   public static TextureSetup singleTextureWithLightmap(GpuTexture var0) {
-      return new TextureSetup(var0, (GpuTexture)null, Minecraft.getInstance().gameRenderer.lightTexture().getTexture());
+   public static TextureSetup singleTextureWithLightmap(GpuTextureView var0) {
+      return new TextureSetup(var0, (GpuTextureView)null, Minecraft.getInstance().gameRenderer.lightTexture().getTextureView());
    }
 
-   public static TextureSetup doubleTexture(GpuTexture var0, GpuTexture var1) {
-      return new TextureSetup(var0, var1, (GpuTexture)null);
+   public static TextureSetup doubleTexture(GpuTextureView var0, GpuTextureView var1) {
+      return new TextureSetup(var0, var1, (GpuTextureView)null);
    }
 
    public static TextureSetup noTexture() {

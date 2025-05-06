@@ -60,6 +60,7 @@ public class EntityEvent {
    public static final byte SHAKE = 66;
    public static final byte DROWN_PARTICLES = 67;
    public static final byte SADDLE_BREAK = 68;
+   public static final byte RAVAGER_ROARED = 69;
 
    public EntityEvent() {
       super();

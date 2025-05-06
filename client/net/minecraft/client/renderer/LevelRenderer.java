@@ -15,7 +15,7 @@ import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -60,6 +60,7 @@ import net.minecraft.client.renderer.chunk.RenderRegionCache;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
@@ -204,7 +205,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public void doEntityOutline() {
       if (this.shouldShowEntityOutlines()) {
-         this.entityOutlineTarget.blitAndBlendToTexture(this.minecraft.getMainRenderTarget().getColorTexture());
+         this.entityOutlineTarget.blitAndBlendToTexture(this.minecraft.getMainRenderTarget().getColorTextureView());
       }
 
    }
@@ -419,74 +420,72 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
 
       var9.popPush("fog");
-      float var19 = var5.getRenderDistance();
-      boolean var20 = this.minecraft.level.effects().isFoggyAt(Mth.floor(var11), Mth.floor(var13)) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
-      Vector4f var21 = FogRenderer.computeFogColor(var4, var8, this.minecraft.level, this.minecraft.options.getEffectiveRenderDistance(), var5.getDarkenWorldAmount(var8));
-      this.fogRenderer.setupFog(var4, var21, var19, var20, var8);
-      GpuBufferSlice var22 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
+      boolean var19 = this.minecraft.level.effects().isFoggyAt(Mth.floor(var11), Mth.floor(var13)) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
+      Vector4f var20 = this.fogRenderer.setupFog(var4, this.minecraft.options.getEffectiveRenderDistance(), var19, var2, var5.getDarkenWorldAmount(var8), this.level);
+      GpuBufferSlice var21 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
       var9.popPush("cullEntities");
-      boolean var23 = this.collectVisibleEntities(var4, var18, this.visibleEntities);
+      boolean var22 = this.collectVisibleEntities(var4, var18, this.visibleEntities);
       this.visibleEntityCount = this.visibleEntities.size();
       var9.popPush("terrain_setup");
       this.setupRender(var4, var18, var17, this.minecraft.player.isSpectator());
       var9.popPush("compile_sections");
       this.compileSections(var4);
-      Matrix4fStack var24 = RenderSystem.getModelViewStack();
-      var24.pushMatrix();
-      var24.mul(var6);
-      FrameGraphBuilder var25 = new FrameGraphBuilder();
-      this.targets.main = var25.<RenderTarget>importExternal("main", this.minecraft.getMainRenderTarget());
-      int var26 = this.minecraft.getMainRenderTarget().width;
-      int var27 = this.minecraft.getMainRenderTarget().height;
-      RenderTargetDescriptor var28 = new RenderTargetDescriptor(var26, var27, true, 0);
-      PostChain var29 = this.getTransparencyChain();
-      if (var29 != null) {
-         this.targets.translucent = var25.<RenderTarget>createInternal("translucent", var28);
-         this.targets.itemEntity = var25.<RenderTarget>createInternal("item_entity", var28);
-         this.targets.particles = var25.<RenderTarget>createInternal("particles", var28);
-         this.targets.weather = var25.<RenderTarget>createInternal("weather", var28);
-         this.targets.clouds = var25.<RenderTarget>createInternal("clouds", var28);
+      Matrix4fStack var23 = RenderSystem.getModelViewStack();
+      var23.pushMatrix();
+      var23.mul(var6);
+      FrameGraphBuilder var24 = new FrameGraphBuilder();
+      this.targets.main = var24.<RenderTarget>importExternal("main", this.minecraft.getMainRenderTarget());
+      int var25 = this.minecraft.getMainRenderTarget().width;
+      int var26 = this.minecraft.getMainRenderTarget().height;
+      RenderTargetDescriptor var27 = new RenderTargetDescriptor(var25, var26, true, 0);
+      PostChain var28 = this.getTransparencyChain();
+      if (var28 != null) {
+         this.targets.translucent = var24.<RenderTarget>createInternal("translucent", var27);
+         this.targets.itemEntity = var24.<RenderTarget>createInternal("item_entity", var27);
+         this.targets.particles = var24.<RenderTarget>createInternal("particles", var27);
+         this.targets.weather = var24.<RenderTarget>createInternal("weather", var27);
+         this.targets.clouds = var24.<RenderTarget>createInternal("clouds", var27);
       }
 
       if (this.entityOutlineTarget != null) {
-         this.targets.entityOutline = var25.<RenderTarget>importExternal("entity_outline", this.entityOutlineTarget);
+         this.targets.entityOutline = var24.<RenderTarget>importExternal("entity_outline", this.entityOutlineTarget);
       }
 
-      FramePass var30 = var25.addPass("clear");
-      this.targets.main = var30.<RenderTarget>readsAndWrites(this.targets.main);
-      var30.executes(() -> {
+      FramePass var29 = var24.addPass("clear");
+      this.targets.main = var29.<RenderTarget>readsAndWrites(this.targets.main);
+      var29.executes(() -> {
          RenderTarget var2 = this.minecraft.getMainRenderTarget();
-         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var2.getColorTexture(), ARGB.colorFromFloat(0.0F, var21.x, var21.y, var21.z), var2.getDepthTexture(), 1.0);
+         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var2.getColorTexture(), ARGB.colorFromFloat(0.0F, var20.x, var20.y, var20.z), var2.getDepthTexture(), 1.0);
       });
-      if (!var20) {
-         this.addSkyPass(var25, var4, var8, var22);
+      if (!var19) {
+         this.addSkyPass(var24, var4, var8, var21);
       }
 
-      this.addMainPass(var25, var18, var4, var6, var22, var3, var23, var2, var9);
-      PostChain var31 = this.minecraft.getShaderManager().getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
-      if (var23 && var31 != null) {
-         var31.addToFrame(var25, var26, var27, this.targets);
+      this.addMainPass(var24, var18, var4, var6, var21, var3, var22, var2, var9);
+      PostChain var30 = this.minecraft.getShaderManager().getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
+      if (var22 && var30 != null) {
+         var30.addToFrame(var24, var25, var26, this.targets);
       }
 
-      this.addParticlesPass(var25, var4, var8, var22);
-      CloudStatus var32 = this.minecraft.options.getCloudsType();
-      if (var32 != CloudStatus.OFF) {
-         Optional var33 = this.level.dimensionType().cloudHeight();
-         if (var33.isPresent()) {
-            float var34 = (float)this.ticks + var8;
-            int var35 = this.level.getCloudColor(var8);
-            this.addCloudsPass(var25, var32, var4.getPosition(), var34, var35, (float)(Integer)var33.get() + 0.33F);
+      this.addParticlesPass(var24, var4, var8, var21);
+      CloudStatus var31 = this.minecraft.options.getCloudsType();
+      if (var31 != CloudStatus.OFF) {
+         Optional var32 = this.level.dimensionType().cloudHeight();
+         if (var32.isPresent()) {
+            float var33 = (float)this.ticks + var8;
+            int var34 = this.level.getCloudColor(var8);
+            this.addCloudsPass(var24, var31, var4.getPosition(), var33, var34, (float)(Integer)var32.get() + 0.33F);
          }
       }
 
-      this.addWeatherPass(var25, var4.getPosition(), var8, var22);
-      if (var29 != null) {
-         var29.addToFrame(var25, var26, var27, this.targets);
+      this.addWeatherPass(var24, var4.getPosition(), var8, var21);
+      if (var28 != null) {
+         var28.addToFrame(var24, var25, var26, this.targets);
       }
 
-      this.addLateDebugPass(var25, var10, var22);
+      this.addLateDebugPass(var24, var10, var21);
       var9.popPush("framegraph");
-      var25.execute(var1, new FrameGraphBuilder.Inspector() {
+      var24.execute(var1, new FrameGraphBuilder.Inspector() {
          public void beforeExecutePass(String var1) {
             var9.push(var1);
          }
@@ -497,7 +496,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       });
       this.visibleEntities.clear();
       this.targets.clear();
-      var24.popMatrix();
+      var23.popMatrix();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
    }
 
@@ -539,11 +538,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
          while(var21.hasNext()) {
             SectionRenderDispatcher.RenderSection var24 = (SectionRenderDispatcher.RenderSection)var21.next();
-            if (var24.getCompiled().hasRenderableLayers()) {
-               BlockPos var25 = var24.getRenderOrigin();
-               var20.add(new DynamicUniforms.Transform(var4, var22, new Vector3f((float)((double)var25.getX() - var14x), (float)((double)var25.getY() - var16), (float)((double)var25.getZ() - var18)), var23, 1.0F));
-               var24.setDynamicTransformIndex(var20.size() - 1);
-            }
+            BlockPos var25 = var24.getRenderOrigin();
+            var20.add(new DynamicUniforms.Transform(var4, var22, new Vector3f((float)((double)var25.getX() - var14x), (float)((double)var25.getY() - var16), (float)((double)var25.getZ() - var18)), var23, 1.0F));
+            var24.setDynamicTransformIndex(var20.size() - 1);
          }
 
          GpuBufferSlice[] var28 = RenderSystem.getDynamicUniforms().writeTransforms((DynamicUniforms.Transform[])var20.toArray(new DynamicUniforms.Transform[0]));
@@ -942,12 +939,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       GpuBuffer var17 = var9 == 0 ? null : var8.getBuffer(var9);
       VertexFormat.IndexType var18 = var9 == 0 ? null : var8.type();
 
-      try (RenderPass var19 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.getName(), var1.getRenderTarget().getColorTexture(), OptionalInt.empty(), var1.getRenderTarget().getDepthTexture(), OptionalDouble.empty())) {
+      try (RenderPass var19 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.getName(), var1.getRenderTarget().getColorTextureView(), OptionalInt.empty(), var1.getRenderTarget().getDepthTextureView(), OptionalDouble.empty())) {
          var19.setPipeline(var6);
          RenderSystem.bindDefaultUniforms(var19);
 
          for(int var20 = 0; var20 < 12; ++var20) {
-            GpuTexture var21 = RenderSystem.getShaderTexture(var20);
+            GpuTextureView var21 = RenderSystem.getShaderTexture(var20);
             if (var21 != null) {
                var19.bindSampler("Sampler" + var20, var21);
             }

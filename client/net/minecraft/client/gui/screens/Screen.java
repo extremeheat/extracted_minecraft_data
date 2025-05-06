@@ -35,8 +35,6 @@ import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.CubeMap;
-import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -52,14 +50,12 @@ import org.slf4j.Logger;
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   protected static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
-   protected static final PanoramaRenderer PANORAMA;
-   public static final ResourceLocation MENU_BACKGROUND;
-   public static final ResourceLocation HEADER_SEPARATOR;
-   public static final ResourceLocation FOOTER_SEPARATOR;
-   private static final ResourceLocation INWORLD_MENU_BACKGROUND;
-   public static final ResourceLocation INWORLD_HEADER_SEPARATOR;
-   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR;
+   public static final ResourceLocation MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
+   public static final ResourceLocation HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
+   public static final ResourceLocation FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
+   private static final ResourceLocation INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
+   public static final ResourceLocation INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
+   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
    protected static final float FADE_IN_TIME = 2000.0F;
    protected final Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
@@ -431,7 +427,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, true);
+      this.minecraft.gameRenderer.getPanorama().render(var1, this.width, this.height, true);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -665,13 +661,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    static {
-      PANORAMA = new PanoramaRenderer(CUBE_MAP);
-      MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
-      HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
-      FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
-      INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
-      INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
-      INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
       NARRATE_SUPPRESS_AFTER_INIT_TIME = TimeUnit.SECONDS.toMillis(2L);
       NARRATE_DELAY_NARRATOR_ENABLED = NARRATE_SUPPRESS_AFTER_INIT_TIME;
    }

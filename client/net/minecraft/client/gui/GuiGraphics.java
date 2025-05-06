@@ -1,7 +1,7 @@
 package net.minecraft.client.gui;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -394,11 +394,11 @@ public class GuiGraphics {
    }
 
    private void innerBlit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
-      GpuTexture var12 = this.minecraft.getTextureManager().getTexture(var2).getTexture();
+      GpuTextureView var12 = this.minecraft.getTextureManager().getTexture(var2).getTextureView();
       this.submitBlit(var1, var12, var3, var5, var4, var6, var7, var8, var9, var10, var11);
    }
 
-   private void submitBlit(RenderPipeline var1, GpuTexture var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
+   private void submitBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
       this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, this.scissorStack.peek()));
    }
 
@@ -649,7 +649,7 @@ public class GuiGraphics {
    public void submitMapRenderState(MapRenderState var1) {
       Minecraft var2 = Minecraft.getInstance();
       TextureManager var3 = var2.getTextureManager();
-      GpuTexture var4 = var3.getTexture(var1.texture).getTexture();
+      GpuTextureView var4 = var3.getTexture(var1.texture).getTextureView();
       this.submitBlit(RenderPipelines.GUI_TEXTURED, var4, 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
 
       for(MapRenderState.MapDecorationRenderState var6 : var1.decorations) {
@@ -661,7 +661,7 @@ public class GuiGraphics {
             this.pose.translate(-0.125F, 0.125F);
             TextureAtlasSprite var7 = var6.atlasSprite;
             if (var7 != null) {
-               GpuTexture var8 = var3.getTexture(var7.atlasLocation()).getTexture();
+               GpuTextureView var8 = var3.getTexture(var7.atlasLocation()).getTextureView();
                this.submitBlit(RenderPipelines.GUI_TEXTURED, var8, -1, -1, 1, 1, var7.getU0(), var7.getU1(), var7.getV1(), var7.getV0(), -1);
             }
 

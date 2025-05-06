@@ -99,6 +99,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private static final boolean DEFAULT_LEFT_HANDED = false;
    private static final boolean DEFAULT_NO_AI = false;
    protected static final ResourceLocation RANDOM_SPAWN_BONUS_ID;
+   public static final String TAG_DROP_CHANCES = "drop_chances";
+   public static final String TAG_LEFT_HANDED = "LeftHanded";
+   public static final String TAG_CAN_PICK_UP_LOOT = "CanPickUpLoot";
+   public static final String TAG_NO_AI = "NoAI";
    public int ambientSoundTime;
    protected int xpReward;
    protected LookControl lookControl;
@@ -438,6 +442,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.setYya(0.0F);
       this.setSpeed(0.0F);
       this.setDeltaMovement(0.0, 0.0, 0.0);
+      this.resetAngularLeashMomentum();
    }
 
    public void aiStep() {
@@ -1178,6 +1183,13 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    @Nullable
    public Leashable.LeashData getLeashData() {
       return this.leashData;
+   }
+
+   private void resetAngularLeashMomentum() {
+      if (this.leashData != null) {
+         this.leashData.angularMomentum = 0.0;
+      }
+
    }
 
    public void setLeashData(@Nullable Leashable.LeashData var1) {

@@ -304,7 +304,7 @@ public abstract class PlayerList {
    }
 
    public void remove(ServerPlayer var1) {
-      ServerLevel var2 = var1.serverLevel();
+      ServerLevel var2 = var1.level();
       var1.awardStat(Stats.LEAVE_GAME);
       this.save(var1);
       if (var1.isPassenger()) {
@@ -390,7 +390,7 @@ public abstract class PlayerList {
 
    public ServerPlayer respawn(ServerPlayer var1, boolean var2, Entity.RemovalReason var3) {
       this.players.remove(var1);
-      var1.serverLevel().removePlayerImmediately(var1, var3);
+      var1.level().removePlayerImmediately(var1, var3);
       TeleportTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(!var2, TeleportTransition.DO_NOTHING);
       ServerLevel var5 = var4.newLevel();
       ServerPlayer var6 = new ServerPlayer(this.server, var5, var1.getGameProfile(), var1.clientInformation());
@@ -413,7 +413,7 @@ public abstract class PlayerList {
       }
 
       int var16 = var2 ? 1 : 0;
-      ServerLevel var9 = var6.serverLevel();
+      ServerLevel var9 = var6.level();
       LevelData var10 = var9.getLevelData();
       var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var16));
       var6.connection.teleport(var6.getX(), var6.getY(), var6.getZ(), var6.getYRot(), var6.getXRot());

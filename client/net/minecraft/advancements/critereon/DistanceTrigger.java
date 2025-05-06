@@ -20,7 +20,7 @@ public class DistanceTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
    public void trigger(ServerPlayer var1, Vec3 var2) {
       Vec3 var3 = var1.position();
-      this.trigger(var1, (var3x) -> var3x.matches(var1.serverLevel(), var2, var3));
+      this.trigger(var1, (var3x) -> var3x.matches(var1.level(), var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance) implements SimpleCriterionTrigger.SimpleInstance {

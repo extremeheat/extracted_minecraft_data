@@ -132,4 +132,9 @@ public class PlayerInfo {
    public int getTabListOrder() {
       return this.tabListOrder;
    }
+
+   // $FF: synthetic method
+   private static PlayerSkin lambda$createSkinLookup$2(PlayerSkin var0) {
+      return var0;
+   }
 }

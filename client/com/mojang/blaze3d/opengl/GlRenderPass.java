@@ -4,7 +4,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public class GlRenderPass implements RenderPass {
    protected VertexFormat.IndexType indexType;
    private final ScissorState scissorState;
    protected final HashMap<String, GpuBufferSlice> uniforms;
-   protected final HashMap<String, GpuTexture> samplers;
+   protected final HashMap<String, GpuTextureView> samplers;
    protected final Set<String> dirtyUniforms;
    protected int pushedDebugGroups;
 
@@ -76,7 +76,7 @@ public class GlRenderPass implements RenderPass {
       this.pipeline = this.encoder.getDevice().getOrCompilePipeline(var1);
    }
 
-   public void bindSampler(String var1, @Nullable GpuTexture var2) {
+   public void bindSampler(String var1, @Nullable GpuTextureView var2) {
       if (var2 == null) {
          this.samplers.remove(var1);
       } else {

@@ -595,7 +595,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                var2.snapTo(var3, var4, var5);
             }
 
-            if (var2.isInterpolating() && var2.hasIndirectPassenger(this.minecraft.player)) {
+            if (!var2.isInterpolating() && var2.hasIndirectPassenger(this.minecraft.player)) {
                var2.positionRider(this.minecraft.player);
                this.minecraft.player.setOldPosAndRot();
             }
@@ -2244,6 +2244,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    public void handleWaypoint(ClientboundTrackedWaypointPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       var1.apply(this.waypointManager);
    }
 

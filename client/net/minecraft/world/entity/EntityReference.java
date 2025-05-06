@@ -15,7 +15,7 @@ import net.minecraft.world.level.entity.UniquelyIdentifyable;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
+public final class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    private static final Codec<? extends EntityReference<?>> CODEC;
    private static final StreamCodec<ByteBuf, ? extends EntityReference<?>> STREAM_CODEC;
    private Either<UUID, StoredEntityType> entity;
@@ -79,6 +79,13 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
       var1.store(var2, UUIDUtil.CODEC, this.getUUID());
    }
 
+   public static void store(@Nullable EntityReference<?> var0, ValueOutput var1, String var2) {
+      if (var0 != null) {
+         var0.store(var1, var2);
+      }
+
+   }
+
    @Nullable
    public static <StoredEntityType extends UniquelyIdentifyable> StoredEntityType get(@Nullable EntityReference<StoredEntityType> var0, UUIDLookup<? super StoredEntityType> var1, Class<StoredEntityType> var2) {
       return (StoredEntityType)(var0 != null ? var0.getEntity(var1, var2) : null);
@@ -93,6 +100,28 @@ public class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> readWithOldOwnerConversion(ValueInput var0, String var1, Level var2) {
       Optional var3 = var0.read(var1, UUIDUtil.CODEC);
       return var3.isPresent() ? new EntityReference((UUID)var3.get()) : (EntityReference)var0.getString(var1).map((var1x) -> OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var1x)).map(EntityReference::new).orElse((Object)null);
+   }
+
+   public boolean equals(Object var1) {
+      if (var1 == this) {
+         return true;
+      } else {
+         boolean var10000;
+         if (var1 instanceof EntityReference) {
+            EntityReference var2 = (EntityReference)var1;
+            if (this.getUUID().equals(var2.getUUID())) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
+      }
+   }
+
+   public int hashCode() {
+      return this.getUUID().hashCode();
    }
 
    static {

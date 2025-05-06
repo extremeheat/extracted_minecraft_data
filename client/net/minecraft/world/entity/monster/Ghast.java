@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
+import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,7 +51,7 @@ public class Ghast extends Mob implements Enemy {
    public Ghast(EntityType<? extends Ghast> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 5;
-      this.moveControl = new GhastMoveControl(this, false, 0.1F);
+      this.moveControl = new GhastMoveControl(this, false, 0.1F, () -> false);
    }
 
    protected void registerGoals() {
@@ -189,20 +190,21 @@ public class Ghast extends Mob implements Enemy {
       private final Mob ghast;
       private int floatDuration;
       private final boolean careful;
-      private double speed;
+      private final double speed;
+      private final BooleanSupplier shouldBeStopped;
 
-      public GhastMoveControl(Mob var1, boolean var2, float var3) {
+      public GhastMoveControl(Mob var1, boolean var2, float var3, BooleanSupplier var4) {
          super(var1);
          this.ghast = var1;
          this.careful = var2;
          this.speed = (double)var3;
+         this.shouldBeStopped = var4;
       }
 
       public void tick() {
-         if (this.ghast.canBeCollidedWith()) {
+         if (this.shouldBeStopped.getAsBoolean()) {
             this.operation = MoveControl.Operation.WAIT;
             this.ghast.stopInPlace();
-            this.ghast.setRequiresPrecisePosition(true);
          }
 
          if (this.operation == MoveControl.Operation.MOVE_TO) {

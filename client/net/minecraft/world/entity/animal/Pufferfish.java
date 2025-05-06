@@ -138,7 +138,7 @@ public class Pufferfish extends AbstractFish {
    public void playerTouch(Player var1) {
       int var2 = this.getPuffState();
       if (var1 instanceof ServerPlayer var3) {
-         if (var2 > 0 && var1.hurtServer(var3.serverLevel(), this.damageSources().mobAttack(this), (float)(1 + var2))) {
+         if (var2 > 0 && var1.hurtServer(var3.level(), this.damageSources().mobAttack(this), (float)(1 + var2))) {
             if (!this.isSilent()) {
                var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PUFFER_FISH_STING, 0.0F));
             }

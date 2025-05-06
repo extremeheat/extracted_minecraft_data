@@ -3,11 +3,9 @@ package net.minecraft.world.entity.projectile;
 import com.google.common.base.MoreObjects;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -17,6 +15,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -41,9 +40,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private static final boolean DEFAULT_LEFT_OWNER = false;
    private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
    @Nullable
-   private UUID ownerUUID;
-   @Nullable
-   private Entity cachedOwner;
+   protected EntityReference<Entity> owner;
    private boolean leftOwner = false;
    private boolean hasBeenShot = false;
    @Nullable
@@ -53,34 +50,17 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       super(var1, var2);
    }
 
-   public void setOwner(@Nullable Entity var1) {
-      if (var1 != null) {
-         this.ownerUUID = var1.getUUID();
-         this.cachedOwner = var1;
-      }
+   protected void setOwner(@Nullable EntityReference<Entity> var1) {
+      this.owner = var1;
+   }
 
+   public void setOwner(@Nullable Entity var1) {
+      this.setOwner(var1 != null ? new EntityReference(var1) : null);
    }
 
    @Nullable
    public Entity getOwner() {
-      if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
-         return this.cachedOwner;
-      } else if (this.ownerUUID != null) {
-         this.cachedOwner = this.findOwner(this.ownerUUID);
-         return this.cachedOwner;
-      } else {
-         return null;
-      }
-   }
-
-   @Nullable
-   protected Entity findOwner(UUID var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         return var2.getEntity(var1);
-      } else {
-         return null;
-      }
+      return (Entity)EntityReference.get(this.owner, this.level(), Entity.class);
    }
 
    public Entity getEffectSource() {
@@ -88,7 +68,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
+      EntityReference.store(this.owner, var1, "Owner");
       if (this.leftOwner) {
          var1.putBoolean("LeftOwner", true);
       }
@@ -97,28 +77,19 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected boolean ownedBy(Entity var1) {
-      return var1.getUUID().equals(this.ownerUUID);
+      return this.owner != null && this.owner.matches(var1);
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
-      this.setOwnerThroughUUID((UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null));
+      this.setOwner(EntityReference.read(var1, "Owner"));
       this.leftOwner = var1.getBooleanOr("LeftOwner", false);
       this.hasBeenShot = var1.getBooleanOr("HasBeenShot", false);
-   }
-
-   protected void setOwnerThroughUUID(@Nullable UUID var1) {
-      if (!Objects.equals(this.ownerUUID, var1)) {
-         this.ownerUUID = var1;
-         this.cachedOwner = var1 != null ? this.findOwner(var1) : null;
-      }
-
    }
 
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof Projectile var2) {
-         this.ownerUUID = var2.ownerUUID;
-         this.cachedOwner = var2.cachedOwner;
+         this.owner = var2.owner;
       }
 
    }

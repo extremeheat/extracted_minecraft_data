@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -175,7 +174,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private final boolean isPrimary;
       protected final int tier;
       private Holder<MobEffect> effect;
-      private TextureAtlasSprite sprite;
+      private ResourceLocation sprite;
 
       public BeaconPowerButton(final int var2, final int var3, final Holder<MobEffect> var4, final boolean var5, final int var6) {
          super(var2, var3);
@@ -186,7 +185,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       protected void setEffect(Holder<MobEffect> var1) {
          this.effect = var1;
-         this.sprite = Minecraft.getInstance().getMobEffectTextures().get(var1);
+         this.sprite = Gui.getMobEffectSprite(var1);
          this.setTooltip(Tooltip.create(this.createEffectDescription(var1), (Component)null));
       }
 
@@ -207,7 +206,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
 
       public void updateStatus(int var1) {

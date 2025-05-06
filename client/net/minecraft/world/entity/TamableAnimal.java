@@ -50,10 +50,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       EntityReference var2 = this.getOwnerReference();
-      if (var2 != null) {
-         var2.store(var1, "Owner");
-      }
-
+      EntityReference.store(var2, var1, "Owner");
       var1.putBoolean("Sitting", this.orderedToSit);
    }
 

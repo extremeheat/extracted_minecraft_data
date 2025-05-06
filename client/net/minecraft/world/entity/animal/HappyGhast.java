@@ -45,6 +45,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -60,14 +62,19 @@ public class HappyGhast extends Animal {
    public static final int SLOW_HEALING_TICKS = 600;
    public static final int MAX_PASSANGERS = 4;
    private static final float FLY_SPEED = 0.09F;
+   private static final int MAX_STILL_TIMEOUT = 10;
+   private static final int MIN_STILL_TIMEOUT_CHECK = 5;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
    public static final Predicate<ItemStack> IS_FOOD = (var0) -> var0.is(ItemTags.HAPPY_GHAST_FOOD);
    private int leashHolderTime = 0;
+   private int serverStillTimeout = 0;
    private static final EntityDataAccessor<Boolean> IS_LEASH_HOLDER;
+   private static final EntityDataAccessor<Boolean> STAYS_STILL;
+   private static final float MAX_SCALE = 1.0F;
 
    public HappyGhast(EntityType<? extends HappyGhast> var1, Level var2) {
       super(var1, var2);
-      this.moveControl = new Ghast.GhastMoveControl(this, true, 0.09F);
+      this.moveControl = new Ghast.GhastMoveControl(this, true, 0.09F, this::isPlayerAboveGhast);
       this.lookControl = new HappyGhastLookControl();
    }
 
@@ -82,7 +89,7 @@ public class HappyGhast extends Animal {
    }
 
    private void adultGhastSetup() {
-      this.moveControl = new Ghast.GhastMoveControl(this, true, 0.09F);
+      this.moveControl = new Ghast.GhastMoveControl(this, true, 0.09F, this::isPlayerAboveGhast);
       this.lookControl = new HappyGhastLookControl();
       this.navigation = this.createNavigation(this.level());
       Level var2 = this.level();
@@ -99,6 +106,7 @@ public class HappyGhast extends Animal {
       this.moveControl = new FlyingMoveControl(this, 180, true);
       this.lookControl = new LookControl(this);
       this.navigation = this.createBabyNavigation(this.level());
+      this.serverStillTimeout = 0;
       this.removeAllGoals((var0) -> true);
    }
 
@@ -114,6 +122,10 @@ public class HappyGhast extends Animal {
 
    public static AttributeSupplier.Builder createAttributes() {
       return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 20.0).add(Attributes.TEMPT_RANGE, 16.0).add(Attributes.FLYING_SPEED, 0.05).add(Attributes.MOVEMENT_SPEED, 0.05).add(Attributes.FOLLOW_RANGE, 16.0).add(Attributes.CAMERA_DISTANCE, 8.0);
+   }
+
+   protected float sanitizeScale(float var1) {
+      return Math.min(var1, 1.0F);
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
@@ -268,7 +280,7 @@ public class HappyGhast extends Animal {
 
    public @Nullable LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
-      if (!this.isNoAi() && !this.isPlayerAboveGhast() && var1 instanceof Player var2) {
+      if (this.isWearingBodyArmor() && !this.isNoAi() && !this.isPlayerAboveGhast() && var1 instanceof Player var2) {
          return var2;
       } else {
          return super.getControllingPassenger();
@@ -322,6 +334,15 @@ public class HappyGhast extends Animal {
    }
 
    protected void customServerAiStep(ServerLevel var1) {
+      if (this.serverStillTimeout > 0) {
+         --this.serverStillTimeout;
+      }
+
+      if (this.serverStillTimeout < 5 && this.scanPlayerAboveGhast()) {
+         this.serverStillTimeout = 10;
+      }
+
+      this.syncStayStillFlag();
       if (this.isBaby()) {
          ProfilerFiller var2 = Profiler.get();
          var2.push("happyGhastBrain");
@@ -332,6 +353,7 @@ public class HappyGhast extends Animal {
          var2.pop();
       }
 
+      this.setRequiresPrecisePosition(this.isPlayerAboveGhast());
       this.checkRestriction();
       if (this.leashHolderTime > 0) {
          --this.leashHolderTime;
@@ -382,6 +404,7 @@ public class HappyGhast extends Animal {
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(IS_LEASH_HOLDER, false);
+      var1.define(STAYS_STILL, false);
    }
 
    private void setLeashHolder(boolean var1) {
@@ -390,6 +413,14 @@ public class HappyGhast extends Animal {
 
    public boolean isLeashHolder() {
       return (Boolean)this.entityData.get(IS_LEASH_HOLDER);
+   }
+
+   private void syncStayStillFlag() {
+      this.entityData.set(STAYS_STILL, this.serverStillTimeout > 0);
+   }
+
+   public boolean staysStill() {
+      return (Boolean)this.entityData.get(STAYS_STILL);
    }
 
    public boolean supportQuadLeashAsHolder() {
@@ -420,7 +451,21 @@ public class HappyGhast extends Animal {
 
    }
 
+   public void addAdditionalSaveData(ValueOutput var1) {
+      super.addAdditionalSaveData(var1);
+      var1.putInt("still_timeout", this.serverStillTimeout);
+   }
+
+   public void readAdditionalSaveData(ValueInput var1) {
+      super.readAdditionalSaveData(var1);
+      this.serverStillTimeout = var1.getIntOr("still_timeout", 0);
+   }
+
    public boolean isPlayerAboveGhast() {
+      return this.staysStill() || this.serverStillTimeout > 0;
+   }
+
+   private boolean scanPlayerAboveGhast() {
       AABB var1 = this.getBoundingBox();
       AABB var2 = new AABB(var1.minX - 1.0, var1.maxY, var1.minZ - 1.0, var1.maxX + 1.0, var1.maxY + var1.getYsize() / 2.0, var1.maxZ + 1.0);
 
@@ -437,8 +482,14 @@ public class HappyGhast extends Animal {
       return new HappyGhastBodyRotationControl();
    }
 
-   public boolean canBeCollidedWith() {
-      return !this.isBaby() && this.isPlayerAboveGhast();
+   public boolean canBeCollidedWith(@Nullable Entity var1) {
+      if (this.isBaby()) {
+         return false;
+      } else if (this.level().isClientSide() && var1 instanceof Player) {
+         return var1.position().y >= this.getBoundingBox().maxY;
+      } else {
+         return this.isPlayerAboveGhast();
+      }
    }
 
    public boolean isFlyingVehicle() {
@@ -447,6 +498,7 @@ public class HappyGhast extends Animal {
 
    static {
       IS_LEASH_HOLDER = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
+      STAYS_STILL = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class BabyFlyingPathNavigation extends FlyingPathNavigation {

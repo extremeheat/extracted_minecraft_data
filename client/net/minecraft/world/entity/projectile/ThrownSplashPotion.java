@@ -41,24 +41,25 @@ public class ThrownSplashPotion extends AbstractThrownPotion {
       AABB var7 = this.getBoundingBox().move(var3.getLocation().subtract(this.position()));
       AABB var8 = var7.inflate(4.0, 2.0, 4.0);
       List var9 = this.level().getEntitiesOfClass(LivingEntity.class, var8);
+      float var10 = ProjectileUtil.computeMargin(this);
       if (!var9.isEmpty()) {
-         Entity var10 = this.getEffectSource();
+         Entity var11 = this.getEffectSource();
 
-         for(LivingEntity var12 : var9) {
-            if (var12.isAffectedByPotions()) {
-               double var13 = var7.distanceToSqr(var12.getBoundingBox().inflate(0.30000001192092896));
-               if (var13 < 16.0) {
-                  double var15 = 1.0 - Math.sqrt(var13) / 4.0;
+         for(LivingEntity var13 : var9) {
+            if (var13.isAffectedByPotions()) {
+               double var14 = var7.distanceToSqr(var13.getBoundingBox().inflate((double)var10));
+               if (var14 < 16.0) {
+                  double var16 = 1.0 - Math.sqrt(var14) / 4.0;
 
-                  for(MobEffectInstance var18 : var6) {
-                     Holder var19 = var18.getEffect();
-                     if (((MobEffect)var19.value()).isInstantenous()) {
-                        ((MobEffect)var19.value()).applyInstantenousEffect(var1, this, this.getOwner(), var12, var18.getAmplifier(), var15);
+                  for(MobEffectInstance var19 : var6) {
+                     Holder var20 = var19.getEffect();
+                     if (((MobEffect)var20.value()).isInstantenous()) {
+                        ((MobEffect)var20.value()).applyInstantenousEffect(var1, this, this.getOwner(), var13, var19.getAmplifier(), var16);
                      } else {
-                        int var20 = var18.mapDuration((var3x) -> (int)(var15 * (double)var3x * (double)var5 + 0.5));
-                        MobEffectInstance var21 = new MobEffectInstance(var19, var20, var18.getAmplifier(), var18.isAmbient(), var18.isVisible());
-                        if (!var21.endsWithin(20)) {
-                           var12.addEffect(var21, var10);
+                        int var21 = var19.mapDuration((var3x) -> (int)(var16 * (double)var3x * (double)var5 + 0.5));
+                        MobEffectInstance var22 = new MobEffectInstance(var20, var21, var19.getAmplifier(), var19.isAmbient(), var19.isVisible());
+                        if (!var22.endsWithin(20)) {
+                           var13.addEffect(var22, var11);
                         }
                      }
                   }

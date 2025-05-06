@@ -49,7 +49,7 @@ public class ServerPlayerGameMode {
       this.delayedDestroyPos = BlockPos.ZERO;
       this.lastSentState = -1;
       this.player = var1;
-      this.level = var1.serverLevel();
+      this.level = var1.level();
    }
 
    public boolean changeGameModeForPlayer(GameType var1) {
@@ -58,7 +58,7 @@ public class ServerPlayerGameMode {
       } else {
          this.setGameModeForPlayer(var1, this.previousGameModeForPlayer);
          this.player.onUpdateAbilities();
-         this.player.server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
+         this.level.getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
          if (var1 == GameType.CREATIVE) {
             this.player.resetCurrentImpulseContext();

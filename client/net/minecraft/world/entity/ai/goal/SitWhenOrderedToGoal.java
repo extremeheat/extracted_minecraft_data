@@ -27,10 +27,10 @@ public class SitWhenOrderedToGoal extends Goal {
          return false;
       } else {
          LivingEntity var2 = this.mob.getOwner();
-         if (var2 == null) {
-            return true;
-         } else {
+         if (var2 != null && var2.level() == this.mob.level()) {
             return this.mob.distanceToSqr(var2) < 144.0 && var2.getLastHurtByMob() != null ? false : var1;
+         } else {
+            return true;
          }
       }
    }

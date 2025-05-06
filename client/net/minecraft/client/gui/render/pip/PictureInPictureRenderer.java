@@ -1,9 +1,11 @@
 package net.minecraft.client.gui.render.pip;
 
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Supplier;
@@ -24,7 +26,11 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    @Nullable
    private GpuTexture texture;
    @Nullable
+   private GpuTextureView textureView;
+   @Nullable
    private GpuTexture depthTexture;
+   @Nullable
+   private GpuTextureView depthTextureView;
    private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName(), -1000.0F, 1000.0F, true);
 
    protected PictureInPictureRenderer(MultiBufferSource.BufferSource var1) {
@@ -36,8 +42,8 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       int var4 = (var1.x1() - var1.x0()) * var3;
       int var5 = (var1.y1() - var1.y0()) * var3;
       this.prepareTexturesAndProjection(var4, var5);
-      RenderSystem.outputColorTextureOverride = this.texture;
-      RenderSystem.outputDepthTextureOverride = this.depthTexture;
+      RenderSystem.outputColorTextureOverride = this.textureView;
+      RenderSystem.outputDepthTextureOverride = this.depthTextureView;
       PoseStack var6 = new PoseStack();
       var6.translate((float)var4 / 2.0F, this.getTranslateY(var5, var3), 0.0F);
       float var7 = (float)var3 * var1.scale();
@@ -46,24 +52,31 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       this.bufferSource.endBatch();
       RenderSystem.outputColorTextureOverride = null;
       RenderSystem.outputDepthTextureOverride = null;
-      var2.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.texture), IDENTITY_POSE, var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea(), (ScreenRectangle)null));
+      var2.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView), IDENTITY_POSE, var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void prepareTexturesAndProjection(int var1, int var2) {
       if (this.texture != null && (this.texture.getWidth(0) != var1 || this.texture.getHeight(0) != var2)) {
          this.texture.close();
          this.texture = null;
+         this.textureView.close();
+         this.textureView = null;
          this.depthTexture.close();
          this.depthTexture = null;
+         this.depthTextureView.close();
+         this.depthTextureView = null;
       }
 
+      GpuDevice var3 = RenderSystem.getDevice();
       if (this.texture == null) {
-         this.texture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), 12, TextureFormat.RGBA8, var1, var2, 1);
+         this.texture = var3.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), 12, TextureFormat.RGBA8, var1, var2, 1, 1);
          this.texture.setTextureFilter(FilterMode.NEAREST, false);
-         this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), 8, TextureFormat.DEPTH32, var1, var2, 1);
+         this.textureView = var3.createTextureView(this.texture);
+         this.depthTexture = var3.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), 8, TextureFormat.DEPTH32, var1, var2, 1, 1);
+         this.depthTextureView = var3.createTextureView(this.depthTexture);
       }
 
-      RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);
+      var3.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);
       RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer((float)var1, (float)var2), ProjectionType.ORTHOGRAPHIC);
    }
 
@@ -76,8 +89,16 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          this.texture.close();
       }
 
+      if (this.textureView != null) {
+         this.textureView.close();
+      }
+
       if (this.depthTexture != null) {
          this.depthTexture.close();
+      }
+
+      if (this.depthTextureView != null) {
+         this.depthTextureView.close();
       }
 
       this.projectionMatrixBuffer.close();

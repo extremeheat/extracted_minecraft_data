@@ -115,10 +115,10 @@ public class VanillaRecipeProvider extends RecipeProvider {
       List var3 = List.of(Items.BLACK_BED, Items.BLUE_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.GREEN_BED, Items.LIGHT_BLUE_BED, Items.LIGHT_GRAY_BED, Items.LIME_BED, Items.MAGENTA_BED, Items.ORANGE_BED, Items.PINK_BED, Items.PURPLE_BED, Items.RED_BED, Items.YELLOW_BED, Items.WHITE_BED);
       List var4 = List.of(Items.BLACK_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.CYAN_CARPET, Items.GRAY_CARPET, Items.GREEN_CARPET, Items.LIGHT_BLUE_CARPET, Items.LIGHT_GRAY_CARPET, Items.LIME_CARPET, Items.MAGENTA_CARPET, Items.ORANGE_CARPET, Items.PINK_CARPET, Items.PURPLE_CARPET, Items.RED_CARPET, Items.YELLOW_CARPET, Items.WHITE_CARPET);
       List var5 = List.of(Items.BLACK_HARNESS, Items.BLUE_HARNESS, Items.BROWN_HARNESS, Items.CYAN_HARNESS, Items.GRAY_HARNESS, Items.GREEN_HARNESS, Items.LIGHT_BLUE_HARNESS, Items.LIGHT_GRAY_HARNESS, Items.LIME_HARNESS, Items.MAGENTA_HARNESS, Items.ORANGE_HARNESS, Items.PINK_HARNESS, Items.PURPLE_HARNESS, Items.RED_HARNESS, Items.YELLOW_HARNESS, Items.WHITE_HARNESS);
-      this.colorItemWithDye(var1, var2, "wool");
-      this.colorItemWithDye(var1, var3, "bed");
-      this.colorItemWithDye(var1, var4, "carpet");
-      this.colorItemWithDye(var1, var5, "harness");
+      this.colorItemWithDye(var1, var2, "wool", RecipeCategory.BUILDING_BLOCKS);
+      this.colorItemWithDye(var1, var3, "bed_dye", RecipeCategory.DECORATIONS);
+      this.colorItemWithDye(var1, var4, "carpet_dye", RecipeCategory.DECORATIONS);
+      this.colorItemWithDye(var1, var5, "harness_dye", RecipeCategory.COMBAT);
       this.carpet(Blocks.BLACK_CARPET, Blocks.BLACK_WOOL);
       this.bedFromPlanksAndWool(Items.BLACK_BED, Blocks.BLACK_WOOL);
       this.banner(Items.BLACK_BANNER, Blocks.BLACK_WOOL);

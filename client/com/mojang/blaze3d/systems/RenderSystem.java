@@ -10,7 +10,7 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.shaders.ShaderType;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -74,7 +74,7 @@ public class RenderSystem {
    private static final Matrix4fStack modelViewStack;
    private static Matrix4f textureMatrix;
    public static final int TEXTURE_COUNT = 12;
-   private static final GpuTexture[] shaderTextures;
+   private static final GpuTextureView[] shaderTextures;
    @Nullable
    private static GpuBufferSlice shaderFog;
    @Nullable
@@ -92,9 +92,9 @@ public class RenderSystem {
    private static GpuBuffer QUAD_VERTEX_BUFFER;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
    @Nullable
-   public static GpuTexture outputColorTextureOverride;
+   public static GpuTextureView outputColorTextureOverride;
    @Nullable
-   public static GpuTexture outputDepthTextureOverride;
+   public static GpuTextureView outputDepthTextureOverride;
    @Nullable
    private static GpuBuffer globalSettingsUniform;
    @Nullable
@@ -231,17 +231,17 @@ public class RenderSystem {
       textureMatrix.identity();
    }
 
-   public static void setupOverlayColor(@Nullable GpuTexture var0) {
+   public static void setupOverlayColor(@Nullable GpuTextureView var0) {
       assertOnRenderThread();
       setShaderTexture(1, var0);
    }
 
    public static void teardownOverlayColor() {
       assertOnRenderThread();
-      setShaderTexture(1, (GpuTexture)null);
+      setShaderTexture(1, (GpuTextureView)null);
    }
 
-   public static void setShaderTexture(int var0, @Nullable GpuTexture var1) {
+   public static void setShaderTexture(int var0, @Nullable GpuTextureView var1) {
       assertOnRenderThread();
       if (var0 >= 0 && var0 < shaderTextures.length) {
          shaderTextures[var0] = var1;
@@ -250,7 +250,7 @@ public class RenderSystem {
    }
 
    @Nullable
-   public static GpuTexture getShaderTexture(int var0) {
+   public static GpuTextureView getShaderTexture(int var0) {
       assertOnRenderThread();
       return var0 >= 0 && var0 < shaderTextures.length ? shaderTextures[var0] : null;
    }
@@ -423,7 +423,7 @@ public class RenderSystem {
       savedProjectionType = ProjectionType.PERSPECTIVE;
       modelViewStack = new Matrix4fStack(16);
       textureMatrix = new Matrix4f();
-      shaderTextures = new GpuTexture[12];
+      shaderTextures = new GpuTextureView[12];
       shaderFog = null;
       modelOffset = new Vector3f();
       shaderLineWidth = 1.0F;

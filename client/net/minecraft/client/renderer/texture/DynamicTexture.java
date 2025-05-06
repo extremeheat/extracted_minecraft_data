@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -37,13 +38,17 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
    }
 
    private void createTexture(Supplier<String> var1) {
-      this.texture = RenderSystem.getDevice().createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      GpuDevice var2 = RenderSystem.getDevice();
+      this.texture = var2.createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
       this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.textureView = var2.createTextureView(this.texture);
    }
 
    private void createTexture(String var1) {
-      this.texture = RenderSystem.getDevice().createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1);
+      GpuDevice var2 = RenderSystem.getDevice();
+      this.texture = var2.createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
       this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.textureView = var2.createTextureView(this.texture);
    }
 
    public void upload() {

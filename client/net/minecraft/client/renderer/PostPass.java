@@ -14,7 +14,7 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.util.Pair;
 import java.util.HashMap;
@@ -109,7 +109,7 @@ public class PostPass implements AutoCloseable {
                var8.putVec2((float)var4.width, (float)var4.height);
 
                for(Pair var10 : var6) {
-                  var8.putVec2((float)((GpuTexture)var10.getSecond()).getWidth(0), (float)((GpuTexture)var10.getSecond()).getHeight(0));
+                  var8.putVec2((float)((GpuTextureView)var10.getSecond()).getWidth(0), (float)((GpuTextureView)var10.getSecond()).getHeight(0));
                }
             }
 
@@ -117,7 +117,7 @@ public class PostPass implements AutoCloseable {
             RenderSystem.AutoStorageIndexBuffer var18 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
             GpuBuffer var19 = var18.getBuffer(6);
 
-            try (RenderPass var20 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTexture(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTexture() : null, OptionalDouble.empty())) {
+            try (RenderPass var20 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTextureView(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTextureView() : null, OptionalDouble.empty())) {
                var20.setPipeline(this.pipeline);
                RenderSystem.bindDefaultUniforms(var20);
                var20.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
@@ -130,7 +130,7 @@ public class PostPass implements AutoCloseable {
                var20.setIndexBuffer(var19, var18.type());
 
                for(Pair var24 : var6) {
-                  var20.bindSampler((String)var24.getFirst() + "Sampler", (GpuTexture)var24.getSecond());
+                  var20.bindSampler((String)var24.getFirst() + "Sampler", (GpuTextureView)var24.getSecond());
                }
 
                var20.drawIndexed(0, 0, 6, 1);
@@ -161,7 +161,7 @@ public class PostPass implements AutoCloseable {
       default void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
       }
 
-      GpuTexture texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1);
+      GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1);
 
       String samplerName();
    }
@@ -178,8 +178,8 @@ public class PostPass implements AutoCloseable {
       public void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
       }
 
-      public GpuTexture texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
-         return this.texture.getTexture();
+      public GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+         return this.texture.getTextureView();
       }
    }
 
@@ -212,11 +212,11 @@ public class PostPass implements AutoCloseable {
 
       }
 
-      public GpuTexture texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      public GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
          ResourceHandle var2 = this.getHandle(var1);
          RenderTarget var3 = (RenderTarget)var2.get();
          var3.setFilterMode(this.bilinear ? FilterMode.LINEAR : FilterMode.NEAREST);
-         GpuTexture var4 = this.depthBuffer ? var3.getDepthTexture() : var3.getColorTexture();
+         GpuTextureView var4 = this.depthBuffer ? var3.getDepthTextureView() : var3.getColorTextureView();
          if (var4 == null) {
             String var10002 = this.depthBuffer ? "depth" : "color";
             throw new IllegalStateException("Missing " + var10002 + "texture for target " + String.valueOf(this.targetId));

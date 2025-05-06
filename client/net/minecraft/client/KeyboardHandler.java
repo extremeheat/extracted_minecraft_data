@@ -24,7 +24,7 @@ import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -340,7 +340,6 @@ public class KeyboardHandler {
       if (var3 != null) {
          var3.remove("UUID");
          var3.remove("Pos");
-         var3.remove("Dimension");
          String var5 = NbtUtils.toPrettyComponent(var3).getString();
          var4 = String.format(Locale.ROOT, "/summon %s %.2f %.2f %.2f %s", var1, var2.x, var2.y, var2.z, var5);
       } else {

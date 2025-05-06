@@ -6,6 +6,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.OptionalDouble;
@@ -15,9 +16,9 @@ import javax.annotation.Nullable;
 
 @DontObfuscate
 public interface CommandEncoder {
-   RenderPass createRenderPass(Supplier<String> var1, GpuTexture var2, OptionalInt var3);
+   RenderPass createRenderPass(Supplier<String> var1, GpuTextureView var2, OptionalInt var3);
 
-   RenderPass createRenderPass(Supplier<String> var1, GpuTexture var2, OptionalInt var3, @Nullable GpuTexture var4, OptionalDouble var5);
+   RenderPass createRenderPass(Supplier<String> var1, GpuTextureView var2, OptionalInt var3, @Nullable GpuTextureView var4, OptionalDouble var5);
 
    void clearColorTexture(GpuTexture var1, int var2);
 
@@ -35,9 +36,9 @@ public interface CommandEncoder {
 
    void writeToTexture(GpuTexture var1, NativeImage var2);
 
-   void writeToTexture(GpuTexture var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9);
+   void writeToTexture(GpuTexture var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10);
 
-   void writeToTexture(GpuTexture var1, IntBuffer var2, NativeImage.Format var3, int var4, int var5, int var6, int var7, int var8);
+   void writeToTexture(GpuTexture var1, IntBuffer var2, NativeImage.Format var3, int var4, int var5, int var6, int var7, int var8, int var9);
 
    void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, int var3, Runnable var4, int var5);
 
@@ -45,7 +46,7 @@ public interface CommandEncoder {
 
    void copyTextureToTexture(GpuTexture var1, GpuTexture var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9);
 
-   void presentTexture(GpuTexture var1);
+   void presentTexture(GpuTextureView var1);
 
    GpuFence createFence();
 }

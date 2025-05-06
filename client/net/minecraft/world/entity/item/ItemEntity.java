@@ -17,6 +17,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -48,9 +49,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private int pickupDelay;
    private int health;
    @Nullable
-   private UUID thrower;
-   @Nullable
-   private Entity cachedThrower;
+   private EntityReference<Entity> thrower;
    @Nullable
    private UUID target;
    public final float bobOffs;
@@ -92,26 +91,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Nullable
    public Entity getOwner() {
-      if (this.cachedThrower != null && !this.cachedThrower.isRemoved()) {
-         return this.cachedThrower;
-      } else {
-         if (this.thrower != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var1 = (ServerLevel)var2;
-               this.cachedThrower = var1.getEntity(this.thrower);
-               return this.cachedThrower;
-            }
-         }
-
-         return null;
-      }
+      return (Entity)EntityReference.get(this.thrower, this.level(), Entity.class);
    }
 
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof ItemEntity var2) {
-         this.cachedThrower = var2.cachedThrower;
+         this.thrower = var2.thrower;
       }
 
    }
@@ -319,7 +305,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
       var1.putShort("PickupDelay", (short)this.pickupDelay);
-      var1.storeNullable("Thrower", UUIDUtil.CODEC, this.thrower);
+      EntityReference.store(this.thrower, var1, "Thrower");
       var1.storeNullable("Owner", UUIDUtil.CODEC, this.target);
       if (!this.getItem().isEmpty()) {
          var1.store("Item", ItemStack.CODEC, this.getItem());
@@ -332,8 +318,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.age = var1.getShortOr("Age", (short)0);
       this.pickupDelay = var1.getShortOr("PickupDelay", (short)0);
       this.target = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
-      this.thrower = (UUID)var1.read("Thrower", UUIDUtil.CODEC).orElse((Object)null);
-      this.cachedThrower = null;
+      this.thrower = EntityReference.<Entity>read(var1, "Thrower");
       this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
       if (this.getItem().isEmpty()) {
          this.discard();
@@ -400,8 +385,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public void setThrower(Entity var1) {
-      this.thrower = var1.getUUID();
-      this.cachedThrower = var1;
+      this.thrower = new EntityReference<Entity>(var1);
    }
 
    public int getAge() {

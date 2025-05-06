@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -47,7 +48,7 @@ public class Vex extends Monster implements TraceableEntity {
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final int FLAG_IS_CHARGING = 1;
    @Nullable
-   Mob owner;
+   private EntityReference<Mob> owner;
    @Nullable
    private BlockPos boundOrigin;
    private boolean hasLimitedLife;
@@ -104,12 +105,13 @@ public class Vex extends Monster implements TraceableEntity {
       super.readAdditionalSaveData(var1);
       this.boundOrigin = (BlockPos)var1.read("bound_pos", BlockPos.CODEC).orElse((Object)null);
       var1.getInt("life_ticks").ifPresentOrElse(this::setLimitedLife, () -> this.hasLimitedLife = false);
+      this.owner = EntityReference.<Mob>read(var1, "owner");
    }
 
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof Vex var2) {
-         this.owner = var2.getOwner();
+         this.owner = var2.owner;
       }
 
    }
@@ -121,11 +123,12 @@ public class Vex extends Monster implements TraceableEntity {
          var1.putInt("life_ticks", this.limitedLifeTicks);
       }
 
+      EntityReference.store(this.owner, var1, "owner");
    }
 
    @Nullable
    public Mob getOwner() {
-      return this.owner;
+      return (Mob)EntityReference.get(this.owner, this.level(), Mob.class);
    }
 
    @Nullable
@@ -162,7 +165,7 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    public void setOwner(Mob var1) {
-      this.owner = var1;
+      this.owner = new EntityReference<Mob>(var1);
    }
 
    public void setLimitedLife(int var1) {
@@ -337,11 +340,13 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public boolean canUse() {
-         return Vex.this.owner != null && Vex.this.owner.getTarget() != null && this.canAttack(Vex.this.owner.getTarget(), this.copyOwnerTargeting);
+         Mob var1 = Vex.this.getOwner();
+         return var1 != null && var1.getTarget() != null && this.canAttack(var1.getTarget(), this.copyOwnerTargeting);
       }
 
       public void start() {
-         Vex.this.setTarget(Vex.this.owner.getTarget());
+         Mob var1 = Vex.this.getOwner();
+         Vex.this.setTarget(var1 != null ? var1.getTarget() : null);
          super.start();
       }
    }

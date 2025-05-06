@@ -143,7 +143,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, false);
+      this.minecraft.gameRenderer.getPanorama().render(var1, this.width, this.height, false);
    }
 
    private void handleInitialNarrationDelay() {

@@ -10,6 +10,7 @@ import net.minecraft.commands.CacheableFunction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -36,28 +37,30 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
 
    public void grant(ServerPlayer var1) {
       var1.giveExperiencePoints(this.experience);
-      LootParams var2 = (new LootParams.Builder(var1.serverLevel())).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var1.position()).create(LootContextParamSets.ADVANCEMENT_REWARD);
-      boolean var3 = false;
+      ServerLevel var2 = var1.level();
+      MinecraftServer var3 = var2.getServer();
+      LootParams var4 = (new LootParams.Builder(var2)).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var1.position()).create(LootContextParamSets.ADVANCEMENT_REWARD);
+      boolean var5 = false;
 
-      for(ResourceKey var5 : this.loot) {
-         ObjectListIterator var6 = var1.server.reloadableRegistries().getLootTable(var5).getRandomItems(var2).iterator();
+      for(ResourceKey var7 : this.loot) {
+         ObjectListIterator var8 = var3.reloadableRegistries().getLootTable(var7).getRandomItems(var4).iterator();
 
-         while(var6.hasNext()) {
-            ItemStack var7 = (ItemStack)var6.next();
-            if (var1.addItem(var7)) {
-               var1.level().playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-               var3 = true;
+         while(var8.hasNext()) {
+            ItemStack var9 = (ItemStack)var8.next();
+            if (var1.addItem(var9)) {
+               var2.playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+               var5 = true;
             } else {
-               ItemEntity var8 = var1.drop(var7, false);
-               if (var8 != null) {
-                  var8.setNoPickUpDelay();
-                  var8.setTarget(var1.getUUID());
+               ItemEntity var10 = var1.drop(var9, false);
+               if (var10 != null) {
+                  var10.setNoPickUpDelay();
+                  var10.setTarget(var1.getUUID());
                }
             }
          }
       }
 
-      if (var3) {
+      if (var5) {
          var1.containerMenu.broadcastChanges();
       }
 
@@ -65,8 +68,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          var1.awardRecipesByKey(this.recipes);
       }
 
-      MinecraftServer var9 = var1.server;
-      this.function.flatMap((var1x) -> var1x.get(var9.getFunctions())).ifPresent((var2x) -> var9.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
+      this.function.flatMap((var1x) -> var1x.get(var3.getFunctions())).ifPresent((var2x) -> var3.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
    }
 
    public static class Builder {

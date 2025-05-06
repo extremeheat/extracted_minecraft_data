@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class EnderEyeItem extends Item {
    public EnderEyeItem(Item.Properties var1) {
@@ -88,7 +89,7 @@ public class EnderEyeItem extends Item {
 
             EyeOfEnder var8 = new EyeOfEnder(var1, var2.getX(), var2.getY(0.5), var2.getZ());
             var8.setItem(var4);
-            var8.signalTo(var7);
+            var8.signalTo(Vec3.atLowerCornerOf(var7));
             var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of((Entity)var2));
             var1.addFreshEntity(var8);
             if (var2 instanceof ServerPlayer) {

@@ -7,7 +7,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
@@ -704,8 +704,8 @@ public abstract class RenderType extends RenderStateShard {
             }
 
             RenderTarget var18 = this.state.outputState.getRenderTarget();
-            GpuTexture var9 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var18.getColorTexture();
-            GpuTexture var10 = var18.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var18.getDepthTexture()) : null;
+            GpuTextureView var9 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var18.getColorTextureView();
+            GpuTextureView var10 = var18.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var18.getDepthTextureView()) : null;
 
             try (RenderPass var11 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.getName(), var9, OptionalInt.empty(), var10, OptionalDouble.empty())) {
                var11.setPipeline(var2);
@@ -714,7 +714,7 @@ public abstract class RenderType extends RenderStateShard {
                var11.setVertexBuffer(0, var5);
 
                for(int var12 = 0; var12 < 12; ++var12) {
-                  GpuTexture var13 = RenderSystem.getShaderTexture(var12);
+                  GpuTextureView var13 = RenderSystem.getShaderTexture(var12);
                   if (var13 != null) {
                      var11.bindSampler("Sampler" + var12, var13);
                   }

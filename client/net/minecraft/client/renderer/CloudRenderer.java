@@ -9,7 +9,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -214,14 +214,14 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
             GpuBufferSlice var44 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
             RenderTarget var27 = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget var28 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
-            GpuTexture var29;
-            GpuTexture var30;
+            GpuTextureView var29;
+            GpuTextureView var30;
             if (var28 != null) {
-               var29 = var28.getColorTexture();
-               var30 = var28.getDepthTexture();
+               var29 = var28.getColorTextureView();
+               var30 = var28.getDepthTextureView();
             } else {
-               var29 = var27.getColorTexture();
-               var30 = var27.getDepthTexture();
+               var29 = var27.getColorTextureView();
+               var30 = var27.getDepthTextureView();
             }
 
             GpuBuffer var31 = this.indices.getBuffer(6);

@@ -2,11 +2,14 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.InsideBlockEffectType;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -17,6 +20,8 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LayeredCauldronBlock extends AbstractCauldronBlock {
    public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Biome.Precipitation.CODEC.fieldOf("precipitation").forGetter((var0x) -> var0x.precipitationType), CauldronInteraction.CODEC.fieldOf("interactions").forGetter((var0x) -> var0x.interactions), propertiesCodec()).apply(var0, LayeredCauldronBlock::new));
@@ -25,6 +30,7 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
    public static final IntegerProperty LEVEL;
    private static final int BASE_CONTENT_HEIGHT = 6;
    private static final double HEIGHT_PER_LEVEL = 3.0;
+   private static final VoxelShape[] FILLED_SHAPES;
    private final Biome.Precipitation precipitationType;
 
    public MapCodec<LayeredCauldronBlock> codec() {
@@ -46,19 +52,29 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
    }
 
    protected double getContentHeight(BlockState var1) {
-      return (6.0 + (double)(Integer)var1.getValue(LEVEL) * 3.0) / 16.0;
+      return getPixelContentHeight((Integer)var1.getValue(LEVEL)) / 16.0;
+   }
+
+   private static double getPixelContentHeight(int var0) {
+      return 6.0 + (double)var0 * 3.0;
+   }
+
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      return FILLED_SHAPES[(Integer)var1.getValue(LEVEL) - 1];
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var2 instanceof ServerLevel var6) {
-         if (var4.isOnFire() && this.isEntityInsideContent(var1, var3, var4)) {
-            var4.clearFire();
-            if (var4.mayInteract(var6, var3)) {
-               this.handleEntityOnFireInside(var1, var2, var3);
+         BlockPos var7 = var3.immutable();
+         var5.runBefore(InsideBlockEffectType.EXTINGUISH, (var5x) -> {
+            if (var5x.isOnFire() && var5x.mayInteract(var6, var7)) {
+               this.handleEntityOnFireInside(var1, var2, var7);
             }
-         }
+
+         });
       }
 
+      var5.apply(InsideBlockEffectType.EXTINGUISH);
    }
 
    private void handleEntityOnFireInside(BlockState var1, Level var2, BlockPos var3) {
@@ -104,5 +120,6 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
 
    static {
       LEVEL = BlockStateProperties.LEVEL_CAULDRON;
+      FILLED_SHAPES = (VoxelShape[])Util.make(() -> Block.boxes(2, (var0) -> Shapes.or(AbstractCauldronBlock.SHAPE, Block.column(12.0, 4.0, getPixelContentHeight(var0 + 1)))));
    }
 }

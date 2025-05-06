@@ -421,7 +421,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   public boolean canBeCollidedWith() {
+   public boolean canBeCollidedWith(@Nullable Entity var1) {
       return this.isAlive();
    }
 

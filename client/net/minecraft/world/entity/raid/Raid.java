@@ -187,7 +187,7 @@ public class Raid {
    private Predicate<ServerPlayer> validPlayer() {
       return (var1) -> {
          BlockPos var2 = var1.blockPosition();
-         return var1.isAlive() && var1.serverLevel().getRaidAt(var2) == this;
+         return var1.isAlive() && var1.level().getRaidAt(var2) == this;
       };
    }
 

@@ -113,10 +113,10 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    public static boolean canVehicleCollide(Entity var0, Entity var1) {
-      return (var1.canBeCollidedWith() || var1.isPushable()) && !var0.isPassengerOfSameVehicle(var1);
+      return (var1.canBeCollidedWith(var0) || var1.isPushable()) && !var0.isPassengerOfSameVehicle(var1);
    }
 
-   public boolean canBeCollidedWith() {
+   public boolean canBeCollidedWith(@Nullable Entity var1) {
       return true;
    }
 

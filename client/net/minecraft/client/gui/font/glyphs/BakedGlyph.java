@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.font.glyphs;
 
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
@@ -17,7 +17,7 @@ public class BakedGlyph {
    public static final float Z_FIGHTER = 0.001F;
    private final GlyphRenderTypes renderTypes;
    @Nullable
-   private final GpuTexture texture;
+   private final GpuTextureView textureView;
    private final float u0;
    private final float u1;
    private final float v0;
@@ -27,10 +27,10 @@ public class BakedGlyph {
    private final float up;
    private final float down;
 
-   public BakedGlyph(GlyphRenderTypes var1, @Nullable GpuTexture var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
+   public BakedGlyph(GlyphRenderTypes var1, @Nullable GpuTextureView var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       super();
       this.renderTypes = var1;
-      this.texture = var2;
+      this.textureView = var2;
       this.u0 = var3;
       this.u1 = var4;
       this.v0 = var5;
@@ -124,16 +124,16 @@ public class BakedGlyph {
       float var14 = var3 ? 1.0F - 0.25F * this.up : 0.0F;
       float var15 = var3 ? 1.0F - 0.25F * this.down : 0.0F;
       float var16 = var8 ? 0.1F : 0.0F;
-      var1.submitGuiElementToCurrentLayer(new GlyphRenderState(var2.getRenderPipeline(), TextureSetup.singleTextureWithLightmap(this.texture), var9.pose(), var10 - var16, var12 - var16, var11 + var16, var13 + var16, var14, var15, this.u0, this.u1, this.v0, this.v1, var6, var9.textRenderState().packedLightCoords(), var9.scissorArea()));
+      var1.submitGuiElementToCurrentLayer(new GlyphRenderState(var2.getRenderPipeline(), TextureSetup.singleTextureWithLightmap(this.textureView), var9.pose(), var10 - var16, var12 - var16, var11 + var16, var13 + var16, var14, var15, this.u0, this.u1, this.v0, this.v1, var6, var9.textRenderState().packedLightCoords(), var9.scissorArea()));
    }
 
    public void extractEffect(GuiRenderState var1, RenderType var2, Effect var3, boolean var4, GuiTextRenderState var5) {
       float var6 = var4 ? var3.shadowOffset() : 0.0F;
-      var1.submitGuiElementToCurrentLayer(new GlyphRenderState(var2.getRenderPipeline(), TextureSetup.singleTextureWithLightmap(this.texture), var5.pose(), var3.x0 + var6, var3.y0 + var6, var3.x1 + var6, var3.y1 + var6, 0.0F, 0.0F, this.u0, this.u1, this.v0, this.v1, var4 ? var3.shadowColor() : var3.color(), var5.textRenderState().packedLightCoords(), var5.scissorArea()));
+      var1.submitGuiElementToCurrentLayer(new GlyphRenderState(var2.getRenderPipeline(), TextureSetup.singleTextureWithLightmap(this.textureView), var5.pose(), var3.x0 + var6, var3.y0 + var6, var3.x1 + var6, var3.y1 + var6, 0.0F, 0.0F, this.u0, this.u1, this.v0, this.v1, var4 ? var3.shadowColor() : var3.color(), var5.textRenderState().packedLightCoords(), var5.scissorArea()));
    }
 
    public void extractBackground(GuiRenderState var1, RenderType var2, Effect var3, GuiTextRenderState var4) {
-      var1.submitGuiElementToCurrentLayer(new GlyphRenderState(var2.getRenderPipeline(), TextureSetup.singleTextureWithLightmap(this.texture), var4.pose(), var3.x0, var3.y0, var3.x1, var3.y1, 0.0F, 0.0F, this.u0, this.u1, this.v0, this.v1, var3.color, var4.textRenderState().packedLightCoords(), var4.scissorArea()));
+      var1.submitGuiElementToCurrentLayer(new GlyphRenderState(var2.getRenderPipeline(), TextureSetup.singleTextureWithLightmap(this.textureView), var4.pose(), var3.x0, var3.y0, var3.x1, var3.y1, 0.0F, 0.0F, this.u0, this.u1, this.v0, this.v1, var3.color, var4.textRenderState().packedLightCoords(), var4.scissorArea()));
    }
 
    public RenderType renderType(Font.DisplayMode var1) {

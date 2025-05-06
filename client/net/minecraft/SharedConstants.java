@@ -14,28 +14,28 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4426;
+   public static final int WORLD_VERSION = 4427;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "25w18a";
+   public static final String VERSION_STRING = "25w19a";
    /** @deprecated */
    @Deprecated
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 770;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 248;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 249;
    public static final int SNBT_NAG_VERSION = 4420;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 59;
+   public static final int RESOURCE_PACK_FORMAT = 60;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 75;
+   public static final int DATA_PACK_FORMAT = 76;
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -96,6 +96,7 @@ public class SharedConstants {
    public static final boolean DEBUG_VAULT_DETECTS_SHEEP_AS_PLAYERS = false;
    public static final boolean DEBUG_FORCE_ONBOARDING_SCREEN = false;
    public static final boolean DEBUG_CURSOR_POS = false;
+   public static final boolean DEBUG_DEFAULT_SKIN_OVERRIDE = false;
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = false;
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
    public static final boolean DEBUG_AQUIFERS = false;
@@ -178,7 +179,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742072;
+      return 1073742073;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

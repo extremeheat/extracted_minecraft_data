@@ -1991,7 +1991,7 @@ public class Blocks {
       DRIED_KELP_BLOCK = register("dried_kelp_block", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F, 2.5F).sound(SoundType.GRASS));
       TURTLE_EGG = register("turtle_egg", TurtleEggBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.SAND).forceSolidOn().strength(0.5F).sound(SoundType.METAL).randomTicks().noOcclusion().pushReaction(PushReaction.DESTROY));
       SNIFFER_EGG = register("sniffer_egg", SnifferEggBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.5F).sound(SoundType.METAL).noOcclusion());
-      DRIED_GHAST = register("dried_ghast", DriedGhastBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).instabreak().sound(SoundType.DRIED_GHAST).noOcclusion().randomTicks());
+      DRIED_GHAST = register("dried_ghast", DriedGhastBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).forceSolidOn().instabreak().sound(SoundType.DRIED_GHAST).noOcclusion().randomTicks());
       DEAD_TUBE_CORAL_BLOCK = register("dead_tube_coral_block", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).forceSolidOn().instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.5F, 6.0F));
       DEAD_BRAIN_CORAL_BLOCK = register("dead_brain_coral_block", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).forceSolidOn().instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.5F, 6.0F));
       DEAD_BUBBLE_CORAL_BLOCK = register("dead_bubble_coral_block", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).forceSolidOn().instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.5F, 6.0F));

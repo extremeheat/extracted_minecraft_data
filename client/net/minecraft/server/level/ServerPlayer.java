@@ -206,6 +206,7 @@ public class ServerPlayer extends Player {
    public static final int ENDER_PEARL_TICKET_RADIUS = 2;
    public static final String ENDER_PEARLS_TAG = "ender_pearls";
    public static final String ENDER_PEARL_DIMENSION_TAG = "ender_pearl_dimension";
+   public static final String TAG_DIMENSION = "Dimension";
    private static final AttributeModifier CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER;
    private static final AttributeModifier CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER;
    private static final Component SPAWN_SET_MESSAGE;
@@ -213,7 +214,7 @@ public class ServerPlayer extends Player {
    private static final boolean DEFAULT_SEEN_CREDITS = false;
    private static final boolean DEFAULT_SPAWN_EXTRA_PARTICLES_ON_FALL = false;
    public ServerGamePacketListenerImpl connection;
-   public final MinecraftServer server;
+   private final MinecraftServer server;
    public final ServerPlayerGameMode gameMode;
    private final PlayerAdvancements advancements;
    private final ServerStatsCounter stats;
@@ -356,7 +357,7 @@ public class ServerPlayer extends Player {
       };
       this.commandSource = new CommandSource() {
          public boolean acceptsSuccess() {
-            return ServerPlayer.this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+            return ServerPlayer.this.level().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
          }
 
          public boolean acceptsFailure() {
@@ -492,7 +493,7 @@ public class ServerPlayer extends Player {
    public void loadAndSpawnParentVehicle(ValueInput var1) {
       Optional var2 = var1.child("RootVehicle");
       if (!var2.isEmpty()) {
-         ServerLevel var3 = this.serverLevel();
+         ServerLevel var3 = this.level();
          Entity var4 = EntityType.loadEntityRecursive((ValueInput)((ValueInput)var2.get()).childOrEmpty("Entity"), var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
          if (var4 != null) {
             UUID var5 = (UUID)((ValueInput)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
@@ -544,7 +545,7 @@ public class ServerPlayer extends Player {
    private void loadAndSpawnEnderPearl(ValueInput var1) {
       Optional var2 = var1.read("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC);
       if (!var2.isEmpty()) {
-         ServerLevel var3 = this.serverLevel().getServer().getLevel((ResourceKey)var2.get());
+         ServerLevel var3 = this.level().getServer().getLevel((ResourceKey)var2.get());
          if (var3 != null) {
             Entity var4 = EntityType.loadEntityRecursive((ValueInput)var1, var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
             if (var4 != null) {
@@ -626,7 +627,7 @@ public class ServerPlayer extends Player {
       if (var1 != this) {
          if (var1.isAlive()) {
             this.absSnapTo(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot());
-            this.serverLevel().getChunkSource().move(this);
+            this.level().getChunkSource().move(this);
             if (this.wantsToStopRiding()) {
                this.setCamera(this);
             }
@@ -745,7 +746,7 @@ public class ServerPlayer extends Player {
 
    private void synchronizeSpecialItemUpdates(ItemStack var1) {
       MapId var2 = (MapId)var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
+      MapItemSavedData var3 = MapItem.getSavedData((MapId)var2, this.level());
       if (var3 != null) {
          Packet var4 = var3.getUpdatePacket(var2, this);
          if (var4 != null) {
@@ -756,7 +757,7 @@ public class ServerPlayer extends Player {
    }
 
    protected void tickRegeneration() {
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.serverLevel().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
          if (this.tickCount % 20 == 0) {
             if (this.getHealth() < this.getMaxHealth()) {
                this.heal(1.0F);
@@ -815,7 +816,7 @@ public class ServerPlayer extends Player {
 
    public void die(DamageSource var1) {
       this.gameEvent(GameEvent.ENTITY_DIE);
-      boolean var2 = this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
+      boolean var2 = this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
       if (var2) {
          Component var3 = this.getCombatTracker().getDeathMessage();
          this.connection.send(new ClientboundPlayerCombatKillPacket(this.getId(), var3), PacketSendListener.exceptionallySend(() -> {
@@ -840,12 +841,12 @@ public class ServerPlayer extends Player {
       }
 
       this.removeEntitiesOnShoulder();
-      if (this.serverLevel().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+      if (this.level().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
          this.tellNeutralMobsThatIDied();
       }
 
       if (!this.isSpectator()) {
-         this.dropAllDeathLoot(this.serverLevel(), var1);
+         this.dropAllDeathLoot(this.level(), var1);
       }
 
       this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
@@ -870,7 +871,7 @@ public class ServerPlayer extends Player {
 
    private void tellNeutralMobsThatIDied() {
       AABB var1 = (new AABB(this.blockPosition())).inflate(32.0, 10.0, 32.0);
-      this.level().getEntitiesOfClass(Mob.class, var1, EntitySelector.NO_SPECTATORS).stream().filter((var0) -> var0 instanceof NeutralMob).forEach((var1x) -> ((NeutralMob)var1x).playerDied(this.serverLevel(), this));
+      this.level().getEntitiesOfClass(Mob.class, var1, EntitySelector.NO_SPECTATORS).stream().filter((var0) -> var0 instanceof NeutralMob).forEach((var1x) -> ((NeutralMob)var1x).playerDied(this.level(), this));
    }
 
    public void awardKillScore(Entity var1, DamageSource var2) {
@@ -958,7 +959,7 @@ public class ServerPlayer extends Player {
 
    protected void onAttributeUpdated(Holder<Attribute> var1) {
       if (var1.is(Attributes.WAYPOINT_RECEIVE_RANGE)) {
-         ServerWaypointManager var2 = this.serverLevel().getWaypointManager();
+         ServerWaypointManager var2 = this.level().getWaypointManager();
          if (this.getAttributes().getValue(var1) > 0.0) {
             var2.addPlayer(this);
          } else {
@@ -996,7 +997,7 @@ public class ServerPlayer extends Player {
 
    public void showEndCredits() {
       this.unRide();
-      this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+      this.level().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
       if (!this.wonGame) {
          this.wonGame = true;
          this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.WIN_GAME, 0.0F));
@@ -1015,7 +1016,7 @@ public class ServerPlayer extends Player {
          }
 
          ServerLevel var2 = var1.newLevel();
-         ServerLevel var3 = this.serverLevel();
+         ServerLevel var3 = this.level();
          ResourceKey var4 = var3.dimension();
          if (!var1.asPassenger()) {
             this.removeVehicle();
@@ -1113,7 +1114,7 @@ public class ServerPlayer extends Player {
                   double var3 = 8.0;
                   double var5 = 5.0;
                   Vec3 var7 = Vec3.atBottomCenterOf(var1);
-                  List var8 = this.level().getEntitiesOfClass(Monster.class, new AABB(var7.x() - 8.0, var7.y() - 5.0, var7.z() - 8.0, var7.x() + 8.0, var7.y() + 5.0, var7.z() + 8.0), (var1x) -> var1x.isPreventingPlayerRest(this.serverLevel(), this));
+                  List var8 = this.level().getEntitiesOfClass(Monster.class, new AABB(var7.x() - 8.0, var7.y() - 5.0, var7.z() - 8.0, var7.x() + 8.0, var7.y() + 5.0, var7.z() + 8.0), (var1x) -> var1x.isPreventingPlayerRest(this.level(), this));
                   if (!var8.isEmpty()) {
                      return Either.left(Player.BedSleepingProblem.NOT_SAFE);
                   }
@@ -1123,11 +1124,11 @@ public class ServerPlayer extends Player {
                   this.awardStat(Stats.SLEEP_IN_BED);
                   CriteriaTriggers.SLEPT_IN_BED.trigger(this);
                });
-               if (!this.serverLevel().canSleepThroughNights()) {
+               if (!this.level().canSleepThroughNights()) {
                   this.displayClientMessage(Component.translatable("sleep.not_possible"), true);
                }
 
-               ((ServerLevel)this.level()).updateSleepingPlayerList();
+               this.level().updateSleepingPlayerList();
                return var9;
             }
          }
@@ -1157,7 +1158,7 @@ public class ServerPlayer extends Player {
 
    public void stopSleepInBed(boolean var1, boolean var2) {
       if (this.isSleeping()) {
-         this.serverLevel().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(this, 2));
+         this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(this, 2));
       }
 
       super.stopSleepInBed(var1, var2);
@@ -1182,7 +1183,7 @@ public class ServerPlayer extends Player {
       if (this.spawnExtraParticlesOnFall && var3 && this.fallDistance > 0.0) {
          Vec3 var6 = var5.getCenter().add(0.0, 0.5, 0.0);
          int var7 = (int)Mth.clamp(50.0 * this.fallDistance, 0.0, 200.0);
-         this.serverLevel().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, var7, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
+         this.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, var7, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
          this.spawnExtraParticlesOnFall = false;
       }
 
@@ -1470,7 +1471,7 @@ public class ServerPlayer extends Player {
       } else {
          this.getAttributes().assignBaseValues(var1.getAttributes());
          this.setHealth(this.getMaxHealth());
-         if (this.serverLevel().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
+         if (this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
             this.getInventory().replaceWith(var1.getInventory());
             this.experienceLevel = var1.experienceLevel;
             this.totalExperience = var1.totalExperience;
@@ -1555,11 +1556,11 @@ public class ServerPlayer extends Player {
    }
 
    public void crit(Entity var1) {
-      this.serverLevel().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 4));
+      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 4));
    }
 
    public void magicCrit(Entity var1) {
-      this.serverLevel().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 5));
+      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 5));
    }
 
    public void onUpdateAbilities() {
@@ -1569,8 +1570,8 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public ServerLevel serverLevel() {
-      return (ServerLevel)this.level();
+   public ServerLevel level() {
+      return (ServerLevel)super.level();
    }
 
    public boolean setGameMode(GameType var1) {
@@ -1586,7 +1587,7 @@ public class ServerPlayer extends Player {
          } else {
             this.setCamera(this);
             if (var2) {
-               EnchantmentHelper.runLocationChangedEffects(this.serverLevel(), this);
+               EnchantmentHelper.runLocationChangedEffects(this.level(), this);
             }
          }
 
@@ -1606,7 +1607,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.serverLevel(), this.getPermissionLevel(), this.getName().getString(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getName().getString(), this.getDisplayName(), this.server, this);
    }
 
    public void sendSystemMessage(Component var1) {
@@ -1727,7 +1728,7 @@ public class ServerPlayer extends Player {
          }
 
          if (var1 != null) {
-            this.serverLevel().getChunkSource().move(this);
+            this.level().getChunkSource().move(this);
          }
 
          this.connection.send(new ClientboundSetCameraPacket(this.camera));
@@ -1993,7 +1994,7 @@ public class ServerPlayer extends Player {
    }
 
    protected float getEnchantedDamage(Entity var1, float var2, DamageSource var3) {
-      return EnchantmentHelper.modifyDamage(this.serverLevel(), this.getWeaponItem(), var1, var3, var2);
+      return EnchantmentHelper.modifyDamage(this.level(), this.getWeaponItem(), var1, var3, var2);
    }
 
    public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {
@@ -2042,6 +2043,11 @@ public class ServerPlayer extends Player {
    public static long placeEnderPearlTicket(ServerLevel var0, ChunkPos var1) {
       var0.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, var1, 2);
       return TicketType.ENDER_PEARL.timeout();
+   }
+
+   // $FF: synthetic method
+   public Level level() {
+      return this.level();
    }
 
    // $FF: synthetic method

@@ -468,7 +468,6 @@ public class SoundEvents {
    public static final SoundEvent DRIED_GHAST_BREAK = register("block.dried_ghast.break");
    public static final SoundEvent DRIED_GHAST_STEP = register("block.dried_ghast.step");
    public static final SoundEvent DRIED_GHAST_FALL = register("block.dried_ghast.fall");
-   public static final SoundEvent DRIED_GHAST_HIT = register("block.dried_ghast.hit");
    public static final SoundEvent DRIED_GHAST_AMBIENT = register("block.dried_ghast.ambient");
    public static final SoundEvent DRIED_GHAST_AMBIENT_WATER = register("block.dried_ghast.ambient_water");
    public static final SoundEvent DRIED_GHAST_PLACE = register("block.dried_ghast.place");

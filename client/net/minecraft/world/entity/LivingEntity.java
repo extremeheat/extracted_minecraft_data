@@ -143,6 +143,15 @@ import org.slf4j.Logger;
 public abstract class LivingEntity extends Entity implements Attackable, WaypointTransmitter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_ACTIVE_EFFECTS = "active_effects";
+   public static final String TAG_ATTRIBUTES = "attributes";
+   public static final String TAG_SLEEPING_POS = "sleeping_pos";
+   public static final String TAG_EQUIPMENT = "equipment";
+   public static final String TAG_BRAIN = "Brain";
+   public static final String TAG_FALL_FLYING = "FallFlying";
+   public static final String TAG_HURT_TIME = "HurtTime";
+   public static final String TAG_DEATH_TIME = "DeathTime";
+   public static final String TAG_HURT_BY_TIMESTAMP = "HurtByTimestamp";
+   public static final String TAG_HEALTH = "Health";
    private static final ResourceLocation SPEED_MODIFIER_POWDER_SNOW_ID = ResourceLocation.withDefaultNamespace("powder_snow");
    private static final ResourceLocation SPRINTING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("sprinting");
    private static final AttributeModifier SPEED_MODIFIER_SPRINTING;
@@ -175,7 +184,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected static final EntityDimensions SLEEPING_DIMENSIONS;
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
-   public static final String ATTRIBUTES_FIELD = "attributes";
    public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM;
    private static final Dynamic<?> EMPTY_BRAIN;
    private final AttributeMap attributes;

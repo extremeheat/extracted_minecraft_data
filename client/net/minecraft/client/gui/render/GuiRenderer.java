@@ -9,10 +9,12 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -87,7 +89,11 @@ public class GuiRenderer implements AutoCloseable {
    @Nullable
    private GpuTexture itemsAtlas;
    @Nullable
+   private GpuTextureView itemsAtlasView;
+   @Nullable
    private GpuTexture itemsAtlasDepth;
+   @Nullable
+   private GpuTextureView itemsAtlasDepthView;
    private int itemAtlasX;
    private int itemAtlasY;
    private int cachedGuiScale;
@@ -187,7 +193,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void executeDrawRange(Supplier<String> var1, RenderTarget var2, GpuBufferSlice var3, GpuBufferSlice var4, GpuBuffer var5, VertexFormat.IndexType var6, int var7, int var8) {
-      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, var2.getColorTexture(), OptionalInt.empty(), var2.useDepth ? var2.getDepthTexture() : null, OptionalDouble.empty())) {
+      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var1, var2.getColorTextureView(), OptionalInt.empty(), var2.useDepth ? var2.getDepthTextureView() : null, OptionalDouble.empty())) {
          RenderSystem.bindDefaultUniforms(var9);
          var9.setUniform("Fog", var3);
          var9.setUniform("DynamicTransforms", var4);
@@ -277,8 +283,8 @@ public class GuiRenderer implements AutoCloseable {
             this.createAtlasTextures(var4);
          }
 
-         RenderSystem.outputColorTextureOverride = this.itemsAtlas;
-         RenderSystem.outputDepthTextureOverride = this.itemsAtlasDepth;
+         RenderSystem.outputColorTextureOverride = this.itemsAtlasView;
+         RenderSystem.outputDepthTextureOverride = this.itemsAtlasDepthView;
          RenderSystem.setProjectionMatrix(this.itemsProjectionMatrixBuffer.getBuffer((float)var4, (float)var4), ProjectionType.ORTHOGRAPHIC);
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
          PoseStack var5 = new PoseStack();
@@ -359,14 +365,17 @@ public class GuiRenderer implements AutoCloseable {
    private void submitBlitFromItemAtlas(GuiItemRenderState var1, float var2, float var3, int var4, int var5) {
       float var6 = var2 + (float)var4 / (float)var5;
       float var7 = var3 + (float)(-var4) / (float)var5;
-      this.renderState.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlas), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
+      this.renderState.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void createAtlasTextures(int var1) {
-      this.itemsAtlas = RenderSystem.getDevice().createTexture("UI items atlas", 12, TextureFormat.RGBA8, var1, var1, 1);
+      GpuDevice var2 = RenderSystem.getDevice();
+      this.itemsAtlas = var2.createTexture("UI items atlas", 12, TextureFormat.RGBA8, var1, var1, 1, 1);
       this.itemsAtlas.setTextureFilter(FilterMode.NEAREST, false);
-      this.itemsAtlasDepth = RenderSystem.getDevice().createTexture("UI items atlas depth", 8, TextureFormat.DEPTH32, var1, var1, 1);
-      RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.itemsAtlas, 0, this.itemsAtlasDepth, 1.0);
+      this.itemsAtlasView = var2.createTextureView(this.itemsAtlas);
+      this.itemsAtlasDepth = var2.createTexture("UI items atlas depth", 8, TextureFormat.DEPTH32, var1, var1, 1, 1);
+      this.itemsAtlasDepthView = var2.createTextureView(this.itemsAtlasDepth);
+      var2.createCommandEncoder().clearColorAndDepthTextures(this.itemsAtlas, 0, this.itemsAtlasDepth, 1.0);
    }
 
    private int calculateAtlasSizeInPixels(int var1, int var2) {
@@ -421,9 +430,19 @@ public class GuiRenderer implements AutoCloseable {
          this.itemsAtlas = null;
       }
 
+      if (this.itemsAtlasView != null) {
+         this.itemsAtlasView.close();
+         this.itemsAtlasView = null;
+      }
+
       if (this.itemsAtlasDepth != null) {
          this.itemsAtlasDepth.close();
          this.itemsAtlasDepth = null;
+      }
+
+      if (this.itemsAtlasDepthView != null) {
+         this.itemsAtlasDepthView.close();
+         this.itemsAtlasDepthView = null;
       }
 
    }
@@ -556,8 +575,16 @@ public class GuiRenderer implements AutoCloseable {
          this.itemsAtlas.close();
       }
 
+      if (this.itemsAtlasView != null) {
+         this.itemsAtlasView.close();
+      }
+
       if (this.itemsAtlasDepth != null) {
          this.itemsAtlasDepth.close();
+      }
+
+      if (this.itemsAtlasDepthView != null) {
+         this.itemsAtlasDepthView.close();
       }
 
       this.pictureInPictureRenderers.values().forEach(PictureInPictureRenderer::close);

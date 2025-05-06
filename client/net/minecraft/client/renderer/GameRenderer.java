@@ -42,6 +42,7 @@ import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -112,20 +113,29 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private final LightTexture lightTexture;
    private final OverlayTexture overlayTexture = new OverlayTexture();
    private boolean panoramicMode;
-   private final CrossFrameResourcePool resourcePool = new CrossFrameResourcePool(3);
+   protected final CubeMap cubeMap = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
+   protected final PanoramaRenderer panorama;
+   private final CrossFrameResourcePool resourcePool;
    private final GuiRenderer guiRenderer;
    private final GuiRenderState guiRenderState;
    @Nullable
    private ResourceLocation postEffectId;
    private boolean effectActive;
-   private final Camera mainCamera = new Camera();
-   private final Lighting lighting = new Lighting();
-   private final GlobalSettingsUniform globalSettingsUniform = new GlobalSettingsUniform();
-   private final PerspectiveProjectionMatrixBuffer levelProjectionMatrixBuffer = new PerspectiveProjectionMatrixBuffer("level");
-   private final CachedPerspectiveProjectionMatrixBuffer hud3dProjectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer("3d hud", 0.05F, 100.0F);
+   private final Camera mainCamera;
+   private final Lighting lighting;
+   private final GlobalSettingsUniform globalSettingsUniform;
+   private final PerspectiveProjectionMatrixBuffer levelProjectionMatrixBuffer;
+   private final CachedPerspectiveProjectionMatrixBuffer hud3dProjectionMatrixBuffer;
 
    public GameRenderer(Minecraft var1, ItemInHandRenderer var2, RenderBuffers var3) {
       super();
+      this.panorama = new PanoramaRenderer(this.cubeMap);
+      this.resourcePool = new CrossFrameResourcePool(3);
+      this.mainCamera = new Camera();
+      this.lighting = new Lighting();
+      this.globalSettingsUniform = new GlobalSettingsUniform();
+      this.levelProjectionMatrixBuffer = new PerspectiveProjectionMatrixBuffer("level");
+      this.hud3dProjectionMatrixBuffer = new CachedPerspectiveProjectionMatrixBuffer("3d hud", 0.05F, 100.0F);
       this.minecraft = var1;
       this.itemInHandRenderer = var2;
       this.lightTexture = new LightTexture(this, var1);
@@ -145,6 +155,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       this.levelProjectionMatrixBuffer.close();
       this.hud3dProjectionMatrixBuffer.close();
       this.lighting.close();
+      this.cubeMap.close();
    }
 
    public void setRenderBlockOutline(boolean var1) {
@@ -762,5 +773,9 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          this.lighting.updateLevel(var1.effects().constantAmbientLight());
       }
 
+   }
+
+   public PanoramaRenderer getPanorama() {
+      return this.panorama;
    }
 }

@@ -9,6 +9,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalInt;
@@ -29,6 +30,7 @@ public class LightTexture implements AutoCloseable {
    private static final int TEXTURE_SIZE = 16;
    private static final int LIGHTMAP_UBO_SIZE = (new Std140SizeCalculator()).putFloat().putFloat().putFloat().putInt().putFloat().putFloat().putFloat().putFloat().putVec3().get();
    private final GpuTexture texture;
+   private final GpuTextureView textureView;
    private boolean updateLightTexture;
    private float blockLightRedFlicker;
    private final GameRenderer renderer;
@@ -40,18 +42,20 @@ public class LightTexture implements AutoCloseable {
       this.renderer = var1;
       this.minecraft = var2;
       GpuDevice var3 = RenderSystem.getDevice();
-      this.texture = var3.createTexture("Light Texture", 12, TextureFormat.RGBA8, 16, 16, 1);
+      this.texture = var3.createTexture("Light Texture", 12, TextureFormat.RGBA8, 16, 16, 1, 1);
       this.texture.setTextureFilter(FilterMode.LINEAR, false);
+      this.textureView = var3.createTextureView(this.texture);
       var3.createCommandEncoder().clearColorTexture(this.texture, -1);
       this.ubo = new MappableRingBuffer(() -> "Lightmap UBO", 130, LIGHTMAP_UBO_SIZE);
    }
 
-   public GpuTexture getTexture() {
-      return this.texture;
+   public GpuTextureView getTextureView() {
+      return this.textureView;
    }
 
    public void close() {
       this.texture.close();
+      this.textureView.close();
       this.ubo.close();
    }
 
@@ -62,11 +66,11 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void turnOffLightLayer() {
-      RenderSystem.setShaderTexture(2, (GpuTexture)null);
+      RenderSystem.setShaderTexture(2, (GpuTextureView)null);
    }
 
    public void turnOnLightLayer() {
-      RenderSystem.setShaderTexture(2, this.texture);
+      RenderSystem.setShaderTexture(2, this.textureView);
    }
 
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {
@@ -115,7 +119,7 @@ public class LightTexture implements AutoCloseable {
                Std140Builder.intoBuffer(var19.data()).putFloat(var13).putFloat(var5).putFloat(var12).putInt(var14 ? 1 : 0).putFloat(var9).putFloat(var8).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var7)).putVec3(var11);
             }
 
-            try (RenderPass var26 = var18.createRenderPass(() -> "Update light", this.texture, OptionalInt.empty())) {
+            try (RenderPass var26 = var18.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
                var26.setPipeline(RenderPipelines.LIGHTMAP);
                RenderSystem.bindDefaultUniforms(var26);
                var26.setUniform("LightmapInfo", this.ubo.currentBuffer());

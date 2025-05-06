@@ -174,7 +174,6 @@ public class ServerEntity {
                      var9 = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)((int)var13), (short)((int)var15), (short)((int)var17), var26, var28, this.entity.onGround());
                      var11 = true;
                      var12 = true;
-                     this.entity.setRequiresPrecisePosition(false);
                   }
                } else {
                   this.wasOnGround = this.entity.onGround();
@@ -283,35 +282,27 @@ public class ServerEntity {
          var2.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedDataValues));
       }
 
-      boolean var4 = this.trackDelta;
-      if (this.entity instanceof LivingEntity) {
-         Collection var5 = ((LivingEntity)this.entity).getAttributes().getSyncableAttributes();
-         if (!var5.isEmpty()) {
-            var2.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), var5));
-         }
-
-         if (((LivingEntity)this.entity).isFallFlying()) {
-            var4 = true;
+      Entity var5 = this.entity;
+      if (var5 instanceof LivingEntity var4) {
+         Collection var11 = var4.getAttributes().getSyncableAttributes();
+         if (!var11.isEmpty()) {
+            var2.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), var11));
          }
       }
 
-      if (var4 && !(this.entity instanceof LivingEntity)) {
-         var2.accept(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
-      }
+      var5 = this.entity;
+      if (var5 instanceof LivingEntity var9) {
+         ArrayList var13 = Lists.newArrayList();
 
-      Entity var6 = this.entity;
-      if (var6 instanceof LivingEntity var10) {
-         ArrayList var12 = Lists.newArrayList();
-
-         for(EquipmentSlot var8 : EquipmentSlot.VALUES) {
-            ItemStack var9 = var10.getItemBySlot(var8);
-            if (!var9.isEmpty()) {
-               var12.add(Pair.of(var8, var9.copy()));
+         for(EquipmentSlot var7 : EquipmentSlot.VALUES) {
+            ItemStack var8 = var9.getItemBySlot(var7);
+            if (!var8.isEmpty()) {
+               var13.add(Pair.of(var7, var8.copy()));
             }
          }
 
-         if (!var12.isEmpty()) {
-            var2.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), var12));
+         if (!var13.isEmpty()) {
+            var2.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), var13));
          }
       }
 
@@ -323,10 +314,10 @@ public class ServerEntity {
          var2.accept(new ClientboundSetPassengersPacket(this.entity.getVehicle()));
       }
 
-      var6 = this.entity;
-      if (var6 instanceof Leashable var11) {
-         if (var11.isLeashed()) {
-            var2.accept(new ClientboundSetEntityLinkPacket(this.entity, var11.getLeashHolder()));
+      var5 = this.entity;
+      if (var5 instanceof Leashable var10) {
+         if (var10.isLeashed()) {
+            var2.accept(new ClientboundSetEntityLinkPacket(this.entity, var10.getLeashHolder()));
          }
       }
 

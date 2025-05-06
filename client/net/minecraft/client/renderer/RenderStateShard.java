@@ -159,7 +159,7 @@ public abstract class RenderStateShard {
                TextureManager var3 = Minecraft.getInstance().getTextureManager();
                AbstractTexture var4 = var3.getTexture(var2.id);
                var4.setUseMipmaps(var2.mipmap);
-               RenderSystem.setShaderTexture(var1x, var4.getTexture());
+               RenderSystem.setShaderTexture(var1x, var4.getTextureView());
             }
 
          }, () -> {
@@ -213,7 +213,7 @@ public abstract class RenderStateShard {
             TextureManager var2x = Minecraft.getInstance().getTextureManager();
             AbstractTexture var3 = var2x.getTexture(var1);
             var3.setUseMipmaps(var2);
-            RenderSystem.setShaderTexture(0, var3.getTexture());
+            RenderSystem.setShaderTexture(0, var3.getTextureView());
          }, () -> {
          });
          this.texture = Optional.of(var1);

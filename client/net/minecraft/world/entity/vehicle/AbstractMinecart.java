@@ -13,6 +13,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -280,6 +281,12 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    public InterpolationHandler getInterpolation() {
       return this.behavior.getInterpolation();
+   }
+
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      Vec3 var2 = this.getDeltaMovement();
+      this.behavior.lerpMotion(var2.x, var2.y, var2.z);
    }
 
    public void lerpMotion(double var1, double var3, double var5) {

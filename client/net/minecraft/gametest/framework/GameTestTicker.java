@@ -11,10 +11,12 @@ public class GameTestTicker {
    @Nullable
    private GameTestRunner runner;
    private State state;
+   private volatile boolean ticking;
 
    private GameTestTicker() {
       super();
       this.state = GameTestTicker.State.IDLE;
+      this.ticking = false;
    }
 
    public void add(GameTestInfo var1) {
@@ -42,8 +44,12 @@ public class GameTestTicker {
       this.runner = var1;
    }
 
+   public void startTicking() {
+      this.ticking = true;
+   }
+
    public void tick() {
-      if (this.runner != null) {
+      if (this.runner != null && this.ticking) {
          this.state = GameTestTicker.State.RUNNING;
          this.testInfos.forEach((var1x) -> var1x.tick(this.runner));
          this.testInfos.removeIf(GameTestInfo::isDone);

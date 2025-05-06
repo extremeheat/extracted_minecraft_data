@@ -921,8 +921,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          return this.isFlat ? (double)var1.getMinY() : 63.0;
       }
 
-      public float getClearColorScale() {
-         return this.isFlat ? 1.0F : 0.03125F;
+      public float voidDarknessOnsetRange() {
+         return this.isFlat ? 1.0F : 32.0F;
       }
    }
 

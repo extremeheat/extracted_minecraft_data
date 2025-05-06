@@ -1,11 +1,19 @@
 package net.minecraft.data.advancements.packs;
 
+import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -49,6 +57,7 @@ import net.minecraft.advancements.critereon.UsedTotemTrigger;
 import net.minecraft.advancements.critereon.UsingItemTrigger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -68,6 +77,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -93,13 +103,16 @@ import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.slf4j.Logger;
 
 public class VanillaAdventureAdvancements implements AdvancementSubProvider {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DISTANCE_FROM_BOTTOM_TO_TOP = 384;
    private static final int Y_COORDINATE_AT_TOP = 320;
    private static final int Y_COORDINATE_AT_BOTTOM = -64;
    private static final int BEDROCK_THICKNESS = 5;
-   protected static final List<EntityType<?>> MOBS_TO_KILL;
+   private static final Map<MobCategory, Set<EntityType<?>>> EXCEPTIONS_BY_EXPECTED_CATEGORIES;
+   private static final List<EntityType<?>> MOBS_TO_KILL;
 
    public VanillaAdventureAdvancements() {
       super();
@@ -122,7 +135,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       createAdventuringTime(var1, var2, var7, MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD);
       AdvancementHolder var8 = Advancement.Builder.advancement().parent(var6).display((ItemLike)Items.EMERALD, Component.translatable("advancements.adventure.trade.title"), Component.translatable("advancements.adventure.trade.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("traded", TradeTrigger.TriggerInstance.tradedWithVillager()).save(var2, "adventure/trade");
       Advancement.Builder.advancement().parent(var8).display((ItemLike)Items.EMERALD, Component.translatable("advancements.adventure.trade_at_world_height.title"), Component.translatable("advancements.adventure.trade_at_world_height.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("trade_at_world_height", TradeTrigger.TriggerInstance.tradedWithVillager(EntityPredicate.Builder.entity().located(LocationPredicate.Builder.atYLocation(MinMaxBounds.Doubles.atLeast(319.0))))).save(var2, "adventure/trade_at_world_height");
-      AdvancementHolder var9 = createMonsterHunterAdvancement(var6, var2, var3, MOBS_TO_KILL);
+      AdvancementHolder var9 = createMonsterHunterAdvancement(var6, var2, var3, validateMobsToKill(MOBS_TO_KILL, var3));
       AdvancementHolder var10 = Advancement.Builder.advancement().parent(var9).display((ItemLike)Items.BOW, Component.translatable("advancements.adventure.shoot_arrow.title"), Component.translatable("advancements.adventure.shoot_arrow.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("shot_arrow", PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(DamagePredicate.Builder.damageInstance().type(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE)).direct(EntityPredicate.Builder.entity().of(var3, EntityTypeTags.ARROWS))))).save(var2, "adventure/shoot_arrow");
       AdvancementHolder var11 = Advancement.Builder.advancement().parent(var9).display((ItemLike)Items.TRIDENT, Component.translatable("advancements.adventure.throw_trident.title"), Component.translatable("advancements.adventure.throw_trident.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("shot_trident", PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(DamagePredicate.Builder.damageInstance().type(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE)).direct(EntityPredicate.Builder.entity().of(var3, EntityType.TRIDENT))))).save(var2, "adventure/throw_trident");
       Advancement.Builder.advancement().parent(var11).display((ItemLike)Items.TRIDENT, Component.translatable("advancements.adventure.very_very_frightening.title"), Component.translatable("advancements.adventure.very_very_frightening.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("struck_villager", ChanneledLightningTrigger.TriggerInstance.channeledLightning(EntityPredicate.Builder.entity().of(var3, EntityType.VILLAGER))).save(var2, "adventure/very_very_frightening");
@@ -244,7 +257,42 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       return var0;
    }
 
+   private static List<EntityType<?>> validateMobsToKill(List<EntityType<?>> var0, HolderLookup<EntityType<?>> var1) {
+      ArrayList var2 = new ArrayList();
+      Set var3 = Set.copyOf(var0);
+      Set var4 = (Set)var3.stream().map(EntityType::getCategory).collect(Collectors.toSet());
+      Sets.SetView var5 = Sets.symmetricDifference(EXCEPTIONS_BY_EXPECTED_CATEGORIES.keySet(), var4);
+      if (!var5.isEmpty()) {
+         var2.add("Found EntityType with MobCategory only in either expected exceptions or kill_all_mobs advancement: %s".formatted(var5.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+      }
+
+      Sets.SetView var6 = Sets.intersection((Set)EXCEPTIONS_BY_EXPECTED_CATEGORIES.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()), var3);
+      if (!var6.isEmpty()) {
+         var2.add("Found EntityType in both expected exceptions and kill_all_mobs advancement: %s".formatted(var6.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+      }
+
+      Stream var10000 = var1.listElements().map(Holder.Reference::value);
+      Objects.requireNonNull(var3);
+      Map var7 = (Map)var10000.filter(Predicate.not(var3::contains)).collect(Collectors.groupingBy(EntityType::getCategory, Collectors.toSet()));
+      EXCEPTIONS_BY_EXPECTED_CATEGORIES.forEach((var2x, var3x) -> {
+         Sets.SetView var4 = Sets.difference((Set)var7.getOrDefault(var2x, Set.of()), var3x);
+         if (!var4.isEmpty()) {
+            var2.add("Found (new?) EntityType with MobCategory %s which are in neither expected exceptions nor kill_all_mobs advancement: %s".formatted(var2x, var4.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+         }
+
+      });
+      if (!var2.isEmpty()) {
+         Logger var10001 = LOGGER;
+         Objects.requireNonNull(var10001);
+         var2.forEach(var10001::error);
+         throw new IllegalStateException("Found inconsistencies with kill_all_mobs advancement");
+      } else {
+         return var0;
+      }
+   }
+
    static {
+      EXCEPTIONS_BY_EXPECTED_CATEGORIES = Map.of(MobCategory.MONSTER, Set.of(EntityType.GIANT, EntityType.ILLUSIONER, EntityType.WARDEN));
       MOBS_TO_KILL = Arrays.asList(EntityType.BLAZE, EntityType.BOGGED, EntityType.BREEZE, EntityType.CAVE_SPIDER, EntityType.CREAKING, EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDER_DRAGON, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.EVOKER, EntityType.GHAST, EntityType.GUARDIAN, EntityType.HOGLIN, EntityType.HUSK, EntityType.MAGMA_CUBE, EntityType.PHANTOM, EntityType.PIGLIN, EntityType.PIGLIN_BRUTE, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER, EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.STRAY, EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH, EntityType.WITHER_SKELETON, EntityType.WITHER, EntityType.ZOGLIN, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIE, EntityType.ZOMBIFIED_PIGLIN);
    }
 }

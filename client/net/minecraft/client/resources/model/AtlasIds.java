@@ -11,7 +11,6 @@ public class AtlasIds {
    public static final ResourceLocation DECORATED_POT = ResourceLocation.withDefaultNamespace("decorated_pot");
    public static final ResourceLocation GUI = ResourceLocation.withDefaultNamespace("gui");
    public static final ResourceLocation MAP_DECORATIONS = ResourceLocation.withDefaultNamespace("map_decorations");
-   public static final ResourceLocation MOB_EFFECTS = ResourceLocation.withDefaultNamespace("mob_effects");
    public static final ResourceLocation PAINTINGS = ResourceLocation.withDefaultNamespace("paintings");
    public static final ResourceLocation PARTICLES = ResourceLocation.withDefaultNamespace("particles");
    public static final ResourceLocation SHIELD_PATTERNS = ResourceLocation.withDefaultNamespace("shield_patterns");

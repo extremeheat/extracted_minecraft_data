@@ -386,7 +386,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handlePlayerInput(ServerboundPlayerInputPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.setLastClientInput(var1.input());
       if (this.player.hasClientLoaded()) {
          this.player.resetLastActionTime();
@@ -408,13 +408,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleMoveVehicle(ServerboundMoveVehiclePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (containsInvalidValues(var1.position().x(), var1.position().y(), var1.position().z(), var1.yRot(), var1.xRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
       } else if (!this.updateAwaitingTeleport() && this.player.hasClientLoaded()) {
          Entity var2 = this.player.getRootVehicle();
          if (var2 != this.player && var2.getControllingPassenger() == this.player && var2 == this.lastVehicle) {
-            ServerLevel var3 = this.player.serverLevel();
+            ServerLevel var3 = this.player.level();
             double var4 = var2.getX();
             double var6 = var2.getY();
             double var8 = var2.getZ();
@@ -471,7 +471,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                return;
             }
 
-            this.player.serverLevel().getChunkSource().move(this.player);
+            this.player.level().getChunkSource().move(this.player);
             Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
             this.handlePlayerKnownMovement(var34);
             var2.setOnGroundWithMovement(var1.onGround(), var34);
@@ -491,7 +491,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleAcceptTeleportPacket(ServerboundAcceptTeleportationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (var1.getId() == this.awaitingTeleport) {
          if (this.awaitingPositionFromClient == null) {
             this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
@@ -509,12 +509,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.setClientLoaded(true);
    }
 
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       RecipeManager.ServerDisplayInfo var2 = this.server.getRecipeManager().getRecipeFromDisplay(var1.recipe());
       if (var2 != null) {
          this.player.getRecipeBook().removeHighlight(var2.parent().id());
@@ -523,17 +523,17 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.containerMenu.setSelectedBundleItemIndex(var1.slotId(), var1.selectedItemIndex());
    }
 
    public void handleRecipeBookChangeSettingsPacket(ServerboundRecipeBookChangeSettingsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.getRecipeBook().setBookSetting(var1.getBookType(), var1.isOpen(), var1.isFiltering());
    }
 
    public void handleSeenAdvancements(ServerboundSeenAdvancementsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (var1.getAction() == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
          ResourceLocation var2 = (ResourceLocation)Objects.requireNonNull(var1.getTab());
          AdvancementHolder var3 = this.server.getAdvancements().get(var2);
@@ -545,7 +545,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleCustomCommandSuggestions(ServerboundCommandSuggestionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       StringReader var2 = new StringReader(var1.getCommand());
       if (var2.canRead() && var2.peek() == '/') {
          var2.skip();
@@ -559,7 +559,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetCommandBlock(ServerboundSetCommandBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (!this.server.isCommandBlockEnabled()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
       } else if (!this.player.canUseGameMasterBlocks()) {
@@ -616,7 +616,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (!this.server.isCommandBlockEnabled()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
       } else if (!this.player.canUseGameMasterBlocks()) {
@@ -638,7 +638,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handlePickItemFromBlock(ServerboundPickItemFromBlockPacket var1) {
-      ServerLevel var2 = this.player.serverLevel();
+      ServerLevel var2 = this.player.level();
       PacketUtils.ensureRunningOnSameThread(var1, this, var2);
       BlockPos var3 = var1.pos();
       if (this.player.canInteractWithBlock(var3, 1.0)) {
@@ -672,7 +672,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket var1) {
-      ServerLevel var2 = this.player.serverLevel();
+      ServerLevel var2 = this.player.level();
       PacketUtils.ensureRunningOnSameThread(var1, this, var2);
       Entity var3 = var2.getEntityOrPart(var1.id());
       if (var3 != null && this.player.canInteractWithEntity(var3, 3.0)) {
@@ -698,13 +698,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             var2.addAndPickItem(var1);
          }
 
-         this.player.connection.send(new ClientboundSetHeldSlotPacket(var2.getSelectedSlot()));
+         this.send(new ClientboundSetHeldSlotPacket(var2.getSelectedSlot()));
          this.player.inventoryMenu.broadcastChanges();
       }
    }
 
    public void handleRenameItem(ServerboundRenameItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       AbstractContainerMenu var3 = this.player.containerMenu;
       if (var3 instanceof AnvilMenu var2) {
          if (!var2.stillValid(this.player)) {
@@ -718,7 +718,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetBeaconPacket(ServerboundSetBeaconPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       AbstractContainerMenu var3 = this.player.containerMenu;
       if (var3 instanceof BeaconMenu var2) {
          if (!this.player.containerMenu.stillValid(this.player)) {
@@ -732,7 +732,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetStructureBlock(ServerboundSetStructureBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.getPos();
          BlockState var3 = this.player.level().getBlockState(var2);
@@ -763,7 +763,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                } else if (var1.getUpdateType() == StructureBlockEntity.UpdateType.LOAD_AREA) {
                   if (!var5.isStructureLoadable()) {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_not_found", var6), false);
-                  } else if (var5.placeStructureIfSameSize(this.player.serverLevel())) {
+                  } else if (var5.placeStructureIfSameSize(this.player.level())) {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_success", var6), false);
                   } else {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_prepare", var6), false);
@@ -787,7 +787,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetTestBlock(ServerboundSetTestBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.position();
          BlockState var3 = this.player.level().getBlockState(var2);
@@ -804,7 +804,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleTestInstanceBlockAction(ServerboundTestInstanceBlockActionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       BlockPos var2 = var1.pos();
       if (this.player.canUseGameMasterBlocks()) {
          BlockEntity var4 = this.player.level().getBlockEntity(var2);
@@ -846,7 +846,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
                Optional var7;
                if (var1.action() == ServerboundTestInstanceBlockActionPacket.Action.QUERY) {
-                  var7 = var1.data().test().flatMap((var1x) -> TestInstanceBlockEntity.getStructureSize(this.player.serverLevel(), var1x));
+                  var7 = var1.data().test().flatMap((var1x) -> TestInstanceBlockEntity.getStructureSize(this.player.level(), var1x));
                } else {
                   var7 = Optional.empty();
                }
@@ -861,7 +861,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetJigsawBlock(ServerboundSetJigsawBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.getPos();
          BlockState var3 = this.player.level().getBlockState(var2);
@@ -883,20 +883,20 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleJigsawGenerate(ServerboundJigsawGeneratePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.getPos();
          BlockEntity var3 = this.player.level().getBlockEntity(var2);
          if (var3 instanceof JigsawBlockEntity) {
             JigsawBlockEntity var4 = (JigsawBlockEntity)var3;
-            var4.generate(this.player.serverLevel(), var1.levels(), var1.keepJigsaws());
+            var4.generate(this.player.level(), var1.levels(), var1.keepJigsaws());
          }
 
       }
    }
 
    public void handleSelectTrade(ServerboundSelectTradePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       int var2 = var1.getItem();
       AbstractContainerMenu var4 = this.player.containerMenu;
       if (var4 instanceof MerchantMenu var3) {
@@ -948,7 +948,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleEntityTagQuery(ServerboundEntityTagQueryPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasPermissions(2)) {
          Entity var2 = this.player.level().getEntity(var1.getEntityId());
          if (var2 != null) {
@@ -956,7 +956,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                TagValueOutput var4 = TagValueOutput.createWithContext(var3, var2.registryAccess());
                var2.saveWithoutId(var4);
                CompoundTag var5 = var4.buildResult();
-               this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var5));
+               this.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var5));
             }
          }
 
@@ -964,7 +964,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleContainerSlotStateChanged(ServerboundContainerSlotStateChangedPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (!this.player.isSpectator() && var1.containerId() == this.player.containerMenu.containerId) {
          AbstractContainerMenu var4 = this.player.containerMenu;
          if (var4 instanceof CrafterMenu) {
@@ -980,20 +980,20 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleBlockEntityTagQuery(ServerboundBlockEntityTagQueryPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasPermissions(2)) {
          BlockEntity var2 = this.player.level().getBlockEntity(var1.getPos());
          CompoundTag var3 = var2 != null ? var2.saveWithoutMetadata((HolderLookup.Provider)this.player.registryAccess()) : null;
-         this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
+         this.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
       }
    }
 
    public void handleMovePlayer(ServerboundMovePlayerPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (containsInvalidValues(var1.getX(0.0), var1.getY(0.0), var1.getZ(0.0), var1.getYRot(0.0F), var1.getXRot(0.0F))) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
       } else {
-         ServerLevel var2 = this.player.serverLevel();
+         ServerLevel var2 = this.player.level();
          if (!this.player.wonGame) {
             if (this.tickCount == 0) {
                this.resetPosition();
@@ -1010,7 +1010,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   double var9 = clampHorizontal(var1.getZ(this.player.getZ()));
                   if (this.player.isPassenger()) {
                      this.player.absSnapTo(this.player.getX(), this.player.getY(), this.player.getZ(), var3, var4);
-                     this.player.serverLevel().getChunkSource().move(this.player);
+                     this.player.level().getChunkSource().move(this.player);
                   } else {
                      double var11 = this.player.getX();
                      double var13 = this.player.getY();
@@ -1075,7 +1075,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            this.player.absSnapTo(var5, var7, var9, var3, var4);
                            boolean var34 = this.player.isAutoSpinAttack();
                            this.clientIsFloating = var31 >= -0.03125 && !var30 && !this.player.isSpectator() && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
-                           this.player.serverLevel().getChunkSource().move(this.player);
+                           this.player.level().getChunkSource().move(this.player);
                            Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                            this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
                            this.player.doCheckFallDamage(var35.x, var35.y, var35.z, var1.isOnGround());
@@ -1111,7 +1111,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       } else if (this.player.isChangingDimension()) {
          return false;
       } else {
-         GameRules var2 = this.player.serverLevel().getGameRules();
+         GameRules var2 = this.player.level().getGameRules();
          if (var2.getBoolean(GameRules.RULE_DISABLE_PLAYER_MOVEMENT_CHECK)) {
             return false;
          } else {
@@ -1160,11 +1160,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
       this.player.teleportSetPosition(var1, var2);
       this.awaitingPositionFromClient = this.player.position();
-      this.player.connection.send(ClientboundPlayerPositionPacket.of(this.awaitingTeleport, var1, var2));
+      this.send(ClientboundPlayerPositionPacket.of(this.awaitingTeleport, var1, var2));
    }
 
    public void handlePlayerAction(ServerboundPlayerActionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasClientLoaded()) {
          BlockPos var2 = var1.getPos();
          this.player.resetLastActionTime();
@@ -1198,7 +1198,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             case ABORT_DESTROY_BLOCK:
             case STOP_DESTROY_BLOCK:
                this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level().getMaxY(), var1.getSequence());
-               this.player.connection.ackBlockChangesUpTo(var1.getSequence());
+               this.ackBlockChangesUpTo(var1.getSequence());
                return;
             default:
                throw new IllegalArgumentException("Invalid player action");
@@ -1216,10 +1216,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleUseItemOn(ServerboundUseItemOnPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasClientLoaded()) {
-         this.player.connection.ackBlockChangesUpTo(var1.getSequence());
-         ServerLevel var2 = this.player.serverLevel();
+         this.ackBlockChangesUpTo(var1.getSequence());
+         ServerLevel var2 = this.player.level();
          InteractionHand var3 = var1.getHand();
          ItemStack var4 = this.player.getItemInHand(var3);
          if (var4.isItemEnabled(var2.enabledFeatures())) {
@@ -1255,8 +1255,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                      this.player.sendSystemMessage(var16, true);
                   }
 
-                  this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7));
-                  this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7.relative(var11)));
+                  this.send(new ClientboundBlockUpdatePacket(var2, var7));
+                  this.send(new ClientboundBlockUpdatePacket(var2, var7.relative(var11)));
                } else {
                   LOGGER.warn("Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.", new Object[]{this.player.getGameProfile().getName(), var6, var7});
                }
@@ -1266,10 +1266,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleUseItem(ServerboundUseItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasClientLoaded()) {
          this.ackBlockChangesUpTo(var1.getSequence());
-         ServerLevel var2 = this.player.serverLevel();
+         ServerLevel var2 = this.player.level();
          InteractionHand var3 = var1.getHand();
          ItemStack var4 = this.player.getItemInHand(var3);
          this.player.resetLastActionTime();
@@ -1293,7 +1293,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleTeleportToEntityPacket(ServerboundTeleportToEntityPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.isSpectator()) {
          for(ServerLevel var3 : this.server.getAllLevels()) {
             Entity var4 = var1.getEntity(var3);
@@ -1307,7 +1307,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handlePaddleBoat(ServerboundPaddleBoatPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       Entity var2 = this.player.getControlledVehicle();
       if (var2 instanceof AbstractBoat var3) {
          var3.setPaddleState(var1.getLeft(), var1.getRight());
@@ -1339,7 +1339,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetCarriedItem(ServerboundSetCarriedItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (var1.getSlot() >= 0 && var1.getSlot() < Inventory.getSelectionSize()) {
          if (this.player.getInventory().getSelectedSlot() != var1.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
             this.player.stopUsingItem();
@@ -1542,13 +1542,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleAnimate(ServerboundSwingPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.resetLastActionTime();
       this.player.swing(var1.getHand());
    }
 
    public void handlePlayerCommand(ServerboundPlayerCommandPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasClientLoaded()) {
          this.player.resetLastActionTime();
          switch (var1.getAction()) {
@@ -1638,9 +1638,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleInteract(ServerboundInteractPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasClientLoaded()) {
-         final ServerLevel var2 = this.player.serverLevel();
+         final ServerLevel var2 = this.player.level();
          final Entity var3 = var1.getTarget(var2);
          this.player.resetLastActionTime();
          this.player.setShiftKeyDown(var1.isUsingSecondaryAction());
@@ -1708,7 +1708,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleClientCommand(ServerboundClientCommandPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.resetLastActionTime();
       ServerboundClientCommandPacket.Action var2 = var1.getAction();
       switch (var2) {
@@ -1727,7 +1727,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.resetPosition();
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
-                  ((GameRules.BooleanValue)this.player.serverLevel().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS)).set(false, this.server);
+                  ((GameRules.BooleanValue)this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS)).set(false, this.server);
                }
             }
             break;
@@ -1738,12 +1738,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleContainerClose(ServerboundContainerClosePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.doCloseContainer();
    }
 
    public void handleContainerClick(ServerboundContainerClickPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.resetLastActionTime();
       if (this.player.containerMenu.containerId == var1.containerId()) {
          if (this.player.isSpectator()) {
@@ -1779,7 +1779,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handlePlaceRecipe(ServerboundPlaceRecipePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.resetLastActionTime();
       if (!this.player.isSpectator() && this.player.containerMenu.containerId == var1.containerId()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
@@ -1797,9 +1797,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         return;
                      }
 
-                     RecipeBookMenu.PostPlaceAction var6 = var4.handlePlacement(var1.useMaxItems(), this.player.isCreative(), var3, this.player.serverLevel(), this.player.getInventory());
+                     RecipeBookMenu.PostPlaceAction var6 = var4.handlePlacement(var1.useMaxItems(), this.player.isCreative(), var3, this.player.level(), this.player.getInventory());
                      if (var6 == RecipeBookMenu.PostPlaceAction.PLACE_GHOST_RECIPE) {
-                        this.player.connection.send(new ClientboundPlaceGhostRecipePacket(this.player.containerMenu.containerId, var2.display().display()));
+                        this.send(new ClientboundPlaceGhostRecipePacket(this.player.containerMenu.containerId, var2.display().display()));
                      }
                   }
 
@@ -1810,7 +1810,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleContainerButtonClick(ServerboundContainerButtonClickPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.resetLastActionTime();
       if (this.player.containerMenu.containerId == var1.containerId() && !this.player.isSpectator()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
@@ -1826,7 +1826,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasInfiniteMaterials()) {
          boolean var2 = var1.slotNum() < 0;
          ItemStack var3 = var1.itemStack();
@@ -1859,7 +1859,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private void updateSignText(ServerboundSignUpdatePacket var1, List<FilteredText> var2) {
       this.player.resetLastActionTime();
-      ServerLevel var3 = this.player.serverLevel();
+      ServerLevel var3 = this.player.level();
       BlockPos var4 = var1.getPos();
       if (var3.hasChunkAt(var4)) {
          BlockEntity var5 = var3.getBlockEntity(var4);
@@ -1874,12 +1874,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handlePlayerAbilities(ServerboundPlayerAbilitiesPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.player.getAbilities().flying = var1.isFlying() && this.player.getAbilities().mayfly;
    }
 
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       boolean var2 = this.player.isModelPartShown(PlayerModelPart.HAT);
       this.player.updateOptions(var1.information());
       if (this.player.isModelPartShown(PlayerModelPart.HAT) != var2) {
@@ -1889,21 +1889,21 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
          this.server.setDifficulty(var1.getDifficulty(), false);
       }
    }
 
    public void handleLockDifficulty(ServerboundLockDifficultyPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
          this.server.setDifficultyLocked(var1.isLocked());
       }
    }
 
    public void handleChatSessionUpdate(ServerboundChatSessionUpdatePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       RemoteChatSession.Data var2 = var1.chatSession();
       ProfilePublicKey.Data var3 = this.chatSession != null ? this.chatSession.profilePublicKey().data() : null;
       ProfilePublicKey.Data var4 = var2.profilePublicKey();
@@ -1937,12 +1937,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.chunkSender.onChunkBatchReceivedByClient(var1.desiredChunksPerTick());
    }
 
    public void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       this.server.subscribeToDebugSample(this.player, var1.sampleType());
    }
 
@@ -1959,7 +1959,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleClientTickEnd(ServerboundClientTickEndPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (!this.receivedMovementThisTick) {
          this.player.setKnownMovement(Vec3.ZERO);
       }

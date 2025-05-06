@@ -50,10 +50,11 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
    public void upload(SpriteLoader.Preparations var1) {
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{var1.width(), var1.height(), var1.mipLevel(), this.location});
-      GpuDevice var10001 = RenderSystem.getDevice();
+      GpuDevice var2 = RenderSystem.getDevice();
       ResourceLocation var10002 = this.location;
       Objects.requireNonNull(var10002);
-      this.texture = var10001.createTexture(var10002::toString, 7, TextureFormat.RGBA8, var1.width(), var1.height(), var1.mipLevel() + 1);
+      this.texture = var2.createTexture(var10002::toString, 7, TextureFormat.RGBA8, var1.width(), var1.height(), 1, var1.mipLevel() + 1);
+      this.textureView = var2.createTextureView(this.texture);
       this.width = var1.width();
       this.height = var1.height();
       this.mipLevel = var1.mipLevel();
@@ -62,33 +63,33 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       this.texturesByName = Map.copyOf(var1.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {
-         String var10 = String.valueOf(this.location);
-         throw new IllegalStateException("Atlas '" + var10 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
+         String var11 = String.valueOf(this.location);
+         throw new IllegalStateException("Atlas '" + var11 + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
       } else {
-         ArrayList var2 = new ArrayList();
          ArrayList var3 = new ArrayList();
+         ArrayList var4 = new ArrayList();
 
-         for(TextureAtlasSprite var5 : var1.regions().values()) {
-            var2.add(var5.contents());
+         for(TextureAtlasSprite var6 : var1.regions().values()) {
+            var3.add(var6.contents());
 
             try {
-               var5.uploadFirstFrame(this.texture);
-            } catch (Throwable var9) {
-               CrashReport var7 = CrashReport.forThrowable(var9, "Stitching texture atlas");
-               CrashReportCategory var8 = var7.addCategory("Texture being stitched together");
-               var8.setDetail("Atlas path", this.location);
-               var8.setDetail("Sprite", var5);
-               throw new ReportedException(var7);
+               var6.uploadFirstFrame(this.texture);
+            } catch (Throwable var10) {
+               CrashReport var8 = CrashReport.forThrowable(var10, "Stitching texture atlas");
+               CrashReportCategory var9 = var8.addCategory("Texture being stitched together");
+               var9.setDetail("Atlas path", this.location);
+               var9.setDetail("Sprite", var6);
+               throw new ReportedException(var8);
             }
 
-            TextureAtlasSprite.Ticker var6 = var5.createTicker();
-            if (var6 != null) {
-               var3.add(var6);
+            TextureAtlasSprite.Ticker var7 = var6.createTicker();
+            if (var7 != null) {
+               var4.add(var7);
             }
          }
 
-         this.sprites = List.copyOf(var2);
-         this.animatedTextures = List.copyOf(var3);
+         this.sprites = List.copyOf(var3);
+         this.animatedTextures = List.copyOf(var4);
       }
    }
 

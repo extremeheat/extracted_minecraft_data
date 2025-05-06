@@ -8,7 +8,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -27,7 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public abstract class AbstractCauldronBlock extends Block {
    protected static final int FLOOR_LEVEL = 4;
    private static final VoxelShape SHAPE_INSIDE = Block.column(12.0, 4.0, 16.0);
-   private static final VoxelShape SHAPE = (VoxelShape)Util.make(() -> {
+   protected static final VoxelShape SHAPE = (VoxelShape)Util.make(() -> {
       boolean var0 = true;
       boolean var1 = true;
       boolean var2 = true;
@@ -44,10 +43,6 @@ public abstract class AbstractCauldronBlock extends Block {
 
    protected double getContentHeight(BlockState var1) {
       return 0.0;
-   }
-
-   protected boolean isEntityInsideContent(BlockState var1, BlockPos var2, Entity var3) {
-      return var3.getY() < (double)var2.getY() + this.getContentHeight(var1) && var3.getBoundingBox().maxY > (double)var2.getY() + 0.25;
    }
 
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {

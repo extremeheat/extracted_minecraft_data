@@ -1,0 +1,52 @@
+package net.minecraft.client.renderer.fog.environment;
+
+import javax.annotation.Nullable;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.fog.FogData;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.material.FogType;
+
+public class LavaFogEnvironment extends FogEnvironment {
+   private static final int COLOR = -6743808;
+
+   public LavaFogEnvironment() {
+      super();
+   }
+
+   public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
+      return -6743808;
+   }
+
+   public void setupFog(FogData var1, Entity var2, BlockPos var3, ClientLevel var4, float var5, DeltaTracker var6) {
+      if (var2.isSpectator()) {
+         var1.environmentalStart = -8.0F;
+         var1.environmentalEnd = var5 * 0.5F;
+      } else {
+         label14: {
+            if (var2 instanceof LivingEntity) {
+               LivingEntity var7 = (LivingEntity)var2;
+               if (var7.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+                  var1.environmentalStart = 0.0F;
+                  var1.environmentalEnd = 5.0F;
+                  break label14;
+               }
+            }
+
+            var1.environmentalStart = 0.25F;
+            var1.environmentalEnd = 1.0F;
+         }
+      }
+
+      var1.skyEnd = var1.environmentalEnd;
+      var1.cloudEnd = var1.environmentalEnd;
+   }
+
+   public boolean isApplicable(@Nullable FogType var1, Entity var2) {
+      return var1 == FogType.LAVA;
+   }
+}

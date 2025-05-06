@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -95,14 +94,13 @@ public class EffectsInInventory {
    }
 
    private void renderIcons(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
-      MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
-      int var7 = this.screen.topPos;
+      int var6 = this.screen.topPos;
 
-      for(MobEffectInstance var9 : var4) {
-         Holder var10 = var9.getEffect();
-         TextureAtlasSprite var11 = var6.get(var10);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var11, var2 + (var5 ? 6 : 7), var7 + 7, 18, 18);
-         var7 += var3;
+      for(MobEffectInstance var8 : var4) {
+         Holder var9 = var8.getEffect();
+         ResourceLocation var10 = Gui.getMobEffectSprite(var9);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var10, var2 + (var5 ? 6 : 7), var6 + 7, 18, 18);
+         var6 += var3;
       }
 
    }

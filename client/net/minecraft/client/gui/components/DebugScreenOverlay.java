@@ -11,7 +11,7 @@ import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -97,7 +97,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class DebugScreenOverlay {
-   private static final float CROSSHAIR_SCALE = 0.007F;
+   private static final float CROSSHAIR_SCALE = 0.01F;
    private static final int CROSHAIR_INDEX_COUNT = 18;
    private static final int COLOR_GREY = -2039584;
    private static final int MARGIN_RIGHT = 2;
@@ -628,12 +628,12 @@ public class DebugScreenOverlay {
       var2.translate(0.0F, 0.0F, -1.0F);
       var2.rotateX(var1.getXRot() * 0.017453292F);
       var2.rotateY(var1.getYRot() * 0.017453292F);
-      float var3 = 0.007F * (float)this.minecraft.getWindow().getGuiScale();
+      float var3 = 0.01F * (float)this.minecraft.getWindow().getGuiScale();
       var2.scale(-var3, var3, -var3);
       RenderPipeline var4 = RenderPipelines.LINES;
       RenderTarget var5 = Minecraft.getInstance().getMainRenderTarget();
-      GpuTexture var6 = var5.getColorTexture();
-      GpuTexture var7 = var5.getDepthTexture();
+      GpuTextureView var6 = var5.getColorTextureView();
+      GpuTextureView var7 = var5.getDepthTextureView();
       GpuBuffer var8 = this.crosshairIndicies.getBuffer(18);
       GpuBufferSlice[] var9 = RenderSystem.getDynamicUniforms().writeTransforms(new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(0.0F, 0.0F, 0.0F, 1.0F), new Vector3f(), new Matrix4f(), 4.0F), new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 2.0F));
 

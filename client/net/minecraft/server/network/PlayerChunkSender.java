@@ -58,7 +58,7 @@ public class PlayerChunkSender {
          this.batchQuota = Math.min(this.batchQuota + this.desiredChunksPerTick, var2);
          if (!(this.batchQuota < 1.0F)) {
             if (!this.pendingChunks.isEmpty()) {
-               ServerLevel var3 = var1.serverLevel();
+               ServerLevel var3 = var1.level();
                ChunkMap var4 = var3.getChunkSource().chunkMap;
                List var5 = this.collectChunksToSend(var4, var1.chunkPosition());
                if (!var5.isEmpty()) {

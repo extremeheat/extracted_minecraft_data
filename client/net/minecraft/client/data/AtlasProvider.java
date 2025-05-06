@@ -97,8 +97,12 @@ public class AtlasProvider implements DataProvider {
       return List.of(forMaterial(ModelBakery.SHIELD_BASE), forMaterial(ModelBakery.NO_PATTERN_SHIELD), forMapper(Sheets.SHIELD_MAPPER));
    }
 
+   private static List<SpriteSource> guiSprites() {
+      return List.of(new DirectoryLister("gui/sprites", ""), new DirectoryLister("mob_effect", "mob_effect/"));
+   }
+
    public CompletableFuture<?> run(CachedOutput var1) {
-      return CompletableFuture.allOf(this.storeAtlas(var1, AtlasIds.ARMOR_TRIMS, armorTrims()), this.storeAtlas(var1, AtlasIds.BANNER_PATTERNS, bannerPatterns()), this.storeAtlas(var1, AtlasIds.BEDS, simpleMapper(Sheets.BED_MAPPER)), this.storeAtlas(var1, AtlasIds.BLOCKS, blocksList()), this.storeAtlas(var1, AtlasIds.CHESTS, simpleMapper(Sheets.CHEST_MAPPER)), this.storeAtlas(var1, AtlasIds.DECORATED_POT, simpleMapper(Sheets.DECORATED_POT_MAPPER)), this.storeAtlas(var1, AtlasIds.GUI, noPrefixMapper("gui/sprites")), this.storeAtlas(var1, AtlasIds.MAP_DECORATIONS, noPrefixMapper("map/decorations")), this.storeAtlas(var1, AtlasIds.MOB_EFFECTS, noPrefixMapper("mob_effect")), this.storeAtlas(var1, AtlasIds.PAINTINGS, noPrefixMapper("painting")), this.storeAtlas(var1, AtlasIds.PARTICLES, noPrefixMapper("particle")), this.storeAtlas(var1, AtlasIds.SHIELD_PATTERNS, shieldPatterns()), this.storeAtlas(var1, AtlasIds.SHULKER_BOXES, simpleMapper(Sheets.SHULKER_MAPPER)), this.storeAtlas(var1, AtlasIds.SIGNS, simpleMapper(Sheets.SIGN_MAPPER)));
+      return CompletableFuture.allOf(this.storeAtlas(var1, AtlasIds.ARMOR_TRIMS, armorTrims()), this.storeAtlas(var1, AtlasIds.BANNER_PATTERNS, bannerPatterns()), this.storeAtlas(var1, AtlasIds.BEDS, simpleMapper(Sheets.BED_MAPPER)), this.storeAtlas(var1, AtlasIds.BLOCKS, blocksList()), this.storeAtlas(var1, AtlasIds.CHESTS, simpleMapper(Sheets.CHEST_MAPPER)), this.storeAtlas(var1, AtlasIds.DECORATED_POT, simpleMapper(Sheets.DECORATED_POT_MAPPER)), this.storeAtlas(var1, AtlasIds.GUI, guiSprites()), this.storeAtlas(var1, AtlasIds.MAP_DECORATIONS, noPrefixMapper("map/decorations")), this.storeAtlas(var1, AtlasIds.PAINTINGS, noPrefixMapper("painting")), this.storeAtlas(var1, AtlasIds.PARTICLES, noPrefixMapper("particle")), this.storeAtlas(var1, AtlasIds.SHIELD_PATTERNS, shieldPatterns()), this.storeAtlas(var1, AtlasIds.SHULKER_BOXES, simpleMapper(Sheets.SHULKER_MAPPER)), this.storeAtlas(var1, AtlasIds.SIGNS, simpleMapper(Sheets.SIGN_MAPPER)));
    }
 
    private CompletableFuture<?> storeAtlas(CachedOutput var1, ResourceLocation var2, List<SpriteSource> var3) {

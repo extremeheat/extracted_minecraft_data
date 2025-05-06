@@ -3,11 +3,14 @@ package net.minecraft.client.renderer.texture;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import javax.annotation.Nullable;
 
 public abstract class AbstractTexture implements AutoCloseable {
    @Nullable
    protected GpuTexture texture;
+   @Nullable
+   protected GpuTextureView textureView;
 
    public AbstractTexture() {
       super();
@@ -43,6 +46,11 @@ public abstract class AbstractTexture implements AutoCloseable {
          this.texture = null;
       }
 
+      if (this.textureView != null) {
+         this.textureView.close();
+         this.textureView = null;
+      }
+
    }
 
    public GpuTexture getTexture() {
@@ -50,6 +58,14 @@ public abstract class AbstractTexture implements AutoCloseable {
          throw new IllegalStateException("Texture does not exist, can't get it before something initializes it");
       } else {
          return this.texture;
+      }
+   }
+
+   public GpuTextureView getTextureView() {
+      if (this.textureView == null) {
+         throw new IllegalStateException("Texture view does not exist, can't get it before something initializes it");
+      } else {
+         return this.textureView;
       }
    }
 }

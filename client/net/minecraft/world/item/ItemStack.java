@@ -457,7 +457,7 @@ public final class ItemStack implements DataComponentHolder {
 
    public void hurtWithoutBreaking(int var1, Player var2) {
       if (var2 instanceof ServerPlayer var3) {
-         int var4 = this.processDurabilityChange(var1, var3.serverLevel(), var3);
+         int var4 = this.processDurabilityChange(var1, var3.level(), var3);
          if (var4 == 0) {
             return;
          }

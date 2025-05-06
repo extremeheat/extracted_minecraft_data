@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -38,7 +39,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
    private static final ExplosionDamageCalculator USED_PORTAL_DAMAGE_CALCULATOR;
    @Nullable
-   private LivingEntity owner;
+   private EntityReference<LivingEntity> owner;
    private boolean usedPortal;
    private float explosionPower;
 
@@ -57,7 +58,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.xo = var2;
       this.yo = var4;
       this.zo = var6;
-      this.owner = var8;
+      this.owner = var8 != null ? new EntityReference(var8) : null;
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -120,17 +121,19 @@ public class PrimedTnt extends Entity implements TraceableEntity {
          var1.putFloat("explosion_power", this.explosionPower);
       }
 
+      EntityReference.store(this.owner, var1, "owner");
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
       this.setFuse(var1.getShortOr("fuse", (short)80));
       this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC).orElse(DEFAULT_BLOCK_STATE));
       this.explosionPower = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
+      this.owner = EntityReference.<LivingEntity>read(var1, "owner");
    }
 
    @Nullable
    public LivingEntity getOwner() {
-      return this.owner;
+      return (LivingEntity)EntityReference.get(this.owner, this.level(), LivingEntity.class);
    }
 
    public void restoreFrom(Entity var1) {

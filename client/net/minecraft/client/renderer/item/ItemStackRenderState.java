@@ -79,6 +79,10 @@ public class ItemStackRenderState {
       return this.modelIdentityElements;
    }
 
+   public void clearModelIdentity() {
+      this.modelIdentityElements.clear();
+   }
+
    private LayerRenderState firstLayer() {
       return this.layers[0];
    }

@@ -91,7 +91,7 @@ public final class EntitySelector {
    }
 
    static {
-      CAN_BE_COLLIDED_WITH = NO_SPECTATORS.and(Entity::canBeCollidedWith);
+      CAN_BE_COLLIDED_WITH = NO_SPECTATORS.and((var0) -> var0.canBeCollidedWith((Entity)null));
       CAN_BE_PICKED = NO_SPECTATORS.and(Entity::isPickable);
    }
 }

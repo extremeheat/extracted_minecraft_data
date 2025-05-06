@@ -3,6 +3,8 @@ package net.minecraft.world.entity;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -78,6 +80,7 @@ public enum ConversionType {
       }
    };
 
+   private static final Set<DataComponentType<?>> COMPONENTS_TO_COPY = Set.of(DataComponents.CUSTOM_NAME, DataComponents.CUSTOM_DATA);
    private final boolean discardAfterConversion;
 
    ConversionType(final boolean var3) {
@@ -125,11 +128,7 @@ public enum ConversionType {
          var2.setPersistenceRequired();
       }
 
-      if (var1.hasCustomName()) {
-         var2.setCustomName(var1.getCustomName());
-         var2.setCustomNameVisible(var1.isCustomNameVisible());
-      }
-
+      var2.setCustomNameVisible(var1.isCustomNameVisible());
       var2.setSharedFlagOnFire(var1.isOnFire());
       var2.setInvulnerable(var1.isInvulnerable());
       var2.setNoGravity(var1.isNoGravity());
@@ -138,18 +137,31 @@ public enum ConversionType {
       Set var10000 = var1.getTags();
       Objects.requireNonNull(var2);
       var10000.forEach(var2::addTag);
+
+      for(DataComponentType var7 : COMPONENTS_TO_COPY) {
+         copyComponent(var1, var2, var7);
+      }
+
       if (var3.team() != null) {
-         Scoreboard var6 = var2.level().getScoreboard();
-         var6.addPlayerToTeam(var2.getStringUUID(), var3.team());
+         Scoreboard var12 = var2.level().getScoreboard();
+         var12.addPlayerToTeam(var2.getStringUUID(), var3.team());
          if (var1.getTeam() != null && var1.getTeam() == var3.team()) {
-            var6.removePlayerFromTeam(var1.getStringUUID(), var1.getTeam());
+            var12.removePlayerFromTeam(var1.getStringUUID(), var1.getTeam());
          }
       }
 
-      if (var1 instanceof Zombie var12) {
-         if (var12.canBreakDoors() && var2 instanceof Zombie var7) {
-            var7.setCanBreakDoors(true);
+      if (var1 instanceof Zombie var13) {
+         if (var13.canBreakDoors() && var2 instanceof Zombie var14) {
+            var14.setCanBreakDoors(true);
          }
+      }
+
+   }
+
+   private static <T> void copyComponent(Mob var0, Mob var1, DataComponentType<T> var2) {
+      Object var3 = var0.get(var2);
+      if (var3 != null) {
+         var1.setComponent(var2, var3);
       }
 
    }

@@ -273,7 +273,7 @@ public class ExperienceOrb extends Entity {
       Optional var3 = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, var1, ItemStack::isDamaged);
       if (var3.isPresent()) {
          ItemStack var4 = ((EnchantedItemInUse)var3.get()).itemStack();
-         int var5 = EnchantmentHelper.modifyDurabilityToRepairFromXp(var1.serverLevel(), var4, var2);
+         int var5 = EnchantmentHelper.modifyDurabilityToRepairFromXp(var1.level(), var4, var2);
          int var6 = Math.min(var5, var4.getDamageValue());
          var4.setDamageValue(var4.getDamageValue() - var6);
          if (var6 > 0) {

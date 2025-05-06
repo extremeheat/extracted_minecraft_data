@@ -1,14 +1,13 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
@@ -27,9 +26,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    private int lifeTicks;
    private boolean clientSideAttackStarted;
    @Nullable
-   private LivingEntity owner;
-   @Nullable
-   private UUID ownerUUID;
+   private EntityReference<LivingEntity> owner;
 
    public EvokerFangs(EntityType<? extends EvokerFangs> var1, Level var2) {
       super(var1, var2);
@@ -49,30 +46,22 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    }
 
    public void setOwner(@Nullable LivingEntity var1) {
-      this.owner = var1;
-      this.ownerUUID = var1 == null ? null : var1.getUUID();
+      this.owner = var1 != null ? new EntityReference(var1) : null;
    }
 
    @Nullable
    public LivingEntity getOwner() {
-      if (this.owner == null && this.ownerUUID != null && this.level() instanceof ServerLevel) {
-         Entity var1 = ((ServerLevel)this.level()).getEntity(this.ownerUUID);
-         if (var1 instanceof LivingEntity) {
-            this.owner = (LivingEntity)var1;
-         }
-      }
-
-      return this.owner;
+      return (LivingEntity)EntityReference.get(this.owner, this.level(), LivingEntity.class);
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
       this.warmupDelayTicks = var1.getIntOr("Warmup", 0);
-      this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
+      this.owner = EntityReference.<LivingEntity>read(var1, "Owner");
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
       var1.putInt("Warmup", this.warmupDelayTicks);
-      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
+      EntityReference.store(this.owner, var1, "Owner");
    }
 
    public void tick() {

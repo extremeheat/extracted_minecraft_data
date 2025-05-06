@@ -772,10 +772,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       var1.putBoolean("Bred", this.isBred());
       var1.putInt("Temper", this.getTemper());
       var1.putBoolean("Tame", this.isTamed());
-      if (this.owner != null) {
-         this.owner.store(var1, "Owner");
-      }
-
+      EntityReference.store(this.owner, var1, "Owner");
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {

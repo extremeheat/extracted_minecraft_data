@@ -5,10 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -62,9 +60,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private float radiusOnUse;
    private float radiusPerTick;
    @Nullable
-   private LivingEntity owner;
-   @Nullable
-   private UUID ownerUUID;
+   private EntityReference<LivingEntity> owner;
 
    public AreaEffectCloud(EntityType<? extends AreaEffectCloud> var1, Level var2) {
       super(var1, var2);
@@ -320,34 +316,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    public void setOwner(@Nullable LivingEntity var1) {
-      this.owner = var1;
-      this.ownerUUID = var1 == null ? null : var1.getUUID();
+      this.owner = var1 != null ? new EntityReference(var1) : null;
    }
 
    @Nullable
    public LivingEntity getOwner() {
-      if (this.owner != null && !this.owner.isRemoved()) {
-         return this.owner;
-      } else {
-         if (this.ownerUUID != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var1 = (ServerLevel)var2;
-               Entity var3 = var1.getEntity(this.ownerUUID);
-               LivingEntity var10001;
-               if (var3 instanceof LivingEntity) {
-                  LivingEntity var4 = (LivingEntity)var3;
-                  var10001 = var4;
-               } else {
-                  var10001 = null;
-               }
-
-               this.owner = var10001;
-            }
-         }
-
-         return this.owner;
-      }
+      return (LivingEntity)EntityReference.get(this.owner, this.level(), LivingEntity.class);
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
@@ -359,7 +333,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.radiusOnUse = var1.getFloatOr("RadiusOnUse", 0.0F);
       this.radiusPerTick = var1.getFloatOr("RadiusPerTick", 0.0F);
       this.setRadius(var1.getFloatOr("Radius", 3.0F));
-      this.ownerUUID = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
+      this.owner = EntityReference.<LivingEntity>read(var1, "Owner");
       this.setCustomParticle((ParticleOptions)var1.read("custom_particle", ParticleTypes.CODEC).orElse((Object)null));
       this.setPotionContents((PotionContents)var1.read("potion_contents", PotionContents.CODEC).orElse(PotionContents.EMPTY));
       this.potionDurationScale = var1.getFloatOr("potion_duration_scale", 1.0F);
@@ -375,7 +349,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       var1.putFloat("RadiusPerTick", this.radiusPerTick);
       var1.putFloat("Radius", this.getRadius());
       var1.storeNullable("custom_particle", ParticleTypes.CODEC, this.customParticle);
-      var1.storeNullable("Owner", UUIDUtil.CODEC, this.ownerUUID);
+      EntityReference.store(this.owner, var1, "Owner");
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
          var1.store("potion_contents", PotionContents.CODEC, this.potionContents);
       }

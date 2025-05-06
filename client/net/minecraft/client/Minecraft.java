@@ -151,7 +151,6 @@ import net.minecraft.client.resources.FoliageColorReloadListener;
 import net.minecraft.client.resources.GrassColorReloadListener;
 import net.minecraft.client.resources.MapDecorationTextureManager;
 import net.minecraft.client.resources.MapTextureManager;
-import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.resources.PaintingTextureManager;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.client.resources.SplashManager;
@@ -173,6 +172,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.gametest.framework.GameTestTicker;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -319,7 +319,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final ModelManager modelManager;
    private final BlockRenderDispatcher blockRenderer;
    private final PaintingTextureManager paintingTextures;
-   private final MobEffectTextureManager mobEffectTextures;
    private final MapTextureManager mapTextureManager;
    private final MapDecorationTextureManager mapDecorationTextures;
    private final GuiSpriteManager guiSprites;
@@ -558,8 +557,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.particleEngine);
       this.paintingTextures = new PaintingTextureManager(this.textureManager);
       this.resourceManager.registerReloadListener(this.paintingTextures);
-      this.mobEffectTextures = new MobEffectTextureManager(this.textureManager);
-      this.resourceManager.registerReloadListener(this.mobEffectTextures);
       this.guiSprites = new GuiSpriteManager(this.textureManager);
       this.resourceManager.registerReloadListener(this.guiSprites);
       this.waypointStyles = new WaypointStyleManager();
@@ -616,6 +613,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.reportingContext = ReportingContext.create(ReportEnvironment.local(), this.userApiService);
       TitleScreen.registerTextures(this.textureManager);
       LoadingOverlay.registerTextures(this.textureManager);
+      this.gameRenderer.getPanorama().registerTextures(this.textureManager);
       this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
       List var17 = this.resourcePackRepository.openAllSelected();
       this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var17);
@@ -630,7 +628,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.reloadStateTracker.finishReload();
             this.onResourceLoadFinished(var19);
          }), false));
-      this.quickPlayLog = QuickPlayLog.of(var1.quickPlay.path());
+      this.quickPlayLog = QuickPlayLog.of(var1.quickPlay.logPath());
       this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
       TimeSource.NanoTimeSource var10003 = Util.timeSource;
       IntSupplier var10004 = () -> this.fpsPieRenderTicks;
@@ -671,8 +669,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       ArrayList var2 = new ArrayList();
       boolean var3 = this.addInitialScreens(var2);
       Runnable var4 = () -> {
-         if (var1 != null && var1.quickPlayData().isEnabled()) {
-            QuickPlay.connect(this, var1.quickPlayData(), var1.realmsClient());
+         if (var1 != null && var1.quickPlayData.isEnabled()) {
+            QuickPlay.connect(this, var1.quickPlayData.variant(), var1.realmsClient());
          } else {
             this.setScreen(new TitleScreen(true, new LogoRenderer(var3)));
          }
@@ -1150,7 +1148,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.levelRenderer.close();
          this.soundManager.destroy();
          this.particleEngine.close();
-         this.mobEffectTextures.close();
          this.paintingTextures.close();
          this.mapDecorationTextures.close();
          this.guiSprites.close();
@@ -1991,6 +1988,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
+      GameTestTicker.SINGLETON.startTicking();
       var14.pop();
       Duration var15 = Duration.between(var5, Instant.now());
       SocketAddress var9 = this.singleplayerServer.getConnection().startMemoryChannel();
@@ -2552,10 +2550,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.paintingTextures;
    }
 
-   public MobEffectTextureManager getMobEffectTextures() {
-      return this.mobEffectTextures;
-   }
-
    public MapTextureManager getMapTextureManager() {
       return this.mapTextureManager;
    }
@@ -2576,48 +2570,51 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.windowActive = var1;
    }
 
-   public Component grabPanoramixScreenshot(File var1, int var2, int var3) {
-      int var4 = this.window.getWidth();
-      int var5 = this.window.getHeight();
-      RenderTarget var6 = this.getMainRenderTarget();
-      float var7 = this.player.getXRot();
-      float var8 = this.player.getYRot();
-      float var9 = this.player.xRotO;
-      float var10 = this.player.yRotO;
+   public Component grabPanoramixScreenshot(File var1) {
+      boolean var2 = true;
+      boolean var3 = true;
+      boolean var4 = true;
+      int var5 = this.window.getWidth();
+      int var6 = this.window.getHeight();
+      RenderTarget var7 = this.getMainRenderTarget();
+      float var8 = this.player.getXRot();
+      float var9 = this.player.getYRot();
+      float var10 = this.player.xRotO;
+      float var11 = this.player.yRotO;
       this.gameRenderer.setRenderBlockOutline(false);
 
-      MutableComponent var12;
+      MutableComponent var13;
       try {
          this.gameRenderer.setPanoramicMode(true);
-         this.window.setWidth(var2);
-         this.window.setHeight(var3);
-         var6.resize(var2, var3);
+         this.window.setWidth(4096);
+         this.window.setHeight(4096);
+         var7.resize(4096, 4096);
 
-         for(int var11 = 0; var11 < 6; ++var11) {
-            switch (var11) {
+         for(int var12 = 0; var12 < 6; ++var12) {
+            switch (var12) {
                case 0:
-                  this.player.setYRot(var8);
+                  this.player.setYRot(var9);
                   this.player.setXRot(0.0F);
                   break;
                case 1:
-                  this.player.setYRot((var8 + 90.0F) % 360.0F);
+                  this.player.setYRot((var9 + 90.0F) % 360.0F);
                   this.player.setXRot(0.0F);
                   break;
                case 2:
-                  this.player.setYRot((var8 + 180.0F) % 360.0F);
+                  this.player.setYRot((var9 + 180.0F) % 360.0F);
                   this.player.setXRot(0.0F);
                   break;
                case 3:
-                  this.player.setYRot((var8 - 90.0F) % 360.0F);
+                  this.player.setYRot((var9 - 90.0F) % 360.0F);
                   this.player.setXRot(0.0F);
                   break;
                case 4:
-                  this.player.setYRot(var8);
+                  this.player.setYRot(var9);
                   this.player.setXRot(-90.0F);
                   break;
                case 5:
                default:
-                  this.player.setYRot(var8);
+                  this.player.setYRot(var9);
                   this.player.setXRot(90.0F);
             }
 
@@ -2627,32 +2624,32 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
             try {
                Thread.sleep(10L);
-            } catch (InterruptedException var17) {
+            } catch (InterruptedException var18) {
             }
 
-            Screenshot.grab(var1, "panorama_" + var11 + ".png", var6, (var0) -> {
+            Screenshot.grab(var1, "panorama_" + var12 + ".png", var7, 4, (var0) -> {
             });
          }
 
-         MutableComponent var20 = Component.literal(var1.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var1.getAbsoluteFile()))));
-         var12 = Component.translatable("screenshot.success", var20);
-         return var12;
-      } catch (Exception var18) {
-         LOGGER.error("Couldn't save image", var18);
-         var12 = Component.translatable("screenshot.failure", var18.getMessage());
+         MutableComponent var21 = Component.literal(var1.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var1.getAbsoluteFile()))));
+         var13 = Component.translatable("screenshot.success", var21);
+         return var13;
+      } catch (Exception var19) {
+         LOGGER.error("Couldn't save image", var19);
+         var13 = Component.translatable("screenshot.failure", var19.getMessage());
       } finally {
-         this.player.setXRot(var7);
-         this.player.setYRot(var8);
-         this.player.xRotO = var9;
-         this.player.yRotO = var10;
+         this.player.setXRot(var8);
+         this.player.setYRot(var9);
+         this.player.xRotO = var10;
+         this.player.yRotO = var11;
          this.gameRenderer.setRenderBlockOutline(true);
-         this.window.setWidth(var4);
-         this.window.setHeight(var5);
-         var6.resize(var4, var5);
+         this.window.setWidth(var5);
+         this.window.setHeight(var6);
+         var7.resize(var5, var6);
          this.gameRenderer.setPanoramicMode(false);
       }
 
-      return var12;
+      return var13;
    }
 
    @Nullable
@@ -2823,6 +2820,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
+      final GameConfig.QuickPlayData quickPlayData;
+
       GameLoadCookie(RealmsClient var1, GameConfig.QuickPlayData var2) {
          super();
          this.realmsClient = var1;

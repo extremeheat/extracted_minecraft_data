@@ -1,11 +1,13 @@
 package com.mojang.blaze3d.pipeline;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalInt;
@@ -24,7 +26,11 @@ public abstract class RenderTarget {
    @Nullable
    protected GpuTexture colorTexture;
    @Nullable
+   protected GpuTextureView colorTextureView;
+   @Nullable
    protected GpuTexture depthTexture;
+   @Nullable
+   protected GpuTextureView depthTextureView;
    public FilterMode filterMode;
 
    public RenderTarget(@Nullable String var1, boolean var2) {
@@ -46,9 +52,19 @@ public abstract class RenderTarget {
          this.depthTexture = null;
       }
 
+      if (this.depthTextureView != null) {
+         this.depthTextureView.close();
+         this.depthTextureView = null;
+      }
+
       if (this.colorTexture != null) {
          this.colorTexture.close();
          this.colorTexture = null;
+      }
+
+      if (this.colorTextureView != null) {
+         this.colorTextureView.close();
+         this.colorTextureView = null;
       }
 
    }
@@ -66,23 +82,26 @@ public abstract class RenderTarget {
 
    public void createBuffers(int var1, int var2) {
       RenderSystem.assertOnRenderThread();
-      int var3 = RenderSystem.getDevice().getMaxTextureSize();
-      if (var1 > 0 && var1 <= var3 && var2 > 0 && var2 <= var3) {
+      GpuDevice var3 = RenderSystem.getDevice();
+      int var4 = var3.getMaxTextureSize();
+      if (var1 > 0 && var1 <= var4 && var2 > 0 && var2 <= var4) {
          this.viewWidth = var1;
          this.viewHeight = var2;
          this.width = var1;
          this.height = var2;
          if (this.useDepth) {
-            this.depthTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1, var2, 1);
+            this.depthTexture = var3.createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1, var2, 1, 1);
+            this.depthTextureView = var3.createTextureView(this.depthTexture);
             this.depthTexture.setTextureFilter(FilterMode.NEAREST, false);
             this.depthTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          }
 
-         this.colorTexture = RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1, var2, 1);
+         this.colorTexture = var3.createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1, var2, 1, 1);
+         this.colorTextureView = var3.createTextureView(this.colorTexture);
          this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          this.setFilterMode(FilterMode.NEAREST, true);
       } else {
-         throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var3 + ")");
+         throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var4 + ")");
       }
    }
 
@@ -106,11 +125,11 @@ public abstract class RenderTarget {
       if (this.colorTexture == null) {
          throw new IllegalStateException("Can't blit to screen, color texture doesn't exist yet");
       } else {
-         RenderSystem.getDevice().createCommandEncoder().presentTexture(this.colorTexture);
+         RenderSystem.getDevice().createCommandEncoder().presentTexture(this.colorTextureView);
       }
    }
 
-   public void blitAndBlendToTexture(GpuTexture var1) {
+   public void blitAndBlendToTexture(GpuTextureView var1) {
       RenderSystem.assertOnRenderThread();
       RenderSystem.AutoStorageIndexBuffer var2 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
       GpuBuffer var3 = var2.getBuffer(6);
@@ -121,7 +140,7 @@ public abstract class RenderTarget {
          RenderSystem.bindDefaultUniforms(var5);
          var5.setVertexBuffer(0, var4);
          var5.setIndexBuffer(var3, var2.type());
-         var5.bindSampler("InSampler", this.colorTexture);
+         var5.bindSampler("InSampler", this.colorTextureView);
          var5.drawIndexed(0, 0, 6, 1);
       }
 
@@ -133,7 +152,17 @@ public abstract class RenderTarget {
    }
 
    @Nullable
+   public GpuTextureView getColorTextureView() {
+      return this.colorTextureView;
+   }
+
+   @Nullable
    public GpuTexture getDepthTexture() {
       return this.depthTexture;
+   }
+
+   @Nullable
+   public GpuTextureView getDepthTextureView() {
+      return this.depthTextureView;
    }
 }

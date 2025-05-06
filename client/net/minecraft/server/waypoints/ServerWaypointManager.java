@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,8 +16,8 @@ import net.minecraft.world.waypoints.WaypointManager;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 
 public class ServerWaypointManager implements WaypointManager<WaypointTransmitter> {
-   private final Set<WaypointTransmitter> waypoints = Sets.newHashSet();
-   private final Set<ServerPlayer> players = Sets.newHashSet();
+   private final Set<WaypointTransmitter> waypoints = new HashSet();
+   private final Set<ServerPlayer> players = new HashSet();
    private final Table<ServerPlayer, WaypointTransmitter, WaypointTransmitter.Connection> connections = HashBasedTable.create();
 
    public ServerWaypointManager() {
@@ -117,13 +118,16 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
       return this.waypoints;
    }
 
+   private static boolean isLocatorBarEnabledFor(ServerPlayer var0) {
+      return var0.level().getServer().getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
+   }
+
    private void createConnection(ServerPlayer var1, WaypointTransmitter var2) {
       if (var1 != var2) {
-         boolean var3 = var1.server.getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
-         if (var3) {
-            var2.makeWaypointConnectionWith(var1).ifPresentOrElse((var3x) -> {
-               this.connections.put(var1, var2, var3x);
-               var3x.connect();
+         if (isLocatorBarEnabledFor(var1)) {
+            var2.makeWaypointConnectionWith(var1).ifPresentOrElse((var3) -> {
+               this.connections.put(var1, var2, var3);
+               var3.connect();
             }, () -> {
                WaypointTransmitter.Connection var3 = (WaypointTransmitter.Connection)this.connections.remove(var1, var2);
                if (var3 != null) {
@@ -137,8 +141,7 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
 
    private void updateConnection(ServerPlayer var1, WaypointTransmitter var2, WaypointTransmitter.Connection var3) {
       if (var1 != var2) {
-         boolean var4 = var1.server.getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
-         if (var4) {
+         if (isLocatorBarEnabledFor(var1)) {
             if (!var3.isBroken()) {
                var3.update();
             } else {
@@ -162,42 +165,5 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
    // $FF: synthetic method
    public void trackWaypoint(final Waypoint var1) {
       this.trackWaypoint((WaypointTransmitter)var1);
-   }
-
-   static final class NullWaypointManager extends ServerWaypointManager {
-      private NullWaypointManager() {
-         super();
-      }
-
-      public void trackWaypoint(WaypointTransmitter var1) {
-      }
-
-      public void updateWaypoint(WaypointTransmitter var1) {
-      }
-
-      public void untrackWaypoint(WaypointTransmitter var1) {
-      }
-
-      public void addPlayer(ServerPlayer var1) {
-      }
-
-      public void updatePlayer(ServerPlayer var1) {
-      }
-
-      public void removePlayer(ServerPlayer var1) {
-      }
-
-      public void breakAllConnections() {
-      }
-
-      // $FF: synthetic method
-      public void untrackWaypoint(final Waypoint var1) {
-         this.untrackWaypoint((WaypointTransmitter)var1);
-      }
-
-      // $FF: synthetic method
-      public void trackWaypoint(final Waypoint var1) {
-         this.trackWaypoint((WaypointTransmitter)var1);
-      }
    }
 }

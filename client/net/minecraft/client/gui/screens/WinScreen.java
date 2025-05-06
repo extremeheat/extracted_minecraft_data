@@ -285,7 +285,7 @@ public class WinScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.poem) {
          TextureManager var5 = Minecraft.getInstance().getTextureManager();
-         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(TheEndPortalRenderer.END_SKY_LOCATION).getTexture(), var5.getTexture(TheEndPortalRenderer.END_PORTAL_LOCATION).getTexture());
+         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(TheEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(TheEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
          var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
       } else {
          super.renderBackground(var1, var2, var3, var4);

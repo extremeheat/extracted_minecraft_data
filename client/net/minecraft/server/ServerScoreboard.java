@@ -18,7 +18,6 @@ import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
@@ -245,10 +244,9 @@ public class ServerScoreboard extends Scoreboard {
    private void updatePlayerWaypoint(String var1) {
       ServerPlayer var2 = this.server.getPlayerList().getPlayerByName(var1);
       if (var2 != null) {
-         Level var4 = var2.level();
+         ServerLevel var4 = var2.level();
          if (var4 instanceof ServerLevel) {
-            ServerLevel var3 = (ServerLevel)var4;
-            var3.getWaypointManager().remakeConnections(var2);
+            var4.getWaypointManager().remakeConnections(var2);
          }
       }
 

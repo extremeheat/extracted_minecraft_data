@@ -8,9 +8,11 @@ public abstract class GpuTexture implements AutoCloseable {
    public static final int USAGE_COPY_SRC = 2;
    public static final int USAGE_TEXTURE_BINDING = 4;
    public static final int USAGE_RENDER_ATTACHMENT = 8;
+   public static final int USAGE_CUBEMAP_COMPATIBLE = 16;
    private final TextureFormat format;
    private final int width;
    private final int height;
+   private final int depthOrLayers;
    private final int mipLevels;
    private final int usage;
    private final String label;
@@ -20,7 +22,7 @@ public abstract class GpuTexture implements AutoCloseable {
    protected FilterMode magFilter;
    protected boolean useMipmaps;
 
-   public GpuTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6) {
+   public GpuTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
       super();
       this.addressModeU = AddressMode.REPEAT;
       this.addressModeV = AddressMode.REPEAT;
@@ -32,7 +34,8 @@ public abstract class GpuTexture implements AutoCloseable {
       this.format = var3;
       this.width = var4;
       this.height = var5;
-      this.mipLevels = var6;
+      this.depthOrLayers = var6;
+      this.mipLevels = var7;
    }
 
    public int getWidth(int var1) {
@@ -41,6 +44,10 @@ public abstract class GpuTexture implements AutoCloseable {
 
    public int getHeight(int var1) {
       return this.height >> var1;
+   }
+
+   public int getDepthOrLayers() {
+      return this.depthOrLayers;
    }
 
    public int getMipLevels() {

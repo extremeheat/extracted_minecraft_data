@@ -14,24 +14,32 @@ public class GlTexture extends GpuTexture {
    private final Int2IntMap fboCache = new Int2IntOpenHashMap();
    protected boolean closed;
    protected boolean modesDirty = true;
+   private int views;
 
-   protected GlTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
-      super(var1, var2, var3, var4, var5, var6);
-      this.id = var7;
+   protected GlTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7, int var8) {
+      super(var1, var2, var3, var4, var5, var6, var7);
+      this.id = var8;
    }
 
    public void close() {
       if (!this.closed) {
          this.closed = true;
-         GlStateManager._deleteTexture(this.id);
-         IntIterator var1 = this.fboCache.values().iterator();
-
-         while(var1.hasNext()) {
-            int var2 = (Integer)var1.next();
-            GlStateManager._glDeleteFramebuffers(var2);
+         if (this.views == 0) {
+            this.destroyImmediately();
          }
 
       }
+   }
+
+   private void destroyImmediately() {
+      GlStateManager._deleteTexture(this.id);
+      IntIterator var1 = this.fboCache.values().iterator();
+
+      while(var1.hasNext()) {
+         int var2 = (Integer)var1.next();
+         GlStateManager._glDeleteFramebuffers(var2);
+      }
+
    }
 
    public boolean isClosed() {
@@ -47,18 +55,18 @@ public class GlTexture extends GpuTexture {
       });
    }
 
-   public void flushModeChanges() {
+   public void flushModeChanges(int var1) {
       if (this.modesDirty) {
-         GlStateManager._texParameter(3553, 10242, GlConst.toGl(this.addressModeU));
-         GlStateManager._texParameter(3553, 10243, GlConst.toGl(this.addressModeV));
+         GlStateManager._texParameter(var1, 10242, GlConst.toGl(this.addressModeU));
+         GlStateManager._texParameter(var1, 10243, GlConst.toGl(this.addressModeV));
          switch (this.minFilter) {
-            case NEAREST -> GlStateManager._texParameter(3553, 10241, this.useMipmaps ? 9986 : 9728);
-            case LINEAR -> GlStateManager._texParameter(3553, 10241, this.useMipmaps ? 9987 : 9729);
+            case NEAREST -> GlStateManager._texParameter(var1, 10241, this.useMipmaps ? 9986 : 9728);
+            case LINEAR -> GlStateManager._texParameter(var1, 10241, this.useMipmaps ? 9987 : 9729);
          }
 
          switch (this.magFilter) {
-            case NEAREST -> GlStateManager._texParameter(3553, 10240, 9728);
-            case LINEAR -> GlStateManager._texParameter(3553, 10240, 9729);
+            case NEAREST -> GlStateManager._texParameter(var1, 10240, 9728);
+            case LINEAR -> GlStateManager._texParameter(var1, 10240, 9729);
          }
 
          this.modesDirty = false;
@@ -83,5 +91,17 @@ public class GlTexture extends GpuTexture {
    public void setUseMipmaps(boolean var1) {
       super.setUseMipmaps(var1);
       this.modesDirty = true;
+   }
+
+   public void addViews() {
+      ++this.views;
+   }
+
+   public void removeViews() {
+      --this.views;
+      if (this.closed && this.views == 0) {
+         this.destroyImmediately();
+      }
+
    }
 }

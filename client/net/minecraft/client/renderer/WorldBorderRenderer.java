@@ -6,7 +6,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -123,14 +123,14 @@ public class WorldBorderRenderer {
          RenderPipeline var31 = RenderPipelines.WORLD_BORDER;
          RenderTarget var32 = Minecraft.getInstance().getMainRenderTarget();
          RenderTarget var33 = Minecraft.getInstance().levelRenderer.getWeatherTarget();
-         GpuTexture var34;
-         GpuTexture var35;
+         GpuTextureView var34;
+         GpuTextureView var35;
          if (var33 != null) {
-            var34 = var33.getColorTexture();
-            var35 = var33.getDepthTexture();
+            var34 = var33.getColorTextureView();
+            var35 = var33.getDepthTextureView();
          } else {
-            var34 = var32.getColorTexture();
-            var35 = var32.getDepthTexture();
+            var34 = var32.getColorTextureView();
+            var35 = var32.getDepthTextureView();
          }
 
          GpuBuffer var36 = this.indices.getBuffer(6);
@@ -141,7 +141,7 @@ public class WorldBorderRenderer {
             RenderSystem.bindDefaultUniforms(var38);
             var38.setUniform("DynamicTransforms", var37);
             var38.setIndexBuffer(var36, this.indices.type());
-            var38.bindSampler("Sampler0", var30.getTexture());
+            var38.bindSampler("Sampler0", var30.getTextureView());
             var38.setVertexBuffer(0, this.worldBorderBuffer);
             ArrayList var39 = new ArrayList();
 

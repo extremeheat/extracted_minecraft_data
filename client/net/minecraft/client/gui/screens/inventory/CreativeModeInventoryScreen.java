@@ -759,11 +759,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
 
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
-      var6 += 5;
-      var7 += 8 + (var4 ? 1 : -1);
-      ItemStack var9 = var2.getIconItem();
-      var1.renderItem(var9, var6, var7);
-      var1.renderItemDecorations(this.font, var9, var6, var7);
+      int var9 = var6 + 13 - 8;
+      int var10 = var7 + 16 - 8 + (var4 ? 1 : -1);
+      var1.renderItem(var2.getIconItem(), var9, var10);
    }
 
    public boolean isInventoryOpen() {

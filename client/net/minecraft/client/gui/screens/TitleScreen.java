@@ -82,7 +82,6 @@ public class TitleScreen extends Screen {
       var0.registerForNextReload(LogoRenderer.MINECRAFT_LOGO);
       var0.registerForNextReload(LogoRenderer.MINECRAFT_EDITION);
       var0.registerForNextReload(PanoramaRenderer.PANORAMA_OVERLAY);
-      CUBE_MAP.registerTextures(var0);
    }
 
    public boolean isPauseScreen() {

@@ -32,8 +32,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -43,6 +43,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
@@ -462,44 +463,47 @@ public class Gui {
       if (!var3.isEmpty() && (this.minecraft.screen == null || !this.minecraft.screen.showsActiveEffects())) {
          int var4 = 0;
          int var5 = 0;
-         MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
 
-         for(MobEffectInstance var8 : Ordering.natural().reverse().sortedCopy(var3)) {
-            Holder var9 = var8.getEffect();
-            if (var8.showIcon()) {
-               int var10 = var1.guiWidth();
-               int var11 = 1;
+         for(MobEffectInstance var7 : Ordering.natural().reverse().sortedCopy(var3)) {
+            Holder var8 = var7.getEffect();
+            if (var7.showIcon()) {
+               int var9 = var1.guiWidth();
+               int var10 = 1;
                if (this.minecraft.isDemo()) {
-                  var11 += 15;
+                  var10 += 15;
                }
 
-               if (((MobEffect)var9.value()).isBeneficial()) {
+               if (((MobEffect)var8.value()).isBeneficial()) {
                   ++var4;
-                  var10 -= 25 * var4;
+                  var9 -= 25 * var4;
                } else {
                   ++var5;
-                  var10 -= 25 * var5;
-                  var11 += 26;
+                  var9 -= 25 * var5;
+                  var10 += 26;
                }
 
-               float var12 = 1.0F;
-               if (var8.isAmbient()) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var10, var11, 24, 24);
+               float var11 = 1.0F;
+               if (var7.isAmbient()) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var9, var10, 24, 24);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var10, var11, 24, 24);
-                  if (var8.endsWithin(200)) {
-                     int var13 = var8.getDuration();
-                     int var14 = 10 - var13 / 20;
-                     var12 = Mth.clamp((float)var13 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((float)var13 * 3.1415927F / 5.0F) * Mth.clamp((float)var14 / 10.0F * 0.25F, 0.0F, 0.25F);
-                     var12 = Mth.clamp(var12, 0.0F, 1.0F);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var9, var10, 24, 24);
+                  if (var7.endsWithin(200)) {
+                     int var12 = var7.getDuration();
+                     int var13 = 10 - var12 / 20;
+                     var11 = Mth.clamp((float)var12 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((float)var12 * 3.1415927F / 5.0F) * Mth.clamp((float)var13 / 10.0F * 0.25F, 0.0F, 0.25F);
+                     var11 = Mth.clamp(var11, 0.0F, 1.0F);
                   }
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)var6.get(var9), var10 + 3, var11 + 3, 18, 18, ARGB.white(var12));
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)getMobEffectSprite(var8), var9 + 3, var10 + 3, 18, 18, ARGB.white(var11));
             }
          }
 
       }
+   }
+
+   public static ResourceLocation getMobEffectSprite(Holder<MobEffect> var0) {
+      return (ResourceLocation)var0.unwrapKey().map(ResourceKey::location).map((var0x) -> var0x.withPrefix("mob_effect/")).orElseGet(MissingTextureAtlasSprite::getLocation);
    }
 
    private void renderHotbarAndDecorations(GuiGraphics var1, DeltaTracker var2) {

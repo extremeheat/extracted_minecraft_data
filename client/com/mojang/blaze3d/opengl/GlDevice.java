@@ -9,6 +9,7 @@ import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
@@ -71,6 +72,7 @@ public class GlDevice implements GpuDevice {
       this.defaultShaderSource = var5;
       this.encoder = new GlCommandEncoder(this);
       this.uniformOffsetAlignment = GL11.glGetInteger(35380);
+      GL11.glEnable(34895);
    }
 
    public GlDebugLabel debugLabels() {
@@ -81,42 +83,91 @@ public class GlDevice implements GpuDevice {
       return this.encoder;
    }
 
-   public GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6) {
-      return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5, var6);
+   public GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+      return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5, var6, var7);
    }
 
-   public GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6) {
-      if (var6 < 1) {
+   public GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+      if (var7 < 1) {
          throw new IllegalArgumentException("mipLevels must be at least 1");
+      } else if (var6 < 1) {
+         throw new IllegalArgumentException("depthOrLayers must be at least 1");
       } else {
+         boolean var8 = (var2 & 16) != 0;
+         if (var8) {
+            if (var4 != var5) {
+               throw new IllegalArgumentException("Cubemap compatible textures must be square, but size is " + var4 + "x" + var5);
+            }
+
+            if (var6 % 6 != 0) {
+               throw new IllegalArgumentException("Cubemap compatible textures must have a layer count with a multiple of 6, was " + var6);
+            }
+
+            if (var6 > 6) {
+               throw new UnsupportedOperationException("Array textures are not yet supported");
+            }
+         } else if (var6 > 1) {
+            throw new UnsupportedOperationException("Array or 3D textures are not yet supported");
+         }
+
          GlStateManager.clearGlErrors();
-         int var7 = GlStateManager._genTexture();
+         int var9 = GlStateManager._genTexture();
          if (var1 == null) {
-            var1 = String.valueOf(var7);
+            var1 = String.valueOf(var9);
          }
 
-         GlStateManager._bindTexture(var7);
-         GlStateManager._texParameter(3553, 33085, var6 - 1);
-         GlStateManager._texParameter(3553, 33082, 0);
-         GlStateManager._texParameter(3553, 33083, var6 - 1);
-         if (var3.hasDepthAspect()) {
-            GlStateManager._texParameter(3553, 34892, 0);
-         }
-
-         for(int var8 = 0; var8 < var6; ++var8) {
-            GlStateManager._texImage2D(3553, var8, GlConst.toGlInternalId(var3), var4 >> var8, var5 >> var8, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
-         }
-
-         int var10 = GlStateManager._getError();
-         if (var10 == 1285) {
-            throw new GpuOutOfMemoryException("Could not allocate texture of " + var4 + "x" + var5 + " for " + var1);
-         } else if (var10 != 0) {
-            throw new IllegalStateException("OpenGL error " + var10);
+         char var10;
+         if (var8) {
+            GL11.glBindTexture(34067, var9);
+            var10 = '\u8513';
          } else {
-            GlTexture var9 = new GlTexture(var2, var1, var3, var4, var5, var6, var7);
-            this.debugLabels.applyLabel(var9);
-            return var9;
+            GlStateManager._bindTexture(var9);
+            var10 = 3553;
          }
+
+         GlStateManager._texParameter(var10, 33085, var7 - 1);
+         GlStateManager._texParameter(var10, 33082, 0);
+         GlStateManager._texParameter(var10, 33083, var7 - 1);
+         if (var3.hasDepthAspect()) {
+            GlStateManager._texParameter(var10, 34892, 0);
+         }
+
+         if (var8) {
+            for(int var14 : GlConst.CUBEMAP_TARGETS) {
+               for(int var15 = 0; var15 < var7; ++var15) {
+                  GlStateManager._texImage2D(var14, var15, GlConst.toGlInternalId(var3), var4 >> var15, var5 >> var15, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+               }
+            }
+         } else {
+            for(int var16 = 0; var16 < var7; ++var16) {
+               GlStateManager._texImage2D(var10, var16, GlConst.toGlInternalId(var3), var4 >> var16, var5 >> var16, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+            }
+         }
+
+         int var17 = GlStateManager._getError();
+         if (var17 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate texture of " + var4 + "x" + var5 + " for " + var1);
+         } else if (var17 != 0) {
+            throw new IllegalStateException("OpenGL error " + var17);
+         } else {
+            GlTexture var18 = new GlTexture(var2, var1, var3, var4, var5, var6, var7, var9);
+            this.debugLabels.applyLabel(var18);
+            return var18;
+         }
+      }
+   }
+
+   public GpuTextureView createTextureView(GpuTexture var1) {
+      return this.createTextureView(var1, 0, var1.getMipLevels());
+   }
+
+   public GpuTextureView createTextureView(GpuTexture var1, int var2, int var3) {
+      if (var1.isClosed()) {
+         throw new IllegalArgumentException("Can't create texture view with closed texture");
+      } else if (var2 >= 0 && var2 + var3 <= var1.getMipLevels()) {
+         return new GlTextureView((GlTexture)var1, var2, var3);
+      } else {
+         throw new IllegalArgumentException(var3 + " mip levels starting from " + var2 + " would be out of range for texture with only " + var1.getMipLevels() + " mip levels");
       }
    }
 

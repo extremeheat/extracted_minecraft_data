@@ -150,9 +150,22 @@ import org.slf4j.Logger;
 
 public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess, ScoreHolder, DataComponentGetter {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final String ID_TAG = "id";
-   public static final String PASSENGERS_TAG = "Passengers";
-   private static final String DATA_TAG = "data";
+   public static final String TAG_ID = "id";
+   public static final String TAG_UUID = "UUID";
+   public static final String TAG_PASSENGERS = "Passengers";
+   public static final String TAG_DATA = "data";
+   public static final String TAG_POS = "Pos";
+   public static final String TAG_MOTION = "Motion";
+   public static final String TAG_ROTATION = "Rotation";
+   public static final String TAG_PORTAL_COOLDOWN = "PortalCooldown";
+   public static final String TAG_NO_GRAVITY = "NoGravity";
+   public static final String TAG_AIR = "Air";
+   public static final String TAG_ON_GROUND = "OnGround";
+   public static final String TAG_FALL_DISTANCE = "fall_distance";
+   public static final String TAG_FIRE = "Fire";
+   public static final String TAG_SILENT = "Silent";
+   public static final String TAG_GLOWING = "Glowing";
+   public static final String TAG_INVULNERABLE = "Invulnerable";
    private static final AtomicInteger ENTITY_COUNTER = new AtomicInteger();
    public static final int CONTENTS_SLOT_INDEX = 0;
    public static final int BOARDING_COOLDOWN = 60;
@@ -171,7 +184,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private static final double WATER_FLOW_SCALE = 0.014;
    private static final double LAVA_FAST_FLOW_SCALE = 0.007;
    private static final double LAVA_SLOW_FLOW_SCALE = 0.0023333333333333335;
-   public static final String UUID_TAG = "UUID";
    private static double viewScale;
    private final EntityType<?> type;
    private boolean requiresPrecisePosition;
@@ -277,7 +289,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.stuckSpeedMultiplier = Vec3.ZERO;
       this.nextStep = 1.0F;
       this.random = RandomSource.create();
-      this.remainingFireTicks = -this.getFireImmuneTicks();
       this.fluidHeight = new Object2DoubleArrayMap(2);
       this.fluidOnEyes = new HashSet();
       this.firstTick = true;
@@ -513,9 +524,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          if (this.remainingFireTicks > 0) {
             if (this.fireImmune()) {
                this.setRemainingFireTicks(this.remainingFireTicks - 4);
-               if (this.remainingFireTicks < 0) {
-                  this.clearFire();
-               }
             } else {
                if (this.remainingFireTicks % 20 == 0 && !this.isInLava()) {
                   this.hurtServer(var2, this.damageSources().onFire(), 1.0F);
@@ -856,19 +864,21 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             var3.getBlock().stepOn(this.level(), var2, var3, this);
          }
 
-         boolean var4 = this.isOnFire();
-         boolean var5 = this.isFreezing();
+         boolean var6 = this.isOnFire();
+         boolean var7 = this.isFreezing();
+         int var4 = this.getRemainingFireTicks();
          this.checkInsideBlocks(var1, this.insideEffectCollector);
          this.insideEffectCollector.applyAndClear(this);
          if (this.isInRain()) {
             this.clearFire();
          }
 
-         if (var4 && !this.isOnFire() || var5 && !this.isFreezing()) {
+         if (var6 && !this.isOnFire() || var7 && !this.isFreezing()) {
             this.playEntityOnFireExtinguishedSound();
          }
 
-         if (var4 && !this.isOnFire() && this.remainingFireTicks <= 0) {
+         boolean var5 = this.getRemainingFireTicks() > var4;
+         if (!this.level.isClientSide && !this.isOnFire() && !var5) {
             this.setRemainingFireTicks(-this.getFireImmuneTicks());
          }
 
@@ -2173,10 +2183,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public boolean canCollideWith(Entity var1) {
-      return var1.canBeCollidedWith() && !this.isPassengerOfSameVehicle(var1);
+      return var1.canBeCollidedWith(this) && !this.isPassengerOfSameVehicle(var1);
    }
 
-   public boolean canBeCollidedWith() {
+   public boolean canBeCollidedWith(@Nullable Entity var1) {
       return false;
    }
 
@@ -2794,7 +2804,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
          TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
          var1.saveWithoutId(var3);
-         var3.discard("Dimension");
          this.load(TagValueInput.create(var2, this.registryAccess(), var3.buildResult()));
       }
 
@@ -3391,7 +3400,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    protected int getFireImmuneTicks() {
-      return 1;
+      return 0;
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
