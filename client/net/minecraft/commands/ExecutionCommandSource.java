@@ -8,9 +8,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import javax.annotation.Nullable;
 import net.minecraft.commands.execution.TraceCallbacks;
 
-public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> {
-   boolean hasPermission(int var1);
-
+public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> extends PermissionSource {
    T withCallback(CommandResultCallback var1);
 
    CommandResultCallback callback();

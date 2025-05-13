@@ -105,6 +105,8 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1);
 
+   void handleChangeGameMode(ServerboundChangeGameModePacket var1);
+
    void handleLockDifficulty(ServerboundLockDifficultyPacket var1);
 
    void handleChatSessionUpdate(ServerboundChatSessionUpdatePacket var1);
@@ -116,4 +118,6 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
    void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1);
 
    void handleClientTickEnd(ServerboundClientTickEndPacket var1);
+
+   void handleCustomClickAction(ServerboundCustomClickActionPacket var1);
 }

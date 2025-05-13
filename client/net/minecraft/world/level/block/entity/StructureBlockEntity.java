@@ -158,7 +158,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       if (!var1.canUseGameMasterBlocks()) {
          return false;
       } else {
-         if (var1.getCommandSenderWorld().isClientSide) {
+         if (var1.level().isClientSide) {
             var1.openStructureBlock(this);
          }
 

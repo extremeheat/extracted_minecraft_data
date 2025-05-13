@@ -35,13 +35,13 @@ public class PlaySoundCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.AVAILABLE_SOUNDS).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)var0x.getSource()).getPlayer()), ResourceLocationArgument.getId(var0x, "sound"), SoundSource.MASTER, ((CommandSourceStack)var0x.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
+      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)var0x.getSource()).getPlayer()), ResourceLocationArgument.getId(var0x, "sound"), SoundSource.MASTER, ((CommandSourceStack)var0x.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
 
       for(SoundSource var5 : SoundSource.values()) {
          var1.then(source(var5));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires((var0x) -> var0x.hasPermission(2))).then(var1));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(2))).then(var1));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> source(SoundSource var0) {

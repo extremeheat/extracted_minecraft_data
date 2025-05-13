@@ -38,6 +38,7 @@ import net.minecraft.data.structures.StructureUpdater;
 import net.minecraft.data.tags.BannerPatternTagsProvider;
 import net.minecraft.data.tags.BiomeTagsProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
+import net.minecraft.data.tags.DialogTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.data.tags.FlatLevelGeneratorPresetTagsProvider;
 import net.minecraft.data.tags.FluidTagsProvider;
@@ -112,6 +113,7 @@ public class Main {
       TagsProvider var9 = (TagsProvider)var11.addProvider(bindRegistries(BannerPatternTagsProvider::new, var14));
       TagsProvider var10 = (TagsProvider)var11.addProvider(bindRegistries(StructureTagsProvider::new, var14));
       var11.addProvider(bindRegistries(DamageTypeTagsProvider::new, var14));
+      var11.addProvider(bindRegistries(DialogTagsProvider::new, var14));
       var11.addProvider(bindRegistries(EntityTypeTagsProvider::new, var14));
       var11.addProvider(bindRegistries(FlatLevelGeneratorPresetTagsProvider::new, var14));
       var11.addProvider(bindRegistries(FluidTagsProvider::new, var14));

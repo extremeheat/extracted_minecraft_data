@@ -87,6 +87,7 @@ import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundBlockEntityTagQueryPacket;
 import net.minecraft.network.protocol.game.ServerboundChangeDifficultyPacket;
+import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
 import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
@@ -101,6 +102,7 @@ import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
+import net.minecraft.network.protocol.game.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.game.ServerboundDebugSampleSubscriptionPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQueryPacket;
@@ -143,6 +145,7 @@ import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FutureChain;
@@ -1890,8 +1893,19 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
-      if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
-         this.server.setDifficulty(var1.getDifficulty(), false);
+      if (!this.player.hasPermissions(2) && !this.isSingleplayerOwner()) {
+         LOGGER.warn("Player {} tried to change difficulty to {} without required permissions", this.player.getGameProfile().getName(), var1.difficulty().getDisplayName());
+      } else {
+         this.server.setDifficulty(var1.difficulty(), false);
+      }
+   }
+
+   public void handleChangeGameMode(ServerboundChangeGameModePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
+      if (!this.player.hasPermissions(2)) {
+         LOGGER.warn("Player {} tried to change game mode to {} without required permissions", this.player.getGameProfile().getName(), var1.mode().getShortDisplayName());
+      } else {
+         GameModeCommand.setGameMode(this.player, var1.mode());
       }
    }
 
@@ -1965,6 +1979,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
 
       this.receivedMovementThisTick = false;
+   }
+
+   public void handleCustomClickAction(ServerboundCustomClickActionPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
+      this.server.handleCustomClickAction(var1.id(), var1.payload());
    }
 
    private void handlePlayerKnownMovement(Vec3 var1) {

@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -23,7 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -149,7 +147,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      boolean var3 = var2.is(FluidTags.WATER) && var2.getAmount() == 8;
+      boolean var3 = var2.getType() == Fluids.WATER;
       return (BlockState)((BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var3)).setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 
@@ -157,21 +155,12 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
       return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
-   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
-      return var5 == Fluids.WATER || var5 == Fluids.FLOWING_WATER;
-   }
-
    public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
-      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.is(FluidTags.WATER)) {
+      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.getType() == Fluids.WATER) {
          if (!var1.isClientSide()) {
-            if (var4.getType() == Fluids.FLOWING_WATER) {
-               Block.dropResources(var3, var1, var2, (BlockEntity)null);
-               var1.setBlock(var2, var4.createLegacyBlock(), 3);
-            } else {
-               var1.setBlock(var2, (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, true), 3);
-               var1.scheduleTick(var2, var4.getType(), var4.getType().getTickDelay(var1));
-               var1.playSound((Entity)null, var2, SoundEvents.DRIED_GHAST_PLACE_IN_WATER, SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
+            var1.setBlock(var2, (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, true), 3);
+            var1.scheduleTick(var2, var4.getType(), var4.getType().getTickDelay(var1));
+            var1.playSound((Entity)null, var2, SoundEvents.DRIED_GHAST_PLACE_IN_WATER, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
 
          return true;

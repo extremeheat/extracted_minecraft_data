@@ -21,7 +21,7 @@ import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.PermissionSource;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -115,8 +115,8 @@ public class EntitySelectorParser {
 
    public static <S> boolean allowSelectors(S var0) {
       boolean var10000;
-      if (var0 instanceof SharedSuggestionProvider var1) {
-         if (var1.hasPermission(2)) {
+      if (var0 instanceof PermissionSource var1) {
+         if (var1.allowsSelectors()) {
             var10000 = true;
             return var10000;
          }

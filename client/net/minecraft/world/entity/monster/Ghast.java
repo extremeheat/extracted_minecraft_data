@@ -46,12 +46,11 @@ public class Ghast extends Mob implements Enemy {
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING;
    private static final byte DEFAULT_EXPLOSION_POWER = 1;
    private int explosionPower = 1;
-   private final float MOVEMENT_SPEED = 0.1F;
 
    public Ghast(EntityType<? extends Ghast> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 5;
-      this.moveControl = new GhastMoveControl(this, false, 0.1F, () -> false);
+      this.moveControl = new GhastMoveControl(this, false, () -> false);
    }
 
    protected void registerGoals() {
@@ -111,7 +110,7 @@ public class Ghast extends Mob implements Enemy {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.FOLLOW_RANGE, 100.0).add(Attributes.CAMERA_DISTANCE, 8.0);
+      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.FOLLOW_RANGE, 100.0).add(Attributes.CAMERA_DISTANCE, 8.0).add(Attributes.FLYING_SPEED, 0.06);
    }
 
    public SoundSource getSoundSource() {
@@ -190,15 +189,13 @@ public class Ghast extends Mob implements Enemy {
       private final Mob ghast;
       private int floatDuration;
       private final boolean careful;
-      private final double speed;
       private final BooleanSupplier shouldBeStopped;
 
-      public GhastMoveControl(Mob var1, boolean var2, float var3, BooleanSupplier var4) {
+      public GhastMoveControl(Mob var1, boolean var2, BooleanSupplier var3) {
          super(var1);
          this.ghast = var1;
          this.careful = var2;
-         this.speed = (double)var3;
-         this.shouldBeStopped = var4;
+         this.shouldBeStopped = var3;
       }
 
       public void tick() {
@@ -212,7 +209,7 @@ public class Ghast extends Mob implements Enemy {
                this.floatDuration += this.ghast.getRandom().nextInt(5) + 2;
                Vec3 var1 = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
                if (this.canReach(var1)) {
-                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(var1.normalize().scale(this.speed)));
+                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(var1.normalize().scale(this.ghast.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0)));
                } else {
                   this.operation = MoveControl.Operation.WAIT;
                }

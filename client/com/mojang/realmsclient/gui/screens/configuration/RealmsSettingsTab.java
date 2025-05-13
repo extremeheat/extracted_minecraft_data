@@ -2,6 +2,7 @@ package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.RealmsRegion;
 import com.mojang.realmsclient.dto.RealmsServer;
+import com.mojang.realmsclient.dto.RegionSelectionPreference;
 import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
 import com.mojang.realmsclient.dto.ServiceQuality;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
@@ -81,7 +82,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    }
 
    private static MutableComponent getTranslatableFromPreference(RegionSelection var0) {
-      return (var0.preference().equals(RegionSelectionPreferenceDto.RegionSelectionPreference.MANUAL) && var0.region() != null ? Component.translatable(var0.region().translationKey) : Component.translatable(var0.preference().translationKey)).withStyle(ChatFormatting.GRAY);
+      return (var0.preference().equals(RegionSelectionPreference.MANUAL) && var0.region() != null ? Component.translatable(var0.region().translationKey) : Component.translatable(var0.preference().translationKey)).withStyle(ChatFormatting.GRAY);
    }
 
    private static ResourceLocation getServiceQualityIcon(RegionSelection var0, Map<RealmsRegion, ServiceQuality> var1) {
@@ -97,7 +98,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       this.minecraft.setScreen(new RealmsPreferredRegionSelectionScreen(this.configurationScreen, this::applyRegionPreferenceSelection, this.regionServiceQuality, this.preferredRegionSelection));
    }
 
-   private void applyRegionPreferenceSelection(RegionSelectionPreferenceDto.RegionSelectionPreference var1, RealmsRegion var2) {
+   private void applyRegionPreferenceSelection(RegionSelectionPreference var1, RealmsRegion var2) {
       this.preferredRegionSelection = new RegionSelection(var1, var2);
       this.updateRegionPreferenceValues();
    }
@@ -105,7 +106,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private void updateRegionPreferenceValues() {
       this.selectedRegionStringWidget.setMessage(getTranslatableFromPreference(this.preferredRegionSelection));
       this.selectedRegionImageWidget.updateResource(getServiceQualityIcon(this.preferredRegionSelection, this.regionServiceQuality));
-      this.selectedRegionImageWidget.visible = this.preferredRegionSelection.preference.equals(RegionSelectionPreferenceDto.RegionSelectionPreference.MANUAL);
+      this.selectedRegionImageWidget.visible = this.preferredRegionSelection.preference == RegionSelectionPreference.MANUAL;
    }
 
    public void onSelected(RealmsServer var1) {
@@ -118,7 +119,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
          var1.regionSelectionPreference = RegionSelectionPreferenceDto.DEFAULT;
       }
 
-      if (var1.regionSelectionPreference.regionSelectionPreference == RegionSelectionPreferenceDto.RegionSelectionPreference.MANUAL && var1.regionSelectionPreference.preferredRegion == null) {
+      if (var1.regionSelectionPreference.regionSelectionPreference == RegionSelectionPreference.MANUAL && var1.regionSelectionPreference.preferredRegion == null) {
          Optional var2 = this.regionServiceQuality.keySet().stream().findFirst();
          var2.ifPresent((var1x) -> var1.regionSelectionPreference.preferredRegion = var1x);
       }
@@ -142,10 +143,10 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       }
    }
 
-   public static record RegionSelection(RegionSelectionPreferenceDto.RegionSelectionPreference preference, @Nullable RealmsRegion region) {
-      final RegionSelectionPreferenceDto.RegionSelectionPreference preference;
+   public static record RegionSelection(RegionSelectionPreference preference, @Nullable RealmsRegion region) {
+      final RegionSelectionPreference preference;
 
-      public RegionSelection(RegionSelectionPreferenceDto.RegionSelectionPreference var1, @Nullable RealmsRegion var2) {
+      public RegionSelection(RegionSelectionPreference var1, @Nullable RealmsRegion var2) {
          super();
          this.preference = var1;
          this.region = var2;

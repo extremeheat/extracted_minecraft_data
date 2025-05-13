@@ -47,6 +47,7 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.tutorial.TutorialSteps;
@@ -249,6 +250,10 @@ public class Options {
    public String languageCode;
    private final OptionInstance<String> soundDevice;
    public boolean onboardAccessibility;
+   private static final Component MUSIC_FREQUENCY_TOOLTIP;
+   private final OptionInstance<MusicManager.MusicFrequency> musicFrequency;
+   private static final Component NOW_PLAYING_TOAST_TOOLTIP;
+   private final OptionInstance<Boolean> showNowPlayingToast;
    public boolean syncWrites;
    public boolean startedCleanly;
 
@@ -616,6 +621,14 @@ public class Options {
       this.save();
    }
 
+   public OptionInstance<MusicManager.MusicFrequency> musicFrequency() {
+      return this.musicFrequency;
+   }
+
+   public OptionInstance<Boolean> showNowPlayingToast() {
+      return this.showNowPlayingToast;
+   }
+
    public Options(Minecraft var1, File var2) {
       super();
       this.darkMojangStudiosBackground = OptionInstance.createBoolean("options.darkMojangStudiosBackgroundColor", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND), false);
@@ -885,6 +898,15 @@ public class Options {
          var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
+      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
+      this.showNowPlayingToast = OptionInstance.createBoolean("options.showNowPlayingToast", OptionInstance.cachedConstantTooltip(NOW_PLAYING_TOAST_TOOLTIP), false, (var1x) -> {
+         if (var1x) {
+            this.minecraft.getToastManager().createNowPlayingToast();
+         } else {
+            this.minecraft.getToastManager().removeNowPlayingToast();
+         }
+
+      });
       this.startedCleanly = true;
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
@@ -1013,6 +1035,8 @@ public class Options {
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
       this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
+      var1.process("showNowPlayingToast", this.showNowPlayingToast);
+      var1.process("musicFrequency", this.musicFrequency);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1432,6 +1456,8 @@ public class Options {
       ACCESSIBILITY_TOOLTIP_GLINT_SPEED = Component.translatable("options.glintSpeed.tooltip");
       ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH = Component.translatable("options.glintStrength.tooltip");
       ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH = Component.translatable("options.damageTiltStrength.tooltip");
+      MUSIC_FREQUENCY_TOOLTIP = Component.translatable("options.music_frequency.tooltip");
+      NOW_PLAYING_TOAST_TOOLTIP = Component.translatable("options.showNowPlayingToast.tooltip");
    }
 
    interface FieldAccess extends OptionAccess {

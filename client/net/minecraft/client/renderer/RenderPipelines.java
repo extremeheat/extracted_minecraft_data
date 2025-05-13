@@ -25,6 +25,7 @@ public class RenderPipelines {
    private static final RenderPipeline.Snippet MATRICES_FOG_LIGHT_DIR_SNIPPET;
    private static final RenderPipeline.Snippet TERRAIN_SNIPPET;
    private static final RenderPipeline.Snippet ENTITY_SNIPPET;
+   private static final RenderPipeline.Snippet ENTITY_EMISSIVE_SNIPPET;
    private static final RenderPipeline.Snippet BEACON_BEAM_SNIPPET;
    private static final RenderPipeline.Snippet TEXT_SNIPPET;
    private static final RenderPipeline.Snippet END_PORTAL_SNIPPET;
@@ -142,6 +143,7 @@ public class RenderPipelines {
       MATRICES_FOG_LIGHT_DIR_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET, FOG_SNIPPET).withUniform("Lighting", UniformType.UNIFORM_BUFFER).buildSnippet();
       TERRAIN_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/terrain").withFragmentShader("core/terrain").withSampler("Sampler0").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).buildSnippet();
       ENTITY_SNIPPET = RenderPipeline.builder(MATRICES_FOG_LIGHT_DIR_SNIPPET).withVertexShader("core/entity").withFragmentShader("core/entity").withSampler("Sampler0").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS).buildSnippet();
+      ENTITY_EMISSIVE_SNIPPET = RenderPipeline.builder(MATRICES_FOG_LIGHT_DIR_SNIPPET).withVertexShader("core/entity").withFragmentShader("core/entity").withSampler("Sampler0").withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS).withShaderDefine("EMISSIVE").buildSnippet();
       BEACON_BEAM_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/rendertype_beacon_beam").withFragmentShader("core/rendertype_beacon_beam").withSampler("Sampler0").withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).buildSnippet();
       TEXT_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS).buildSnippet();
       END_PORTAL_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET, FOG_SNIPPET, GLOBALS_SNIPPET).withVertexShader("core/rendertype_end_portal").withFragmentShader("core/rendertype_end_portal").withSampler("Sampler0").withSampler("Sampler1").withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).buildSnippet();
@@ -170,7 +172,7 @@ public class RenderPipelines {
       ENTITY_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withSampler("Sampler1").withCull(false).build());
       ENTITY_CUTOUT_NO_CULL_Z_OFFSET = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_cutout_no_cull_z_offset").withShaderDefine("ALPHA_CUTOUT", 0.1F).withSampler("Sampler1").withCull(false).build());
       ENTITY_TRANSLUCENT = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_translucent").withShaderDefine("ALPHA_CUTOUT", 0.1F).withSampler("Sampler1").withBlend(BlendFunction.TRANSLUCENT).withCull(false).build());
-      ENTITY_TRANSLUCENT_EMISSIVE = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_translucent_emissive").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("EMISSIVE").withSampler("Sampler1").withBlend(BlendFunction.TRANSLUCENT).withCull(false).withDepthWrite(false).build());
+      ENTITY_TRANSLUCENT_EMISSIVE = register(RenderPipeline.builder(ENTITY_EMISSIVE_SNIPPET).withLocation("pipeline/entity_translucent_emissive").withShaderDefine("ALPHA_CUTOUT", 0.1F).withSampler("Sampler1").withBlend(BlendFunction.TRANSLUCENT).withCull(false).withDepthWrite(false).build());
       ENTITY_SMOOTH_CUTOUT = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_smooth_cutout").withShaderDefine("ALPHA_CUTOUT", 0.1F).withSampler("Sampler1").withCull(false).build());
       ENTITY_NO_OUTLINE = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/entity_no_outline").withShaderDefine("NO_OVERLAY").withBlend(BlendFunction.TRANSLUCENT).withCull(false).withDepthWrite(false).build());
       BREEZE_WIND = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/breeze_wind").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("APPLY_TEXTURE_MATRIX").withShaderDefine("NO_OVERLAY").withShaderDefine("NO_CARDINAL_LIGHTING").withBlend(BlendFunction.TRANSLUCENT).withCull(false).build());

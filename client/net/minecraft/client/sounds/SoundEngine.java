@@ -137,14 +137,7 @@ public class SoundEngine {
          } else {
             this.instanceToChannel.forEach((var1x, var2x) -> {
                float var3 = this.calculateVolume(var1x);
-               var2x.execute((var1) -> {
-                  if (var3 <= 0.0F) {
-                     var1.stop();
-                  } else {
-                     var1.setVolume(var3);
-                  }
-
-               });
+               var2x.execute((var1) -> var1.setVolume(var3));
             });
          }
       }
@@ -247,13 +240,15 @@ public class SoundEngine {
       }
 
       if (!var1) {
-         this.tickNonPaused();
+         this.tickInGameSound();
+      } else {
+         this.tickMusicWhenPaused();
       }
 
       this.channelAccess.scheduleTick();
    }
 
-   private void tickNonPaused() {
+   private void tickInGameSound() {
       ++this.tickCount;
       this.queuedTickableSounds.stream().filter(SoundInstance::canPlaySound).forEach(this::play);
       this.queuedTickableSounds.clear();
@@ -281,51 +276,64 @@ public class SoundEngine {
          }
       }
 
-      Iterator var9 = this.instanceToChannel.entrySet().iterator();
+      Iterator var8 = this.instanceToChannel.entrySet().iterator();
 
-      while(var9.hasNext()) {
-         Map.Entry var10 = (Map.Entry)var9.next();
-         ChannelAccess.ChannelHandle var12 = (ChannelAccess.ChannelHandle)var10.getValue();
-         SoundInstance var14 = (SoundInstance)var10.getKey();
-         float var16 = this.options.getSoundSourceVolume(var14.getSource());
-         if (var16 <= 0.0F) {
-            var12.execute(Channel::stop);
-            var9.remove();
-         } else if (var12.isStopped()) {
-            int var17 = (Integer)this.soundDeleteTime.get(var14);
-            if (var17 <= this.tickCount) {
-               if (shouldLoopManually(var14)) {
-                  this.queuedSounds.put(var14, this.tickCount + var14.getDelay());
+      while(var8.hasNext()) {
+         Map.Entry var9 = (Map.Entry)var8.next();
+         ChannelAccess.ChannelHandle var11 = (ChannelAccess.ChannelHandle)var9.getValue();
+         SoundInstance var13 = (SoundInstance)var9.getKey();
+         if (var11.isStopped()) {
+            int var15 = (Integer)this.soundDeleteTime.get(var13);
+            if (var15 <= this.tickCount) {
+               if (shouldLoopManually(var13)) {
+                  this.queuedSounds.put(var13, this.tickCount + var13.getDelay());
                }
 
-               var9.remove();
-               LOGGER.debug(MARKER, "Removed channel {} because it's not playing anymore", var12);
-               this.soundDeleteTime.remove(var14);
+               var8.remove();
+               LOGGER.debug(MARKER, "Removed channel {} because it's not playing anymore", var11);
+               this.soundDeleteTime.remove(var13);
 
                try {
-                  this.instanceBySource.remove(var14.getSource(), var14);
-               } catch (RuntimeException var8) {
+                  this.instanceBySource.remove(var13.getSource(), var13);
+               } catch (RuntimeException var7) {
                }
 
-               if (var14 instanceof TickableSoundInstance) {
-                  this.tickingSounds.remove(var14);
+               if (var13 instanceof TickableSoundInstance) {
+                  this.tickingSounds.remove(var13);
                }
             }
          }
       }
 
-      Iterator var11 = this.queuedSounds.entrySet().iterator();
+      Iterator var10 = this.queuedSounds.entrySet().iterator();
 
-      while(var11.hasNext()) {
-         Map.Entry var13 = (Map.Entry)var11.next();
-         if (this.tickCount >= (Integer)var13.getValue()) {
-            SoundInstance var15 = (SoundInstance)var13.getKey();
-            if (var15 instanceof TickableSoundInstance) {
-               ((TickableSoundInstance)var15).tick();
+      while(var10.hasNext()) {
+         Map.Entry var12 = (Map.Entry)var10.next();
+         if (this.tickCount >= (Integer)var12.getValue()) {
+            SoundInstance var14 = (SoundInstance)var12.getKey();
+            if (var14 instanceof TickableSoundInstance) {
+               ((TickableSoundInstance)var14).tick();
             }
 
-            this.play(var15);
-            var11.remove();
+            this.play(var14);
+            var10.remove();
+         }
+      }
+
+   }
+
+   private void tickMusicWhenPaused() {
+      Iterator var1 = this.instanceToChannel.entrySet().iterator();
+
+      while(var1.hasNext()) {
+         Map.Entry var2 = (Map.Entry)var1.next();
+         ChannelAccess.ChannelHandle var3 = (ChannelAccess.ChannelHandle)var2.getValue();
+         SoundInstance var4 = (SoundInstance)var2.getKey();
+         if (var4.getSource() == SoundSource.MUSIC && var3.isStopped()) {
+            var1.remove();
+            LOGGER.debug(MARKER, "Removed channel {} because it's not playing anymore", var3);
+            this.soundDeleteTime.remove(var4);
+            this.instanceBySource.remove(var4.getSource(), var4);
          }
       }
 
@@ -389,7 +397,7 @@ public class SoundEngine {
                            }
                         }
 
-                        if (this.listener.getGain() <= 0.0F) {
+                        if (this.listener.getGain() <= 0.0F && var7 != SoundSource.MUSIC) {
                            LOGGER.debug(MARKER, "Skipped playing soundEvent: {}, master volume was zero", var3);
                         } else {
                            boolean var17 = shouldLoopAutomatically(var1);
@@ -465,11 +473,15 @@ public class SoundEngine {
       return Mth.clamp(var1 * this.getVolume(var2), 0.0F, 1.0F);
    }
 
-   public void pause() {
+   public void pauseAllExcept(SoundSource... var1) {
       if (this.loaded) {
-         this.channelAccess.executeOnChannels((var0) -> var0.forEach(Channel::pause));
-      }
+         for(Map.Entry var3 : this.instanceToChannel.entrySet()) {
+            if (!List.of(var1).contains(((SoundInstance)var3.getKey()).getSource())) {
+               ((ChannelAccess.ChannelHandle)var3.getValue()).execute(Channel::pause);
+            }
+         }
 
+      }
    }
 
    public void resume() {

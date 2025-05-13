@@ -73,7 +73,7 @@ public class FunctionCommand {
             })));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> var0x.hasPermission(2))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
          @Nullable
          protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
             return null;

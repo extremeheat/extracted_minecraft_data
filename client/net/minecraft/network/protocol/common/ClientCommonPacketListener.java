@@ -24,4 +24,8 @@ public interface ClientCommonPacketListener extends ClientCookiePacketListener {
    void handleCustomReportDetails(ClientboundCustomReportDetailsPacket var1);
 
    void handleServerLinks(ClientboundServerLinksPacket var1);
+
+   void handleClearDialog(ClientboundClearDialogPacket var1);
+
+   void handleShowDialog(ClientboundShowDialogPacket var1);
 }

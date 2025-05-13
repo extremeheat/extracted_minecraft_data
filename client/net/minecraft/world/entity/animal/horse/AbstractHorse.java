@@ -117,7 +117,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private int standCounter;
    public int tailCounter;
    public int sprintCounter;
-   protected boolean isJumping;
    protected SimpleContainer inventory;
    protected int temper = 0;
    protected float playerJumpPendingScale;
@@ -192,10 +191,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    public void setTamed(boolean var1) {
       this.setFlag(2, var1);
-   }
-
-   public void setIsJumping(boolean var1) {
-      this.isJumping = var1;
    }
 
    public void onElasticLeashPull() {
@@ -479,7 +474,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    protected void doPlayerRide(Player var1) {
       this.setEating(false);
-      this.setStanding(false);
+      this.clearStanding();
       if (!this.level().isClientSide) {
          var1.setYRot(this.getYRot());
          var1.setXRot(this.getXRot());
@@ -565,9 +560,8 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          this.setFlag(64, false);
       }
 
-      if (this.isEffectiveAi() && this.standCounter > 0 && ++this.standCounter > 20) {
-         this.standCounter = 0;
-         this.setStanding(false);
+      if (this.standCounter > 0 && --this.standCounter <= 0) {
+         this.clearStanding();
       }
 
       if (this.tailCounter > 0 && ++this.tailCounter > 8) {
@@ -664,12 +658,15 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.setFlag(16, var1);
    }
 
-   public void setStanding(boolean var1) {
-      if (var1) {
-         this.setEating(false);
-      }
+   public void setStanding(int var1) {
+      this.setEating(false);
+      this.setFlag(32, true);
+      this.standCounter = var1;
+   }
 
-      this.setFlag(32, var1);
+   public void clearStanding() {
+      this.setFlag(32, false);
+      this.standCounter = 0;
    }
 
    @Nullable
@@ -678,15 +675,14 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    public void standIfPossible() {
-      if (this.canPerformRearing() && this.isEffectiveAi()) {
-         this.standCounter = 1;
-         this.setStanding(true);
+      if (this.canPerformRearing() && (this.isEffectiveAi() || !this.level().isClientSide)) {
+         this.setStanding(20);
       }
 
    }
 
    public void makeMad() {
-      if (!this.isStanding()) {
+      if (!this.isStanding() && !this.level().isClientSide) {
          this.standIfPossible();
          this.makeSound(this.getAngrySound());
       }
@@ -715,7 +711,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          }
 
          if (this.onGround()) {
-            this.setIsJumping(false);
             if (this.playerJumpPendingScale > 0.0F && !this.isJumping()) {
                this.executeRidersJump(this.playerJumpPendingScale, var2);
             }
@@ -752,7 +747,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       double var3 = (double)this.getJumpPower(var1);
       Vec3 var5 = this.getDeltaMovement();
       this.setDeltaMovement(var5.x, var3, var5.z);
-      this.setIsJumping(true);
       this.hasImpulse = true;
       if (var2.z > 0.0) {
          float var6 = Mth.sin(this.getYRot() * 0.017453292F);

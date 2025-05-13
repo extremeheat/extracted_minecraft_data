@@ -14,11 +14,11 @@ import com.mojang.realmsclient.dto.PlayerInfo;
 import com.mojang.realmsclient.dto.PreferredRegionsDto;
 import com.mojang.realmsclient.dto.RealmsConfigurationDto;
 import com.mojang.realmsclient.dto.RealmsDescriptionDto;
+import com.mojang.realmsclient.dto.RealmsJoinInformation;
 import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.dto.RealmsRegion;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsServerAddress;
 import com.mojang.realmsclient.dto.RealmsServerList;
 import com.mojang.realmsclient.dto.RealmsServerPlayerLists;
 import com.mojang.realmsclient.dto.RealmsSetting;
@@ -27,6 +27,7 @@ import com.mojang.realmsclient.dto.RealmsWorldOptions;
 import com.mojang.realmsclient.dto.RealmsWorldResetDto;
 import com.mojang.realmsclient.dto.ReflectionBasedSerialization;
 import com.mojang.realmsclient.dto.RegionDataDto;
+import com.mojang.realmsclient.dto.RegionSelectionPreference;
 import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
 import com.mojang.realmsclient.dto.ServerActivityList;
 import com.mojang.realmsclient.dto.Subscription;
@@ -265,10 +266,10 @@ public class RealmsClient {
       return RealmsServerPlayerLists.parse(var2);
    }
 
-   public RealmsServerAddress join(long var1) throws RealmsServiceException {
+   public RealmsJoinInformation join(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/v1/$ID/join/pc".replace("$ID", "" + var1));
       String var4 = this.execute(Request.get(var3, 5000, 30000));
-      return RealmsServerAddress.parse(var4);
+      return RealmsJoinInformation.parse(GSON, var4);
    }
 
    public void initializeRealm(long var1, String var3, String var4) throws RealmsServiceException {
@@ -306,12 +307,12 @@ public class RealmsClient {
       this.execute(Request.delete(var3));
    }
 
-   public RealmsServer invite(long var1, String var3) throws RealmsServiceException {
+   public List<PlayerInfo> invite(long var1, String var3) throws RealmsServiceException {
       PlayerInfo var4 = new PlayerInfo();
       var4.setName(var3);
       String var5 = this.url("invites" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
       String var6 = this.execute(Request.post(var5, GSON.toJson((ReflectionBasedSerialization)var4)));
-      return RealmsServer.parse(GSON, var6);
+      return RealmsServer.parse(GSON, var6).players;
    }
 
    public BackupList backupsFor(long var1) throws RealmsServiceException {
@@ -321,7 +322,7 @@ public class RealmsClient {
    }
 
    public void updateConfiguration(long var1, String var3, String var4, @Nullable RegionSelectionPreferenceDto var5, int var6, RealmsWorldOptions var7, List<RealmsSetting> var8) throws RealmsServiceException {
-      RegionSelectionPreferenceDto var9 = var5 != null ? var5 : new RegionSelectionPreferenceDto(RegionSelectionPreferenceDto.RegionSelectionPreference.DEFAULT_SELECTION, (RealmsRegion)null);
+      RegionSelectionPreferenceDto var9 = var5 != null ? var5 : new RegionSelectionPreferenceDto(RegionSelectionPreference.DEFAULT_SELECTION, (RealmsRegion)null);
       RealmsDescriptionDto var10 = new RealmsDescriptionDto(var3, var4);
       RealmsSlotUpdateDto var11 = new RealmsSlotUpdateDto(var6, var7, RealmsSetting.isHardcore(var8));
       RealmsConfigurationDto var12 = new RealmsConfigurationDto(var11, var8, var9, var10);
@@ -491,23 +492,28 @@ public class RealmsClient {
       try {
          int var2 = var1.responseCode();
          if (var2 != 503 && var2 != 277) {
-            String var6 = var1.text();
+            String var7 = var1.text();
             if (var2 >= 200 && var2 < 300) {
-               return var6;
+               return var7;
             } else if (var2 == 401) {
-               String var7 = var1.getHeader("WWW-Authenticate");
-               LOGGER.info("Could not authorize you against Realms server: {}", var7);
-               throw new RealmsServiceException(new RealmsError.AuthenticationError(var7));
+               String var8 = var1.getHeader("WWW-Authenticate");
+               LOGGER.info("Could not authorize you against Realms server: {}", var8);
+               throw new RealmsServiceException(new RealmsError.AuthenticationError(var8));
             } else {
-               RealmsError var4 = RealmsError.parse(var2, var6);
-               throw new RealmsServiceException(var4);
+               String var4 = var1.connection.getContentType();
+               if (var4 != null && var4.startsWith("text/html")) {
+                  throw new RealmsServiceException(RealmsError.CustomError.htmlPayload(var2, var7));
+               } else {
+                  RealmsError var5 = RealmsError.parse(var2, var7);
+                  throw new RealmsServiceException(var5);
+               }
             }
          } else {
             int var3 = var1.getRetryAfterHeader();
             throw new RetryCallException(var3, var2);
          }
-      } catch (RealmsHttpException var5) {
-         throw new RealmsServiceException(RealmsError.CustomError.connectivityError(var5));
+      } catch (RealmsHttpException var6) {
+         throw new RealmsServiceException(RealmsError.CustomError.connectivityError(var6));
       }
    }
 

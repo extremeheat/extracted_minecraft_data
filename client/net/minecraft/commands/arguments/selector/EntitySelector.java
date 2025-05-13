@@ -91,7 +91,7 @@ public class EntitySelector {
    }
 
    private void checkPermissions(CommandSourceStack var1) throws CommandSyntaxException {
-      if (this.usesSelector && !var1.hasPermission(2)) {
+      if (this.usesSelector && !var1.allowsSelectors()) {
          throw EntityArgument.ERROR_SELECTORS_NOT_ALLOWED.create();
       }
    }

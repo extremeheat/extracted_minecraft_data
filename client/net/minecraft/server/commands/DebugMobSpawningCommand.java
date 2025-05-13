@@ -15,7 +15,7 @@ public class DebugMobSpawningCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires((var0x) -> var0x.hasPermission(2));
+      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires(Commands.hasPermission(2));
 
       for(MobCategory var5 : MobCategory.values()) {
          var1.then(Commands.literal(var5.getName()).then(Commands.argument("at", BlockPosArgument.blockPos()).executes((var1x) -> spawnMobs((CommandSourceStack)var1x.getSource(), var5, BlockPosArgument.getLoadedBlockPos(var1x, "at")))));

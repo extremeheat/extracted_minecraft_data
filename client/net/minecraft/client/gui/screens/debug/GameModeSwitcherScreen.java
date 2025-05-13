@@ -13,6 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -66,7 +67,7 @@ public class GameModeSwitcherScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (!this.checkToClose()) {
-         var1.drawCenteredString(this.font, (Component)this.currentlyHovered.getName(), this.width / 2, this.height / 2 - 31 - 20, -1);
+         var1.drawCenteredString(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
          var1.drawCenteredString(this.font, (Component)SELECT_KEY, this.width / 2, this.height / 2 + 5, -1);
          if (!this.setFirstMousePos) {
             this.firstMouseX = var2;
@@ -101,7 +102,7 @@ public class GameModeSwitcherScreen extends Screen {
       if (var0.gameMode != null && var0.player != null) {
          GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
          if (var0.player.hasPermissions(2) && var1 != var2) {
-            var0.player.connection.sendUnsignedCommand(var1.getCommand());
+            var0.player.connection.send(new ServerboundChangeGameModePacket(var1.mode));
          }
 
       }
@@ -136,34 +137,26 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    static enum GameModeIcon {
-      CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.GRASS_BLOCK)),
-      SURVIVAL(Component.translatable("gameMode.survival"), "gamemode survival", new ItemStack(Items.IRON_SWORD)),
-      ADVENTURE(Component.translatable("gameMode.adventure"), "gamemode adventure", new ItemStack(Items.MAP)),
-      SPECTATOR(Component.translatable("gameMode.spectator"), "gamemode spectator", new ItemStack(Items.ENDER_EYE));
+      CREATIVE(Component.translatable("gameMode.creative"), GameType.CREATIVE, new ItemStack(Blocks.GRASS_BLOCK)),
+      SURVIVAL(Component.translatable("gameMode.survival"), GameType.SURVIVAL, new ItemStack(Items.IRON_SWORD)),
+      ADVENTURE(Component.translatable("gameMode.adventure"), GameType.ADVENTURE, new ItemStack(Items.MAP)),
+      SPECTATOR(Component.translatable("gameMode.spectator"), GameType.SPECTATOR, new ItemStack(Items.ENDER_EYE));
 
-      protected static final GameModeIcon[] VALUES = values();
+      static final GameModeIcon[] VALUES = values();
       private static final int ICON_AREA = 16;
-      protected static final int ICON_TOP_LEFT = 5;
+      private static final int ICON_TOP_LEFT = 5;
       final Component name;
-      final String command;
-      final ItemStack renderStack;
+      final GameType mode;
+      private final ItemStack renderStack;
 
-      private GameModeIcon(final Component var3, final String var4, final ItemStack var5) {
+      private GameModeIcon(final Component var3, final GameType var4, final ItemStack var5) {
          this.name = var3;
-         this.command = var4;
+         this.mode = var4;
          this.renderStack = var5;
       }
 
       void drawIcon(GuiGraphics var1, int var2, int var3) {
          var1.renderItem(this.renderStack, var2, var3);
-      }
-
-      Component getName() {
-         return this.name;
-      }
-
-      String getCommand() {
-         return this.command;
       }
 
       GameModeIcon getNext() {
@@ -203,7 +196,7 @@ public class GameModeSwitcherScreen extends Screen {
       private boolean isSelected;
 
       public GameModeSlot(GameModeIcon var1, int var2, int var3) {
-         super(var2, var3, 26, 26, var1.getName());
+         super(var2, var3, 26, 26, var1.name);
          this.icon = var1;
       }
 

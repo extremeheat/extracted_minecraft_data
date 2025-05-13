@@ -955,6 +955,7 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CREATOR = registerForHolder("music_disc.creator");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_CREATOR_MUSIC_BOX = registerForHolder("music_disc.creator_music_box");
    public static final Holder.Reference<SoundEvent> MUSIC_DISC_PRECIPICE = registerForHolder("music_disc.precipice");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_TEARS = registerForHolder("music_disc.tears");
    public static final Holder.Reference<SoundEvent> MUSIC_DRAGON = registerForHolder("music.dragon");
    public static final Holder.Reference<SoundEvent> MUSIC_END = registerForHolder("music.end");
    public static final Holder.Reference<SoundEvent> MUSIC_GAME = registerForHolder("music.game");

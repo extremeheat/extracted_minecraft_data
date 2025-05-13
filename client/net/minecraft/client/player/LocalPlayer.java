@@ -37,6 +37,7 @@ import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -51,6 +52,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -546,6 +548,10 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void openJigsawBlock(JigsawBlockEntity var1) {
       this.minecraft.setScreen(new JigsawBlockEditScreen(var1));
+   }
+
+   public void openDialog(Holder<Dialog> var1) {
+      this.connection.showDialog(var1);
    }
 
    public void openItemGui(ItemStack var1, InteractionHand var2) {

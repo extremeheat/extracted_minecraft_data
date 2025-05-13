@@ -81,8 +81,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      SharedSuggestionProvider.suggestResource(this.registryLookup.listTagIds().map(TagKey::location), var2, "#");
-      return SharedSuggestionProvider.suggestResource(this.registryLookup.listElementIds().map(ResourceKey::location), var2);
+      return SharedSuggestionProvider.listSuggestions(var1, var2, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ALL);
    }
 
    public Collection<String> getExamples() {

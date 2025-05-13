@@ -118,8 +118,11 @@ public class PresetFlatWorldScreen extends Screen {
             return Collections.emptyList();
          }
 
-         var2.add(var9);
-         var4 += var9.getHeight();
+         int var10 = DimensionType.Y_SIZE - var4;
+         if (var10 > 0) {
+            var2.add(var9.heightLimited(var10));
+            var4 += var9.getHeight();
+         }
       }
 
       return var2;

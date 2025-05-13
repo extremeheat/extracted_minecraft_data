@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
@@ -21,6 +22,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.execution.TraceCallbacks;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -46,7 +48,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public class CommandSourceStack implements ExecutionCommandSource<CommandSourceStack>, SharedSuggestionProvider {
+public class CommandSourceStack implements ExecutionCommandSource<CommandSourceStack>, PermissionSource, SharedSuggestionProvider {
    public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(Component.translatable("permissions.requires.player"));
    public static final SimpleCommandExceptionType ERROR_NOT_ENTITY = new SimpleCommandExceptionType(Component.translatable("permissions.requires.entity"));
    private final CommandSource source;
@@ -335,11 +337,16 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
          Collection var5 = this.server.getAdvancements().getAllAdvancements();
          return SharedSuggestionProvider.suggestResource(var5.stream().map(AdvancementHolder::id), var3);
       } else {
-         return (CompletableFuture)this.registryAccess().lookup(var1).map((var3x) -> {
+         return (CompletableFuture)this.getLookup(var1).map((var3x) -> {
             this.suggestRegistryElements(var3x, var2, var3);
             return var3.buildFuture();
          }).orElseGet(Suggestions::empty);
       }
+   }
+
+   private Optional<? extends HolderLookup<?>> getLookup(ResourceKey<? extends Registry<?>> var1) {
+      Optional var2 = this.registryAccess().lookup(var1);
+      return var2.isPresent() ? var2 : this.server.reloadableRegistries().lookup().lookup(var1);
    }
 
    public Set<ResourceKey<Level>> levels() {

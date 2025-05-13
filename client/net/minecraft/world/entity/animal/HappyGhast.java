@@ -38,9 +38,6 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
@@ -61,7 +58,6 @@ public class HappyGhast extends Animal {
    public static final int FAST_HEALING_TICKS = 20;
    public static final int SLOW_HEALING_TICKS = 600;
    public static final int MAX_PASSANGERS = 4;
-   private static final float FLY_SPEED = 0.09F;
    private static final int MAX_STILL_TIMEOUT = 10;
    private static final int MIN_STILL_TIMEOUT_CHECK = 5;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
@@ -74,7 +70,7 @@ public class HappyGhast extends Animal {
 
    public HappyGhast(EntityType<? extends HappyGhast> var1, Level var2) {
       super(var1, var2);
-      this.moveControl = new Ghast.GhastMoveControl(this, true, 0.09F, this::isPlayerAboveGhast);
+      this.moveControl = new Ghast.GhastMoveControl(this, true, this::isPlayerAboveGhast);
       this.lookControl = new HappyGhastLookControl();
    }
 
@@ -89,7 +85,7 @@ public class HappyGhast extends Animal {
    }
 
    private void adultGhastSetup() {
-      this.moveControl = new Ghast.GhastMoveControl(this, true, 0.09F, this::isPlayerAboveGhast);
+      this.moveControl = new Ghast.GhastMoveControl(this, true, this::isPlayerAboveGhast);
       this.lookControl = new HappyGhastLookControl();
       this.navigation = this.createNavigation(this.level());
       Level var2 = this.level();
@@ -136,7 +132,8 @@ public class HappyGhast extends Animal {
    }
 
    public void travel(Vec3 var1) {
-      this.travelFlying(var1, 0.09F, 0.09F, 0.09F);
+      float var2 = (float)this.getAttributeValue(Attributes.FLYING_SPEED) * 5.0F / 3.0F;
+      this.travelFlying(var1, var2, var2, var2);
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -227,25 +224,11 @@ public class HappyGhast extends Animal {
             }
          }
 
-         if (!var3.is(Items.SHEARS) || this.isVehicle() || !this.isWearingBodyArmor() || EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) && !var1.isCreative()) {
-            if (this.isWearingBodyArmor() && !var1.isSecondaryUseActive()) {
-               this.doPlayerRide(var1);
-               return InteractionResult.SUCCESS;
-            } else {
-               return super.mobInteract(var1, var2);
-            }
-         } else {
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
-            this.playSound(SoundEvents.HARNESS_UNEQUIP);
-            ItemStack var7 = this.getBodyArmorItem();
-            this.setBodyArmorItem(ItemStack.EMPTY);
-            Level var6 = this.level();
-            if (var6 instanceof ServerLevel) {
-               ServerLevel var5 = (ServerLevel)var6;
-               this.spawnAtLocation(var5, var7, this.getBbHeight() + 0.5F);
-            }
-
+         if (this.isWearingBodyArmor() && !var1.isSecondaryUseActive()) {
+            this.doPlayerRide(var1);
             return InteractionResult.SUCCESS;
+         } else {
+            return super.mobInteract(var1, var2);
          }
       }
    }
@@ -307,7 +290,7 @@ public class HappyGhast extends Animal {
          var5 += 0.5F;
       }
 
-      return (new Vec3((double)var3, (double)var5, (double)var4)).scale(0.18000000715255737);
+      return (new Vec3((double)var3, (double)var5, (double)var4)).scale(3.9000000953674316 * this.getAttributeValue(Attributes.FLYING_SPEED));
    }
 
    protected Vec2 getRiddenRotation(LivingEntity var1) {
@@ -334,15 +317,6 @@ public class HappyGhast extends Animal {
    }
 
    protected void customServerAiStep(ServerLevel var1) {
-      if (this.serverStillTimeout > 0) {
-         --this.serverStillTimeout;
-      }
-
-      if (this.serverStillTimeout < 5 && this.scanPlayerAboveGhast()) {
-         this.serverStillTimeout = 10;
-      }
-
-      this.syncStayStillFlag();
       if (this.isBaby()) {
          ProfilerFiller var2 = Profiler.get();
          var2.push("happyGhastBrain");
@@ -355,12 +329,27 @@ public class HappyGhast extends Animal {
 
       this.setRequiresPrecisePosition(this.isPlayerAboveGhast());
       this.checkRestriction();
-      if (this.leashHolderTime > 0) {
-         --this.leashHolderTime;
-      }
-
-      this.setLeashHolder(this.leashHolderTime > 0);
       super.customServerAiStep(var1);
+   }
+
+   public void tick() {
+      super.tick();
+      if (!this.level().isClientSide()) {
+         if (this.leashHolderTime > 0) {
+            --this.leashHolderTime;
+         }
+
+         this.setLeashHolder(this.leashHolderTime > 0);
+         if (this.serverStillTimeout > 0) {
+            --this.serverStillTimeout;
+         }
+
+         if (this.serverStillTimeout < 5 && this.scanPlayerAboveGhast()) {
+            this.serverStillTimeout = 10;
+         }
+
+         this.syncStayStillFlag();
+      }
    }
 
    public void aiStep() {
@@ -429,6 +418,10 @@ public class HappyGhast extends Animal {
 
    public Vec3[] getQuadLeashHolderOffsets() {
       return Leashable.createQuadLeashOffsets(this, -0.03125, 0.4375, 0.46875, 0.03125);
+   }
+
+   public Vec3 getLeashOffset() {
+      return Vec3.ZERO;
    }
 
    public double leashElasticDistance() {

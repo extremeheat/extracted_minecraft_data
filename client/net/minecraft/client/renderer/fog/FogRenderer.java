@@ -47,7 +47,7 @@ public class FogRenderer implements AutoCloseable {
 
       try {
          ByteBuffer var3 = var2.malloc(FOG_UBO_SIZE);
-         this.updateBuffer(var3, 0, new Vector4f(0.0F), 3.4028235E38F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+         this.updateBuffer(var3, 0, new Vector4f(0.0F), 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F);
          this.emptyBuffer = var1.createBuffer(() -> "Empty fog", 128, var3.flip());
       } catch (Throwable var6) {
          if (var2 != null) {

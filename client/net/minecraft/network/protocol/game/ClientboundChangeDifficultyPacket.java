@@ -1,31 +1,19 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.Difficulty;
 
-public class ClientboundChangeDifficultyPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundChangeDifficultyPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundChangeDifficultyPacket>codec(ClientboundChangeDifficultyPacket::write, ClientboundChangeDifficultyPacket::new);
-   private final Difficulty difficulty;
-   private final boolean locked;
+public record ClientboundChangeDifficultyPacket(Difficulty difficulty, boolean locked) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<ByteBuf, ClientboundChangeDifficultyPacket> STREAM_CODEC;
 
    public ClientboundChangeDifficultyPacket(Difficulty var1, boolean var2) {
       super();
       this.difficulty = var1;
       this.locked = var2;
-   }
-
-   private ClientboundChangeDifficultyPacket(FriendlyByteBuf var1) {
-      super();
-      this.difficulty = Difficulty.byId(var1.readUnsignedByte());
-      this.locked = var1.readBoolean();
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.difficulty.getId());
-      var1.writeBoolean(this.locked);
    }
 
    public PacketType<ClientboundChangeDifficultyPacket> type() {
@@ -36,11 +24,7 @@ public class ClientboundChangeDifficultyPacket implements Packet<ClientGamePacke
       var1.handleChangeDifficulty(this);
    }
 
-   public boolean isLocked() {
-      return this.locked;
-   }
-
-   public Difficulty getDifficulty() {
-      return this.difficulty;
+   static {
+      STREAM_CODEC = StreamCodec.composite(Difficulty.STREAM_CODEC, ClientboundChangeDifficultyPacket::difficulty, ByteBufCodecs.BOOL, ClientboundChangeDifficultyPacket::locked, ClientboundChangeDifficultyPacket::new);
    }
 }

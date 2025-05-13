@@ -201,6 +201,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.FileZipper;
@@ -441,9 +442,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.singleplayerServer = null;
       KeybindResolver.setKeyResolver(KeyMapping::createNameSupplier);
       this.fixerUpper = DataFixers.getDataFixer();
-      this.toastManager = new ToastManager(this);
       this.gameThread = Thread.currentThread();
       this.options = new Options(this, this.gameDirectory);
+      this.toastManager = new ToastManager(this, this.options);
       boolean var6 = this.options.startedCleanly;
       this.options.startedCleanly = false;
       this.options.save();
@@ -1183,9 +1184,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.reloadResourcePacks().thenRun(() -> var2.complete((Object)null));
       }
 
-      Runnable var15;
-      while((var15 = (Runnable)this.progressTasks.poll()) != null) {
-         var15.run();
+      Runnable var16;
+      while((var16 = (Runnable)this.progressTasks.poll()) != null) {
+         var16.run();
       }
 
       int var3 = this.deltaTracker.advanceTime(Util.getMillis(), var1);
@@ -1212,7 +1213,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var4.popPush("toasts");
       this.toastManager.update();
       var4.popPush("render");
-      long var16 = Util.getNanos();
+      long var17 = Util.getNanos();
       boolean var7;
       if (!this.getDebugOverlay().showDebugScreen() && !this.metricsRecorder.isRecording()) {
          var7 = false;
@@ -1240,7 +1241,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var8.blitToScreen();
       }
 
-      this.frameTimeNs = Util.getNanos() - var16;
+      this.frameTimeNs = Util.getNanos() - var17;
       if (var7) {
          TimerQuery.getInstance().ifPresent((var1x) -> this.currentFrameProfile = var1x.endProfile());
       }
@@ -1262,33 +1263,38 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var4.pop();
       this.window.setErrorSection("Post render");
       ++this.frames;
+      boolean var10 = this.pause;
       this.pause = this.hasSingleplayerServer() && (this.screen != null && this.screen.isPauseScreen() || this.overlay != null && this.overlay.isPauseScreen()) && !this.singleplayerServer.isPublished();
-      this.deltaTracker.updatePauseState(this.pause);
-      this.deltaTracker.updateFrozenState(!this.isLevelRunningNormally());
-      long var10 = Util.getNanos();
-      long var12 = var10 - this.lastNanoTime;
-      if (var7) {
-         this.savedCpuDuration = var12;
+      if (!var10 && this.pause) {
+         this.soundManager.pauseAllExcept(SoundSource.MUSIC);
       }
 
-      this.getDebugOverlay().logFrameDuration(var12);
-      this.lastNanoTime = var10;
+      this.deltaTracker.updatePauseState(this.pause);
+      this.deltaTracker.updateFrozenState(!this.isLevelRunningNormally());
+      long var11 = Util.getNanos();
+      long var13 = var11 - this.lastNanoTime;
+      if (var7) {
+         this.savedCpuDuration = var13;
+      }
+
+      this.getDebugOverlay().logFrameDuration(var13);
+      this.lastNanoTime = var11;
       var4.push("fpsUpdate");
       if (this.currentFrameProfile != null && this.currentFrameProfile.isDone()) {
          this.gpuUtilization = (double)this.currentFrameProfile.get() * 100.0 / (double)this.savedCpuDuration;
       }
 
       while(Util.getMillis() >= this.lastTime + 1000L) {
-         String var14;
+         String var15;
          if (this.gpuUtilization > 0.0) {
             String var10000 = this.gpuUtilization > 100.0 ? String.valueOf(ChatFormatting.RED) + "100%" : Math.round(this.gpuUtilization) + "%";
-            var14 = " GPU: " + var10000;
+            var15 = " GPU: " + var10000;
          } else {
-            var14 = "";
+            var15 = "";
          }
 
          fps = this.frames;
-         this.fpsString = String.format(Locale.ROOT, "%d fps T: %s%s%s%s B: %d%s", fps, var9 == 260 ? "inf" : var9, (Boolean)this.options.enableVsync().get() ? " vsync " : " ", this.options.graphicsMode().get(), this.options.cloudStatus().get() == CloudStatus.OFF ? "" : (this.options.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius().get(), var14);
+         this.fpsString = String.format(Locale.ROOT, "%d fps T: %s%s%s%s B: %d%s", fps, var9 == 260 ? "inf" : var9, (Boolean)this.options.enableVsync().get() ? " vsync " : " ", this.options.graphicsMode().get(), this.options.cloudStatus().get() == CloudStatus.OFF ? "" : (this.options.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius().get(), var15);
          this.lastTime += 1000L;
          this.frames = 0;
       }
@@ -1504,7 +1510,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          boolean var2 = this.hasSingleplayerServer() && !this.singleplayerServer.isPublished();
          if (var2) {
             this.setScreen(new PauseScreen(!var1));
-            this.soundManager.pause();
          } else {
             this.setScreen(new PauseScreen(true));
          }
@@ -1750,10 +1755,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.gameRenderer.clearPostEffect();
       }
 
-      if (!this.pause) {
-         this.musicManager.tick();
-      }
-
+      this.musicManager.tick();
       this.soundManager.tick(this.pause);
       if (this.level != null) {
          if (!this.pause) {

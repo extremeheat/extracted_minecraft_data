@@ -85,7 +85,12 @@ public abstract class BlockAttachedEntity extends Entity {
    }
 
    public boolean ignoreExplosion(Explosion var1) {
-      return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
+      Entity var2 = var1.getDirectSourceEntity();
+      if (var2 != null && var2.isInWater()) {
+         return true;
+      } else {
+         return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
+      }
    }
 
    public void move(MoverType var1, Vec3 var2) {

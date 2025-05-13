@@ -37,24 +37,26 @@ import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.gui.render.state.BlitRenderState;
+import net.minecraft.client.gui.render.state.GlyphEffectRenderState;
+import net.minecraft.client.gui.render.state.GlyphRenderState;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.gui.render.state.TextRenderState;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -76,7 +78,7 @@ public class GuiRenderer implements AutoCloseable {
    private static final Comparator<TextureSetup> TEXTURE_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(TextureSetup::getSortKey));
    private static final Comparator<GuiElementRenderState> ELEMENT_SORT_COMPARATOR;
    private final Map<Object, AtlasPosition> atlasPositions = new Object2ObjectOpenHashMap();
-   private final GuiRenderState renderState;
+   final GuiRenderState renderState;
    private final List<Draw> draws = new ArrayList();
    private final List<MeshToDraw> meshesToDraw = new ArrayList();
    private final ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(786432);
@@ -226,50 +228,23 @@ public class GuiRenderer implements AutoCloseable {
 
    private void prepareText() {
       this.renderState.forEachText((var1) -> {
-         this.renderState.down();
-         TextRenderState var2 = var1.textRenderState();
-         BakedGlyph var3 = var2.whiteGlyph();
-         boolean var4 = var2.effects() != null;
-         if (var2.backgroundColor() != 0) {
-            BakedGlyph.Effect var5 = new BakedGlyph.Effect((float)(var1.x() - 1), (float)(var1.y() - 1), var2.endX(), (float)(var1.y() + var2.lineHeight()), 0.0F, var2.backgroundColor());
-            RenderType var6 = var3.renderType(var2.mode());
-            var3.extractBackground(this.renderState, var6, var5, var1);
-         }
+         final Matrix3x2f var2 = var1.pose;
+         final ScreenRectangle var3 = var1.scissor;
+         var1.ensurePrepared().visit(new Font.GlyphVisitor() {
+            public void acceptGlyph(BakedGlyph.GlyphInstance var1) {
+               if (var1.glyph().textureView() != null) {
+                  GuiRenderer.this.renderState.submitGuiElementToCurrentLayer(new GlyphRenderState(var2, var1, var3));
+               }
 
-         this.renderState.up();
-
-         for(BakedGlyph.GlyphInstance var13 : var2.glyphInstances()) {
-            BakedGlyph var7 = var13.glyph();
-            RenderType var8 = var7.renderType(var2.mode());
-            var7.extractChar(this.renderState, var8, var13, true, var1);
-         }
-
-         if (var4) {
-            this.renderState.up();
-            RenderType var10 = var3.renderType(var2.mode());
-
-            for(BakedGlyph.Effect var17 : var2.effects()) {
-               var3.extractEffect(this.renderState, var10, var17, true, var1);
             }
-         }
 
-         this.renderState.up();
+            public void acceptEffect(BakedGlyph var1, BakedGlyph.Effect var2x) {
+               if (var1.textureView() != null) {
+                  GuiRenderer.this.renderState.submitGuiElementToCurrentLayer(new GlyphEffectRenderState(var2, var1, var2x, var3));
+               }
 
-         for(BakedGlyph.GlyphInstance var15 : var2.glyphInstances()) {
-            BakedGlyph var18 = var15.glyph();
-            RenderType var20 = var18.renderType(var2.mode());
-            var18.extractChar(this.renderState, var20, var15, false, var1);
-         }
-
-         if (var4) {
-            this.renderState.up();
-            RenderType var12 = var3.renderType(var2.mode());
-
-            for(BakedGlyph.Effect var19 : var2.effects()) {
-               var3.extractEffect(this.renderState, var12, var19, false, var1);
             }
-         }
-
+         });
       });
    }
 

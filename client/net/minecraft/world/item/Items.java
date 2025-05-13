@@ -1327,6 +1327,7 @@ public class Items {
    public static final Item MUSIC_DISC_5;
    public static final Item MUSIC_DISC_PIGSTEP;
    public static final Item MUSIC_DISC_PRECIPICE;
+   public static final Item MUSIC_DISC_TEARS;
    public static final Item DISC_FRAGMENT_5;
    public static final Item TRIDENT;
    public static final Item NAUTILUS_SHELL;
@@ -2818,6 +2819,7 @@ public class Items {
       MUSIC_DISC_5 = registerItem("music_disc_5", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.FIVE));
       MUSIC_DISC_PIGSTEP = registerItem("music_disc_pigstep", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PIGSTEP));
       MUSIC_DISC_PRECIPICE = registerItem("music_disc_precipice", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.PRECIPICE));
+      MUSIC_DISC_TEARS = registerItem("music_disc_tears", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.TEARS));
       DISC_FRAGMENT_5 = registerItem("disc_fragment_5", DiscFragmentItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       TRIDENT = registerItem("trident", TridentItem::new, (new Item.Properties()).rarity(Rarity.RARE).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties()).enchantable(1).component(DataComponents.WEAPON, new Weapon(1)));
       NAUTILUS_SHELL = registerItem("nautilus_shell", (new Item.Properties()).rarity(Rarity.UNCOMMON));

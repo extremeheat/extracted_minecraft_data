@@ -35,6 +35,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.VersionCommand;
 import net.minecraft.util.Mth;
@@ -212,11 +213,10 @@ public class KeyboardHandler {
                if (!this.minecraft.player.hasPermissions(2)) {
                   this.debugFeedbackTranslated("debug.creative_spectator.error");
                } else if (!this.minecraft.player.isSpectator()) {
-                  this.minecraft.player.connection.sendUnsignedCommand("gamemode spectator");
+                  this.minecraft.player.connection.send(new ServerboundChangeGameModePacket(GameType.SPECTATOR));
                } else {
-                  ClientPacketListener var10000 = this.minecraft.player.connection;
-                  GameType var10001 = this.minecraft.gameMode.getPreviousPlayerMode();
-                  var10000.sendUnsignedCommand("gamemode " + ((GameType)MoreObjects.firstNonNull(var10001, GameType.CREATIVE)).getName());
+                  GameType var8 = (GameType)MoreObjects.firstNonNull(this.minecraft.gameMode.getPreviousPlayerMode(), GameType.CREATIVE);
+                  this.minecraft.player.connection.send(new ServerboundChangeGameModePacket(var8));
                }
 
                return true;

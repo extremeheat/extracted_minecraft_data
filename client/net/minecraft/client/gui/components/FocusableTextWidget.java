@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 
 public class FocusableTextWidget extends MultiLineTextWidget {
-   private static final int DEFAULT_PADDING = 4;
+   public static final int DEFAULT_PADDING = 4;
    private final boolean alwaysShowBorder;
    private final boolean fillBackground;
    private final int padding;

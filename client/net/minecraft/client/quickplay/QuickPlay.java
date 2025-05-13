@@ -132,11 +132,11 @@ public class QuickPlay {
       try {
          var3 = Long.parseLong(var2);
          var5 = var1.listRealms();
-      } catch (NumberFormatException var9) {
-         RealmsMainScreen var11 = new RealmsMainScreen(new TitleScreen());
-         var0.setScreen(new DisconnectedScreen(var11, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));
+      } catch (NumberFormatException var8) {
+         RealmsMainScreen var10 = new RealmsMainScreen(new TitleScreen());
+         var0.setScreen(new DisconnectedScreen(var10, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));
          return;
-      } catch (RealmsServiceException var10) {
+      } catch (RealmsServiceException var9) {
          TitleScreen var7 = new TitleScreen();
          var0.setScreen(new DisconnectedScreen(var7, ERROR_TITLE, REALM_CONNECT, TO_TITLE));
          return;
@@ -144,12 +144,11 @@ public class QuickPlay {
 
       RealmsServer var6 = (RealmsServer)var5.servers.stream().filter((var2x) -> var2x.id == var3).findFirst().orElse((Object)null);
       if (var6 == null) {
-         RealmsMainScreen var13 = new RealmsMainScreen(new TitleScreen());
-         var0.setScreen(new DisconnectedScreen(var13, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
+         RealmsMainScreen var12 = new RealmsMainScreen(new TitleScreen());
+         var0.setScreen(new DisconnectedScreen(var12, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
       } else {
-         TitleScreen var12 = new TitleScreen();
-         GetServerDetailsTask var8 = new GetServerDetailsTask(var12, var6);
-         var0.setScreen(new RealmsLongRunningMcoTaskScreen(var12, new LongRunningTask[]{var8}));
+         TitleScreen var11 = new TitleScreen();
+         var0.setScreen(new RealmsLongRunningMcoTaskScreen(var11, new LongRunningTask[]{new GetServerDetailsTask(var11, var6)}));
       }
    }
 }

@@ -50,7 +50,7 @@ public class CloneCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires((var0x) -> var0x.hasPermission(2))).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> DimensionArgument.getDimension(var0x, "sourceDimension"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(2))).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> DimensionArgument.getDimension(var0x, "sourceDimension"))))));
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1) {

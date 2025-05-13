@@ -100,6 +100,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
@@ -2048,15 +2051,20 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    @Nullable
-   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
+   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, Vec3 var3) {
       if (var2.isEmpty()) {
          return null;
       } else {
-         ItemEntity var4 = new ItemEntity(var1, this.getX(), this.getY() + (double)var3, this.getZ(), var2);
+         ItemEntity var4 = new ItemEntity(var1, this.getX() + var3.x, this.getY() + var3.y, this.getZ() + var3.z, var2);
          var4.setDefaultPickUpDelay();
          var1.addFreshEntity(var4);
          return var4;
       }
+   }
+
+   @Nullable
+   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
+      return this.spawnAtLocation(var1, var2, new Vec3(0.0, (double)var3, 0.0));
    }
 
    public boolean isAlive() {
@@ -2077,13 +2085,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (this.isAlive() && var1.isSecondaryUseActive() && this instanceof Leashable var3) {
-         if (var3.canBeLeashed()) {
-            label70: {
+      if (!this.level().isClientSide && var1.isSecondaryUseActive() && this instanceof Leashable var3) {
+         if (var3.canBeLeashed() && this.isAlive()) {
+            label83: {
                if (this instanceof LivingEntity) {
                   LivingEntity var4 = (LivingEntity)this;
                   if (var4.isBaby()) {
-                     break label70;
+                     break label83;
                   }
                }
 
@@ -2100,7 +2108,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
                   if (var6) {
                      this.level().gameEvent(GameEvent.ENTITY_ACTION, this.blockPosition(), GameEvent.Context.of((Entity)var1));
-                     return InteractionResult.SUCCESS.withoutItem();
+                     return InteractionResult.SUCCESS_SERVER.withoutItem();
                   }
                }
             }
@@ -2112,14 +2120,21 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          var9.hurtAndBreak(1, var1, (InteractionHand)var2);
          return InteractionResult.SUCCESS;
       } else {
+         if (this instanceof Mob) {
+            Mob var10 = (Mob)this;
+            if (var9.is(Items.SHEARS) && var10.canShearEquipment(var1) && !var1.isSecondaryUseActive() && this.attemptToShearEquipment(var1, var2, var9, var10)) {
+               return InteractionResult.SUCCESS;
+            }
+         }
+
          if (this.isAlive() && this instanceof Leashable) {
-            Leashable var10 = (Leashable)this;
-            if (var10.getLeashHolder() == var1) {
+            Leashable var11 = (Leashable)this;
+            if (var11.getLeashHolder() == var1) {
                if (!this.level().isClientSide()) {
                   if (var1.hasInfiniteMaterials()) {
-                     var10.removeLeash();
+                     var11.removeLeash();
                   } else {
-                     var10.dropLeash();
+                     var11.dropLeash();
                   }
 
                   this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
@@ -2128,17 +2143,17 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                return InteractionResult.SUCCESS.withoutItem();
             }
 
-            ItemStack var11 = var1.getItemInHand(var2);
-            if (var11.is(Items.LEAD) && var10.canHaveALeashAttachedTo(var1) && !(var10.getLeashHolder() instanceof Player)) {
-               if (!this.level().isClientSide()) {
-                  if (var10.isLeashed()) {
-                     var10.dropLeash();
+            ItemStack var12 = var1.getItemInHand(var2);
+            if (var12.is(Items.LEAD) && !(var11.getLeashHolder() instanceof Player)) {
+               if (!this.level().isClientSide() && var11.canHaveALeashAttachedTo(var1)) {
+                  if (var11.isLeashed()) {
+                     var11.dropLeash();
                   }
 
-                  var10.setLeashedTo(var1, true);
+                  var11.setLeashedTo(var1, true);
+                  var12.shrink(1);
                }
 
-               var11.shrink(1);
                return InteractionResult.SUCCESS;
             }
          }
@@ -2180,6 +2195,28 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       } else {
          return false;
       }
+   }
+
+   private boolean attemptToShearEquipment(Player var1, InteractionHand var2, ItemStack var3, Mob var4) {
+      for(EquipmentSlot var6 : EquipmentSlot.VALUES) {
+         ItemStack var7 = var4.getItemBySlot(var6);
+         Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
+         if (var8 != null && var8.canBeSheared() && (!EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || var1.isCreative())) {
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)LivingEntity.getSlotForHand(var2));
+            Vec3 var9 = this.dimensions.attachments().getAverage(EntityAttachment.PASSENGER);
+            var4.setItemSlotAndDropWhenKilled(var6, ItemStack.EMPTY);
+            this.playSound((SoundEvent)var8.shearingSound().value());
+            Level var11 = this.level();
+            if (var11 instanceof ServerLevel) {
+               ServerLevel var10 = (ServerLevel)var11;
+               this.spawnAtLocation(var10, var7, var9);
+            }
+
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public boolean canCollideWith(Entity var1) {
@@ -3201,10 +3238,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public SlotAccess getSlot(int var1) {
       return SlotAccess.NULL;
-   }
-
-   public Level getCommandSenderWorld() {
-      return this.level();
    }
 
    @Nullable

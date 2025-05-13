@@ -13,6 +13,7 @@ public interface SoundInstance {
    @Nullable
    WeighedSoundEvents resolve(SoundManager var1);
 
+   @Nullable
    Sound getSound();
 
    SoundSource getSource();

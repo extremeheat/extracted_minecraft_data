@@ -44,10 +44,12 @@ public class Painting extends HangingEntity {
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
       var1.define(DATA_PAINTING_VARIANT_ID, VariantUtils.getAny(this.registryAccess(), Registries.PAINTING_VARIANT));
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+      super.onSyncedDataUpdated(var1);
       if (DATA_PAINTING_VARIANT_ID.equals(var1)) {
          this.recalculateBoundingBox();
       }
@@ -127,15 +129,15 @@ public class Painting extends HangingEntity {
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.direction);
+      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.getDirection());
       super.addAdditionalSaveData(var1);
       VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
-      this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
+      Direction var2 = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       super.readAdditionalSaveData(var1);
-      this.setDirection(this.direction);
+      this.setDirection(var2);
       VariantUtils.readVariant(var1, Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
    }
 
@@ -185,7 +187,7 @@ public class Painting extends HangingEntity {
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
+      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

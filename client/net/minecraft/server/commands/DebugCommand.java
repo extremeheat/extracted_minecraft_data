@@ -53,7 +53,7 @@ public class DebugCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> var0x.hasPermission(3))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(3))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(3))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
    }
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {

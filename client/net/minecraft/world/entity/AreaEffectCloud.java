@@ -203,7 +203,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    private void serverTick(ServerLevel var1) {
-      if (this.duration != -1 && this.tickCount >= this.waitTime + this.duration) {
+      if (this.duration != -1 && this.tickCount - this.waitTime >= this.duration) {
          this.discard();
       } else {
          boolean var2 = this.isWaiting();

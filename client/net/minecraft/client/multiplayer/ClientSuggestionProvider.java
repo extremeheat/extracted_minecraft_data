@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.PermissionSource;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -32,18 +32,20 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class ClientSuggestionProvider implements SharedSuggestionProvider {
+public class ClientSuggestionProvider implements PermissionSource, SharedSuggestionProvider {
    private final ClientPacketListener connection;
    private final Minecraft minecraft;
    private int pendingSuggestionsId = -1;
    @Nullable
    private CompletableFuture<Suggestions> pendingSuggestionsFuture;
    private final Set<String> customCompletionSuggestions = new HashSet();
+   private final boolean allowsRestrictedCommands;
 
-   public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2) {
+   public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2, boolean var3) {
       super();
       this.connection = var1;
       this.minecraft = var2;
+      this.allowsRestrictedCommands = var3;
    }
 
    public Collection<String> getOnlinePlayerNames() {
@@ -79,8 +81,11 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    }
 
    public boolean hasPermission(int var1) {
-      LocalPlayer var2 = this.minecraft.player;
-      return var2 != null ? var2.hasPermissions(var1) : var1 == 0;
+      return this.allowsRestrictedCommands || var1 == 0;
+   }
+
+   public boolean allowsSelectors() {
+      return this.allowsRestrictedCommands;
    }
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
@@ -165,5 +170,9 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
             this.customCompletionSuggestions.addAll(var2);
       }
 
+   }
+
+   public boolean allowsRestrictedCommands() {
+      return this.allowsRestrictedCommands;
    }
 }

@@ -152,8 +152,7 @@ public class GuiRenderState {
       MutableInt var3 = new MutableInt(0);
       this.traverse((Consumer)((var2x) -> {
          if (var2x.elementStates != null) {
-            var3.increment();
-            int var3x = var3.intValue();
+            int var3x = var3.incrementAndGet();
 
             for(GuiElementRenderState var5 : var2x.elementStates) {
                var1.accept(var5, var3x);

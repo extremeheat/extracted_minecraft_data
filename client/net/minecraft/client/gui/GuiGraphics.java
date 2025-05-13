@@ -22,7 +22,6 @@ import net.minecraft.client.gui.render.state.ColoredRectangleRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.GuiTextRenderState;
-import net.minecraft.client.gui.render.state.TextRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiBannerResultRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiBookModelRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiEntityRenderState;
@@ -47,6 +46,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
@@ -197,8 +197,7 @@ public class GuiGraphics {
 
    public void drawString(Font var1, @Nullable String var2, int var3, int var4, int var5, boolean var6) {
       if (var2 != null) {
-         TextRenderState var7 = var1.extractTextRenderState((String)var2, (float)var3, (float)var4, var5, var6, Font.DisplayMode.NORMAL, 0, 15728880);
-         this.submitText(var7, var3, var4);
+         this.drawString(var1, Language.getInstance().getVisualOrder(FormattedText.of(var2)), var3, var4, var5, var6);
       }
    }
 
@@ -208,13 +207,8 @@ public class GuiGraphics {
 
    public void drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5, boolean var6) {
       if (ARGB.alpha(var5) != 0) {
-         TextRenderState var7 = var1.extractTextRenderState((FormattedCharSequence)var2, (float)var3, (float)var4, var5, var6, Font.DisplayMode.NORMAL, 0, 15728880);
-         this.submitText(var7, var3, var4);
+         this.guiRenderState.submitText(new GuiTextRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, 0, var6, this.scissorStack.peek()));
       }
-   }
-
-   private void submitText(TextRenderState var1, int var2, int var3) {
-      this.guiRenderState.submitText(new GuiTextRenderState(var1, new Matrix3x2f(this.pose), var2, var3, this.scissorStack.peek()));
    }
 
    public void drawString(Font var1, Component var2, int var3, int var4, int var5) {
@@ -667,16 +661,15 @@ public class GuiGraphics {
 
             this.pose.popMatrix();
             if (var6.name != null) {
-               Font var12 = var2.font;
-               float var9 = (float)var12.width((FormattedText)var6.name);
+               Font var11 = var2.font;
+               float var9 = (float)var11.width((FormattedText)var6.name);
                float var10000 = 25.0F / var9;
-               Objects.requireNonNull(var12);
+               Objects.requireNonNull(var11);
                float var10 = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
                this.pose.pushMatrix();
                this.pose.translate((float)var6.x / 2.0F + 64.0F - var9 * var10 / 2.0F, (float)var6.y / 2.0F + 64.0F + 4.0F);
                this.pose.scale(var10, var10);
-               TextRenderState var11 = var12.extractTextRenderState((FormattedCharSequence)var6.name.getVisualOrderText(), 0.0F, 0.0F, -1, false, Font.DisplayMode.NORMAL, -2147483648, 15728880);
-               this.submitText(var11, 0, 0);
+               this.guiRenderState.submitText(new GuiTextRenderState(var11, var6.name.getVisualOrderText(), new Matrix3x2f(this.pose), 0, 0, -1, -2147483648, false, this.scissorStack.peek()));
                this.pose.popMatrix();
             }
          }

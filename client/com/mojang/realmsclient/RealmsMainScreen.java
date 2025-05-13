@@ -97,7 +97,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final ResourceLocation NEWS_SPRITE = ResourceLocation.withDefaultNamespace("icon/news");
    public static final ResourceLocation HARDCORE_MODE_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full");
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation LOGO_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/title/realms.png");
    private static final ResourceLocation NO_REALMS_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/no_realms.png");
    private static final Component TITLE = Component.translatable("menu.online");
    private static final Component LOADING_TEXT = Component.translatable("mco.selectServer.loading");
@@ -123,10 +122,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final int BUTTON_COLUMNS = 3;
    private static final int BUTTON_SPACING = 4;
    private static final int CONTENT_WIDTH = 308;
-   private static final int LOGO_WIDTH = 128;
-   private static final int LOGO_HEIGHT = 34;
-   private static final int LOGO_TEXTURE_WIDTH = 128;
-   private static final int LOGO_TEXTURE_HEIGHT = 64;
    private static final int LOGO_PADDING = 5;
    private static final int HEADER_HEIGHT = 44;
    private static final int FOOTER_PADDING = 11;
@@ -283,7 +278,7 @@ public class RealmsMainScreen extends RealmsScreen {
       LinearLayout var3 = LinearLayout.horizontal();
       var3.defaultCellSetting().alignVerticallyMiddle();
       var3.addChild(SpacerElement.width(90));
-      var3.addChild(ImageWidget.texture(128, 34, LOGO_LOCATION, 128, 64), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+      var3.addChild(realmsLogo(), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       ((FrameLayout)var3.addChild(new FrameLayout(90, 44))).addChild(var2, (Consumer)(LayoutSettings::alignHorizontallyRight));
       return var3;
    }

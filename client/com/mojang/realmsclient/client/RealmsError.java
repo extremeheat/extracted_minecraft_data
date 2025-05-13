@@ -122,6 +122,8 @@ public interface RealmsError {
    public static record CustomError(int httpCode, @Nullable Component payload) implements RealmsError {
       public static final CustomError SERVICE_BUSY = new CustomError(429, Component.translatable("mco.errorMessage.serviceBusy"));
       public static final Component RETRY_MESSAGE = Component.translatable("mco.errorMessage.retry");
+      public static final String BODY_TAG = "<body>";
+      public static final String CLOSING_BODY_TAG = "</body>";
 
       public CustomError(int var1, @Nullable Component var2) {
          super();
@@ -147,6 +149,17 @@ public interface RealmsError {
 
       public static CustomError noPayload(int var0) {
          return new CustomError(var0, (Component)null);
+      }
+
+      public static CustomError htmlPayload(int var0, String var1) {
+         int var2 = var1.indexOf("<body>");
+         int var3 = var1.indexOf("</body>");
+         if (var2 >= 0 && var3 > var2) {
+            return new CustomError(var0, Component.literal(var1.substring(var2 + "<body>".length(), var3).trim()));
+         } else {
+            LOGGER.error("Got an error with an unreadable html body {}", var1);
+            return new CustomError(var0, (Component)null);
+         }
       }
 
       public int errorCode() {

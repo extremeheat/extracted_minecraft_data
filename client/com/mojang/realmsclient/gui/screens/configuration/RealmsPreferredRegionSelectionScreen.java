@@ -1,7 +1,7 @@
 package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.RealmsRegion;
-import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
+import com.mojang.realmsclient.dto.RegionSelectionPreference;
 import com.mojang.realmsclient.dto.ServiceQuality;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +25,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    private static final int SPACING = 8;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Screen parent;
-   private final BiConsumer<RegionSelectionPreferenceDto.RegionSelectionPreference, RealmsRegion> applySettings;
+   private final BiConsumer<RegionSelectionPreference, RealmsRegion> applySettings;
    final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
    @Nullable
    private RegionSelectionList list;
@@ -33,7 +33,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    @Nullable
    private Button doneButton;
 
-   public RealmsPreferredRegionSelectionScreen(Screen var1, BiConsumer<RegionSelectionPreferenceDto.RegionSelectionPreference, RealmsRegion> var2, Map<RealmsRegion, ServiceQuality> var3, RealmsSettingsTab.RegionSelection var4) {
+   public RealmsPreferredRegionSelectionScreen(Screen var1, BiConsumer<RegionSelectionPreference, RealmsRegion> var2, Map<RealmsRegion, ServiceQuality> var3, RealmsSettingsTab.RegionSelection var4) {
       super(REGION_SELECTION_LABEL);
       this.parent = var1;
       this.applySettings = var2;
@@ -75,9 +75,9 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    class RegionSelectionList extends ObjectSelectionList<Entry> {
       RegionSelectionList() {
          super(RealmsPreferredRegionSelectionScreen.this.minecraft, RealmsPreferredRegionSelectionScreen.this.width, RealmsPreferredRegionSelectionScreen.this.height - 77, 40, 16);
-         this.addEntry(new Entry(RegionSelectionPreferenceDto.RegionSelectionPreference.AUTOMATIC_PLAYER, (RealmsRegion)null));
-         this.addEntry(new Entry(RegionSelectionPreferenceDto.RegionSelectionPreference.AUTOMATIC_OWNER, (RealmsRegion)null));
-         RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.keySet().stream().map((var1x) -> new Entry(RegionSelectionPreferenceDto.RegionSelectionPreference.MANUAL, var1x)).forEach((var1x) -> this.addEntry(var1x));
+         this.addEntry(new Entry(RegionSelectionPreference.AUTOMATIC_PLAYER, (RealmsRegion)null));
+         this.addEntry(new Entry(RegionSelectionPreference.AUTOMATIC_OWNER, (RealmsRegion)null));
+         RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.keySet().stream().map((var1x) -> new Entry(RegionSelectionPreference.MANUAL, var1x)).forEach((var1x) -> this.addEntry(var1x));
       }
 
       public void setSelected(@Nullable Entry var1) {
@@ -93,14 +93,14 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          final RealmsSettingsTab.RegionSelection regionSelection;
          private final Component name;
 
-         public Entry(final RegionSelectionPreferenceDto.RegionSelectionPreference var2, @Nullable final RealmsRegion var3) {
+         public Entry(final RegionSelectionPreference var2, @Nullable final RealmsRegion var3) {
             this(new RealmsSettingsTab.RegionSelection(var2, var3));
          }
 
          public Entry(final RealmsSettingsTab.RegionSelection var2) {
             super();
             this.regionSelection = var2;
-            if (var2.preference() == RegionSelectionPreferenceDto.RegionSelectionPreference.MANUAL) {
+            if (var2.preference() == RegionSelectionPreference.MANUAL) {
                if (var2.region() != null) {
                   this.name = Component.translatable(var2.region().translationKey);
                } else {

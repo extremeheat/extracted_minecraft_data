@@ -16,7 +16,7 @@ public class SaveOffCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-off").requires((var0x) -> var0x.hasPermission(4))).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-off").requires(Commands.hasPermission(4))).executes((var0x) -> {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
          boolean var2 = false;
 

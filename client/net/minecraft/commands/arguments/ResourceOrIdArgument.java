@@ -7,14 +7,18 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -25,6 +29,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
 import net.minecraft.util.parsing.packrat.NamedRule;
@@ -45,11 +50,13 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private final Optional<? extends HolderLookup.RegistryLookup<T>> elementLookup;
    private final Codec<T> codec;
    private final Grammar<Result<T, Tag>> grammar;
+   private final ResourceKey<? extends Registry<T>> registryKey;
 
    protected ResourceOrIdArgument(CommandBuildContext var1, ResourceKey<? extends Registry<T>> var2, Codec<T> var3) {
       super();
       this.registryLookup = var1;
       this.elementLookup = var1.lookup(var2);
+      this.registryKey = var2;
       this.codec = var3;
       this.grammar = createGrammar(var2, OPS);
    }
@@ -98,6 +105,14 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
       return getResource(var0, var1);
    }
 
+   public static DialogArgument dialog(CommandBuildContext var0) {
+      return new DialogArgument(var0);
+   }
+
+   public static Holder<Dialog> getDialog(CommandContext<CommandSourceStack> var0, String var1) {
+      return getResource(var0, var1);
+   }
+
    private static <T> Holder<T> getResource(CommandContext<CommandSourceStack> var0, String var1) {
       return (Holder)var0.getArgument(var1, Holder.class);
    }
@@ -111,6 +126,10 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private <O> Holder<T> parse(StringReader var1, Grammar<Result<T, O>> var2, DynamicOps<O> var3) throws CommandSyntaxException {
       Result var4 = (Result)var2.parseForCommands(var1);
       return this.elementLookup.isEmpty() ? null : var4.parse(var1, this.registryLookup, var3, this.codec, (HolderLookup.RegistryLookup)this.elementLookup.get());
+   }
+
+   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
+      return SharedSuggestionProvider.listSuggestions(var1, var2, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS);
    }
 
    public Collection<String> getExamples() {
@@ -154,6 +173,18 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    public static class LootPredicateArgument extends ResourceOrIdArgument<LootItemCondition> {
       protected LootPredicateArgument(CommandBuildContext var1) {
          super(var1, Registries.PREDICATE, LootItemCondition.DIRECT_CODEC);
+      }
+
+      // $FF: synthetic method
+      @Nullable
+      public Object parse(final StringReader var1) throws CommandSyntaxException {
+         return super.parse(var1);
+      }
+   }
+
+   public static class DialogArgument extends ResourceOrIdArgument<Dialog> {
+      protected DialogArgument(CommandBuildContext var1) {
+         super(var1, Registries.DIALOG, Dialog.DIRECT_CODEC);
       }
 
       // $FF: synthetic method

@@ -23,7 +23,7 @@ public class DebugConfigCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugconfig").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("config").then(Commands.argument("target", EntityArgument.player()).executes((var0x) -> config((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target")))))).then(Commands.literal("unconfig").then(Commands.argument("target", UuidArgument.uuid()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)var0x.getSource()).getServer()), var1)).executes((var0x) -> unconfig((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "target"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugconfig").requires(Commands.hasPermission(3))).then(Commands.literal("config").then(Commands.argument("target", EntityArgument.player()).executes((var0x) -> config((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target")))))).then(Commands.literal("unconfig").then(Commands.argument("target", UuidArgument.uuid()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)var0x.getSource()).getServer()), var1)).executes((var0x) -> unconfig((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "target"))))));
    }
 
    private static Iterable<String> getUuidsInConfig(MinecraftServer var0) {

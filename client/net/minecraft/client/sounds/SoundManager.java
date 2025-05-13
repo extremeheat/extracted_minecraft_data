@@ -176,8 +176,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.updateSource(var1);
    }
 
-   public void pause() {
-      this.soundEngine.pause();
+   public void pauseAllExcept(SoundSource... var1) {
+      this.soundEngine.pauseAllExcept(var1);
    }
 
    public void stop() {
@@ -201,10 +201,6 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    }
 
    public void updateSourceVolume(SoundSource var1, float var2) {
-      if (var1 == SoundSource.MASTER && var2 <= 0.0F) {
-         this.stop();
-      }
-
       this.soundEngine.updateCategoryVolume(var1, var2);
    }
 

@@ -39,6 +39,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.game.ServerboundCustomClickActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.world.item.Item;
@@ -253,111 +254,134 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    protected void insertText(String var1, boolean var2) {
    }
 
-   public boolean handleComponentClicked(@Nullable Style var1) {
-      if (var1 == null) {
+   public boolean handleComponentClicked(Style var1) {
+      ClickEvent var2 = var1.getClickEvent();
+      if (hasShiftDown()) {
+         if (var1.getInsertion() != null) {
+            this.insertText(var1.getInsertion(), false);
+         }
+      } else if (var2 != null) {
+         return this.handleClickEvent(var2);
+      }
+
+      return false;
+   }
+
+   protected boolean handleClickEvent(ClickEvent var1) {
+      return defaultHandleClickEvent(var1, this.minecraft, this);
+   }
+
+   protected static boolean defaultHandleClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
+      Objects.requireNonNull(var0);
+      byte var4 = 0;
+      //$FF: var4->value
+      //0->net/minecraft/network/chat/ClickEvent$OpenUrl
+      //1->net/minecraft/network/chat/ClickEvent$OpenFile
+      //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
+      //3->net/minecraft/network/chat/ClickEvent$RunCommand
+      //4->net/minecraft/network/chat/ClickEvent$ShowDialog
+      //5->net/minecraft/network/chat/ClickEvent$Custom
+      //6->net/minecraft/network/chat/ClickEvent$CopyToClipboard
+      switch (var0.typeSwitch<invokedynamic>(var0, var4)) {
+         case 0:
+            ClickEvent.OpenUrl var5 = (ClickEvent.OpenUrl)var0;
+            ClickEvent.OpenUrl var29 = var5;
+
+            try {
+               var30 = var29.uri();
+            } catch (Throwable var20) {
+               throw new MatchException(var20.toString(), var20);
+            }
+
+            URI var21 = var30;
+            clickUrlAction(var1, var2, var21);
+            break;
+         case 1:
+            ClickEvent.OpenFile var7 = (ClickEvent.OpenFile)var0;
+            Util.getPlatform().openFile(var7.file());
+            break;
+         case 2:
+            ClickEvent.SuggestCommand var8 = (ClickEvent.SuggestCommand)var0;
+            ClickEvent.SuggestCommand var27 = var8;
+
+            try {
+               var28 = var27.command();
+            } catch (Throwable var19) {
+               throw new MatchException(var19.toString(), var19);
+            }
+
+            String var22 = var28;
+            if (var2 != null) {
+               var2.insertText(var22, true);
+            }
+            break;
+         case 3:
+            ClickEvent.RunCommand var10 = (ClickEvent.RunCommand)var0;
+            ClickEvent.RunCommand var25 = var10;
+
+            try {
+               var26 = var25.command();
+            } catch (Throwable var18) {
+               throw new MatchException(var18.toString(), var18);
+            }
+
+            String var23 = var26;
+            clickCommandAction(var1, var23, false);
+            break;
+         case 4:
+            ClickEvent.ShowDialog var12 = (ClickEvent.ShowDialog)var0;
+            var1.player.openDialog(var12.dialog());
+            break;
+         case 5:
+            ClickEvent.Custom var13 = (ClickEvent.Custom)var0;
+            var1.player.connection.send(new ServerboundCustomClickActionPacket(var13.id(), var13.payload()));
+            break;
+         case 6:
+            ClickEvent.CopyToClipboard var14 = (ClickEvent.CopyToClipboard)var0;
+            ClickEvent.CopyToClipboard var10000 = var14;
+
+            try {
+               var24 = var10000.value();
+            } catch (Throwable var17) {
+               throw new MatchException(var17.toString(), var17);
+            }
+
+            String var16 = var24;
+            var1.keyboardHandler.setClipboard(var16);
+            break;
+         default:
+            LOGGER.error("Don't know how to handle {}", var0);
+      }
+
+      return true;
+   }
+
+   protected static boolean clickUrlAction(Minecraft var0, @Nullable Screen var1, URI var2) {
+      if (!(Boolean)var0.options.chatLinks().get()) {
          return false;
       } else {
-         ClickEvent var2 = var1.getClickEvent();
-         if (hasShiftDown()) {
-            if (var1.getInsertion() != null) {
-               this.insertText(var1.getInsertion(), false);
-            }
-         } else if (var2 != null) {
-            Objects.requireNonNull(var2);
-            byte var4 = 0;
-            //$FF: var4->value
-            //0->net/minecraft/network/chat/ClickEvent$OpenUrl
-            //1->net/minecraft/network/chat/ClickEvent$OpenFile
-            //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
-            //3->net/minecraft/network/chat/ClickEvent$RunCommand
-            //4->net/minecraft/network/chat/ClickEvent$CopyToClipboard
-            switch (var2.typeSwitch<invokedynamic>(var2, var4)) {
-               case 0:
-                  ClickEvent.OpenUrl var5 = (ClickEvent.OpenUrl)var2;
-                  ClickEvent.OpenUrl var27 = var5;
+         if ((Boolean)var0.options.chatLinksPrompt().get()) {
+            var0.setScreen(new ConfirmLinkScreen((var3) -> {
+               if (var3) {
+                  Util.getPlatform().openUri(var2);
+               }
 
-                  try {
-                     var28 = var27.uri();
-                  } catch (Throwable var18) {
-                     throw new MatchException(var18.toString(), var18);
-                  }
-
-                  URI var19 = var28;
-                  if (!(Boolean)this.minecraft.options.chatLinks().get()) {
-                     return false;
-                  }
-
-                  if ((Boolean)this.minecraft.options.chatLinksPrompt().get()) {
-                     this.minecraft.setScreen(new ConfirmLinkScreen((var2x) -> {
-                        if (var2x) {
-                           Util.getPlatform().openUri(var19);
-                        }
-
-                        this.minecraft.setScreen(this);
-                     }, var19.toString(), false));
-                  } else {
-                     Util.getPlatform().openUri(var19);
-                  }
-                  break;
-               case 1:
-                  ClickEvent.OpenFile var7 = (ClickEvent.OpenFile)var2;
-                  Util.getPlatform().openFile(var7.file());
-                  break;
-               case 2:
-                  ClickEvent.SuggestCommand var8 = (ClickEvent.SuggestCommand)var2;
-                  ClickEvent.SuggestCommand var25 = var8;
-
-                  try {
-                     var26 = var25.command();
-                  } catch (Throwable var17) {
-                     throw new MatchException(var17.toString(), var17);
-                  }
-
-                  String var20 = var26;
-                  this.insertText(var20, true);
-                  break;
-               case 3:
-                  ClickEvent.RunCommand var10 = (ClickEvent.RunCommand)var2;
-                  ClickEvent.RunCommand var23 = var10;
-
-                  try {
-                     var24 = var23.command();
-                  } catch (Throwable var16) {
-                     throw new MatchException(var16.toString(), var16);
-                  }
-
-                  String var21 = var24;
-                  String var11 = var21;
-                  if (var21.startsWith("/")) {
-                     var11 = var21.substring(1);
-                  }
-
-                  if (!this.minecraft.player.connection.sendUnsignedCommand(var11)) {
-                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var11);
-                  }
-                  break;
-               case 4:
-                  ClickEvent.CopyToClipboard var12 = (ClickEvent.CopyToClipboard)var2;
-                  ClickEvent.CopyToClipboard var10000 = var12;
-
-                  try {
-                     var22 = var10000.value();
-                  } catch (Throwable var15) {
-                     throw new MatchException(var15.toString(), var15);
-                  }
-
-                  String var14 = var22;
-                  this.minecraft.keyboardHandler.setClipboard(var14);
-                  break;
-               default:
-                  LOGGER.error("Don't know how to handle {}", var2);
-            }
-
-            return true;
+               var0.setScreen(var1);
+            }, var2.toString(), false));
+         } else {
+            Util.getPlatform().openUri(var2);
          }
 
-         return false;
+         return true;
       }
+   }
+
+   protected static void clickCommandAction(Minecraft var0, String var1, boolean var2) {
+      if (var1.startsWith("/")) {
+         var1 = var1.substring(1);
+      }
+
+      var0.player.connection.sendUnattendedCommand(var1, var2);
    }
 
    public final void init(Minecraft var1, int var2, int var3) {

@@ -88,12 +88,12 @@ public class ScreenEffectRenderer {
          float var7 = 10.25F * var6 * var5 - 24.95F * var5 * var5 + 25.5F * var6 - 13.8F * var5 + 4.0F * var4;
          float var8 = var7 * 3.1415927F;
          float var9 = (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight();
-         float var10 = this.itemActivationOffX * 15.0F * var9;
-         float var11 = this.itemActivationOffY * 15.0F;
+         float var10 = this.itemActivationOffX * 0.3F * var9;
+         float var11 = this.itemActivationOffY * 0.3F;
          var1.pushPose();
-         var1.translate(var10 * Mth.abs(Mth.sin(var8 * 2.0F)), var11 * Mth.abs(Mth.sin(var8 * 2.0F)), -50.0F);
-         float var12 = 11.0F + 38.5F * Mth.sin(var8);
-         var1.scale(var12, var12, var12);
+         var1.translate(var10 * Mth.abs(Mth.sin(var8 * 2.0F)), var11 * Mth.abs(Mth.sin(var8 * 2.0F)), -10.0F + 9.0F * Mth.sin(var8));
+         float var12 = 0.8F;
+         var1.scale(0.8F, 0.8F, 0.8F);
          var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
          var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
          var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));

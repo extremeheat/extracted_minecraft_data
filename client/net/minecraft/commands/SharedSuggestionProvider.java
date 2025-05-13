@@ -18,10 +18,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 
@@ -58,20 +60,27 @@ public interface SharedSuggestionProvider {
 
    FeatureFlagSet enabledFeatures();
 
-   default void suggestRegistryElements(Registry<?> var1, ElementSuggestionType var2, SuggestionsBuilder var3) {
+   default void suggestRegistryElements(HolderLookup<?> var1, ElementSuggestionType var2, SuggestionsBuilder var3) {
       if (var2.shouldSuggestTags()) {
-         suggestResource(var1.getTags().map((var0) -> var0.key().location()), var3, "#");
+         suggestResource(var1.listTagIds().map(TagKey::location), var3, "#");
       }
 
       if (var2.shouldSuggestElements()) {
-         suggestResource(var1.keySet(), var3);
+         suggestResource(var1.listElementIds().map(ResourceKey::location), var3);
       }
 
    }
 
-   CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4);
+   static <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var0, SuggestionsBuilder var1, ResourceKey<? extends Registry<?>> var2, ElementSuggestionType var3) {
+      Object var5 = var0.getSource();
+      if (var5 instanceof SharedSuggestionProvider var4) {
+         return var4.suggestRegistryElements(var2, var3, var1, var0);
+      } else {
+         return var1.buildFuture();
+      }
+   }
 
-   boolean hasPermission(int var1);
+   CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4);
 
    static <T> void filterResources(Iterable<T> var0, String var1, Function<T, ResourceLocation> var2, Consumer<T> var3) {
       boolean var4 = var1.indexOf(58) > -1;

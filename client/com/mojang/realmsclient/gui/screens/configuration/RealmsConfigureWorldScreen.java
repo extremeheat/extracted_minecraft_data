@@ -9,6 +9,7 @@ import com.mojang.realmsclient.dto.RealmsRegion;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.RegionDataDto;
+import com.mojang.realmsclient.dto.RegionSelectionPreference;
 import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
 import com.mojang.realmsclient.dto.ServiceQuality;
 import com.mojang.realmsclient.exception.RealmsServiceException;
@@ -18,6 +19,7 @@ import com.mojang.realmsclient.util.task.CloseServerTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.OpenServerTask;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -251,14 +253,14 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       this.minecraft.setScreen(this);
    }
 
-   public void saveSettings(String var1, String var2, RegionSelectionPreferenceDto.RegionSelectionPreference var3, @Nullable RealmsRegion var4) {
+   public void saveSettings(String var1, String var2, RegionSelectionPreference var3, @Nullable RealmsRegion var4) {
       String var5 = StringUtil.isBlank(var2) ? "" : var2;
       String var6 = StringUtil.isBlank(var1) ? "" : var1;
       RealmsClient var7 = RealmsClient.getOrCreate();
 
       try {
          RealmsSlot var8 = (RealmsSlot)this.serverData.slots.get(this.serverData.activeSlot);
-         RealmsRegion var9 = var3 == RegionSelectionPreferenceDto.RegionSelectionPreference.MANUAL ? var4 : null;
+         RealmsRegion var9 = var3 == RegionSelectionPreference.MANUAL ? var4 : null;
          RegionSelectionPreferenceDto var10 = new RegionSelectionPreferenceDto(var3, var9);
          var7.updateConfiguration(this.serverData.id, var6, var5, var10, var8.slotId, var8.options, var8.settings);
          this.serverData.regionSelectionPreference = var10;
@@ -301,7 +303,13 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       RealmsClient var4 = RealmsClient.getOrCreate();
 
       try {
-         this.serverData = var4.invite(var1, var3);
+         List var5 = var4.invite(var1, var3);
+         if (this.serverData != null) {
+            this.serverData.players = var5;
+         } else {
+            this.serverData = var4.getOwnRealm(var1);
+         }
+
          this.stateChanged();
          return true;
       } catch (RealmsServiceException var6) {

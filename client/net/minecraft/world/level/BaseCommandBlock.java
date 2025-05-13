@@ -181,7 +181,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       if (!var1.canUseGameMasterBlocks()) {
          return InteractionResult.PASS;
       } else {
-         if (var1.getCommandSenderWorld().isClientSide) {
+         if (var1.level().isClientSide) {
             var1.openMinecartCommandBlock(this);
          }
 

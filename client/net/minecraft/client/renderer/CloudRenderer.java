@@ -57,7 +57,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    private CloudStatus prevType;
    @Nullable
    private TextureData texture;
-   private int instanceCount;
+   private int quadCount;
    private final RenderSystem.AutoStorageIndexBuffer indices;
    private final MappableRingBuffer ubo;
    @Nullable
@@ -66,7 +66,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    public CloudRenderer() {
       super();
       this.prevRelativeCameraPos = CloudRenderer.RelativeCameraPos.INSIDE_CLOUDS;
-      this.instanceCount = 0;
+      this.quadCount = 0;
       this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
       this.ubo = new MappableRingBuffer(() -> "Cloud UBO", 130, UBO_SIZE);
    }
@@ -202,16 +202,16 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
 
             try (GpuBuffer.MappedView var26 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.utb.currentBuffer(), false, true)) {
                this.buildMesh(var11, var26.data(), var20, var21, var24, var7);
-               this.instanceCount = var26.data().position() / 3;
+               this.quadCount = var26.data().position() / 3;
             }
          }
 
-         if (this.instanceCount != 0) {
-            try (GpuBuffer.MappedView var43 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var43.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
+         if (this.quadCount != 0) {
+            try (GpuBuffer.MappedView var42 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var42.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
             }
 
-            GpuBufferSlice var44 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+            GpuBufferSlice var43 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
             RenderTarget var27 = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget var28 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
             GpuTextureView var29;
@@ -224,23 +224,20 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
                var30 = var27.getDepthTextureView();
             }
 
-            GpuBuffer var31 = this.indices.getBuffer(6);
-
-            try (RenderPass var32 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", var29, OptionalInt.empty(), var30, OptionalDouble.empty())) {
-               var32.setPipeline(var25);
-               RenderSystem.bindDefaultUniforms(var32);
-               var32.setUniform("DynamicTransforms", var44);
-               var32.setIndexBuffer(var31, this.indices.type());
-               var32.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-               var32.setUniform("CloudInfo", this.ubo.currentBuffer());
-               var32.setUniform("CloudFaces", this.utb.currentBuffer());
+            try (RenderPass var31 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", var29, OptionalInt.empty(), var30, OptionalDouble.empty())) {
+               var31.setPipeline(var25);
+               RenderSystem.bindDefaultUniforms(var31);
+               var31.setUniform("DynamicTransforms", var43);
+               var31.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
+               var31.setUniform("CloudInfo", this.ubo.currentBuffer());
+               var31.setUniform("CloudFaces", this.utb.currentBuffer());
                if (var24) {
-                  var32.setPipeline(RenderPipelines.CLOUDS_DEPTH_ONLY);
-                  var32.drawIndexed(0, 0, 6, this.instanceCount);
+                  var31.setPipeline(RenderPipelines.CLOUDS_DEPTH_ONLY);
+                  var31.draw(0, 6 * this.quadCount);
                }
 
-               var32.setPipeline(var25);
-               var32.drawIndexed(0, 0, 6, this.instanceCount);
+               var31.setPipeline(var25);
+               var31.draw(0, 6 * this.quadCount);
             }
 
          }

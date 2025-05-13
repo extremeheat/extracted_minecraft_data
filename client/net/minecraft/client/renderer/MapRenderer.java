@@ -68,9 +68,9 @@ public class MapRenderer {
                float var15 = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
                var2.pushPose();
                var2.translate((float)var10.x / 2.0F + 64.0F - var14 * var15 / 2.0F, (float)var10.y / 2.0F + 64.0F + 4.0F, -0.025F);
-               var2.scale(var15, var15, 1.0F);
-               var2.translate(0.0F, 0.0F, -0.1F);
-               var16.drawInBatch(var10.name, 0.0F, 0.0F, -1, false, var2.last().pose(), var3, Font.DisplayMode.NORMAL, -2147483648, var5, false);
+               var2.scale(var15, var15, -1.0F);
+               var2.translate(0.0F, 0.0F, 0.1F);
+               var16.drawInBatch((Component)var10.name, 0.0F, 0.0F, -1, false, var2.last().pose(), var3, Font.DisplayMode.NORMAL, -2147483648, var5);
                var2.popPose();
             }
 

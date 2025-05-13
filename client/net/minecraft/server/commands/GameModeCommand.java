@@ -24,7 +24,7 @@ public class GameModeCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires((var0x) -> var0x.hasPermission(2))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> setMode(var0x, Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("target", EntityArgument.players()).executes((var0x) -> setMode(var0x, EntityArgument.getPlayers(var0x, "target"), GameModeArgument.getGameMode(var0x, "gamemode"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> setMode(var0x, Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("target", EntityArgument.players()).executes((var0x) -> setMode(var0x, EntityArgument.getPlayers(var0x, "target"), GameModeArgument.getGameMode(var0x, "gamemode"))))));
    }
 
    private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
@@ -45,12 +45,24 @@ public class GameModeCommand {
       int var3 = 0;
 
       for(ServerPlayer var5 : var1) {
-         if (var5.setGameMode(var2)) {
-            logGamemodeChange((CommandSourceStack)var0.getSource(), var5, var2);
+         if (setGameMode((CommandSourceStack)var0.getSource(), var5, var2)) {
             ++var3;
          }
       }
 
       return var3;
+   }
+
+   public static void setGameMode(ServerPlayer var0, GameType var1) {
+      setGameMode(var0.createCommandSourceStack(), var0, var1);
+   }
+
+   private static boolean setGameMode(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
+      if (var1.setGameMode(var2)) {
+         logGamemodeChange(var0, var1, var2);
+         return true;
+      } else {
+         return false;
+      }
    }
 }

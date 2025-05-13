@@ -219,15 +219,25 @@ public interface Leashable {
       } else {
          Wrench var5 = Leashable.Wrench.accumulate(var4).scale(var3 ? 0.25 : 1.0);
          var2.angularMomentum += 10.0 * var5.torque();
-         Vec3 var6 = var1.getKnownMovement().subtract(((Entity)this).getKnownMovement());
+         Vec3 var6 = getHolderMovement(var1).subtract(((Entity)this).getKnownMovement());
          ((Entity)this).addDeltaMovement(var5.force().multiply(AXIS_SPECIFIC_ELASTICITY).add(var6.scale(0.11)));
          return true;
       }
    }
 
+   private static Vec3 getHolderMovement(Entity var0) {
+      if (var0 instanceof Mob var1) {
+         if (var1.isNoAi()) {
+            return Vec3.ZERO;
+         }
+      }
+
+      return var0.getKnownMovement();
+   }
+
    private static <E extends Entity & Leashable> List<Wrench> computeElasticInteraction(E var0, Entity var1, List<Vec3> var2, List<Vec3> var3) {
       double var4 = ((Leashable)var0).leashElasticDistance();
-      Vec3 var6 = var0.getKnownMovement();
+      Vec3 var6 = getHolderMovement(var0);
       float var7 = var0.getYRot() * 0.017453292F;
       Vec3 var8 = new Vec3((double)var0.getBbWidth(), (double)var0.getBbHeight(), (double)var0.getBbWidth());
       float var9 = var1.getYRot() * 0.017453292F;

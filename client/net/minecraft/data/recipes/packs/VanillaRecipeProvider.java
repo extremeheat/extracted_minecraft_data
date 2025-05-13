@@ -432,6 +432,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.COMBAT, Items.LEATHER_HELMET).define('X', Items.LEATHER).pattern("XXX").pattern("X X").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);
       this.shaped(RecipeCategory.COMBAT, Items.LEATHER_LEGGINGS).define('X', Items.LEATHER).pattern("XXX").pattern("X X").pattern("X X").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);
       this.shaped(RecipeCategory.MISC, Items.LEATHER_HORSE_ARMOR).define('X', Items.LEATHER).pattern("X X").pattern("XXX").pattern("X X").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);
+      this.shaped(RecipeCategory.COMBAT, Items.SADDLE).define('X', Items.LEATHER).define('#', Items.IRON_INGOT).pattern(" X ").pattern("X#X").unlockedBy("has_leather", this.has(Items.LEATHER)).save(this.output);
       this.shaped(RecipeCategory.REDSTONE, Blocks.LECTERN).define('S', ItemTags.WOODEN_SLABS).define('B', Blocks.BOOKSHELF).pattern("SSS").pattern(" B ").pattern(" S ").unlockedBy("has_book", this.has(Items.BOOK)).save(this.output);
       this.shaped(RecipeCategory.REDSTONE, Blocks.LEVER).define('#', Blocks.COBBLESTONE).define('X', Items.STICK).pattern("X").pattern("#").unlockedBy("has_cobblestone", this.has(Blocks.COBBLESTONE)).save(this.output);
       this.oneToOneConversionRecipe(Items.LIGHT_BLUE_DYE, Blocks.BLUE_ORCHID, "light_blue_dye");

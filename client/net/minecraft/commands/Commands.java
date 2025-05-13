@@ -1,6 +1,5 @@
 package net.minecraft.commands;
 
-import com.google.common.collect.Maps;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
@@ -11,6 +10,8 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
@@ -45,6 +46,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
@@ -62,6 +64,7 @@ import net.minecraft.server.commands.DebugConfigCommand;
 import net.minecraft.server.commands.DebugMobSpawningCommand;
 import net.minecraft.server.commands.DebugPathCommand;
 import net.minecraft.server.commands.DefaultGameModeCommands;
+import net.minecraft.server.commands.DialogCommand;
 import net.minecraft.server.commands.DifficultyCommand;
 import net.minecraft.server.commands.EffectCommands;
 import net.minecraft.server.commands.EmoteCommands;
@@ -89,6 +92,7 @@ import net.minecraft.server.commands.PardonCommand;
 import net.minecraft.server.commands.PardonIpCommand;
 import net.minecraft.server.commands.ParticleCommand;
 import net.minecraft.server.commands.PerfCommand;
+import net.minecraft.server.commands.PermissionCheck;
 import net.minecraft.server.commands.PlaceCommand;
 import net.minecraft.server.commands.PlaySoundCommand;
 import net.minecraft.server.commands.PublishCommand;
@@ -151,6 +155,31 @@ public class Commands {
    public static final int LEVEL_GAMEMASTERS = 2;
    public static final int LEVEL_ADMINS = 3;
    public static final int LEVEL_OWNERS = 4;
+   private static final ClientboundCommandsPacket.NodeInspector<CommandSourceStack> COMMAND_NODE_INSPECTOR = new ClientboundCommandsPacket.NodeInspector<CommandSourceStack>() {
+      @Nullable
+      public ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
+         SuggestionProvider var2 = var1.getCustomSuggestions();
+         return var2 != null ? SuggestionProviders.getName(var2) : null;
+      }
+
+      public boolean isExecutable(CommandNode<CommandSourceStack> var1) {
+         return var1.getCommand() != null;
+      }
+
+      public boolean isRestricted(CommandNode<CommandSourceStack> var1) {
+         Predicate var3 = var1.getRequirement();
+         boolean var10000;
+         if (var3 instanceof PermissionCheck var2) {
+            if (var2.requiredLevel() > 0) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
+      }
+   };
    private final CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher();
 
    public Commands(CommandSelection var1, CommandBuildContext var2) {
@@ -166,6 +195,7 @@ public class Commands {
       DataPackCommand.register(this.dispatcher, var2);
       DebugCommand.register(this.dispatcher);
       DefaultGameModeCommands.register(this.dispatcher);
+      DialogCommand.register(this.dispatcher, var2);
       DifficultyCommand.register(this.dispatcher);
       EffectCommands.register(this.dispatcher, var2);
       EmoteCommands.register(this.dispatcher);
@@ -367,38 +397,26 @@ public class Commands {
    }
 
    public void sendCommands(ServerPlayer var1) {
-      HashMap var2 = Maps.newHashMap();
+      HashMap var2 = new HashMap();
       RootCommandNode var3 = new RootCommandNode();
       var2.put(this.dispatcher.getRoot(), var3);
-      this.fillUsableCommands(this.dispatcher.getRoot(), var3, var1.createCommandSourceStack(), var2);
-      var1.connection.send(new ClientboundCommandsPacket(var3));
+      fillUsableCommands(this.dispatcher.getRoot(), var3, var1.createCommandSourceStack(), var2);
+      var1.connection.send(new ClientboundCommandsPacket(var3, COMMAND_NODE_INSPECTOR));
    }
 
-   private void fillUsableCommands(CommandNode<CommandSourceStack> var1, CommandNode<SharedSuggestionProvider> var2, CommandSourceStack var3, Map<CommandNode<CommandSourceStack>, CommandNode<SharedSuggestionProvider>> var4) {
-      for(CommandNode var6 : var1.getChildren()) {
-         if (var6.canUse(var3)) {
-            ArgumentBuilder var7 = var6.createBuilder();
-            var7.requires((var0) -> true);
-            if (var7.getCommand() != null) {
-               var7.executes((var0) -> 0);
+   private static <S> void fillUsableCommands(CommandNode<S> var0, CommandNode<S> var1, S var2, Map<CommandNode<S>, CommandNode<S>> var3) {
+      for(CommandNode var5 : var0.getChildren()) {
+         if (var5.canUse(var2)) {
+            ArgumentBuilder var6 = var5.createBuilder();
+            if (var6.getRedirect() != null) {
+               var6.redirect((CommandNode)var3.get(var6.getRedirect()));
             }
 
-            if (var7 instanceof RequiredArgumentBuilder) {
-               RequiredArgumentBuilder var8 = (RequiredArgumentBuilder)var7;
-               if (var8.getSuggestionsProvider() != null) {
-                  var8.suggests(SuggestionProviders.safelySwap(var8.getSuggestionsProvider()));
-               }
-            }
-
-            if (var7.getRedirect() != null) {
-               var7.redirect((CommandNode)var4.get(var7.getRedirect()));
-            }
-
-            CommandNode var9 = var7.build();
-            var4.put(var6, var9);
-            var2.addChild(var9);
-            if (!var6.getChildren().isEmpty()) {
-               this.fillUsableCommands(var6, var9, var3, var4);
+            CommandNode var7 = var6.build();
+            var3.put(var5, var7);
+            var1.addChild(var7);
+            if (!var5.getChildren().isEmpty()) {
+               fillUsableCommands(var5, var7, var2, var3);
             }
          }
       }
@@ -490,6 +508,10 @@ public class Commands {
          LOGGER.warn("Missing type registration for following arguments:\n {}", var4.stream().map((var0x) -> "\t" + String.valueOf(var0x)).collect(Collectors.joining(",\n")));
          throw new IllegalStateException("Unregistered argument types");
       }
+   }
+
+   public static <T extends PermissionSource> PermissionCheck<T> hasPermission(int var0) {
+      return new PermissionSource.Check<T>(var0);
    }
 
    public static enum CommandSelection {

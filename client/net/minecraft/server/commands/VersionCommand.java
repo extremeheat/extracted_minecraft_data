@@ -21,7 +21,7 @@ public class VersionCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, boolean var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("version").requires((var1x) -> !var1 || var1x.hasPermission(2))).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("version").requires(Commands.hasPermission(var1 ? 2 : 0))).executes((var0x) -> {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
          var1.sendSystemMessage(HEADER);
          Objects.requireNonNull(var1);

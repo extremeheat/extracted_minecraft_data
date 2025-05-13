@@ -53,6 +53,21 @@ public class EntityAttachments {
       }
    }
 
+   public Vec3 getAverage(EntityAttachment var1) {
+      List var2 = (List)this.attachments.get(var1);
+      if (var2 != null && !var2.isEmpty()) {
+         Vec3 var3 = Vec3.ZERO;
+
+         for(Vec3 var5 : var2) {
+            var3 = var3.add(var5);
+         }
+
+         return var3.scale((double)(1.0F / (float)var2.size()));
+      } else {
+         throw new IllegalStateException("No attachment points of type: PASSENGER");
+      }
+   }
+
    public Vec3 getClamped(EntityAttachment var1, int var2, float var3) {
       List var4 = (List)this.attachments.get(var1);
       if (var4.isEmpty()) {

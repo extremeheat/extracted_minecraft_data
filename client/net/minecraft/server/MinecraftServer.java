@@ -2043,6 +2043,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
    }
 
+   public void handleCustomClickAction(ResourceLocation var1, Optional<String> var2) {
+      LOGGER.debug("Received custom click action {} with payload {}", var1, var2.orElse((Object)null));
+   }
+
    public boolean acceptsTransfers() {
       return false;
    }

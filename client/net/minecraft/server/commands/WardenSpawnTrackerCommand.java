@@ -17,7 +17,7 @@ public class WardenSpawnTrackerCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("warden_spawn_tracker").requires((var0x) -> var0x.hasPermission(2))).then(Commands.literal("clear").executes((var0x) -> resetTracker((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException()))))).then(Commands.literal("set").then(Commands.argument("warning_level", IntegerArgumentType.integer(0, 4)).executes((var0x) -> setWarningLevel((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), IntegerArgumentType.getInteger(var0x, "warning_level"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("warden_spawn_tracker").requires(Commands.hasPermission(2))).then(Commands.literal("clear").executes((var0x) -> resetTracker((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException()))))).then(Commands.literal("set").then(Commands.argument("warning_level", IntegerArgumentType.integer(0, 4)).executes((var0x) -> setWarningLevel((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), IntegerArgumentType.getInteger(var0x, "warning_level"))))));
    }
 
    private static int setWarningLevel(CommandSourceStack var0, Collection<? extends Player> var1, int var2) {

@@ -8,6 +8,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Optional;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
@@ -80,6 +84,19 @@ public interface ClickEvent {
       }
    }
 
+   public static record ShowDialog(Holder<Dialog> dialog) implements ClickEvent {
+      public static final MapCodec<ShowDialog> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Dialog.CODEC.fieldOf("dialog").forGetter(ShowDialog::dialog)).apply(var0, ShowDialog::new));
+
+      public ShowDialog(Holder<Dialog> var1) {
+         super();
+         this.dialog = var1;
+      }
+
+      public Action action() {
+         return ClickEvent.Action.SHOW_DIALOG;
+      }
+   }
+
    public static record ChangePage(int page) implements ClickEvent {
       public static final MapCodec<ChangePage> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("page").forGetter(ChangePage::page)).apply(var0, ChangePage::new));
 
@@ -106,13 +123,29 @@ public interface ClickEvent {
       }
    }
 
+   public static record Custom(ResourceLocation id, Optional<String> payload) implements ClickEvent {
+      public static final MapCodec<Custom> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(Custom::id), Codec.STRING.optionalFieldOf("payload").forGetter(Custom::payload)).apply(var0, Custom::new));
+
+      public Custom(ResourceLocation var1, Optional<String> var2) {
+         super();
+         this.id = var1;
+         this.payload = var2;
+      }
+
+      public Action action() {
+         return ClickEvent.Action.CUSTOM;
+      }
+   }
+
    public static enum Action implements StringRepresentable {
       OPEN_URL("open_url", true, ClickEvent.OpenUrl.CODEC),
       OPEN_FILE("open_file", false, ClickEvent.OpenFile.CODEC),
       RUN_COMMAND("run_command", true, ClickEvent.RunCommand.CODEC),
       SUGGEST_COMMAND("suggest_command", true, ClickEvent.SuggestCommand.CODEC),
+      SHOW_DIALOG("show_dialog", true, ClickEvent.ShowDialog.CODEC),
       CHANGE_PAGE("change_page", true, ClickEvent.ChangePage.CODEC),
-      COPY_TO_CLIPBOARD("copy_to_clipboard", true, ClickEvent.CopyToClipboard.CODEC);
+      COPY_TO_CLIPBOARD("copy_to_clipboard", true, ClickEvent.CopyToClipboard.CODEC),
+      CUSTOM("custom", true, ClickEvent.Custom.CODEC);
 
       public static final Codec<Action> UNSAFE_CODEC = StringRepresentable.<Action>fromEnum(Action::values);
       public static final Codec<Action> CODEC = UNSAFE_CODEC.validate(Action::filterForSerialization);
@@ -140,7 +173,7 @@ public interface ClickEvent {
 
       // $FF: synthetic method
       private static Action[] $values() {
-         return new Action[]{OPEN_URL, OPEN_FILE, RUN_COMMAND, SUGGEST_COMMAND, CHANGE_PAGE, COPY_TO_CLIPBOARD};
+         return new Action[]{OPEN_URL, OPEN_FILE, RUN_COMMAND, SUGGEST_COMMAND, SHOW_DIALOG, CHANGE_PAGE, COPY_TO_CLIPBOARD, CUSTOM};
       }
    }
 }

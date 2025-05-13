@@ -1,27 +1,17 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.Difficulty;
 
-public class ServerboundChangeDifficultyPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChangeDifficultyPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChangeDifficultyPacket>codec(ServerboundChangeDifficultyPacket::write, ServerboundChangeDifficultyPacket::new);
-   private final Difficulty difficulty;
+public record ServerboundChangeDifficultyPacket(Difficulty difficulty) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<ByteBuf, ServerboundChangeDifficultyPacket> STREAM_CODEC;
 
    public ServerboundChangeDifficultyPacket(Difficulty var1) {
       super();
       this.difficulty = var1;
-   }
-
-   private ServerboundChangeDifficultyPacket(FriendlyByteBuf var1) {
-      super();
-      this.difficulty = Difficulty.byId(var1.readUnsignedByte());
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.difficulty.getId());
    }
 
    public PacketType<ServerboundChangeDifficultyPacket> type() {
@@ -32,7 +22,7 @@ public class ServerboundChangeDifficultyPacket implements Packet<ServerGamePacke
       var1.handleChangeDifficulty(this);
    }
 
-   public Difficulty getDifficulty() {
-      return this.difficulty;
+   static {
+      STREAM_CODEC = StreamCodec.composite(Difficulty.STREAM_CODEC, ServerboundChangeDifficultyPacket::difficulty, ServerboundChangeDifficultyPacket::new);
    }
 }

@@ -36,6 +36,14 @@ import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.dialog.DialogTypes;
+import net.minecraft.server.dialog.body.DialogBody;
+import net.minecraft.server.dialog.body.DialogBodyTypes;
+import net.minecraft.server.dialog.input.InputControl;
+import net.minecraft.server.dialog.input.InputControlTypes;
+import net.minecraft.server.dialog.submit.SubmitMethod;
+import net.minecraft.server.dialog.submit.SubmitMethodTypes;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -223,6 +231,10 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends TestEnvironmentDefinition>> TEST_ENVIRONMENT_DEFINITION_TYPE;
    public static final Registry<MapCodec<? extends GameTestInstance>> TEST_INSTANCE_TYPE;
    public static final Registry<MapCodec<? extends SpawnCondition>> SPAWN_CONDITION_TYPE;
+   public static final Registry<MapCodec<? extends Dialog>> DIALOG_TYPE;
+   public static final Registry<MapCodec<? extends SubmitMethod>> SUBMIT_METHOD_TYPE;
+   public static final Registry<MapCodec<? extends InputControl>> INPUT_CONTROL_TYPE;
+   public static final Registry<MapCodec<? extends DialogBody>> DIALOG_BODY_TYPE;
    public static final Registry<Consumer<GameTestHelper>> TEST_FUNCTION;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
@@ -386,6 +398,10 @@ public class BuiltInRegistries {
       TEST_ENVIRONMENT_DEFINITION_TYPE = registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
       TEST_INSTANCE_TYPE = registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
       SPAWN_CONDITION_TYPE = registerSimple(Registries.SPAWN_CONDITION_TYPE, SpawnConditions::bootstrap);
+      DIALOG_TYPE = registerSimple(Registries.DIALOG_TYPE, DialogTypes::bootstrap);
+      SUBMIT_METHOD_TYPE = registerSimple(Registries.SUBMIT_METHOD_TYPE, SubmitMethodTypes::bootstrap);
+      INPUT_CONTROL_TYPE = registerSimple(Registries.INPUT_CONTROL_TYPE, InputControlTypes::bootstrap);
+      DIALOG_BODY_TYPE = registerSimple(Registries.DIALOG_BODY_TYPE, DialogBodyTypes::bootstrap);
       TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }

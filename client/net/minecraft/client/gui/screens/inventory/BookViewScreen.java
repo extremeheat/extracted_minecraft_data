@@ -15,7 +15,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -30,7 +29,7 @@ public class BookViewScreen extends Screen {
    public static final int PAGE_TEXT_Y_OFFSET = 30;
    private static final int BACKGROUND_TEXTURE_WIDTH = 256;
    private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
-   private static final MutableComponent TITLE = Component.translatable("book.view.title");
+   private static final Component TITLE = Component.translatable("book.view.title");
    public static final BookAccess EMPTY_ACCESS = new BookAccess(List.of());
    public static final ResourceLocation BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
    protected static final int TEXT_WIDTH = 114;
@@ -200,30 +199,46 @@ public class BookViewScreen extends Screen {
       return super.mouseClicked(var1, var3, var5);
    }
 
-   public boolean handleComponentClicked(Style var1) {
-      ClickEvent var2 = var1.getClickEvent();
-      if (var2 == null) {
-         return false;
-      } else if (var2 instanceof ClickEvent.ChangePage) {
-         ClickEvent.ChangePage var7 = (ClickEvent.ChangePage)var2;
-         ClickEvent.ChangePage var10000 = var7;
+   protected boolean handleClickEvent(ClickEvent var1) {
+      Objects.requireNonNull(var1);
+      byte var3 = 0;
+      boolean var13;
+      //$FF: var3->value
+      //0->net/minecraft/network/chat/ClickEvent$ChangePage
+      //1->net/minecraft/network/chat/ClickEvent$RunCommand
+      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+         case 0:
+            ClickEvent.ChangePage var4 = (ClickEvent.ChangePage)var1;
+            ClickEvent.ChangePage var14 = var4;
 
-         try {
-            var8 = var10000.page();
-         } catch (Throwable var6) {
-            throw new MatchException(var6.toString(), var6);
-         }
+            try {
+               var15 = var14.page();
+            } catch (Throwable var10) {
+               throw new MatchException(var10.toString(), var10);
+            }
 
-         int var5 = var8;
-         return this.forcePage(var5 - 1);
-      } else {
-         boolean var3 = super.handleComponentClicked(var1);
-         if (var3 && var2.action() == ClickEvent.Action.RUN_COMMAND) {
-            this.closeScreen();
-         }
+            int var11 = var15;
+            var13 = this.forcePage(var11 - 1);
+            break;
+         case 1:
+            ClickEvent.RunCommand var6 = (ClickEvent.RunCommand)var1;
+            ClickEvent.RunCommand var10000 = var6;
 
-         return var3;
+            try {
+               var12 = var10000.command();
+            } catch (Throwable var9) {
+               throw new MatchException(var9.toString(), var9);
+            }
+
+            String var8 = var12;
+            clickCommandAction(this.minecraft, var8, true);
+            var13 = true;
+            break;
+         default:
+            var13 = defaultHandleClickEvent(var1, this.minecraft, this);
       }
+
+      return var13;
    }
 
    protected void closeScreen() {

@@ -55,6 +55,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
@@ -94,6 +95,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.players.PlayerList;
@@ -1207,6 +1209,10 @@ public class ServerPlayer extends Player {
    public void openTextEdit(SignBlockEntity var1, boolean var2) {
       this.connection.send(new ClientboundBlockUpdatePacket(this.level(), var1.getBlockPos()));
       this.connection.send(new ClientboundOpenSignEditorPacket(var1.getBlockPos(), var2));
+   }
+
+   public void openDialog(Holder<Dialog> var1) {
+      this.connection.send(new ClientboundShowDialogPacket(var1));
    }
 
    private void nextContainerCounter() {

@@ -517,6 +517,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.persistenceRequired = true;
    }
 
+   protected boolean canShearEquipment(Player var1) {
+      return !this.isVehicle();
+   }
+
    public void setGuaranteedDrop(EquipmentSlot var1) {
       this.dropChances = this.dropChances.withGuaranteedDrop(var1);
    }

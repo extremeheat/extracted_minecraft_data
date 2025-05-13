@@ -10,46 +10,46 @@ public record StringTemplate(List<String> segments, List<String> variables) {
       this.variables = var2;
    }
 
-   public static StringTemplate fromString(String var0, int var1) {
+   public static StringTemplate fromString(String var0) {
+      ImmutableList.Builder var1 = ImmutableList.builder();
       ImmutableList.Builder var2 = ImmutableList.builder();
-      ImmutableList.Builder var3 = ImmutableList.builder();
-      int var4 = var0.length();
-      int var5 = 0;
-      int var6 = var0.indexOf(36);
+      int var3 = var0.length();
+      int var4 = 0;
+      int var5 = var0.indexOf(36);
 
-      while(var6 != -1) {
-         if (var6 != var4 - 1 && var0.charAt(var6 + 1) == '(') {
-            var2.add(var0.substring(var5, var6));
-            int var7 = var0.indexOf(41, var6 + 1);
-            if (var7 == -1) {
-               throw new IllegalArgumentException("Unterminated macro variable in macro '" + var0 + "' on line " + var1);
+      while(var5 != -1) {
+         if (var5 != var3 - 1 && var0.charAt(var5 + 1) == '(') {
+            var1.add(var0.substring(var4, var5));
+            int var6 = var0.indexOf(41, var5 + 1);
+            if (var6 == -1) {
+               throw new IllegalArgumentException("Unterminated macro variable");
             }
 
-            String var8 = var0.substring(var6 + 2, var7);
-            if (!isValidVariableName(var8)) {
-               throw new IllegalArgumentException("Invalid macro variable name '" + var8 + "' on line " + var1);
+            String var7 = var0.substring(var5 + 2, var6);
+            if (!isValidVariableName(var7)) {
+               throw new IllegalArgumentException("Invalid macro variable name '" + var7 + "'");
             }
 
-            var3.add(var8);
-            var5 = var7 + 1;
-            var6 = var0.indexOf(36, var5);
+            var2.add(var7);
+            var4 = var6 + 1;
+            var5 = var0.indexOf(36, var4);
          } else {
-            var6 = var0.indexOf(36, var6 + 1);
+            var5 = var0.indexOf(36, var5 + 1);
          }
       }
 
-      if (var5 == 0) {
-         throw new IllegalArgumentException("Macro without variables on line " + var1);
+      if (var4 == 0) {
+         throw new IllegalArgumentException("No variables in macro");
       } else {
-         if (var5 != var4) {
-            var2.add(var0.substring(var5));
+         if (var4 != var3) {
+            var1.add(var0.substring(var4));
          }
 
-         return new StringTemplate(var2.build(), var3.build());
+         return new StringTemplate(var1.build(), var2.build());
       }
    }
 
-   private static boolean isValidVariableName(String var0) {
+   public static boolean isValidVariableName(String var0) {
       for(int var1 = 0; var1 < var0.length(); ++var1) {
          char var2 = var0.charAt(var1);
          if (!Character.isLetterOrDigit(var2) && var2 != '_') {
@@ -69,7 +69,7 @@ public record StringTemplate(List<String> segments, List<String> variables) {
       }
 
       if (this.segments.size() > this.variables.size()) {
-         var2.append((String)this.segments.get(this.segments.size() - 1));
+         var2.append((String)this.segments.getLast());
       }
 
       CommandFunction.checkCommandLineLength(var2);

@@ -20,7 +20,7 @@ public record MusicInfo(@Nullable Music music, float volume) {
       if (this.music == null) {
          return false;
       } else {
-         return this.music.replaceCurrentMusic() && !((SoundEvent)this.music.getEvent().value()).location().equals(var1.getLocation());
+         return this.music.replaceCurrentMusic() && !((SoundEvent)this.music.event().value()).location().equals(var1.getLocation());
       }
    }
 }

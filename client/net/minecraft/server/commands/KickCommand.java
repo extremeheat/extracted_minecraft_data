@@ -22,7 +22,7 @@ public class KickCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kick").requires((var0x) -> var0x.hasPermission(3))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Component.translatable("multiplayer.disconnect.kicked")))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kick").requires(Commands.hasPermission(3))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Component.translatable("multiplayer.disconnect.kicked")))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
    }
 
    private static int kickPlayers(CommandSourceStack var0, Collection<ServerPlayer> var1, Component var2) throws CommandSyntaxException {

@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -84,6 +85,7 @@ import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.slf4j.Logger;
 
 public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
@@ -116,6 +118,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    protected final CubeMap cubeMap = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
    protected final PanoramaRenderer panorama;
    private final CrossFrameResourcePool resourcePool;
+   private final FogRenderer fogRenderer;
    private final GuiRenderer guiRenderer;
    private final GuiRenderState guiRenderState;
    @Nullable
@@ -131,6 +134,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       super();
       this.panorama = new PanoramaRenderer(this.cubeMap);
       this.resourcePool = new CrossFrameResourcePool(3);
+      this.fogRenderer = new FogRenderer();
       this.mainCamera = new Camera();
       this.lighting = new Lighting();
       this.globalSettingsUniform = new GlobalSettingsUniform();
@@ -156,6 +160,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       this.hud3dProjectionMatrixBuffer.close();
       this.lighting.close();
       this.cubeMap.close();
+      this.fogRenderer.close();
    }
 
    public void setRenderBlockOutline(boolean var1) {
@@ -478,7 +483,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          int var5 = (int)this.minecraft.mouseHandler.getScaledXPos(this.minecraft.getWindow());
          int var6 = (int)this.minecraft.mouseHandler.getScaledYPos(this.minecraft.getWindow());
          if (var4 && var2 && this.minecraft.level != null) {
-            var3.push("level");
+            var3.push("world");
             this.renderLevel(var1);
             this.tryTakeScreenshotIfNeeded();
             this.minecraft.levelRenderer.doEntityOutline();
@@ -491,6 +496,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             }
          }
 
+         this.fogRenderer.endFrame();
          RenderTarget var17 = this.minecraft.getMainRenderTarget();
          RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
@@ -543,7 +549,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             }
          }
 
-         this.guiRenderer.render(this.minecraft.levelRenderer.getFogRenderer().getBuffer(FogRenderer.FogMode.NONE));
+         this.guiRenderer.render(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
          this.guiRenderer.incrementFrameNumber();
          this.resourcePool.endFrame();
       }
@@ -679,23 +685,29 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          var10.rotate(-var18, var17);
       }
 
-      float var23 = Math.max(var9, (float)(Integer)this.minecraft.options.fov().get());
-      Matrix4f var24 = this.getProjectionMatrix(var23);
+      float var26 = Math.max(var9, (float)(Integer)this.minecraft.options.fov().get());
+      Matrix4f var27 = this.getProjectionMatrix(var26);
       RenderSystem.setProjectionMatrix(this.levelProjectionMatrixBuffer.getBuffer(var10), ProjectionType.PERSPECTIVE);
-      Quaternionf var25 = var6.rotation().conjugate(new Quaternionf());
-      Matrix4f var19 = (new Matrix4f()).rotation(var25);
-      this.minecraft.levelRenderer.prepareCullFrustum(var6.getPosition(), var19, var24);
-      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, var6, this, var19, var10);
-      boolean var20 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
-      RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
+      Quaternionf var28 = var6.rotation().conjugate(new Quaternionf());
+      Matrix4f var19 = (new Matrix4f()).rotation(var28);
+      this.minecraft.levelRenderer.prepareCullFrustum(var6.getPosition(), var19, var27);
+      var4.popPush("fog");
+      boolean var20 = this.minecraft.level.effects().isFoggyAt(var6.getBlockPosition().getX(), var6.getBlockPosition().getZ()) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
+      Vector4f var21 = this.fogRenderer.setupFog(var6, this.minecraft.options.getEffectiveRenderDistance(), var20, var1, this.getDarkenWorldAmount(var2), this.minecraft.level);
+      GpuBufferSlice var22 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
+      var4.popPush("level");
+      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, var6, var19, var10, var22, var21, !var20);
       var4.popPush("hand");
+      boolean var23 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
+      RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
       RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
-      this.renderItemInHand(var2, var20, var19);
+      this.renderItemInHand(var2, var23, var19);
       var4.popPush("screen effects");
-      MultiBufferSource.BufferSource var21 = this.renderBuffers.bufferSource();
-      this.screenEffectRenderer.renderScreenEffect(var20, var2);
-      var21.endBatch();
+      MultiBufferSource.BufferSource var24 = this.renderBuffers.bufferSource();
+      this.screenEffectRenderer.renderScreenEffect(var23, var2);
+      var24.endBatch();
       var4.pop();
+      RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
       if (this.minecraft.gui.shouldRenderDebugCrosshair()) {
          this.minecraft.getDebugOverlay().render3dCrosshair(var6);
       }

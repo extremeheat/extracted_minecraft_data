@@ -75,16 +75,17 @@ public class ItemFrame extends HangingEntity {
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
       var1.define(DATA_ITEM, ItemStack.EMPTY);
       var1.define(DATA_ROTATION, 0);
    }
 
    protected void setDirection(Direction var1) {
       Validate.notNull(var1);
-      this.direction = var1;
+      super.setDirectionRaw(var1);
       if (var1.getAxis().isHorizontal()) {
          this.setXRot(0.0F);
-         this.setYRot((float)(this.direction.get2DDataValue() * 90));
+         this.setYRot((float)(var1.get2DDataValue() * 90));
       } else {
          this.setXRot((float)(-90 * var1.getAxisDirection().getStep()));
          this.setYRot(0.0F);
@@ -111,8 +112,8 @@ public class ItemFrame extends HangingEntity {
       } else if (!this.level().noCollision(this)) {
          return false;
       } else {
-         BlockState var1 = this.level().getBlockState(this.pos.relative(this.direction.getOpposite()));
-         return var1.isSolid() || this.direction.getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
+         BlockState var1 = this.level().getBlockState(this.pos.relative(this.getDirection().getOpposite()));
+         return var1.isSolid() || this.getDirection().getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
       }
    }
 
@@ -285,6 +286,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+      super.onSyncedDataUpdated(var1);
       if (var1.equals(DATA_ITEM)) {
          this.onItemChanged(this.getItem());
       }
@@ -324,7 +326,7 @@ public class ItemFrame extends HangingEntity {
 
       var1.putByte("ItemRotation", (byte)this.getRotation());
       var1.putFloat("ItemDropChance", this.dropChance);
-      var1.store("Facing", Direction.LEGACY_ID_CODEC, this.direction);
+      var1.store("Facing", Direction.LEGACY_ID_CODEC, this.getDirection());
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Fixed", this.fixed);
    }
@@ -386,7 +388,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
+      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

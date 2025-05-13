@@ -15,7 +15,7 @@ public class GameRuleCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      final LiteralArgumentBuilder var2 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires((var0x) -> var0x.hasPermission(2));
+      final LiteralArgumentBuilder var2 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(Commands.hasPermission(2));
       (new GameRules(var1.enabledFeatures())).visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
          public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1, GameRules.Type<T> var2x) {
             LiteralArgumentBuilder var3 = Commands.literal(var1.getId());

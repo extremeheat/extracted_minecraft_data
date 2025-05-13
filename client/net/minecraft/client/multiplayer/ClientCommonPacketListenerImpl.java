@@ -29,10 +29,13 @@ import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.dialog.DialogScreen;
+import net.minecraft.client.gui.screens.dialog.DialogScreens;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
+import net.minecraft.core.Holder;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.ServerboundPacketListener;
@@ -41,6 +44,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
+import net.minecraft.network.protocol.common.ClientboundClearDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
@@ -49,6 +53,7 @@ import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
+import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
@@ -62,6 +67,7 @@ import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.thread.BlockableEventLoop;
 import org.slf4j.Logger;
 
@@ -223,6 +229,38 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       }
 
       this.serverLinks = new ServerLinks(var3.build());
+   }
+
+   public void handleShowDialog(ClientboundShowDialogPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      this.showDialog(var1.dialog());
+   }
+
+   public void showDialog(Holder<Dialog> var1) {
+      Screen var4 = this.minecraft.screen;
+      Screen var2;
+      if (var4 instanceof DialogScreen var3) {
+         var2 = var3.previousScreen();
+      } else {
+         var2 = this.minecraft.screen;
+      }
+
+      DialogScreen var5 = DialogScreens.createFromData((Dialog)var1.value(), var2);
+      if (var5 != null) {
+         this.minecraft.setScreen(var5);
+      } else {
+         LOGGER.warn("Failed to show dialog for data {}", var1);
+      }
+
+   }
+
+   public void handleClearDialog(ClientboundClearDialogPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      Screen var3 = this.minecraft.screen;
+      if (var3 instanceof DialogScreen var2) {
+         this.minecraft.setScreen(var2.previousScreen());
+      }
+
    }
 
    public void handleTransfer(ClientboundTransferPacket var1) {

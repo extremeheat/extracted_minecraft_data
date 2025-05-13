@@ -77,17 +77,12 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
       return new ResourceSelectorArgument<T>(var0, var1);
    }
 
-   public static <T> Collection<Holder.Reference<T>> getSelectedResources(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<? extends Registry<T>> var2) {
+   public static <T> Collection<Holder.Reference<T>> getSelectedResources(CommandContext<CommandSourceStack> var0, String var1) {
       return (Collection)var0.getArgument(var1, Collection.class);
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      if (var4 instanceof SharedSuggestionProvider var3) {
-         return var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, var2, var1);
-      } else {
-         return SharedSuggestionProvider.suggest(this.registryLookup.listElementIds().map(ResourceKey::location).map(ResourceLocation::toString), var2);
-      }
+      return SharedSuggestionProvider.listSuggestions(var1, var2, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS);
    }
 
    public Collection<String> getExamples() {

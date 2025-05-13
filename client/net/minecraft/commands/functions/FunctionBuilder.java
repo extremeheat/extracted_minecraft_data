@@ -50,7 +50,13 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
    }
 
    public void addMacro(String var1, int var2, T var3) {
-      StringTemplate var4 = StringTemplate.fromString(var1, var2);
+      StringTemplate var4;
+      try {
+         var4 = StringTemplate.fromString(var1);
+      } catch (Exception var7) {
+         throw new IllegalArgumentException("Can't parse function line " + var2 + ": '" + var1 + "'", var7);
+      }
+
       if (this.plainEntries != null) {
          this.macroEntries = new ArrayList(this.plainEntries.size() + 1);
 

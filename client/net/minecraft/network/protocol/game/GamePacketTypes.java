@@ -125,6 +125,7 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundBlockEntityTagQueryPacket> SERVERBOUND_BLOCK_ENTITY_TAG_QUERY = createServerbound("block_entity_tag_query");
    public static final PacketType<ServerboundSelectBundleItemPacket> SERVERBOUND_BUNDLE_ITEM_SELECTED = createServerbound("bundle_item_selected");
    public static final PacketType<ServerboundChangeDifficultyPacket> SERVERBOUND_CHANGE_DIFFICULTY = createServerbound("change_difficulty");
+   public static final PacketType<ServerboundChangeGameModePacket> SERVERBOUND_CHANGE_GAME_MODE = createServerbound("change_game_mode");
    public static final PacketType<ServerboundChatAckPacket> SERVERBOUND_CHAT_ACK = createServerbound("chat_ack");
    public static final PacketType<ServerboundChatCommandPacket> SERVERBOUND_CHAT_COMMAND = createServerbound("chat_command");
    public static final PacketType<ServerboundChatCommandSignedPacket> SERVERBOUND_CHAT_COMMAND_SIGNED = createServerbound("chat_command_signed");
@@ -139,6 +140,7 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundContainerClickPacket> SERVERBOUND_CONTAINER_CLICK = createServerbound("container_click");
    public static final PacketType<ServerboundContainerClosePacket> SERVERBOUND_CONTAINER_CLOSE = createServerbound("container_close");
    public static final PacketType<ServerboundContainerSlotStateChangedPacket> SERVERBOUND_CONTAINER_SLOT_STATE_CHANGED = createServerbound("container_slot_state_changed");
+   public static final PacketType<ServerboundCustomClickActionPacket> SERVERBOUND_CUSTOM_CLICK_ACTION = createServerbound("custom_click_action");
    public static final PacketType<ServerboundDebugSampleSubscriptionPacket> SERVERBOUND_DEBUG_SAMPLE_SUBSCRIPTION = createServerbound("debug_sample_subscription");
    public static final PacketType<ServerboundEditBookPacket> SERVERBOUND_EDIT_BOOK = createServerbound("edit_book");
    public static final PacketType<ServerboundEntityTagQueryPacket> SERVERBOUND_ENTITY_TAG_QUERY = createServerbound("entity_tag_query");
