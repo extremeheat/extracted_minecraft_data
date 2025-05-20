@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.BatAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -18,6 +19,8 @@ public class BatModel extends EntityModel<BatRenderState> {
    private final ModelPart rightWingTip;
    private final ModelPart leftWingTip;
    private final ModelPart feet;
+   private final KeyframeAnimation flyingAnimation;
+   private final KeyframeAnimation restingAnimation;
 
    public BatModel(ModelPart var1) {
       super(var1, RenderType::entityCutout);
@@ -28,6 +31,8 @@ public class BatModel extends EntityModel<BatRenderState> {
       this.leftWing = this.body.getChild("left_wing");
       this.leftWingTip = this.leftWing.getChild("left_wing_tip");
       this.feet = this.body.getChild("feet");
+      this.flyingAnimation = BatAnimation.BAT_FLYING.bake(var1);
+      this.restingAnimation = BatAnimation.BAT_RESTING.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -51,8 +56,8 @@ public class BatModel extends EntityModel<BatRenderState> {
          this.applyHeadRotation(var1.yRot);
       }
 
-      this.animate(var1.flyAnimationState, BatAnimation.BAT_FLYING, var1.ageInTicks, 1.0F);
-      this.animate(var1.restAnimationState, BatAnimation.BAT_RESTING, var1.ageInTicks, 1.0F);
+      this.flyingAnimation.apply(var1.flyAnimationState, var1.ageInTicks);
+      this.restingAnimation.apply(var1.restAnimationState, var1.ageInTicks);
    }
 
    private void applyHeadRotation(float var1) {

@@ -24,6 +24,8 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ExperienceOrb extends Entity {
    protected static final EntityDataAccessor<Integer> DATA_VALUE;
@@ -50,15 +52,19 @@ public class ExperienceOrb extends Entity {
    public ExperienceOrb(Level var1, Vec3 var2, Vec3 var3, int var4) {
       this(EntityType.EXPERIENCE_ORB, var1);
       this.setPos(var2);
-      if (!this.level().isClientSide) {
-         this.setYRot((float)(this.random.nextDouble() * 360.0));
-         Vec3 var5 = new Vec3((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
+      if (!var1.isClientSide) {
+         this.setYRot(this.random.nextFloat() * 360.0F);
+         Vec3 var5 = new Vec3((this.random.nextDouble() * 0.2 - 0.1) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.2 - 0.1) * 2.0);
          if (var3.lengthSqr() > 0.0 && var3.dot(var5) < 0.0) {
             var5 = var5.scale(-1.0);
          }
 
+         double var6 = this.getBoundingBox().getSize();
+         this.setPos(var2.add(var3.normalize().scale(var6 * 0.5)));
          this.setDeltaMovement(var5);
-         this.setPos(var2.add(var3.normalize().scale(this.getBoundingBox().getSize() * 0.5)));
+         if (!var1.noCollision(this.getBoundingBox())) {
+            this.unstuckIfPossible(var6);
+         }
       }
 
       this.setValue(var4);
@@ -70,6 +76,12 @@ public class ExperienceOrb extends Entity {
       this.health = 5;
       this.count = 1;
       this.interpolation = new InterpolationHandler(this);
+   }
+
+   protected void unstuckIfPossible(double var1) {
+      Vec3 var3 = this.position().add(0.0, (double)this.getBbHeight() / 2.0, 0.0);
+      VoxelShape var4 = Shapes.create(AABB.ofSize(var3, var1, var1, var1));
+      this.level().findFreePosition(this, var4, var3, (double)this.getBbWidth(), (double)this.getBbHeight(), (double)this.getBbWidth()).ifPresent((var1x) -> this.setPos(var1x.add(0.0, (double)(-this.getBbHeight()) / 2.0, 0.0)));
    }
 
    protected Entity.MovementEmission getMovementEmission() {

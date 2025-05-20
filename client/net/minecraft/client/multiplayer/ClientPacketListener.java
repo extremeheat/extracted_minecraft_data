@@ -48,6 +48,7 @@ import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
+import net.minecraft.client.gui.screens.dialog.DialogConnectionAccess;
 import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -100,6 +101,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
 import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
 import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
@@ -260,6 +262,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -892,7 +895,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.sendChatAcknowledgement();
       ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.customReportDetails, this.serverLinks)));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.customReportDetails, this.serverLinks())));
       this.send(ServerboundConfigurationAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
    }
@@ -2405,12 +2408,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
    }
 
-   public void sendUnattendedCommand(String var1, boolean var2) {
+   public void sendUnattendedCommand(String var1, @Nullable Screen var2) {
       switch (this.verifyCommand(var1).ordinal()) {
-         case 0 -> this.send(new ServerboundChatCommandPacket(var1));
-         case 1 -> this.openCommandSendConfirmationWindow(var1, "multiplayer.confirm_command.parse_errors", var2);
-         case 2 -> LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var1);
-         case 3 -> this.openCommandSendConfirmationWindow(var1, "multiplayer.confirm_command.permissions_required", var2);
+         case 0:
+            this.send(new ServerboundChatCommandPacket(var1));
+            this.minecraft.setScreen(var2);
+            break;
+         case 1:
+            this.openCommandSendConfirmationWindow(var1, "multiplayer.confirm_command.parse_errors", var2);
+            break;
+         case 2:
+            LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var1);
+            break;
+         case 3:
+            this.openCommandSendConfirmationWindow(var1, "multiplayer.confirm_command.permissions_required", var2);
       }
 
    }
@@ -2431,15 +2442,15 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       return !var0.getReader().canRead() && var0.getExceptions().isEmpty() && var0.getContext().getLastChild().getCommand() != null;
    }
 
-   private void openCommandSendConfirmationWindow(String var1, String var2, boolean var3) {
+   private void openCommandSendConfirmationWindow(String var1, String var2, @Nullable Screen var3) {
       Screen var4 = this.minecraft.screen;
       this.minecraft.setScreen(new ConfirmScreen((var4x) -> {
          if (var4x) {
             this.send(new ServerboundChatCommandPacket(var1));
          }
 
-         if (var3 && var4x) {
-            this.minecraft.setScreen((Screen)null);
+         if (var4x) {
+            this.minecraft.setScreen(var3);
          } else {
             this.minecraft.setScreen(var4);
          }
@@ -2496,6 +2507,30 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
    }
 
+   protected DialogConnectionAccess createDialogAccess() {
+      return new DialogConnectionAccess() {
+         public void disconnect(Component var1) {
+            ClientPacketListener.this.getConnection().disconnect(var1);
+         }
+
+         public void runCommand(String var1, @Nullable Screen var2) {
+            ClientPacketListener.this.sendUnattendedCommand(var1, var2);
+         }
+
+         public void openDialog(Holder<Dialog> var1) {
+            ClientPacketListener.this.showDialog(var1);
+         }
+
+         public void sendCustomAction(ResourceLocation var1, Optional<String> var2) {
+            ClientPacketListener.this.send(new ServerboundCustomClickActionPacket(var1, var2));
+         }
+
+         public ServerLinks serverLinks() {
+            return ClientPacketListener.this.serverLinks();
+         }
+      };
+   }
+
    @Nullable
    public ServerData getServerData() {
       return this.serverData;
@@ -2527,10 +2562,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public SessionSearchTrees searchTrees() {
       return this.searchTrees;
-   }
-
-   public ServerLinks serverLinks() {
-      return this.serverLinks;
    }
 
    public void registerForCleaning(CacheSlot<?, ?> var1) {

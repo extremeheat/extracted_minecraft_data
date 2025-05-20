@@ -773,6 +773,7 @@ public class SoundEvents {
    public static final SoundEvent HORSE_AMBIENT = register("entity.horse.ambient");
    public static final SoundEvent HORSE_ANGRY = register("entity.horse.angry");
    public static final Holder.Reference<SoundEvent> HORSE_ARMOR = registerForHolder("entity.horse.armor");
+   public static final Holder.Reference<SoundEvent> HORSE_ARMOR_UNEQUIP = registerForHolder("item.horse_armor.unequip");
    public static final SoundEvent HORSE_BREATHE = register("entity.horse.breathe");
    public static final SoundEvent HORSE_DEATH = register("entity.horse.death");
    public static final SoundEvent HORSE_EAT = register("entity.horse.eat");
@@ -844,8 +845,9 @@ public class SoundEvents {
    public static final SoundEvent LEAF_LITTER_PLACE = register("block.leaf_litter.place");
    public static final SoundEvent LEAF_LITTER_HIT = register("block.leaf_litter.hit");
    public static final SoundEvent LEAF_LITTER_FALL = register("block.leaf_litter.fall");
-   public static final SoundEvent LEASH_KNOT_BREAK = register("entity.leash_knot.break");
-   public static final SoundEvent LEASH_KNOT_PLACE = register("entity.leash_knot.place");
+   public static final SoundEvent LEAD_UNTIED = register("item.lead.untied");
+   public static final SoundEvent LEAD_TIED = register("item.lead.tied");
+   public static final SoundEvent LEAD_BREAK = register("item.lead.break");
    public static final SoundEvent LEVER_CLICK = register("block.lever.click");
    public static final SoundEvent LIGHTNING_BOLT_IMPACT = register("entity.lightning_bolt.impact");
    public static final SoundEvent LIGHTNING_BOLT_THUNDER = register("entity.lightning_bolt.thunder");
@@ -859,6 +861,7 @@ public class SoundEvents {
    public static final SoundEvent LLAMA_SPIT = register("entity.llama.spit");
    public static final SoundEvent LLAMA_STEP = register("entity.llama.step");
    public static final Holder.Reference<SoundEvent> LLAMA_SWAG = registerForHolder("entity.llama.swag");
+   public static final Holder.Reference<SoundEvent> LLAMA_CARPET_UNEQUIP = registerForHolder("item.llama_carpet.unequip");
    public static final SoundEvent MAGMA_CUBE_DEATH_SMALL = register("entity.magma_cube.death_small");
    public static final SoundEvent LODESTONE_BREAK = register("block.lodestone.break");
    public static final SoundEvent LODESTONE_STEP = register("block.lodestone.step");
@@ -1689,6 +1692,7 @@ public class SoundEvents {
    public static final SoundEvent APPLY_EFFECT_BAD_OMEN = register("event.mob_effect.bad_omen");
    public static final SoundEvent APPLY_EFFECT_TRIAL_OMEN = register("event.mob_effect.trial_omen");
    public static final SoundEvent APPLY_EFFECT_RAID_OMEN = register("event.mob_effect.raid_omen");
+   public static final Holder.Reference<SoundEvent> SADDLE_UNEQUIP = registerForHolder("item.saddle.unequip");
 
    public SoundEvents() {
       super();

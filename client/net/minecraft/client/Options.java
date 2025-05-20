@@ -508,6 +508,10 @@ public class Options {
       return this.reducedDebugInfo;
    }
 
+   public final float getFinalSoundSourceVolume(SoundSource var1) {
+      return var1 == SoundSource.MASTER ? this.getSoundSourceVolume(var1) : this.getSoundSourceVolume(var1) * this.getSoundSourceVolume(SoundSource.MASTER);
+   }
+
    public final float getSoundSourceVolume(SoundSource var1) {
       return ((Double)this.getSoundSourceOptionInstance(var1).get()).floatValue();
    }
@@ -517,7 +521,7 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2, var1x.floatValue()));
+      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2));
    }
 
    public OptionInstance<Boolean> showSubtitles() {

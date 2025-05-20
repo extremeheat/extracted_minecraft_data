@@ -39,8 +39,9 @@ public class OpenServerTask extends LongRunningTask {
             boolean var3 = var1.open(this.serverData.id);
             if (var3) {
                this.minecraft.execute(() -> {
-                  if (this.returnScreen instanceof RealmsConfigureWorldScreen) {
-                     ((RealmsConfigureWorldScreen)this.returnScreen).stateChanged();
+                  Screen var2 = this.returnScreen;
+                  if (var2 instanceof RealmsConfigureWorldScreen var1) {
+                     var1.stateChanged();
                   }
 
                   this.serverData.state = RealmsServer.State.OPEN;

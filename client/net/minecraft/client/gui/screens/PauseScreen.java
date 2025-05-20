@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
@@ -33,6 +34,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.Dialogs;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
 
@@ -189,7 +191,8 @@ public class PauseScreen extends Screen {
    }
 
    public boolean rendersNowPlayingToast() {
-      return (Boolean)this.minecraft.options.showNowPlayingToast().get() && this.showPauseMenu;
+      Options var1 = this.minecraft.options;
+      return (Boolean)var1.showNowPlayingToast().get() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
    }
 
    private Button openScreenButton(Component var1, Supplier<Screen> var2) {

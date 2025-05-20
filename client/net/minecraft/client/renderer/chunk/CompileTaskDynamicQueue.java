@@ -10,6 +10,7 @@ public class CompileTaskDynamicQueue {
    private static final int MAX_RECOMPILE_QUOTA = 2;
    private int recompileQuota = 2;
    private final List<SectionRenderDispatcher.RenderSection.CompileTask> tasks = new ObjectArrayList();
+   private volatile int size = 0;
 
    public CompileTaskDynamicQueue() {
       super();
@@ -17,6 +18,7 @@ public class CompileTaskDynamicQueue {
 
    public synchronized void add(SectionRenderDispatcher.RenderSection.CompileTask var1) {
       this.tasks.add(var1);
+      ++this.size;
    }
 
    @Nullable
@@ -58,12 +60,17 @@ public class CompileTaskDynamicQueue {
    }
 
    public int size() {
-      return this.tasks.size();
+      return this.size;
    }
 
    @Nullable
    private SectionRenderDispatcher.RenderSection.CompileTask removeTaskByIndex(int var1) {
-      return var1 >= 0 ? (SectionRenderDispatcher.RenderSection.CompileTask)this.tasks.remove(var1) : null;
+      if (var1 >= 0) {
+         --this.size;
+         return (SectionRenderDispatcher.RenderSection.CompileTask)this.tasks.remove(var1);
+      } else {
+         return null;
+      }
    }
 
    public synchronized void clear() {
@@ -72,5 +79,6 @@ public class CompileTaskDynamicQueue {
       }
 
       this.tasks.clear();
+      this.size = 0;
    }
 }

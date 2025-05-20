@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.ArmadilloAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -27,6 +28,10 @@ public class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
    private final ModelPart cube;
    private final ModelPart head;
    private final ModelPart tail;
+   private final KeyframeAnimation walkAnimation;
+   private final KeyframeAnimation rollOutAnimation;
+   private final KeyframeAnimation rollUpAnimation;
+   private final KeyframeAnimation peekAnimation;
 
    public ArmadilloModel(ModelPart var1) {
       super(var1);
@@ -36,6 +41,10 @@ public class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
       this.head = this.body.getChild("head");
       this.tail = this.body.getChild("tail");
       this.cube = var1.getChild("cube");
+      this.walkAnimation = ArmadilloAnimation.ARMADILLO_WALK.bake(var1);
+      this.rollOutAnimation = ArmadilloAnimation.ARMADILLO_ROLL_OUT.bake(var1);
+      this.rollUpAnimation = ArmadilloAnimation.ARMADILLO_ROLL_UP.bake(var1);
+      this.peekAnimation = ArmadilloAnimation.ARMADILLO_PEEK.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -75,9 +84,9 @@ public class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
          this.head.yRot = Mth.clamp(var1.yRot, -32.5F, 32.5F) * 0.017453292F;
       }
 
-      this.animateWalk(ArmadilloAnimation.ARMADILLO_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 16.5F, 2.5F);
-      this.animate(var1.rollOutAnimationState, ArmadilloAnimation.ARMADILLO_ROLL_OUT, var1.ageInTicks, 1.0F);
-      this.animate(var1.rollUpAnimationState, ArmadilloAnimation.ARMADILLO_ROLL_UP, var1.ageInTicks, 1.0F);
-      this.animate(var1.peekAnimationState, ArmadilloAnimation.ARMADILLO_PEEK, var1.ageInTicks, 1.0F);
+      this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 16.5F, 2.5F);
+      this.rollOutAnimation.apply(var1.rollOutAnimationState, var1.ageInTicks);
+      this.rollUpAnimation.apply(var1.rollUpAnimationState, var1.ageInTicks);
+      this.peekAnimation.apply(var1.peekAnimationState, var1.ageInTicks);
    }
 }

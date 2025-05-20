@@ -7,11 +7,11 @@ import net.minecraft.server.dialog.ClickAction;
 import net.minecraft.server.dialog.MultiActionDialog;
 
 public class MultiButtonDialogScreen extends ButtonListDialogScreen<MultiActionDialog> {
-   public MultiButtonDialogScreen(@Nullable Screen var1, MultiActionDialog var2) {
-      super(var1, var2);
+   public MultiButtonDialogScreen(@Nullable Screen var1, MultiActionDialog var2, DialogConnectionAccess var3) {
+      super(var1, var2, var3);
    }
 
-   protected Stream<ClickAction> createListActions(MultiActionDialog var1) {
+   protected Stream<ClickAction> createListActions(MultiActionDialog var1, DialogConnectionAccess var2) {
       return var1.actions().stream();
    }
 }

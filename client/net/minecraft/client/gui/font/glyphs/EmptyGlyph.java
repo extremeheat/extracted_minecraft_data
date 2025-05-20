@@ -13,6 +13,6 @@ public class EmptyGlyph extends BakedGlyph {
       super(GlyphRenderTypes.createForColorTexture(ResourceLocation.withDefaultNamespace("")), (GpuTextureView)null, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
    }
 
-   public void renderChar(BakedGlyph.GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4) {
+   public void renderChar(BakedGlyph.GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4, boolean var5) {
    }
 }

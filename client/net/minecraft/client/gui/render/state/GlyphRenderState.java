@@ -20,8 +20,8 @@ public record GlyphRenderState(Matrix3x2f pose, BakedGlyph.GlyphInstance instanc
    }
 
    public void buildVertices(VertexConsumer var1, float var2) {
-      Matrix4f var3 = (new Matrix4f()).mul(this.pose).translate(0.0F, 0.0F, var2).scale(1.0F, 1.0F, 0.0F);
-      this.instance.glyph().renderChar(this.instance, var3, var1, 15728880);
+      Matrix4f var3 = (new Matrix4f()).mul(this.pose).translate(0.0F, 0.0F, var2);
+      this.instance.glyph().renderChar(this.instance, var3, var1, 15728880, true);
    }
 
    public RenderPipeline pipeline() {

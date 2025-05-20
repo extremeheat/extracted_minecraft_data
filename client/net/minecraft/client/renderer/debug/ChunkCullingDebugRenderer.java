@@ -55,13 +55,13 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
                   }
                }
 
-               if (this.minecraft.sectionVisibility && var12.getCompiled().hasRenderableLayers()) {
+               if (this.minecraft.sectionVisibility && var12.getSectionMesh().hasRenderableLayers()) {
                   VertexConsumer var32 = var2.getBuffer(RenderType.lines());
                   int var33 = 0;
 
                   for(Direction var40 : DIRECTIONS) {
                      for(Direction var25 : DIRECTIONS) {
-                        boolean var26 = var12.getCompiled().facesCanSeeEachother(var40, var25);
+                        boolean var26 = var12.getSectionMesh().facesCanSeeEachother(var40, var25);
                         if (!var26) {
                            ++var33;
                            var32.addVertex(var15, (float)(8 + 8 * var40.getStepX()), (float)(8 + 8 * var40.getStepY()), (float)(8 + 8 * var40.getStepZ())).setColor(255, 0, 0, 255).setNormal((float)var40.getStepX(), (float)var40.getStepY(), (float)var40.getStepZ());

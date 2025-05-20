@@ -148,6 +148,7 @@ import net.minecraft.world.level.GameRules;
 import org.slf4j.Logger;
 
 public class Commands {
+   public static final String COMMAND_PREFIX = "/";
    private static final ThreadLocal<ExecutionContext<CommandSourceStack>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal();
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int LEVEL_ALL = 0;
@@ -262,7 +263,7 @@ public class Commands {
          SpawnArmorTrimsCommand.register(this.dispatcher);
          ServerPackCommand.register(this.dispatcher);
          if (var1.includeDedicated) {
-            DebugConfigCommand.register(this.dispatcher);
+            DebugConfigCommand.register(this.dispatcher, var2);
          }
       }
 
@@ -298,8 +299,12 @@ public class Commands {
    }
 
    public void performPrefixedCommand(CommandSourceStack var1, String var2) {
-      var2 = var2.startsWith("/") ? var2.substring(1) : var2;
+      var2 = trimOptionalPrefix(var2);
       this.performCommand(this.dispatcher.parse(var2, var1), var2);
+   }
+
+   public static String trimOptionalPrefix(String var0) {
+      return var0.startsWith("/") ? var0.substring(1) : var0;
    }
 
    public void performCommand(ParseResults<CommandSourceStack> var1, String var2) {

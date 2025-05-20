@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.network.protocol.game.ServerboundCustomClickActionPacket;
 import net.minecraft.server.dialog.submit.CommandTemplate;
 import net.minecraft.server.dialog.submit.CustomForm;
 import net.minecraft.server.dialog.submit.CustomSubmitMethod;
@@ -56,9 +55,9 @@ public class SubmitMethodHandlers {
 
       public SubmitMethodHandler.Callback createCallback(CommandTemplate var1) {
          ParsedTemplate var2 = var1.template();
-         return (var1x, var2x) -> {
-            String var3 = var2.instantiate(var2x);
-            var1x.sendUnattendedCommand(var3, true);
+         return (var1x, var2x, var3) -> {
+            String var4 = var2.instantiate(var2x);
+            var1x.runCommand(var4, var3.previousScreen());
          };
       }
 
@@ -74,9 +73,9 @@ public class SubmitMethodHandlers {
       }
 
       public SubmitMethodHandler.Callback createCallback(CustomSubmitMethod var1) {
-         return (var1x, var2) -> {
-            String var3 = var1.payload(var2);
-            var1x.send(new ServerboundCustomClickActionPacket(var1.id(), Optional.of(var3)));
+         return (var1x, var2, var3) -> {
+            String var4 = var1.payload(var2);
+            var1x.sendCustomAction(var1.id(), Optional.of(var4));
          };
       }
 

@@ -10,7 +10,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -30,7 +29,6 @@ public abstract class RenderType extends RenderStateShard {
    private static final RenderType SOLID;
    private static final RenderType CUTOUT_MIPPED;
    private static final RenderType CUTOUT;
-   private static final RenderType TRANSLUCENT;
    private static final RenderType TRANSLUCENT_MOVING_BLOCK;
    private static final Function<ResourceLocation, RenderType> ARMOR_CUTOUT_NO_CULL;
    private static final Function<ResourceLocation, RenderType> ARMOR_TRANSLUCENT;
@@ -87,7 +85,6 @@ public abstract class RenderType extends RenderStateShard {
    private static final Function<ResourceLocation, RenderType> CELESTIAL;
    private static final Function<ResourceLocation, RenderType> BLOCK_SCREEN_EFFECT;
    private static final Function<ResourceLocation, RenderType> FIRE_SCREEN_EFFECT;
-   private static final ImmutableList<RenderType> CHUNK_BUFFER_LAYERS;
    private final int bufferSize;
    private final boolean affectsCrumbling;
    private final boolean sortOnUpload;
@@ -102,10 +99,6 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType cutout() {
       return CUTOUT;
-   }
-
-   public static RenderType translucent() {
-      return TRANSLUCENT;
    }
 
    public static RenderType translucentMovingBlock() {
@@ -386,14 +379,6 @@ public abstract class RenderType extends RenderStateShard {
 
    public abstract void draw(MeshData var1);
 
-   public abstract RenderTarget getRenderTarget();
-
-   public abstract RenderPipeline getRenderPipeline();
-
-   public static List<RenderType> chunkBufferLayers() {
-      return CHUNK_BUFFER_LAYERS;
-   }
-
    public int bufferSize() {
       return this.bufferSize;
    }
@@ -423,10 +408,9 @@ public abstract class RenderType extends RenderStateShard {
    }
 
    static {
-      SOLID = create("solid", 4194304, true, false, RenderPipelines.SOLID, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).createCompositeState(true));
-      CUTOUT_MIPPED = create("cutout_mipped", 4194304, true, false, RenderPipelines.CUTOUT_MIPPED, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).createCompositeState(true));
-      CUTOUT = create("cutout", 786432, true, false, RenderPipelines.CUTOUT, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET).createCompositeState(true));
-      TRANSLUCENT = create("translucent", 786432, true, true, RenderPipelines.TRANSLUCENT, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).setOutputState(TRANSLUCENT_TARGET).createCompositeState(true));
+      SOLID = create("solid", 1536, true, false, RenderPipelines.SOLID, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).createCompositeState(true));
+      CUTOUT_MIPPED = create("cutout_mipped", 1536, true, false, RenderPipelines.CUTOUT_MIPPED, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).createCompositeState(true));
+      CUTOUT = create("cutout", 1536, true, false, RenderPipelines.CUTOUT, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET).createCompositeState(true));
       TRANSLUCENT_MOVING_BLOCK = create("translucent_moving_block", 786432, false, true, RenderPipelines.TRANSLUCENT_MOVING_BLOCK, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(true));
       ARMOR_CUTOUT_NO_CULL = Util.memoize((Function)((var0) -> {
          CompositeState var1 = RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).setLightmapState(LIGHTMAP).setOverlayState(OVERLAY).setLayeringState(VIEW_OFFSET_Z_LAYERING).createCompositeState(true);
@@ -537,7 +521,6 @@ public abstract class RenderType extends RenderStateShard {
       CELESTIAL = Util.memoize((Function)((var0) -> create("celestial", 1536, false, false, RenderPipelines.CELESTIAL, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).createCompositeState(false))));
       BLOCK_SCREEN_EFFECT = Util.memoize((Function)((var0) -> create("block_screen_effect", 1536, false, false, RenderPipelines.BLOCK_SCREEN_EFFECT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).createCompositeState(false))));
       FIRE_SCREEN_EFFECT = Util.memoize((Function)((var0) -> create("fire_screen_effect", 1536, false, false, RenderPipelines.FIRE_SCREEN_EFFECT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).createCompositeState(false))));
-      CHUNK_BUFFER_LAYERS = ImmutableList.of(solid(), cutoutMipped(), cutout(), translucent(), tripwire());
    }
 
    protected static enum OutlineProperty {
@@ -672,10 +655,6 @@ public abstract class RenderType extends RenderStateShard {
          return this.isOutline;
       }
 
-      public RenderPipeline getRenderPipeline() {
-         return this.renderPipeline;
-      }
-
       public VertexFormat format() {
          return this.renderPipeline.getVertexFormat();
       }
@@ -685,54 +664,53 @@ public abstract class RenderType extends RenderStateShard {
       }
 
       public void draw(MeshData var1) {
-         RenderPipeline var2 = this.getRenderPipeline();
          this.setupRenderState();
-         GpuBufferSlice var3 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
-         MeshData var4 = var1;
+         GpuBufferSlice var2 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
+         MeshData var3 = var1;
 
          try {
-            GpuBuffer var5 = var2.getVertexFormat().uploadImmediateVertexBuffer(var1.vertexBuffer());
-            GpuBuffer var6;
-            VertexFormat.IndexType var7;
+            GpuBuffer var4 = this.renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(var1.vertexBuffer());
+            GpuBuffer var5;
+            VertexFormat.IndexType var6;
             if (var1.indexBuffer() == null) {
-               RenderSystem.AutoStorageIndexBuffer var8 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
-               var6 = var8.getBuffer(var1.drawState().indexCount());
-               var7 = var8.type();
+               RenderSystem.AutoStorageIndexBuffer var7 = RenderSystem.getSequentialBuffer(var1.drawState().mode());
+               var5 = var7.getBuffer(var1.drawState().indexCount());
+               var6 = var7.type();
             } else {
-               var6 = var2.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
-               var7 = var1.drawState().indexType();
+               var5 = this.renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(var1.indexBuffer());
+               var6 = var1.drawState().indexType();
             }
 
-            RenderTarget var18 = this.state.outputState.getRenderTarget();
-            GpuTextureView var9 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var18.getColorTextureView();
-            GpuTextureView var10 = var18.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var18.getDepthTextureView()) : null;
+            RenderTarget var17 = this.state.outputState.getRenderTarget();
+            GpuTextureView var8 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var17.getColorTextureView();
+            GpuTextureView var9 = var17.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var17.getDepthTextureView()) : null;
 
-            try (RenderPass var11 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.getName(), var9, OptionalInt.empty(), var10, OptionalDouble.empty())) {
-               var11.setPipeline(var2);
-               RenderSystem.bindDefaultUniforms(var11);
-               var11.setUniform("DynamicTransforms", var3);
-               var11.setVertexBuffer(0, var5);
+            try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.getName(), var8, OptionalInt.empty(), var9, OptionalDouble.empty())) {
+               var10.setPipeline(this.renderPipeline);
+               RenderSystem.bindDefaultUniforms(var10);
+               var10.setUniform("DynamicTransforms", var2);
+               var10.setVertexBuffer(0, var4);
 
-               for(int var12 = 0; var12 < 12; ++var12) {
-                  GpuTextureView var13 = RenderSystem.getShaderTexture(var12);
-                  if (var13 != null) {
-                     var11.bindSampler("Sampler" + var12, var13);
+               for(int var11 = 0; var11 < 12; ++var11) {
+                  GpuTextureView var12 = RenderSystem.getShaderTexture(var11);
+                  if (var12 != null) {
+                     var10.bindSampler("Sampler" + var11, var12);
                   }
                }
 
-               var11.setIndexBuffer(var6, var7);
-               var11.drawIndexed(0, 0, var1.drawState().indexCount(), 1);
+               var10.setIndexBuffer(var5, var6);
+               var10.drawIndexed(0, 0, var1.drawState().indexCount(), 1);
             }
-         } catch (Throwable var17) {
+         } catch (Throwable var16) {
             if (var1 != null) {
                try {
-                  var4.close();
-               } catch (Throwable var14) {
-                  var17.addSuppressed(var14);
+                  var3.close();
+               } catch (Throwable var13) {
+                  var16.addSuppressed(var13);
                }
             }
 
-            throw var17;
+            throw var16;
          }
 
          if (var1 != null) {
@@ -740,10 +718,6 @@ public abstract class RenderType extends RenderStateShard {
          }
 
          this.clearRenderState();
-      }
-
-      public RenderTarget getRenderTarget() {
-         return this.state.outputState.getRenderTarget();
       }
 
       public String toString() {

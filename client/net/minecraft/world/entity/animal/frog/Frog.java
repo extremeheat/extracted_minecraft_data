@@ -252,7 +252,7 @@ public class Frog extends Animal {
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      FrogVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.FROG_VARIANT).ifPresent(this::setVariant);
       FrogAi.initMemories(this, var1.getRandom());
       return super.finalizeSpawn(var1, var2, var3, var4);
    }

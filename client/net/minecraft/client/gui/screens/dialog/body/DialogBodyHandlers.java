@@ -71,7 +71,6 @@ public class DialogBodyHandlers {
             LinearLayout var4 = LinearLayout.horizontal().spacing(2);
             var4.defaultCellSetting().alignVerticallyMiddle();
             ItemDisplayWidget var5 = new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), CommonComponents.EMPTY, var2.item(), var2.showDecorations(), var2.showTooltip());
-            var5.active = false;
             var4.addChild(var5);
             var4.addChild(new FocusableTextWidget(var3.width(), var3.contents(), var1.getFont(), false, false, 4));
             return var4;

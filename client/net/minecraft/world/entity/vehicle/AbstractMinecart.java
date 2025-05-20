@@ -336,10 +336,11 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    public void applyEffectsFromBlocks() {
-      if (!useExperimentalMovement(this.level())) {
-         this.applyEffectsFromBlocks(this.position(), this.position());
-      } else {
+      if (useExperimentalMovement(this.level())) {
          super.applyEffectsFromBlocks();
+      } else {
+         this.applyEffectsFromBlocks(this.position(), this.position());
+         this.clearMovementThisTick();
       }
 
    }

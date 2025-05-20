@@ -289,7 +289,7 @@ public class Pig extends Animal implements ItemSteerable {
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      PigVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.PIG_VARIANT).ifPresent(this::setVariant);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

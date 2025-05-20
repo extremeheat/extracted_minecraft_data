@@ -24,6 +24,7 @@ public class CommonPacketTypes {
    public static final PacketType<ServerboundKeepAlivePacket> SERVERBOUND_KEEP_ALIVE = createServerbound("keep_alive");
    public static final PacketType<ServerboundPongPacket> SERVERBOUND_PONG = createServerbound("pong");
    public static final PacketType<ServerboundResourcePackPacket> SERVERBOUND_RESOURCE_PACK = createServerbound("resource_pack");
+   public static final PacketType<ServerboundCustomClickActionPacket> SERVERBOUND_CUSTOM_CLICK_ACTION = createServerbound("custom_click_action");
 
    public CommonPacketTypes() {
       super();

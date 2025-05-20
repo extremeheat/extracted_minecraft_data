@@ -1,4 +1,4 @@
-package net.minecraft.network.protocol.game;
+package net.minecraft.network.protocol.common;
 
 import io.netty.buffer.ByteBuf;
 import java.util.Optional;
@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
-public record ServerboundCustomClickActionPacket(ResourceLocation id, Optional<String> payload) implements Packet<ServerGamePacketListener> {
+public record ServerboundCustomClickActionPacket(ResourceLocation id, Optional<String> payload) implements Packet<ServerCommonPacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundCustomClickActionPacket> STREAM_CODEC;
 
    public ServerboundCustomClickActionPacket(ResourceLocation var1, Optional<String> var2) {
@@ -18,10 +18,10 @@ public record ServerboundCustomClickActionPacket(ResourceLocation id, Optional<S
    }
 
    public PacketType<ServerboundCustomClickActionPacket> type() {
-      return GamePacketTypes.SERVERBOUND_CUSTOM_CLICK_ACTION;
+      return CommonPacketTypes.SERVERBOUND_CUSTOM_CLICK_ACTION;
    }
 
-   public void handle(ServerGamePacketListener var1) {
+   public void handle(ServerCommonPacketListener var1) {
       var1.handleCustomClickAction(this);
    }
 

@@ -12,4 +12,6 @@ public interface ServerCommonPacketListener extends ServerCookiePacketListener {
    void handleResourcePackResponse(ServerboundResourcePackPacket var1);
 
    void handleClientInformation(ServerboundClientInformationPacket var1);
+
+   void handleCustomClickAction(ServerboundCustomClickActionPacket var1);
 }

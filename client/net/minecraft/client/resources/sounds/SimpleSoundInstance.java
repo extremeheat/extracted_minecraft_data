@@ -25,8 +25,8 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       return new SimpleSoundInstance(var0.location(), SoundSource.MASTER, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
-   public static SimpleSoundInstance forMusic(SoundEvent var0) {
-      return new SimpleSoundInstance(var0.location(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+   public static SimpleSoundInstance forMusic(SoundEvent var0, float var1) {
+      return new SimpleSoundInstance(var0.location(), SoundSource.MUSIC, var1, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forJukeboxSong(SoundEvent var0, Vec3 var1) {

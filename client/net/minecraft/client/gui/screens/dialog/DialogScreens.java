@@ -26,9 +26,9 @@ public class DialogScreens {
    }
 
    @Nullable
-   public static <T extends Dialog> DialogScreen<T> createFromData(T var0, @Nullable Screen var1) {
-      Factory var2 = (Factory)FACTORIES.get(var0.codec());
-      return var2 != null ? var2.create(var1, var0) : null;
+   public static <T extends Dialog> DialogScreen<T> createFromData(T var0, @Nullable Screen var1, DialogConnectionAccess var2) {
+      Factory var3 = (Factory)FACTORIES.get(var0.codec());
+      return var3 != null ? var3.create(var1, var0, var2) : null;
    }
 
    public static void bootstrap() {
@@ -43,6 +43,6 @@ public class DialogScreens {
 
    @FunctionalInterface
    public interface Factory<T extends Dialog> {
-      DialogScreen<T> create(@Nullable Screen var1, T var2);
+      DialogScreen<T> create(@Nullable Screen var1, T var2, DialogConnectionAccess var3);
    }
 }

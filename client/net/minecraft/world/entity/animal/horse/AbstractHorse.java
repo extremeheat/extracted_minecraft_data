@@ -428,6 +428,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          var4 = 3.0F;
          var5 = 60;
          var6 = 3;
+      } else if (var2.is(Items.CARROT)) {
+         var4 = 3.0F;
+         var5 = 60;
+         var6 = 3;
       } else if (var2.is(Items.GOLDEN_CARROT)) {
          var4 = 4.0F;
          var5 = 60;

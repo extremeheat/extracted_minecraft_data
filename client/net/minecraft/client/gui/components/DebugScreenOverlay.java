@@ -279,7 +279,7 @@ public class DebugScreenOverlay {
          String var11 = var10 ? "-" : String.format(Locale.ROOT, "%.1f", var8.millisecondsPerTick());
          var1 = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", var2.getCurrentSmoothedTickTime(), var11, var7, var5, var6);
       } else {
-         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.lambda$fillCrashReport$0(), var7, var5, var6);
+         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.serverBrand(), var7, var5, var6);
       }
 
       BlockPos var28 = this.minecraft.getCameraEntity().blockPosition();

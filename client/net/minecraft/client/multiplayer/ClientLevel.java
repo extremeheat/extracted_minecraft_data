@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
@@ -31,6 +32,7 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
@@ -80,6 +82,7 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
@@ -133,12 +136,25 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final Deque<Runnable> lightUpdateQueue = Queues.newArrayDeque();
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
+   private final Set<BlockEntity> globallyRenderedBlockEntities = new ReferenceOpenHashSet();
    private final int seaLevel;
    private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
 
    public void handleBlockChangedAck(int var1) {
       this.blockStatePredictionHandler.endPredictionsUpTo(var1, this);
+   }
+
+   public void onBlockEntityAdded(BlockEntity var1) {
+      BlockEntityRenderer var2 = this.minecraft.getBlockEntityRenderDispatcher().getRenderer(var1);
+      if (var2 != null && var2.shouldRenderOffScreen()) {
+         this.globallyRenderedBlockEntities.add(var1);
+      }
+
+   }
+
+   public Set<BlockEntity> getGloballyRenderedBlockEntities() {
+      return this.globallyRenderedBlockEntities;
    }
 
    public void setServerVerifiedBlockState(BlockPos var1, BlockState var2, int var3) {
@@ -453,7 +469,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.lambda$fillCrashReport$0()));
+      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
       var2.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
       var2.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
       return var2;

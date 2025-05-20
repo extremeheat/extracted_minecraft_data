@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.client.model.geom.ModelPart;
 
 public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
    public AnimationDefinition(float var1, boolean var2, Map<String, List<AnimationChannel>> var3) {
@@ -11,6 +12,10 @@ public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<St
       this.lengthInSeconds = var1;
       this.looping = var2;
       this.boneAnimations = var3;
+   }
+
+   public KeyframeAnimation bake(ModelPart var1) {
+      return KeyframeAnimation.bake(var1, this);
    }
 
    public static class Builder {

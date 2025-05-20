@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components.toasts;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -25,6 +26,8 @@ public class NowPlayingToast implements Toast {
    private static int musicNoteColorTick;
    private static long lastMusicNoteColorChange;
    private static int musicNoteColor;
+   private boolean updateToast;
+   private double notificationDisplayTimeMultiplier;
    @Nullable
    private static String currentSong;
    private final Minecraft minecraft;
@@ -65,13 +68,26 @@ public class NowPlayingToast implements Toast {
       return var0 == null ? Component.empty() : Component.translatable(var0.replace("/", "."));
    }
 
+   public void showToast(Options var1) {
+      this.updateToast = true;
+      this.notificationDisplayTimeMultiplier = (Double)var1.notificationDisplayTime().get();
+      this.setWantedVisibility(Toast.Visibility.SHOW);
+   }
+
    public void update(ToastManager var1, long var2) {
-      this.wantedVisibility = (double)var2 < 5000.0 * var1.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
-      tickMusicNotes();
+      if (this.updateToast) {
+         this.wantedVisibility = (double)var2 < 5000.0 * this.notificationDisplayTimeMultiplier ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
+         tickMusicNotes();
+      }
+
    }
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       renderToast(var1, var2);
+   }
+
+   public void onFinishedRendering() {
+      this.updateToast = false;
    }
 
    public int width() {

@@ -54,34 +54,32 @@ public class BakedGlyph {
       return var1.y + this.down + (var1.hasShadow() ? var1.shadowOffset : 0.0F) + extraThickness(var1.style.isBold());
    }
 
-   public void renderChar(GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4) {
-      Style var5 = var1.style();
-      boolean var6 = var5.isItalic();
-      float var7 = var1.x();
-      float var8 = var1.y();
-      int var9 = var1.color();
-      int var10 = var1.shadowColor();
-      boolean var11 = var5.isBold();
+   public void renderChar(GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4, boolean var5) {
+      Style var6 = var1.style();
+      boolean var7 = var6.isItalic();
+      float var8 = var1.x();
+      float var9 = var1.y();
+      int var10 = var1.color();
+      boolean var11 = var6.isBold();
+      float var13 = var5 ? 0.0F : 0.001F;
+      float var12;
       if (var1.hasShadow()) {
-         this.render(var6, var7 + var1.shadowOffset(), var8 + var1.shadowOffset(), var2, var3, var10, var11, var4);
-         this.render(var6, var7, var8, 0.003F, var2, var3, var9, var11, var4);
-      } else {
-         this.render(var6, var7, var8, var2, var3, var9, var11, var4);
-      }
-
-      if (var11) {
-         if (var1.hasShadow()) {
-            this.render(var6, var7 + var1.boldOffset() + var1.shadowOffset(), var8 + var1.shadowOffset(), 0.001F, var2, var3, var10, true, var4);
-            this.render(var6, var7 + var1.boldOffset(), var8, 0.003F, var2, var3, var9, true, var4);
-         } else {
-            this.render(var6, var7 + var1.boldOffset(), var8, var2, var3, var9, true, var4);
+         int var14 = var1.shadowColor();
+         this.render(var7, var8 + var1.shadowOffset(), var9 + var1.shadowOffset(), 0.0F, var2, var3, var14, var11, var4);
+         if (var11) {
+            this.render(var7, var8 + var1.boldOffset() + var1.shadowOffset(), var9 + var1.shadowOffset(), var13, var2, var3, var14, true, var4);
          }
+
+         var12 = var5 ? 0.0F : 0.003F;
+      } else {
+         var12 = 0.0F;
       }
 
-   }
+      this.render(var7, var8, var9, var12, var2, var3, var10, var11, var4);
+      if (var11) {
+         this.render(var7, var8 + var1.boldOffset(), var9, var12 + var13, var2, var3, var10, true, var4);
+      }
 
-   private void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, boolean var7, int var8) {
-      this.render(var1, var2, var3, 0.0F, var4, var5, var6, var7, var8);
    }
 
    private void render(boolean var1, float var2, float var3, float var4, Matrix4f var5, VertexConsumer var6, int var7, boolean var8, int var9) {
@@ -110,21 +108,21 @@ public class BakedGlyph {
       return 1.0F - 0.25F * this.up;
    }
 
-   public void renderEffect(Effect var1, Matrix4f var2, VertexConsumer var3, int var4) {
+   public void renderEffect(Effect var1, Matrix4f var2, VertexConsumer var3, int var4, boolean var5) {
+      float var6 = var5 ? 0.0F : var1.depth;
       if (var1.hasShadow()) {
-         this.buildEffect(var1, var1.shadowOffset(), 0.0F, var1.shadowColor(), var3, var4, var2);
-         this.buildEffect(var1, 0.0F, 0.003F, var1.color, var3, var4, var2);
-      } else {
-         this.buildEffect(var1, 0.0F, 0.0F, var1.color, var3, var4, var2);
+         this.buildEffect(var1, var1.shadowOffset(), var6, var1.shadowColor(), var3, var4, var2);
+         var6 += var5 ? 0.0F : 0.003F;
       }
 
+      this.buildEffect(var1, 0.0F, var6, var1.color, var3, var4, var2);
    }
 
    private void buildEffect(Effect var1, float var2, float var3, int var4, VertexConsumer var5, int var6, Matrix4f var7) {
-      var5.addVertex(var7, var1.x0 + var2, var1.y1 + var2, var1.depth + var3).setColor(var4).setUv(this.u0, this.v0).setLight(var6);
-      var5.addVertex(var7, var1.x1 + var2, var1.y1 + var2, var1.depth + var3).setColor(var4).setUv(this.u0, this.v1).setLight(var6);
-      var5.addVertex(var7, var1.x1 + var2, var1.y0 + var2, var1.depth + var3).setColor(var4).setUv(this.u1, this.v1).setLight(var6);
-      var5.addVertex(var7, var1.x0 + var2, var1.y0 + var2, var1.depth + var3).setColor(var4).setUv(this.u1, this.v0).setLight(var6);
+      var5.addVertex(var7, var1.x0 + var2, var1.y1 + var2, var3).setColor(var4).setUv(this.u0, this.v0).setLight(var6);
+      var5.addVertex(var7, var1.x1 + var2, var1.y1 + var2, var3).setColor(var4).setUv(this.u0, this.v1).setLight(var6);
+      var5.addVertex(var7, var1.x1 + var2, var1.y0 + var2, var3).setColor(var4).setUv(this.u1, this.v1).setLight(var6);
+      var5.addVertex(var7, var1.x0 + var2, var1.y0 + var2, var3).setColor(var4).setUv(this.u1, this.v0).setLight(var6);
    }
 
    @Nullable

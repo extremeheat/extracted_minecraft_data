@@ -29,7 +29,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.tabs.GridLayoutTab;
+import net.minecraft.client.gui.components.tabs.LoadingTab;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
@@ -41,6 +41,7 @@ import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.StringUtil;
 import org.slf4j.Logger;
@@ -53,20 +54,31 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private RealmsServer serverData;
    @Nullable
    private PreferredRegionsDto regions;
-   private final Map<RealmsRegion, ServiceQuality> regionServiceQuality = new LinkedHashMap();
+   private final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
    private final long serverId;
    private boolean stateChanged;
-   private final TabManager tabManager = new TabManager((var1x) -> {
-      AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-   }, (var1x) -> this.removeWidget(var1x), this::onTabSelected, this::onTabDeselected);
+   private final TabManager tabManager;
+   @Nullable
+   private Button playButton;
    @Nullable
    private TabNavigationBar tabNavigationBar;
-   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   private final HeaderAndFooterLayout layout;
 
-   public RealmsConfigureWorldScreen(RealmsMainScreen var1, long var2) {
+   public RealmsConfigureWorldScreen(RealmsMainScreen var1, long var2, @Nullable RealmsServer var4, @Nullable PreferredRegionsDto var5) {
       super(Component.empty());
+      this.regionServiceQuality = new LinkedHashMap();
+      this.tabManager = new TabManager((var1x) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
+      }, (var1x) -> this.removeWidget(var1x), this::onTabSelected, this::onTabDeselected);
+      this.layout = new HeaderAndFooterLayout(this);
       this.lastScreen = var1;
       this.serverId = var2;
+      this.serverData = var4;
+      this.regions = var5;
+   }
+
+   public RealmsConfigureWorldScreen(RealmsMainScreen var1, long var2) {
+      this(var1, var2, (RealmsServer)null, (PreferredRegionsDto)null);
    }
 
    public void init() {
@@ -78,20 +90,26 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          this.fetchRegionData();
       }
 
-      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new GridLayoutTab(Component.empty())).build();
+      MutableComponent var1 = Component.translatable("mco.configure.world.loading");
+      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), RealmsWorldsTab.TITLE, var1), new LoadingTab(this.getFont(), RealmsPlayersTab.TITLE, var1), new LoadingTab(this.getFont(), RealmsSubscriptionTab.TITLE, var1), new LoadingTab(this.getFont(), RealmsSettingsTab.TITLE, var1)).build();
       this.addRenderableWidget(this.tabNavigationBar);
-      LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(PLAY_TEXT, (var1x) -> {
+      LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      this.playButton = (Button)var2.addChild(Button.builder(PLAY_TEXT, (var1x) -> {
          this.onClose();
          RealmsMainScreen.play(this.serverData, this);
       }).width(150).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
+      this.playButton.active = false;
+      var2.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
       this.layout.visitWidgets((var1x) -> {
          var1x.setTabOrderGroup(1);
          this.addRenderableWidget(var1x);
       });
       this.tabNavigationBar.selectTab(0, false);
       this.repositionElements();
+      if (this.serverData != null && this.regions != null) {
+         this.onRealmsDataFetched();
+      }
+
    }
 
    private void onTabSelected(Tab var1) {
@@ -132,6 +150,16 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }
    }
 
+   private void updateButtonStates() {
+      if (this.serverData != null && this.playButton != null) {
+         this.playButton.active = this.serverData.shouldPlayButtonBeActive();
+         if (!this.playButton.active && this.serverData.state == RealmsServer.State.CLOSED) {
+            this.playButton.setTooltip(Tooltip.create(RealmsServer.WORLD_CLOSED_COMPONENT));
+         }
+      }
+
+   }
+
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
@@ -170,14 +198,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             PreferredRegionsDto var2 = var1.getPreferredRegionSelections();
             this.minecraft.execute(() -> {
                this.regions = var2;
-               this.regionServiceQuality.clear();
-
-               for(RegionDataDto var3 : var2.regionData()) {
-                  if (var3.region() != RealmsRegion.INVALID_REGION) {
-                     this.regionServiceQuality.put(var3.region(), var3.serviceQuality());
-                  }
-               }
-
                this.onRealmsDataFetched();
             });
          } catch (RealmsServiceException var3) {
@@ -208,6 +228,14 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    private void onRealmsDataFetched() {
       if (this.serverData != null && this.regions != null) {
+         this.regionServiceQuality.clear();
+
+         for(RegionDataDto var2 : this.regions.regionData()) {
+            if (var2.region() != RealmsRegion.INVALID_REGION) {
+               this.regionServiceQuality.put(var2.region(), var2.serviceQuality());
+            }
+         }
+
          if (this.tabNavigationBar != null) {
             this.removeWidget(this.tabNavigationBar);
          }
@@ -222,6 +250,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             this.tabNavigationBar.setTabTooltip(3, (Tooltip)null);
          }
 
+         this.updateButtonStates();
          this.repositionElements();
       }
    }
@@ -277,13 +306,13 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    public void openTheWorld(boolean var1) {
-      RealmsConfigureWorldScreen var2 = this.getNewScreen();
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var2, new LongRunningTask[]{new OpenServerTask(this.serverData, var2, var1, this.minecraft)}));
+      RealmsConfigureWorldScreen var2 = this.getNewScreenWithKnownData(this.serverData);
+      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.getNewScreen(), new LongRunningTask[]{new OpenServerTask(this.serverData, var2, var1, this.minecraft)}));
    }
 
    public void closeTheWorld() {
-      RealmsConfigureWorldScreen var1 = this.getNewScreen();
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var1, new LongRunningTask[]{new CloseServerTask(this.serverData, var1)}));
+      RealmsConfigureWorldScreen var1 = this.getNewScreenWithKnownData(this.serverData);
+      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.getNewScreen(), new LongRunningTask[]{new CloseServerTask(this.serverData, var1)}));
    }
 
    public void stateChanged() {
@@ -322,5 +351,11 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       RealmsConfigureWorldScreen var1 = new RealmsConfigureWorldScreen(this.lastScreen, this.serverId);
       var1.stateChanged = this.stateChanged;
       return var1;
+   }
+
+   public RealmsConfigureWorldScreen getNewScreenWithKnownData(RealmsServer var1) {
+      RealmsConfigureWorldScreen var2 = new RealmsConfigureWorldScreen(this.lastScreen, this.serverId, var1, this.regions);
+      var2.stateChanged = this.stateChanged;
+      return var2;
    }
 }

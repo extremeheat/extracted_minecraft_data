@@ -49,6 +49,9 @@ public interface Toast {
       return Mth.positiveCeilDiv(this.height(), 32);
    }
 
+   default void onFinishedRendering() {
+   }
+
    public static enum Visibility {
       SHOW(SoundEvents.UI_TOAST_IN),
       HIDE(SoundEvents.UI_TOAST_OUT);

@@ -233,14 +233,14 @@ public class GuiRenderer implements AutoCloseable {
          var1.ensurePrepared().visit(new Font.GlyphVisitor() {
             public void acceptGlyph(BakedGlyph.GlyphInstance var1) {
                if (var1.glyph().textureView() != null) {
-                  GuiRenderer.this.renderState.submitGuiElementToCurrentLayer(new GlyphRenderState(var2, var1, var3));
+                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
                }
 
             }
 
             public void acceptEffect(BakedGlyph var1, BakedGlyph.Effect var2x) {
                if (var1.textureView() != null) {
-                  GuiRenderer.this.renderState.submitGuiElementToCurrentLayer(new GlyphEffectRenderState(var2, var1, var2x, var3));
+                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphEffectRenderState(var2, var1, var2x, var3));
                }
 
             }
@@ -340,7 +340,7 @@ public class GuiRenderer implements AutoCloseable {
    private void submitBlitFromItemAtlas(GuiItemRenderState var1, float var2, float var3, int var4, int var5) {
       float var6 = var2 + (float)var4 / (float)var5;
       float var7 = var3 + (float)(-var4) / (float)var5;
-      this.renderState.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
+      this.renderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void createAtlasTextures(int var1) {

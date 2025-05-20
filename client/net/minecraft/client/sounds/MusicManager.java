@@ -22,6 +22,7 @@ public class MusicManager {
    private MusicFrequency gameMusicFrequency;
    private float currentGain = 1.0F;
    private int nextSongDelay = 100;
+   private boolean toastShown = false;
 
    public MusicManager(Minecraft var1) {
       super();
@@ -64,15 +65,27 @@ public class MusicManager {
    }
 
    public void startPlaying(MusicInfo var1) {
-      this.currentMusic = SimpleSoundInstance.forMusic((SoundEvent)var1.music().event().value());
-      if (this.currentMusic.getSound() != SoundManager.EMPTY_SOUND) {
-         this.minecraft.getSoundManager().play(this.currentMusic);
-         this.minecraft.getSoundManager().setVolume(this.currentMusic, var1.volume());
-         this.minecraft.getToastManager().showNowPlayingToast();
+      SoundEvent var2 = (SoundEvent)var1.music().event().value();
+      this.currentMusic = SimpleSoundInstance.forMusic(var2, var1.volume());
+      switch (this.minecraft.getSoundManager().play(this.currentMusic)) {
+         case STARTED:
+            this.minecraft.getToastManager().showNowPlayingToast();
+            this.toastShown = true;
+            break;
+         case STARTED_SILENTLY:
+            this.toastShown = false;
       }
 
       this.nextSongDelay = 2147483647;
       this.currentGain = var1.volume();
+   }
+
+   public void showNowPlayingToastIfNeeded() {
+      if (!this.toastShown) {
+         this.minecraft.getToastManager().showNowPlayingToast();
+         this.toastShown = true;
+      }
+
    }
 
    public void stopPlaying(Music var1) {

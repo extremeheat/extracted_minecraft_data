@@ -215,7 +215,7 @@ public class RealmsBackupScreen extends RealmsScreen {
       private void restoreClicked() {
          Component var1 = RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate);
          MutableComponent var2 = Component.translatable("mco.configure.world.restore.question.line1", this.getShortBackupDate(), var1);
-         RealmsBackupScreen.this.minecraft.setScreen(RealmsPopups.warningPopupScreen(RealmsBackupScreen.this, var2, (var1x) -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(RealmsBackupScreen.this.lastScreen.getNewScreen(), new LongRunningTask[]{new RestoreTask(this.backup, RealmsBackupScreen.this.serverData.id, RealmsBackupScreen.this.lastScreen)}))));
+         RealmsBackupScreen.this.minecraft.setScreen(RealmsPopups.warningPopupScreen(RealmsBackupScreen.this, var2, (var1x) -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(RealmsBackupScreen.this.lastScreen.getNewScreen(), new LongRunningTask[]{new RestoreTask(this.backup, RealmsBackupScreen.this.serverData, RealmsBackupScreen.this.lastScreen)}))));
       }
 
       public List<? extends GuiEventListener> children() {

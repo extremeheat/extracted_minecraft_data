@@ -118,6 +118,4 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
    void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1);
 
    void handleClientTickEnd(ServerboundClientTickEndPacket var1);
-
-   void handleCustomClickAction(ServerboundCustomClickActionPacket var1);
 }

@@ -53,9 +53,9 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    private final SoundEngine soundEngine;
    private final Map<ResourceLocation, Resource> soundCache = new HashMap();
 
-   public SoundManager(Options var1) {
+   public SoundManager(Options var1, MusicManager var2) {
       super();
-      this.soundEngine = new SoundEngine(this, var1, ResourceProvider.fromMap(this.soundCache));
+      this.soundEngine = new SoundEngine(var2, this, var1, ResourceProvider.fromMap(this.soundCache));
    }
 
    protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -164,8 +164,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.queueTickingSound(var1);
    }
 
-   public void play(SoundInstance var1) {
-      this.soundEngine.play(var1);
+   public SoundEngine.PlayResult play(SoundInstance var1) {
+      return this.soundEngine.play(var1);
    }
 
    public void playDelayed(SoundInstance var1, int var2) {
@@ -200,8 +200,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.resume();
    }
 
-   public void updateSourceVolume(SoundSource var1, float var2) {
-      this.soundEngine.updateCategoryVolume(var1, var2);
+   public void updateSourceVolume(SoundSource var1) {
+      this.soundEngine.updateCategoryVolume(var1);
    }
 
    public void stop(SoundInstance var1) {

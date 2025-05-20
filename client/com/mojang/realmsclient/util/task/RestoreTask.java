@@ -3,6 +3,7 @@ package com.mojang.realmsclient.util.task;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.Backup;
+import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
@@ -14,14 +15,14 @@ public class RestoreTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component TITLE = Component.translatable("mco.backup.restoring");
    private final Backup backup;
-   private final long realmId;
+   private final RealmsServer serverData;
    private final RealmsConfigureWorldScreen lastScreen;
 
-   public RestoreTask(Backup var1, long var2, RealmsConfigureWorldScreen var4) {
+   public RestoreTask(Backup var1, RealmsServer var2, RealmsConfigureWorldScreen var3) {
       super();
       this.backup = var1;
-      this.realmId = var2;
-      this.lastScreen = var4;
+      this.serverData = var2;
+      this.lastScreen = var3;
    }
 
    public void run() {
@@ -34,13 +35,13 @@ public class RestoreTask extends LongRunningTask {
                return;
             }
 
-            var1.restoreWorld(this.realmId, this.backup.backupId);
+            var1.restoreWorld(this.serverData.id, this.backup.backupId);
             pause(1L);
             if (this.aborted()) {
                return;
             }
 
-            setScreen(this.lastScreen.getNewScreen());
+            setScreen(this.lastScreen.getNewScreenWithKnownData(this.serverData));
             return;
          } catch (RetryCallException var4) {
             if (this.aborted()) {
@@ -55,7 +56,7 @@ public class RestoreTask extends LongRunningTask {
             }
 
             LOGGER.error("Couldn't restore backup", var5);
-            setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen));
+            setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen.getNewScreen()));
             return;
          } catch (Exception var6) {
             if (this.aborted()) {

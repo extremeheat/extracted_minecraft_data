@@ -36,7 +36,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
    private static final int DEFAULT_COMPONENT_WIDTH = 200;
    private static final int EXTRA_SPACING = 2;
    private static final int DEFAULT_SPACING = 6;
-   private static final Component TITLE = Component.translatable("mco.configure.world.subscription.tab");
+   static final Component TITLE = Component.translatable("mco.configure.world.subscription.tab");
    private static final Component SUBSCRIPTION_START_LABEL = Component.translatable("mco.configure.world.subscription.start");
    private static final Component TIME_LEFT_LABEL = Component.translatable("mco.configure.world.subscription.timeleft");
    private static final Component DAYS_LEFT_LABEL = Component.translatable("mco.configure.world.subscription.recurring.daysleft");

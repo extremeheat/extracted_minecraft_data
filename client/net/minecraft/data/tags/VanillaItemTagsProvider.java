@@ -116,7 +116,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.RABBIT_STEW);
       this.tag(ItemTags.OCELOT_FOOD).add(Items.COD, Items.SALMON);
       this.tag(ItemTags.CAT_FOOD).add(Items.COD, Items.SALMON);
-      this.tag(ItemTags.HORSE_FOOD).add(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+      this.tag(ItemTags.HORSE_FOOD).add(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.CARROT, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
       this.tag(ItemTags.HORSE_TEMPT_ITEMS).add(Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
       this.tag(ItemTags.HARNESSES).add(Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS, Items.YELLOW_HARNESS, Items.LIME_HARNESS, Items.PINK_HARNESS, Items.GRAY_HARNESS, Items.LIGHT_GRAY_HARNESS, Items.CYAN_HARNESS, Items.PURPLE_HARNESS, Items.BLUE_HARNESS, Items.BROWN_HARNESS, Items.GREEN_HARNESS, Items.RED_HARNESS, Items.BLACK_HARNESS);
       this.tag(ItemTags.HAPPY_GHAST_FOOD).add(Items.SNOWBALL);

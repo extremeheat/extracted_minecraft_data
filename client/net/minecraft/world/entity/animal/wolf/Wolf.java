@@ -240,14 +240,14 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       if (var4 instanceof WolfPackData var5) {
          this.setVariant(var5.type);
       } else {
-         Optional var6 = WolfVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition()));
+         Optional var6 = VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.WOLF_VARIANT);
          if (var6.isPresent()) {
             this.setVariant((Holder)var6.get());
             var4 = new WolfPackData((Holder)var6.get());
          }
       }
 
-      this.setSoundVariant(WolfSoundVariants.pickRandomSoundVariant(this.registryAccess(), this.random));
+      this.setSoundVariant(WolfSoundVariants.pickRandomSoundVariant(this.registryAccess(), var1.getRandom()));
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 

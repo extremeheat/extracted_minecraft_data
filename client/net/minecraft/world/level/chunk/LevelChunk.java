@@ -381,6 +381,7 @@ public class LevelChunk extends ChunkAccess {
             this.addGameEventListener(var1, var2);
          }
 
+         this.level.onBlockEntityAdded(var1);
          this.updateBlockEntityTicker(var1);
       }
 
@@ -652,6 +653,7 @@ public class LevelChunk extends ChunkAccess {
             this.addGameEventListener(var1, var2);
          }
 
+         this.level.onBlockEntityAdded(var1);
          this.updateBlockEntityTicker(var1);
       });
    }

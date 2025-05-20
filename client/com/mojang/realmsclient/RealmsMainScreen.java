@@ -310,15 +310,17 @@ public class RealmsMainScreen extends RealmsScreen {
    void updateButtonStates() {
       RealmsServer var1 = this.getSelectedServer();
       this.addRealmButton.active = this.activeLayoutState != RealmsMainScreen.LayoutState.LOADING;
-      this.playButton.active = var1 != null && this.shouldPlayButtonBeActive(var1);
-      this.renewButton.active = var1 != null && this.shouldRenewButtonBeActive(var1);
-      this.leaveButton.active = var1 != null && this.shouldLeaveButtonBeActive(var1);
-      this.configureButton.active = var1 != null && this.shouldConfigureButtonBeActive(var1);
-   }
+      if (var1 != null) {
+         this.playButton.active = var1.shouldPlayButtonBeActive();
+         if (!this.playButton.active && var1.state == RealmsServer.State.CLOSED) {
+            this.playButton.setTooltip(Tooltip.create(RealmsServer.WORLD_CLOSED_COMPONENT));
+         }
 
-   boolean shouldPlayButtonBeActive(RealmsServer var1) {
-      boolean var2 = !var1.expired && var1.state == RealmsServer.State.OPEN;
-      return var2 && (var1.isCompatible() || var1.needsUpgrade() || isSelfOwnedServer(var1));
+         this.renewButton.active = this.shouldRenewButtonBeActive(var1);
+         this.leaveButton.active = this.shouldLeaveButtonBeActive(var1);
+         this.configureButton.active = this.shouldConfigureButtonBeActive(var1);
+      }
+
    }
 
    private boolean shouldRenewButtonBeActive(RealmsServer var1) {
@@ -1141,7 +1143,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public boolean mouseClicked(double var1, double var3, int var5) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
             this.createUnitializedRealm();
-         } else if (RealmsMainScreen.this.shouldPlayButtonBeActive(this.serverData)) {
+         } else if (this.serverData.shouldPlayButtonBeActive()) {
             if (Util.getMillis() - RealmsMainScreen.this.lastClickTime < 250L && this.isFocused()) {
                this.playRealm();
             }
@@ -1159,7 +1161,7 @@ public class RealmsMainScreen extends RealmsScreen {
                return true;
             }
 
-            if (RealmsMainScreen.this.shouldPlayButtonBeActive(this.serverData)) {
+            if (this.serverData.shouldPlayButtonBeActive()) {
                this.playRealm();
                return true;
             }

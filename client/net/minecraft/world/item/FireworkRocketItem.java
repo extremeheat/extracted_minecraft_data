@@ -4,9 +4,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -46,7 +49,10 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
          ItemStack var4 = var2.getItemInHand(var3);
          if (var1 instanceof ServerLevel) {
             ServerLevel var5 = (ServerLevel)var1;
-            var2.dropAllLeashConnections((Player)null);
+            if (var2.dropAllLeashConnections((Player)null)) {
+               var1.playSound((Entity)null, (Entity)var2, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            }
+
             Projectile.spawnProjectile(new FireworkRocketEntity(var1, var4, var2), var5, var4);
             var4.consume(1, var2);
             var2.awardStat(Stats.ITEM_USED.get(this));

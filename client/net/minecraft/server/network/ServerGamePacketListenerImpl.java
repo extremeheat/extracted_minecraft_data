@@ -102,7 +102,6 @@ import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
-import net.minecraft.network.protocol.game.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.game.ServerboundDebugSampleSubscriptionPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQueryPacket;
@@ -1979,11 +1978,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
 
       this.receivedMovementThisTick = false;
-   }
-
-   public void handleCustomClickAction(ServerboundCustomClickActionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
-      this.server.handleCustomClickAction(var1.id(), var1.payload());
    }
 
    private void handlePlayerKnownMovement(Vec3 var1) {

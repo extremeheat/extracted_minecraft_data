@@ -6,15 +6,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.dialog.input.BooleanInput;
 import net.minecraft.server.dialog.input.InputControl;
@@ -63,11 +66,35 @@ public class InputControlHandlers {
 
       public void addControl(TextInput var1, Screen var2, InputControlHandler.Output var3) {
          Font var4 = var2.getFont();
-         EditBox var5 = new EditBox(var4, var1.width(), 20, var1.label());
-         var5.setValue(var1.initial());
-         Object var6 = var1.labelVisible() ? CommonLayouts.labeledElement(var4, var5, var1.label()) : var5;
-         Objects.requireNonNull(var5);
-         var3.accept((LayoutElement)var6, var5::getValue);
+         Object var5;
+         Supplier var6;
+         if (var1.multiline().isPresent()) {
+            TextInput.MultilineOptions var7 = (TextInput.MultilineOptions)var1.multiline().get();
+            int var8 = (Integer)var7.height().orElseGet(() -> {
+               int var2 = (Integer)var7.maxLines().orElse(4);
+               Objects.requireNonNull(var4);
+               return 9 * var2 + 8;
+            });
+            MultiLineEditBox var9 = MultiLineEditBox.builder().build(var4, var1.width(), var8, CommonComponents.EMPTY);
+            var9.setValue(var1.initial());
+            var9.setCharacterLimit(var1.maxLength());
+            Optional var10000 = var7.maxLines();
+            Objects.requireNonNull(var9);
+            var10000.ifPresent(var9::setLineLimit);
+            var5 = var9;
+            Objects.requireNonNull(var9);
+            var6 = var9::getValue;
+         } else {
+            EditBox var10 = new EditBox(var4, var1.width(), 20, var1.label());
+            var10.setValue(var1.initial());
+            var10.setMaxLength(var1.maxLength());
+            var5 = var10;
+            Objects.requireNonNull(var10);
+            var6 = var10::getValue;
+         }
+
+         Object var11 = var1.labelVisible() ? CommonLayouts.labeledElement(var4, (LayoutElement)var5, var1.label()) : var5;
+         var3.accept((LayoutElement)var11, var6);
       }
 
       // $FF: synthetic method
@@ -121,10 +148,10 @@ public class InputControlHandlers {
       }
 
       public void addControl(NumberRangeInput var1, Screen var2, InputControlHandler.Output var3) {
-         double var4 = var1.rangeInfo().initialSliderValue();
-         SliderImpl var6 = new SliderImpl(var1, var4);
-         Objects.requireNonNull(var6);
-         var3.accept(var6, var6::valueToSend);
+         float var4 = var1.rangeInfo().initialSliderValue();
+         SliderImpl var5 = new SliderImpl(var1, (double)var4);
+         Objects.requireNonNull(var5);
+         var3.accept(var5, var5::valueToSend);
       }
 
       // $FF: synthetic method
@@ -152,16 +179,16 @@ public class InputControlHandlers {
          }
 
          private static String sliderValueToString(NumberRangeInput var0, double var1) {
-            return valueToString(var0.rangeInfo().computeScaledValue(var1));
+            return valueToString(var0.rangeInfo().computeScaledValue((float)var1));
          }
 
          private static Component computeMessage(NumberRangeInput var0, double var1) {
             return var0.computeLabel(sliderValueToString(var0, var1));
          }
 
-         private static String valueToString(double var0) {
-            long var2 = (long)var0;
-            return (double)var2 == var0 ? Long.toString(var2) : Double.toString(var0);
+         private static String valueToString(float var0) {
+            int var1 = (int)var0;
+            return (float)var1 == var0 ? Integer.toString(var1) : Float.toString(var0);
          }
       }
    }

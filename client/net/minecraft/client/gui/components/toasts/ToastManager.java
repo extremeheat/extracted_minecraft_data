@@ -152,7 +152,7 @@ public class ToastManager {
    public void showNowPlayingToast() {
       if (this.nowPlayingToast != null) {
          this.nowPlayingToast.resetToast();
-         ((NowPlayingToast)this.nowPlayingToast.getToast()).setWantedVisibility(Toast.Visibility.SHOW);
+         ((NowPlayingToast)this.nowPlayingToast.getToast()).showToast(this.minecraft.options);
       }
 
    }
@@ -190,7 +190,7 @@ public class ToastManager {
       Toast.Visibility visibility;
       private long fullyVisibleFor;
       private float visiblePortion;
-      private boolean hasFinishedRendering;
+      protected boolean hasFinishedRendering;
 
       ToastInstance(final T var2, final int var3, final int var4) {
          super();
@@ -248,14 +248,21 @@ public class ToastManager {
             this.visibility = var3;
          }
 
+         boolean var4 = this.hasFinishedRendering;
          this.hasFinishedRendering = this.visibility == Toast.Visibility.HIDE && var1 - this.animationStartTime > 600L;
+         if (this.hasFinishedRendering && !var4) {
+            this.toast.onFinishedRendering();
+         }
+
       }
 
       public void render(GuiGraphics var1, int var2) {
-         var1.pose().pushMatrix();
-         var1.pose().translate(this.toast.xPos(var2, this.visiblePortion), this.toast.yPos(this.firstSlotIndex));
-         this.toast.render(var1, ToastManager.this.minecraft.font, this.fullyVisibleFor);
-         var1.pose().popMatrix();
+         if (!this.hasFinishedRendering) {
+            var1.pose().pushMatrix();
+            var1.pose().translate(this.toast.xPos(var2, this.visiblePortion), this.toast.yPos(this.firstSlotIndex));
+            this.toast.render(var1, ToastManager.this.minecraft.font, this.fullyVisibleFor);
+            var1.pose().popMatrix();
+         }
       }
    }
 }

@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component TITLE = Component.translatable("mco.configure.world.players.title");
+   static final Component TITLE = Component.translatable("mco.configure.world.players.title");
    static final Component QUESTION_TITLE = Component.translatable("mco.question");
    private static final int PADDING = 8;
    final RealmsConfigureWorldScreen configurationScreen;

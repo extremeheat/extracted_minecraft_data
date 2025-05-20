@@ -52,7 +52,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public void dropItem(ServerLevel var1, @Nullable Entity var2) {
-      this.playSound(SoundEvents.LEASH_KNOT_BREAK, 1.0F, 1.0F);
+      this.playSound(SoundEvents.LEAD_UNTIED, 1.0F, 1.0F);
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
@@ -98,6 +98,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
             return super.interact(var1, var2);
          } else {
             this.gameEvent(GameEvent.BLOCK_ATTACH, var1);
+            this.playSound(SoundEvents.LEAD_TIED);
             return InteractionResult.SUCCESS;
          }
       }
@@ -131,7 +132,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public void playPlacementSound() {
-      this.playSound(SoundEvents.LEASH_KNOT_PLACE, 1.0F, 1.0F);
+      this.playSound(SoundEvents.LEAD_TIED, 1.0F, 1.0F);
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {

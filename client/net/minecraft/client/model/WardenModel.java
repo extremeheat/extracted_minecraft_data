@@ -2,6 +2,7 @@ package net.minecraft.client.model;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.WardenAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -31,6 +32,12 @@ public class WardenModel extends EntityModel<WardenRenderState> {
    private final List<ModelPart> heartLayerModelParts;
    private final List<ModelPart> bioluminescentLayerModelParts;
    private final List<ModelPart> pulsatingSpotsLayerModelParts;
+   private final KeyframeAnimation attackAnimation;
+   private final KeyframeAnimation sonicBoomAnimation;
+   private final KeyframeAnimation diggingAnimation;
+   private final KeyframeAnimation emergeAnimation;
+   private final KeyframeAnimation roarAnimation;
+   private final KeyframeAnimation sniffAnimation;
 
    public WardenModel(ModelPart var1) {
       super(var1, RenderType::entityCutoutNoCull);
@@ -49,6 +56,12 @@ public class WardenModel extends EntityModel<WardenRenderState> {
       this.heartLayerModelParts = ImmutableList.of(this.body);
       this.bioluminescentLayerModelParts = ImmutableList.of(this.head, this.leftArm, this.rightArm, this.leftLeg, this.rightLeg);
       this.pulsatingSpotsLayerModelParts = ImmutableList.of(this.body, this.head, this.leftArm, this.rightArm, this.leftLeg, this.rightLeg);
+      this.attackAnimation = WardenAnimation.WARDEN_ATTACK.bake(var1);
+      this.sonicBoomAnimation = WardenAnimation.WARDEN_SONIC_BOOM.bake(var1);
+      this.diggingAnimation = WardenAnimation.WARDEN_DIG.bake(var1);
+      this.emergeAnimation = WardenAnimation.WARDEN_EMERGE.bake(var1);
+      this.roarAnimation = WardenAnimation.WARDEN_ROAR.bake(var1);
+      this.sniffAnimation = WardenAnimation.WARDEN_SNIFF.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -74,12 +87,12 @@ public class WardenModel extends EntityModel<WardenRenderState> {
       this.animateWalk(var1.walkAnimationPos, var1.walkAnimationSpeed);
       this.animateIdlePose(var1.ageInTicks);
       this.animateTendrils(var1, var1.ageInTicks);
-      this.animate(var1.attackAnimationState, WardenAnimation.WARDEN_ATTACK, var1.ageInTicks);
-      this.animate(var1.sonicBoomAnimationState, WardenAnimation.WARDEN_SONIC_BOOM, var1.ageInTicks);
-      this.animate(var1.diggingAnimationState, WardenAnimation.WARDEN_DIG, var1.ageInTicks);
-      this.animate(var1.emergeAnimationState, WardenAnimation.WARDEN_EMERGE, var1.ageInTicks);
-      this.animate(var1.roarAnimationState, WardenAnimation.WARDEN_ROAR, var1.ageInTicks);
-      this.animate(var1.sniffAnimationState, WardenAnimation.WARDEN_SNIFF, var1.ageInTicks);
+      this.attackAnimation.apply(var1.attackAnimationState, var1.ageInTicks);
+      this.sonicBoomAnimation.apply(var1.sonicBoomAnimationState, var1.ageInTicks);
+      this.diggingAnimation.apply(var1.diggingAnimationState, var1.ageInTicks);
+      this.emergeAnimation.apply(var1.emergeAnimationState, var1.ageInTicks);
+      this.roarAnimation.apply(var1.roarAnimationState, var1.ageInTicks);
+      this.sniffAnimation.apply(var1.sniffAnimationState, var1.ageInTicks);
    }
 
    private void animateHeadLookTarget(float var1, float var2) {

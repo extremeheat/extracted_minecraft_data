@@ -2,12 +2,14 @@ package net.minecraft.world.entity.variant;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -38,5 +40,11 @@ public class VariantUtils {
       HolderLookup.Provider var10001 = var0.lookup();
       Objects.requireNonNull(var10001);
       return var10000.flatMap(var10001::get);
+   }
+
+   public static <T extends PriorityProvider<SpawnContext, ?>> Optional<Holder.Reference<T>> selectVariantToSpawn(SpawnContext var0, ResourceKey<Registry<T>> var1) {
+      ServerLevelAccessor var2 = var0.level();
+      Stream var3 = var2.registryAccess().lookupOrThrow(var1).listElements();
+      return PriorityProvider.pick(var3, Holder::value, var2.getRandom(), var0);
    }
 }

@@ -493,7 +493,7 @@ public class Item implements FeatureElement, ItemLike {
 
       public Properties horseArmor(ArmorMaterial var1) {
          HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).build()).stacksTo(1);
+         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
       }
 
       public Properties trimMaterial(ResourceKey<TrimMaterial> var1) {

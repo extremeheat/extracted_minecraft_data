@@ -133,10 +133,6 @@ public class StatsScreen extends Screen {
 
    }
 
-   public boolean isPauseScreen() {
-      return !this.isLoading;
-   }
-
    public void setActiveList(@Nullable ObjectSelectionList<?> var1) {
       if (this.activeList != null) {
          this.removeWidget(this.activeList);

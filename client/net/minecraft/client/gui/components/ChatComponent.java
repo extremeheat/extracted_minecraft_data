@@ -57,6 +57,28 @@ public class ChatComponent {
 
    }
 
+   private int forEachLine(int var1, int var2, boolean var3, int var4, LineConsumer var5) {
+      int var6 = this.getLineHeight();
+      int var7 = 0;
+
+      for(int var8 = Math.min(this.trimmedMessages.size() - this.chatScrollbarPos, var1) - 1; var8 >= 0; --var8) {
+         int var9 = var8 + this.chatScrollbarPos;
+         GuiMessage.Line var10 = (GuiMessage.Line)this.trimmedMessages.get(var9);
+         if (var10 != null) {
+            int var11 = var2 - var10.addedTime();
+            float var12 = var3 ? 1.0F : (float)getTimeFactor(var11);
+            if (var12 > 1.0E-5F) {
+               ++var7;
+               int var13 = var4 - var8 * var6;
+               int var14 = var13 - var6;
+               var5.accept(0, var14, var13, var10, var8, var12);
+            }
+         }
+      }
+
+      return var7;
+   }
+
    public void render(GuiGraphics var1, int var2, int var3, int var4, boolean var5) {
       if (!this.isChatHidden()) {
          int var6 = this.getLinesPerPage();
@@ -72,69 +94,53 @@ public class ChatComponent {
             var1.pose().translate(4.0F, 0.0F);
             int var12 = Mth.floor((float)(var11 - 40) / var9);
             int var13 = this.getMessageEndIndexAt(this.screenToChatX((double)var3), this.screenToChatY((double)var4));
-            double var14 = (Double)this.minecraft.options.chatOpacity().get() * 0.9 + 0.1;
-            double var16 = (Double)this.minecraft.options.textBackgroundOpacity().get();
-            double var18 = (Double)this.minecraft.options.chatLineSpacing().get();
-            int var20 = this.getLineHeight();
-            int var21 = (int)Math.round(-8.0 * (var18 + 1.0) + 4.0 * var18);
-            int var22 = 0;
-
-            for(int var23 = 0; var23 + this.chatScrollbarPos < this.trimmedMessages.size() && var23 < var6; ++var23) {
-               int var24 = var23 + this.chatScrollbarPos;
-               GuiMessage.Line var25 = (GuiMessage.Line)this.trimmedMessages.get(var24);
-               if (var25 != null) {
-                  int var26 = var2 - var25.addedTime();
-                  if (var26 < 200 || var5) {
-                     double var27 = var5 ? 1.0 : getTimeFactor(var26);
-                     int var29 = (int)(255.0 * var27 * var14);
-                     int var30 = (int)(255.0 * var27 * var16);
-                     ++var22;
-                     if (var29 > 3) {
-                        boolean var31 = false;
-                        int var32 = var12 - var23 * var20;
-                        int var33 = var32 + var21;
-                        var1.fill(-4, var32 - var20, 0 + var10 + 4 + 4, var32, var30 << 24);
-                        GuiMessageTag var34 = var25.tag();
-                        if (var34 != null) {
-                           int var35 = var34.indicatorColor() | var29 << 24;
-                           var1.fill(-4, var32 - var20, -2, var32, var35);
-                           if (var24 == var13 && var34.icon() != null) {
-                              int var36 = this.getTagIconLeft(var25);
-                              Objects.requireNonNull(this.minecraft.font);
-                              int var37 = var33 + 9;
-                              this.drawTagIcon(var1, var36, var37, var34.icon());
-                           }
-                        }
-
-                        var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, ARGB.color(var29, -1));
-                     }
+            float var14 = ((Double)this.minecraft.options.chatOpacity().get()).floatValue() * 0.9F + 0.1F;
+            float var15 = ((Double)this.minecraft.options.textBackgroundOpacity().get()).floatValue();
+            double var16 = (Double)this.minecraft.options.chatLineSpacing().get();
+            int var18 = (int)Math.round(-8.0 * (var16 + 1.0) + 4.0 * var16);
+            this.forEachLine(var6, var2, var5, var12, (var7x, var8x, var9x, var10x, var11x, var12x) -> {
+               var1.fill(var7x - 4, var8x, var7x + var10 + 4 + 4, var9x, ARGB.color(var12x * var15, -16777216));
+               GuiMessageTag var13x = var10x.tag();
+               if (var13x != null) {
+                  int var14x = ARGB.color(var12x * var14, var13x.indicatorColor());
+                  var1.fill(var7x - 4, var8x, var7x - 2, var9x, var14x);
+                  if (var11x == var13 && var13x.icon() != null) {
+                     int var15x = this.getTagIconLeft(var10x);
+                     int var10000 = var9x + var18;
+                     Objects.requireNonNull(this.minecraft.font);
+                     int var16 = var10000 + 9;
+                     this.drawTagIcon(var1, var15x, var16, var13x.icon());
                   }
                }
-            }
 
-            long var38 = this.minecraft.getChatListener().queueSize();
-            if (var38 > 0L) {
-               int var39 = (int)(128.0 * var14);
-               int var41 = (int)(255.0 * var16);
+            });
+            int var19 = this.forEachLine(var6, var2, var5, var12, (var4x, var5x, var6x, var7x, var8x, var9x) -> {
+               int var10 = var6x + var18;
+               var1.drawString(this.minecraft.font, var7x.content(), var4x, var10, ARGB.color(var9x * var14, -1));
+            });
+            long var20 = this.minecraft.getChatListener().queueSize();
+            if (var20 > 0L) {
+               int var22 = (int)(128.0F * var14);
+               int var23 = (int)(255.0F * var15);
                var1.pose().pushMatrix();
                var1.pose().translate(0.0F, (float)var12);
-               var1.fill(-2, 0, var10 + 4, 9, var41 << 24);
-               var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var38), 0, 1, ARGB.color(var39, -1));
+               var1.fill(-2, 0, var10 + 4, 9, var23 << 24);
+               var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var20), 0, 1, ARGB.color(var22, -1));
                var1.pose().popMatrix();
             }
 
             if (var5) {
-               int var40 = this.getLineHeight();
-               int var42 = var7 * var40;
-               int var43 = var22 * var40;
-               int var28 = this.chatScrollbarPos * var43 / var7 - var12;
-               int var44 = var43 * var43 / var42;
-               if (var42 != var43) {
-                  int var45 = var28 > 0 ? 170 : 96;
-                  int var46 = this.newMessageSinceScroll ? 13382451 : 3355562;
-                  int var47 = var10 + 4;
-                  var1.fill(var47, -var28, var47 + 2, -var28 - var44, ARGB.color(var45, var46));
-                  var1.fill(var47 + 2, -var28, var47 + 1, -var28 - var44, ARGB.color(var45, 13421772));
+               int var30 = this.getLineHeight();
+               int var31 = var7 * var30;
+               int var24 = var19 * var30;
+               int var25 = this.chatScrollbarPos * var24 / var7 - var12;
+               int var26 = var24 * var24 / var31;
+               if (var31 != var24) {
+                  int var27 = var25 > 0 ? 170 : 96;
+                  int var28 = this.newMessageSinceScroll ? 13382451 : 3355562;
+                  int var29 = var10 + 4;
+                  var1.fill(var29, -var25, var29 + 2, -var25 - var26, ARGB.color(var27, var28));
+                  var1.fill(var29 + 2, -var25, var29 + 1, -var25 - var26, ARGB.color(var27, 13421772));
                }
             }
 
@@ -523,5 +529,10 @@ public class ChatComponent {
          this.history = var2;
          this.delayedMessageDeletions = var3;
       }
+   }
+
+   @FunctionalInterface
+   interface LineConsumer {
+      void accept(int var1, int var2, int var3, GuiMessage.Line var4, int var5, float var6);
    }
 }

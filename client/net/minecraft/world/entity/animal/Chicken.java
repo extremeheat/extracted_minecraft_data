@@ -155,7 +155,7 @@ public class Chicken extends Animal {
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      ChickenVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

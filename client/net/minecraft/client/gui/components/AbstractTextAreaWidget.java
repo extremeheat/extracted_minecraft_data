@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
    private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
    private static final int INNER_PADDING = 4;
+   public static final int DEFAULT_TOTAL_PADDING = 8;
    private boolean showBackground;
    private boolean showDecorations;
 

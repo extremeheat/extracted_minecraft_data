@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
@@ -199,46 +200,44 @@ public class BookViewScreen extends Screen {
       return super.mouseClicked(var1, var3, var5);
    }
 
-   protected boolean handleClickEvent(ClickEvent var1) {
-      Objects.requireNonNull(var1);
-      byte var3 = 0;
-      boolean var13;
-      //$FF: var3->value
+   protected void handleClickEvent(Minecraft var1, ClickEvent var2) {
+      LocalPlayer var3 = (LocalPlayer)Objects.requireNonNull(var1.player, "Player not available");
+      Objects.requireNonNull(var2);
+      byte var5 = 0;
+      //$FF: var5->value
       //0->net/minecraft/network/chat/ClickEvent$ChangePage
       //1->net/minecraft/network/chat/ClickEvent$RunCommand
-      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+      switch (var2.typeSwitch<invokedynamic>(var2, var5)) {
          case 0:
-            ClickEvent.ChangePage var4 = (ClickEvent.ChangePage)var1;
-            ClickEvent.ChangePage var14 = var4;
+            ClickEvent.ChangePage var6 = (ClickEvent.ChangePage)var2;
+            ClickEvent.ChangePage var15 = var6;
 
             try {
-               var15 = var14.page();
-            } catch (Throwable var10) {
-               throw new MatchException(var10.toString(), var10);
+               var16 = var15.page();
+            } catch (Throwable var12) {
+               throw new MatchException(var12.toString(), var12);
             }
 
-            int var11 = var15;
-            var13 = this.forcePage(var11 - 1);
+            int var13 = var16;
+            this.forcePage(var13 - 1);
             break;
          case 1:
-            ClickEvent.RunCommand var6 = (ClickEvent.RunCommand)var1;
-            ClickEvent.RunCommand var10000 = var6;
+            ClickEvent.RunCommand var8 = (ClickEvent.RunCommand)var2;
+            ClickEvent.RunCommand var10000 = var8;
 
             try {
-               var12 = var10000.command();
-            } catch (Throwable var9) {
-               throw new MatchException(var9.toString(), var9);
+               var14 = var10000.command();
+            } catch (Throwable var11) {
+               throw new MatchException(var11.toString(), var11);
             }
 
-            String var8 = var12;
-            clickCommandAction(this.minecraft, var8, true);
-            var13 = true;
+            String var10 = var14;
+            clickCommandAction(var3, var10, (Screen)null);
             break;
          default:
-            var13 = defaultHandleClickEvent(var1, this.minecraft, this);
+            defaultHandleGameClickEvent(var2, var1, this);
       }
 
-      return var13;
    }
 
    protected void closeScreen() {

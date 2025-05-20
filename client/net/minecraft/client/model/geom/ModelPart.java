@@ -2,11 +2,15 @@ package net.minecraft.client.model.geom;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import org.joml.Matrix3f;
@@ -198,8 +202,31 @@ public final class ModelPart {
       this.zScale += var1.z();
    }
 
-   public Stream<ModelPart> getAllParts() {
-      return Stream.concat(Stream.of(this), this.children.values().stream().flatMap(ModelPart::getAllParts));
+   public List<ModelPart> getAllParts() {
+      ArrayList var1 = new ArrayList();
+      var1.add(this);
+      this.addAllChildren((var1x, var2) -> var1.add(var2));
+      return List.copyOf(var1);
+   }
+
+   public Function<String, ModelPart> createPartLookup() {
+      HashMap var1 = new HashMap();
+      var1.put("root", this);
+      Objects.requireNonNull(var1);
+      this.addAllChildren(var1::putIfAbsent);
+      Objects.requireNonNull(var1);
+      return var1::get;
+   }
+
+   private void addAllChildren(BiConsumer<String, ModelPart> var1) {
+      for(Map.Entry var3 : this.children.entrySet()) {
+         var1.accept((String)var3.getKey(), (ModelPart)var3.getValue());
+      }
+
+      for(ModelPart var5 : this.children.values()) {
+         var5.addAllChildren(var1);
+      }
+
    }
 
    public static class Cube {

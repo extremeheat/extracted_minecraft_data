@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
@@ -92,6 +93,11 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void handleCustomPayload(ServerboundCustomPayloadPacket var1) {
+   }
+
+   public void handleCustomClickAction(ServerboundCustomClickActionPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      this.server.handleCustomClickAction(var1.id(), var1.payload());
    }
 
    public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {

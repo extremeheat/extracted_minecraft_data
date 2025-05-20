@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.CamelAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -16,11 +17,23 @@ public class CamelModel extends EntityModel<CamelRenderState> {
    private static final float WALK_ANIMATION_SCALE_FACTOR = 2.5F;
    public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.45F);
    protected final ModelPart head;
+   private final KeyframeAnimation walkAnimation;
+   private final KeyframeAnimation sitAnimation;
+   private final KeyframeAnimation sitPoseAnimation;
+   private final KeyframeAnimation standupAnimation;
+   private final KeyframeAnimation idleAnimation;
+   private final KeyframeAnimation dashAnimation;
 
    public CamelModel(ModelPart var1) {
       super(var1);
       ModelPart var2 = var1.getChild("body");
       this.head = var2.getChild("head");
+      this.walkAnimation = CamelAnimation.CAMEL_WALK.bake(var1);
+      this.sitAnimation = CamelAnimation.CAMEL_SIT.bake(var1);
+      this.sitPoseAnimation = CamelAnimation.CAMEL_SIT_POSE.bake(var1);
+      this.standupAnimation = CamelAnimation.CAMEL_STANDUP.bake(var1);
+      this.idleAnimation = CamelAnimation.CAMEL_IDLE.bake(var1);
+      this.dashAnimation = CamelAnimation.CAMEL_DASH.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -46,12 +59,12 @@ public class CamelModel extends EntityModel<CamelRenderState> {
    public void setupAnim(CamelRenderState var1) {
       super.setupAnim(var1);
       this.applyHeadRotation(var1, var1.yRot, var1.xRot);
-      this.animateWalk(CamelAnimation.CAMEL_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);
-      this.animate(var1.sitAnimationState, CamelAnimation.CAMEL_SIT, var1.ageInTicks, 1.0F);
-      this.animate(var1.sitPoseAnimationState, CamelAnimation.CAMEL_SIT_POSE, var1.ageInTicks, 1.0F);
-      this.animate(var1.sitUpAnimationState, CamelAnimation.CAMEL_STANDUP, var1.ageInTicks, 1.0F);
-      this.animate(var1.idleAnimationState, CamelAnimation.CAMEL_IDLE, var1.ageInTicks, 1.0F);
-      this.animate(var1.dashAnimationState, CamelAnimation.CAMEL_DASH, var1.ageInTicks, 1.0F);
+      this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);
+      this.sitAnimation.apply(var1.sitAnimationState, var1.ageInTicks);
+      this.sitPoseAnimation.apply(var1.sitPoseAnimationState, var1.ageInTicks);
+      this.standupAnimation.apply(var1.sitUpAnimationState, var1.ageInTicks);
+      this.idleAnimation.apply(var1.idleAnimationState, var1.ageInTicks);
+      this.dashAnimation.apply(var1.dashAnimationState, var1.ageInTicks);
    }
 
    private void applyHeadRotation(CamelRenderState var1, float var2, float var3) {

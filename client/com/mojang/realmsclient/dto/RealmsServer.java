@@ -17,13 +17,16 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 
 public class RealmsServer extends ValueObject implements ReflectionBasedSerialization {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int NO_VALUE = -1;
+   public static final Component WORLD_CLOSED_COMPONENT = Component.translatable("mco.play.button.realm.closed");
    @SerializedName("id")
    public long id = -1L;
    @Nullable
@@ -205,6 +208,15 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
 
    public boolean needsDowngrade() {
       return this.compatibility.needsDowngrade();
+   }
+
+   public boolean shouldPlayButtonBeActive() {
+      boolean var1 = !this.expired && this.state == RealmsServer.State.OPEN;
+      return var1 && (this.isCompatible() || this.needsUpgrade() || this.isSelfOwnedServer());
+   }
+
+   private boolean isSelfOwnedServer() {
+      return Minecraft.getInstance().isLocalPlayer(this.ownerUUID);
    }
 
    public int hashCode() {

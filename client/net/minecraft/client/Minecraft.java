@@ -510,11 +510,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.skinManager = new SkinManager(var2.toPath().resolve("skins"), this.minecraftSessionService, this);
       this.levelSource = new LevelStorageSource(var3.resolve("saves"), var3.resolve("backups"), this.directoryValidator, this.fixerUpper);
       this.commandHistory = new CommandHistory(var3);
-      this.soundManager = new SoundManager(this.options);
+      this.musicManager = new MusicManager(this);
+      this.soundManager = new SoundManager(this.options, this.musicManager);
       this.resourceManager.registerReloadListener(this.soundManager);
       this.splashManager = new SplashManager(this.user);
       this.resourceManager.registerReloadListener(this.splashManager);
-      this.musicManager = new MusicManager(this);
       this.fontManager = new FontManager(this.textureManager);
       this.font = this.fontManager.createFont();
       this.fontFilterFishy = this.fontManager.createFontFilterFishy();

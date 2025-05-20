@@ -500,6 +500,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          RenderTarget var17 = this.minecraft.getMainRenderTarget();
          RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
+         this.guiRenderState.reset();
          GuiGraphics var8 = new GuiGraphics(this.minecraft, this.guiRenderState);
          if (var4 && var2 && this.minecraft.level != null) {
             var3.popPush("gui");

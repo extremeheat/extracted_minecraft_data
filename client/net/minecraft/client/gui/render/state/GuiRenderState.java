@@ -140,8 +140,12 @@ public class GuiRenderState {
       return false;
    }
 
-   public void submitGuiElementToCurrentLayer(GuiElementRenderState var1) {
+   public void submitBlitToCurrentLayer(BlitRenderState var1) {
       this.current.submitGuiElement(var1);
+   }
+
+   public void submitGlyphToCurrentLayer(GuiElementRenderState var1) {
+      this.current.submitGlyph(var1);
    }
 
    public Set<Object> getItemModelIdentities() {
@@ -151,14 +155,21 @@ public class GuiRenderState {
    public void forEachElement(LayeredElementConsumer var1, TraverseRange var2) {
       MutableInt var3 = new MutableInt(0);
       this.traverse((Consumer)((var2x) -> {
-         if (var2x.elementStates != null) {
+         if (var2x.elementStates != null || var2x.glyphStates != null) {
             int var3x = var3.incrementAndGet();
-
-            for(GuiElementRenderState var5 : var2x.elementStates) {
-               var1.accept(var5, var3x);
+            if (var2x.elementStates != null) {
+               for(GuiElementRenderState var5 : var2x.elementStates) {
+                  var1.accept(var5, var3x);
+               }
             }
-         }
 
+            if (var2x.glyphStates != null) {
+               for(GuiElementRenderState var7 : var2x.glyphStates) {
+                  var1.accept(var7, var3x);
+               }
+            }
+
+         }
       }), var2);
    }
 
@@ -260,6 +271,8 @@ public class GuiRenderState {
       @Nullable
       public List<GuiElementRenderState> elementStates;
       @Nullable
+      public List<GuiElementRenderState> glyphStates;
+      @Nullable
       public List<GuiItemRenderState> itemStates;
       @Nullable
       public List<GuiTextRenderState> textStates;
@@ -301,6 +314,14 @@ public class GuiRenderState {
          }
 
          this.elementStates.add(var1);
+      }
+
+      public void submitGlyph(GuiElementRenderState var1) {
+         if (this.glyphStates == null) {
+            this.glyphStates = new ArrayList();
+         }
+
+         this.glyphStates.add(var1);
       }
    }
 

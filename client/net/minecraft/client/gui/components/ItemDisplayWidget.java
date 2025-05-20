@@ -31,6 +31,10 @@ public class ItemDisplayWidget extends AbstractWidget {
          var1.renderItemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
       }
 
+      if (this.isFocused()) {
+         var1.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
+      }
+
       if (this.tooltip && this.isHoveredOrFocused()) {
          var1.setTooltipForNextFrame(this.minecraft.font, this.itemStack, var2, var3);
       }

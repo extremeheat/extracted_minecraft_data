@@ -8,17 +8,18 @@ import net.minecraft.server.dialog.ClickAction;
 import net.minecraft.server.dialog.SimpleDialog;
 
 public class SimpleDialogScreen<T extends SimpleDialog> extends DialogScreen<T> {
-   public SimpleDialogScreen(@Nullable Screen var1, T var2) {
-      super(var1, var2);
+   public SimpleDialogScreen(@Nullable Screen var1, T var2, DialogConnectionAccess var3) {
+      super(var1, var2, var3);
    }
 
-   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, T var2) {
-      LinearLayout var3 = LinearLayout.horizontal().spacing(8);
+   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, T var2, DialogConnectionAccess var3) {
+      super.updateHeaderAndFooter(var1, var2, var3);
+      LinearLayout var4 = LinearLayout.horizontal().spacing(8);
 
-      for(ClickAction var5 : var2.mainActions()) {
-         var3.addChild(this.createClickActionButton(var5).build());
+      for(ClickAction var6 : var2.mainActions()) {
+         var4.addChild(this.createClickActionButton(var6).build());
       }
 
-      var1.addToFooter(var3);
+      var1.addToFooter(var4);
    }
 }

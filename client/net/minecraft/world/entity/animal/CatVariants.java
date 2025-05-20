@@ -1,21 +1,16 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.List;
-import java.util.Optional;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.StructureTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.variant.MoonBrightnessCheck;
 import net.minecraft.world.entity.variant.PriorityProvider;
-import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import net.minecraft.world.entity.variant.StructureCheck;
 
@@ -57,9 +52,5 @@ public interface CatVariants {
 
    private static void register(BootstrapContext<CatVariant> var0, ResourceKey<CatVariant> var1, String var2, SpawnPrioritySelectors var3) {
       var0.register(var1, new CatVariant(new ClientAsset(ResourceLocation.withDefaultNamespace(var2)), var3));
-   }
-
-   static Optional<Holder.Reference<CatVariant>> selectVariantToSpawn(RandomSource var0, RegistryAccess var1, SpawnContext var2) {
-      return PriorityProvider.pick(var1.lookupOrThrow(Registries.CAT_VARIANT).listElements(), Holder::value, var0, var2);
    }
 }

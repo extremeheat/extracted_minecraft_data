@@ -332,8 +332,8 @@ public class Font {
          if (!(this.left >= this.right) && !(this.top >= this.bottom)) {
             int var1 = Mth.floor(this.left);
             int var2 = Mth.floor(this.top);
-            int var3 = Mth.floor(this.right) + 1;
-            int var4 = Mth.floor(this.bottom) + 1;
+            int var3 = Mth.ceil(this.right);
+            int var4 = Mth.ceil(this.bottom);
             return new ScreenRectangle(var1, var2, var3 - var1, var4 - var2);
          } else {
             return null;
@@ -347,12 +347,12 @@ public class Font {
             public void acceptGlyph(BakedGlyph.GlyphInstance var1x) {
                BakedGlyph var2x = var1x.glyph();
                VertexConsumer var3x = var0.getBuffer(var2x.renderType(var2));
-               var2x.renderChar(var1x, var1, var3x, var3);
+               var2x.renderChar(var1x, var1, var3x, var3, false);
             }
 
             public void acceptEffect(BakedGlyph var1x, BakedGlyph.Effect var2x) {
                VertexConsumer var3x = var0.getBuffer(var1x.renderType(var2));
-               var1x.renderEffect(var2x, var1, var3x, var3);
+               var1x.renderEffect(var2x, var1, var3x, var3, false);
             }
          };
       }

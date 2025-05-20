@@ -12,11 +12,11 @@ import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogListDialog;
 
 public class DialogListDialogScreen extends ButtonListDialogScreen<DialogListDialog> {
-   public DialogListDialogScreen(@Nullable Screen var1, DialogListDialog var2) {
-      super(var1, var2);
+   public DialogListDialogScreen(@Nullable Screen var1, DialogListDialog var2, DialogConnectionAccess var3) {
+      super(var1, var2, var3);
    }
 
-   protected Stream<ClickAction> createListActions(DialogListDialog var1) {
+   protected Stream<ClickAction> createListActions(DialogListDialog var1, DialogConnectionAccess var2) {
       return var1.dialogs().stream().map((var1x) -> createDialogClickAction(var1, var1x));
    }
 

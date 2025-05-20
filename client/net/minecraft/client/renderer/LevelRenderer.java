@@ -15,7 +15,6 @@ import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -30,10 +29,9 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -56,8 +54,13 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.RenderRegionCache;
+import net.minecraft.client.renderer.chunk.SectionBuffers;
+import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
+import net.minecraft.client.renderer.chunk.TranslucencyPointOfView;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -122,7 +125,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> visibleSections = new ObjectArrayList(10000);
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> nearbyVisibleSections = new ObjectArrayList(50);
-   private final Set<BlockEntity> globalBlockEntities = Sets.newHashSet();
    @Nullable
    private ViewArea viewArea;
    private int ticks;
@@ -230,7 +232,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          this.sectionRenderDispatcher = null;
-         this.globalBlockEntities.clear();
          this.sectionOcclusionGraph.waitAndReset((ViewArea)null);
          this.clearVisibleSections();
       }
@@ -258,11 +259,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.viewArea.releaseAllBuffers();
          }
 
-         this.sectionRenderDispatcher.blockUntilClear();
-         synchronized(this.globalBlockEntities) {
-            this.globalBlockEntities.clear();
-         }
-
+         this.sectionRenderDispatcher.clearCompileQueue();
          this.viewArea = new ViewArea(this.sectionRenderDispatcher, this.level, this.minecraft.options.getEffectiveRenderDistance(), this);
          this.sectionOcclusionGraph.waitAndReset(this.viewArea);
          this.clearVisibleSections();
@@ -303,7 +300,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       while(var2.hasNext()) {
          SectionRenderDispatcher.RenderSection var3 = (SectionRenderDispatcher.RenderSection)var2.next();
-         if (var3.getCompiled().hasRenderableLayers()) {
+         if (var3.getSectionMesh().hasRenderableLayers()) {
             ++var1;
          }
       }
@@ -335,7 +332,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.worldBorderRenderer.invalidate();
       }
 
-      this.sectionRenderDispatcher.setCamera(var5);
+      this.sectionRenderDispatcher.setCameraPosition(var5);
       var6.popPush("cull");
       double var10 = Math.floor(var5.x / 8.0);
       double var12 = Math.floor(var5.y / 8.0);
@@ -537,9 +534,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          GpuBufferSlice[] var28 = RenderSystem.getDynamicUniforms().writeTransforms((DynamicUniforms.Transform[])var20.toArray(new DynamicUniforms.Transform[0]));
-         this.renderSectionLayer(RenderType.solid(), var28);
-         this.renderSectionLayer(RenderType.cutoutMipped(), var28);
-         this.renderSectionLayer(RenderType.cutout(), var28);
+         this.renderSectionLayer(ChunkSectionLayer.SOLID, var28);
+         this.renderSectionLayer(ChunkSectionLayer.CUTOUT_MIPPED, var28);
+         this.renderSectionLayer(ChunkSectionLayer.CUTOUT, var28);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
          if (var13 != null) {
             ((RenderTarget)var13.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
@@ -598,9 +595,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          var9.popPush("translucent");
-         this.renderSectionLayer(RenderType.translucent(), var28);
+         this.renderSectionLayer(ChunkSectionLayer.TRANSLUCENT, var28);
          var9.popPush("string");
-         this.renderSectionLayer(RenderType.tripwire(), var28);
+         this.renderSectionLayer(ChunkSectionLayer.TRIPWIRE, var28);
          if (var6) {
             this.renderBlockOutline(var3, var26, var30, true);
          }
@@ -739,11 +736,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       double var7 = var6.x();
       double var9 = var6.y();
       double var11 = var6.z();
-      ObjectListIterator var13 = this.visibleSections.iterator();
+      Iterator var13 = this.visibleSections.iterator();
 
       while(var13.hasNext()) {
          SectionRenderDispatcher.RenderSection var14 = (SectionRenderDispatcher.RenderSection)var13.next();
-         List var15 = var14.getCompiled().getRenderableBlockEntities();
+         List var15 = var14.getSectionMesh().getRenderableBlockEntities();
          if (!var15.isEmpty()) {
             for(BlockEntity var17 : var15) {
                BlockPos var18 = var17.getBlockPos();
@@ -769,16 +766,21 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
       }
 
-      synchronized(this.globalBlockEntities) {
-         for(BlockEntity var27 : this.globalBlockEntities) {
-            BlockPos var28 = var27.getBlockPos();
+      var13 = this.level.getGloballyRenderedBlockEntities().iterator();
+
+      while(var13.hasNext()) {
+         BlockEntity var25 = (BlockEntity)var13.next();
+         if (var25.isRemoved()) {
+            var13.remove();
+         } else {
+            BlockPos var26 = var25.getBlockPos();
             var1.pushPose();
-            var1.translate((double)var28.getX() - var7, (double)var28.getY() - var9, (double)var28.getZ() - var11);
-            this.blockEntityRenderDispatcher.render(var27, var5, var1, var2);
+            var1.translate((double)var26.getX() - var7, (double)var26.getY() - var9, (double)var26.getZ() - var11);
+            this.blockEntityRenderDispatcher.render(var25, var5, var1, var2);
             var1.popPose();
          }
-
       }
+
    }
 
    private void renderBlockDestroyAnimation(PoseStack var1, Camera var2, MultiBufferSource.BufferSource var3) {
@@ -854,7 +856,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          BlockPos var2 = BlockPos.containing(var1);
          boolean var3 = !var2.equals(this.lastTranslucentSortBlockPos);
          Profiler.get().push("translucent_sort");
-         SectionRenderDispatcher.TranslucencyPointOfView var4 = new SectionRenderDispatcher.TranslucencyPointOfView();
+         TranslucencyPointOfView var4 = new TranslucencyPointOfView();
          ObjectListIterator var5 = this.nearbyVisibleSections.iterator();
 
          while(var5.hasNext()) {
@@ -875,9 +877,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   private void scheduleResort(SectionRenderDispatcher.RenderSection var1, SectionRenderDispatcher.TranslucencyPointOfView var2, Vec3 var3, boolean var4, boolean var5) {
+   private void scheduleResort(SectionRenderDispatcher.RenderSection var1, TranslucencyPointOfView var2, Vec3 var3, boolean var4, boolean var5) {
       var2.set(var3, var1.getSectionNode());
-      boolean var6 = !var2.equals(var1.pointOfView.get());
+      boolean var6 = var1.getSectionMesh().isDifferentPointOfView(var2);
       boolean var7 = var4 && (var2.isAxisAligned() || var5);
       if ((var7 || var6) && !var1.transparencyResortingScheduled() && var1.hasTranslucentGeometry()) {
          var1.resortTransparency(this.sectionRenderDispatcher);
@@ -885,17 +887,14 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void renderSectionLayer(RenderType var1, GpuBufferSlice[] var2) {
+   private void renderSectionLayer(ChunkSectionLayer var1, GpuBufferSlice[] var2) {
       RenderSystem.assertOnRenderThread();
-      Zone var3 = Profiler.get().zone((Supplier)(() -> "render_" + var1.name));
-      Objects.requireNonNull(var1);
-      var3.addText(var1::toString);
-      boolean var4 = var1 != RenderType.translucent();
+      Zone var3 = Profiler.get().zone((Supplier)(() -> "render_" + var1.label()));
+      boolean var4 = var1 != ChunkSectionLayer.TRANSLUCENT;
       ObjectListIterator var5 = this.visibleSections.listIterator(var4 ? 0 : this.visibleSections.size());
-      var1.setupRenderState();
-      RenderPipeline var6 = var1.getRenderPipeline();
+      RenderPipeline var6 = var1.pipeline();
       ArrayList var7 = new ArrayList();
-      RenderSystem.AutoStorageIndexBuffer var8 = RenderSystem.getSequentialBuffer(var1.mode());
+      RenderSystem.AutoStorageIndexBuffer var8 = RenderSystem.getSequentialBuffer(var6.getVertexFormatMode());
       int var9 = 0;
 
       while(true) {
@@ -908,46 +907,41 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          SectionRenderDispatcher.RenderSection var10 = var4 ? (SectionRenderDispatcher.RenderSection)var5.next() : (SectionRenderDispatcher.RenderSection)var5.previous();
-         SectionRenderDispatcher.SectionBuffers var11 = var10.getBuffers(var1);
-         if (!var10.getCompiled().isEmpty(var1) && var11 != null) {
-            GpuBuffer var12;
-            VertexFormat.IndexType var13;
-            if (var11.getIndexBuffer() == null) {
-               if (var11.getIndexCount() > var9) {
-                  var9 = var11.getIndexCount();
+         SectionMesh var11 = var10.getSectionMesh();
+         SectionBuffers var12 = var11.getBuffers(var1);
+         if (var12 != null) {
+            GpuBuffer var13;
+            VertexFormat.IndexType var14;
+            if (var12.getIndexBuffer() == null) {
+               if (var12.getIndexCount() > var9) {
+                  var9 = var12.getIndexCount();
                }
 
-               var12 = null;
                var13 = null;
+               var14 = null;
             } else {
-               var12 = var11.getIndexBuffer();
-               var13 = var11.getIndexType();
+               var13 = var12.getIndexBuffer();
+               var14 = var12.getIndexType();
             }
 
-            GpuBufferSlice var14 = var2[var10.getDynamicTransformIndex()];
-            var7.add(new RenderPass.Draw(0, var11.getVertexBuffer(), var12, var13, 0, var11.getIndexCount(), (var1x) -> var1x.upload("DynamicTransforms", var14)));
+            GpuBufferSlice var15 = var2[var10.getDynamicTransformIndex()];
+            var7.add(new RenderPass.Draw(0, var12.getVertexBuffer(), var13, var14, 0, var12.getIndexCount(), (var1x) -> var1x.upload("DynamicTransforms", var15)));
          }
       }
 
-      GpuBuffer var17 = var9 == 0 ? null : var8.getBuffer(var9);
-      VertexFormat.IndexType var18 = var9 == 0 ? null : var8.type();
+      GpuBuffer var18 = var9 == 0 ? null : var8.getBuffer(var9);
+      VertexFormat.IndexType var19 = var9 == 0 ? null : var8.type();
+      RenderTarget var20 = var1.outputTarget();
 
-      try (RenderPass var19 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.getName(), var1.getRenderTarget().getColorTextureView(), OptionalInt.empty(), var1.getRenderTarget().getDepthTextureView(), OptionalDouble.empty())) {
-         var19.setPipeline(var6);
-         RenderSystem.bindDefaultUniforms(var19);
-
-         for(int var20 = 0; var20 < 12; ++var20) {
-            GpuTextureView var21 = RenderSystem.getShaderTexture(var20);
-            if (var21 != null) {
-               var19.bindSampler("Sampler" + var20, var21);
-            }
-         }
-
-         var19.drawMultipleIndexed(var7, var17, var18, List.of("DynamicTransforms"));
+      try (RenderPass var21 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var20.getColorTextureView(), OptionalInt.empty(), var20.getDepthTextureView(), OptionalDouble.empty())) {
+         var21.setPipeline(var6);
+         RenderSystem.bindDefaultUniforms(var21);
+         var21.bindSampler("Sampler0", var1.textureView());
+         var21.bindSampler("Sampler2", this.minecraft.gameRenderer.lightTexture().getTextureView());
+         var21.drawMultipleIndexed(var7, var18, var19, List.of("DynamicTransforms"));
       }
 
       var3.close();
-      var1.clearRenderState();
    }
 
    public void endFrame() {
@@ -1057,7 +1051,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       while(var6.hasNext()) {
          SectionRenderDispatcher.RenderSection var7 = (SectionRenderDispatcher.RenderSection)var6.next();
-         if (var7.isDirty() && var7.hasAllNeighbors()) {
+         if (var7.isDirty() && (var7.getSectionMesh() != CompiledSectionMesh.UNCOMPILED || var7.hasAllNeighbors())) {
             boolean var8 = false;
             if (this.minecraft.options.prioritizeChunkUpdates().get() == PrioritizeChunkUpdates.NEARBY) {
                BlockPos var9 = SectionPos.of(var7.getSectionNode()).center();
@@ -1082,7 +1076,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var2.popPush("schedule_async_compile");
 
       for(SectionRenderDispatcher.RenderSection var11 : var5) {
-         var11.rebuildSectionAsync(this.sectionRenderDispatcher, var3);
+         var11.rebuildSectionAsync(var3);
          var11.setNotDirty();
       }
 
@@ -1247,13 +1241,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.cloudRenderer.markForRebuild();
    }
 
-   public void updateGlobalBlockEntities(Collection<BlockEntity> var1, Collection<BlockEntity> var2) {
-      synchronized(this.globalBlockEntities) {
-         this.globalBlockEntities.removeAll(var1);
-         this.globalBlockEntities.addAll(var2);
-      }
-   }
-
    public static int getLightColor(BlockAndTintGetter var0, BlockPos var1) {
       return getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, var0, var0.getBlockState(var1), var1);
    }
@@ -1276,7 +1263,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public boolean isSectionCompiled(BlockPos var1) {
       SectionRenderDispatcher.RenderSection var2 = this.viewArea.getRenderSectionAt(var1);
-      return var2 != null && var2.compiled.get() != SectionRenderDispatcher.CompiledSection.UNCOMPILED;
+      return var2 != null && var2.sectionMesh.get() != CompiledSectionMesh.UNCOMPILED;
    }
 
    @Nullable

@@ -13,13 +13,13 @@ public class SwitchMinigameTask extends LongRunningTask {
    private static final Component TITLE = Component.translatable("mco.minigame.world.starting.screen.title");
    private final long realmId;
    private final WorldTemplate worldTemplate;
-   private final RealmsConfigureWorldScreen lastScreen;
+   private final RealmsConfigureWorldScreen nextScreen;
 
    public SwitchMinigameTask(long var1, WorldTemplate var3, RealmsConfigureWorldScreen var4) {
       super();
       this.realmId = var1;
       this.worldTemplate = var3;
-      this.lastScreen = var4;
+      this.nextScreen = var4;
    }
 
    public void run() {
@@ -32,7 +32,7 @@ public class SwitchMinigameTask extends LongRunningTask {
             }
 
             if (var1.putIntoMinigameMode(this.realmId, this.worldTemplate.id)) {
-               setScreen(this.lastScreen);
+               setScreen(this.nextScreen);
                break;
             }
          } catch (RetryCallException var4) {

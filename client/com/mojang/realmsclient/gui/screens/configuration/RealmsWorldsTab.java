@@ -22,7 +22,7 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.network.chat.Component;
 
 class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
-   private static final Component TITLE = Component.translatable("mco.configure.worlds.title");
+   static final Component TITLE = Component.translatable("mco.configure.worlds.title");
    private final RealmsConfigureWorldScreen configurationScreen;
    private final Minecraft minecraft;
    private RealmsServer serverData;
@@ -66,7 +66,8 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    private void templateSelectionCallback(@Nullable WorldTemplate var1) {
       if (var1 != null && WorldTemplate.WorldTemplateType.MINIGAME == var1.type) {
          this.configurationScreen.stateChanged();
-         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.configurationScreen.getLastScreen(), new LongRunningTask[]{new SwitchMinigameTask(this.serverData.id, var1, this.configurationScreen.getNewScreen())}));
+         RealmsConfigureWorldScreen var2 = this.configurationScreen.getNewScreen();
+         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var2, new LongRunningTask[]{new SwitchMinigameTask(this.serverData.id, var1, var2)}));
       } else {
          this.minecraft.setScreen(this.configurationScreen);
       }
@@ -138,7 +139,10 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    private void switchToFullSlot(int var1, RealmsServer var2) {
       this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this.configurationScreen, Component.translatable("mco.configure.world.slot.switch.question.line1"), (var3) -> {
          this.configurationScreen.stateChanged();
-         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.configurationScreen.getLastScreen(), new LongRunningTask[]{new SwitchSlotTask(var2.id, var1, () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreen())))}));
+         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.configurationScreen.getNewScreen(), new LongRunningTask[]{new SwitchSlotTask(var2.id, var1, () -> {
+            var2.activeSlot = var1;
+            this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreenWithKnownData(var2)));
+         })}));
       }));
    }
 

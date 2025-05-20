@@ -105,7 +105,7 @@ public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & Bounding
       }
    }
 
-   public boolean shouldRenderOffScreen(T var1) {
+   public boolean shouldRenderOffScreen() {
       return true;
    }
 

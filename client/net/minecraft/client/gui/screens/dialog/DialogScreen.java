@@ -1,8 +1,10 @@
 package net.minecraft.client.gui.screens.dialog;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ScrollableLayout;
@@ -16,6 +18,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.dialog.body.DialogBodyHandlers;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -24,6 +27,7 @@ import net.minecraft.server.dialog.ClickAction;
 import net.minecraft.server.dialog.CommonButtonData;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.body.DialogBody;
+import org.apache.commons.lang3.mutable.MutableObject;
 
 public abstract class DialogScreen<T extends Dialog> extends Screen {
    public static final Component DISCONNECT = Component.translatable("menu.custom_screen_info.disconnect");
@@ -36,11 +40,13 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    @Nullable
    private ScrollableLayout bodyScroll;
    private Button warningButton;
+   private final DialogConnectionAccess connectionAccess;
 
-   public DialogScreen(@Nullable Screen var1, T var2) {
+   public DialogScreen(@Nullable Screen var1, T var2, DialogConnectionAccess var3) {
       super(var2.common().title());
       this.dialog = var2;
       this.previousScreen = var1;
+      this.connectionAccess = var3;
    }
 
    protected final void init() {
@@ -49,7 +55,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       this.warningButton.setTabOrderGroup(-10);
       LinearLayout var1 = LinearLayout.vertical().spacing(10);
       var1.defaultCellSetting().alignHorizontallyCenter();
-      this.dialogInit(this.dialog);
+      this.dialogInit(this.dialog, this.connectionAccess);
       this.layout.addToHeader(this.createTitleWithWarningButton());
 
       for(DialogBody var3 : this.dialog.common().body()) {
@@ -59,10 +65,10 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
          }
       }
 
-      this.populateBodyElements(var1, this.dialog);
+      this.populateBodyElements(var1, this.dialog, this.connectionAccess);
       this.bodyScroll = new ScrollableLayout(this.minecraft, var1, this.layout.getContentHeight());
       this.layout.addToContents(this.bodyScroll);
-      this.updateHeaderAndFooter(this.layout, this.dialog);
+      this.updateHeaderAndFooter(this.layout, this.dialog, this.connectionAccess);
       this.layout.visitWidgets((var1x) -> {
          if (var1x != this.warningButton) {
             this.addRenderableWidget(var1x);
@@ -73,13 +79,13 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       this.repositionElements();
    }
 
-   protected void dialogInit(T var1) {
+   protected void dialogInit(T var1, DialogConnectionAccess var2) {
    }
 
-   protected void populateBodyElements(LinearLayout var1, T var2) {
+   protected void populateBodyElements(LinearLayout var1, T var2, DialogConnectionAccess var3) {
    }
 
-   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, T var2) {
+   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, T var2, DialogConnectionAccess var3) {
    }
 
    protected void repositionElements() {
@@ -88,15 +94,11 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       this.makeSureWarningButtonIsInBounds();
    }
 
-   protected LayoutElement warningButton() {
-      return this.warningButton;
-   }
-
    protected LayoutElement createTitleWithWarningButton() {
       LinearLayout var1 = LinearLayout.horizontal().spacing(10);
       var1.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
       var1.addChild(new StringWidget(this.title, this.font));
-      var1.addChild(this.warningButton());
+      var1.addChild(this.warningButton);
       return var1;
    }
 
@@ -105,21 +107,13 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       int var2 = this.warningButton.getY();
       if (var1 < 0 || var2 < 0 || var1 > this.width - 20 || var2 > this.height - 20) {
          this.warningButton.setX(Math.max(0, this.width - 40));
-         this.warningButton.setX(Math.min(5, this.height));
+         this.warningButton.setY(Math.min(5, this.height));
       }
 
    }
 
    private Button createWarningButton() {
-      ImageButton var1 = new ImageButton(0, 0, 20, 20, WARNING_BUTTON_SPRITES, (var1x) -> this.minecraft.setScreen(new ConfirmScreen((var1) -> {
-            if (var1) {
-               this.minecraft.setScreen((Screen)null);
-               this.minecraft.player.connection.getConnection().disconnect(DISCONNECT);
-            } else {
-               this.minecraft.setScreen(this);
-            }
-
-         }, Component.translatable("menu.custom_screen_info.title"), Component.translatable("menu.custom_screen_info.contents"), CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), CommonComponents.GUI_BACK)), Component.translatable("menu.custom_screen_info.button_narration"));
+      ImageButton var1 = new ImageButton(0, 0, 20, 20, WARNING_BUTTON_SPRITES, (var1x) -> this.minecraft.setScreen(DialogScreen.WarningScreen.create(this.minecraft, this.connectionAccess, this)), Component.translatable("menu.custom_screen_info.button_narration"));
       var1.setTooltip(Tooltip.create(Component.translatable("menu.custom_screen_info.tooltip")));
       return var1;
    }
@@ -147,9 +141,44 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    }
 
    private void closeScreen(Optional<ClickEvent> var1) {
-      var1.ifPresent((var1x) -> defaultHandleClickEvent(var1x, this.minecraft, this.previousScreen));
+      var1.ifPresent(this::handleDialogClickEvent);
       if (this.minecraft.screen == this) {
          this.minecraft.setScreen(this.previousScreen);
+      }
+
+   }
+
+   private void handleDialogClickEvent(ClickEvent var1) {
+      Objects.requireNonNull(var1);
+      byte var3 = 0;
+      //$FF: var3->value
+      //0->net/minecraft/network/chat/ClickEvent$RunCommand
+      //1->net/minecraft/network/chat/ClickEvent$ShowDialog
+      //2->net/minecraft/network/chat/ClickEvent$Custom
+      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+         case 0:
+            ClickEvent.RunCommand var4 = (ClickEvent.RunCommand)var1;
+            ClickEvent.RunCommand var10000 = var4;
+
+            try {
+               var10 = var10000.command();
+            } catch (Throwable var8) {
+               throw new MatchException(var8.toString(), var8);
+            }
+
+            String var9 = var10;
+            this.connectionAccess.runCommand(Commands.trimOptionalPrefix(var9), this.previousScreen);
+            break;
+         case 1:
+            ClickEvent.ShowDialog var6 = (ClickEvent.ShowDialog)var1;
+            this.connectionAccess.openDialog(var6.dialog());
+            break;
+         case 2:
+            ClickEvent.Custom var7 = (ClickEvent.Custom)var1;
+            this.connectionAccess.sendCustomAction(var7.id(), var7.payload());
+            break;
+         default:
+            defaultHandleClickEvent(var1, this.minecraft, this.previousScreen);
       }
 
    }
@@ -179,9 +208,42 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
             var8.addChild((LayoutElement)var0.get(var7));
          }
 
-         var2.addChild(var8, var4 + 1, 0, 1, var1);
+         var2.addChild(var8, var4, 0, 1, var1);
       }
 
       return var2;
+   }
+
+   public static class WarningScreen extends ConfirmScreen {
+      private final MutableObject<DialogScreen<?>> returnScreen;
+
+      public static Screen create(Minecraft var0, DialogConnectionAccess var1, DialogScreen<?> var2) {
+         return new WarningScreen(var0, var1, new MutableObject(var2));
+      }
+
+      private WarningScreen(Minecraft var1, DialogConnectionAccess var2, MutableObject<DialogScreen<?>> var3) {
+         super((var3x) -> {
+            if (var3x) {
+               var1.setScreen((Screen)null);
+               var2.disconnect(DialogScreen.DISCONNECT);
+            } else {
+               var1.setScreen((Screen)var3.getValue());
+            }
+
+         }, Component.translatable("menu.custom_screen_info.title"), Component.translatable("menu.custom_screen_info.contents"), CommonComponents.disconnectButtonLabel(var1.isLocalServer()), CommonComponents.GUI_BACK);
+         this.returnScreen = var3;
+      }
+
+      public DialogScreen<?> returnScreen() {
+         return (DialogScreen)this.returnScreen.getValue();
+      }
+
+      public void updateReturnScreen(DialogScreen<?> var1) {
+         this.returnScreen.setValue(var1);
+      }
+
+      public void clearReturnScreen() {
+         this.returnScreen.setValue((Object)null);
+      }
    }
 }

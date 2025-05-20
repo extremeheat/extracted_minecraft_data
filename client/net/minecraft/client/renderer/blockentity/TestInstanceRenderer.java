@@ -20,8 +20,8 @@ public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlo
       this.box.render(var1, var2, var3, var4, var5, var6, var7);
    }
 
-   public boolean shouldRenderOffScreen(TestInstanceBlockEntity var1) {
-      return this.beacon.shouldRenderOffScreen(var1) || this.box.shouldRenderOffScreen(var1);
+   public boolean shouldRenderOffScreen() {
+      return this.beacon.shouldRenderOffScreen() || this.box.shouldRenderOffScreen();
    }
 
    public int getViewDistance() {

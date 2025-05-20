@@ -1,20 +1,14 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Optional;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.variant.BiomeCheck;
 import net.minecraft.world.entity.variant.ModelAndTexture;
-import net.minecraft.world.entity.variant.PriorityProvider;
-import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import net.minecraft.world.level.biome.Biome;
 
@@ -46,10 +40,6 @@ public class ChickenVariants {
    private static void register(BootstrapContext<ChickenVariant> var0, ResourceKey<ChickenVariant> var1, ChickenVariant.ModelType var2, String var3, SpawnPrioritySelectors var4) {
       ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/chicken/" + var3);
       var0.register(var1, new ChickenVariant(new ModelAndTexture(var2, var5), var4));
-   }
-
-   public static Optional<Holder.Reference<ChickenVariant>> selectVariantToSpawn(RandomSource var0, RegistryAccess var1, SpawnContext var2) {
-      return PriorityProvider.pick(var1.lookupOrThrow(Registries.CHICKEN_VARIANT).listElements(), Holder::value, var0, var2);
    }
 
    static {

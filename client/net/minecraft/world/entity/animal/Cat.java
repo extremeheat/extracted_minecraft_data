@@ -354,7 +354,7 @@ public class Cat extends TamableAnimal {
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
-      CatVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.CAT_VARIANT).ifPresent(this::setVariant);
       return var4;
    }
 

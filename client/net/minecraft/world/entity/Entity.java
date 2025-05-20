@@ -15,6 +15,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -277,7 +278,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private boolean hasVisualFire;
    @Nullable
    private BlockState inBlockState;
-   private final List<List<Movement>> movementThisTick;
+   public static final int MAX_MOVEMENTS_HANDELED_PER_TICK = 100;
+   private final ArrayDeque<List<Movement>> movementThisTick;
    private final List<Movement> finalMovementsThisTick;
    private final LongSet visitedBlocks;
    private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
@@ -304,7 +306,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.mainSupportingBlockPos = Optional.empty();
       this.onGroundNoBlocks = false;
       this.inBlockState = null;
-      this.movementThisTick = new ObjectArrayList();
+      this.movementThisTick = new ArrayDeque(100);
       this.finalMovementsThisTick = new ObjectArrayList();
       this.visitedBlocks = new LongOpenHashSet();
       this.insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
@@ -742,7 +744,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                }
             }
 
-            this.movementThisTick.add(var8);
+            this.addMovementThisTick(var8);
             this.setPos(var15);
          }
 
@@ -834,7 +836,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    protected void applyEffectsFromBlocks() {
       this.finalMovementsThisTick.clear();
-      List var10000 = this.movementThisTick;
+      ArrayDeque var10000 = this.movementThisTick;
       List var10001 = this.finalMovementsThisTick;
       Objects.requireNonNull(var10001);
       var10000.forEach(var10001::addAll);
@@ -848,11 +850,23 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.applyEffectsFromBlocks(this.finalMovementsThisTick);
    }
 
+   private void addMovementThisTick(List<Movement> var1) {
+      if (this.movementThisTick.size() >= 100) {
+         throw new IllegalStateException("Too many movements of entity in one tick");
+      } else {
+         this.movementThisTick.add(var1);
+      }
+   }
+
    public void removeLatestMovementRecordingBatch() {
       if (!this.movementThisTick.isEmpty()) {
          this.movementThisTick.removeLast();
       }
 
+   }
+
+   protected void clearMovementThisTick() {
+      this.movementThisTick.clear();
    }
 
    public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
@@ -2108,6 +2122,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
                   if (var6) {
                      this.level().gameEvent(GameEvent.ENTITY_ACTION, this.blockPosition(), GameEvent.Context.of((Entity)var1));
+                     this.playSound(SoundEvents.LEAD_TIED);
                      return InteractionResult.SUCCESS_SERVER.withoutItem();
                   }
                }
@@ -2138,6 +2153,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                   }
 
                   this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
+                  this.playSound(SoundEvents.LEAD_UNTIED);
                }
 
                return InteractionResult.SUCCESS.withoutItem();
@@ -2151,6 +2167,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                   }
 
                   var11.setLeashedTo(var1, true);
+                  this.playSound(SoundEvents.LEAD_TIED);
                   var12.shrink(1);
                }
 
@@ -2966,7 +2983,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.reapplyPosition();
       this.setOldPosAndRot();
       this.setDeltaMovement(var4.deltaMovement());
-      this.movementThisTick.clear();
+      this.clearMovementThisTick();
    }
 
    public void forceSetRotation(float var1, float var2) {

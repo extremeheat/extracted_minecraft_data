@@ -52,7 +52,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       this.bufferSource.endBatch();
       RenderSystem.outputColorTextureOverride = null;
       RenderSystem.outputDepthTextureOverride = null;
-      var2.submitGuiElementToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView), IDENTITY_POSE, var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea(), (ScreenRectangle)null));
+      var2.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView), IDENTITY_POSE, var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void prepareTexturesAndProjection(int var1, int var2) {

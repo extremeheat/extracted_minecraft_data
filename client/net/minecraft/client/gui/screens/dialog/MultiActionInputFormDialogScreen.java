@@ -12,24 +12,25 @@ import net.minecraft.server.dialog.MultiActionInputFormDialog;
 public class MultiActionInputFormDialogScreen extends DialogScreen<MultiActionInputFormDialog> {
    public static final int FOOTER_MARGIN = 5;
 
-   public MultiActionInputFormDialogScreen(@Nullable Screen var1, MultiActionInputFormDialog var2) {
-      super(var1, var2);
+   public MultiActionInputFormDialogScreen(@Nullable Screen var1, MultiActionInputFormDialog var2, DialogConnectionAccess var3) {
+      super(var1, var2, var3);
    }
 
-   protected void populateBodyElements(LinearLayout var1, MultiActionInputFormDialog var2) {
-      super.populateBodyElements(var1, var2);
-      InputFormControlSet var3 = new InputFormControlSet(this.minecraft, this);
+   protected void populateBodyElements(LinearLayout var1, MultiActionInputFormDialog var2, DialogConnectionAccess var3) {
+      super.populateBodyElements(var1, var2, var3);
+      InputFormControlSet var4 = new InputFormControlSet(this);
 
-      for(InputFormDialog.Input var5 : var2.inputs()) {
+      for(InputFormDialog.Input var6 : var2.inputs()) {
          Objects.requireNonNull(var1);
-         var3.addInput(var5, var1::addChild);
+         var4.addInput(var6, var1::addChild);
       }
 
-      List var6 = var2.actions().stream().map((var1x) -> var3.createActionButton(var1x).build()).toList();
-      var1.addChild(packControlsIntoColumns(var6, 2));
+      List var7 = var2.actions().stream().map((var3x) -> var4.createActionButton(var3x, var3, this).build()).toList();
+      var1.addChild(packControlsIntoColumns(var7, var2.columns()));
    }
 
-   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, MultiActionInputFormDialog var2) {
+   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, MultiActionInputFormDialog var2, DialogConnectionAccess var3) {
+      super.updateHeaderAndFooter(var1, var2, var3);
       var1.setFooterHeight(5);
    }
 }

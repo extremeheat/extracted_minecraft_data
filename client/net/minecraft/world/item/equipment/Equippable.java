@@ -49,12 +49,12 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
    }
 
    public static Equippable llamaSwag(DyeColor var0) {
-      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.LLAMA_SWAG).setAsset((ResourceKey)EquipmentAssets.CARPETS.get(var0)).setAllowedEntities(EntityType.LLAMA, EntityType.TRADER_LLAMA).setCanBeSheared(true).build();
+      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.LLAMA_SWAG).setAsset((ResourceKey)EquipmentAssets.CARPETS.get(var0)).setAllowedEntities(EntityType.LLAMA, EntityType.TRADER_LLAMA).setCanBeSheared(true).setShearingSound(SoundEvents.LLAMA_CARPET_UNEQUIP).build();
    }
 
    public static Equippable saddle() {
       HolderGetter var0 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-      return builder(EquipmentSlot.SADDLE).setEquipSound(SoundEvents.HORSE_SADDLE).setAsset(EquipmentAssets.SADDLE).setAllowedEntities(var0.getOrThrow(EntityTypeTags.CAN_EQUIP_SADDLE)).setEquipOnInteract(true).setCanBeSheared(true).build();
+      return builder(EquipmentSlot.SADDLE).setEquipSound(SoundEvents.HORSE_SADDLE).setAsset(EquipmentAssets.SADDLE).setAllowedEntities(var0.getOrThrow(EntityTypeTags.CAN_EQUIP_SADDLE)).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.SADDLE_UNEQUIP).build();
    }
 
    public static Equippable harness(DyeColor var0) {

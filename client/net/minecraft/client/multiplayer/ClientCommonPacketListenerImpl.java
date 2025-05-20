@@ -29,6 +29,7 @@ import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.dialog.DialogConnectionAccess;
 import net.minecraft.client.gui.screens.dialog.DialogScreen;
 import net.minecraft.client.gui.screens.dialog.DialogScreens;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -87,7 +88,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    private final List<DeferredPacket> deferredPackets = new ArrayList();
    protected final Map<ResourceLocation, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
-   protected ServerLinks serverLinks;
+   private ServerLinks serverLinks;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super();
@@ -100,6 +101,10 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.serverCookies = var3.serverCookies();
       this.customReportDetails = var3.customReportDetails();
       this.serverLinks = var3.serverLinks();
+   }
+
+   public ServerLinks serverLinks() {
+      return this.serverLinks;
    }
 
    public void onPacketError(Packet var1, Exception var2) {
@@ -236,29 +241,51 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.showDialog(var1.dialog());
    }
 
+   protected abstract DialogConnectionAccess createDialogAccess();
+
    public void showDialog(Holder<Dialog> var1) {
-      Screen var4 = this.minecraft.screen;
-      Screen var2;
-      if (var4 instanceof DialogScreen var3) {
-         var2 = var3.previousScreen();
-      } else {
-         var2 = this.minecraft.screen;
-      }
+      if (var3 instanceof DialogScreen.WarningScreen var5) {
+         DialogScreen var8 = var5.returnScreen();
+         DialogScreen var9 = DialogScreens.createFromData((Dialog)var1.value(), var8.previousScreen(), this.createDialogAccess());
+         if (var9 != null) {
+            var5.updateReturnScreen(var9);
+         } else {
+            LOGGER.warn("Failed to show dialog for data {}", var1);
+         }
 
-      DialogScreen var5 = DialogScreens.createFromData((Dialog)var1.value(), var2);
-      if (var5 != null) {
-         this.minecraft.setScreen(var5);
       } else {
-         LOGGER.warn("Failed to show dialog for data {}", var1);
-      }
+         Screen var4 = this.minecraft.screen;
+         Screen var2;
+         if (var4 instanceof DialogScreen var3) {
+            var2 = var3.previousScreen();
+         } else {
+            var2 = this.minecraft.screen;
+         }
 
+         var3 = DialogScreens.createFromData((Dialog)var1.value(), var2, this.createDialogAccess());
+         if (var3 != null) {
+            this.minecraft.setScreen(var3);
+         } else {
+            LOGGER.warn("Failed to show dialog for data {}", var1);
+         }
+
+      }
    }
 
    public void handleClearDialog(ClientboundClearDialogPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      this.clearDialog();
+   }
+
+   public void clearDialog() {
       Screen var3 = this.minecraft.screen;
-      if (var3 instanceof DialogScreen var2) {
-         this.minecraft.setScreen(var2.previousScreen());
+      if (var3 instanceof DialogScreen.WarningScreen var1) {
+         var1.clearReturnScreen();
+      } else {
+         var3 = this.minecraft.screen;
+         if (var3 instanceof DialogScreen var2) {
+            this.minecraft.setScreen(var2.previousScreen());
+         }
       }
 
    }

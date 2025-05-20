@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.FrogAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -23,6 +24,12 @@ public class FrogModel extends EntityModel<FrogRenderState> {
    private final ModelPart leftLeg;
    private final ModelPart rightLeg;
    private final ModelPart croakingBody;
+   private final KeyframeAnimation jumpAnimation;
+   private final KeyframeAnimation croakAnimation;
+   private final KeyframeAnimation tongueAnimation;
+   private final KeyframeAnimation swimAnimation;
+   private final KeyframeAnimation walkAnimation;
+   private final KeyframeAnimation idleWaterAnimation;
 
    public FrogModel(ModelPart var1) {
       super(var1.getChild("root"));
@@ -35,6 +42,12 @@ public class FrogModel extends EntityModel<FrogRenderState> {
       this.leftLeg = this.root.getChild("left_leg");
       this.rightLeg = this.root.getChild("right_leg");
       this.croakingBody = this.body.getChild("croaking_body");
+      this.jumpAnimation = FrogAnimation.FROG_JUMP.bake(var1);
+      this.croakAnimation = FrogAnimation.FROG_CROAK.bake(var1);
+      this.tongueAnimation = FrogAnimation.FROG_TONGUE.bake(var1);
+      this.swimAnimation = FrogAnimation.FROG_SWIM.bake(var1);
+      this.walkAnimation = FrogAnimation.FROG_WALK.bake(var1);
+      this.idleWaterAnimation = FrogAnimation.FROG_IDLE_WATER.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -61,16 +74,16 @@ public class FrogModel extends EntityModel<FrogRenderState> {
 
    public void setupAnim(FrogRenderState var1) {
       super.setupAnim(var1);
-      this.animate(var1.jumpAnimationState, FrogAnimation.FROG_JUMP, var1.ageInTicks);
-      this.animate(var1.croakAnimationState, FrogAnimation.FROG_CROAK, var1.ageInTicks);
-      this.animate(var1.tongueAnimationState, FrogAnimation.FROG_TONGUE, var1.ageInTicks);
+      this.jumpAnimation.apply(var1.jumpAnimationState, var1.ageInTicks);
+      this.croakAnimation.apply(var1.croakAnimationState, var1.ageInTicks);
+      this.tongueAnimation.apply(var1.tongueAnimationState, var1.ageInTicks);
       if (var1.isSwimming) {
-         this.animateWalk(FrogAnimation.FROG_SWIM, var1.walkAnimationPos, var1.walkAnimationSpeed, 1.0F, 2.5F);
+         this.swimAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 1.0F, 2.5F);
       } else {
-         this.animateWalk(FrogAnimation.FROG_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 1.5F, 2.5F);
+         this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 1.5F, 2.5F);
       }
 
-      this.animate(var1.swimIdleAnimationState, FrogAnimation.FROG_IDLE_WATER, var1.ageInTicks);
+      this.idleWaterAnimation.apply(var1.swimIdleAnimationState, var1.ageInTicks);
       this.croakingBody.visible = var1.croakAnimationState.isStarted();
    }
 }

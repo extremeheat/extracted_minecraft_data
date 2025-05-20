@@ -100,7 +100,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       var1.addVertex(var0, var4, (float)var3, var5).setColor(var2).setUv(var6, var7).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(var0, 0.0F, 1.0F, 0.0F);
    }
 
-   public boolean shouldRenderOffScreen(T var1) {
+   public boolean shouldRenderOffScreen() {
       return true;
    }
 

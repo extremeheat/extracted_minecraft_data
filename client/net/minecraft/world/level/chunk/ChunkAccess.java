@@ -259,10 +259,6 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return true;
    }
 
-   public boolean isSectionEmpty(int var1) {
-      return this.getSection(this.getSectionIndexFromSectionY(var1)).hasOnlyAir();
-   }
-
    public void markUnsaved() {
       this.unsaved = true;
    }
