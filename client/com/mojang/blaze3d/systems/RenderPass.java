@@ -7,7 +7,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -35,18 +35,18 @@ public interface RenderPass extends AutoCloseable {
 
    void drawIndexed(int var1, int var2, int var3, int var4);
 
-   void drawMultipleIndexed(Collection<Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4);
+   <T> void drawMultipleIndexed(Collection<Draw<T>> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4, T var5);
 
    void draw(int var1, int var2);
 
    void close();
 
-   public static record Draw(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, @Nullable VertexFormat.IndexType indexType, int firstIndex, int indexCount, @Nullable Consumer<UniformUploader> uniformUploaderConsumer) {
+   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, @Nullable VertexFormat.IndexType indexType, int firstIndex, int indexCount, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
       public Draw(int var1, GpuBuffer var2, GpuBuffer var3, VertexFormat.IndexType var4, int var5, int var6) {
-         this(var1, var2, var3, var4, var5, var6, (Consumer)null);
+         this(var1, var2, var3, var4, var5, var6, (BiConsumer)null);
       }
 
-      public Draw(int var1, GpuBuffer var2, @Nullable GpuBuffer var3, @Nullable VertexFormat.IndexType var4, int var5, int var6, @Nullable Consumer<UniformUploader> var7) {
+      public Draw(int var1, GpuBuffer var2, @Nullable GpuBuffer var3, @Nullable VertexFormat.IndexType var4, int var5, int var6, @Nullable BiConsumer<T, UniformUploader> var7) {
          super();
          this.slot = var1;
          this.vertexBuffer = var2;

@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
@@ -54,7 +55,6 @@ public class PauseScreen extends Screen {
    private static final Component OPTIONS = Component.translatable("menu.options");
    private static final Component SHARE_TO_LAN = Component.translatable("menu.shareToLan");
    private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
-   private static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
    private static final Component GAME = Component.translatable("menu.game");
    private static final Component PAUSED = Component.translatable("menu.paused");
    private static final Tooltip CUSTOM_OPTIONS_TOOLTIP = Tooltip.create(Component.translatable("menu.custom_options.tooltip"));
@@ -108,7 +108,7 @@ public class PauseScreen extends Screen {
 
       this.disconnectButton = (Button)var2.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (var1x) -> {
          var1x.active = false;
-         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::onDisconnect, true);
+         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> disconnectFromWorld(this.minecraft, ClientLevel.DEFAULT_QUIT_MESSAGE), true);
       }).width(204).build(), 2);
       var1.arrangeElements();
       FrameLayout.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.25F);
@@ -140,26 +140,26 @@ public class PauseScreen extends Screen {
 
    private void addFeedbackSubscreenAndCustomDialogButtons(Minecraft var1, Holder<Dialog> var2, GridLayout.RowHelper var3) {
       var3.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
-      var3.addChild(Button.builder(((Dialog)var2.value()).common().computeExternalTitle(), (var2x) -> var1.player.openDialog(var2)).width(98).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
+      var3.addChild(Button.builder(((Dialog)var2.value()).common().computeExternalTitle(), (var3x) -> var1.player.connection.showDialog(var2, this)).width(98).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
    }
 
-   private void onDisconnect() {
-      boolean var1 = this.minecraft.isLocalServer();
-      ServerData var2 = this.minecraft.getCurrentServer();
-      this.minecraft.level.disconnect();
-      if (var1) {
-         this.minecraft.disconnect(new GenericMessageScreen(SAVING_LEVEL));
+   public static void disconnectFromWorld(Minecraft var0, Component var1) {
+      boolean var2 = var0.isLocalServer();
+      ServerData var3 = var0.getCurrentServer();
+      var0.level.disconnect(var1);
+      if (var2) {
+         var0.disconnectWithSavingScreen();
       } else {
-         this.minecraft.disconnect();
+         var0.disconnectWithProgressScreen();
       }
 
-      TitleScreen var3 = new TitleScreen();
-      if (var1) {
-         this.minecraft.setScreen(var3);
-      } else if (var2 != null && var2.isRealm()) {
-         this.minecraft.setScreen(new RealmsMainScreen(var3));
+      TitleScreen var4 = new TitleScreen();
+      if (var2) {
+         var0.setScreen(var4);
+      } else if (var3 != null && var3.isRealm()) {
+         var0.setScreen(new RealmsMainScreen(var4));
       } else {
-         this.minecraft.setScreen(new JoinMultiplayerScreen(var3));
+         var0.setScreen(new JoinMultiplayerScreen(var4));
       }
 
    }

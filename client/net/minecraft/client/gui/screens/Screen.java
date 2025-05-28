@@ -298,11 +298,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
             break;
          case 1:
             ClickEvent.ShowDialog var8 = (ClickEvent.ShowDialog)var0;
-            var3.openDialog(var8.dialog());
+            var3.connection.showDialog(var8.dialog(), var2);
             break;
          case 2:
             ClickEvent.Custom var9 = (ClickEvent.Custom)var0;
             var3.connection.send(new ServerboundCustomClickActionPacket(var9.id(), var9.payload()));
+            if (var1.screen != var2) {
+               var1.setScreen(var2);
+            }
             break;
          default:
             defaultHandleClickEvent(var0, var1, var2);
@@ -312,60 +315,72 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected static void defaultHandleClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
       Objects.requireNonNull(var0);
-      byte var4 = 0;
-      //$FF: var4->value
+      byte var5 = 0;
+      boolean var20;
+      //$FF: var5->value
       //0->net/minecraft/network/chat/ClickEvent$OpenUrl
       //1->net/minecraft/network/chat/ClickEvent$OpenFile
       //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
       //3->net/minecraft/network/chat/ClickEvent$CopyToClipboard
-      switch (var0.typeSwitch<invokedynamic>(var0, var4)) {
+      switch (var0.typeSwitch<invokedynamic>(var0, var5)) {
          case 0:
-            ClickEvent.OpenUrl var5 = (ClickEvent.OpenUrl)var0;
-            ClickEvent.OpenUrl var21 = var5;
+            ClickEvent.OpenUrl var6 = (ClickEvent.OpenUrl)var0;
+            ClickEvent.OpenUrl var23 = var6;
 
             try {
-               var22 = var21.uri();
+               var24 = var23.uri();
+            } catch (Throwable var16) {
+               throw new MatchException(var16.toString(), var16);
+            }
+
+            URI var17 = var24;
+            clickUrlAction(var1, var2, var17);
+            var20 = false;
+            break;
+         case 1:
+            ClickEvent.OpenFile var8 = (ClickEvent.OpenFile)var0;
+            Util.getPlatform().openFile(var8.file());
+            var20 = true;
+            break;
+         case 2:
+            ClickEvent.SuggestCommand var9 = (ClickEvent.SuggestCommand)var0;
+            ClickEvent.SuggestCommand var21 = var9;
+
+            try {
+               var22 = var21.command();
             } catch (Throwable var15) {
                throw new MatchException(var15.toString(), var15);
             }
 
-            URI var16 = var22;
-            clickUrlAction(var1, var2, var16);
+            String var18 = var22;
+            if (var2 != null) {
+               var2.insertText(var18, true);
+            }
+
+            var20 = true;
             break;
-         case 1:
-            ClickEvent.OpenFile var7 = (ClickEvent.OpenFile)var0;
-            Util.getPlatform().openFile(var7.file());
-            break;
-         case 2:
-            ClickEvent.SuggestCommand var8 = (ClickEvent.SuggestCommand)var0;
-            ClickEvent.SuggestCommand var19 = var8;
+         case 3:
+            ClickEvent.CopyToClipboard var11 = (ClickEvent.CopyToClipboard)var0;
+            ClickEvent.CopyToClipboard var10000 = var11;
 
             try {
-               var20 = var19.command();
+               var19 = var10000.value();
             } catch (Throwable var14) {
                throw new MatchException(var14.toString(), var14);
             }
 
-            String var17 = var20;
-            if (var2 != null) {
-               var2.insertText(var17, true);
-            }
-            break;
-         case 3:
-            ClickEvent.CopyToClipboard var10 = (ClickEvent.CopyToClipboard)var0;
-            ClickEvent.CopyToClipboard var10000 = var10;
-
-            try {
-               var18 = var10000.value();
-            } catch (Throwable var13) {
-               throw new MatchException(var13.toString(), var13);
-            }
-
-            String var12 = var18;
-            var1.keyboardHandler.setClipboard(var12);
+            String var13 = var19;
+            var1.keyboardHandler.setClipboard(var13);
+            var20 = true;
             break;
          default:
             LOGGER.error("Don't know how to handle {}", var0);
+            var20 = true;
+      }
+
+      boolean var3 = var20;
+      if (var3 && var1.screen != var2) {
+         var1.setScreen(var2);
       }
 
    }

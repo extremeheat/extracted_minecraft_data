@@ -2,6 +2,7 @@ package net.minecraft.server.network;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
+import io.netty.channel.ChannelFutureListener;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -152,10 +153,10 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void send(Packet<?> var1) {
-      this.send(var1, (PacketSendListener)null);
+      this.send(var1, (ChannelFutureListener)null);
    }
 
-   public void send(Packet<?> var1, @Nullable PacketSendListener var2) {
+   public void send(Packet<?> var1, @Nullable ChannelFutureListener var2) {
       if (var1.isTerminal()) {
          this.close();
       }

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.util.ARGB;
@@ -500,16 +500,16 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   protected void executeDrawMultiple(GlRenderPass var1, Collection<RenderPass.Draw> var2, @Nullable GpuBuffer var3, @Nullable VertexFormat.IndexType var4, Collection<String> var5) {
+   protected <T> void executeDrawMultiple(GlRenderPass var1, Collection<RenderPass.Draw<T>> var2, @Nullable GpuBuffer var3, @Nullable VertexFormat.IndexType var4, Collection<String> var5, T var6) {
       if (this.trySetup(var1, var5)) {
          if (var4 == null) {
             var4 = VertexFormat.IndexType.SHORT;
          }
 
-         for(RenderPass.Draw var7 : var2) {
-            VertexFormat.IndexType var8 = var7.indexType() == null ? var4 : var7.indexType();
-            var1.setIndexBuffer(var7.indexBuffer() == null ? var3 : var7.indexBuffer(), var8);
-            var1.setVertexBuffer(var7.slot(), var7.vertexBuffer());
+         for(RenderPass.Draw var8 : var2) {
+            VertexFormat.IndexType var9 = var8.indexType() == null ? var4 : var8.indexType();
+            var1.setIndexBuffer(var8.indexBuffer() == null ? var3 : var8.indexBuffer(), var9);
+            var1.setVertexBuffer(var8.slot(), var8.vertexBuffer());
             if (GlRenderPass.VALIDATION) {
                if (var1.indexBuffer == null) {
                   throw new IllegalStateException("Missing index buffer");
@@ -528,9 +528,9 @@ public class GlCommandEncoder implements CommandEncoder {
                }
             }
 
-            Consumer var9 = var7.uniformUploaderConsumer();
-            if (var9 != null) {
-               var9.accept((RenderPass.UniformUploader)(var1x, var2x) -> {
+            BiConsumer var10 = var8.uniformUploaderConsumer();
+            if (var10 != null) {
+               var10.accept(var6, (RenderPass.UniformUploader)(var1x, var2x) -> {
                   Uniform var5 = var1.pipeline.program().getUniform(var1x);
                   if (var5 instanceof Uniform.Ubo var3) {
                      Uniform.Ubo var10000 = var3;
@@ -548,7 +548,7 @@ public class GlCommandEncoder implements CommandEncoder {
                });
             }
 
-            this.drawFromBuffers(var1, 0, var7.firstIndex(), var7.indexCount(), var8, var1.pipeline, 1);
+            this.drawFromBuffers(var1, 0, var8.firstIndex(), var8.indexCount(), var9, var1.pipeline, 1);
          }
 
       }

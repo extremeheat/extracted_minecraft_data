@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MaterialMapper;
@@ -15,6 +16,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import org.joml.Vector3f;
 
 public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
    private final Model model;
@@ -28,6 +30,13 @@ public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
 
    public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
       HangingSignRenderer.renderInHand(var2, var3, var4, var5, this.model, this.material);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      HangingSignRenderer.translateBase(var2, 0.0F);
+      var2.scale(1.0F, -1.0F, -1.0F);
+      this.model.root().getExtentsForGui(var2, var1);
    }
 
    public static record Unbaked(WoodType woodType, Optional<ResourceLocation> texture) implements SpecialModelRenderer.Unbaked {

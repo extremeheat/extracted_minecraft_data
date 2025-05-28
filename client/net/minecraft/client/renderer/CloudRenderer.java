@@ -207,13 +207,15 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          }
 
          if (this.quadCount != 0) {
-            try (GpuBuffer.MappedView var42 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var42.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
+            try (GpuBuffer.MappedView var44 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var44.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
             }
 
-            GpuBufferSlice var43 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+            GpuBufferSlice var45 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
             RenderTarget var27 = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget var28 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+            RenderSystem.AutoStorageIndexBuffer var31 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            GpuBuffer var32 = var31.getBuffer(6 * this.quadCount);
             GpuTextureView var29;
             GpuTextureView var30;
             if (var28 != null) {
@@ -224,20 +226,16 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
                var30 = var27.getDepthTextureView();
             }
 
-            try (RenderPass var31 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", var29, OptionalInt.empty(), var30, OptionalDouble.empty())) {
-               var31.setPipeline(var25);
-               RenderSystem.bindDefaultUniforms(var31);
-               var31.setUniform("DynamicTransforms", var43);
-               var31.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-               var31.setUniform("CloudInfo", this.ubo.currentBuffer());
-               var31.setUniform("CloudFaces", this.utb.currentBuffer());
-               if (var24) {
-                  var31.setPipeline(RenderPipelines.CLOUDS_DEPTH_ONLY);
-                  var31.draw(0, 6 * this.quadCount);
-               }
-
-               var31.setPipeline(var25);
-               var31.draw(0, 6 * this.quadCount);
+            try (RenderPass var33 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", var29, OptionalInt.empty(), var30, OptionalDouble.empty())) {
+               var33.setPipeline(var25);
+               RenderSystem.bindDefaultUniforms(var33);
+               var33.setUniform("DynamicTransforms", var45);
+               var33.setIndexBuffer(var32, var31.type());
+               var33.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
+               var33.setUniform("CloudInfo", this.ubo.currentBuffer());
+               var33.setUniform("CloudFaces", this.utb.currentBuffer());
+               var33.setPipeline(var25);
+               var33.drawIndexed(0, 0, 6 * this.quadCount, 1);
             }
 
          }
@@ -250,19 +248,31 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          int var8 = this.texture.width;
          int var9 = this.texture.height;
 
-         for(int var10 = -var6; var10 <= var6; ++var10) {
-            for(int var11 = -var6; var11 <= var6; ++var11) {
-               int var12 = Math.floorMod(var3 + var11, var8);
-               int var13 = Math.floorMod(var4 + var10, var9);
-               long var14 = var7[var12 + var13 * var8];
-               if (var14 != 0L) {
-                  if (var5) {
-                     this.buildExtrudedCell(var1, var2, var11, var10, var14);
-                  } else {
-                     this.buildFlatCell(var2, var11, var10);
+         for(int var10 = 0; var10 <= 2 * var6; ++var10) {
+            for(int var11 = -var10; var11 <= var10; ++var11) {
+               int var12 = var10 - Math.abs(var11);
+               if (var12 >= 0 && var12 <= var6 && var11 * var11 + var12 * var12 <= var6 * var6) {
+                  if (var12 != 0) {
+                     this.tryBuildCell(var1, var2, var3, var4, var5, var11, var8, -var12, var9, var7);
                   }
+
+                  this.tryBuildCell(var1, var2, var3, var4, var5, var11, var8, var12, var9, var7);
                }
             }
+         }
+
+      }
+   }
+
+   private void tryBuildCell(RelativeCameraPos var1, ByteBuffer var2, int var3, int var4, boolean var5, int var6, int var7, int var8, int var9, long[] var10) {
+      int var11 = Math.floorMod(var3 + var6, var7);
+      int var12 = Math.floorMod(var4 + var8, var9);
+      long var13 = var10[var11 + var12 * var7];
+      if (var13 != 0L) {
+         if (var5) {
+            this.buildExtrudedCell(var1, var2, var6, var8, var13);
+         } else {
+            this.buildFlatCell(var2, var6, var8);
          }
 
       }

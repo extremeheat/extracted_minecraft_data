@@ -137,6 +137,21 @@ public final class ModelPart {
       this.setRotation(var4.x, var4.y, var4.z);
    }
 
+   public void getExtentsForGui(PoseStack var1, Set<Vector3f> var2) {
+      this.visit(var1, (var1x, var2x, var3, var4) -> {
+         for(Polygon var8 : var4.polygons) {
+            for(Vertex var12 : var8.vertices()) {
+               float var13 = var12.pos().x() / 16.0F;
+               float var14 = var12.pos().y() / 16.0F;
+               float var15 = var12.pos().z() / 16.0F;
+               Vector3f var16 = var1x.pose().transformPosition(var13, var14, var15, new Vector3f());
+               var2.add(var16);
+            }
+         }
+
+      });
+   }
+
    public void visit(PoseStack var1, Visitor var2) {
       this.visit(var1, var2, "");
    }

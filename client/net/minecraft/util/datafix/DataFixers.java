@@ -291,7 +291,6 @@ import net.minecraft.util.datafix.schemas.V1904;
 import net.minecraft.util.datafix.schemas.V1906;
 import net.minecraft.util.datafix.schemas.V1909;
 import net.minecraft.util.datafix.schemas.V1920;
-import net.minecraft.util.datafix.schemas.V1925;
 import net.minecraft.util.datafix.schemas.V1928;
 import net.minecraft.util.datafix.schemas.V1929;
 import net.minecraft.util.datafix.schemas.V1931;
@@ -621,7 +620,7 @@ public class DataFixers {
       Schema var83 = var0.addSchema(1920, V1920::new);
       var0.addFixer(new NewVillageFix(var83, false));
       var0.addFixer(new AddNewChoices(var83, "Add campfire", References.BLOCK_ENTITY));
-      Schema var84 = var0.addSchema(1925, V1925::new);
+      Schema var84 = var0.addSchema(1925, SAME_NAMESPACED);
       var0.addFixer(new MapIdFix(var84));
       Schema var85 = var0.addSchema(1928, V1928::new);
       var0.addFixer(new EntityRavagerRenameFix(var85, true));

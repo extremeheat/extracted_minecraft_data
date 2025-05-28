@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -99,7 +100,7 @@ public class StructureTemplate {
       return this.author;
    }
 
-   public void fillFromWorld(Level var1, BlockPos var2, Vec3i var3, boolean var4, @Nullable Block var5) {
+   public void fillFromWorld(Level var1, BlockPos var2, Vec3i var3, boolean var4, List<Block> var5) {
       if (var3.getX() >= 1 && var3.getY() >= 1 && var3.getZ() >= 1) {
          BlockPos var6 = var2.offset(var3).offset(-1, -1, -1);
          ArrayList var7 = Lists.newArrayList();
@@ -113,7 +114,9 @@ public class StructureTemplate {
             for(BlockPos var14 : BlockPos.betweenClosed(var10, var11)) {
                BlockPos var15 = var14.subtract(var10);
                BlockState var16 = var1.getBlockState(var14);
-               if (var5 == null || !var16.is(var5)) {
+               Stream var10000 = var5.stream();
+               Objects.requireNonNull(var16);
+               if (!var10000.anyMatch(var16::is)) {
                   BlockEntity var17 = var1.getBlockEntity(var14);
                   StructureBlockInfo var18;
                   if (var17 != null) {

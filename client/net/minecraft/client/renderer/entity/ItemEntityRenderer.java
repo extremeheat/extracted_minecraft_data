@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import java.util.Objects;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
@@ -41,17 +40,10 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
       var2.extractItemGroupRenderState(var1, var1.getItem(), this.itemModelResolver);
    }
 
-   private static AABB calculateModelBoundingBox(ItemStackRenderState var0) {
-      AABB.Builder var1 = new AABB.Builder();
-      Objects.requireNonNull(var1);
-      var0.visitExtents(var1::include);
-      return var1.build();
-   }
-
    public void render(ItemEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       if (!var1.item.isEmpty()) {
          var2.pushPose();
-         AABB var5 = calculateModelBoundingBox(var1.item);
+         AABB var5 = var1.item.getModelBoundingBox();
          float var6 = -((float)var5.minY) + 0.0625F;
          float var7 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
          var2.translate(0.0F, var7 + var6, 0.0F);
@@ -64,7 +56,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
    }
 
    public static void renderMultipleFromCount(PoseStack var0, MultiBufferSource var1, int var2, ItemClusterRenderState var3, RandomSource var4) {
-      renderMultipleFromCount(var0, var1, var2, var3, var4, calculateModelBoundingBox(var3.item));
+      renderMultipleFromCount(var0, var1, var2, var3, var4, var3.item.getModelBoundingBox());
    }
 
    public static void renderMultipleFromCount(PoseStack var0, MultiBufferSource var1, int var2, ItemClusterRenderState var3, RandomSource var4, AABB var5) {

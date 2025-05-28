@@ -4,15 +4,17 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.net.URI;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class ConfirmLinkScreen extends ConfirmScreen {
    private static final Component COPY_BUTTON_TEXT = Component.translatable("chat.copy");
-   private static final Component WARNING_TEXT = Component.translatable("chat.link.warning");
+   private static final Component WARNING_TEXT = Component.translatable("chat.link.warning").withColor(-13108);
+   private static final int BUTTON_WIDTH = 100;
    private final String url;
    private final boolean showWarning;
 
@@ -34,8 +36,8 @@ public class ConfirmLinkScreen extends ConfirmScreen {
 
    public ConfirmLinkScreen(BooleanConsumer var1, Component var2, Component var3, String var4, Component var5, boolean var6) {
       super(var1, var2, var3);
-      this.yesButton = (Component)(var6 ? Component.translatable("chat.link.open") : CommonComponents.GUI_YES);
-      this.noButton = var5;
+      this.yesButtonComponent = var6 ? CommonComponents.GUI_OPEN_IN_BROWSER : CommonComponents.GUI_YES;
+      this.noButtonComponent = var5;
       this.showWarning = !var6;
       this.url = var4;
    }
@@ -48,25 +50,24 @@ public class ConfirmLinkScreen extends ConfirmScreen {
       return Component.translatable(var0 ? "chat.link.confirmTrusted" : "chat.link.confirm");
    }
 
-   protected void addButtons(int var1) {
-      this.addRenderableWidget(Button.builder(this.yesButton, (var1x) -> this.callback.accept(true)).bounds(this.width / 2 - 50 - 105, var1, 100, 20).build());
-      this.addRenderableWidget(Button.builder(COPY_BUTTON_TEXT, (var1x) -> {
+   protected void addAdditionalText() {
+      if (this.showWarning) {
+         this.layout.addChild(new StringWidget(WARNING_TEXT, this.font));
+      }
+
+   }
+
+   protected void addButtons(LinearLayout var1) {
+      this.yesButton = (Button)var1.addChild(Button.builder(this.yesButtonComponent, (var1x) -> this.callback.accept(true)).width(100).build());
+      var1.addChild(Button.builder(COPY_BUTTON_TEXT, (var1x) -> {
          this.copyToClipboard();
          this.callback.accept(false);
-      }).bounds(this.width / 2 - 50, var1, 100, 20).build());
-      this.addRenderableWidget(Button.builder(this.noButton, (var1x) -> this.callback.accept(false)).bounds(this.width / 2 - 50 + 105, var1, 100, 20).build());
+      }).width(100).build());
+      this.noButton = (Button)var1.addChild(Button.builder(this.noButtonComponent, (var1x) -> this.callback.accept(false)).width(100).build());
    }
 
    public void copyToClipboard() {
       this.minecraft.keyboardHandler.setClipboard(this.url);
-   }
-
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      if (this.showWarning) {
-         var1.drawCenteredString(this.font, (Component)WARNING_TEXT, this.width / 2, 110, 16764108);
-      }
-
    }
 
    public static void confirmLinkNow(Screen var0, String var1, boolean var2) {

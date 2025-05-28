@@ -551,7 +551,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void openDialog(Holder<Dialog> var1) {
-      this.connection.showDialog(var1);
+      this.connection.showDialog(var1, this.minecraft.screen);
    }
 
    public void openItemGui(ItemStack var1, InteractionHand var2) {

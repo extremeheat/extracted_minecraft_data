@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -37,7 +38,9 @@ import net.minecraft.world.phys.Vec3;
 
 public class SectionRenderDispatcher {
    private final CompileTaskDynamicQueue compileQueue = new CompileTaskDynamicQueue();
-   final Queue<Runnable> toUpload = Queues.newConcurrentLinkedQueue();
+   private final Queue<Runnable> toUpload = Queues.newConcurrentLinkedQueue();
+   final Executor mainThreadUploadExecutor;
+   final Queue<SectionMesh> toClose;
    final SectionBufferBuilderPack fixedBuffers;
    private final SectionBufferBuilderPool bufferPool;
    volatile boolean closed;
@@ -50,6 +53,10 @@ public class SectionRenderDispatcher {
 
    public SectionRenderDispatcher(ClientLevel var1, LevelRenderer var2, TracingExecutor var3, RenderBuffers var4, BlockRenderDispatcher var5, BlockEntityRenderDispatcher var6) {
       super();
+      Queue var10001 = this.toUpload;
+      Objects.requireNonNull(var10001);
+      this.mainThreadUploadExecutor = var10001::add;
+      this.toClose = Queues.newConcurrentLinkedQueue();
       this.cameraPosition = Vec3.ZERO;
       this.level = var1;
       this.renderer = var2;
@@ -99,6 +106,11 @@ public class SectionRenderDispatcher {
       Runnable var1;
       while((var1 = (Runnable)this.toUpload.poll()) != null) {
          var1.run();
+      }
+
+      SectionMesh var2;
+      while((var2 = (SectionMesh)this.toClose.poll()) != null) {
+         var2.close();
       }
 
    }
@@ -165,7 +177,6 @@ public class SectionRenderDispatcher {
       volatile long sectionNode;
       final BlockPos.MutableBlockPos renderOrigin;
       private boolean playerChanged;
-      private int dynamicTransformIndex;
 
       public RenderSection(final int var2, final long var3) {
          super();
@@ -195,16 +206,13 @@ public class SectionRenderDispatcher {
             var1.values().forEach(MeshData::close);
             return CompletableFuture.completedFuture((Object)null);
          } else {
-            Runnable var10000 = () -> var1.forEach((var2x, var3) -> {
+            return CompletableFuture.runAsync(() -> var1.forEach((var2x, var3) -> {
                   try (Zone var4 = Profiler.get().zone("Upload Section Layer")) {
                      var2.uploadMeshLayer(var2x, var3, this.sectionNode);
                      var3.close();
                   }
 
-               });
-            Queue var10001 = SectionRenderDispatcher.this.toUpload;
-            Objects.requireNonNull(var10001);
-            return CompletableFuture.runAsync(var10000, var10001::add);
+               }), SectionRenderDispatcher.this.mainThreadUploadExecutor);
          }
       }
 
@@ -213,16 +221,13 @@ public class SectionRenderDispatcher {
             var2.close();
             return CompletableFuture.completedFuture((Object)null);
          } else {
-            Runnable var10000 = () -> {
+            return CompletableFuture.runAsync(() -> {
                try (Zone var4 = Profiler.get().zone("Upload Section Indices")) {
                   var1.uploadLayerIndexBuffer(var3, var2, this.sectionNode);
                   var2.close();
                }
 
-            };
-            Queue var10001 = SectionRenderDispatcher.this.toUpload;
-            Objects.requireNonNull(var10001);
-            return CompletableFuture.runAsync(var10000, var10001::add);
+            }, SectionRenderDispatcher.this.mainThreadUploadExecutor);
          }
       }
 
@@ -238,14 +243,6 @@ public class SectionRenderDispatcher {
 
       public SectionMesh getSectionMesh() {
          return (SectionMesh)this.sectionMesh.get();
-      }
-
-      public void setDynamicTransformIndex(int var1) {
-         this.dynamicTransformIndex = var1;
-      }
-
-      public int getDynamicTransformIndex() {
-         return this.dynamicTransformIndex;
       }
 
       public void reset() {
@@ -335,7 +332,7 @@ public class SectionRenderDispatcher {
 
       void setSectionMesh(SectionMesh var1) {
          SectionMesh var2 = (SectionMesh)this.sectionMesh.getAndSet(var1);
-         var2.close();
+         SectionRenderDispatcher.this.toClose.add(var2);
          SectionRenderDispatcher.this.renderer.addRecentlyCompiledSection(this);
       }
 
@@ -386,7 +383,7 @@ public class SectionRenderDispatcher {
                            RenderSection.this.setSectionMesh(var7);
                            return SectionRenderDispatcher.SectionTaskResult.SUCCESSFUL;
                         } else {
-                           var7.close();
+                           SectionRenderDispatcher.this.toClose.add(var7);
                            return SectionRenderDispatcher.SectionTaskResult.CANCELLED;
                         }
                      });

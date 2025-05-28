@@ -3,8 +3,11 @@ package net.minecraft.client.gui.render.state.pip;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.state.ScreenArea;
+import org.joml.Matrix3x2f;
 
 public interface PictureInPictureRenderState extends ScreenArea {
+   Matrix3x2f IDENTITY_POSE = new Matrix3x2f();
+
    int x0();
 
    int x1();
@@ -14,6 +17,10 @@ public interface PictureInPictureRenderState extends ScreenArea {
    int y1();
 
    float scale();
+
+   default Matrix3x2f pose() {
+      return IDENTITY_POSE;
+   }
 
    @Nullable
    ScreenRectangle scissorArea();

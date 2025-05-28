@@ -10,10 +10,10 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.server.dialog.action.Action;
 import net.minecraft.util.ExtraCodecs;
 
 public interface Dialog {
@@ -28,5 +28,5 @@ public interface Dialog {
 
    MapCodec<? extends Dialog> codec();
 
-   Optional<ClickEvent> onCancel();
+   Optional<Action> onCancel();
 }

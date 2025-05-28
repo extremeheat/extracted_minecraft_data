@@ -15,6 +15,7 @@ public class CommonColors {
    public static final int SOFT_YELLOW = -171;
    public static final int DARK_PURPLE = -11534256;
    public static final int HIGH_CONTRAST_DIAMOND = -11010079;
+   public static final int COSMOS_PINK = -13108;
 
    public CommonColors() {
       super();

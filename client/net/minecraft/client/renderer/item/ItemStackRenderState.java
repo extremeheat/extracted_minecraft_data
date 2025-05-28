@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -16,6 +17,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -24,7 +26,10 @@ public class ItemStackRenderState {
    ItemDisplayContext displayContext;
    private int activeLayerCount;
    private boolean animated;
+   private boolean oversizedInGui;
    private final List<Object> modelIdentityElements;
+   @Nullable
+   private AABB cachedModelBoundingBox;
    private LayerRenderState[] layers;
 
    public ItemStackRenderState() {
@@ -61,6 +66,8 @@ public class ItemStackRenderState {
 
       this.activeLayerCount = 0;
       this.animated = false;
+      this.oversizedInGui = false;
+      this.cachedModelBoundingBox = null;
    }
 
    public void setAnimated() {
@@ -124,6 +131,27 @@ public class ItemStackRenderState {
          this.layers[var5].render(var1, var2, var3, var4);
       }
 
+   }
+
+   public AABB getModelBoundingBox() {
+      if (this.cachedModelBoundingBox != null) {
+         return this.cachedModelBoundingBox;
+      } else {
+         AABB.Builder var1 = new AABB.Builder();
+         Objects.requireNonNull(var1);
+         this.visitExtents(var1::include);
+         AABB var2 = var1.build();
+         this.cachedModelBoundingBox = var2;
+         return var2;
+      }
+   }
+
+   public void setOversizedInGui(boolean var1) {
+      this.oversizedInGui = var1;
+   }
+
+   public boolean isOversizedInGui() {
+      return this.oversizedInGui;
    }
 
    public static enum FoilType {

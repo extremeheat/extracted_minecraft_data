@@ -14,5 +14,6 @@ public class DialogTagsProvider extends KeyTagProvider<Dialog> {
 
    protected void addTags(HolderLookup.Provider var1) {
       this.tag(DialogTags.PAUSE_SCREEN_ADDITIONS);
+      this.tag(DialogTags.QUICK_ACTIONS);
    }
 }

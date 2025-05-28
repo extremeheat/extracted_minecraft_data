@@ -81,6 +81,7 @@ import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.HashedPatchMap;
 import net.minecraft.network.TickablePacketListener;
@@ -2517,11 +2518,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             ClientPacketListener.this.sendUnattendedCommand(var1, var2);
          }
 
-         public void openDialog(Holder<Dialog> var1) {
-            ClientPacketListener.this.showDialog(var1);
+         public void openDialog(Holder<Dialog> var1, @Nullable Screen var2) {
+            ClientPacketListener.this.showDialog(var1, this, var2);
          }
 
-         public void sendCustomAction(ResourceLocation var1, Optional<String> var2) {
+         public void sendCustomAction(ResourceLocation var1, Optional<Tag> var2) {
             ClientPacketListener.this.send(new ServerboundCustomClickActionPacket(var1, var2));
          }
 

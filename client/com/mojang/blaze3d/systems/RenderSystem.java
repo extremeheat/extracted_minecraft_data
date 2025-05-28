@@ -99,6 +99,7 @@ public class RenderSystem {
    private static GpuBuffer globalSettingsUniform;
    @Nullable
    private static DynamicUniforms dynamicUniforms;
+   private static ScissorState scissorStateForRenderTypeDraws;
 
    public RenderSystem() {
       super();
@@ -187,6 +188,18 @@ public class RenderSystem {
    public static float getShaderLineWidth() {
       assertOnRenderThread();
       return shaderLineWidth;
+   }
+
+   public static void enableScissorForRenderTypeDraws(int var0, int var1, int var2, int var3) {
+      scissorStateForRenderTypeDraws.enable(var0, var1, var2, var3);
+   }
+
+   public static void disableScissorForRenderTypeDraws() {
+      scissorStateForRenderTypeDraws.disable();
+   }
+
+   public static ScissorState getScissorStateForRenderTypeDraws() {
+      return scissorStateForRenderTypeDraws;
    }
 
    public static String getBackendDescription() {
@@ -431,6 +444,7 @@ public class RenderSystem {
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
+      scissorStateForRenderTypeDraws = new ScissorState();
    }
 
    public static final class AutoStorageIndexBuffer {

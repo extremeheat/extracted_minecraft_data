@@ -160,6 +160,10 @@ public class Font {
       return Language.getInstance().getVisualOrder(this.splitter.splitLines(var1, var2, Style.EMPTY));
    }
 
+   public List<FormattedText> splitIgnoringLanguage(FormattedText var1, int var2) {
+      return this.splitter.splitLines(var1, var2, Style.EMPTY);
+   }
+
    public boolean isBidirectional() {
       return Language.getInstance().isDefaultRightToLeft();
    }
@@ -208,18 +212,19 @@ public class Font {
          super();
          this.left = 3.4028235E38F;
          this.top = 3.4028235E38F;
-         this.right = 1.4E-45F;
-         this.bottom = 1.4E-45F;
+         this.right = -3.4028235E38F;
+         this.bottom = -3.4028235E38F;
          this.backgroundLeft = 3.4028235E38F;
          this.backgroundTop = 3.4028235E38F;
-         this.backgroundRight = 1.4E-45F;
-         this.backgroundBottom = 1.4E-45F;
+         this.backgroundRight = -3.4028235E38F;
+         this.backgroundBottom = -3.4028235E38F;
          this.glyphs = new ArrayList();
          this.x = var2;
          this.y = var3;
          this.drawShadow = var6;
          this.color = var4;
          this.backgroundColor = var5;
+         this.markBackground(var2, var3, 0.0F);
       }
 
       private void markSize(float var1, float var2, float var3, float var4) {

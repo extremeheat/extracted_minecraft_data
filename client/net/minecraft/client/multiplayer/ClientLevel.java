@@ -109,6 +109,7 @@ import org.slf4j.Logger;
 
 public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel> {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Component DEFAULT_QUIT_MESSAGE = Component.translatable("multiplayer.status.quitting");
    private static final double FLUID_PARTICLE_SPAWN_OFFSET = 0.05;
    private static final int NORMAL_LIGHT_UPDATES_PER_FRAME = 10;
    private static final int LIGHT_UPDATE_QUEUE_SIZE_THRESHOLD = 1000;
@@ -369,8 +370,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return (Entity)this.getEntities().get(var1);
    }
 
-   public void disconnect() {
-      this.connection.getConnection().disconnect((Component)Component.translatable("multiplayer.status.quitting"));
+   public void disconnect(Component var1) {
+      this.connection.getConnection().disconnect(var1);
    }
 
    public void animateTick(int var1, int var2, int var3) {

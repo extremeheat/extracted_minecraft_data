@@ -279,7 +279,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    @Nullable
    private BlockState inBlockState;
    public static final int MAX_MOVEMENTS_HANDELED_PER_TICK = 100;
-   private final ArrayDeque<List<Movement>> movementThisTick;
+   private final ArrayDeque<Movement> movementThisTick;
    private final List<Movement> finalMovementsThisTick;
    private final LongSet visitedBlocks;
    private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
@@ -732,27 +732,17 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                }
             }
 
-            Vec3 var15 = this.position();
-            ObjectArrayList var8 = new ObjectArrayList();
-
-            for(Direction.Axis var10 : axisStepOrder(var4)) {
-               double var11 = var4.get(var10);
-               if (var11 != 0.0) {
-                  Vec3 var13 = var15.relative(var10.getPositive(), var11);
-                  var8.add(new Movement(var15, var13));
-                  var15 = var13;
-               }
-            }
-
-            this.addMovementThisTick(var8);
-            this.setPos(var15);
+            Vec3 var13 = this.position();
+            Vec3 var8 = var13.add(var4);
+            this.addMovementThisTick(new Movement(var13, var8, true));
+            this.setPos(var8);
          }
 
          var3.pop();
          var3.push("rest");
-         boolean var16 = !Mth.equal(var2.x, var4.x);
-         boolean var17 = !Mth.equal(var2.z, var4.z);
-         this.horizontalCollision = var16 || var17;
+         boolean var14 = !Mth.equal(var2.x, var4.x);
+         boolean var15 = !Mth.equal(var2.z, var4.z);
+         this.horizontalCollision = var14 || var15;
          if (Math.abs(var2.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
             this.verticalCollision = var2.y != var4.y;
             this.verticalCollisionBelow = this.verticalCollision && var2.y < 0.0;
@@ -765,36 +755,36 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             this.minorHorizontalCollision = false;
          }
 
-         BlockPos var18 = this.getOnPosLegacy();
-         BlockState var19 = this.level().getBlockState(var18);
+         BlockPos var9 = this.getOnPosLegacy();
+         BlockState var10 = this.level().getBlockState(var9);
          if (this.isLocalInstanceAuthoritative()) {
-            this.checkFallDamage(var4.y, this.onGround(), var19, var18);
+            this.checkFallDamage(var4.y, this.onGround(), var10, var9);
          }
 
          if (this.isRemoved()) {
             var3.pop();
          } else {
             if (this.horizontalCollision) {
-               Vec3 var20 = this.getDeltaMovement();
-               this.setDeltaMovement(var16 ? 0.0 : var20.x, var20.y, var17 ? 0.0 : var20.z);
+               Vec3 var11 = this.getDeltaMovement();
+               this.setDeltaMovement(var14 ? 0.0 : var11.x, var11.y, var15 ? 0.0 : var11.z);
             }
 
             if (this.canSimulateMovement()) {
-               Block var21 = var19.getBlock();
+               Block var16 = var10.getBlock();
                if (var2.y != var4.y) {
-                  var21.updateEntityMovementAfterFallOn(this.level(), this);
+                  var16.updateEntityMovementAfterFallOn(this.level(), this);
                }
             }
 
             if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
-               MovementEmission var22 = this.getMovementEmission();
-               if (var22.emitsAnything() && !this.isPassenger()) {
-                  this.applyMovementEmissionAndPlaySound(var22, var4, var18, var19);
+               MovementEmission var17 = this.getMovementEmission();
+               if (var17.emitsAnything() && !this.isPassenger()) {
+                  this.applyMovementEmissionAndPlaySound(var17, var4, var9, var10);
                }
             }
 
-            float var23 = this.getBlockSpeedFactor();
-            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var23, 1.0, (double)var23));
+            float var18 = this.getBlockSpeedFactor();
+            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var18, 1.0, (double)var18));
             var3.pop();
          }
       }
@@ -836,29 +826,29 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    protected void applyEffectsFromBlocks() {
       this.finalMovementsThisTick.clear();
-      ArrayDeque var10000 = this.movementThisTick;
-      List var10001 = this.finalMovementsThisTick;
-      Objects.requireNonNull(var10001);
-      var10000.forEach(var10001::addAll);
+      this.finalMovementsThisTick.addAll(this.movementThisTick);
       this.movementThisTick.clear();
       if (this.finalMovementsThisTick.isEmpty()) {
-         this.finalMovementsThisTick.add(new Movement(this.oldPosition(), this.position()));
+         this.finalMovementsThisTick.add(new Movement(this.oldPosition(), this.position(), false));
       } else if (((Movement)this.finalMovementsThisTick.getLast()).to.distanceToSqr(this.position()) > 9.999999439624929E-11) {
-         this.finalMovementsThisTick.add(new Movement(((Movement)this.finalMovementsThisTick.getLast()).to, this.position()));
+         this.finalMovementsThisTick.add(new Movement(((Movement)this.finalMovementsThisTick.getLast()).to, this.position(), false));
       }
 
       this.applyEffectsFromBlocks(this.finalMovementsThisTick);
    }
 
-   private void addMovementThisTick(List<Movement> var1) {
+   private void addMovementThisTick(Movement var1) {
       if (this.movementThisTick.size() >= 100) {
-         throw new IllegalStateException("Too many movements of entity in one tick");
-      } else {
-         this.movementThisTick.add(var1);
+         Movement var2 = (Movement)this.movementThisTick.removeFirst();
+         Movement var3 = (Movement)this.movementThisTick.removeFirst();
+         Movement var4 = new Movement(var2.from(), var3.to(), false);
+         this.movementThisTick.addFirst(var4);
       }
+
+      this.movementThisTick.add(var1);
    }
 
-   public void removeLatestMovementRecordingBatch() {
+   public void removeLatestMovementRecording() {
       if (!this.movementThisTick.isEmpty()) {
          this.movementThisTick.removeLast();
       }
@@ -870,7 +860,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
-      this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
+      this.applyEffectsFromBlocks(List.of(new Movement(var1, var2, false)));
    }
 
    private void applyEffectsFromBlocks(List<Movement> var1) {
@@ -1164,50 +1154,71 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          LongSet var3 = this.visitedBlocks;
 
          for(Movement var5 : var1) {
-            Vec3 var6 = var5.from();
-            Vec3 var7 = var5.to();
-            AABB var8 = this.makeBoundingBox(var7).deflate(9.999999747378752E-6);
-            BlockGetter.forEachBlockIntersectedBetween(var6, var7, var8, (var5x, var6x) -> {
-               if (!this.isAlive()) {
-                  return false;
-               } else {
-                  BlockState var7x = this.level().getBlockState(var5x);
-                  if (var7x.isAir()) {
-                     return true;
-                  } else if (!var3.add(var5x.asLong())) {
-                     return true;
-                  } else {
-                     VoxelShape var8 = var7x.getEntityInsideCollisionShape(this.level(), var5x, this);
-                     boolean var9 = var8 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var8.move(new Vec3(var5x)).toAabbs());
-                     if (var9) {
-                        try {
-                           var2.advanceStep(var6x);
-                           var7x.entityInside(this.level(), var5x, this, var2);
-                           this.onInsideBlock(var7x);
-                        } catch (Throwable var14) {
-                           CrashReport var11 = CrashReport.forThrowable(var14, "Colliding entity with block");
-                           CrashReportCategory var12 = var11.addCategory("Block being collided with");
-                           CrashReportCategory.populateBlockDetails(var12, this.level(), var5x, var7x);
-                           CrashReportCategory var13 = var11.addCategory("Entity being checked for collision");
-                           this.fillCrashReportCategory(var13);
-                           throw new ReportedException(var11);
-                        }
-                     }
+            if (var5.axisIndependant) {
+               Vec3 var6 = var5.from;
+               Vec3 var7 = var5.to().subtract(var5.from());
 
-                     boolean var10 = this.collidedWithFluid(var7x.getFluidState(), var5x, var6, var7);
-                     if (var10) {
-                        var2.advanceStep(var6x);
-                        var7x.getFluidState().entityInside(this.level(), var5x, this, var2);
-                     }
-
-                     return true;
+               for(Direction.Axis var9 : axisStepOrder(var7)) {
+                  double var10 = var7.get(var9);
+                  if (var10 != 0.0) {
+                     Vec3 var12 = var6.relative(var9.getPositive(), var10);
+                     this.checkInsideBlocks(var6, var12, var2, var3);
+                     var6 = var12;
                   }
                }
-            });
+            } else {
+               this.checkInsideBlocks(var5.from(), var5.to(), var2, var3);
+            }
          }
 
          var3.clear();
       }
+   }
+
+   private void checkInsideBlocks(Vec3 var1, Vec3 var2, InsideBlockEffectApplier.StepBasedCollector var3, LongSet var4) {
+      AABB var5 = this.makeBoundingBox(var2).deflate(9.999999747378752E-6);
+      BlockGetter.forEachBlockIntersectedBetween(var1, var2, var5, (var5x, var6) -> {
+         if (!this.isAlive()) {
+            return false;
+         } else {
+            BlockState var7 = this.level().getBlockState(var5x);
+            if (var7.isAir()) {
+               this.debugBlockIntersection(var5x, false, false);
+               return true;
+            } else if (!var4.add(var5x.asLong())) {
+               return true;
+            } else {
+               VoxelShape var8 = var7.getEntityInsideCollisionShape(this.level(), var5x, this);
+               boolean var9 = var8 == Shapes.block() || this.collidedWithShapeMovingFrom(var1, var2, var8.move(new Vec3(var5x)).toAabbs());
+               if (var9) {
+                  try {
+                     var3.advanceStep(var6);
+                     var7.entityInside(this.level(), var5x, this, var3);
+                     this.onInsideBlock(var7);
+                  } catch (Throwable var14) {
+                     CrashReport var11 = CrashReport.forThrowable(var14, "Colliding entity with block");
+                     CrashReportCategory var12 = var11.addCategory("Block being collided with");
+                     CrashReportCategory.populateBlockDetails(var12, this.level(), var5x, var7);
+                     CrashReportCategory var13 = var11.addCategory("Entity being checked for collision");
+                     this.fillCrashReportCategory(var13);
+                     throw new ReportedException(var11);
+                  }
+               }
+
+               boolean var10 = this.collidedWithFluid(var7.getFluidState(), var5x, var1, var2);
+               if (var10) {
+                  var3.advanceStep(var6);
+                  var7.getFluidState().entityInside(this.level(), var5x, this, var3);
+               }
+
+               this.debugBlockIntersection(var5x, var9, var10);
+               return true;
+            }
+         }
+      });
+   }
+
+   private void debugBlockIntersection(BlockPos var1, boolean var2, boolean var3) {
    }
 
    public boolean collidedWithFluid(FluidState var1, BlockPos var2, Vec3 var3, Vec3 var4) {
@@ -2222,6 +2233,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             var3.hurtAndBreak(1, var1, (EquipmentSlot)LivingEntity.getSlotForHand(var2));
             Vec3 var9 = this.dimensions.attachments().getAverage(EntityAttachment.PASSENGER);
             var4.setItemSlotAndDropWhenKilled(var6, ItemStack.EMPTY);
+            this.gameEvent(GameEvent.SHEAR, var1);
             this.playSound((SoundEvent)var8.shearingSound().value());
             Level var11 = this.level();
             if (var11 instanceof ServerLevel) {
@@ -3967,13 +3979,16 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       DATA_TICKS_FROZEN = SynchedEntityData.<Integer>defineId(Entity.class, EntityDataSerializers.INT);
    }
 
-   static record Movement(Vec3 from, Vec3 to) {
+   static record Movement(Vec3 from, Vec3 to, boolean axisIndependant) {
+      final Vec3 from;
       final Vec3 to;
+      final boolean axisIndependant;
 
-      Movement(Vec3 var1, Vec3 var2) {
+      Movement(Vec3 var1, Vec3 var2, boolean var3) {
          super();
          this.from = var1;
          this.to = var2;
+         this.axisIndependant = var3;
       }
    }
 

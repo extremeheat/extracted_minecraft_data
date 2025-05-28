@@ -4,6 +4,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
@@ -110,23 +111,23 @@ public class GlRenderPass implements RenderPass {
    }
 
    public boolean isScissorEnabled() {
-      return this.scissorState.enabled;
+      return this.scissorState.enabled();
    }
 
    public int getScissorX() {
-      return this.scissorState.x;
+      return this.scissorState.x();
    }
 
    public int getScissorY() {
-      return this.scissorState.y;
+      return this.scissorState.y();
    }
 
    public int getScissorWidth() {
-      return this.scissorState.width;
+      return this.scissorState.width();
    }
 
    public int getScissorHeight() {
-      return this.scissorState.height;
+      return this.scissorState.height();
    }
 
    public void setVertexBuffer(int var1, GpuBuffer var2) {
@@ -150,11 +151,11 @@ public class GlRenderPass implements RenderPass {
       }
    }
 
-   public void drawMultipleIndexed(Collection<RenderPass.Draw> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4) {
+   public <T> void drawMultipleIndexed(Collection<RenderPass.Draw<T>> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4, T var5) {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.encoder.executeDrawMultiple(this, var1, var2, var3, var4);
+         this.encoder.executeDrawMultiple(this, var1, var2, var3, var4, var5);
       }
    }
 
@@ -180,29 +181,5 @@ public class GlRenderPass implements RenderPass {
 
    static {
       VALIDATION = SharedConstants.IS_RUNNING_IN_IDE;
-   }
-
-   static class ScissorState {
-      boolean enabled;
-      int x;
-      int y;
-      int width;
-      int height;
-
-      ScissorState() {
-         super();
-      }
-
-      public void enable(int var1, int var2, int var3, int var4) {
-         this.enabled = true;
-         this.x = var1;
-         this.y = var2;
-         this.width = var3;
-         this.height = var4;
-      }
-
-      public void disable() {
-         this.enabled = false;
-      }
    }
 }

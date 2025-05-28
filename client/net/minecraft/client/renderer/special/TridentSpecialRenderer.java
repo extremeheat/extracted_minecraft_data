@@ -3,12 +3,14 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
+import java.util.Set;
 import net.minecraft.client.model.TridentModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Vector3f;
 
 public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
    private final TridentModel model;
@@ -24,6 +26,12 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
       VertexConsumer var7 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TridentModel.TEXTURE), false, var6);
       this.model.renderToBuffer(var2, var7, var4, var5);
       var2.popPose();
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      var2.scale(1.0F, -1.0F, -1.0F);
+      this.model.root().getExtentsForGui(var2, var1);
    }
 
    public static record Unbaked() implements SpecialModelRenderer.Unbaked {

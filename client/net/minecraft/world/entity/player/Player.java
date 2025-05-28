@@ -206,19 +206,18 @@ public abstract class Player extends LivingEntity {
    private boolean ignoreFallDamageFromCurrentImpulse;
    private int currentImpulseContextResetGraceTime;
 
-   public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
+   public Player(Level var1, GameProfile var2) {
       super(EntityType.PLAYER, var1);
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
       this.ignoreFallDamageFromCurrentImpulse = false;
       this.currentImpulseContextResetGraceTime = 0;
-      this.setUUID(var4.getId());
-      this.gameProfile = var4;
+      this.setUUID(var2.getId());
+      this.gameProfile = var2;
       this.inventory = new Inventory(this, this.equipment);
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
-      this.snapTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
    }
 
    protected EntityEquipment createEquipment() {

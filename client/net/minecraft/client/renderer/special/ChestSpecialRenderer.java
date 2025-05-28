@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Set;
 import net.minecraft.client.model.ChestModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Vector3f;
 
 public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    public static final ResourceLocation GIFT_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("christmas");
@@ -35,6 +37,12 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
       VertexConsumer var7 = this.material.buffer(var3, RenderType::entitySolid);
       this.model.setupAnim(this.openness);
       this.model.renderToBuffer(var2, var7, var4, var5);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      this.model.setupAnim(this.openness);
+      this.model.root().getExtentsForGui(var2, var1);
    }
 
    public static record Unbaked(ResourceLocation texture, float openness) implements SpecialModelRenderer.Unbaked {

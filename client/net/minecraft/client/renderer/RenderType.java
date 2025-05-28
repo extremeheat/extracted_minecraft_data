@@ -7,6 +7,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -681,36 +682,41 @@ public abstract class RenderType extends RenderStateShard {
                var6 = var1.drawState().indexType();
             }
 
-            RenderTarget var17 = this.state.outputState.getRenderTarget();
-            GpuTextureView var8 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var17.getColorTextureView();
-            GpuTextureView var9 = var17.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var17.getDepthTextureView()) : null;
+            RenderTarget var18 = this.state.outputState.getRenderTarget();
+            GpuTextureView var8 = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : var18.getColorTextureView();
+            GpuTextureView var9 = var18.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : var18.getDepthTextureView()) : null;
 
             try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Immediate draw for " + this.getName(), var8, OptionalInt.empty(), var9, OptionalDouble.empty())) {
                var10.setPipeline(this.renderPipeline);
+               ScissorState var11 = RenderSystem.getScissorStateForRenderTypeDraws();
+               if (var11.enabled()) {
+                  var10.enableScissor(var11.x(), var11.y(), var11.width(), var11.height());
+               }
+
                RenderSystem.bindDefaultUniforms(var10);
                var10.setUniform("DynamicTransforms", var2);
                var10.setVertexBuffer(0, var4);
 
-               for(int var11 = 0; var11 < 12; ++var11) {
-                  GpuTextureView var12 = RenderSystem.getShaderTexture(var11);
-                  if (var12 != null) {
-                     var10.bindSampler("Sampler" + var11, var12);
+               for(int var12 = 0; var12 < 12; ++var12) {
+                  GpuTextureView var13 = RenderSystem.getShaderTexture(var12);
+                  if (var13 != null) {
+                     var10.bindSampler("Sampler" + var12, var13);
                   }
                }
 
                var10.setIndexBuffer(var5, var6);
                var10.drawIndexed(0, 0, var1.drawState().indexCount(), 1);
             }
-         } catch (Throwable var16) {
+         } catch (Throwable var17) {
             if (var1 != null) {
                try {
                   var3.close();
-               } catch (Throwable var13) {
-                  var16.addSuppressed(var13);
+               } catch (Throwable var14) {
+                  var17.addSuppressed(var14);
                }
             }
 
-            throw var16;
+            throw var17;
          }
 
          if (var1 != null) {

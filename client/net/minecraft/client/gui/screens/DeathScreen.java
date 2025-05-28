@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -71,10 +72,10 @@ public class DeathScreen extends Screen {
 
    private void exitToTitleScreen() {
       if (this.minecraft.level != null) {
-         this.minecraft.level.disconnect();
+         this.minecraft.level.disconnect(ClientLevel.DEFAULT_QUIT_MESSAGE);
       }
 
-      this.minecraft.disconnect(new GenericMessageScreen(Component.translatable("menu.savingLevel")));
+      this.minecraft.disconnectWithSavingScreen();
       this.minecraft.setScreen(new TitleScreen());
    }
 

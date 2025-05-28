@@ -68,7 +68,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ServerScoreboard;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -172,6 +171,11 @@ public abstract class PlayerList {
          }
 
          var2.setServerLevel(var11);
+         if (var8.isEmpty()) {
+            var2.snapTo(var2.adjustSpawnLocation(var11, var11.getSharedSpawnPos()).getBottomCenter(), var11.getSharedSpawnAngle(), 0.0F);
+         }
+
+         var11.waitForChunkAndEntities(var2.chunkPosition(), 1);
          String var12 = var1.getLoggableAddress(this.server.logIPs());
          LOGGER.info("{}[{}] logged in with entity id {} at ({}, {}, {})", new Object[]{var2.getName().getString(), var12, var2.getId(), var2.getX(), var2.getY(), var2.getZ()});
          LevelData var13 = var11.getLevelData();
@@ -360,10 +364,6 @@ public abstract class PlayerList {
       } else {
          return this.players.size() >= this.maxPlayers && !this.canBypassPlayerLimit(var2) ? Component.translatable("multiplayer.disconnect.server_full") : null;
       }
-   }
-
-   public ServerPlayer getPlayerForLogin(GameProfile var1, ClientInformation var2) {
-      return new ServerPlayer(this.server, this.server.overworld(), var1, var2);
    }
 
    public boolean disconnectAllPlayersWithProfile(GameProfile var1) {

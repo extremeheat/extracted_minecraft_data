@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.dialog.DialogConnectionAccess;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -140,11 +141,11 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
             ClientConfigurationPacketListenerImpl.LOGGER.warn("Commands are not supported in configuration phase, trying to run '{}'", var1);
          }
 
-         public void openDialog(Holder<Dialog> var1) {
-            ClientConfigurationPacketListenerImpl.this.showDialog(var1);
+         public void openDialog(Holder<Dialog> var1, @Nullable Screen var2) {
+            ClientConfigurationPacketListenerImpl.this.showDialog(var1, this, var2);
          }
 
-         public void sendCustomAction(ResourceLocation var1, Optional<String> var2) {
+         public void sendCustomAction(ResourceLocation var1, Optional<Tag> var2) {
             ClientConfigurationPacketListenerImpl.this.send(new ServerboundCustomClickActionPacket(var1, var2));
          }
 

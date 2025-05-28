@@ -1,4 +1,4 @@
-package net.minecraft.server.dialog.submit;
+package net.minecraft.server.dialog.action;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;

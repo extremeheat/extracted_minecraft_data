@@ -3,20 +3,15 @@ package net.minecraft.client.renderer.item;
 import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AbstractSkullBlock;
 
 public class ItemModelResolver {
    private final Function<ResourceLocation, ItemModel> modelGetter;
@@ -47,24 +42,10 @@ public class ItemModelResolver {
 
    }
 
-   private static void fixupSkullProfile(ItemStack var0) {
-      Item var2 = var0.getItem();
-      if (var2 instanceof BlockItem var1) {
-         if (var1.getBlock() instanceof AbstractSkullBlock) {
-            ResolvableProfile var3 = (ResolvableProfile)var0.get(DataComponents.PROFILE);
-            if (var3 != null && !var3.isResolved()) {
-               var0.remove(DataComponents.PROFILE);
-               var3.resolve().thenAcceptAsync((var1x) -> var0.set(DataComponents.PROFILE, var1x), Minecraft.getInstance());
-            }
-         }
-      }
-
-   }
-
    public void appendItemLayers(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable LivingEntity var5, int var6) {
-      fixupSkullProfile(var2);
       ResourceLocation var7 = (ResourceLocation)var2.get(DataComponents.ITEM_MODEL);
       if (var7 != null) {
+         var1.setOversizedInGui(((ClientItem.Properties)this.clientProperties.apply(var7)).oversizedInGui());
          ItemModel var10000 = (ItemModel)this.modelGetter.apply(var7);
          ClientLevel var10005;
          if (var4 instanceof ClientLevel) {

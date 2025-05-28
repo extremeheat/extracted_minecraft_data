@@ -14,28 +14,28 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4429;
+   public static final int WORLD_VERSION = 4430;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "25w21a";
+   public static final String VERSION_STRING = "1.21.6-pre1";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 770;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 771;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 251;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 252;
    public static final int SNBT_NAG_VERSION = 4420;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 62;
+   public static final int RESOURCE_PACK_FORMAT = 63;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 78;
+   public static final int DATA_PACK_FORMAT = 79;
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -101,6 +101,7 @@ public class SharedConstants {
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
    public static final boolean DEBUG_AQUIFERS = false;
    public static final boolean DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING = false;
+   public static final boolean DEBUG_ENTITY_BLOCK_INTERSECTION = false;
    public static boolean debugGenerateSquareTerrainWithoutNoise = false;
    public static boolean debugGenerateStripedTerrainWithoutNoise = false;
    public static final boolean DEBUG_ONLY_GENERATE_HALF_THE_WORLD = false;
@@ -179,7 +180,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742075;
+      return 1073742076;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

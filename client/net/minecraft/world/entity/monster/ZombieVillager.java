@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -10,6 +11,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -266,7 +268,13 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.setVillagerData(this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
+      VillagerData var5 = this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition())));
+      Optional var6 = BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random);
+      if (var6.isPresent()) {
+         var5 = var5.withProfession((Holder)var6.get());
+      }
+
+      this.setVillagerData(var5);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

@@ -30,7 +30,7 @@ public class SnifferModel extends EntityModel<SnifferRenderState> {
       super(var1);
       this.head = var1.getChild("bone").getChild("body").getChild("head");
       this.sniffSearchAnimation = SnifferAnimation.SNIFFER_SNIFF_SEARCH.bake(var1);
-      this.walkAnimation = SnifferAnimation.SNIFFER_DIG.bake(var1);
+      this.walkAnimation = SnifferAnimation.SNIFFER_WALK.bake(var1);
       this.digAnimation = SnifferAnimation.SNIFFER_DIG.bake(var1);
       this.longSniffAnimation = SnifferAnimation.SNIFFER_LONGSNIFF.bake(var1);
       this.standUpAnimation = SnifferAnimation.SNIFFER_STAND_UP.bake(var1);

@@ -276,7 +276,7 @@ public class ServerPlayer extends Player {
    public boolean wonGame;
 
    public ServerPlayer(MinecraftServer var1, ServerLevel var2, GameProfile var3, ClientInformation var4) {
-      super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3);
+      super(var2, var3);
       this.chatVisibility = ChatVisiblity.FULL;
       this.particleStatus = ParticleStatus.ALL;
       this.canChatColor = true;
@@ -380,7 +380,6 @@ public class ServerPlayer extends Player {
       this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
-      this.snapTo(this.adjustSpawnLocation(var2, var2.getSharedSpawnPos()).getBottomCenter(), 0.0F, 0.0F);
       this.updateOptions(var4);
       this.object = null;
    }

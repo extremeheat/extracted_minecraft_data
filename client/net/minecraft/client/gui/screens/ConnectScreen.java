@@ -71,7 +71,7 @@ public class ConnectScreen extends Screen {
             var7.updateStatus(Component.translatable("connect.transferring"));
          }
 
-         var1.disconnect();
+         var1.disconnectWithProgressScreen();
          var1.prepareForMultiplayer();
          var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3.ip));
          var1.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, var3.ip, var3.name);

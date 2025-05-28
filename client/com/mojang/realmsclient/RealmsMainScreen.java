@@ -309,18 +309,16 @@ public class RealmsMainScreen extends RealmsScreen {
 
    void updateButtonStates() {
       RealmsServer var1 = this.getSelectedServer();
+      boolean var2 = var1 != null;
       this.addRealmButton.active = this.activeLayoutState != RealmsMainScreen.LayoutState.LOADING;
-      if (var1 != null) {
-         this.playButton.active = var1.shouldPlayButtonBeActive();
-         if (!this.playButton.active && var1.state == RealmsServer.State.CLOSED) {
-            this.playButton.setTooltip(Tooltip.create(RealmsServer.WORLD_CLOSED_COMPONENT));
-         }
-
-         this.renewButton.active = this.shouldRenewButtonBeActive(var1);
-         this.leaveButton.active = this.shouldLeaveButtonBeActive(var1);
-         this.configureButton.active = this.shouldConfigureButtonBeActive(var1);
+      this.playButton.active = var2 && var1.shouldPlayButtonBeActive();
+      if (!this.playButton.active && var2 && var1.state == RealmsServer.State.CLOSED) {
+         this.playButton.setTooltip(Tooltip.create(RealmsServer.WORLD_CLOSED_COMPONENT));
       }
 
+      this.renewButton.active = var2 && this.shouldRenewButtonBeActive(var1);
+      this.leaveButton.active = var2 && this.shouldLeaveButtonBeActive(var1);
+      this.configureButton.active = var2 && this.shouldConfigureButtonBeActive(var1);
    }
 
    private boolean shouldRenewButtonBeActive(RealmsServer var1) {

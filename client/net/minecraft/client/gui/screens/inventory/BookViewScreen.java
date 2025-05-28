@@ -232,6 +232,7 @@ public class BookViewScreen extends Screen {
             }
 
             String var10 = var14;
+            this.closeContainerOnServer();
             clickCommandAction(var3, var10, (Screen)null);
             break;
          default:
@@ -240,8 +241,7 @@ public class BookViewScreen extends Screen {
 
    }
 
-   protected void closeScreen() {
-      this.minecraft.setScreen((Screen)null);
+   protected void closeContainerOnServer() {
    }
 
    @Nullable

@@ -436,7 +436,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                return;
             }
 
-            boolean var28 = var3.noCollision(var2, var2.getBoundingBox().deflate(0.0625));
+            AABB var28 = var2.getBoundingBox();
             var18 = var10 - this.vehicleLastGoodX;
             var20 = var12 - this.vehicleLastGoodY;
             var22 = var14 - this.vehicleLastGoodZ;
@@ -449,7 +449,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             }
 
             var2.move(MoverType.PLAYER, new Vec3(var18, var20, var22));
-            double var42 = var20;
+            double var41 = var20;
             var18 = var10 - var2.getX();
             var20 = var12 - var2.getY();
             if (var20 > -0.5 || var20 < 0.5) {
@@ -464,22 +464,21 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", new Object[]{var2.getName().getString(), this.player.getName().getString(), Math.sqrt(var26)});
             }
 
-            var2.absSnapTo(var10, var12, var14, var16, var17);
-            boolean var33 = var3.noCollision(var2, var2.getBoundingBox().deflate(0.0625));
-            if (var28 && (var32 || !var33)) {
+            if (var32 && var3.noCollision(var2, var28) || this.isEntityCollidingWithAnythingNew(var3, var2, var28, var10, var12, var14)) {
                var2.absSnapTo(var4, var6, var8, var16, var17);
                this.send(ClientboundMoveVehiclePacket.fromEntity(var2));
-               var2.removeLatestMovementRecordingBatch();
+               var2.removeLatestMovementRecording();
                return;
             }
 
+            var2.absSnapTo(var10, var12, var14, var16, var17);
             this.player.level().getChunkSource().move(this.player);
-            Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
-            this.handlePlayerKnownMovement(var34);
-            var2.setOnGroundWithMovement(var1.onGround(), var34);
-            var2.doCheckFallDamage(var34.x, var34.y, var34.z, var1.onGround());
-            this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
-            this.clientVehicleIsFloating = var42 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isFlyingVehicle() && !var2.isNoGravity() && this.noBlocksAround(var2);
+            Vec3 var33 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
+            this.handlePlayerKnownMovement(var33);
+            var2.setOnGroundWithMovement(var1.onGround(), var33);
+            var2.doCheckFallDamage(var33.x, var33.y, var33.z, var1.onGround());
+            this.player.checkMovementStatistics(var33.x, var33.y, var33.z);
+            this.clientVehicleIsFloating = var41 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isFlyingVehicle() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
             this.vehicleLastGoodY = var2.getY();
             this.vehicleLastGoodZ = var2.getZ();
@@ -1073,7 +1072,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            LOGGER.warn("{} moved wrongly!", this.player.getName().getString());
                         }
 
-                        if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43, var5, var7, var9)) {
+                        if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isEntityCollidingWithAnythingNew(var2, this.player, var43, var5, var7, var9)) {
                            this.player.absSnapTo(var5, var7, var9, var3, var4);
                            boolean var34 = this.player.isAutoSpinAttack();
                            this.clientIsFloating = var31 >= -0.03125 && !var30 && !this.player.isSpectator() && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
@@ -1097,7 +1096,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         } else {
                            this.teleport(var11, var13, var15, var3, var4);
                            this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
-                           this.player.removeLatestMovementRecordingBatch();
+                           this.player.removeLatestMovementRecording();
                         }
                      }
                   }
@@ -1136,13 +1135,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
-   private boolean isPlayerCollidingWithAnythingNew(LevelReader var1, AABB var2, double var3, double var5, double var7) {
-      AABB var9 = this.player.getBoundingBox().move(var3 - this.player.getX(), var5 - this.player.getY(), var7 - this.player.getZ());
-      Iterable var10 = var1.getPreMoveCollisions(this.player, var9.deflate(9.999999747378752E-6), var2.getBottomCenter());
-      VoxelShape var11 = Shapes.create(var2.deflate(9.999999747378752E-6));
+   private boolean isEntityCollidingWithAnythingNew(LevelReader var1, Entity var2, AABB var3, double var4, double var6, double var8) {
+      AABB var10 = var2.getBoundingBox().move(var4 - var2.getX(), var6 - var2.getY(), var8 - var2.getZ());
+      Iterable var11 = var1.getPreMoveCollisions(var2, var10.deflate(9.999999747378752E-6), var3.getBottomCenter());
+      VoxelShape var12 = Shapes.create(var3.deflate(9.999999747378752E-6));
 
-      for(VoxelShape var13 : var10) {
-         if (!Shapes.joinIsNotEmpty(var13, var11, BooleanOp.AND)) {
+      for(VoxelShape var14 : var11) {
+         if (!Shapes.joinIsNotEmpty(var14, var12, BooleanOp.AND)) {
             return true;
          }
       }

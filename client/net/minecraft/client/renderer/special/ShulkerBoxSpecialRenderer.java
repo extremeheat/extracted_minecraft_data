@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Set;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
@@ -13,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Vector3f;
 
 public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
    private final ShulkerBoxRenderer shulkerBoxRenderer;
@@ -30,6 +32,10 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
 
    public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
       this.shulkerBoxRenderer.render(var2, var3, var4, var5, this.orientation, this.openness, this.material);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      this.shulkerBoxRenderer.getExtents(this.orientation, this.openness, var1);
    }
 
    public static record Unbaked(ResourceLocation texture, float openness, Direction orientation) implements SpecialModelRenderer.Unbaked {

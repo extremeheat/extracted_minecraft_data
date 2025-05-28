@@ -268,7 +268,7 @@ public final class DataComponentPatch {
       DELIMITED_STREAM_CODEC = createStreamCodec(new CodecGetter() {
          public <T> StreamCodec<RegistryFriendlyByteBuf, T> apply(DataComponentType<T> var1) {
             StreamCodec var2 = var1.streamCodec().cast();
-            return var2.apply(ByteBufCodecs.lengthPrefixed(2147483647));
+            return var2.apply(ByteBufCodecs.registryFriendlyLengthPrefixed(2147483647));
          }
       });
    }

@@ -36,7 +36,7 @@ public class FileUtil {
 
    public static String findAvailableName(Path var0, String var1, String var2) throws IOException {
       var1 = sanitizeName(var1);
-      if (RESERVED_WINDOWS_FILENAMES.matcher(var1).matches()) {
+      if (!isPathPartPortable(var1)) {
          var1 = "_" + var1 + "_";
       }
 
@@ -83,12 +83,16 @@ public class FileUtil {
 
    public static boolean isPathPortable(Path var0) {
       for(Path var2 : var0) {
-         if (RESERVED_WINDOWS_FILENAMES.matcher(var2.toString()).matches()) {
+         if (!isPathPartPortable(var2.toString())) {
             return false;
          }
       }
 
       return true;
+   }
+
+   public static boolean isPathPartPortable(String var0) {
+      return !RESERVED_WINDOWS_FILENAMES.matcher(var0).matches();
    }
 
    public static Path createPathToResource(Path var0, String var1, String var2) {

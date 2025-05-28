@@ -162,7 +162,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.STATS, () -> DSL.optionalFields("stats", DSL.optionalFields(new Pair[]{Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:crafted", (TypeTemplate)var4.get()), Pair.of("minecraft:used", (TypeTemplate)var4.get()), Pair.of("minecraft:broken", (TypeTemplate)var4.get()), Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()), Pair.of("minecraft:dropped", (TypeTemplate)var4.get()), Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))})));
       var1.registerType(false, References.SAVED_DATA_COMMAND_STORAGE, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_TICKETS, DSL::remainder);
-      var1.registerType(false, References.SAVED_DATA_MAP_DATA, () -> DSL.optionalFields("banners", DSL.list(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1)))));
+      var1.registerType(false, References.SAVED_DATA_MAP_DATA, () -> DSL.optionalFields("data", DSL.optionalFields("banners", DSL.list(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1))))));
       var1.registerType(false, References.SAVED_DATA_MAP_INDEX, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RAIDS, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RANDOM_SEQUENCES, DSL::remainder);

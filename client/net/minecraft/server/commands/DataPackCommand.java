@@ -57,6 +57,7 @@ public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_CANNOT_DISABLE_FEATURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.disable.failed.feature", var0));
    private static final Dynamic2CommandExceptionType ERROR_PACK_FEATURES_NOT_ENABLED = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.datapack.enable.failed.no_flags", var0, var1));
    private static final DynamicCommandExceptionType ERROR_PACK_INVALID_NAME = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.create.invalid_name", var0));
+   private static final DynamicCommandExceptionType ERROR_PACK_INVALID_FULL_NAME = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.create.invalid_full_name", var0));
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_EXISTS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.create.already_exists", var0));
    private static final Dynamic2CommandExceptionType ERROR_PACK_METADATA_ENCODE_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.datapack.create.metadata_encode_failure", var0, var1));
    private static final DynamicCommandExceptionType ERROR_PACK_IO_FAILURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.datapack.create.io_failure", var0));
@@ -80,6 +81,8 @@ public class DataPackCommand {
       Path var3 = var0.getServer().getWorldPath(LevelResource.DATAPACK_DIR);
       if (!FileUtil.isValidStrictPathSegment(var1)) {
          throw ERROR_PACK_INVALID_NAME.create(var1);
+      } else if (!FileUtil.isPathPartPortable(var1)) {
+         throw ERROR_PACK_INVALID_FULL_NAME.create(var1);
       } else {
          Path var4 = var3.resolve(var1);
          if (Files.exists(var4, new LinkOption[0])) {

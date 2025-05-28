@@ -13,8 +13,6 @@ public class DialogTypes {
       Registry.register(var0, (String)"server_links", ServerLinksDialog.MAP_CODEC);
       Registry.register(var0, (String)"dialog_list", DialogListDialog.MAP_CODEC);
       Registry.register(var0, (String)"multi_action", MultiActionDialog.MAP_CODEC);
-      Registry.register(var0, (String)"multi_action_input_form", MultiActionInputFormDialog.MAP_CODEC);
-      Registry.register(var0, (String)"simple_input_form", SimpleInputFormDialog.MAP_CODEC);
       return (MapCodec)Registry.register(var0, (String)"confirmation", ConfirmationDialog.MAP_CODEC);
    }
 }

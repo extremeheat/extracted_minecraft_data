@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
+import java.util.Set;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -10,6 +11,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Vector3f;
 
 public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
    private final ModelPart model;
@@ -25,6 +27,12 @@ public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
       var2.translate(0.5F, 0.5F, 0.5F);
       this.model.render(var2, var7, var4, var5);
       var2.popPose();
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      var2.translate(0.5F, 0.5F, 0.5F);
+      this.model.getExtentsForGui(var2, var1);
    }
 
    public static record Unbaked() implements SpecialModelRenderer.Unbaked {

@@ -9,10 +9,8 @@ import net.minecraft.server.dialog.ConfirmationDialog;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogListDialog;
 import net.minecraft.server.dialog.MultiActionDialog;
-import net.minecraft.server.dialog.MultiActionInputFormDialog;
 import net.minecraft.server.dialog.NoticeDialog;
 import net.minecraft.server.dialog.ServerLinksDialog;
-import net.minecraft.server.dialog.SimpleInputFormDialog;
 
 public class DialogScreens {
    private static final Map<MapCodec<? extends Dialog>, Factory<?>> FACTORIES = new HashMap();
@@ -37,8 +35,6 @@ public class DialogScreens {
       register(DialogListDialog.MAP_CODEC, DialogListDialogScreen::new);
       register(MultiActionDialog.MAP_CODEC, MultiButtonDialogScreen::new);
       register(ServerLinksDialog.MAP_CODEC, ServerLinksDialogScreen::new);
-      register(SimpleInputFormDialog.MAP_CODEC, SimpleInputFormDialogScreen::new);
-      register(MultiActionInputFormDialog.MAP_CODEC, MultiActionInputFormDialogScreen::new);
    }
 
    @FunctionalInterface

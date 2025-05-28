@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.dialog;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.dialog.body.DialogBodyHandlers;
 import net.minecraft.commands.Commands;
@@ -23,9 +25,9 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.dialog.ClickAction;
-import net.minecraft.server.dialog.CommonButtonData;
 import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.dialog.DialogAction;
+import net.minecraft.server.dialog.Input;
 import net.minecraft.server.dialog.body.DialogBody;
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -41,9 +43,11 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    private ScrollableLayout bodyScroll;
    private Button warningButton;
    private final DialogConnectionAccess connectionAccess;
+   private Supplier<Optional<ClickEvent>> onClose;
 
    public DialogScreen(@Nullable Screen var1, T var2, DialogConnectionAccess var3) {
       super(var2.common().title());
+      this.onClose = DialogControlSet.EMPTY_ACTION;
       this.dialog = var2;
       this.previousScreen = var1;
       this.connectionAccess = var3;
@@ -53,22 +57,28 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       super.init();
       this.warningButton = this.createWarningButton();
       this.warningButton.setTabOrderGroup(-10);
-      LinearLayout var1 = LinearLayout.vertical().spacing(10);
-      var1.defaultCellSetting().alignHorizontallyCenter();
-      this.dialogInit(this.dialog, this.connectionAccess);
+      DialogControlSet var1 = new DialogControlSet(this);
+      LinearLayout var2 = LinearLayout.vertical().spacing(10);
+      var2.defaultCellSetting().alignHorizontallyCenter();
       this.layout.addToHeader(this.createTitleWithWarningButton());
 
-      for(DialogBody var3 : this.dialog.common().body()) {
-         LayoutElement var4 = DialogBodyHandlers.createBodyElement(this, var3);
-         if (var4 != null) {
-            var1.addChild(var4);
+      for(DialogBody var4 : this.dialog.common().body()) {
+         LayoutElement var5 = DialogBodyHandlers.createBodyElement(this, var4);
+         if (var5 != null) {
+            var2.addChild(var5);
          }
       }
 
-      this.populateBodyElements(var1, this.dialog, this.connectionAccess);
-      this.bodyScroll = new ScrollableLayout(this.minecraft, var1, this.layout.getContentHeight());
+      for(Input var7 : this.dialog.common().inputs()) {
+         Objects.requireNonNull(var2);
+         var1.addInput(var7, var2::addChild);
+      }
+
+      this.populateBodyElements(var2, var1, this.dialog, this.connectionAccess);
+      this.bodyScroll = new ScrollableLayout(this.minecraft, var2, this.layout.getContentHeight());
       this.layout.addToContents(this.bodyScroll);
-      this.updateHeaderAndFooter(this.layout, this.dialog, this.connectionAccess);
+      this.updateHeaderAndFooter(this.layout, var1, this.dialog, this.connectionAccess);
+      this.onClose = var1.bindAction(this.dialog.onCancel());
       this.layout.visitWidgets((var1x) -> {
          if (var1x != this.warningButton) {
             this.addRenderableWidget(var1x);
@@ -79,13 +89,10 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       this.repositionElements();
    }
 
-   protected void dialogInit(T var1, DialogConnectionAccess var2) {
+   protected void populateBodyElements(LinearLayout var1, DialogControlSet var2, T var3, DialogConnectionAccess var4) {
    }
 
-   protected void populateBodyElements(LinearLayout var1, T var2, DialogConnectionAccess var3) {
-   }
-
-   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, T var2, DialogConnectionAccess var3) {
+   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, DialogControlSet var2, T var3, DialogConnectionAccess var4) {
    }
 
    protected void repositionElements() {
@@ -118,18 +125,8 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       return var1;
    }
 
-   public static Button.Builder createDialogButton(CommonButtonData var0, Button.OnPress var1) {
-      Button.Builder var2 = Button.builder(var0.label(), var1);
-      var2.width(var0.width());
-      if (var0.tooltip().isPresent()) {
-         var2 = var2.tooltip(Tooltip.create((Component)var0.tooltip().get()));
-      }
-
-      return var2;
-   }
-
-   protected Button.Builder createClickActionButton(ClickAction var1) {
-      return createDialogButton(var1.buttonData(), (var2) -> this.closeScreen(var1.onClick()));
+   public boolean isPauseScreen() {
+      return this.dialog.common().pause();
    }
 
    public boolean shouldCloseOnEsc() {
@@ -137,48 +134,63 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    }
 
    public void onClose() {
-      this.closeScreen(this.dialog.onCancel());
+      this.runAction((Optional)this.onClose.get(), DialogAction.CLOSE);
    }
 
-   private void closeScreen(Optional<ClickEvent> var1) {
-      var1.ifPresent(this::handleDialogClickEvent);
-      if (this.minecraft.screen == this) {
-         this.minecraft.setScreen(this.previousScreen);
+   public void runAction(Optional<ClickEvent> var1) {
+      this.runAction(var1, this.dialog.common().afterAction());
+   }
+
+   public void runAction(Optional<ClickEvent> var1, DialogAction var2) {
+      Object var10000;
+      switch (var2) {
+         case NONE -> var10000 = this;
+         case CLOSE -> var10000 = this.previousScreen;
+         case WAIT_FOR_RESPONSE -> var10000 = new WaitingForResponseScreen(this.previousScreen);
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      Object var3 = var10000;
+      if (var1.isPresent()) {
+         this.handleDialogClickEvent((ClickEvent)var1.get(), (Screen)var3);
+      } else {
+         this.minecraft.setScreen((Screen)var3);
       }
 
    }
 
-   private void handleDialogClickEvent(ClickEvent var1) {
+   private void handleDialogClickEvent(ClickEvent var1, @Nullable Screen var2) {
       Objects.requireNonNull(var1);
-      byte var3 = 0;
-      //$FF: var3->value
+      byte var4 = 0;
+      //$FF: var4->value
       //0->net/minecraft/network/chat/ClickEvent$RunCommand
       //1->net/minecraft/network/chat/ClickEvent$ShowDialog
       //2->net/minecraft/network/chat/ClickEvent$Custom
-      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+      switch (var1.typeSwitch<invokedynamic>(var1, var4)) {
          case 0:
-            ClickEvent.RunCommand var4 = (ClickEvent.RunCommand)var1;
-            ClickEvent.RunCommand var10000 = var4;
+            ClickEvent.RunCommand var5 = (ClickEvent.RunCommand)var1;
+            ClickEvent.RunCommand var10000 = var5;
 
             try {
-               var10 = var10000.command();
-            } catch (Throwable var8) {
-               throw new MatchException(var8.toString(), var8);
+               var11 = var10000.command();
+            } catch (Throwable var9) {
+               throw new MatchException(var9.toString(), var9);
             }
 
-            String var9 = var10;
-            this.connectionAccess.runCommand(Commands.trimOptionalPrefix(var9), this.previousScreen);
+            String var10 = var11;
+            this.connectionAccess.runCommand(Commands.trimOptionalPrefix(var10), var2);
             break;
          case 1:
-            ClickEvent.ShowDialog var6 = (ClickEvent.ShowDialog)var1;
-            this.connectionAccess.openDialog(var6.dialog());
+            ClickEvent.ShowDialog var7 = (ClickEvent.ShowDialog)var1;
+            this.connectionAccess.openDialog(var7.dialog(), var2);
             break;
          case 2:
-            ClickEvent.Custom var7 = (ClickEvent.Custom)var1;
-            this.connectionAccess.sendCustomAction(var7.id(), var7.payload());
+            ClickEvent.Custom var8 = (ClickEvent.Custom)var1;
+            this.connectionAccess.sendCustomAction(var8.id(), var8.payload());
+            this.minecraft.setScreen(var2);
             break;
          default:
-            defaultHandleClickEvent(var1, this.minecraft, this.previousScreen);
+            defaultHandleClickEvent(var1, this.minecraft, var2);
       }
 
    }
@@ -222,10 +234,9 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       }
 
       private WarningScreen(Minecraft var1, DialogConnectionAccess var2, MutableObject<DialogScreen<?>> var3) {
-         super((var3x) -> {
-            if (var3x) {
-               var1.setScreen((Screen)null);
-               var2.disconnect(DialogScreen.DISCONNECT);
+         super((var2x) -> {
+            if (var2x) {
+               PauseScreen.disconnectFromWorld(var1, DialogScreen.DISCONNECT);
             } else {
                var1.setScreen((Screen)var3.getValue());
             }

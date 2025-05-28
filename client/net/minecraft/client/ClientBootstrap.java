@@ -4,7 +4,6 @@ import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.dialog.DialogScreens;
 import net.minecraft.client.gui.screens.dialog.body.DialogBodyHandlers;
 import net.minecraft.client.gui.screens.dialog.input.InputControlHandlers;
-import net.minecraft.client.gui.screens.dialog.submit.SubmitMethodHandlers;
 import net.minecraft.client.renderer.item.ItemModels;
 import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperties;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperties;
@@ -30,7 +29,6 @@ public class ClientBootstrap {
          RangeSelectItemModelProperties.bootstrap();
          SpriteSources.bootstrap();
          DialogScreens.bootstrap();
-         SubmitMethodHandlers.bootstrap();
          InputControlHandlers.bootstrap();
          DialogBodyHandlers.bootstrap();
       }

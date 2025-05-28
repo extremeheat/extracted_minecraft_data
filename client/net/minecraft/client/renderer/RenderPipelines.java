@@ -84,7 +84,6 @@ public class RenderPipelines {
    public static final RenderPipeline END_GATEWAY;
    public static final RenderPipeline FLAT_CLOUDS;
    public static final RenderPipeline CLOUDS;
-   public static final RenderPipeline CLOUDS_DEPTH_ONLY;
    public static final RenderPipeline LINES;
    public static final RenderPipeline SECONDARY_BLOCK_OUTLINE;
    public static final RenderPipeline LINE_STRIP;
@@ -202,7 +201,6 @@ public class RenderPipelines {
       END_GATEWAY = register(RenderPipeline.builder(END_PORTAL_SNIPPET).withLocation("pipeline/end_gateway").withShaderDefine("PORTAL_LAYERS", 16).build());
       FLAT_CLOUDS = register(RenderPipeline.builder(CLOUDS_SNIPPET).withLocation("pipeline/flat_clouds").withCull(false).build());
       CLOUDS = register(RenderPipeline.builder(CLOUDS_SNIPPET).withLocation("pipeline/clouds").build());
-      CLOUDS_DEPTH_ONLY = register(RenderPipeline.builder(CLOUDS_SNIPPET).withLocation("pipeline/clouds_depth_only").withColorWrite(false).build());
       LINES = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines").build());
       SECONDARY_BLOCK_OUTLINE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/secondary_block_outline").withDepthWrite(false).build());
       LINE_STRIP = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/line_strip").withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINE_STRIP).build());

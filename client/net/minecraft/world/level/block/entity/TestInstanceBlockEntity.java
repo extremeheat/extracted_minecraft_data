@@ -225,7 +225,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
          Level var5 = this.level;
          if (var5 instanceof ServerLevel) {
             ServerLevel var4 = (ServerLevel)var5;
-            StructureBlockEntity.saveStructure(var4, (ResourceLocation)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true);
+            StructureBlockEntity.saveStructure(var4, (ResourceLocation)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true, List.of(Blocks.AIR));
          }
 
          return var3;

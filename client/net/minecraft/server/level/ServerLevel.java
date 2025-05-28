@@ -1596,6 +1596,23 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.pathTypesByPosCache;
    }
 
+   public void waitForChunkAndEntities(ChunkPos var1, int var2) {
+      List var3 = ChunkPos.rangeClosed(var1, var2).toList();
+      this.chunkSource.addTicketWithRadius(TicketType.UNKNOWN, var1, var2);
+      var3.forEach((var1x) -> this.getChunk(var1x.x, var1x.z));
+      this.server.managedBlock(() -> {
+         this.entityManager.processPendingLoads();
+
+         for(ChunkPos var3x : var3) {
+            if (!this.areEntitiesLoaded(var3x.toLong())) {
+               return false;
+            }
+         }
+
+         return true;
+      });
+   }
+
    public void close() throws IOException {
       super.close();
       this.entityManager.close();

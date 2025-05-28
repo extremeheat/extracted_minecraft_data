@@ -1,38 +1,40 @@
 package net.minecraft.network;
 
+import com.mojang.logging.LogUtils;
+import io.netty.channel.ChannelFutureListener;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.network.protocol.Packet;
+import org.slf4j.Logger;
 
-public interface PacketSendListener {
-   static PacketSendListener thenRun(final Runnable var0) {
-      return new PacketSendListener() {
-         public void onSuccess() {
-            var0.run();
+public class PacketSendListener {
+   private static final Logger LOGGER = LogUtils.getLogger();
+
+   public PacketSendListener() {
+      super();
+   }
+
+   public static ChannelFutureListener thenRun(Runnable var0) {
+      return (var1) -> {
+         var0.run();
+         if (!var1.isSuccess()) {
+            var1.channel().pipeline().fireExceptionCaught(var1.cause());
          }
 
-         @Nullable
-         public Packet<?> onFailure() {
-            var0.run();
-            return null;
-         }
       };
    }
 
-   static PacketSendListener exceptionallySend(final Supplier<Packet<?>> var0) {
-      return new PacketSendListener() {
-         @Nullable
-         public Packet<?> onFailure() {
-            return (Packet)var0.get();
+   public static ChannelFutureListener exceptionallySend(Supplier<Packet<?>> var0) {
+      return (var1) -> {
+         if (!var1.isSuccess()) {
+            Packet var2 = (Packet)var0.get();
+            if (var2 != null) {
+               LOGGER.warn("Failed to deliver packet, sending fallback {}", var2.type(), var1.cause());
+               var1.channel().writeAndFlush(var2, var1.channel().voidPromise());
+            } else {
+               var1.channel().pipeline().fireExceptionCaught(var1.cause());
+            }
          }
+
       };
-   }
-
-   default void onSuccess() {
-   }
-
-   @Nullable
-   default Packet<?> onFailure() {
-      return null;
    }
 }

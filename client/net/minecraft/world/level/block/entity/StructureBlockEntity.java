@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -21,6 +22,7 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -333,29 +335,29 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
          if (var3 instanceof ServerLevel) {
             ServerLevel var2 = (ServerLevel)var3;
             BlockPos var4 = this.getBlockPos().offset(this.structurePos);
-            return saveStructure(var2, this.structureName, var4, this.structureSize, this.ignoreEntities, this.author, var1);
+            return saveStructure(var2, this.structureName, var4, this.structureSize, this.ignoreEntities, this.author, var1, List.of());
          }
       }
 
       return false;
    }
 
-   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6) {
-      StructureTemplateManager var7 = var0.getStructureManager();
+   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6, List<Block> var7) {
+      StructureTemplateManager var8 = var0.getStructureManager();
 
-      StructureTemplate var8;
+      StructureTemplate var9;
       try {
-         var8 = var7.getOrCreate(var1);
-      } catch (ResourceLocationException var11) {
+         var9 = var8.getOrCreate(var1);
+      } catch (ResourceLocationException var12) {
          return false;
       }
 
-      var8.fillFromWorld(var0, var2, var3, !var4, Blocks.STRUCTURE_VOID);
-      var8.setAuthor(var5);
+      var9.fillFromWorld(var0, var2, var3, !var4, Stream.concat(var7.stream(), Stream.of(Blocks.STRUCTURE_VOID)).toList());
+      var9.setAuthor(var5);
       if (var6) {
          try {
-            return var7.save(var1);
-         } catch (ResourceLocationException var10) {
+            return var8.save(var1);
+         } catch (ResourceLocationException var11) {
             return false;
          }
       } else {

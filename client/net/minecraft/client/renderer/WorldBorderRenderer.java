@@ -152,7 +152,7 @@ public class WorldBorderRenderer {
                }
             }
 
-            var38.drawMultipleIndexed(var39, (GpuBuffer)null, (VertexFormat.IndexType)null, Collections.emptyList());
+            var38.drawMultipleIndexed(var39, (GpuBuffer)null, (VertexFormat.IndexType)null, Collections.emptyList(), this);
          }
 
       }

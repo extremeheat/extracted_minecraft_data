@@ -286,7 +286,7 @@ public class GameTestHelper {
    }
 
    public Player makeMockPlayer(final GameType var1) {
-      return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+      return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
          @Nonnull
          public GameType gameMode() {
             return var1;

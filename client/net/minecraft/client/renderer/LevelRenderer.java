@@ -6,7 +6,6 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
@@ -29,15 +28,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -55,6 +52,8 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.RenderRegionCache;
 import net.minecraft.client.renderer.chunk.SectionBuffers;
@@ -82,7 +81,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -100,6 +98,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
@@ -521,88 +520,74 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          double var16 = var13x.y();
          double var18 = var13x.z();
          var9.push("terrain");
-         ArrayList var20 = new ArrayList();
-         ObjectListIterator var21 = this.visibleSections.listIterator(0);
-         Vector4f var22 = new Vector4f(1.0F, 1.0F, 1.0F, 1.0F);
-         Matrix4f var23 = new Matrix4f();
-
-         while(var21.hasNext()) {
-            SectionRenderDispatcher.RenderSection var24 = (SectionRenderDispatcher.RenderSection)var21.next();
-            BlockPos var25 = var24.getRenderOrigin();
-            var20.add(new DynamicUniforms.Transform(var4, var22, new Vector3f((float)((double)var25.getX() - var14x), (float)((double)var25.getY() - var16), (float)((double)var25.getZ() - var18)), var23, 1.0F));
-            var24.setDynamicTransformIndex(var20.size() - 1);
-         }
-
-         GpuBufferSlice[] var28 = RenderSystem.getDynamicUniforms().writeTransforms((DynamicUniforms.Transform[])var20.toArray(new DynamicUniforms.Transform[0]));
-         this.renderSectionLayer(ChunkSectionLayer.SOLID, var28);
-         this.renderSectionLayer(ChunkSectionLayer.CUTOUT_MIPPED, var28);
-         this.renderSectionLayer(ChunkSectionLayer.CUTOUT, var28);
+         ChunkSectionsToRender var20 = this.prepareChunkRenders(var4, var14x, var16, var18);
+         var20.renderGroup(ChunkSectionLayerGroup.OPAQUE);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
          if (var13 != null) {
             ((RenderTarget)var13.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
          }
 
          if (this.shouldShowEntityOutlines() && var14 != null) {
-            RenderTarget var29 = (RenderTarget)var14.get();
-            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var29.getColorTexture(), 0, var29.getDepthTexture(), 1.0);
+            RenderTarget var21 = (RenderTarget)var14.get();
+            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var21.getColorTexture(), 0, var21.getDepthTexture(), 1.0);
          }
 
-         PoseStack var30 = new PoseStack();
-         MultiBufferSource.BufferSource var26 = this.renderBuffers.bufferSource();
-         MultiBufferSource.BufferSource var27 = this.renderBuffers.crumblingBufferSource();
+         PoseStack var24 = new PoseStack();
+         MultiBufferSource.BufferSource var22 = this.renderBuffers.bufferSource();
+         MultiBufferSource.BufferSource var23 = this.renderBuffers.crumblingBufferSource();
          var9.popPush("entities");
-         this.renderEntities(var30, var26, var3, var8, this.visibleEntities);
-         var26.endLastBatch();
-         this.checkPoseStack(var30);
+         this.renderEntities(var24, var22, var3, var8, this.visibleEntities);
+         var22.endLastBatch();
+         this.checkPoseStack(var24);
          var9.popPush("blockentities");
-         this.renderBlockEntities(var30, var26, var27, var3, var12x);
-         var26.endLastBatch();
-         this.checkPoseStack(var30);
-         var26.endBatch(RenderType.solid());
-         var26.endBatch(RenderType.endPortal());
-         var26.endBatch(RenderType.endGateway());
-         var26.endBatch(Sheets.solidBlockSheet());
-         var26.endBatch(Sheets.cutoutBlockSheet());
-         var26.endBatch(Sheets.bedSheet());
-         var26.endBatch(Sheets.shulkerBoxSheet());
-         var26.endBatch(Sheets.signSheet());
-         var26.endBatch(Sheets.hangingSignSheet());
-         var26.endBatch(Sheets.chestSheet());
+         this.renderBlockEntities(var24, var22, var23, var3, var12x);
+         var22.endLastBatch();
+         this.checkPoseStack(var24);
+         var22.endBatch(RenderType.solid());
+         var22.endBatch(RenderType.endPortal());
+         var22.endBatch(RenderType.endGateway());
+         var22.endBatch(Sheets.solidBlockSheet());
+         var22.endBatch(Sheets.cutoutBlockSheet());
+         var22.endBatch(Sheets.bedSheet());
+         var22.endBatch(Sheets.shulkerBoxSheet());
+         var22.endBatch(Sheets.signSheet());
+         var22.endBatch(Sheets.hangingSignSheet());
+         var22.endBatch(Sheets.chestSheet());
          this.renderBuffers.outlineBufferSource().endOutlineBatch();
          if (var6) {
-            this.renderBlockOutline(var3, var26, var30, false);
+            this.renderBlockOutline(var3, var22, var24, false);
          }
 
          var9.popPush("debug");
-         this.minecraft.debugRenderer.render(var30, var2, var26, var14x, var16, var18);
-         var26.endLastBatch();
-         this.checkPoseStack(var30);
-         var26.endBatch(Sheets.translucentItemSheet());
-         var26.endBatch(Sheets.bannerSheet());
-         var26.endBatch(Sheets.shieldSheet());
-         var26.endBatch(RenderType.armorEntityGlint());
-         var26.endBatch(RenderType.glint());
-         var26.endBatch(RenderType.glintTranslucent());
-         var26.endBatch(RenderType.entityGlint());
+         this.minecraft.debugRenderer.render(var24, var2, var22, var14x, var16, var18);
+         var22.endLastBatch();
+         this.checkPoseStack(var24);
+         var22.endBatch(Sheets.translucentItemSheet());
+         var22.endBatch(Sheets.bannerSheet());
+         var22.endBatch(Sheets.shieldSheet());
+         var22.endBatch(RenderType.armorEntityGlint());
+         var22.endBatch(RenderType.glint());
+         var22.endBatch(RenderType.glintTranslucent());
+         var22.endBatch(RenderType.entityGlint());
          var9.popPush("destroyProgress");
-         this.renderBlockDestroyAnimation(var30, var3, var27);
-         var27.endBatch();
-         this.checkPoseStack(var30);
-         var26.endBatch(RenderType.waterMask());
-         var26.endBatch();
+         this.renderBlockDestroyAnimation(var24, var3, var23);
+         var23.endBatch();
+         this.checkPoseStack(var24);
+         var22.endBatch(RenderType.waterMask());
+         var22.endBatch();
          if (var12 != null) {
             ((RenderTarget)var12.get()).copyDepthFrom((RenderTarget)var11.get());
          }
 
          var9.popPush("translucent");
-         this.renderSectionLayer(ChunkSectionLayer.TRANSLUCENT, var28);
+         var20.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT);
          var9.popPush("string");
-         this.renderSectionLayer(ChunkSectionLayer.TRIPWIRE, var28);
+         var20.renderGroup(ChunkSectionLayerGroup.TRIPWIRE);
          if (var6) {
-            this.renderBlockOutline(var3, var26, var30, true);
+            this.renderBlockOutline(var3, var22, var24, true);
          }
 
-         var26.endBatch();
+         var22.endBatch();
          var9.pop();
       });
    }
@@ -887,61 +872,50 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void renderSectionLayer(ChunkSectionLayer var1, GpuBufferSlice[] var2) {
-      RenderSystem.assertOnRenderThread();
-      Zone var3 = Profiler.get().zone((Supplier)(() -> "render_" + var1.label()));
-      boolean var4 = var1 != ChunkSectionLayer.TRANSLUCENT;
-      ObjectListIterator var5 = this.visibleSections.listIterator(var4 ? 0 : this.visibleSections.size());
-      RenderPipeline var6 = var1.pipeline();
-      ArrayList var7 = new ArrayList();
-      RenderSystem.AutoStorageIndexBuffer var8 = RenderSystem.getSequentialBuffer(var6.getVertexFormatMode());
-      int var9 = 0;
+   private ChunkSectionsToRender prepareChunkRenders(Matrix4fc var1, double var2, double var4, double var6) {
+      ObjectListIterator var8 = this.visibleSections.listIterator(0);
+      EnumMap var9 = new EnumMap(ChunkSectionLayer.class);
+      int var10 = 0;
 
-      while(true) {
-         if (var4) {
-            if (!var5.hasNext()) {
-               break;
-            }
-         } else if (!var5.hasPrevious()) {
-            break;
-         }
+      for(ChunkSectionLayer var14 : ChunkSectionLayer.values()) {
+         var9.put(var14, new ArrayList());
+      }
 
-         SectionRenderDispatcher.RenderSection var10 = var4 ? (SectionRenderDispatcher.RenderSection)var5.next() : (SectionRenderDispatcher.RenderSection)var5.previous();
-         SectionMesh var11 = var10.getSectionMesh();
-         SectionBuffers var12 = var11.getBuffers(var1);
-         if (var12 != null) {
-            GpuBuffer var13;
-            VertexFormat.IndexType var14;
-            if (var12.getIndexBuffer() == null) {
-               if (var12.getIndexCount() > var9) {
-                  var9 = var12.getIndexCount();
+      ArrayList var25 = new ArrayList();
+      Vector4f var26 = new Vector4f(1.0F, 1.0F, 1.0F, 1.0F);
+      Matrix4f var27 = new Matrix4f();
+
+      while(var8.hasNext()) {
+         SectionRenderDispatcher.RenderSection var28 = (SectionRenderDispatcher.RenderSection)var8.next();
+         SectionMesh var15 = var28.getSectionMesh();
+
+         for(ChunkSectionLayer var19 : ChunkSectionLayer.values()) {
+            SectionBuffers var20 = var15.getBuffers(var19);
+            if (var20 != null) {
+               GpuBuffer var21;
+               VertexFormat.IndexType var22;
+               if (var20.getIndexBuffer() == null) {
+                  if (var20.getIndexCount() > var10) {
+                     var10 = var20.getIndexCount();
+                  }
+
+                  var21 = null;
+                  var22 = null;
+               } else {
+                  var21 = var20.getIndexBuffer();
+                  var22 = var20.getIndexType();
                }
 
-               var13 = null;
-               var14 = null;
-            } else {
-               var13 = var12.getIndexBuffer();
-               var14 = var12.getIndexType();
+               BlockPos var23 = var28.getRenderOrigin();
+               int var24 = var25.size();
+               var25.add(new DynamicUniforms.Transform(var1, var26, new Vector3f((float)((double)var23.getX() - var2), (float)((double)var23.getY() - var4), (float)((double)var23.getZ() - var6)), var27, 1.0F));
+               ((List)var9.get(var19)).add(new RenderPass.Draw(0, var20.getVertexBuffer(), var21, var22, 0, var20.getIndexCount(), (var1x, var2x) -> var2x.upload("DynamicTransforms", var1x[var24])));
             }
-
-            GpuBufferSlice var15 = var2[var10.getDynamicTransformIndex()];
-            var7.add(new RenderPass.Draw(0, var12.getVertexBuffer(), var13, var14, 0, var12.getIndexCount(), (var1x) -> var1x.upload("DynamicTransforms", var15)));
          }
       }
 
-      GpuBuffer var18 = var9 == 0 ? null : var8.getBuffer(var9);
-      VertexFormat.IndexType var19 = var9 == 0 ? null : var8.type();
-      RenderTarget var20 = var1.outputTarget();
-
-      try (RenderPass var21 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var20.getColorTextureView(), OptionalInt.empty(), var20.getDepthTextureView(), OptionalDouble.empty())) {
-         var21.setPipeline(var6);
-         RenderSystem.bindDefaultUniforms(var21);
-         var21.bindSampler("Sampler0", var1.textureView());
-         var21.bindSampler("Sampler2", this.minecraft.gameRenderer.lightTexture().getTextureView());
-         var21.drawMultipleIndexed(var7, var18, var19, List.of("DynamicTransforms"));
-      }
-
-      var3.close();
+      GpuBufferSlice[] var29 = RenderSystem.getDynamicUniforms().writeTransforms((DynamicUniforms.Transform[])var25.toArray(new DynamicUniforms.Transform[0]));
+      return new ChunkSectionsToRender(var9, var10, var29);
    }
 
    public void endFrame() {

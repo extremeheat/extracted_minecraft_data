@@ -65,12 +65,11 @@ public abstract class HangingEntity extends BlockAttachedEntity {
       this.recalculateBoundingBox();
    }
 
-   protected final void recalculateBoundingBox() {
+   protected void recalculateBoundingBox() {
       if (this.getDirection() != null) {
          AABB var1 = this.calculateBoundingBox(this.pos, this.getDirection());
          Vec3 var2 = var1.getCenter();
          this.setPosRaw(var2.x, var2.y, var2.z);
-         this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
          this.setBoundingBox(var1);
       }
    }

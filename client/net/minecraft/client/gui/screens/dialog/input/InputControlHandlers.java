@@ -17,8 +17,12 @@ import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.dialog.action.Action;
 import net.minecraft.server.dialog.input.BooleanInput;
 import net.minecraft.server.dialog.input.InputControl;
 import net.minecraft.server.dialog.input.NumberRangeInput;
@@ -67,7 +71,7 @@ public class InputControlHandlers {
       public void addControl(TextInput var1, Screen var2, InputControlHandler.Output var3) {
          Font var4 = var2.getFont();
          Object var5;
-         Supplier var6;
+         Action.ValueGetter var6;
          if (var1.multiline().isPresent()) {
             TextInput.MultilineOptions var7 = (TextInput.MultilineOptions)var1.multiline().get();
             int var8 = (Integer)var7.height().orElseGet(() -> {
@@ -83,14 +87,14 @@ public class InputControlHandlers {
             var10000.ifPresent(var9::setLineLimit);
             var5 = var9;
             Objects.requireNonNull(var9);
-            var6 = var9::getValue;
+            var6 = Action.ValueGetter.of(var9::getValue);
          } else {
             EditBox var10 = new EditBox(var4, var1.width(), 20, var1.label());
             var10.setValue(var1.initial());
             var10.setMaxLength(var1.maxLength());
             var5 = var10;
             Objects.requireNonNull(var10);
-            var6 = var10::getValue;
+            var6 = Action.ValueGetter.of(var10::getValue);
          }
 
          Object var11 = var1.labelVisible() ? CommonLayouts.labeledElement(var4, (LayoutElement)var5, var1.label()) : var5;
@@ -116,7 +120,7 @@ public class InputControlHandlers {
          }
 
          CycleButton var6 = var4.create(0, 0, var1.width(), 20, var1.label());
-         var3.accept(var6, () -> ((SingleOptionInput.Entry)var6.getValue()).id());
+         var3.accept(var6, Action.ValueGetter.of((Supplier)(() -> ((SingleOptionInput.Entry)var6.getValue()).id())));
       }
 
       // $FF: synthetic method
@@ -130,10 +134,18 @@ public class InputControlHandlers {
          super();
       }
 
-      public void addControl(BooleanInput var1, Screen var2, InputControlHandler.Output var3) {
+      public void addControl(final BooleanInput var1, Screen var2, InputControlHandler.Output var3) {
          Font var4 = var2.getFont();
-         Checkbox var5 = Checkbox.builder(var1.label(), var4).selected(var1.initial()).build();
-         var3.accept(var5, () -> var5.selected() ? var1.onTrue() : var1.onFalse());
+         final Checkbox var5 = Checkbox.builder(var1.label(), var4).selected(var1.initial()).build();
+         var3.accept(var5, new Action.ValueGetter() {
+            public String asTemplateSubstitution() {
+               return var5.selected() ? var1.onTrue() : var1.onFalse();
+            }
+
+            public Tag asTag() {
+               return ByteTag.valueOf(var5.selected());
+            }
+         });
       }
 
       // $FF: synthetic method
@@ -149,9 +161,16 @@ public class InputControlHandlers {
 
       public void addControl(NumberRangeInput var1, Screen var2, InputControlHandler.Output var3) {
          float var4 = var1.rangeInfo().initialSliderValue();
-         SliderImpl var5 = new SliderImpl(var1, (double)var4);
-         Objects.requireNonNull(var5);
-         var3.accept(var5, var5::valueToSend);
+         final SliderImpl var5 = new SliderImpl(var1, (double)var4);
+         var3.accept(var5, new Action.ValueGetter() {
+            public String asTemplateSubstitution() {
+               return var5.stringValueToSend();
+            }
+
+            public Tag asTag() {
+               return FloatTag.valueOf(var5.floatValueToSend());
+            }
+         });
       }
 
       // $FF: synthetic method
@@ -174,12 +193,20 @@ public class InputControlHandlers {
          protected void applyValue() {
          }
 
-         public String valueToSend() {
+         public String stringValueToSend() {
             return sliderValueToString(this.input, this.value);
          }
 
+         public float floatValueToSend() {
+            return scaledValue(this.input, this.value);
+         }
+
+         private static float scaledValue(NumberRangeInput var0, double var1) {
+            return var0.rangeInfo().computeScaledValue((float)var1);
+         }
+
          private static String sliderValueToString(NumberRangeInput var0, double var1) {
-            return valueToString(var0.rangeInfo().computeScaledValue((float)var1));
+            return valueToString(scaledValue(var0, var1));
          }
 
          private static Component computeMessage(NumberRangeInput var0, double var1) {

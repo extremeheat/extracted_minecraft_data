@@ -58,12 +58,12 @@ public class HappyGhast extends Animal {
    public static final int FAST_HEALING_TICKS = 20;
    public static final int SLOW_HEALING_TICKS = 600;
    public static final int MAX_PASSANGERS = 4;
-   private static final int MAX_STILL_TIMEOUT = 10;
-   private static final int MIN_STILL_TIMEOUT_CHECK = 5;
+   private static final int MAX_STILL_TIMEOUT = 40;
+   private static final int MAX_STILL_TIMEOUT_WHEN_RIDDEN = 10;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
    public static final Predicate<ItemStack> IS_FOOD = (var0) -> var0.is(ItemTags.HAPPY_GHAST_FOOD);
    private int leashHolderTime = 0;
-   private int serverStillTimeout = 0;
+   private int serverStillTimeout;
    private static final EntityDataAccessor<Boolean> IS_LEASH_HOLDER;
    private static final EntityDataAccessor<Boolean> STAYS_STILL;
    private static final float MAX_SCALE = 1.0F;
@@ -72,6 +72,11 @@ public class HappyGhast extends Animal {
       super(var1, var2);
       this.moveControl = new Ghast.GhastMoveControl(this, true, this::isPlayerAboveGhast);
       this.lookControl = new HappyGhastLookControl();
+   }
+
+   private void setServerStillTimeout(int var1) {
+      this.serverStillTimeout = var1;
+      this.syncStayStillFlag();
    }
 
    private PathNavigation createBabyNavigation(Level var1) {
@@ -102,7 +107,7 @@ public class HappyGhast extends Animal {
       this.moveControl = new FlyingMoveControl(this, 180, true);
       this.lookControl = new LookControl(this);
       this.navigation = this.createBabyNavigation(this.level());
-      this.serverStillTimeout = 0;
+      this.setServerStillTimeout(0);
       this.removeAllGoals((var0) -> true);
    }
 
@@ -246,10 +251,22 @@ public class HappyGhast extends Animal {
       }
 
       super.addPassenger(var1);
+      if (!this.level().isClientSide) {
+         if (!this.scanPlayerAboveGhast()) {
+            this.setServerStillTimeout(0);
+         } else if (this.serverStillTimeout > 10) {
+            this.setServerStillTimeout(10);
+         }
+      }
+
    }
 
    protected void removePassenger(Entity var1) {
       super.removePassenger(var1);
+      if (!this.level().isClientSide) {
+         this.setServerStillTimeout(this.getPassengers().isEmpty() ? 40 : 10);
+      }
+
       if (!this.isVehicle()) {
          this.clearHome();
          this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.HARNESS_GOGGLES_UP, this.getSoundSource(), 1.0F, 1.0F);
@@ -341,14 +358,13 @@ public class HappyGhast extends Animal {
 
          this.setLeashHolder(this.leashHolderTime > 0);
          if (this.serverStillTimeout > 0) {
-            --this.serverStillTimeout;
+            this.setServerStillTimeout(this.serverStillTimeout - 1);
          }
 
-         if (this.serverStillTimeout < 5 && this.scanPlayerAboveGhast()) {
-            this.serverStillTimeout = 10;
+         if (this.scanPlayerAboveGhast()) {
+            this.setServerStillTimeout(this.getPassengers().isEmpty() ? 40 : 10);
          }
 
-         this.syncStayStillFlag();
       }
    }
 
@@ -451,7 +467,7 @@ public class HappyGhast extends Animal {
 
    public void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.serverStillTimeout = var1.getIntOr("still_timeout", 0);
+      this.setServerStillTimeout(var1.getIntOr("still_timeout", 0));
    }
 
    public boolean isPlayerAboveGhast() {
@@ -463,8 +479,11 @@ public class HappyGhast extends Animal {
       AABB var2 = new AABB(var1.minX - 1.0, var1.maxY, var1.minZ - 1.0, var1.maxX + 1.0, var1.maxY + var1.getYsize() / 2.0, var1.maxZ + 1.0);
 
       for(Player var4 : this.level().players()) {
-         if (!var4.isSpectator() && var2.contains(var4.getX(), var4.getY(), var4.getZ())) {
-            return true;
+         if (!var4.isSpectator()) {
+            Entity var5 = var4.getRootVehicle();
+            if (!(var5 instanceof HappyGhast) && var2.contains(var5.position())) {
+               return true;
+            }
          }
       }
 
@@ -476,12 +495,14 @@ public class HappyGhast extends Animal {
    }
 
    public boolean canBeCollidedWith(@Nullable Entity var1) {
-      if (this.isBaby()) {
-         return false;
-      } else if (this.level().isClientSide() && var1 instanceof Player) {
-         return var1.position().y >= this.getBoundingBox().maxY;
+      if (!this.isBaby() && this.isAlive()) {
+         if (this.level().isClientSide() && var1 instanceof Player) {
+            return var1.position().y >= this.getBoundingBox().maxY;
+         } else {
+            return this.isVehicle() && var1 instanceof HappyGhast ? true : this.isPlayerAboveGhast();
+         }
       } else {
-         return this.isPlayerAboveGhast();
+         return false;
       }
    }
 

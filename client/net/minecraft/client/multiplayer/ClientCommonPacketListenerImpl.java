@@ -32,6 +32,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.dialog.DialogConnectionAccess;
 import net.minecraft.client.gui.screens.dialog.DialogScreen;
 import net.minecraft.client.gui.screens.dialog.DialogScreens;
+import net.minecraft.client.gui.screens.dialog.WaitingForResponseScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
@@ -238,33 +239,38 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void handleShowDialog(ClientboundShowDialogPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      this.showDialog(var1.dialog());
+      this.showDialog(var1.dialog(), this.minecraft.screen);
    }
 
    protected abstract DialogConnectionAccess createDialogAccess();
 
-   public void showDialog(Holder<Dialog> var1) {
-      if (var3 instanceof DialogScreen.WarningScreen var5) {
-         DialogScreen var8 = var5.returnScreen();
-         DialogScreen var9 = DialogScreens.createFromData((Dialog)var1.value(), var8.previousScreen(), this.createDialogAccess());
-         if (var9 != null) {
-            var5.updateReturnScreen(var9);
+   public void showDialog(Holder<Dialog> var1, @Nullable Screen var2) {
+      this.showDialog(var1, this.createDialogAccess(), var2);
+   }
+
+   protected void showDialog(Holder<Dialog> var1, DialogConnectionAccess var2, @Nullable Screen var3) {
+      if (var3 instanceof DialogScreen.WarningScreen var7) {
+         DialogScreen var9 = var7.returnScreen();
+         DialogScreen var10 = DialogScreens.createFromData((Dialog)var1.value(), var9.previousScreen(), var2);
+         if (var10 != null) {
+            var7.updateReturnScreen(var10);
          } else {
             LOGGER.warn("Failed to show dialog for data {}", var1);
          }
 
       } else {
-         Screen var4 = this.minecraft.screen;
-         Screen var2;
-         if (var4 instanceof DialogScreen var3) {
-            var2 = var3.previousScreen();
+         Screen var4;
+         if (var3 instanceof DialogScreen var5) {
+            var4 = var5.previousScreen();
+         } else if (var3 instanceof WaitingForResponseScreen var6) {
+            var4 = var6.previousScreen();
          } else {
-            var2 = this.minecraft.screen;
+            var4 = var3;
          }
 
-         var3 = DialogScreens.createFromData((Dialog)var1.value(), var2, this.createDialogAccess());
-         if (var3 != null) {
-            this.minecraft.setScreen(var3);
+         DialogScreen var8 = DialogScreens.createFromData((Dialog)var1.value(), var4, var2);
+         if (var8 != null) {
+            this.minecraft.setScreen(var8);
          } else {
             LOGGER.warn("Failed to show dialog for data {}", var1);
          }

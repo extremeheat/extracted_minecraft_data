@@ -44,6 +44,7 @@ import net.minecraft.client.renderer.special.BedSpecialRenderer;
 import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.special.ConduitSpecialRenderer;
 import net.minecraft.client.renderer.special.DecoratedPotSpecialRenderer;
+import net.minecraft.client.renderer.special.PlayerHeadSpecialRenderer;
 import net.minecraft.client.renderer.special.ShulkerBoxSpecialRenderer;
 import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -1719,7 +1720,12 @@ public class BlockModelGenerators {
       MultiVariant var5 = plainVariant(ModelLocationUtils.decorateBlockModelLocation("skull"));
       this.blockStateOutput.accept(createSimpleBlock(var1, var5));
       this.blockStateOutput.accept(createSimpleBlock(var2, var5));
-      this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var4, new SkullSpecialRenderer.Unbaked(var3)));
+      if (var3 == SkullBlock.Types.PLAYER) {
+         this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var4, new PlayerHeadSpecialRenderer.Unbaked()));
+      } else {
+         this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var4, new SkullSpecialRenderer.Unbaked(var3)));
+      }
+
    }
 
    private void createHeads() {

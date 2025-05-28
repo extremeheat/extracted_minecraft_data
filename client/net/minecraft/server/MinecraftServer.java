@@ -76,6 +76,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.MiscOverworldFeatures;
 import net.minecraft.gametest.framework.GameTestTicker;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -2043,7 +2044,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
    }
 
-   public void handleCustomClickAction(ResourceLocation var1, Optional<String> var2) {
+   public void handleCustomClickAction(ResourceLocation var1, Optional<Tag> var2) {
       LOGGER.debug("Received custom click action {} with payload {}", var1, var2.orElse((Object)null));
    }
 

@@ -652,9 +652,6 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public void onBlockEntityAdded(BlockEntity var1) {
    }
 
-   public void disconnect() {
-   }
-
    public long getGameTime() {
       return this.levelData.getGameTime();
    }

@@ -37,7 +37,7 @@ public class HangingSignRenderer extends AbstractSignRenderer {
    private static final String CHAIN_R_1 = "chainR1";
    private static final String CHAIN_R_2 = "chainR2";
    private static final String BOARD = "board";
-   private static final float MODEL_RENDER_SCALE = 1.0F;
+   public static final float MODEL_RENDER_SCALE = 1.0F;
    private static final float TEXT_RENDER_SCALE = 0.9F;
    private static final Vec3 TEXT_OFFSET = new Vec3(0.0, -0.3199999928474426, 0.0729999989271164);
    private final Map<ModelKey, Model> hangingSignModels;
@@ -60,7 +60,7 @@ public class HangingSignRenderer extends AbstractSignRenderer {
       return 0.9F;
    }
 
-   private static void translateBase(PoseStack var0, float var1) {
+   public static void translateBase(PoseStack var0, float var1) {
       var0.translate(0.5, 0.9375, 0.5);
       var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1));
       var0.translate(0.0F, -0.3125F, 0.0F);

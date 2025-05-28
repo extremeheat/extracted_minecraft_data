@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -84,6 +85,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
          int var5 = this.getHydrationLevel(var1);
          if (var5 > 0) {
             var2.setBlock(var3, (BlockState)var1.setValue(HYDRATION_LEVEL, var5 - 1), 2);
+            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
          }
 
       }
@@ -93,6 +95,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
       if (!this.isReadyToSpawn(var1)) {
          var2.playSound((Entity)null, var3, SoundEvents.DRIED_GHAST_TRANSITION, SoundSource.BLOCKS, 1.0F, 1.0F);
          var2.setBlock(var3, (BlockState)var1.setValue(HYDRATION_LEVEL, this.getHydrationLevel(var1) + 1), 2);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
       } else {
          this.spawnGhastling(var2, var3, var1);
       }
@@ -120,7 +123,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
       double var9 = (double)var3.getZ() + 0.5;
       if (!(Boolean)var1.getValue(WATERLOGGED)) {
          if (var4.nextInt(40) == 0 && var2.getBlockState(var3.below()).is(BlockTags.TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS)) {
-            var2.playLocalSound(var5, var7, var9, SoundEvents.DRIED_GHAST_AMBIENT, SoundSource.AMBIENT, 1.0F, 1.0F, false);
+            var2.playLocalSound(var5, var7, var9, SoundEvents.DRIED_GHAST_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
          if (var4.nextInt(6) == 0) {
@@ -128,7 +131,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
          }
       } else {
          if (var4.nextInt(40) == 0) {
-            var2.playLocalSound(var5, var7, var9, SoundEvents.DRIED_GHAST_AMBIENT_WATER, SoundSource.AMBIENT, 1.0F, 1.0F, false);
+            var2.playLocalSound(var5, var7, var9, SoundEvents.DRIED_GHAST_AMBIENT_WATER, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
          if (var4.nextInt(6) == 0) {

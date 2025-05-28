@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -11,6 +12,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import org.joml.Vector3f;
 
 public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDecorations> {
    private final DecoratedPotRenderer decoratedPotRenderer;
@@ -27,6 +29,10 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
 
    public void render(@Nullable PotDecorations var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, boolean var7) {
       this.decoratedPotRenderer.renderInHand(var3, var4, var5, var6, (PotDecorations)Objects.requireNonNullElse(var1, PotDecorations.EMPTY));
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      this.decoratedPotRenderer.getExtents(var1);
    }
 
    // $FF: synthetic method

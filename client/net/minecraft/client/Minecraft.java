@@ -171,7 +171,9 @@ import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestTicker;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ClickEvent;
@@ -187,6 +189,8 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
+import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.dialog.Dialogs;
 import net.minecraft.server.level.progress.ProcessorChunkProgressListener;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
 import net.minecraft.server.packs.PackType;
@@ -203,6 +207,7 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
@@ -260,6 +265,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private static final ResourceLocation REGIONAL_COMPLIANCIES;
    private static final CompletableFuture<Unit> RESOURCE_RELOAD_INITIAL_TASK;
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE;
+   private static final Component SAVING_LEVEL;
    public static final String UPDATE_DRIVERS_ADVICE = "Please make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).";
    private final long canary = Double.doubleToLongBits(3.141592653589793);
    private final Path resourcePackDirectory;
@@ -789,8 +795,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private void abortResourcePackRecovery() {
       this.setOverlay((Overlay)null);
       if (this.level != null) {
-         this.level.disconnect();
-         this.disconnect();
+         this.level.disconnect(ClientLevel.DEFAULT_QUIT_MESSAGE);
+         this.disconnectWithProgressScreen();
       }
 
       this.setScreen(new TitleScreen());
@@ -1112,10 +1118,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          try {
             if (this.level != null) {
-               this.level.disconnect();
+               this.level.disconnect(ClientLevel.DEFAULT_QUIT_MESSAGE);
             }
 
-            this.disconnect();
+            this.disconnectWithProgressScreen();
          } catch (Throwable var6) {
          }
 
@@ -1377,7 +1383,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.singleplayerServer.halt(true);
          }
 
-         this.disconnect(new GenericMessageScreen(Component.translatable("menu.savingLevel")));
+         this.disconnectWithSavingScreen();
       } catch (Throwable var2) {
       }
 
@@ -1871,6 +1877,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.setScreen(new AdvancementsScreen(this.player.connection.getAdvancements()));
       }
 
+      while(this.options.keyQuickActions.consumeClick()) {
+         this.getQuickActionsDialog().ifPresent((var1x) -> this.player.connection.showDialog(var1x, this.screen));
+      }
+
       while(this.options.keySwapOffhand.consumeClick()) {
          if (!this.player.isSpectator()) {
             this.getConnection().send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ZERO, Direction.DOWN));
@@ -1926,6 +1936,17 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.continueAttack(this.screen == null && !var5 && this.options.keyAttack.isDown() && this.mouseHandler.isMouseGrabbed());
    }
 
+   private Optional<Holder<Dialog>> getQuickActionsDialog() {
+      Registry var1 = this.player.connection.registryAccess().lookupOrThrow(Registries.DIALOG);
+      return var1.get(DialogTags.QUICK_ACTIONS).flatMap((var1x) -> {
+         if (var1x.size() == 0) {
+            return Optional.empty();
+         } else {
+            return var1x.size() == 1 ? Optional.of(var1x.get(0)) : var1.get(Dialogs.QUICK_ACTIONS);
+         }
+      });
+   }
+
    public ClientTelemetryManager getTelemetryManager() {
       return this.telemetryManager;
    }
@@ -1943,7 +1964,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void doWorldLoad(LevelStorageSource.LevelStorageAccess var1, PackRepository var2, WorldStem var3, boolean var4) {
-      this.disconnect();
+      this.disconnectWithProgressScreen();
       this.progressListener.set((Object)null);
       Instant var5 = Instant.now();
 
@@ -2014,12 +2035,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    }
 
-   public void disconnect() {
-      this.disconnect(new ProgressScreen(true), false);
+   public void disconnectWithSavingScreen() {
+      this.disconnect(new GenericMessageScreen(SAVING_LEVEL), false);
    }
 
-   public void disconnect(Screen var1) {
-      this.disconnect(var1, false);
+   public void disconnectWithProgressScreen() {
+      this.disconnect(new ProgressScreen(true), false);
    }
 
    public void disconnect(Screen var1, boolean var2) {
@@ -2778,6 +2799,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       REGIONAL_COMPLIANCIES = ResourceLocation.withDefaultNamespace("regional_compliancies.json");
       RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
       SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
+      SAVING_LEVEL = Component.translatable("menu.savingLevel");
    }
 
    public static enum ChatStatus {

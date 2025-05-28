@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Set;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
@@ -11,6 +12,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Vector3f;
 
 public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
    private final BedRenderer bedRenderer;
@@ -24,6 +26,10 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
 
    public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
       this.bedRenderer.renderInHand(var2, var3, var4, var5, this.material);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      this.bedRenderer.getExtents(var1);
    }
 
    public static record Unbaked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {

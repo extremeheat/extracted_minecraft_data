@@ -502,6 +502,28 @@ public interface ByteBufCodecs {
       };
    }
 
+   static StreamCodec<ByteBuf, Optional<Tag>> optionalTagCodec(final Supplier<NbtAccounter> var0) {
+      return new StreamCodec<ByteBuf, Optional<Tag>>() {
+         public Optional<Tag> decode(ByteBuf var1) {
+            return Optional.ofNullable(FriendlyByteBuf.readNbt(var1, (NbtAccounter)var0.get()));
+         }
+
+         public void encode(ByteBuf var1, Optional<Tag> var2) {
+            FriendlyByteBuf.writeNbt(var1, (Tag)var2.orElse((Object)null));
+         }
+
+         // $FF: synthetic method
+         public void encode(final Object var1, final Object var2) {
+            this.encode((ByteBuf)var1, (Optional)var2);
+         }
+
+         // $FF: synthetic method
+         public Object decode(final Object var1) {
+            return this.decode((ByteBuf)var1);
+         }
+      };
+   }
+
    static StreamCodec<ByteBuf, Tag> tagCodec(final Supplier<NbtAccounter> var0) {
       return new StreamCodec<ByteBuf, Tag>() {
          public Tag decode(ByteBuf var1) {
@@ -820,7 +842,11 @@ public interface ByteBufCodecs {
          };
    }
 
-   static <V> StreamCodec.CodecOperation<RegistryFriendlyByteBuf, V, V> lengthPrefixed(int var0) {
+   static <V> StreamCodec.CodecOperation<ByteBuf, V, V> lengthPrefixed(int var0) {
+      return lengthPrefixed(var0, (var0x, var1) -> var1);
+   }
+
+   static <V> StreamCodec.CodecOperation<RegistryFriendlyByteBuf, V, V> registryFriendlyLengthPrefixed(int var0) {
       return lengthPrefixed(var0, (var0x, var1) -> new RegistryFriendlyByteBuf(var1, var0x.registryAccess()));
    }
 

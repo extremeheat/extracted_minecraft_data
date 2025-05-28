@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.item;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.HashSet;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.TextureSlots;
@@ -17,7 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
 public class SpecialModelWrapper<T> implements ItemModel {
-   private static final Vector3f[] EXTENTS = new Vector3f[]{new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(0.0F, 0.0F, 1.0F), new Vector3f(0.0F, 1.0F, 1.0F), new Vector3f(0.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 1.0F), new Vector3f(1.0F, 0.0F, 1.0F), new Vector3f(1.0F, 0.0F, 0.0F)};
    private final SpecialModelRenderer<T> specialRenderer;
    private final ModelRenderProperties properties;
 
@@ -37,8 +37,12 @@ public class SpecialModelWrapper<T> implements ItemModel {
          var1.appendModelIdentityElement(var9);
       }
 
-      var8.setExtents(() -> EXTENTS);
       Object var10 = this.specialRenderer.extractArgument(var2);
+      var8.setExtents(() -> {
+         HashSet var1 = new HashSet();
+         this.specialRenderer.getExtents(var1);
+         return (Vector3f[])var1.toArray(new Vector3f[0]);
+      });
       var8.setupSpecialModel(this.specialRenderer, var10);
       if (var10 != null) {
          var1.appendModelIdentityElement(var10);

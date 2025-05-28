@@ -96,6 +96,11 @@ public class ItemFrame extends HangingEntity {
       this.recalculateBoundingBox();
    }
 
+   protected final void recalculateBoundingBox() {
+      super.recalculateBoundingBox();
+      this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
+   }
+
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
       float var3 = 0.46875F;
       Vec3 var4 = Vec3.atCenterOf(var1).relative(var2, -0.46875);

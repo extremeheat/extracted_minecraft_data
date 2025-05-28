@@ -198,7 +198,7 @@ public class V99 extends Schema {
       var1.registerType(false, References.STATS, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_COMMAND_STORAGE, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_TICKETS, DSL::remainder);
-      var1.registerType(false, References.SAVED_DATA_MAP_DATA, () -> DSL.optionalFields("banners", DSL.list(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1)))));
+      var1.registerType(false, References.SAVED_DATA_MAP_DATA, () -> DSL.optionalFields("data", DSL.optionalFields("banners", DSL.list(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1))))));
       var1.registerType(false, References.SAVED_DATA_MAP_INDEX, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RAIDS, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RANDOM_SEQUENCES, DSL::remainder);

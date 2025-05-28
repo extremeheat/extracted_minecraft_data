@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.dialog;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.server.dialog.ClickAction;
+import net.minecraft.server.dialog.ActionButton;
 import net.minecraft.server.dialog.MultiActionDialog;
 
 public class MultiButtonDialogScreen extends ButtonListDialogScreen<MultiActionDialog> {
@@ -11,7 +11,7 @@ public class MultiButtonDialogScreen extends ButtonListDialogScreen<MultiActionD
       super(var1, var2, var3);
    }
 
-   protected Stream<ClickAction> createListActions(MultiActionDialog var1, DialogConnectionAccess var2) {
+   protected Stream<ActionButton> createListActions(MultiActionDialog var1, DialogConnectionAccess var2) {
       return var1.actions().stream();
    }
 }

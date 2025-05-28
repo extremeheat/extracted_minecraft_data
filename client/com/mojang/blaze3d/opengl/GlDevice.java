@@ -175,9 +175,17 @@ public class GlDevice implements GpuDevice {
       if (var3 <= 0) {
          throw new IllegalArgumentException("Buffer size must be greater than zero");
       } else {
+         GlStateManager.clearGlErrors();
          GlBuffer var4 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
-         this.debugLabels.applyLabel(var4);
-         return var4;
+         int var5 = GlStateManager._getError();
+         if (var5 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate buffer of " + var3 + " for " + String.valueOf(var1));
+         } else if (var5 != 0) {
+            throw new IllegalStateException("OpenGL error " + var5);
+         } else {
+            this.debugLabels.applyLabel(var4);
+            return var4;
+         }
       }
    }
 
@@ -185,9 +193,18 @@ public class GlDevice implements GpuDevice {
       if (!var3.hasRemaining()) {
          throw new IllegalArgumentException("Buffer source must not be empty");
       } else {
-         GlBuffer var4 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
-         this.debugLabels.applyLabel(var4);
-         return var4;
+         GlStateManager.clearGlErrors();
+         long var4 = (long)var3.remaining();
+         GlBuffer var6 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
+         int var7 = GlStateManager._getError();
+         if (var7 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate buffer of " + var4 + " for " + String.valueOf(var1));
+         } else if (var7 != 0) {
+            throw new IllegalStateException("OpenGL error " + var7);
+         } else {
+            this.debugLabels.applyLabel(var6);
+            return var6;
+         }
       }
    }
 

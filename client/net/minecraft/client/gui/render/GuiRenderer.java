@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
@@ -40,6 +41,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.gui.render.state.GlyphEffectRenderState;
@@ -47,6 +49,7 @@ import net.minecraft.client.gui.render.state.GlyphRenderState;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MappableRingBuffer;
@@ -72,12 +75,13 @@ public class GuiRenderer implements AutoCloseable {
    public static final int GUI_3D_Z_NEAR = -1000;
    public static final int DEFAULT_ITEM_SIZE = 16;
    private static final int MINIMUM_ITEM_ATLAS_SIZE = 512;
-   private static final int MAXIMUM_ITEM_ATLAS_SIZE = 2048;
+   private static final int MAXIMUM_ITEM_ATLAS_SIZE = RenderSystem.getDevice().getMaxTextureSize();
    public static final int CLEAR_COLOR = 0;
    private static final Comparator<ScreenRectangle> SCISSOR_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(ScreenRectangle::top).thenComparing(ScreenRectangle::bottom).thenComparing(ScreenRectangle::left).thenComparing(ScreenRectangle::right));
    private static final Comparator<TextureSetup> TEXTURE_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(TextureSetup::getSortKey));
    private static final Comparator<GuiElementRenderState> ELEMENT_SORT_COMPARATOR;
    private final Map<Object, AtlasPosition> atlasPositions = new Object2ObjectOpenHashMap();
+   private final Map<Object, OversizedItemRenderer> oversizedItemRenderers = new Object2ObjectOpenHashMap();
    final GuiRenderState renderState;
    private final List<Draw> draws = new ArrayList();
    private final List<MeshToDraw> meshesToDraw = new ArrayList();
@@ -138,6 +142,23 @@ public class GuiRenderer implements AutoCloseable {
       this.meshesToDraw.clear();
       this.renderState.reset();
       this.firstDrawIndexAfterBlur = 2147483647;
+      this.clearUnusedOversizedItemRenderers();
+   }
+
+   private void clearUnusedOversizedItemRenderers() {
+      Iterator var1 = this.oversizedItemRenderers.entrySet().iterator();
+
+      while(var1.hasNext()) {
+         Map.Entry var2 = (Map.Entry)var1.next();
+         OversizedItemRenderer var3 = (OversizedItemRenderer)var2.getValue();
+         if (!var3.usedOnThisFrame()) {
+            var3.close();
+            var1.remove();
+         } else {
+            var3.resetUsedOnThisFrame();
+         }
+      }
+
    }
 
    private void prepare() {
@@ -251,60 +272,77 @@ public class GuiRenderer implements AutoCloseable {
    private void prepareItemElements() {
       if (!this.renderState.getItemModelIdentities().isEmpty()) {
          int var1 = this.getGuiScaleInvalidatingItemAtlasIfChanged();
-         int var2 = this.getItemCount();
-         int var3 = 16 * var1;
-         int var4 = this.calculateAtlasSizeInPixels(var2, var3);
+         int var2 = 16 * var1;
+         int var3 = this.calculateAtlasSizeInPixels(var2);
          if (this.itemsAtlas == null) {
-            this.createAtlasTextures(var4);
+            this.createAtlasTextures(var3);
          }
 
          RenderSystem.outputColorTextureOverride = this.itemsAtlasView;
          RenderSystem.outputDepthTextureOverride = this.itemsAtlasDepthView;
-         RenderSystem.setProjectionMatrix(this.itemsProjectionMatrixBuffer.getBuffer((float)var4, (float)var4), ProjectionType.ORTHOGRAPHIC);
+         RenderSystem.setProjectionMatrix(this.itemsProjectionMatrixBuffer.getBuffer((float)var3, (float)var3), ProjectionType.ORTHOGRAPHIC);
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
-         PoseStack var5 = new PoseStack();
+         PoseStack var4 = new PoseStack();
+         MutableBoolean var5 = new MutableBoolean(false);
          MutableBoolean var6 = new MutableBoolean(false);
-         this.renderState.forEachItem((var5x) -> {
-            ItemStackRenderState var6x = var5x.itemStackRenderState();
-            AtlasPosition var7 = (AtlasPosition)this.atlasPositions.get(var6x.getModelIdentity());
-            if (var7 == null || var6x.isAnimated() && var7.lastAnimatedOnFrame != this.frameNumber) {
-               if (this.itemAtlasX + var3 > var4) {
-                  this.itemAtlasX = 0;
-                  this.itemAtlasY += var3;
-               }
-
-               boolean var8 = var6x.isAnimated() && var7 != null;
-               if (!var8 && this.itemAtlasY + var3 > var4) {
-                  if (var6.isFalse()) {
-                     LOGGER.warn("Trying to render too many items in GUI at the same time. Skipping some of them.");
-                     var6.setTrue();
-                  }
-
-               } else {
-                  int var9 = var8 ? var7.x : this.itemAtlasX;
-                  int var10 = var8 ? var7.y : this.itemAtlasY;
-                  if (var8) {
-                     RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.itemsAtlas, 0, this.itemsAtlasDepth, 1.0, var9, var4 - var10 - var3, var3, var3);
-                  }
-
-                  this.renderItemToAtlas(var6x, var5, var9, var10, var3);
-                  float var11 = (float)var9 / (float)var4;
-                  float var12 = (float)(var4 - var10) / (float)var4;
-                  this.submitBlitFromItemAtlas(var5x, var11, var12, var3, var4);
-                  if (var8) {
-                     var7.lastAnimatedOnFrame = this.frameNumber;
-                  } else {
-                     this.atlasPositions.put(var5x.itemStackRenderState().getModelIdentity(), new AtlasPosition(this.itemAtlasX, this.itemAtlasY, var11, var12, this.frameNumber));
-                     this.itemAtlasX += var3;
-                  }
-
-               }
+         this.renderState.forEachItem((var6x) -> {
+            if (var6x.oversizedItemBounds() != null) {
+               var6.setTrue();
             } else {
-               this.submitBlitFromItemAtlas(var5x, var7.u, var7.v, var3, var4);
+               ItemStackRenderState var7 = var6x.itemStackRenderState();
+               AtlasPosition var8 = (AtlasPosition)this.atlasPositions.get(var7.getModelIdentity());
+               if (var8 == null || var7.isAnimated() && var8.lastAnimatedOnFrame != this.frameNumber) {
+                  if (this.itemAtlasX + var2 > var3) {
+                     this.itemAtlasX = 0;
+                     this.itemAtlasY += var2;
+                  }
+
+                  boolean var9 = var7.isAnimated() && var8 != null;
+                  if (!var9 && this.itemAtlasY + var2 > var3) {
+                     if (var5.isFalse()) {
+                        LOGGER.warn("Trying to render too many items in GUI at the same time. Skipping some of them.");
+                        var5.setTrue();
+                     }
+
+                  } else {
+                     int var10 = var9 ? var8.x : this.itemAtlasX;
+                     int var11 = var9 ? var8.y : this.itemAtlasY;
+                     if (var9) {
+                        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(this.itemsAtlas, 0, this.itemsAtlasDepth, 1.0, var10, var3 - var11 - var2, var2, var2);
+                     }
+
+                     this.renderItemToAtlas(var7, var4, var10, var11, var2);
+                     float var12 = (float)var10 / (float)var3;
+                     float var13 = (float)(var3 - var11) / (float)var3;
+                     this.submitBlitFromItemAtlas(var6x, var12, var13, var2, var3);
+                     if (var9) {
+                        var8.lastAnimatedOnFrame = this.frameNumber;
+                     } else {
+                        this.atlasPositions.put(var6x.itemStackRenderState().getModelIdentity(), new AtlasPosition(this.itemAtlasX, this.itemAtlasY, var12, var13, this.frameNumber));
+                        this.itemAtlasX += var2;
+                     }
+
+                  }
+               } else {
+                  this.submitBlitFromItemAtlas(var6x, var8.u, var8.v, var2, var3);
+               }
             }
          });
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
+         if (var6.getValue()) {
+            this.renderState.forEachItem((var2x) -> {
+               if (var2x.oversizedItemBounds() != null) {
+                  ItemStackRenderState var3 = var2x.itemStackRenderState();
+                  OversizedItemRenderer var4 = (OversizedItemRenderer)this.oversizedItemRenderers.computeIfAbsent(var3.getModelIdentity(), (var1x) -> new OversizedItemRenderer(this.bufferSource));
+                  ScreenRectangle var5 = var2x.oversizedItemBounds();
+                  OversizedItemRenderState var6 = new OversizedItemRenderState(var2x, var5.left(), var5.top(), var5.right(), var5.bottom());
+                  var4.prepare(var6, this.renderState, var1);
+               }
+
+            });
+         }
+
       }
    }
 
@@ -332,8 +370,10 @@ public class GuiRenderer implements AutoCloseable {
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
       }
 
+      RenderSystem.enableScissorForRenderTypeDraws(var3, this.itemsAtlas.getHeight(0) - var4 - var5, var5, var5);
       var1.render(var2, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
       this.bufferSource.endBatch();
+      RenderSystem.disableScissorForRenderTypeDraws();
       var2.popPose();
    }
 
@@ -353,43 +393,45 @@ public class GuiRenderer implements AutoCloseable {
       var2.createCommandEncoder().clearColorAndDepthTextures(this.itemsAtlas, 0, this.itemsAtlasDepth, 1.0);
    }
 
-   private int calculateAtlasSizeInPixels(int var1, int var2) {
-      int var3 = Mth.smallestSquareSide(var1);
-      int var4 = Math.max(512, Mth.smallestEncompassingPowerOfTwo(var3 * var2));
-      if (var4 > 2048) {
-         this.invalidateItemAtlas();
-         var4 = 2048;
-      } else if (this.itemsAtlas != null && this.itemsAtlas.getWidth(0) < var4) {
-         this.invalidateItemAtlas();
-      } else if (this.itemsAtlas != null) {
-         var4 = this.itemsAtlas.getWidth(0);
-      }
-
-      return var4;
-   }
-
-   private int getItemCount() {
-      Set var1 = this.renderState.getItemModelIdentities();
-      int var2;
+   private int calculateAtlasSizeInPixels(int var1) {
+      Set var2 = this.renderState.getItemModelIdentities();
+      int var3;
       if (this.atlasPositions.isEmpty()) {
-         var2 = var1.size();
+         var3 = var2.size();
       } else {
-         var2 = this.atlasPositions.size();
+         var3 = this.atlasPositions.size();
 
-         for(Object var4 : var1) {
-            if (!this.atlasPositions.containsKey(var4)) {
-               ++var2;
+         for(Object var5 : var2) {
+            if (!this.atlasPositions.containsKey(var5)) {
+               ++var3;
             }
          }
       }
 
-      return var2;
+      if (this.itemsAtlas != null) {
+         int var6 = this.itemsAtlas.getWidth(0) / var1;
+         int var8 = var6 * var6;
+         if (var3 < var8) {
+            return this.itemsAtlas.getWidth(0);
+         }
+
+         this.invalidateItemAtlas();
+      }
+
+      int var7 = var2.size();
+      int var9 = Mth.smallestSquareSide(var7 + var7 / 2);
+      return Math.clamp((long)Mth.smallestEncompassingPowerOfTwo(var9 * var1), 512, MAXIMUM_ITEM_ATLAS_SIZE);
    }
 
    private int getGuiScaleInvalidatingItemAtlasIfChanged() {
       int var1 = Minecraft.getInstance().getWindow().getGuiScale();
       if (var1 != this.cachedGuiScale) {
          this.invalidateItemAtlas();
+
+         for(OversizedItemRenderer var3 : this.oversizedItemRenderers.values()) {
+            var3.invalidateTexture();
+         }
+
          this.cachedGuiScale = var1;
       }
 
@@ -570,6 +612,7 @@ public class GuiRenderer implements AutoCloseable {
          var2.close();
       }
 
+      this.oversizedItemRenderers.values().forEach(PictureInPictureRenderer::close);
    }
 
    static {
