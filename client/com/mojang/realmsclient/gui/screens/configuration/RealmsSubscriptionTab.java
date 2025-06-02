@@ -6,8 +6,8 @@ import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.exception.RealmsServiceException;
-import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
+import com.mojang.realmsclient.util.RealmsUtil;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -15,7 +15,6 @@ import java.util.Objects;
 import java.util.TimeZone;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -87,18 +86,10 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
    }
 
    private void deleteRealm() {
-      Util.nonCriticalIoPool().execute(() -> {
-         try {
-            RealmsClient var1 = RealmsClient.getOrCreate();
-            var1.deleteRealm(this.serverData.id);
-         } catch (RealmsServiceException var2) {
-            LOGGER.error("Couldn't delete world", var2);
-            this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsGenericErrorScreen(var2, this.configurationScreen.getLastScreen())));
-            return;
-         }
-
-         this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getLastScreen()));
-      });
+      RealmsUtil.RealmsIoConsumer var10000 = (var1) -> var1.deleteRealm(this.serverData.id);
+      RealmsConfigureWorldScreen var10001 = this.configurationScreen;
+      Objects.requireNonNull(var10001);
+      RealmsUtil.runAsync(var10000, RealmsUtil.openScreenAndLogOnFailure(var10001::createErrorScreen, "Couldn't delete world")).thenRunAsync(() -> this.minecraft.setScreen(this.configurationScreen.getLastScreen()), this.minecraft);
       this.minecraft.setScreen(this.configurationScreen);
    }
 
@@ -112,7 +103,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
          this.type = var4.type;
       } catch (RealmsServiceException var5) {
          LOGGER.error("Couldn't get subscription", var5);
-         this.minecraft.setScreen(new RealmsGenericErrorScreen(var5, this.configurationScreen.getLastScreen()));
+         this.minecraft.setScreen(this.configurationScreen.createErrorScreen(var5));
       }
 
    }

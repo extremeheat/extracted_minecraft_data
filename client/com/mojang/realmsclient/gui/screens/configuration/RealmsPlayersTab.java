@@ -2,11 +2,9 @@ package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.Ops;
 import com.mojang.realmsclient.dto.PlayerInfo;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsConfirmScreen;
 import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.List;
@@ -124,31 +122,21 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
       }
 
       private void op(int var1) {
-         RealmsClient var2 = RealmsClient.getOrCreate();
-         UUID var3 = ((PlayerInfo)RealmsPlayersTab.this.serverData.players.get(var1)).getUuid();
-
-         try {
-            this.updateOps(var2.op(RealmsPlayersTab.this.serverData.id, var3));
-         } catch (RealmsServiceException var5) {
-            RealmsPlayersTab.LOGGER.error("Couldn't op the user", var5);
-         }
-
-         this.updateOpButtons();
-         this.setFocused(this.removeOpButton);
+         UUID var2 = ((PlayerInfo)RealmsPlayersTab.this.serverData.players.get(var1)).getUuid();
+         RealmsUtil.supplyAsync((var2x) -> var2x.op(RealmsPlayersTab.this.serverData.id, var2), (var0) -> RealmsPlayersTab.LOGGER.error("Couldn't op the user", var0)).thenAcceptAsync((var1x) -> {
+            this.updateOps(var1x);
+            this.updateOpButtons();
+            this.setFocused(this.removeOpButton);
+         }, RealmsPlayersTab.this.minecraft);
       }
 
       private void deop(int var1) {
-         RealmsClient var2 = RealmsClient.getOrCreate();
-         UUID var3 = ((PlayerInfo)RealmsPlayersTab.this.serverData.players.get(var1)).getUuid();
-
-         try {
-            this.updateOps(var2.deop(RealmsPlayersTab.this.serverData.id, var3));
-         } catch (RealmsServiceException var5) {
-            RealmsPlayersTab.LOGGER.error("Couldn't deop the user", var5);
-         }
-
-         this.updateOpButtons();
-         this.setFocused(this.makeOpButton);
+         UUID var2 = ((PlayerInfo)RealmsPlayersTab.this.serverData.players.get(var1)).getUuid();
+         RealmsUtil.supplyAsync((var2x) -> var2x.deop(RealmsPlayersTab.this.serverData.id, var2), (var0) -> RealmsPlayersTab.LOGGER.error("Couldn't deop the user", var0)).thenAcceptAsync((var1x) -> {
+            this.updateOps(var1x);
+            this.updateOpButtons();
+            this.setFocused(this.makeOpButton);
+         }, RealmsPlayersTab.this.minecraft);
       }
 
       private void uninvite(int var1) {
@@ -156,14 +144,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
             PlayerInfo var2 = (PlayerInfo)RealmsPlayersTab.this.serverData.players.get(var1);
             RealmsConfirmScreen var3 = new RealmsConfirmScreen((var3x) -> {
                if (var3x) {
-                  RealmsClient var4 = RealmsClient.getOrCreate();
-
-                  try {
-                     var4.uninvite(RealmsPlayersTab.this.serverData.id, var2.getUuid());
-                  } catch (RealmsServiceException var6) {
-                     RealmsPlayersTab.LOGGER.error("Couldn't uninvite user", var6);
-                  }
-
+                  RealmsUtil.runAsync((var2x) -> var2x.uninvite(RealmsPlayersTab.this.serverData.id, var2.getUuid()), (var0) -> RealmsPlayersTab.LOGGER.error("Couldn't uninvite user", var0));
                   RealmsPlayersTab.this.serverData.players.remove(var1);
                   RealmsPlayersTab.this.updateData(RealmsPlayersTab.this.serverData);
                }

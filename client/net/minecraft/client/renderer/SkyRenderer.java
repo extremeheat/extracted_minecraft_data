@@ -51,7 +51,7 @@ public class SkyRenderer implements AutoCloseable {
       this.starBuffer = this.buildStars();
       this.endSkyBuffer = buildEndSky();
 
-      try (ByteBufferBuilder var1 = new ByteBufferBuilder(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
+      try (ByteBufferBuilder var1 = ByteBufferBuilder.exactlySized(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
          BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
          this.buildSkyDisc(var2, 16.0F);
 
@@ -74,7 +74,7 @@ public class SkyRenderer implements AutoCloseable {
       float var2 = 100.0F;
 
       GpuBuffer var19;
-      try (ByteBufferBuilder var3 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
+      try (ByteBufferBuilder var3 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
          BufferBuilder var4 = new BufferBuilder(var3, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
          for(int var5 = 0; var5 < 1500; ++var5) {
@@ -238,7 +238,7 @@ public class SkyRenderer implements AutoCloseable {
 
    private static GpuBuffer buildEndSky() {
       GpuBuffer var10;
-      try (ByteBufferBuilder var0 = new ByteBufferBuilder(24 * DefaultVertexFormat.POSITION_TEX_COLOR.getVertexSize())) {
+      try (ByteBufferBuilder var0 = ByteBufferBuilder.exactlySized(24 * DefaultVertexFormat.POSITION_TEX_COLOR.getVertexSize())) {
          BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
          for(int var2 = 0; var2 < 6; ++var2) {

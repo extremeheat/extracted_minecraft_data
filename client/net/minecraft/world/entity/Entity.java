@@ -1154,10 +1154,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          LongSet var3 = this.visitedBlocks;
 
          for(Movement var5 : var1) {
-            if (var5.axisIndependant) {
-               Vec3 var6 = var5.from;
-               Vec3 var7 = var5.to().subtract(var5.from());
-
+            Vec3 var6 = var5.from;
+            Vec3 var7 = var5.to().subtract(var5.from());
+            if (var5.axisIndependant && var7.lengthSqr() > 0.0) {
                for(Direction.Axis var9 : axisStepOrder(var7)) {
                   double var10 = var7.get(var9);
                   if (var10 != 0.0) {

@@ -10,6 +10,7 @@ import com.mojang.realmsclient.dto.WorldDownload;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsWorldSlotButton;
 import com.mojang.realmsclient.util.RealmsTextureManager;
+import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.OpenServerTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
@@ -116,19 +117,15 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       return this.leftX + (var1 - 1) * 110;
    }
 
+   public Screen createErrorScreen(RealmsServiceException var1) {
+      return new RealmsGenericErrorScreen(var1, this.lastScreen);
+   }
+
    private void fetchServerData(long var1) {
-      (new Thread(() -> {
-         RealmsClient var3 = RealmsClient.getOrCreate();
-
-         try {
-            this.serverData = var3.getOwnRealm(var1);
-            this.addButtons();
-         } catch (RealmsServiceException var5) {
-            LOGGER.error("Couldn't get own world", var5);
-            this.minecraft.setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen));
-         }
-
-      })).start();
+      RealmsUtil.supplyAsync((var2) -> var2.getOwnRealm(var1), RealmsUtil.openScreenAndLogOnFailure(this::createErrorScreen, "Couldn't get own world")).thenAcceptAsync((var1x) -> {
+         this.serverData = var1x;
+         this.addButtons();
+      }, this.minecraft);
    }
 
    public void doSwitchOrReset() {
@@ -142,7 +139,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
                this.minecraft.execute(() -> RealmsMainScreen.play(var2, this));
             } catch (RealmsServiceException var3) {
                LOGGER.error("Couldn't get own world", var3);
-               this.minecraft.execute(() -> this.minecraft.setScreen(this.lastScreen));
+               this.minecraft.execute(() -> this.minecraft.setScreen(this.createErrorScreen(var3)));
             }
          }
 

@@ -15,8 +15,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.FullChunkStatus;
@@ -263,58 +265,65 @@ public class TicketStorage extends SavedData {
       return var5 == null ? "no_ticket" : var5.toString();
    }
 
-   public void purgeStaleTickets() {
-      this.removeTicketIf((var0) -> {
-         var0.decreaseTicksLeft();
-         return var0.isTimedOut();
+   public void purgeStaleTickets(ChunkMap var1) {
+      this.removeTicketIf((var1x, var2) -> {
+         ChunkHolder var3 = var1.getUpdatingChunkIfPresent(var1x);
+         boolean var4 = var3 != null && !var3.isReadyForSaving() && var2.getType().doesSimulate();
+         if (var4) {
+            return false;
+         } else {
+            var2.decreaseTicksLeft();
+            return var2.isTimedOut();
+         }
       }, (Long2ObjectOpenHashMap)null);
       this.setDirty();
    }
 
    public void deactivateTicketsOnClosing() {
-      this.removeTicketIf((var0) -> var0.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
+      this.removeTicketIf((var0, var1) -> var1.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
    }
 
-   public void removeTicketIf(Predicate<Ticket> var1, @Nullable Long2ObjectOpenHashMap<List<Ticket>> var2) {
+   public void removeTicketIf(BiPredicate<Long, Ticket> var1, @Nullable Long2ObjectOpenHashMap<List<Ticket>> var2) {
       ObjectIterator var3 = this.tickets.long2ObjectEntrySet().fastIterator();
       boolean var4 = false;
 
       while(var3.hasNext()) {
          Long2ObjectMap.Entry var5 = (Long2ObjectMap.Entry)var3.next();
          Iterator var6 = ((List)var5.getValue()).iterator();
-         boolean var7 = false;
-         boolean var8 = false;
+         long var7 = var5.getLongKey();
+         boolean var9 = false;
+         boolean var10 = false;
 
          while(var6.hasNext()) {
-            Ticket var9 = (Ticket)var6.next();
-            if (var1.test(var9)) {
+            Ticket var11 = (Ticket)var6.next();
+            if (var1.test(var7, var11)) {
                if (var2 != null) {
-                  List var10 = (List)var2.computeIfAbsent(var5.getLongKey(), (var1x) -> new ObjectArrayList(((List)var5.getValue()).size()));
-                  var10.add(var9);
+                  List var12 = (List)var2.computeIfAbsent(var7, (var1x) -> new ObjectArrayList(((List)var5.getValue()).size()));
+                  var12.add(var11);
                }
 
                var6.remove();
-               if (var9.getType().doesLoad()) {
-                  var8 = true;
+               if (var11.getType().doesLoad()) {
+                  var10 = true;
                }
 
-               if (var9.getType().doesSimulate()) {
-                  var7 = true;
+               if (var11.getType().doesSimulate()) {
+                  var9 = true;
                }
 
-               if (var9.getType().equals(TicketType.FORCED)) {
+               if (var11.getType().equals(TicketType.FORCED)) {
                   var4 = true;
                }
             }
          }
 
-         if (var8 || var7) {
-            if (var8 && this.loadingChunkUpdatedListener != null) {
-               this.loadingChunkUpdatedListener.update(var5.getLongKey(), getTicketLevelAt((List)var5.getValue(), false), false);
+         if (var10 || var9) {
+            if (var10 && this.loadingChunkUpdatedListener != null) {
+               this.loadingChunkUpdatedListener.update(var7, getTicketLevelAt((List)var5.getValue(), false), false);
             }
 
-            if (var7 && this.simulationChunkUpdatedListener != null) {
-               this.simulationChunkUpdatedListener.update(var5.getLongKey(), getTicketLevelAt((List)var5.getValue(), true), false);
+            if (var9 && this.simulationChunkUpdatedListener != null) {
+               this.simulationChunkUpdatedListener.update(var7, getTicketLevelAt((List)var5.getValue(), true), false);
             }
 
             this.setDirty();

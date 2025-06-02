@@ -109,7 +109,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                if (var14) {
                   String var23 = var5.substring(var13.beginIndex(), var6);
                   var1.drawString(this.font, var23, var15, var11, this.textColor, this.textShadow);
-                  var9 = var15 + this.font.width(var23) - (this.textShadow ? 1 : 0);
+                  var9 = var15 + this.font.width(var23);
                   int var10002 = var11 - 1;
                   int var10003 = var9 + 1;
                   int var10004 = var11 + 1;

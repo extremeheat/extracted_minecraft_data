@@ -33,7 +33,7 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
       private static ListTag loadList(DataInput var0, NbtAccounter var1) throws IOException {
          var1.accountBytes(36L);
          byte var2 = var0.readByte();
-         int var3 = var0.readInt();
+         int var3 = readListCount(var0);
          if (var2 == 0 && var3 > 0) {
             throw new NbtFormatException("Missing type on ListTag");
          } else {
@@ -65,7 +65,7 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
       private static StreamTagVisitor.ValueResult parseList(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
          var2.accountBytes(36L);
          TagType var3 = TagTypes.getType(var0.readByte());
-         int var4 = var0.readInt();
+         int var4 = readListCount(var0);
          switch (var1.visitList(var3, var4)) {
             case HALT:
                return StreamTagVisitor.ValueResult.HALT;
@@ -109,6 +109,15 @@ public final class ListTag extends AbstractList<Tag> implements CollectionTag {
 
                   ++var5;
                }
+         }
+      }
+
+      private static int readListCount(DataInput var0) throws IOException {
+         int var1 = var0.readInt();
+         if (var1 < 0) {
+            throw new NbtFormatException("ListTag length cannot be negative: " + var1);
+         } else {
+            return var1;
          }
       }
 

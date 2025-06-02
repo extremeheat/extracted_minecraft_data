@@ -280,7 +280,7 @@ public class HappyGhast extends Animal {
 
    public @Nullable LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
-      if (this.isWearingBodyArmor() && !this.isNoAi() && !this.isPlayerAboveGhast() && var1 instanceof Player var2) {
+      if (this.isWearingBodyArmor() && !this.isPlayerAboveGhast() && var1 instanceof Player var2) {
          return var2;
       } else {
          return super.getControllingPassenger();
@@ -496,8 +496,8 @@ public class HappyGhast extends Animal {
 
    public boolean canBeCollidedWith(@Nullable Entity var1) {
       if (!this.isBaby() && this.isAlive()) {
-         if (this.level().isClientSide() && var1 instanceof Player) {
-            return var1.position().y >= this.getBoundingBox().maxY;
+         if (this.level().isClientSide() && var1 instanceof Player && var1.position().y >= this.getBoundingBox().maxY) {
+            return true;
          } else {
             return this.isVehicle() && var1 instanceof HappyGhast ? true : this.isPlayerAboveGhast();
          }

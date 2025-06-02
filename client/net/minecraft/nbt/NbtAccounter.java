@@ -28,7 +28,9 @@ public class NbtAccounter {
    }
 
    public void accountBytes(long var1) {
-      if (this.usage + var1 > this.quota) {
+      if (var1 < 0L) {
+         throw new IllegalArgumentException("Tried to account NBT tag with negative size: " + var1);
+      } else if (this.usage + var1 > this.quota) {
          throw new NbtAccounterException("Tried to read NBT tag that was too big; tried to allocate: " + this.usage + " + " + var1 + " bytes where max allowed: " + this.quota);
       } else {
          this.usage += var1;

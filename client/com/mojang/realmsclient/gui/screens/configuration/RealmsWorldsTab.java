@@ -138,11 +138,9 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
 
    private void switchToFullSlot(int var1, RealmsServer var2) {
       this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this.configurationScreen, Component.translatable("mco.configure.world.slot.switch.question.line1"), (var3) -> {
+         RealmsConfigureWorldScreen var4 = this.configurationScreen.getNewScreen();
          this.configurationScreen.stateChanged();
-         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.configurationScreen.getNewScreen(), new LongRunningTask[]{new SwitchSlotTask(var2.id, var1, () -> {
-            var2.activeSlot = var1;
-            this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreenWithKnownData(var2)));
-         })}));
+         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var4, new LongRunningTask[]{new SwitchSlotTask(var2.id, var1, () -> this.minecraft.execute(() -> this.minecraft.setScreen(var4)))}));
       }));
    }
 

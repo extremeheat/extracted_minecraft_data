@@ -15,6 +15,7 @@ import com.mojang.realmsclient.dto.ServiceQuality;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
+import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.CloseServerTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.OpenServerTask;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -138,6 +138,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       return this.lastScreen;
    }
 
+   public Screen createErrorScreen(RealmsServiceException var1) {
+      return new RealmsGenericErrorScreen(var1, this.lastScreen);
+   }
+
    public void repositionElements() {
       if (this.tabNavigationBar != null) {
          this.tabNavigationBar.setWidth(this.width);
@@ -191,39 +195,17 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    public void fetchRegionData() {
-      Util.nonCriticalIoPool().execute(() -> {
-         RealmsClient var1 = RealmsClient.getOrCreate();
-
-         try {
-            PreferredRegionsDto var2 = var1.getPreferredRegionSelections();
-            this.minecraft.execute(() -> {
-               this.regions = var2;
-               this.onRealmsDataFetched();
-            });
-         } catch (RealmsServiceException var3) {
-            LOGGER.error("Couldn't get realms region data", var3);
-            this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsGenericErrorScreen(var3, this.lastScreen)));
-         }
-
-      });
+      RealmsUtil.supplyAsync(RealmsClient::getPreferredRegionSelections, RealmsUtil.openScreenAndLogOnFailure(this::createErrorScreen, "Couldn't get realms region data")).thenAcceptAsync((var1) -> {
+         this.regions = var1;
+         this.onRealmsDataFetched();
+      }, this.minecraft);
    }
 
    public void fetchServerData(long var1) {
-      Util.nonCriticalIoPool().execute(() -> {
-         RealmsClient var3 = RealmsClient.getOrCreate();
-
-         try {
-            RealmsServer var4 = var3.getOwnRealm(var1);
-            this.minecraft.execute(() -> {
-               this.serverData = var4;
-               this.onRealmsDataFetched();
-            });
-         } catch (RealmsServiceException var5) {
-            LOGGER.error("Couldn't get own world", var5);
-            this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen)));
-         }
-
-      });
+      RealmsUtil.supplyAsync((var2) -> var2.getOwnRealm(var1), RealmsUtil.openScreenAndLogOnFailure(this::createErrorScreen, "Couldn't get own world")).thenAcceptAsync((var1x) -> {
+         this.serverData = var1x;
+         this.onRealmsDataFetched();
+      }, this.minecraft);
    }
 
    private void onRealmsDataFetched() {

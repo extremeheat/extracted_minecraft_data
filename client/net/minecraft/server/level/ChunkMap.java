@@ -232,7 +232,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    @Nullable
-   protected ChunkHolder getUpdatingChunkIfPresent(long var1) {
+   public ChunkHolder getUpdatingChunkIfPresent(long var1) {
       return (ChunkHolder)this.updatingChunkMap.get(var1);
    }
 

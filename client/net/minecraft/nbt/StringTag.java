@@ -141,6 +141,35 @@ public record StringTag(String value) implements PrimitiveTag {
       var1.append((char)var3);
    }
 
+   public static String escapeWithoutQuotes(String var0) {
+      StringBuilder var1 = new StringBuilder();
+      escapeWithoutQuotes(var0, var1);
+      return var1.toString();
+   }
+
+   public static void escapeWithoutQuotes(String var0, StringBuilder var1) {
+      for(int var2 = 0; var2 < var0.length(); ++var2) {
+         char var3 = var0.charAt(var2);
+         switch (var3) {
+            case '"':
+            case '\'':
+            case '\\':
+               var1.append('\\');
+               var1.append(var3);
+               break;
+            default:
+               String var4 = SnbtGrammar.escapeControlCharacters(var3);
+               if (var4 != null) {
+                  var1.append('\\');
+                  var1.append(var4);
+               } else {
+                  var1.append(var3);
+               }
+         }
+      }
+
+   }
+
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
       return var1.visit(this.value);
    }

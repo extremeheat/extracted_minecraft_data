@@ -221,7 +221,7 @@ public class RenderSystem {
       apiDescription = getDevice().getImplementationInformation();
       dynamicUniforms = new DynamicUniforms();
 
-      try (ByteBufferBuilder var6 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
+      try (ByteBufferBuilder var6 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
          BufferBuilder var7 = new BufferBuilder(var6, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
          var7.addVertex(0.0F, 0.0F, 0.0F);
          var7.addVertex(1.0F, 0.0F, 0.0F);

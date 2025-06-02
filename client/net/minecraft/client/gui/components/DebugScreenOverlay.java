@@ -149,7 +149,7 @@ public class DebugScreenOverlay {
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
 
-      try (ByteBufferBuilder var2 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
+      try (ByteBufferBuilder var2 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
          BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
          var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
          var3.addVertex(1.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);

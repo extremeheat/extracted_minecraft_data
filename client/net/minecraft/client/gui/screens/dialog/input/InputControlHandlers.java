@@ -19,6 +19,7 @@ import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -71,34 +72,42 @@ public class InputControlHandlers {
       public void addControl(TextInput var1, Screen var2, InputControlHandler.Output var3) {
          Font var4 = var2.getFont();
          Object var5;
-         Action.ValueGetter var6;
+         final Supplier var6;
          if (var1.multiline().isPresent()) {
             TextInput.MultilineOptions var7 = (TextInput.MultilineOptions)var1.multiline().get();
             int var8 = (Integer)var7.height().orElseGet(() -> {
                int var2 = (Integer)var7.maxLines().orElse(4);
                Objects.requireNonNull(var4);
-               return 9 * var2 + 8;
+               return Math.min(9 * var2 + 8, 512);
             });
             MultiLineEditBox var9 = MultiLineEditBox.builder().build(var4, var1.width(), var8, CommonComponents.EMPTY);
-            var9.setValue(var1.initial());
             var9.setCharacterLimit(var1.maxLength());
             Optional var10000 = var7.maxLines();
             Objects.requireNonNull(var9);
             var10000.ifPresent(var9::setLineLimit);
+            var9.setValue(var1.initial());
             var5 = var9;
             Objects.requireNonNull(var9);
-            var6 = Action.ValueGetter.of(var9::getValue);
+            var6 = var9::getValue;
          } else {
             EditBox var10 = new EditBox(var4, var1.width(), 20, var1.label());
-            var10.setValue(var1.initial());
             var10.setMaxLength(var1.maxLength());
+            var10.setValue(var1.initial());
             var5 = var10;
             Objects.requireNonNull(var10);
-            var6 = Action.ValueGetter.of(var10::getValue);
+            var6 = var10::getValue;
          }
 
          Object var11 = var1.labelVisible() ? CommonLayouts.labeledElement(var4, (LayoutElement)var5, var1.label()) : var5;
-         var3.accept((LayoutElement)var11, var6);
+         var3.accept((LayoutElement)var11, new Action.ValueGetter() {
+            public String asTemplateSubstitution() {
+               return StringTag.escapeWithoutQuotes((String)var6.get());
+            }
+
+            public Tag asTag() {
+               return StringTag.valueOf((String)var6.get());
+            }
+         });
       }
 
       // $FF: synthetic method

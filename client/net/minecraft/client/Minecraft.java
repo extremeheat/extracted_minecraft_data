@@ -2451,31 +2451,26 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       Music var1 = (Music)Optionull.map(this.screen, Screen::getBackgroundMusic);
       if (var1 != null) {
          return new MusicInfo(var1);
-      } else if (this.player != null) {
+      } else if (this.player == null) {
+         return new MusicInfo(Musics.MENU);
+      } else {
          Level var2 = this.player.level();
          if (var2.dimension() == Level.END) {
             return this.gui.getBossOverlay().shouldPlayMusic() ? new MusicInfo(Musics.END_BOSS) : new MusicInfo(Musics.END);
          } else {
             Holder var3 = var2.getBiome(this.player.blockPosition());
-            float var4 = ((Biome)var3.value()).getBackgroundMusicVolume();
-            if (!this.musicManager.isPlayingMusic(Musics.UNDER_WATER) && (!this.player.isUnderWater() || !var3.is(BiomeTags.PLAYS_UNDERWATER_MUSIC))) {
-               if (var2.dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly) {
-                  return new MusicInfo(Musics.CREATIVE, var4);
-               } else {
-                  Optional var5 = ((Biome)var3.value()).getBackgroundMusic();
-                  if (var5.isPresent()) {
-                     Optional var6 = ((WeightedList)var5.get()).getRandom(var2.random);
-                     return new MusicInfo((Music)var6.orElse((Object)null), var4);
-                  } else {
-                     return new MusicInfo(Musics.GAME, var4);
-                  }
-               }
+            Biome var4 = (Biome)var3.value();
+            float var5 = var4.getBackgroundMusicVolume();
+            Optional var6 = var4.getBackgroundMusic();
+            if (var6.isPresent()) {
+               Optional var7 = ((WeightedList)var6.get()).getRandom(var2.random);
+               return new MusicInfo((Music)var7.orElse((Object)null), var5);
+            } else if (!this.musicManager.isPlayingMusic(Musics.UNDER_WATER) && (!this.player.isUnderWater() || !var3.is(BiomeTags.PLAYS_UNDERWATER_MUSIC))) {
+               return var2.dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly ? new MusicInfo(Musics.CREATIVE, var5) : new MusicInfo(Musics.GAME, var5);
             } else {
-               return new MusicInfo(Musics.UNDER_WATER, var4);
+               return new MusicInfo(Musics.UNDER_WATER, var5);
             }
          }
-      } else {
-         return new MusicInfo(Musics.MENU);
       }
    }
 

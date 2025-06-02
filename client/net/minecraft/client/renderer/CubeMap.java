@@ -67,7 +67,7 @@ public class CubeMap implements AutoCloseable {
 
    private static GpuBuffer initializeVertices() {
       GpuBuffer var3;
-      try (ByteBufferBuilder var0 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4)) {
+      try (ByteBufferBuilder var0 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 4 * 6)) {
          BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
          var1.addVertex(-1.0F, -1.0F, 1.0F);
          var1.addVertex(-1.0F, 1.0F, 1.0F);

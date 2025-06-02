@@ -48,7 +48,7 @@ public class WorldBorderRenderer {
    }
 
    private void rebuildWorldBorderBuffer(WorldBorder var1, double var2, double var4, double var6, float var8, float var9, float var10) {
-      try (ByteBufferBuilder var11 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4)) {
+      try (ByteBufferBuilder var11 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4 * 4)) {
          double var12 = var1.getMinX();
          double var14 = var1.getMaxX();
          double var16 = var1.getMinZ();

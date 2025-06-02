@@ -28,6 +28,7 @@ public record TextInput(int width, Component label, boolean labelVisible, String
    }
 
    public static record MultilineOptions(Optional<Integer> maxLines, Optional<Integer> height) {
+      public static final int MAX_HEIGHT = 512;
       public static final Codec<MultilineOptions> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("max_lines").forGetter(MultilineOptions::maxLines), ExtraCodecs.intRange(1, 512).optionalFieldOf("height").forGetter(MultilineOptions::height)).apply(var0, MultilineOptions::new));
 
       public MultilineOptions(Optional<Integer> var1, Optional<Integer> var2) {

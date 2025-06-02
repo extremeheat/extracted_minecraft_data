@@ -298,7 +298,7 @@ public class ServerChunkCache extends ChunkSource {
       ProfilerFiller var3 = Profiler.get();
       var3.push("purge");
       if (this.level.tickRateManager().runsNormally() || !var2) {
-         this.ticketStorage.purgeStaleTickets();
+         this.ticketStorage.purgeStaleTickets(this.chunkMap);
       }
 
       this.runDistanceManagerUpdates();
