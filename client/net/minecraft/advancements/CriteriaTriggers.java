@@ -94,6 +94,7 @@ public class CriteriaTriggers {
    public static final PickedUpItemTrigger THROWN_ITEM_PICKED_UP_BY_ENTITY;
    public static final PickedUpItemTrigger THROWN_ITEM_PICKED_UP_BY_PLAYER;
    public static final PlayerInteractTrigger PLAYER_INTERACTED_WITH_ENTITY;
+   public static final PlayerInteractTrigger PLAYER_SHEARED_EQUIPMENT;
    public static final StartRidingTrigger START_RIDING_TRIGGER;
    public static final LightningStrikeTrigger LIGHTNING_STRIKE;
    public static final UsingItemTrigger USING_ITEM;
@@ -165,6 +166,7 @@ public class CriteriaTriggers {
       THROWN_ITEM_PICKED_UP_BY_ENTITY = (PickedUpItemTrigger)register("thrown_item_picked_up_by_entity", new PickedUpItemTrigger());
       THROWN_ITEM_PICKED_UP_BY_PLAYER = (PickedUpItemTrigger)register("thrown_item_picked_up_by_player", new PickedUpItemTrigger());
       PLAYER_INTERACTED_WITH_ENTITY = (PlayerInteractTrigger)register("player_interacted_with_entity", new PlayerInteractTrigger());
+      PLAYER_SHEARED_EQUIPMENT = (PlayerInteractTrigger)register("player_sheared_equipment", new PlayerInteractTrigger());
       START_RIDING_TRIGGER = (StartRidingTrigger)register("started_riding", new StartRidingTrigger());
       LIGHTNING_STRIKE = (LightningStrikeTrigger)register("lightning_strike", new LightningStrikeTrigger());
       USING_ITEM = (UsingItemTrigger)register("using_item", new UsingItemTrigger());

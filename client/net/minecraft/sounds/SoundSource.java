@@ -10,7 +10,8 @@ public enum SoundSource {
    NEUTRAL("neutral"),
    PLAYERS("player"),
    AMBIENT("ambient"),
-   VOICE("voice");
+   VOICE("voice"),
+   UI("ui");
 
    private final String name;
 
@@ -24,6 +25,6 @@ public enum SoundSource {
 
    // $FF: synthetic method
    private static SoundSource[] $values() {
-      return new SoundSource[]{MASTER, MUSIC, RECORDS, WEATHER, BLOCKS, HOSTILE, NEUTRAL, PLAYERS, AMBIENT, VOICE};
+      return new SoundSource[]{MASTER, MUSIC, RECORDS, WEATHER, BLOCKS, HOSTILE, NEUTRAL, PLAYERS, AMBIENT, VOICE, UI};
    }
 }

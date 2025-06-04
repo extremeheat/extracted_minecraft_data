@@ -146,7 +146,10 @@ public class PauseScreen extends Screen {
    public static void disconnectFromWorld(Minecraft var0, Component var1) {
       boolean var2 = var0.isLocalServer();
       ServerData var3 = var0.getCurrentServer();
-      var0.level.disconnect(var1);
+      if (var0.level != null) {
+         var0.level.disconnect(var1);
+      }
+
       if (var2) {
          var0.disconnectWithSavingScreen();
       } else {

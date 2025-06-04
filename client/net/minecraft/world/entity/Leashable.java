@@ -167,7 +167,7 @@ public interface Leashable {
             double var4 = ((Leashable)var1).leashDistanceTo(var3);
             ((Leashable)var1).whenLeashedTo(var3);
             if (var4 > ((Leashable)var1).leashSnapDistance()) {
-               var0.playSound((Entity)null, var3, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
+               var0.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
                ((Leashable)var1).leashTooFarBehaviour();
             } else if (var4 > ((Leashable)var1).leashElasticDistance() - (double)var3.getBbWidth() - (double)var1.getBbWidth() && ((Leashable)var1).checkElasticInteractions(var3, var2)) {
                ((Leashable)var1).onElasticLeashPull();

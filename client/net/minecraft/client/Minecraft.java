@@ -1272,7 +1272,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       boolean var10 = this.pause;
       this.pause = this.hasSingleplayerServer() && (this.screen != null && this.screen.isPauseScreen() || this.overlay != null && this.overlay.isPauseScreen()) && !this.singleplayerServer.isPublished();
       if (!var10 && this.pause) {
-         this.soundManager.pauseAllExcept(SoundSource.MUSIC);
+         this.soundManager.pauseAllExcept(SoundSource.MUSIC, SoundSource.UI);
       }
 
       this.deltaTracker.updatePauseState(this.pause);

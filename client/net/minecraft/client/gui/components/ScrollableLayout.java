@@ -19,6 +19,7 @@ import net.minecraft.network.chat.CommonComponents;
 
 public class ScrollableLayout implements Layout {
    private static final int SCROLLBAR_SPACING = 4;
+   private static final int SCROLLBAR_RESERVE = 10;
    final Layout content;
    private final Container container;
    private int minWidth;
@@ -43,8 +44,8 @@ public class ScrollableLayout implements Layout {
 
    public void arrangeElements() {
       this.content.arrangeElements();
-      int var1 = this.content.getWidth() + 6 + 4;
-      this.container.setWidth(Math.max(var1, this.minWidth));
+      int var1 = this.content.getWidth();
+      this.container.setWidth(Math.max(var1 + 20, this.minWidth));
       this.container.setHeight(Math.min(this.content.getHeight(), this.maxHeight));
       this.container.refreshScrollAmount();
    }
@@ -134,7 +135,7 @@ public class ScrollableLayout implements Layout {
 
       public void setX(int var1) {
          super.setX(var1);
-         ScrollableLayout.this.content.setX(var1);
+         ScrollableLayout.this.content.setX(var1 + 10);
       }
 
       public void setY(int var1) {

@@ -38,6 +38,14 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.createCriterion(new TriggerInstance(var0, Optional.of(var1.build()), var2));
       }
 
+      public static Criterion<TriggerInstance> equipmentSheared(Optional<ContextAwarePredicate> var0, ItemPredicate.Builder var1, Optional<ContextAwarePredicate> var2) {
+         return CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.createCriterion(new TriggerInstance(var0, Optional.of(var1.build()), var2));
+      }
+
+      public static Criterion<TriggerInstance> equipmentSheared(ItemPredicate.Builder var0, Optional<ContextAwarePredicate> var1) {
+         return CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var0.build()), var1));
+      }
+
       public static Criterion<TriggerInstance> itemUsedOnEntity(ItemPredicate.Builder var0, Optional<ContextAwarePredicate> var1) {
          return itemUsedOnEntity(Optional.empty(), var0, var1);
       }

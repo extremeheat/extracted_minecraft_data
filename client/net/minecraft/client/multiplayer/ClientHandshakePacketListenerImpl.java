@@ -50,7 +50,6 @@ import net.minecraft.network.protocol.login.ServerboundCustomQueryAnswerPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.network.protocol.login.custom.CustomQueryAnswerPayload;
-import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.util.Crypt;
@@ -180,7 +179,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void onDisconnect(DisconnectionDetails var1) {
       Component var2 = this.wasTransferredTo ? CommonComponents.TRANSFER_CONNECT_FAILED : CommonComponents.CONNECT_FAILED;
       if (this.serverData != null && this.serverData.isRealm()) {
-         this.minecraft.setScreen(new DisconnectedRealmsScreen(this.parent, var2, var1.reason()));
+         this.minecraft.setScreen(new DisconnectedScreen(this.parent, var2, var1.reason(), CommonComponents.GUI_BACK));
       } else {
          this.minecraft.setScreen(new DisconnectedScreen(this.parent, var2, var1));
       }

@@ -28,6 +28,7 @@ import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
 import net.minecraft.client.gui.contextualbar.ExperienceBarRenderer;
 import net.minecraft.client.gui.contextualbar.JumpableVehicleBarRenderer;
 import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
@@ -196,27 +197,29 @@ public class Gui {
    }
 
    public void render(GuiGraphics var1, DeltaTracker var2) {
-      if (!this.minecraft.options.hideGui) {
-         this.renderCameraOverlays(var1, var2);
-         this.renderCrosshair(var1, var2);
-         var1.nextStratum();
-         this.renderHotbarAndDecorations(var1, var2);
-         this.renderEffects(var1, var2);
-         this.renderBossOverlay(var1, var2);
-      }
+      if (this.minecraft.screen == null || !(this.minecraft.screen instanceof ReceivingLevelScreen)) {
+         if (!this.minecraft.options.hideGui) {
+            this.renderCameraOverlays(var1, var2);
+            this.renderCrosshair(var1, var2);
+            var1.nextStratum();
+            this.renderHotbarAndDecorations(var1, var2);
+            this.renderEffects(var1, var2);
+            this.renderBossOverlay(var1, var2);
+         }
 
-      this.renderSleepOverlay(var1, var2);
-      if (!this.minecraft.options.hideGui) {
-         this.renderDemoOverlay(var1, var2);
-         this.renderDebugOverlay(var1, var2);
-         this.renderScoreboardSidebar(var1, var2);
-         this.renderOverlayMessage(var1, var2);
-         this.renderTitle(var1, var2);
-         this.renderChat(var1, var2);
-         this.renderTabList(var1, var2);
-         this.renderSubtitleOverlay(var1, var2);
-      }
+         this.renderSleepOverlay(var1, var2);
+         if (!this.minecraft.options.hideGui) {
+            this.renderDemoOverlay(var1, var2);
+            this.renderDebugOverlay(var1, var2);
+            this.renderScoreboardSidebar(var1, var2);
+            this.renderOverlayMessage(var1, var2);
+            this.renderTitle(var1, var2);
+            this.renderChat(var1, var2);
+            this.renderTabList(var1, var2);
+            this.renderSubtitleOverlay(var1, var2);
+         }
 
+      }
    }
 
    private void renderBossOverlay(GuiGraphics var1, DeltaTracker var2) {

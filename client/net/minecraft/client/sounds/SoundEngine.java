@@ -388,29 +388,29 @@ public class SoundEngine {
                float var9 = this.calculatePitch(var1);
                SoundInstance.Attenuation var10 = var1.getAttenuation();
                boolean var11 = var1.isRelative();
-               boolean var12 = false;
+               if (!this.listeners.isEmpty()) {
+                  float var12 = !var11 && var10 != SoundInstance.Attenuation.NONE ? var6 : 1.0F / 0.0F;
+
+                  for(SoundEventListener var14 : this.listeners) {
+                     var14.onPlaySound(var1, var2, var12);
+                  }
+               }
+
+               boolean var18 = false;
                if (var8 == 0.0F) {
                   if (!var1.canStartSilent() && var7 != SoundSource.MUSIC) {
                      LOGGER.debug(MARKER, "Skipped playing sound {}, volume was zero.", var4.getLocation());
                      return SoundEngine.PlayResult.NOT_STARTED;
                   }
 
-                  var12 = true;
+                  var18 = true;
                }
 
-               Vec3 var13 = new Vec3(var1.getX(), var1.getY(), var1.getZ());
-               if (!this.listeners.isEmpty()) {
-                  float var14 = !var11 && var10 != SoundInstance.Attenuation.NONE ? var6 : 1.0F / 0.0F;
-
-                  for(SoundEventListener var16 : this.listeners) {
-                     var16.onPlaySound(var1, var2, var14);
-                  }
-               }
-
-               boolean var18 = shouldLoopAutomatically(var1);
-               boolean var19 = var4.shouldStream();
-               CompletableFuture var20 = this.channelAccess.createHandle(var4.shouldStream() ? Library.Pool.STREAMING : Library.Pool.STATIC);
-               ChannelAccess.ChannelHandle var17 = (ChannelAccess.ChannelHandle)var20.join();
+               Vec3 var19 = new Vec3(var1.getX(), var1.getY(), var1.getZ());
+               boolean var20 = shouldLoopAutomatically(var1);
+               boolean var15 = var4.shouldStream();
+               CompletableFuture var16 = this.channelAccess.createHandle(var4.shouldStream() ? Library.Pool.STREAMING : Library.Pool.STATIC);
+               ChannelAccess.ChannelHandle var17 = (ChannelAccess.ChannelHandle)var16.join();
                if (var17 == null) {
                   if (SharedConstants.IS_RUNNING_IN_IDE) {
                      LOGGER.warn("Failed to create new sound handle");
@@ -431,17 +431,17 @@ public class SoundEngine {
                         var8x.disableAttenuation();
                      }
 
-                     var8x.setLooping(var18 && !var19);
-                     var8x.setSelfPosition(var13);
+                     var8x.setLooping(var20 && !var15);
+                     var8x.setSelfPosition(var19);
                      var8x.setRelative(var11);
                   });
-                  if (!var19) {
+                  if (!var15) {
                      this.soundBuffers.getCompleteBuffer(var4.getPath()).thenAccept((var1x) -> var17.execute((var1) -> {
                            var1.attachStaticBuffer(var1x);
                            var1.play();
                         }));
                   } else {
-                     this.soundBuffers.getStream(var4.getPath(), var18).thenAccept((var1x) -> var17.execute((var1) -> {
+                     this.soundBuffers.getStream(var4.getPath(), var20).thenAccept((var1x) -> var17.execute((var1) -> {
                            var1.attachBufferStream(var1x);
                            var1.play();
                         }));
@@ -451,7 +451,7 @@ public class SoundEngine {
                      this.tickingSounds.add((TickableSoundInstance)var1);
                   }
 
-                  return var12 ? SoundEngine.PlayResult.STARTED_SILENTLY : SoundEngine.PlayResult.STARTED;
+                  return var18 ? SoundEngine.PlayResult.STARTED_SILENTLY : SoundEngine.PlayResult.STARTED;
                }
             }
          }

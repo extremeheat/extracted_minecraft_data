@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
@@ -111,6 +112,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    public static final int HALF_SECTION_SIZE = 8;
    public static final int NEARBY_SECTION_DISTANCE_IN_BLOCKS = 32;
    private static final int MINIMUM_TRANSPARENT_SORT_COUNT = 15;
+   private static final Comparator<Entity> ENTITY_COMPARATOR = Comparator.comparing((var0) -> var0.getType().hashCode());
    private final Minecraft minecraft;
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -536,6 +538,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          MultiBufferSource.BufferSource var22 = this.renderBuffers.bufferSource();
          MultiBufferSource.BufferSource var23 = this.renderBuffers.crumblingBufferSource();
          var9.popPush("entities");
+         this.visibleEntities.sort(ENTITY_COMPARATOR);
          this.renderEntities(var24, var22, var3, var8, this.visibleEntities);
          var22.endLastBatch();
          this.checkPoseStack(var24);

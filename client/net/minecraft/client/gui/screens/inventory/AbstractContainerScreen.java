@@ -107,6 +107,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       super.render(var1, var2, var3, var4);
       var1.pose().pushMatrix();
       var1.pose().translate((float)var5, (float)var6);
+      this.renderLabels(var1, var2, var3);
       Slot var7 = this.hoveredSlot;
       this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
       this.renderSlotHighlightBack(var1);
@@ -116,7 +117,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          this.onStopHovering(var7);
       }
 
-      this.renderLabels(var1, var2, var3);
       var1.pose().popMatrix();
    }
 

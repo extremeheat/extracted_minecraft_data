@@ -2238,6 +2238,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             if (var11 instanceof ServerLevel) {
                ServerLevel var10 = (ServerLevel)var11;
                this.spawnAtLocation(var10, var7, var9);
+               CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)var1, var7, var4);
             }
 
             return true;

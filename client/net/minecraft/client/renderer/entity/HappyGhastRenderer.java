@@ -20,7 +20,7 @@ public class HappyGhastRenderer extends AgeableMobRenderer<HappyGhast, HappyGhas
    private static final ResourceLocation GHAST_ROPES = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast_ropes.png");
 
    public HappyGhastRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST)), new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_BABY)), 1.5F);
+      super(var1, new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST)), new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_BABY)), 2.0F);
       this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HAPPY_GHAST_BODY, (var0) -> var0.bodyItem, new HappyGhastHarnessModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_HARNESS)), new HappyGhastHarnessModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_BABY_HARNESS))));
       this.addLayer(new RopesLayer(this, var1.getModelSet(), GHAST_ROPES));
    }

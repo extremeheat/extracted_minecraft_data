@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.TransferState;
@@ -86,7 +87,7 @@ public class RealmsConnect {
                   var3x = var3x.replaceAll(var4x, "");
                }
 
-               DisconnectedRealmsScreen var7 = new DisconnectedRealmsScreen(RealmsConnect.this.onlineScreen, CommonComponents.CONNECT_FAILED, Component.translatable("disconnect.genericReason", var3x));
+               DisconnectedScreen var7 = new DisconnectedScreen(RealmsConnect.this.onlineScreen, Component.translatable("mco.connect.failed"), Component.translatable("disconnect.genericReason", var3x), CommonComponents.GUI_BACK);
                var3.execute(() -> var3.setScreen(var7));
             }
 

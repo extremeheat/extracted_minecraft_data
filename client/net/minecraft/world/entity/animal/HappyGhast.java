@@ -70,7 +70,7 @@ public class HappyGhast extends Animal {
 
    public HappyGhast(EntityType<? extends HappyGhast> var1, Level var2) {
       super(var1, var2);
-      this.moveControl = new Ghast.GhastMoveControl(this, true, this::isPlayerAboveGhast);
+      this.moveControl = new Ghast.GhastMoveControl(this, true, this::isOnStillTimeout);
       this.lookControl = new HappyGhastLookControl();
    }
 
@@ -90,7 +90,7 @@ public class HappyGhast extends Animal {
    }
 
    private void adultGhastSetup() {
-      this.moveControl = new Ghast.GhastMoveControl(this, true, this::isPlayerAboveGhast);
+      this.moveControl = new Ghast.GhastMoveControl(this, true, this::isOnStillTimeout);
       this.lookControl = new HappyGhastLookControl();
       this.navigation = this.createNavigation(this.level());
       Level var2 = this.level();
@@ -280,7 +280,7 @@ public class HappyGhast extends Animal {
 
    public @Nullable LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
-      if (this.isWearingBodyArmor() && !this.isPlayerAboveGhast() && var1 instanceof Player var2) {
+      if (this.isWearingBodyArmor() && !this.isOnStillTimeout() && var1 instanceof Player var2) {
          return var2;
       } else {
          return super.getControllingPassenger();
@@ -344,7 +344,6 @@ public class HappyGhast extends Animal {
          var2.pop();
       }
 
-      this.setRequiresPrecisePosition(this.isPlayerAboveGhast());
       this.checkRestriction();
       super.customServerAiStep(var1);
    }
@@ -369,6 +368,10 @@ public class HappyGhast extends Animal {
    }
 
    public void aiStep() {
+      if (!this.level().isClientSide) {
+         this.setRequiresPrecisePosition(this.isOnStillTimeout());
+      }
+
       super.aiStep();
       this.continuousHeal();
    }
@@ -470,7 +473,7 @@ public class HappyGhast extends Animal {
       this.setServerStillTimeout(var1.getIntOr("still_timeout", 0));
    }
 
-   public boolean isPlayerAboveGhast() {
+   public boolean isOnStillTimeout() {
       return this.staysStill() || this.serverStillTimeout > 0;
    }
 
@@ -499,7 +502,7 @@ public class HappyGhast extends Animal {
          if (this.level().isClientSide() && var1 instanceof Player && var1.position().y >= this.getBoundingBox().maxY) {
             return true;
          } else {
-            return this.isVehicle() && var1 instanceof HappyGhast ? true : this.isPlayerAboveGhast();
+            return this.isVehicle() && var1 instanceof HappyGhast ? true : this.isOnStillTimeout();
          }
       } else {
          return false;
@@ -534,7 +537,7 @@ public class HappyGhast extends Animal {
       }
 
       public boolean canUse() {
-         return !HappyGhast.this.isPlayerAboveGhast() && super.canUse();
+         return !HappyGhast.this.isOnStillTimeout() && super.canUse();
       }
    }
 
@@ -544,7 +547,7 @@ public class HappyGhast extends Animal {
       }
 
       public void tick() {
-         if (HappyGhast.this.isPlayerAboveGhast()) {
+         if (HappyGhast.this.isOnStillTimeout()) {
             float var5 = wrapDegrees90(HappyGhast.this.getYRot());
             HappyGhast.this.setYRot(HappyGhast.this.getYRot() - var5);
             HappyGhast.this.setYHeadRot(HappyGhast.this.getYRot());

@@ -66,7 +66,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
 import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
-import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
@@ -249,11 +248,19 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    protected void showDialog(Holder<Dialog> var1, DialogConnectionAccess var2, @Nullable Screen var3) {
-      if (var3 instanceof DialogScreen.WarningScreen var7) {
-         DialogScreen var9 = var7.returnScreen();
-         DialogScreen var10 = DialogScreens.createFromData((Dialog)var1.value(), var9.previousScreen(), var2);
-         if (var10 != null) {
-            var7.updateReturnScreen(var10);
+      if (var3 instanceof DialogScreen.WarningScreen var8) {
+         Screen var10 = var8.returnScreen();
+         Screen var10000;
+         if (var10 instanceof DialogScreen var7) {
+            var10000 = var7.previousScreen();
+         } else {
+            var10000 = var10;
+         }
+
+         Screen var11 = var10000;
+         DialogScreen var12 = DialogScreens.createFromData((Dialog)var1.value(), var11, var2);
+         if (var12 != null) {
+            var8.updateReturnScreen(var12);
          } else {
             LOGGER.warn("Failed to show dialog for data {}", var1);
          }
@@ -268,9 +275,9 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
             var4 = var3;
          }
 
-         DialogScreen var8 = DialogScreens.createFromData((Dialog)var1.value(), var4, var2);
-         if (var8 != null) {
-            this.minecraft.setScreen(var8);
+         DialogScreen var9 = DialogScreens.createFromData((Dialog)var1.value(), var4, var2);
+         if (var9 != null) {
+            this.minecraft.setScreen(var9);
          } else {
             LOGGER.warn("Failed to show dialog for data {}", var1);
          }
@@ -286,7 +293,10 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    public void clearDialog() {
       Screen var3 = this.minecraft.screen;
       if (var3 instanceof DialogScreen.WarningScreen var1) {
-         var1.clearReturnScreen();
+         var3 = var1.returnScreen();
+         if (var3 instanceof DialogScreen var4) {
+            var1.updateReturnScreen(var4.previousScreen());
+         }
       } else {
          var3 = this.minecraft.screen;
          if (var3 instanceof DialogScreen var2) {
@@ -354,7 +364,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    protected Screen createDisconnectScreen(DisconnectionDetails var1) {
       Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
-      return (Screen)(this.serverData != null && this.serverData.isRealm() ? new DisconnectedRealmsScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1.reason()) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1));
+      return this.serverData != null && this.serverData.isRealm() ? new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1, CommonComponents.GUI_BACK) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1);
    }
 
    @Nullable

@@ -69,10 +69,14 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       var5.addChild(var6);
       var5.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.region_preference"), (var1x) -> this.openPreferenceSelector()).bounds(0, 0, 212, 20).build());
       var5.addChild(SpacerElement.height(2));
-      this.closeOpenButton = (Button)var5.addChild(Button.builder(Component.empty(), (var3x) -> {
+      this.closeOpenButton = (Button)var5.addChild(Button.builder(Component.empty(), (var4x) -> {
          if (var3.state == RealmsServer.State.OPEN) {
-            var2.setScreen(RealmsPopups.customPopupScreen(var1, Component.translatable("mco.configure.world.close.question.title"), Component.translatable("mco.configure.world.close.question.line1"), (var1x) -> var1.closeTheWorld()));
+            var2.setScreen(RealmsPopups.customPopupScreen(var1, Component.translatable("mco.configure.world.close.question.title"), Component.translatable("mco.configure.world.close.question.line1"), (var2x) -> {
+               this.save();
+               var1.closeTheWorld();
+            }));
          } else {
+            this.save();
             var1.openTheWorld(false);
          }
 
