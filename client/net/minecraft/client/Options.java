@@ -522,7 +522,7 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2));
+      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2, var1x.floatValue()));
    }
 
    public OptionInstance<Boolean> showSubtitles() {

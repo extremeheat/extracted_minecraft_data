@@ -58,8 +58,8 @@ public class HappyGhast extends Animal {
    public static final int FAST_HEALING_TICKS = 20;
    public static final int SLOW_HEALING_TICKS = 600;
    public static final int MAX_PASSANGERS = 4;
-   private static final int MAX_STILL_TIMEOUT = 40;
-   private static final int MAX_STILL_TIMEOUT_WHEN_RIDDEN = 10;
+   private static final int STILL_TIMEOUT_ON_LOAD_GRACE_PERIOD = 60;
+   private static final int MAX_STILL_TIMEOUT = 10;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
    public static final Predicate<ItemStack> IS_FOOD = (var0) -> var0.is(ItemTags.HAPPY_GHAST_FOOD);
    private int leashHolderTime = 0;
@@ -264,7 +264,7 @@ public class HappyGhast extends Animal {
    protected void removePassenger(Entity var1) {
       super.removePassenger(var1);
       if (!this.level().isClientSide) {
-         this.setServerStillTimeout(this.getPassengers().isEmpty() ? 40 : 10);
+         this.setServerStillTimeout(10);
       }
 
       if (!this.isVehicle()) {
@@ -357,11 +357,15 @@ public class HappyGhast extends Animal {
 
          this.setLeashHolder(this.leashHolderTime > 0);
          if (this.serverStillTimeout > 0) {
-            this.setServerStillTimeout(this.serverStillTimeout - 1);
+            if (this.tickCount > 60) {
+               --this.serverStillTimeout;
+            }
+
+            this.setServerStillTimeout(this.serverStillTimeout);
          }
 
          if (this.scanPlayerAboveGhast()) {
-            this.setServerStillTimeout(this.getPassengers().isEmpty() ? 40 : 10);
+            this.setServerStillTimeout(10);
          }
 
       }

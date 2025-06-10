@@ -105,7 +105,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             Objects.requireNonNull(this.font);
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
             int var15 = this.getInnerLeft();
-            if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
+            if (var7 && var8 && var6 >= var13.beginIndex() && var6 < var13.endIndex()) {
                if (var14) {
                   String var23 = var5.substring(var13.beginIndex(), var6);
                   var1.drawString(this.font, var23, var15, var11, this.textColor, this.textShadow);

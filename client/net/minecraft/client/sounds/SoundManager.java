@@ -200,8 +200,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.resume();
    }
 
-   public void updateSourceVolume(SoundSource var1) {
-      this.soundEngine.updateCategoryVolume(var1);
+   public void updateSourceVolume(SoundSource var1, float var2) {
+      this.soundEngine.updateCategoryVolume(var1, var2);
    }
 
    public void stop(SoundInstance var1) {

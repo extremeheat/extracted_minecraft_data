@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,8 +12,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
+import org.slf4j.Logger;
 
 public class MultilineTextField {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int NO_LIMIT = 2147483647;
    private static final int LINE_SEEK_PIXEL_BIAS = 2;
    private final Font font;
@@ -291,8 +294,8 @@ public class MultilineTextField {
    private StringView getCursorLineView(int var1) {
       int var2 = this.getLineAtCursor();
       if (var2 < 0) {
-         int var10002 = this.cursor;
-         throw new IllegalStateException("Cursor is not within text (cursor = " + var10002 + ", length = " + this.value.length() + ")");
+         LOGGER.error("Cursor is not within text (cursor = {}, length = {})", this.cursor, this.value.length());
+         return (StringView)this.displayLines.getLast();
       } else {
          return (StringView)this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
       }
