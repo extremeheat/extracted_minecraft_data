@@ -54,7 +54,11 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    }
 
    public void setValue(String var1) {
-      this.textField.setValue(var1);
+      this.setValue(var1, false);
+   }
+
+   public void setValue(String var1, boolean var2) {
+      this.textField.setValue(var1, var2);
    }
 
    public String getValue() {

@@ -122,7 +122,7 @@ public class BookEditScreen extends Screen {
    }
 
    private void updatePageContent() {
-      this.page.setValue((String)this.pages.get(this.currentPage));
+      this.page.setValue((String)this.pages.get(this.currentPage), true);
       this.numberOfPages = this.getPageNumberMessage();
    }
 

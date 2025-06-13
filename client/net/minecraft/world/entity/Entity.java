@@ -3701,17 +3701,19 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             Level var11 = this.level;
             if (var11 instanceof ServerLevel) {
                ServerLevel var10 = (ServerLevel)var11;
-               if (this instanceof WaypointTransmitter) {
-                  WaypointTransmitter var13 = (WaypointTransmitter)this;
-                  if (var13.isTransmittingWaypoint()) {
-                     var10.getWaypointManager().updateWaypoint(var13);
+               if (!this.isRemoved()) {
+                  if (this instanceof WaypointTransmitter) {
+                     WaypointTransmitter var13 = (WaypointTransmitter)this;
+                     if (var13.isTransmittingWaypoint()) {
+                        var10.getWaypointManager().updateWaypoint(var13);
+                     }
                   }
-               }
 
-               if (this instanceof ServerPlayer) {
-                  ServerPlayer var14 = (ServerPlayer)this;
-                  if (var14.isReceivingWaypoints() && var14.connection != null) {
-                     var10.getWaypointManager().updatePlayer(var14);
+                  if (this instanceof ServerPlayer) {
+                     ServerPlayer var14 = (ServerPlayer)this;
+                     if (var14.isReceivingWaypoints() && var14.connection != null) {
+                        var10.getWaypointManager().updatePlayer(var14);
+                     }
                   }
                }
             }

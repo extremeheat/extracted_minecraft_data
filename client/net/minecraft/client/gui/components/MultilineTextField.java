@@ -76,9 +76,13 @@ public class MultilineTextField {
    }
 
    public void setValue(String var1) {
-      String var2 = this.truncateFullText(var1);
-      if (!this.overflowsLineLimit(var2)) {
-         this.value = var2;
+      this.setValue(var1, false);
+   }
+
+   public void setValue(String var1, boolean var2) {
+      String var3 = this.truncateFullText(var1);
+      if (var2 || !this.overflowsLineLimit(var3)) {
+         this.value = var3;
          this.cursor = this.value.length();
          this.selectCursor = this.cursor;
          this.onValueChange();

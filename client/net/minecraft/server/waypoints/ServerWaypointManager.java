@@ -97,7 +97,6 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
          var0.disconnect();
          return true;
       });
-      this.players.remove(var1);
       this.untrackWaypoint((WaypointTransmitter)var1);
       this.players.remove(var1);
    }
