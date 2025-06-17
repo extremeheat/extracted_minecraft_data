@@ -59,7 +59,7 @@ public enum DyeColor implements StringRepresentable {
       this.id = var3;
       this.name = var4;
       this.mapColor = var6;
-      this.textColor = var8;
+      this.textColor = ARGB.opaque(var8);
       this.textureDiffuseColor = ARGB.opaque(var5);
       this.fireworkColor = var7;
    }

@@ -2,7 +2,6 @@ package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
@@ -12,16 +11,24 @@ import com.mojang.realmsclient.dto.PendingInvite;
 import com.mojang.realmsclient.dto.PendingInvitesList;
 import com.mojang.realmsclient.dto.PingResult;
 import com.mojang.realmsclient.dto.PlayerInfo;
+import com.mojang.realmsclient.dto.PreferredRegionsDto;
+import com.mojang.realmsclient.dto.RealmsConfigurationDto;
 import com.mojang.realmsclient.dto.RealmsDescriptionDto;
+import com.mojang.realmsclient.dto.RealmsJoinInformation;
 import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
+import com.mojang.realmsclient.dto.RealmsRegion;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsServerAddress;
 import com.mojang.realmsclient.dto.RealmsServerList;
 import com.mojang.realmsclient.dto.RealmsServerPlayerLists;
+import com.mojang.realmsclient.dto.RealmsSetting;
+import com.mojang.realmsclient.dto.RealmsSlotUpdateDto;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
 import com.mojang.realmsclient.dto.RealmsWorldResetDto;
 import com.mojang.realmsclient.dto.ReflectionBasedSerialization;
+import com.mojang.realmsclient.dto.RegionDataDto;
+import com.mojang.realmsclient.dto.RegionSelectionPreference;
+import com.mojang.realmsclient.dto.RegionSelectionPreferenceDto;
 import com.mojang.realmsclient.dto.ServerActivityList;
 import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.dto.UploadInfo;
@@ -45,6 +52,8 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class RealmsClient {
@@ -63,6 +72,7 @@ public class RealmsClient {
    private static final String ACTIVITIES_RESOURCE = "activities";
    private static final String OPS_RESOURCE = "ops";
    private static final String REGIONS_RESOURCE = "regions/ping/stat";
+   private static final String PREFERRED_REGION_RESOURCE = "regions/preferredRegions";
    private static final String TRIALS_RESOURCE = "trial";
    private static final String NOTIFICATIONS_RESOURCE = "notifications";
    private static final String FEATURE_FLAGS_RESOURCE = "feature/v1";
@@ -86,7 +96,7 @@ public class RealmsClient {
    private static final String PATH_ACCEPT_INVITE = "/accept/$INVITATION_ID";
    private static final String PATH_REJECT_INVITE = "/reject/$INVITATION_ID";
    private static final String PATH_UNINVITE_MYSELF = "/$WORLD_ID";
-   private static final String PATH_WORLD_UPDATE = "/$WORLD_ID";
+   private static final String PATH_WORLD_CONFIGURE = "/$WORLD_ID/configuration";
    private static final String PATH_SLOT = "/$WORLD_ID/slot/$SLOT_ID";
    private static final String PATH_WORLD_OPEN = "/$WORLD_ID/open";
    private static final String PATH_WORLD_CLOSE = "/$WORLD_ID/close";
@@ -141,21 +151,26 @@ public class RealmsClient {
    }
 
    private Set<String> fetchFeatureFlags() {
-      String var1 = url("feature/v1", (String)null, false);
+      User var1 = Minecraft.getInstance().getUser();
+      if (var1.getType() != User.Type.MSA) {
+         return Set.of();
+      } else {
+         String var2 = url("feature/v1", (String)null, false);
 
-      try {
-         String var2 = this.execute(Request.get(var1, 5000, 10000));
-         JsonArray var3 = JsonParser.parseString(var2).getAsJsonArray();
-         Set var4 = (Set)var3.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet());
-         LOGGER.debug("Fetched Realms feature flags: {}", var4);
-         return var4;
-      } catch (RealmsServiceException var5) {
-         LOGGER.error("Failed to fetch Realms feature flags", var5);
-      } catch (Exception var6) {
-         LOGGER.error("Could not parse Realms feature flags", var6);
+         try {
+            String var3 = this.execute(Request.get(var2, 5000, 10000));
+            JsonArray var4 = LenientJsonParser.parse(var3).getAsJsonArray();
+            Set var5 = (Set)var4.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet());
+            LOGGER.debug("Fetched Realms feature flags: {}", var5);
+            return var5;
+         } catch (RealmsServiceException var6) {
+            LOGGER.error("Failed to fetch Realms feature flags", var6);
+         } catch (Exception var7) {
+            LOGGER.error("Could not parse Realms feature flags", var7);
+         }
+
+         return Set.of();
       }
-
-      return Set.of();
    }
 
    public RealmsServerList listRealms() throws RealmsServiceException {
@@ -165,19 +180,19 @@ public class RealmsClient {
       }
 
       String var2 = this.execute(Request.get(var1));
-      return RealmsServerList.parse(var2);
+      return RealmsServerList.parse(GSON, var2);
    }
 
    public List<RealmsServer> listSnapshotEligibleRealms() throws RealmsServiceException {
       String var1 = this.url("worlds/listPrereleaseEligibleWorlds");
       String var2 = this.execute(Request.get(var1));
-      return RealmsServerList.parse(var2).servers;
+      return RealmsServerList.parse(GSON, var2).servers;
    }
 
    public RealmsServer createSnapshotRealm(Long var1) throws RealmsServiceException {
       String var2 = String.valueOf(var1);
       String var3 = this.url("worlds" + "/$PARENT_WORLD_ID/createPrereleaseRealm".replace("$PARENT_WORLD_ID", var2));
-      return RealmsServer.parse(this.execute(Request.post(var3, var2)));
+      return RealmsServer.parse(GSON, this.execute(Request.post(var3, var2)));
    }
 
    public List<RealmsNotification> getNotifications() throws RealmsServiceException {
@@ -211,7 +226,32 @@ public class RealmsClient {
    public RealmsServer getOwnRealm(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/$ID".replace("$ID", String.valueOf(var1)));
       String var4 = this.execute(Request.get(var3));
-      return RealmsServer.parse(var4);
+      return RealmsServer.parse(GSON, var4);
+   }
+
+   public PreferredRegionsDto getPreferredRegionSelections() throws RealmsServiceException {
+      String var1 = this.url("regions/preferredRegions");
+      String var2 = this.execute(Request.get(var1));
+
+      try {
+         PreferredRegionsDto var3 = (PreferredRegionsDto)GSON.fromJson(var2, PreferredRegionsDto.class);
+         if (var3 == null) {
+            return PreferredRegionsDto.empty();
+         } else {
+            Set var4 = (Set)var3.regionData().stream().map(RegionDataDto::region).collect(Collectors.toSet());
+
+            for(RealmsRegion var8 : RealmsRegion.values()) {
+               if (var8 != RealmsRegion.INVALID_REGION && !var4.contains(var8)) {
+                  LOGGER.debug("No realms region matching {} in server response", var8);
+               }
+            }
+
+            return var3;
+         }
+      } catch (Exception var9) {
+         LOGGER.error("Could not parse PreferredRegionSelections: {}", var9.getMessage());
+         return PreferredRegionsDto.empty();
+      }
    }
 
    public ServerActivityList getActivity(long var1) throws RealmsServiceException {
@@ -226,10 +266,10 @@ public class RealmsClient {
       return RealmsServerPlayerLists.parse(var2);
    }
 
-   public RealmsServerAddress join(long var1) throws RealmsServiceException {
+   public RealmsJoinInformation join(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/v1/$ID/join/pc".replace("$ID", "" + var1));
       String var4 = this.execute(Request.get(var3, 5000, 30000));
-      return RealmsServerAddress.parse(var4);
+      return RealmsJoinInformation.parse(GSON, var4);
    }
 
    public void initializeRealm(long var1, String var3, String var4) throws RealmsServiceException {
@@ -267,12 +307,12 @@ public class RealmsClient {
       this.execute(Request.delete(var3));
    }
 
-   public RealmsServer invite(long var1, String var3) throws RealmsServiceException {
+   public List<PlayerInfo> invite(long var1, String var3) throws RealmsServiceException {
       PlayerInfo var4 = new PlayerInfo();
       var4.setName(var3);
       String var5 = this.url("invites" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
       String var6 = this.execute(Request.post(var5, GSON.toJson((ReflectionBasedSerialization)var4)));
-      return RealmsServer.parse(var6);
+      return RealmsServer.parse(GSON, var6).players;
    }
 
    public BackupList backupsFor(long var1) throws RealmsServiceException {
@@ -281,16 +321,19 @@ public class RealmsClient {
       return BackupList.parse(var4);
    }
 
-   public void update(long var1, String var3, String var4) throws RealmsServiceException {
-      RealmsDescriptionDto var5 = new RealmsDescriptionDto(var3, var4);
-      String var6 = this.url("worlds" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
-      this.execute(Request.post(var6, GSON.toJson((ReflectionBasedSerialization)var5)));
+   public void updateConfiguration(long var1, String var3, String var4, @Nullable RegionSelectionPreferenceDto var5, int var6, RealmsWorldOptions var7, List<RealmsSetting> var8) throws RealmsServiceException {
+      RegionSelectionPreferenceDto var9 = var5 != null ? var5 : new RegionSelectionPreferenceDto(RegionSelectionPreference.DEFAULT_SELECTION, (RealmsRegion)null);
+      RealmsDescriptionDto var10 = new RealmsDescriptionDto(var3, var4);
+      RealmsSlotUpdateDto var11 = new RealmsSlotUpdateDto(var6, var7, RealmsSetting.isHardcore(var8));
+      RealmsConfigurationDto var12 = new RealmsConfigurationDto(var11, var8, var9, var10);
+      String var13 = this.url("worlds" + "/$WORLD_ID/configuration".replace("$WORLD_ID", String.valueOf(var1)));
+      this.execute(Request.post(var13, GSON.toJson((ReflectionBasedSerialization)var12)));
    }
 
-   public void updateSlot(long var1, int var3, RealmsWorldOptions var4) throws RealmsServiceException {
-      String var5 = this.url("worlds" + "/$WORLD_ID/slot/$SLOT_ID".replace("$WORLD_ID", String.valueOf(var1)).replace("$SLOT_ID", String.valueOf(var3)));
-      String var6 = var4.toJson();
-      this.execute(Request.post(var5, var6));
+   public void updateSlot(long var1, int var3, RealmsWorldOptions var4, List<RealmsSetting> var5) throws RealmsServiceException {
+      String var6 = this.url("worlds" + "/$WORLD_ID/slot/$SLOT_ID".replace("$WORLD_ID", String.valueOf(var1)).replace("$SLOT_ID", String.valueOf(var3)));
+      String var7 = GSON.toJson((ReflectionBasedSerialization)(new RealmsSlotUpdateDto(var3, var4, RealmsSetting.isHardcore(var5))));
+      this.execute(Request.post(var6, var7));
    }
 
    public boolean switchSlot(long var1, int var3) throws RealmsServiceException {
@@ -443,29 +486,34 @@ public class RealmsClient {
    private String execute(Request<?> var1) throws RealmsServiceException {
       var1.cookie("sid", this.sessionId);
       var1.cookie("user", this.username);
-      var1.cookie("version", SharedConstants.getCurrentVersion().getName());
+      var1.cookie("version", SharedConstants.getCurrentVersion().name());
       var1.addSnapshotHeader(RealmsMainScreen.isSnapshot());
 
       try {
          int var2 = var1.responseCode();
          if (var2 != 503 && var2 != 277) {
-            String var6 = var1.text();
+            String var7 = var1.text();
             if (var2 >= 200 && var2 < 300) {
-               return var6;
+               return var7;
             } else if (var2 == 401) {
-               String var7 = var1.getHeader("WWW-Authenticate");
-               LOGGER.info("Could not authorize you against Realms server: {}", var7);
-               throw new RealmsServiceException(new RealmsError.AuthenticationError(var7));
+               String var8 = var1.getHeader("WWW-Authenticate");
+               LOGGER.info("Could not authorize you against Realms server: {}", var8);
+               throw new RealmsServiceException(new RealmsError.AuthenticationError(var8));
             } else {
-               RealmsError var4 = RealmsError.parse(var2, var6);
-               throw new RealmsServiceException(var4);
+               String var4 = var1.connection.getContentType();
+               if (var4 != null && var4.startsWith("text/html")) {
+                  throw new RealmsServiceException(RealmsError.CustomError.htmlPayload(var2, var7));
+               } else {
+                  RealmsError var5 = RealmsError.parse(var2, var7);
+                  throw new RealmsServiceException(var5);
+               }
             }
          } else {
             int var3 = var1.getRetryAfterHeader();
             throw new RetryCallException(var3, var2);
          }
-      } catch (RealmsHttpException var5) {
-         throw new RealmsServiceException(RealmsError.CustomError.connectivityError(var5));
+      } catch (RealmsHttpException var6) {
+         throw new RealmsServiceException(RealmsError.CustomError.connectivityError(var6));
       }
    }
 

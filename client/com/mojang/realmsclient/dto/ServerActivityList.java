@@ -3,9 +3,9 @@ package com.mojang.realmsclient.dto;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.List;
+import net.minecraft.util.LenientJsonParser;
 
 public class ServerActivityList extends ValueObject {
    public long periodInMillis;
@@ -17,20 +17,19 @@ public class ServerActivityList extends ValueObject {
 
    public static ServerActivityList parse(String var0) {
       ServerActivityList var1 = new ServerActivityList();
-      JsonParser var2 = new JsonParser();
 
       try {
-         JsonElement var3 = var2.parse(var0);
-         JsonObject var4 = var3.getAsJsonObject();
-         var1.periodInMillis = JsonUtils.getLongOr("periodInMillis", var4, -1L);
-         JsonElement var5 = var4.get("playerActivityDto");
-         if (var5 != null && var5.isJsonArray()) {
-            for(JsonElement var8 : var5.getAsJsonArray()) {
-               ServerActivity var9 = ServerActivity.parse(var8.getAsJsonObject());
-               var1.serverActivities.add(var9);
+         JsonElement var2 = LenientJsonParser.parse(var0);
+         JsonObject var3 = var2.getAsJsonObject();
+         var1.periodInMillis = JsonUtils.getLongOr("periodInMillis", var3, -1L);
+         JsonElement var4 = var3.get("playerActivityDto");
+         if (var4 != null && var4.isJsonArray()) {
+            for(JsonElement var7 : var4.getAsJsonArray()) {
+               ServerActivity var8 = ServerActivity.parse(var7.getAsJsonObject());
+               var1.serverActivities.add(var8);
             }
          }
-      } catch (Exception var10) {
+      } catch (Exception var9) {
       }
 
       return var1;

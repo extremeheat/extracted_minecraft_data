@@ -7,11 +7,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class AlternativesEntry extends CompositeEntryBase {
    public static final MapCodec<AlternativesEntry> CODEC = createCodec(AlternativesEntry::new);
+   public static final ProblemReporter.Problem UNREACHABLE_PROBLEM = new ProblemReporter.Problem() {
+      public String description() {
+         return "Unreachable entry!";
+      }
+   };
 
    AlternativesEntry(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
       super(var1, var2);
@@ -46,7 +52,7 @@ public class AlternativesEntry extends CompositeEntryBase {
 
       for(int var2 = 0; var2 < this.children.size() - 1; ++var2) {
          if (((LootPoolEntryContainer)this.children.get(var2)).conditions.isEmpty()) {
-            var1.reportProblem("Unreachable entry!");
+            var1.reportProblem(UNREACHABLE_PROBLEM);
          }
       }
 

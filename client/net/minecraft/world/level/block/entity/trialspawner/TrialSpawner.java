@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity.trialspawner;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -16,13 +17,14 @@ import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
@@ -39,6 +41,9 @@ import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.block.TrialSpawnerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -46,59 +51,55 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.slf4j.Logger;
 
 public final class TrialSpawner {
-   public static final String NORMAL_CONFIG_TAG_NAME = "normal_config";
-   public static final String OMINOUS_CONFIG_TAG_NAME = "ominous_config";
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int DETECT_PLAYER_SPAWN_BUFFER = 40;
    private static final int DEFAULT_TARGET_COOLDOWN_LENGTH = 36000;
    private static final int DEFAULT_PLAYER_SCAN_RANGE = 14;
    private static final int MAX_MOB_TRACKING_DISTANCE = 47;
    private static final int MAX_MOB_TRACKING_DISTANCE_SQR = Mth.square(47);
    private static final float SPAWNING_AMBIENT_SOUND_CHANCE = 0.02F;
-   private Holder<TrialSpawnerConfig> normalConfig;
-   private Holder<TrialSpawnerConfig> ominousConfig;
-   private final TrialSpawnerData data;
-   private final int requiredPlayerRange;
-   private final int targetCooldownLength;
+   private final TrialSpawnerStateData data = new TrialSpawnerStateData();
+   private FullConfig config;
    private final StateAccessor stateAccessor;
    private PlayerDetector playerDetector;
    private final PlayerDetector.EntitySelector entitySelector;
    private boolean overridePeacefulAndMobSpawnRule;
    private boolean isOminous;
 
-   public MapCodec<TrialSpawner> codec() {
-      return RecordCodecBuilder.mapCodec((var1) -> var1.group(TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.normalConfig), TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.ominousConfig), TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData), Codec.intRange(0, 2147483647).optionalFieldOf("target_cooldown_length", 36000).forGetter(TrialSpawner::getTargetCooldownLength), Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(TrialSpawner::getRequiredPlayerRange)).apply(var1, (var1x, var2, var3, var4, var5) -> new TrialSpawner(var1x, var2, var3, var4, var5, this.stateAccessor, this.playerDetector, this.entitySelector)));
-   }
-
-   public TrialSpawner(StateAccessor var1, PlayerDetector var2, PlayerDetector.EntitySelector var3) {
-      this(Holder.direct(TrialSpawnerConfig.DEFAULT), Holder.direct(TrialSpawnerConfig.DEFAULT), new TrialSpawnerData(), 36000, 14, var1, var2, var3);
-   }
-
-   public TrialSpawner(Holder<TrialSpawnerConfig> var1, Holder<TrialSpawnerConfig> var2, TrialSpawnerData var3, int var4, int var5, StateAccessor var6, PlayerDetector var7, PlayerDetector.EntitySelector var8) {
+   public TrialSpawner(FullConfig var1, StateAccessor var2, PlayerDetector var3, PlayerDetector.EntitySelector var4) {
       super();
-      this.normalConfig = var1;
-      this.ominousConfig = var2;
-      this.data = var3;
-      this.targetCooldownLength = var4;
-      this.requiredPlayerRange = var5;
-      this.stateAccessor = var6;
-      this.playerDetector = var7;
-      this.entitySelector = var8;
+      this.config = var1;
+      this.stateAccessor = var2;
+      this.playerDetector = var3;
+      this.entitySelector = var4;
    }
 
-   public TrialSpawnerConfig getConfig() {
-      return this.isOminous ? this.getOminousConfig() : this.getNormalConfig();
+   public TrialSpawnerConfig activeConfig() {
+      return this.isOminous ? (TrialSpawnerConfig)this.config.ominous().value() : (TrialSpawnerConfig)this.config.normal.value();
    }
 
-   @VisibleForTesting
-   public TrialSpawnerConfig getNormalConfig() {
-      return this.normalConfig.value();
+   public TrialSpawnerConfig normalConfig() {
+      return this.config.normal.value();
    }
 
-   @VisibleForTesting
-   public TrialSpawnerConfig getOminousConfig() {
-      return this.ominousConfig.value();
+   public TrialSpawnerConfig ominousConfig() {
+      return this.config.ominous.value();
+   }
+
+   public void load(ValueInput var1) {
+      Optional var10000 = var1.read(TrialSpawnerStateData.Packed.MAP_CODEC);
+      TrialSpawnerStateData var10001 = this.data;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::apply);
+      this.config = (FullConfig)var1.read(TrialSpawner.FullConfig.MAP_CODEC).orElse(TrialSpawner.FullConfig.DEFAULT);
+   }
+
+   public void store(ValueOutput var1) {
+      var1.store(TrialSpawnerStateData.Packed.MAP_CODEC, this.data.pack());
+      var1.store(TrialSpawner.FullConfig.MAP_CODEC, this.config);
    }
 
    public void applyOminous(ServerLevel var1, BlockPos var2) {
@@ -117,20 +118,20 @@ public final class TrialSpawner {
       return this.isOminous;
    }
 
-   public TrialSpawnerData getData() {
-      return this.data;
-   }
-
    public int getTargetCooldownLength() {
-      return this.targetCooldownLength;
+      return this.config.targetCooldownLength;
    }
 
    public int getRequiredPlayerRange() {
-      return this.requiredPlayerRange;
+      return this.config.requiredPlayerRange;
    }
 
    public TrialSpawnerState getState() {
       return this.stateAccessor.getState();
+   }
+
+   public TrialSpawnerStateData getStateData() {
+      return this.data;
    }
 
    public void setState(Level var1, TrialSpawnerState var2) {
@@ -160,60 +161,66 @@ public final class TrialSpawner {
    public Optional<UUID> spawnMob(ServerLevel var1, BlockPos var2) {
       RandomSource var3 = var1.getRandom();
       SpawnData var4 = this.data.getOrCreateNextSpawnData(this, var1.getRandom());
-      CompoundTag var5 = var4.entityToSpawn();
-      Optional var6 = EntityType.by(var5);
-      if (var6.isEmpty()) {
-         return Optional.empty();
-      } else {
-         Vec3 var7 = (Vec3)var5.read("Pos", Vec3.CODEC).orElseGet(() -> new Vec3((double)var2.getX() + (var3.nextDouble() - var3.nextDouble()) * (double)this.getConfig().spawnRange() + 0.5, (double)(var2.getY() + var3.nextInt(3) - 1), (double)var2.getZ() + (var3.nextDouble() - var3.nextDouble()) * (double)this.getConfig().spawnRange() + 0.5));
-         if (!var1.noCollision(((EntityType)var6.get()).getSpawnAABB(var7.x, var7.y, var7.z))) {
-            return Optional.empty();
-         } else if (!inLineOfSight(var1, var2.getCenter(), var7)) {
+
+      try (ProblemReporter.ScopedCollector var5 = new ProblemReporter.ScopedCollector(() -> "spawner@" + String.valueOf(var2), LOGGER)) {
+         ValueInput var6 = TagValueInput.create(var5, var1.registryAccess(), var4.entityToSpawn());
+         Optional var7 = EntityType.by(var6);
+         if (var7.isEmpty()) {
             return Optional.empty();
          } else {
-            BlockPos var8 = BlockPos.containing(var7);
-            if (!SpawnPlacements.checkSpawnRules((EntityType)var6.get(), var1, EntitySpawnReason.TRIAL_SPAWNER, var8, var1.getRandom())) {
+            Vec3 var8 = (Vec3)var6.read("Pos", Vec3.CODEC).orElseGet(() -> {
+               TrialSpawnerConfig var3x = this.activeConfig();
+               return new Vec3((double)var2.getX() + (var3.nextDouble() - var3.nextDouble()) * (double)var3x.spawnRange() + 0.5, (double)(var2.getY() + var3.nextInt(3) - 1), (double)var2.getZ() + (var3.nextDouble() - var3.nextDouble()) * (double)var3x.spawnRange() + 0.5);
+            });
+            if (!var1.noCollision(((EntityType)var7.get()).getSpawnAABB(var8.x, var8.y, var8.z))) {
+               return Optional.empty();
+            } else if (!inLineOfSight(var1, var2.getCenter(), var8)) {
                return Optional.empty();
             } else {
-               if (var4.getCustomSpawnRules().isPresent()) {
-                  SpawnData.CustomSpawnRules var9 = (SpawnData.CustomSpawnRules)var4.getCustomSpawnRules().get();
-                  if (!var9.isValidPosition(var8, var1)) {
-                     return Optional.empty();
-                  }
-               }
-
-               Entity var12 = EntityType.loadEntityRecursive(var5, var1, EntitySpawnReason.TRIAL_SPAWNER, (var2x) -> {
-                  var2x.snapTo(var7.x, var7.y, var7.z, var3.nextFloat() * 360.0F, 0.0F);
-                  return var2x;
-               });
-               if (var12 == null) {
+               BlockPos var9 = BlockPos.containing(var8);
+               if (!SpawnPlacements.checkSpawnRules((EntityType)var7.get(), var1, EntitySpawnReason.TRIAL_SPAWNER, var9, var1.getRandom())) {
                   return Optional.empty();
                } else {
-                  if (var12 instanceof Mob) {
-                     Mob var10 = (Mob)var12;
-                     if (!var10.checkSpawnObstruction(var1)) {
+                  if (var4.getCustomSpawnRules().isPresent()) {
+                     SpawnData.CustomSpawnRules var10 = (SpawnData.CustomSpawnRules)var4.getCustomSpawnRules().get();
+                     if (!var10.isValidPosition(var9, var1)) {
                         return Optional.empty();
                      }
-
-                     boolean var11 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().getString("id").isPresent();
-                     if (var11) {
-                        var10.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var10.blockPosition()), EntitySpawnReason.TRIAL_SPAWNER, (SpawnGroupData)null);
-                     }
-
-                     var10.setPersistenceRequired();
-                     Optional var10000 = var4.getEquipment();
-                     Objects.requireNonNull(var10);
-                     var10000.ifPresent(var10::equip);
                   }
 
-                  if (!var1.tryAddFreshEntityWithPassengers(var12)) {
+                  Entity var18 = EntityType.loadEntityRecursive((ValueInput)var6, var1, EntitySpawnReason.TRIAL_SPAWNER, (var2x) -> {
+                     var2x.snapTo(var8.x, var8.y, var8.z, var3.nextFloat() * 360.0F, 0.0F);
+                     return var2x;
+                  });
+                  if (var18 == null) {
                      return Optional.empty();
                   } else {
-                     FlameParticle var13 = this.isOminous ? TrialSpawner.FlameParticle.OMINOUS : TrialSpawner.FlameParticle.NORMAL;
-                     var1.levelEvent(3011, var2, var13.encode());
-                     var1.levelEvent(3012, var8, var13.encode());
-                     var1.gameEvent(var12, GameEvent.ENTITY_PLACE, var8);
-                     return Optional.of(var12.getUUID());
+                     if (var18 instanceof Mob) {
+                        Mob var11 = (Mob)var18;
+                        if (!var11.checkSpawnObstruction(var1)) {
+                           return Optional.empty();
+                        }
+
+                        boolean var12 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().getString("id").isPresent();
+                        if (var12) {
+                           var11.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var11.blockPosition()), EntitySpawnReason.TRIAL_SPAWNER, (SpawnGroupData)null);
+                        }
+
+                        var11.setPersistenceRequired();
+                        Optional var10000 = var4.getEquipment();
+                        Objects.requireNonNull(var11);
+                        var10000.ifPresent(var11::equip);
+                     }
+
+                     if (!var1.tryAddFreshEntityWithPassengers(var18)) {
+                        return Optional.empty();
+                     } else {
+                        FlameParticle var20 = this.isOminous ? TrialSpawner.FlameParticle.OMINOUS : TrialSpawner.FlameParticle.NORMAL;
+                        var1.levelEvent(3011, var2, var20.encode());
+                        var1.levelEvent(3012, var9, var20.encode());
+                        var1.gameEvent(var18, GameEvent.ENTITY_PLACE, var9);
+                        return Optional.of(var18.getUUID());
+                     }
                   }
                }
             }
@@ -261,7 +268,7 @@ public final class TrialSpawner {
       this.isOminous = var3;
       TrialSpawnerState var4 = this.getState();
       if (this.data.currentMobs.removeIf((var2x) -> shouldMobBeUntracked(var1, var2, var2x))) {
-         this.data.nextMobSpawnsAt = var1.getGameTime() + (long)this.getConfig().ticksBetweenSpawn();
+         this.data.nextMobSpawnsAt = var1.getGameTime() + (long)this.activeConfig().ticksBetweenSpawn();
       }
 
       TrialSpawnerState var5 = var4.tickAndGetNext(var2, this, var1);
@@ -334,8 +341,7 @@ public final class TrialSpawner {
 
    public void overrideEntityToSpawn(EntityType<?> var1, Level var2) {
       this.data.reset();
-      this.normalConfig = Holder.<TrialSpawnerConfig>direct((this.normalConfig.value()).withSpawning(var1));
-      this.ominousConfig = Holder.<TrialSpawnerConfig>direct((this.ominousConfig.value()).withSpawning(var1));
+      this.config = this.config.overrideEntity(var1);
       this.setState(var2, TrialSpawnerState.INACTIVE);
    }
 
@@ -379,6 +385,31 @@ public final class TrialSpawner {
       // $FF: synthetic method
       private static FlameParticle[] $values() {
          return new FlameParticle[]{NORMAL, OMINOUS};
+      }
+   }
+
+   public static record FullConfig(Holder<TrialSpawnerConfig> normal, Holder<TrialSpawnerConfig> ominous, int targetCooldownLength, int requiredPlayerRange) {
+      final Holder<TrialSpawnerConfig> normal;
+      final Holder<TrialSpawnerConfig> ominous;
+      final int targetCooldownLength;
+      final int requiredPlayerRange;
+      public static final MapCodec<FullConfig> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter(FullConfig::normal), TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter(FullConfig::ominous), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("target_cooldown_length", 36000).forGetter(FullConfig::targetCooldownLength), Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(FullConfig::requiredPlayerRange)).apply(var0, FullConfig::new));
+      public static final FullConfig DEFAULT;
+
+      public FullConfig(Holder<TrialSpawnerConfig> var1, Holder<TrialSpawnerConfig> var2, int var3, int var4) {
+         super();
+         this.normal = var1;
+         this.ominous = var2;
+         this.targetCooldownLength = var3;
+         this.requiredPlayerRange = var4;
+      }
+
+      public FullConfig overrideEntity(EntityType<?> var1) {
+         return new FullConfig(Holder.direct((this.normal.value()).withSpawning(var1)), Holder.direct((this.ominous.value()).withSpawning(var1)), this.targetCooldownLength, this.requiredPlayerRange);
+      }
+
+      static {
+         DEFAULT = new FullConfig(Holder.direct(TrialSpawnerConfig.DEFAULT), Holder.direct(TrialSpawnerConfig.DEFAULT), 36000, 14);
       }
    }
 

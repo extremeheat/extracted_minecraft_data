@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -59,7 +60,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.BlockHitResult;
@@ -103,10 +104,10 @@ public class FriendlyByteBuf extends ByteBuf {
       return this;
    }
 
-   public <T> T readJsonWithCodec(Codec<T> var1) {
-      JsonElement var2 = (JsonElement)GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
+   public <T> T readLenientJsonWithCodec(Codec<T> var1) {
+      JsonElement var2 = LenientJsonParser.parse(this.readUtf());
       DataResult var3 = var1.parse(JsonOps.INSTANCE, var2);
-      return (T)var3.getOrThrow((var0) -> new DecoderException("Failed to decode json: " + var0));
+      return (T)var3.getOrThrow((var0) -> new DecoderException("Failed to decode JSON: " + var0));
    }
 
    public <T> void writeJsonWithCodec(Codec<T> var1, T var2) {
@@ -235,6 +236,20 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public <T> Optional<T> readOptional(StreamDecoder<? super FriendlyByteBuf, T> var1) {
       return this.readBoolean() ? Optional.of(var1.decode(this)) : Optional.empty();
+   }
+
+   public <L, R> void writeEither(Either<L, R> var1, StreamEncoder<? super FriendlyByteBuf, L> var2, StreamEncoder<? super FriendlyByteBuf, R> var3) {
+      var1.ifLeft((var2x) -> {
+         this.writeBoolean(true);
+         var2.encode(this, var2x);
+      }).ifRight((var2x) -> {
+         this.writeBoolean(false);
+         var3.encode(this, var2x);
+      });
+   }
+
+   public <L, R> Either<L, R> readEither(StreamDecoder<? super FriendlyByteBuf, L> var1, StreamDecoder<? super FriendlyByteBuf, R> var2) {
+      return this.readBoolean() ? Either.left(var1.decode(this)) : Either.right(var2.decode(this));
    }
 
    @Nullable

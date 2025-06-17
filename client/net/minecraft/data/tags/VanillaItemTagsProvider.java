@@ -1,93 +1,36 @@
 package net.minecraft.data.tags;
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
-public class VanillaItemTagsProvider extends ItemTagsProvider {
-   public VanillaItemTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2, CompletableFuture<TagsProvider.TagLookup<Block>> var3) {
-      super(var1, var2, var3);
+public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
+   public VanillaItemTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, Registries.ITEM, var2, (var0) -> var0.builtInRegistryHolder().key());
    }
 
    protected void addTags(HolderLookup.Provider var1) {
-      this.copy(BlockTags.WOOL, ItemTags.WOOL);
-      this.copy(BlockTags.PLANKS, ItemTags.PLANKS);
-      this.copy(BlockTags.STONE_BRICKS, ItemTags.STONE_BRICKS);
-      this.copy(BlockTags.WOODEN_BUTTONS, ItemTags.WOODEN_BUTTONS);
-      this.copy(BlockTags.STONE_BUTTONS, ItemTags.STONE_BUTTONS);
-      this.copy(BlockTags.BUTTONS, ItemTags.BUTTONS);
-      this.copy(BlockTags.WOOL_CARPETS, ItemTags.WOOL_CARPETS);
-      this.copy(BlockTags.WOODEN_DOORS, ItemTags.WOODEN_DOORS);
-      this.copy(BlockTags.WOODEN_STAIRS, ItemTags.WOODEN_STAIRS);
-      this.copy(BlockTags.WOODEN_SLABS, ItemTags.WOODEN_SLABS);
-      this.copy(BlockTags.WOODEN_FENCES, ItemTags.WOODEN_FENCES);
-      this.copy(BlockTags.FENCE_GATES, ItemTags.FENCE_GATES);
-      this.copy(BlockTags.WOODEN_PRESSURE_PLATES, ItemTags.WOODEN_PRESSURE_PLATES);
-      this.copy(BlockTags.DOORS, ItemTags.DOORS);
-      this.copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
-      this.copy(BlockTags.BAMBOO_BLOCKS, ItemTags.BAMBOO_BLOCKS);
-      this.copy(BlockTags.OAK_LOGS, ItemTags.OAK_LOGS);
-      this.copy(BlockTags.DARK_OAK_LOGS, ItemTags.DARK_OAK_LOGS);
-      this.copy(BlockTags.PALE_OAK_LOGS, ItemTags.PALE_OAK_LOGS);
-      this.copy(BlockTags.BIRCH_LOGS, ItemTags.BIRCH_LOGS);
-      this.copy(BlockTags.ACACIA_LOGS, ItemTags.ACACIA_LOGS);
-      this.copy(BlockTags.SPRUCE_LOGS, ItemTags.SPRUCE_LOGS);
-      this.copy(BlockTags.MANGROVE_LOGS, ItemTags.MANGROVE_LOGS);
-      this.copy(BlockTags.JUNGLE_LOGS, ItemTags.JUNGLE_LOGS);
-      this.copy(BlockTags.CHERRY_LOGS, ItemTags.CHERRY_LOGS);
-      this.copy(BlockTags.CRIMSON_STEMS, ItemTags.CRIMSON_STEMS);
-      this.copy(BlockTags.WARPED_STEMS, ItemTags.WARPED_STEMS);
-      this.copy(BlockTags.WART_BLOCKS, ItemTags.WART_BLOCKS);
-      this.copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);
-      this.copy(BlockTags.LOGS, ItemTags.LOGS);
-      this.copy(BlockTags.SAND, ItemTags.SAND);
-      this.copy(BlockTags.SMELTS_TO_GLASS, ItemTags.SMELTS_TO_GLASS);
-      this.copy(BlockTags.SLABS, ItemTags.SLABS);
-      this.copy(BlockTags.WALLS, ItemTags.WALLS);
-      this.copy(BlockTags.STAIRS, ItemTags.STAIRS);
-      this.copy(BlockTags.ANVIL, ItemTags.ANVIL);
-      this.copy(BlockTags.RAILS, ItemTags.RAILS);
-      this.copy(BlockTags.LEAVES, ItemTags.LEAVES);
-      this.copy(BlockTags.WOODEN_TRAPDOORS, ItemTags.WOODEN_TRAPDOORS);
-      this.copy(BlockTags.TRAPDOORS, ItemTags.TRAPDOORS);
-      this.copy(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS);
-      this.copy(BlockTags.FLOWERS, ItemTags.FLOWERS);
-      this.copy(BlockTags.BEDS, ItemTags.BEDS);
-      this.copy(BlockTags.FENCES, ItemTags.FENCES);
-      this.copy(BlockTags.BEE_ATTRACTIVE, ItemTags.BEE_FOOD);
-      this.copy(BlockTags.SOUL_FIRE_BASE_BLOCKS, ItemTags.SOUL_FIRE_BASE_BLOCKS);
-      this.copy(BlockTags.CANDLES, ItemTags.CANDLES);
-      this.copy(BlockTags.DAMPENS_VIBRATIONS, ItemTags.DAMPENS_VIBRATIONS);
-      this.copy(BlockTags.GOLD_ORES, ItemTags.GOLD_ORES);
-      this.copy(BlockTags.IRON_ORES, ItemTags.IRON_ORES);
-      this.copy(BlockTags.DIAMOND_ORES, ItemTags.DIAMOND_ORES);
-      this.copy(BlockTags.REDSTONE_ORES, ItemTags.REDSTONE_ORES);
-      this.copy(BlockTags.LAPIS_ORES, ItemTags.LAPIS_ORES);
-      this.copy(BlockTags.COAL_ORES, ItemTags.COAL_ORES);
-      this.copy(BlockTags.EMERALD_ORES, ItemTags.EMERALD_ORES);
-      this.copy(BlockTags.COPPER_ORES, ItemTags.COPPER_ORES);
-      this.copy(BlockTags.DIRT, ItemTags.DIRT);
-      this.copy(BlockTags.TERRACOTTA, ItemTags.TERRACOTTA);
-      this.copy(BlockTags.COMPLETES_FIND_TREE_TUTORIAL, ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
-      this.copy(BlockTags.SHULKER_BOXES, ItemTags.SHULKER_BOXES);
+      (new BlockItemTagsProvider() {
+         protected TagAppender<Block, Block> tag(TagKey<Block> var1, TagKey<Item> var2) {
+            return new BlockToItemConverter(VanillaItemTagsProvider.this.tag(var2));
+         }
+      }).run();
       this.tag(ItemTags.BANNERS).add(Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER, Items.YELLOW_BANNER, Items.LIME_BANNER, Items.PINK_BANNER, Items.GRAY_BANNER, Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER, Items.BROWN_BANNER, Items.GREEN_BANNER, Items.RED_BANNER, Items.BLACK_BANNER);
       this.tag(ItemTags.BOATS).add(Items.OAK_BOAT, Items.SPRUCE_BOAT, Items.BIRCH_BOAT, Items.JUNGLE_BOAT, Items.ACACIA_BOAT, Items.DARK_OAK_BOAT, Items.PALE_OAK_BOAT, Items.MANGROVE_BOAT, Items.BAMBOO_RAFT, Items.CHERRY_BOAT).addTag(ItemTags.CHEST_BOATS);
       this.tag(ItemTags.BUNDLES).add(Items.BUNDLE, Items.BLACK_BUNDLE, Items.BLUE_BUNDLE, Items.BROWN_BUNDLE, Items.CYAN_BUNDLE, Items.GRAY_BUNDLE, Items.GREEN_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.LIME_BUNDLE, Items.MAGENTA_BUNDLE, Items.ORANGE_BUNDLE, Items.PINK_BUNDLE, Items.PURPLE_BUNDLE, Items.RED_BUNDLE, Items.YELLOW_BUNDLE, Items.WHITE_BUNDLE);
       this.tag(ItemTags.CHEST_BOATS).add(Items.OAK_CHEST_BOAT, Items.SPRUCE_CHEST_BOAT, Items.BIRCH_CHEST_BOAT, Items.JUNGLE_CHEST_BOAT, Items.ACACIA_CHEST_BOAT, Items.DARK_OAK_CHEST_BOAT, Items.PALE_OAK_CHEST_BOAT, Items.MANGROVE_CHEST_BOAT, Items.BAMBOO_CHEST_RAFT, Items.CHERRY_CHEST_BOAT);
       this.tag(ItemTags.EGGS).add(Items.EGG, Items.BLUE_EGG, Items.BROWN_EGG);
       this.tag(ItemTags.FISHES).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.PUFFERFISH, Items.TROPICAL_FISH);
-      this.copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
-      this.copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
       this.tag(ItemTags.CREEPER_DROP_MUSIC_DISCS).add(Items.MUSIC_DISC_13, Items.MUSIC_DISC_CAT, Items.MUSIC_DISC_BLOCKS, Items.MUSIC_DISC_CHIRP, Items.MUSIC_DISC_FAR, Items.MUSIC_DISC_MALL, Items.MUSIC_DISC_MELLOHI, Items.MUSIC_DISC_STAL, Items.MUSIC_DISC_STRAD, Items.MUSIC_DISC_WARD, Items.MUSIC_DISC_11, Items.MUSIC_DISC_WAIT);
       this.tag(ItemTags.COALS).add(Items.COAL, Items.CHARCOAL);
       this.tag(ItemTags.ARROWS).add(Items.ARROW, Items.TIPPED_ARROW, Items.SPECTRAL_ARROW);
@@ -141,7 +84,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.HEAD_ARMOR).add(Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
       this.tag(ItemTags.SKULLS).add(Items.PLAYER_HEAD, Items.CREEPER_HEAD, Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.DRAGON_HEAD, Items.PIGLIN_HEAD);
       this.tag(ItemTags.TRIMMABLE_ARMOR).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR);
-      this.tag(ItemTags.TRIM_MATERIALS).addAll(var1.lookupOrThrow(Registries.ITEM).listElements().filter((var0) -> ((Item)var0.value()).components().has(DataComponents.PROVIDES_TRIM_MATERIAL)).map(Holder.Reference::key).sorted(Comparator.comparing(ResourceKey::location)).toList());
+      this.tag(ItemTags.TRIM_MATERIALS).addAll(var1.lookupOrThrow(Registries.ITEM).listElements().filter((var0) -> ((Item)var0.value()).components().has(DataComponents.PROVIDES_TRIM_MATERIAL)).sorted(Comparator.comparing((var0) -> var0.key().location())).map(Holder.Reference::value));
       this.tag(ItemTags.BOOKSHELF_BOOKS).add(Items.BOOK, Items.WRITTEN_BOOK, Items.ENCHANTED_BOOK, Items.WRITABLE_BOOK, Items.KNOWLEDGE_BOOK);
       this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD);
       this.tag(ItemTags.SNIFFER_FOOD).add(Items.TORCHFLOWER_SEEDS);
@@ -173,8 +116,11 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.RABBIT_STEW);
       this.tag(ItemTags.OCELOT_FOOD).add(Items.COD, Items.SALMON);
       this.tag(ItemTags.CAT_FOOD).add(Items.COD, Items.SALMON);
-      this.tag(ItemTags.HORSE_FOOD).add(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+      this.tag(ItemTags.HORSE_FOOD).add(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.CARROT, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
       this.tag(ItemTags.HORSE_TEMPT_ITEMS).add(Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+      this.tag(ItemTags.HARNESSES).add(Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS, Items.YELLOW_HARNESS, Items.LIME_HARNESS, Items.PINK_HARNESS, Items.GRAY_HARNESS, Items.LIGHT_GRAY_HARNESS, Items.CYAN_HARNESS, Items.PURPLE_HARNESS, Items.BLUE_HARNESS, Items.BROWN_HARNESS, Items.GREEN_HARNESS, Items.RED_HARNESS, Items.BLACK_HARNESS);
+      this.tag(ItemTags.HAPPY_GHAST_FOOD).add(Items.SNOWBALL);
+      this.tag(ItemTags.HAPPY_GHAST_TEMPT_ITEMS).addTag(ItemTags.HAPPY_GHAST_FOOD).addTag(ItemTags.HARNESSES);
       this.tag(ItemTags.CAMEL_FOOD).add(Items.CACTUS);
       this.tag(ItemTags.ARMADILLO_FOOD).add(Items.SPIDER_EYE);
       this.tag(ItemTags.CHICKEN_FOOD).add(Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD);
@@ -196,5 +142,38 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.GOAT_FOOD).add(Items.WHEAT);
       this.tag(ItemTags.MAP_INVISIBILITY_EQUIPMENT).add(Items.CARVED_PUMPKIN);
       this.tag(ItemTags.GAZE_DISGUISE_EQUIPMENT).add(Items.CARVED_PUMPKIN);
+   }
+
+   static class BlockToItemConverter implements TagAppender<Block, Block> {
+      private final TagAppender<Item, Item> itemAppender;
+
+      public BlockToItemConverter(TagAppender<Item, Item> var1) {
+         super();
+         this.itemAppender = var1;
+      }
+
+      public TagAppender<Block, Block> add(Block var1) {
+         this.itemAppender.add((Item)Objects.requireNonNull(var1.asItem()));
+         return this;
+      }
+
+      public TagAppender<Block, Block> addOptional(Block var1) {
+         this.itemAppender.addOptional((Item)Objects.requireNonNull(var1.asItem()));
+         return this;
+      }
+
+      private static TagKey<Item> blockTagToItemTag(TagKey<Block> var0) {
+         return TagKey.<Item>create(Registries.ITEM, var0.location());
+      }
+
+      public TagAppender<Block, Block> addTag(TagKey<Block> var1) {
+         this.itemAppender.addTag(blockTagToItemTag(var1));
+         return this;
+      }
+
+      public TagAppender<Block, Block> addOptionalTag(TagKey<Block> var1) {
+         this.itemAppender.addOptionalTag(blockTagToItemTag(var1));
+         return this;
+      }
    }
 }

@@ -15,6 +15,10 @@ public class RealmsPopups {
       super();
    }
 
+   public static PopupScreen customPopupScreen(Screen var0, Component var1, Component var2, Consumer<PopupScreen> var3) {
+      return (new PopupScreen.Builder(var0, var1)).setMessage(var2).addButton(CommonComponents.GUI_CONTINUE, var3).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
+   }
+
    public static PopupScreen infoPopupScreen(Screen var0, Component var1, Consumer<PopupScreen> var2) {
       return (new PopupScreen.Builder(var0, INFO)).setMessage(var1).addButton(CommonComponents.GUI_CONTINUE, var2).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build();
    }

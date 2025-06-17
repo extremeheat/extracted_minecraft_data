@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -45,7 +46,7 @@ public record BlockDataSource(String posPattern, @Nullable Coordinates compiledP
          if (var2.isLoaded(var3)) {
             BlockEntity var4 = var2.getBlockEntity(var3);
             if (var4 != null) {
-               return Stream.of(var4.saveWithFullMetadata(var1.registryAccess()));
+               return Stream.of(var4.saveWithFullMetadata((HolderLookup.Provider)var1.registryAccess()));
             }
          }
       }

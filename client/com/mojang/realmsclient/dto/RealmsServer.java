@@ -3,12 +3,10 @@ package com.mojang.realmsclient.dto;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.util.JsonUtils;
+import com.mojang.util.UUIDTypeAdapter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,46 +17,88 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 
-public class RealmsServer extends ValueObject {
+public class RealmsServer extends ValueObject implements ReflectionBasedSerialization {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int NO_VALUE = -1;
-   public long id;
+   public static final Component WORLD_CLOSED_COMPONENT = Component.translatable("mco.play.button.realm.closed");
+   @SerializedName("id")
+   public long id = -1L;
    @Nullable
+   @SerializedName("remoteSubscriptionId")
    public String remoteSubscriptionId;
    @Nullable
+   @SerializedName("name")
    public String name;
-   public String motd;
+   @SerializedName("motd")
+   public String motd = "";
+   @SerializedName("state")
    public State state;
    @Nullable
+   @SerializedName("owner")
    public String owner;
+   @SerializedName("ownerUUID")
+   @JsonAdapter(UUIDTypeAdapter.class)
    public UUID ownerUUID;
+   @SerializedName("players")
    public List<PlayerInfo> players;
-   public Map<Integer, RealmsWorldOptions> slots;
+   @SerializedName("slots")
+   private List<RealmsSlot> slotList;
+   @Exclude
+   public Map<Integer, RealmsSlot> slots;
+   @SerializedName("expired")
    public boolean expired;
+   @SerializedName("expiredTrial")
    public boolean expiredTrial;
+   @SerializedName("daysLeft")
    public int daysLeft;
+   @SerializedName("worldType")
    public WorldType worldType;
+   @SerializedName("isHardcore")
    public boolean isHardcore;
+   @SerializedName("gameMode")
    public int gameMode;
+   @SerializedName("activeSlot")
    public int activeSlot;
    @Nullable
+   @SerializedName("minigameName")
    public String minigameName;
+   @SerializedName("minigameId")
    public int minigameId;
    @Nullable
+   @SerializedName("minigameImage")
    public String minigameImage;
+   @SerializedName("parentWorldId")
    public long parentRealmId;
    @Nullable
+   @SerializedName("parentWorldName")
    public String parentWorldName;
+   @SerializedName("activeVersion")
    public String activeVersion;
+   @SerializedName("compatibility")
    public Compatibility compatibility;
+   @Nullable
+   @SerializedName("regionSelectionPreference")
+   public RegionSelectionPreferenceDto regionSelectionPreference;
 
    public RealmsServer() {
       super();
+      this.state = RealmsServer.State.CLOSED;
       this.ownerUUID = Util.NIL_UUID;
+      this.players = Lists.newArrayList();
+      this.slotList = createEmptySlots();
+      this.slots = new HashMap();
+      this.expiredTrial = false;
+      this.worldType = RealmsServer.WorldType.NORMAL;
+      this.isHardcore = false;
+      this.gameMode = -1;
+      this.activeSlot = -1;
+      this.minigameId = -1;
       this.parentRealmId = -1L;
       this.activeVersion = "";
       this.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
@@ -86,161 +126,76 @@ public class RealmsServer extends ValueObject {
       this.motd = var1;
    }
 
-   public static RealmsServer parse(JsonObject var0) {
-      RealmsServer var1 = new RealmsServer();
-
+   public static RealmsServer parse(GuardedSerializer var0, String var1) {
       try {
-         var1.id = JsonUtils.getLongOr("id", var0, -1L);
-         var1.remoteSubscriptionId = JsonUtils.getStringOr("remoteSubscriptionId", var0, (String)null);
-         var1.name = JsonUtils.getStringOr("name", var0, (String)null);
-         var1.motd = JsonUtils.getStringOr("motd", var0, "");
-         var1.state = getState(JsonUtils.getStringOr("state", var0, RealmsServer.State.CLOSED.name()));
-         var1.owner = JsonUtils.getStringOr("owner", var0, (String)null);
-         if (var0.get("players") != null && var0.get("players").isJsonArray()) {
-            var1.players = parseInvited(var0.get("players").getAsJsonArray());
-            sortInvited(var1);
+         RealmsServer var2 = (RealmsServer)var0.fromJson(var1, RealmsServer.class);
+         if (var2 == null) {
+            LOGGER.error("Could not parse McoServer: {}", var1);
+            return new RealmsServer();
          } else {
-            var1.players = Lists.newArrayList();
+            finalize(var2);
+            return var2;
          }
-
-         var1.daysLeft = JsonUtils.getIntOr("daysLeft", var0, 0);
-         var1.expired = JsonUtils.getBooleanOr("expired", var0, false);
-         var1.expiredTrial = JsonUtils.getBooleanOr("expiredTrial", var0, false);
-         var1.worldType = getWorldType(JsonUtils.getStringOr("worldType", var0, RealmsServer.WorldType.NORMAL.name()));
-         var1.isHardcore = JsonUtils.getBooleanOr("isHardcore", var0, false);
-         var1.gameMode = JsonUtils.getIntOr("gameMode", var0, -1);
-         var1.ownerUUID = JsonUtils.getUuidOr("ownerUUID", var0, Util.NIL_UUID);
-         if (var0.get("slots") != null && var0.get("slots").isJsonArray()) {
-            var1.slots = parseSlots(var0.get("slots").getAsJsonArray());
-         } else {
-            var1.slots = createEmptySlots();
-         }
-
-         var1.minigameName = JsonUtils.getStringOr("minigameName", var0, (String)null);
-         var1.activeSlot = JsonUtils.getIntOr("activeSlot", var0, -1);
-         var1.minigameId = JsonUtils.getIntOr("minigameId", var0, -1);
-         var1.minigameImage = JsonUtils.getStringOr("minigameImage", var0, (String)null);
-         var1.parentRealmId = JsonUtils.getLongOr("parentWorldId", var0, -1L);
-         var1.parentWorldName = JsonUtils.getStringOr("parentWorldName", var0, (String)null);
-         var1.activeVersion = JsonUtils.getStringOr("activeVersion", var0, "");
-         var1.compatibility = getCompatibility(JsonUtils.getStringOr("compatibility", var0, RealmsServer.Compatibility.UNVERIFIABLE.name()));
       } catch (Exception var3) {
          LOGGER.error("Could not parse McoServer: {}", var3.getMessage());
+         return new RealmsServer();
+      }
+   }
+
+   public static void finalize(RealmsServer var0) {
+      if (var0.players == null) {
+         var0.players = Lists.newArrayList();
       }
 
-      return var1;
+      if (var0.slotList == null) {
+         var0.slotList = createEmptySlots();
+      }
+
+      if (var0.slots == null) {
+         var0.slots = new HashMap();
+      }
+
+      if (var0.worldType == null) {
+         var0.worldType = RealmsServer.WorldType.NORMAL;
+      }
+
+      if (var0.activeVersion == null) {
+         var0.activeVersion = "";
+      }
+
+      if (var0.compatibility == null) {
+         var0.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
+      }
+
+      if (var0.regionSelectionPreference == null) {
+         var0.regionSelectionPreference = RegionSelectionPreferenceDto.DEFAULT;
+      }
+
+      sortInvited(var0);
+      finalizeSlots(var0);
    }
 
    private static void sortInvited(RealmsServer var0) {
       var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.getAccepted(), var0x.getAccepted()).compare(var0x.getName().toLowerCase(Locale.ROOT), var1.getName().toLowerCase(Locale.ROOT)).result());
    }
 
-   private static List<PlayerInfo> parseInvited(JsonArray var0) {
-      ArrayList var1 = Lists.newArrayList();
+   private static void finalizeSlots(RealmsServer var0) {
+      var0.slotList.forEach((var1x) -> var0.slots.put(var1x.slotId, var1x));
 
-      for(JsonElement var3 : var0) {
-         try {
-            JsonObject var4 = var3.getAsJsonObject();
-            PlayerInfo var5 = new PlayerInfo();
-            var5.setName(JsonUtils.getStringOr("name", var4, (String)null));
-            var5.setUuid(JsonUtils.getUuidOr("uuid", var4, Util.NIL_UUID));
-            var5.setOperator(JsonUtils.getBooleanOr("operator", var4, false));
-            var5.setAccepted(JsonUtils.getBooleanOr("accepted", var4, false));
-            var5.setOnline(JsonUtils.getBooleanOr("online", var4, false));
-            var1.add(var5);
-         } catch (Exception var6) {
+      for(int var1 = 1; var1 <= 3; ++var1) {
+         if (!var0.slots.containsKey(var1)) {
+            var0.slots.put(var1, RealmsSlot.defaults(var1));
          }
       }
 
-      return var1;
    }
 
-   private static Map<Integer, RealmsWorldOptions> parseSlots(JsonArray var0) {
-      HashMap var1 = Maps.newHashMap();
-
-      for(JsonElement var3 : var0) {
-         try {
-            JsonObject var5 = var3.getAsJsonObject();
-            JsonElement var6 = JsonParser.parseString(var5.get("options").getAsString());
-            RealmsSettings var7 = parseSettings(var5.get("settings"));
-            RealmsWorldOptions var4;
-            if (var6 == null) {
-               var4 = RealmsWorldOptions.createDefaults();
-            } else {
-               var4 = RealmsWorldOptions.parse(var6.getAsJsonObject(), var7);
-            }
-
-            int var8 = JsonUtils.getIntOr("slotId", var5, -1);
-            var1.put(var8, var4);
-         } catch (Exception var9) {
-         }
-      }
-
-      for(int var10 = 1; var10 <= 3; ++var10) {
-         if (!var1.containsKey(var10)) {
-            var1.put(var10, RealmsWorldOptions.createEmptyDefaults());
-         }
-      }
-
-      return var1;
-   }
-
-   private static RealmsSettings parseSettings(JsonElement var0) {
-      boolean var1 = false;
-      if (var0.isJsonArray()) {
-         for(JsonElement var3 : var0.getAsJsonArray()) {
-            JsonObject var4 = var3.getAsJsonObject();
-            var1 = readBoolean(var4, "hardcore", var1);
-         }
-      }
-
-      return new RealmsSettings(var1);
-   }
-
-   private static boolean readBoolean(JsonObject var0, String var1, boolean var2) {
-      String var3 = JsonUtils.getStringOr("name", var0, (String)null);
-      return var3 != null && var3.equals(var1) ? JsonUtils.getBooleanOr("value", var0, var2) : var2;
-   }
-
-   private static Map<Integer, RealmsWorldOptions> createEmptySlots() {
-      HashMap var0 = Maps.newHashMap();
-      var0.put(1, RealmsWorldOptions.createEmptyDefaults());
-      var0.put(2, RealmsWorldOptions.createEmptyDefaults());
-      var0.put(3, RealmsWorldOptions.createEmptyDefaults());
+   private static List<RealmsSlot> createEmptySlots() {
+      ArrayList var0 = new ArrayList();
+      var0.add(RealmsSlot.defaults(1));
+      var0.add(RealmsSlot.defaults(2));
+      var0.add(RealmsSlot.defaults(3));
       return var0;
-   }
-
-   public static RealmsServer parse(String var0) {
-      try {
-         return parse((new JsonParser()).parse(var0).getAsJsonObject());
-      } catch (Exception var2) {
-         LOGGER.error("Could not parse McoServer: {}", var2.getMessage());
-         return new RealmsServer();
-      }
-   }
-
-   private static State getState(String var0) {
-      try {
-         return RealmsServer.State.valueOf(var0);
-      } catch (Exception var2) {
-         return RealmsServer.State.CLOSED;
-      }
-   }
-
-   private static WorldType getWorldType(String var0) {
-      try {
-         return RealmsServer.WorldType.valueOf(var0);
-      } catch (Exception var2) {
-         return RealmsServer.WorldType.NORMAL;
-      }
-   }
-
-   public static Compatibility getCompatibility(@Nullable String var0) {
-      try {
-         return RealmsServer.Compatibility.valueOf(var0);
-      } catch (Exception var2) {
-         return RealmsServer.Compatibility.UNVERIFIABLE;
-      }
    }
 
    public boolean isCompatible() {
@@ -253,6 +208,15 @@ public class RealmsServer extends ValueObject {
 
    public boolean needsDowngrade() {
       return this.compatibility.needsDowngrade();
+   }
+
+   public boolean shouldPlayButtonBeActive() {
+      boolean var1 = !this.expired && this.state == RealmsServer.State.OPEN;
+      return var1 && (this.isCompatible() || this.needsUpgrade() || this.isSelfOwnedServer());
+   }
+
+   private boolean isSelfOwnedServer() {
+      return Minecraft.getInstance().isLocalPlayer(this.ownerUUID);
    }
 
    public int hashCode() {
@@ -281,6 +245,7 @@ public class RealmsServer extends ValueObject {
       var1.state = this.state;
       var1.owner = this.owner;
       var1.players = this.players;
+      var1.slotList = this.slotList.stream().map(RealmsSlot::clone).toList();
       var1.slots = this.cloneSlots(this.slots);
       var1.expired = this.expired;
       var1.expiredTrial = this.expiredTrial;
@@ -297,14 +262,15 @@ public class RealmsServer extends ValueObject {
       var1.parentRealmId = this.parentRealmId;
       var1.activeVersion = this.activeVersion;
       var1.compatibility = this.compatibility;
+      var1.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.clone() : null;
       return var1;
    }
 
-   public Map<Integer, RealmsWorldOptions> cloneSlots(Map<Integer, RealmsWorldOptions> var1) {
+   public Map<Integer, RealmsSlot> cloneSlots(Map<Integer, RealmsSlot> var1) {
       HashMap var2 = Maps.newHashMap();
 
       for(Map.Entry var4 : var1.entrySet()) {
-         var2.put((Integer)var4.getKey(), ((RealmsWorldOptions)var4.getValue()).clone());
+         var2.put((Integer)var4.getKey(), new RealmsSlot((Integer)var4.getKey(), ((RealmsSlot)var4.getValue()).options.clone(), ((RealmsSlot)var4.getValue()).settings));
       }
 
       return var2;
@@ -319,7 +285,12 @@ public class RealmsServer extends ValueObject {
    }
 
    public String getWorldName(int var1) {
-      return this.name == null ? ((RealmsWorldOptions)this.slots.get(var1)).getSlotName(var1) : this.name + " (" + ((RealmsWorldOptions)this.slots.get(var1)).getSlotName(var1) + ")";
+      if (this.name == null) {
+         return ((RealmsSlot)this.slots.get(var1)).options.getSlotName(var1);
+      } else {
+         String var10000 = this.name;
+         return var10000 + " (" + ((RealmsSlot)this.slots.get(var1)).options.getSlotName(var1) + ")";
+      }
    }
 
    public ServerData toServerData(String var1) {

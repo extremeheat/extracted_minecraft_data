@@ -289,7 +289,7 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var3, new Dye(var2)));
    }
 
-   private void generateWolfArmor(Item var1) {
+   private void generateTwoLayerDyedItem(Item var1) {
       ResourceLocation var2 = TextureMapping.getItemTexture(var1);
       ResourceLocation var3 = TextureMapping.getItemTexture(var1, "_overlay");
       ResourceLocation var4 = ModelTemplates.FLAT_ITEM.create(var1, TextureMapping.layer0(var2), this.modelOutput);
@@ -461,6 +461,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.MUSIC_DISC_OTHERSIDE, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_RELIC, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUSIC_DISC_5, ModelTemplates.MUSIC_DISC);
+      this.generateFlatItem(Items.MUSIC_DISC_TEARS, ModelTemplates.MUSIC_DISC);
       this.generateFlatItem(Items.MUTTON, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NAME_TAG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NAUTILUS_SHELL, ModelTemplates.FLAT_ITEM);
@@ -636,7 +637,23 @@ public class ItemModelGenerators {
       this.generateBundleModels(Items.ORANGE_BUNDLE);
       this.generateSpyglass(Items.SPYGLASS);
       this.generateTrident(Items.TRIDENT);
-      this.generateWolfArmor(Items.WOLF_ARMOR);
+      this.generateTwoLayerDyedItem(Items.WOLF_ARMOR);
+      this.generateFlatItem(Items.WHITE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ORANGE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.MAGENTA_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LIGHT_BLUE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.YELLOW_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LIME_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PINK_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GRAY_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.LIGHT_GRAY_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.CYAN_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.PURPLE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLUE_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BROWN_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GREEN_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.RED_HARNESS, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLACK_HARNESS, ModelTemplates.FLAT_ITEM);
       this.generateBow(Items.BOW);
       this.generateCrossbow(Items.CROSSBOW);
       this.generateElytra(Items.ELYTRA);
@@ -677,6 +694,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.GLOW_SQUID_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOAT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GUARDIAN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.HAPPY_GHAST_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HOGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HORSE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HUSK_SPAWN_EGG, ModelTemplates.FLAT_ITEM);

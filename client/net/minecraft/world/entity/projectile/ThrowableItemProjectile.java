@@ -1,16 +1,15 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public abstract class ThrowableItemProjectile extends ThrowableProjectile implements ItemSupplier {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
@@ -43,16 +42,14 @@ public abstract class ThrowableItemProjectile extends ThrowableProjectile implem
       var1.define(DATA_ITEM_STACK, new ItemStack(this.getDefaultItem()));
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("Item", ItemStack.CODEC, var2, this.getItem());
+      var1.store("Item", ItemStack.CODEC, this.getItem());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElseGet(() -> new ItemStack(this.getDefaultItem())));
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElseGet(() -> new ItemStack(this.getDefaultItem())));
    }
 
    static {

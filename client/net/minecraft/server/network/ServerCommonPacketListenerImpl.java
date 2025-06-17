@@ -2,6 +2,7 @@ package net.minecraft.server.network;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
+import io.netty.channel.ChannelFutureListener;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -18,6 +19,7 @@ import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
@@ -94,6 +96,11 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    public void handleCustomPayload(ServerboundCustomPayloadPacket var1) {
    }
 
+   public void handleCustomClickAction(ServerboundCustomClickActionPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      this.server.handleCustomClickAction(var1.id(), var1.payload());
+   }
+
    public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
       if (var1.action() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
@@ -146,10 +153,10 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void send(Packet<?> var1) {
-      this.send(var1, (PacketSendListener)null);
+      this.send(var1, (ChannelFutureListener)null);
    }
 
-   public void send(Packet<?> var1, @Nullable PacketSendListener var2) {
+   public void send(Packet<?> var1, @Nullable ChannelFutureListener var2) {
       if (var1.isTerminal()) {
          this.close();
       }

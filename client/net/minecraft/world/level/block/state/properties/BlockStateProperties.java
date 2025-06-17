@@ -114,6 +114,7 @@ public class BlockStateProperties {
    public static final int MIN_RESPAWN_ANCHOR_CHARGES = 0;
    public static final int MAX_RESPAWN_ANCHOR_CHARGES = 4;
    public static final IntegerProperty RESPAWN_ANCHOR_CHARGES;
+   public static final IntegerProperty DRIED_GHAST_HYDRATION_LEVELS;
    public static final IntegerProperty ROTATION_16;
    public static final EnumProperty<BedPart> BED_PART;
    public static final EnumProperty<ChestType> CHEST_TYPE;
@@ -205,6 +206,7 @@ public class BlockStateProperties {
       STAGE = IntegerProperty.create("stage", 0, 1);
       STABILITY_DISTANCE = IntegerProperty.create("distance", 0, 7);
       RESPAWN_ANCHOR_CHARGES = IntegerProperty.create("charges", 0, 4);
+      DRIED_GHAST_HYDRATION_LEVELS = IntegerProperty.create("hydration", 0, 3);
       ROTATION_16 = IntegerProperty.create("rotation", 0, RotationSegment.getMaxSegmentIndex());
       BED_PART = EnumProperty.<BedPart>create("part", BedPart.class);
       CHEST_TYPE = EnumProperty.<ChestType>create("type", ChestType.class);

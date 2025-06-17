@@ -24,7 +24,7 @@ import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
 import net.minecraft.client.multiplayer.chat.report.ChatReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
@@ -301,7 +301,7 @@ public class ChatSelectionScreen extends Screen {
             int var12 = var10000 + (var6 - 9) / 2;
             var1.drawString(ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var11, var12, this.canReport ? -1 : -1593835521);
             if (this.hoverText != null && var9) {
-               ChatSelectionScreen.this.setTooltipForNextRenderPass(this.hoverText);
+               var1.setTooltipForNextFrame(this.hoverText, var7, var8);
             }
 
             int var13 = ChatSelectionScreen.this.font.width(this.text);
@@ -313,7 +313,7 @@ public class ChatSelectionScreen extends Screen {
                int var7 = var3 + (var4 - this.tagIcon.height) / 2;
                this.tagIcon.draw(var1, var2, var7);
                if (this.tagHoverText != null && var5 >= var2 && var5 <= var2 + this.tagIcon.width && var6 >= var7 && var6 <= var7 + this.tagIcon.height) {
-                  ChatSelectionScreen.this.setTooltipForNextRenderPass(this.tagHoverText);
+                  var1.setTooltipForNextFrame(this.tagHoverText, var5, var6);
                }
             }
 
@@ -321,7 +321,7 @@ public class ChatSelectionScreen extends Screen {
 
          private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
          }
 
          private int getMaximumTextWidth() {

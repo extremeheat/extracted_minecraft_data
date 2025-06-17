@@ -25,6 +25,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BrushableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -171,13 +173,13 @@ public class BrushableBlockEntity extends BlockEntity {
 
    }
 
-   private boolean tryLoadLootTable(CompoundTag var1) {
+   private boolean tryLoadLootTable(ValueInput var1) {
       this.lootTable = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
       this.lootTableSeed = var1.getLongOr("LootTableSeed", 0L);
       return this.lootTable != null;
    }
 
-   private boolean trySaveLootTable(CompoundTag var1) {
+   private boolean trySaveLootTable(ValueOutput var1) {
       if (this.lootTable == null) {
          return false;
       } else {
@@ -205,11 +207,10 @@ public class BrushableBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       if (!this.tryLoadLootTable(var1)) {
-         this.item = (ItemStack)var1.read("item", ItemStack.CODEC, var3).orElse(ItemStack.EMPTY);
+         this.item = (ItemStack)var1.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
       } else {
          this.item = ItemStack.EMPTY;
       }
@@ -217,11 +218,10 @@ public class BrushableBlockEntity extends BlockEntity {
       this.hitDirection = (Direction)var1.read("hit_direction", Direction.LEGACY_ID_CODEC).orElse((Object)null);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
-         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-         var1.store("item", ItemStack.CODEC, var3, this.item);
+         var1.store("item", ItemStack.CODEC, this.item);
       }
 
    }

@@ -286,7 +286,7 @@ public class GameTestHelper {
    }
 
    public Player makeMockPlayer(final GameType var1) {
-      return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+      return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
          @Nonnull
          public GameType gameMode() {
             return var1;
@@ -378,7 +378,7 @@ public class GameTestHelper {
    }
 
    public void assertBlockTag(TagKey<Block> var1, BlockPos var2) {
-      this.assertBlockState(var2, (var1x) -> var1x.is(var1), (var1x) -> Component.translatable("test.error.expected_block_tag", var1.location(), var1x.getBlock().getName()));
+      this.assertBlockState(var2, (var1x) -> var1x.is(var1), (var1x) -> Component.translatable("test.error.expected_block_tag", Component.translationArg(var1.location()), var1x.getBlock().getName()));
    }
 
    public void succeedWhenBlockPresent(Block var1, int var2, int var3, int var4) {

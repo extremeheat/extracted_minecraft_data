@@ -6,7 +6,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
@@ -202,13 +202,13 @@ public class BlockItem extends Item {
 
    }
 
-   public static void setBlockEntityData(ItemStack var0, BlockEntityType<?> var1, CompoundTag var2) {
-      var2.remove("id");
+   public static void setBlockEntityData(ItemStack var0, BlockEntityType<?> var1, TagValueOutput var2) {
+      var2.discard("id");
       if (var2.isEmpty()) {
          var0.remove(DataComponents.BLOCK_ENTITY_DATA);
       } else {
          BlockEntity.addEntityType(var2, var1);
-         var0.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(var2));
+         var0.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(var2.buildResult()));
       }
 
    }

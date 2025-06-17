@@ -161,7 +161,7 @@ public class EditWorldScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 15, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 15, -1);
    }
 
    static {

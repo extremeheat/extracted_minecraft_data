@@ -9,7 +9,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.SlotArgument;
@@ -27,10 +25,8 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -50,10 +46,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public class LootCommand {
-   public static final SuggestionProvider<CommandSourceStack> SUGGEST_LOOT_TABLE = (var0, var1) -> {
-      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.LOOT_TABLE), var1);
-   };
    private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_held_items", var0));
    private static final DynamicCommandExceptionType ERROR_NO_ENTITY_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_loot_table.entity", var0));
    private static final DynamicCommandExceptionType ERROR_NO_BLOCK_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_loot_table.block", var0));
@@ -63,7 +55,7 @@ public class LootCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)addTargets((LiteralArgumentBuilder)Commands.literal("loot").requires((var0x) -> var0x.hasPermission(2)), (var1x, var2) -> var1x.then(Commands.literal("fish").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1)).suggests(SUGGEST_LOOT_TABLE).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemStack.EMPTY, var2))).then(Commands.argument("tool", ItemArgument.item(var1)).executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemArgument.getItem(var1xx, "tool").createItemStack(1, false), var2)))).then(Commands.literal("mainhand").executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND), var2)))).then(Commands.literal("offhand").executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND), var2)))))).then(Commands.literal("loot").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1)).suggests(SUGGEST_LOOT_TABLE).executes((var1xx) -> dropChestLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), var2)))).then(Commands.literal("kill").then(Commands.argument("target", EntityArgument.entity()).executes((var1xx) -> dropKillLoot(var1xx, EntityArgument.getEntity(var1xx, "target"), var2)))).then(Commands.literal("mine").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemStack.EMPTY, var2))).then(Commands.argument("tool", ItemArgument.item(var1)).executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemArgument.getItem(var1xx, "tool").createItemStack(1, false), var2)))).then(Commands.literal("mainhand").executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND), var2)))).then(Commands.literal("offhand").executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND), var2)))))));
+      var0.register((LiteralArgumentBuilder)addTargets((LiteralArgumentBuilder)Commands.literal("loot").requires(Commands.hasPermission(2)), (var1x, var2) -> var1x.then(Commands.literal("fish").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1)).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemStack.EMPTY, var2))).then(Commands.argument("tool", ItemArgument.item(var1)).executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemArgument.getItem(var1xx, "tool").createItemStack(1, false), var2)))).then(Commands.literal("mainhand").executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND), var2)))).then(Commands.literal("offhand").executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND), var2)))))).then(Commands.literal("loot").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1)).executes((var1xx) -> dropChestLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), var2)))).then(Commands.literal("kill").then(Commands.argument("target", EntityArgument.entity()).executes((var1xx) -> dropKillLoot(var1xx, EntityArgument.getEntity(var1xx, "target"), var2)))).then(Commands.literal("mine").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemStack.EMPTY, var2))).then(Commands.argument("tool", ItemArgument.item(var1)).executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemArgument.getItem(var1xx, "tool").createItemStack(1, false), var2)))).then(Commands.literal("mainhand").executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND), var2)))).then(Commands.literal("offhand").executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND), var2)))))));
    }
 
    private static <T extends ArgumentBuilder<CommandSourceStack, T>> T addTargets(T var0, TailProvider var1) {

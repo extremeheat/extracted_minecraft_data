@@ -298,7 +298,7 @@ public class ServerChunkCache extends ChunkSource {
       ProfilerFiller var3 = Profiler.get();
       var3.push("purge");
       if (this.level.tickRateManager().runsNormally() || !var2) {
-         this.ticketStorage.purgeStaleTickets();
+         this.ticketStorage.purgeStaleTickets(this.chunkMap);
       }
 
       this.runDistanceManagerUpdates();
@@ -479,6 +479,9 @@ public class ServerChunkCache extends ChunkSource {
    public void move(ServerPlayer var1) {
       if (!var1.isRemoved()) {
          this.chunkMap.move(var1);
+         if (var1.isReceivingWaypoints()) {
+            this.level.getWaypointManager().updatePlayer(var1);
+         }
       }
 
    }

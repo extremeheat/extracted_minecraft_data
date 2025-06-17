@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -48,6 +47,8 @@ import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.BinaryHeap;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -123,7 +124,7 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 200.0);
+      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 200.0).add(Attributes.CAMERA_DISTANCE, 16.0);
    }
 
    public boolean isFlapping() {
@@ -714,13 +715,13 @@ public class EnderDragon extends Mob implements Enemy {
       return new Path(var3, new BlockPos(var2.x, var2.y, var2.z), true);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("DragonPhase", this.phaseManager.getCurrentPhase().getPhase().getId());
       var1.putInt("DragonDeathTime", this.dragonDeathTime);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       var1.getInt("DragonPhase").ifPresent((var1x) -> this.phaseManager.setPhase(EnderDragonPhase.getById(var1x)));
       this.dragonDeathTime = var1.getIntOr("DragonDeathTime", 0);

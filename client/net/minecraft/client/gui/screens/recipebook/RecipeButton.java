@@ -12,7 +12,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -98,24 +98,24 @@ public class RecipeButton extends AbstractWidget {
       boolean var6 = this.animationTime > 0.0F;
       if (var6) {
          float var7 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
-         var1.pose().pushPose();
-         var1.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
-         var1.pose().scale(var7, var7, 1.0F);
-         var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
+         var1.pose().pushMatrix();
+         var1.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
+         var1.pose().scale(var7, var7);
+         var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
          this.animationTime -= var4;
       }
 
-      var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
       ItemStack var9 = this.getDisplayStack();
       int var8 = 4;
       if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {
-         var1.renderItem(var9, this.getX() + var8 + 1, this.getY() + var8 + 1, 0, 10);
+         var1.renderItem(var9, this.getX() + var8 + 1, this.getY() + var8 + 1, 0);
          --var8;
       }
 
       var1.renderFakeItem(var9, this.getX() + var8, this.getY() + var8);
       if (var6) {
-         var1.pose().popPose();
+         var1.pose().popMatrix();
       }
 
    }

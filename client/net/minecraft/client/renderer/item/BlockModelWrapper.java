@@ -32,6 +32,7 @@ public class BlockModelWrapper implements ItemModel {
    private final List<BakedQuad> quads;
    private final Supplier<Vector3f[]> extents;
    private final ModelRenderProperties properties;
+   private final boolean animated;
 
    public BlockModelWrapper(List<ItemTintSource> var1, List<BakedQuad> var2, ModelRenderProperties var3) {
       super();
@@ -39,6 +40,16 @@ public class BlockModelWrapper implements ItemModel {
       this.quads = var2;
       this.properties = var3;
       this.extents = Suppliers.memoize(() -> computeExtents(this.quads));
+      boolean var4 = false;
+
+      for(BakedQuad var6 : var2) {
+         if (var6.sprite().isAnimated()) {
+            var4 = true;
+            break;
+         }
+      }
+
+      this.animated = var4;
    }
 
    public static Vector3f[] computeExtents(List<BakedQuad> var0) {
@@ -54,22 +65,32 @@ public class BlockModelWrapper implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
-         var8.setFoilType(hasSpecialAnimatedTexture(var2) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD);
+         ItemStackRenderState.FoilType var9 = hasSpecialAnimatedTexture(var2) ? ItemStackRenderState.FoilType.SPECIAL : ItemStackRenderState.FoilType.STANDARD;
+         var8.setFoilType(var9);
+         var1.setAnimated();
+         var1.appendModelIdentityElement(var9);
       }
 
-      int var9 = this.tints.size();
-      int[] var10 = var8.prepareTintLayers(var9);
+      int var13 = this.tints.size();
+      int[] var10 = var8.prepareTintLayers(var13);
 
-      for(int var11 = 0; var11 < var9; ++var11) {
-         var10[var11] = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6);
+      for(int var11 = 0; var11 < var13; ++var11) {
+         int var12 = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6);
+         var10[var11] = var12;
+         var1.appendModelIdentityElement(var12);
       }
 
       var8.setExtents(this.extents);
       var8.setRenderType(ItemBlockRenderTypes.getRenderType(var2));
       this.properties.applyToLayer(var8, var4);
       var8.prepareQuadList().addAll(this.quads);
+      if (this.animated) {
+         var1.setAnimated();
+      }
+
    }
 
    private static boolean hasSpecialAnimatedTexture(ItemStack var0) {

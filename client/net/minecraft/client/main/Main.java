@@ -18,10 +18,12 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
@@ -32,6 +34,7 @@ import joptsimple.OptionSpecBuilder;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.DefaultUncaughtExceptionHandler;
+import net.minecraft.Optionull;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.ClientBootstrap;
@@ -73,7 +76,7 @@ public class Main {
       OptionSpecBuilder var4 = var1.accepts("tracy");
       OptionSpecBuilder var5 = var1.accepts("tracyNoImages");
       ArgumentAcceptingOptionSpec var6 = var1.accepts("quickPlayPath").withRequiredArg();
-      ArgumentAcceptingOptionSpec var7 = var1.accepts("quickPlaySingleplayer").withRequiredArg();
+      ArgumentAcceptingOptionSpec var7 = var1.accepts("quickPlaySingleplayer").withOptionalArg();
       ArgumentAcceptingOptionSpec var8 = var1.accepts("quickPlayMultiplayer").withRequiredArg();
       ArgumentAcceptingOptionSpec var9 = var1.accepts("quickPlayRealms").withRequiredArg();
       ArgumentAcceptingOptionSpec var10 = var1.accepts("gameDir").withRequiredArg().ofType(File.class).defaultsTo(new File("."), new File[0]);
@@ -116,12 +119,12 @@ public class Main {
          }
 
          Stopwatch var39 = Stopwatch.createStarted(Ticker.systemTicker());
-         Stopwatch var88 = Stopwatch.createStarted(Ticker.systemTicker());
+         Stopwatch var86 = Stopwatch.createStarted(Ticker.systemTicker());
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS, var39);
-         GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var88);
+         GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var86);
          SharedConstants.tryDetectVersion();
-         TracyClient.reportAppInfo("Minecraft Java Edition " + SharedConstants.getCurrentVersion().getName());
-         CompletableFuture var91 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
+         TracyClient.reportAppInfo("Minecraft Java Edition " + SharedConstants.getCurrentVersion().name());
+         CompletableFuture var89 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
          CrashReport.preload();
          var36 = LogUtils.getLogger();
          var38 = "Bootstrap";
@@ -146,7 +149,7 @@ public class Main {
          if (var45 != null) {
             try {
                var46 = new Proxy(Type.SOCKS, new InetSocketAddress(var45, (Integer)parseArgument(var33, var14)));
-            } catch (Exception var83) {
+            } catch (Exception var81) {
             }
          }
 
@@ -181,15 +184,13 @@ public class Main {
          String var67 = (String)var33.valueOf(var19);
          String var68 = (String)var33.valueOf(var20);
          String var69 = (String)parseArgument(var33, var6);
-         String var70 = unescapeJavaArgument((String)parseArgument(var33, var7));
-         String var71 = unescapeJavaArgument((String)parseArgument(var33, var8));
-         String var72 = unescapeJavaArgument((String)parseArgument(var33, var9));
-         User var73 = new User((String)var17.value(var33), var65, (String)var21.value(var33), emptyStringToEmptyOptional(var67), emptyStringToEmptyOptional(var68), var44);
-         var37 = new GameConfig(new GameConfig.UserData(var73, var60, var61, var46), new DisplayData(var49, var50, var51, var52, var53), new GameConfig.FolderData(var34, var64, var63, var66), new GameConfig.GameData(var54, var35, var62, var55, var56, var57, var58), new GameConfig.QuickPlayData(var69, var70, var71, var72));
+         GameConfig.QuickPlayVariant var70 = getQuickPlayVariant(var33, var7, var8, var9);
+         User var71 = new User((String)var17.value(var33), var65, (String)var21.value(var33), emptyStringToEmptyOptional(var67), emptyStringToEmptyOptional(var68), var44);
+         var37 = new GameConfig(new GameConfig.UserData(var71, var60, var61, var46), new DisplayData(var49, var50, var51, var52, var53), new GameConfig.FolderData(var34, var64, var63, var66), new GameConfig.GameData(var54, var35, var62, var55, var56, var57, var58), new GameConfig.QuickPlayData(var69, var70));
          Util.startTimerHackThread();
-         var91.join();
-      } catch (Throwable var84) {
-         CrashReport var40 = CrashReport.forThrowable(var84, var38);
+         var89.join();
+      } catch (Throwable var82) {
+         CrashReport var40 = CrashReport.forThrowable(var82, var38);
          CrashReportCategory var41 = var40.addCategory("Initialization");
          NativeModuleLister.addCrashSection(var41);
          Minecraft.fillReport((Minecraft)null, (LanguageManager)null, var35, (Options)null, var40);
@@ -197,7 +198,7 @@ public class Main {
          return;
       }
 
-      Thread var87 = new Thread("Client Shutdown Thread") {
+      Thread var85 = new Thread("Client Shutdown Thread") {
          public void run() {
             Minecraft var1 = Minecraft.getInstance();
             if (var1 != null) {
@@ -209,36 +210,58 @@ public class Main {
             }
          }
       };
-      var87.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(var36));
-      Runtime.getRuntime().addShutdownHook(var87);
-      Minecraft var89 = null;
+      var85.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(var36));
+      Runtime.getRuntime().addShutdownHook(var85);
+      Minecraft var87 = null;
 
       try {
          Thread.currentThread().setName("Render thread");
          RenderSystem.initRenderThread();
-         var89 = new Minecraft(var37);
-      } catch (SilentInitException var81) {
+         var87 = new Minecraft(var37);
+      } catch (SilentInitException var79) {
          Util.shutdownExecutors();
-         var36.warn("Failed to create window: ", var81);
+         var36.warn("Failed to create window: ", var79);
          return;
-      } catch (Throwable var82) {
-         CrashReport var93 = CrashReport.forThrowable(var82, "Initializing game");
-         CrashReportCategory var94 = var93.addCategory("Initialization");
-         NativeModuleLister.addCrashSection(var94);
-         Minecraft.fillReport(var89, (LanguageManager)null, var37.game.launchVersion, (Options)null, var93);
-         Minecraft.crash(var89, var37.location.gameDirectory, var93);
+      } catch (Throwable var80) {
+         CrashReport var91 = CrashReport.forThrowable(var80, "Initializing game");
+         CrashReportCategory var92 = var91.addCategory("Initialization");
+         NativeModuleLister.addCrashSection(var92);
+         Minecraft.fillReport(var87, (LanguageManager)null, var37.game.launchVersion, (Options)null, var91);
+         Minecraft.crash(var87, var37.location.gameDirectory, var91);
          return;
       }
 
-      Minecraft var92 = var89;
-      var89.run();
+      Minecraft var90 = var87;
+      var87.run();
 
       try {
-         var92.stop();
+         var90.stop();
       } finally {
-         var89.destroy();
+         var87.destroy();
       }
 
+   }
+
+   private static GameConfig.QuickPlayVariant getQuickPlayVariant(OptionSet var0, OptionSpec<String> var1, OptionSpec<String> var2, OptionSpec<String> var3) {
+      Stream var10000 = Stream.of(var1, var2, var3);
+      Objects.requireNonNull(var0);
+      long var4 = var10000.filter(var0::has).count();
+      if (var4 == 0L) {
+         return GameConfig.QuickPlayVariant.DISABLED;
+      } else if (var4 > 1L) {
+         throw new IllegalArgumentException("Only one quick play option can be specified");
+      } else if (var0.has(var1)) {
+         String var8 = unescapeJavaArgument((String)parseArgument(var0, var1));
+         return new GameConfig.QuickPlaySinglePlayerData(var8);
+      } else if (var0.has(var2)) {
+         String var7 = unescapeJavaArgument((String)parseArgument(var0, var2));
+         return (GameConfig.QuickPlayVariant)Optionull.mapOrDefault(var7, GameConfig.QuickPlayMultiplayerData::new, GameConfig.QuickPlayVariant.DISABLED);
+      } else if (var0.has(var3)) {
+         String var6 = unescapeJavaArgument((String)parseArgument(var0, var3));
+         return (GameConfig.QuickPlayVariant)Optionull.mapOrDefault(var6, GameConfig.QuickPlayRealmsData::new, GameConfig.QuickPlayVariant.DISABLED);
+      } else {
+         return GameConfig.QuickPlayVariant.DISABLED;
+      }
    }
 
    @Nullable

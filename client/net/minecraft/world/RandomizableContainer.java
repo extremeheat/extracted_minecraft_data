@@ -3,7 +3,6 @@ package net.minecraft.world;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,6 +11,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -49,14 +50,14 @@ public interface RandomizableContainer extends Container {
 
    }
 
-   default boolean tryLoadLootTable(CompoundTag var1) {
+   default boolean tryLoadLootTable(ValueInput var1) {
       ResourceKey var2 = (ResourceKey)var1.read("LootTable", LootTable.KEY_CODEC).orElse((Object)null);
       this.setLootTable(var2);
       this.setLootTableSeed(var1.getLongOr("LootTableSeed", 0L));
       return var2 != null;
    }
 
-   default boolean trySaveLootTable(CompoundTag var1) {
+   default boolean trySaveLootTable(ValueOutput var1) {
       ResourceKey var2 = this.getLootTable();
       if (var2 == null) {
          return false;

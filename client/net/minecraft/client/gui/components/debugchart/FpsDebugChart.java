@@ -4,7 +4,6 @@ import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public class FpsDebugChart extends AbstractDebugChart {
@@ -18,10 +17,10 @@ public class FpsDebugChart extends AbstractDebugChart {
    protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
       this.drawStringWithShade(var1, "30 FPS", var2 + 1, var4 - 60 + 1);
       this.drawStringWithShade(var1, "60 FPS", var2 + 1, var4 - 30 + 1);
-      var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4 - 30, -1);
+      var1.hLine(var2, var2 + var3 - 1, var4 - 30, -1);
       int var5 = (Integer)Minecraft.getInstance().options.framerateLimit().get();
       if (var5 > 0 && var5 <= 250) {
-         var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4 - this.getSampleHeight(1.0E9 / (double)var5) - 1, -16711681);
+         var1.hLine(var2, var2 + var3 - 1, var4 - this.getSampleHeight(1.0E9 / (double)var5) - 1, -16711681);
       }
 
    }

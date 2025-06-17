@@ -31,13 +31,13 @@ public class CriterionValidator {
    }
 
    public void validate(ContextAwarePredicate var1, ContextKeySet var2, String var3) {
-      var1.validate(new ValidationContext(this.reporter.forChild(var3), var2, this.lootData));
+      var1.validate(new ValidationContext(this.reporter.forChild(new ProblemReporter.FieldPathElement(var3)), var2, this.lootData));
    }
 
    public void validate(List<ContextAwarePredicate> var1, ContextKeySet var2, String var3) {
       for(int var4 = 0; var4 < var1.size(); ++var4) {
          ContextAwarePredicate var5 = (ContextAwarePredicate)var1.get(var4);
-         var5.validate(new ValidationContext(this.reporter.forChild(var3 + "[" + var4 + "]"), var2, this.lootData));
+         var5.validate(new ValidationContext(this.reporter.forChild(new ProblemReporter.IndexedFieldPathElement(var3, var4)), var2, this.lootData));
       }
 
    }

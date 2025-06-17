@@ -23,6 +23,8 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
+import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -261,7 +263,7 @@ public class SectionOcclusionGraph {
                var5.accept(var11.section);
             }
          } else {
-            var11.section.compiled.compareAndSet(SectionRenderDispatcher.CompiledSection.UNCOMPILED, SectionRenderDispatcher.CompiledSection.EMPTY);
+            var11.section.sectionMesh.compareAndSet(CompiledSectionMesh.UNCOMPILED, CompiledSectionMesh.EMPTY);
          }
 
          long var13 = var12.getSectionNode();
@@ -271,7 +273,7 @@ public class SectionOcclusionGraph {
             SectionRenderDispatcher.RenderSection var20 = this.getRelativeFrom(var8, var12, var19);
             if (var20 != null && (!var4 || !var11.hasDirection(var19.getOpposite()))) {
                if (var4 && var11.hasSourceDirections()) {
-                  SectionRenderDispatcher.CompiledSection var21 = var12.getCompiled();
+                  SectionMesh var21 = var12.getSectionMesh();
                   boolean var22 = false;
 
                   for(int var23 = 0; var23 < DIRECTIONS.length; ++var23) {

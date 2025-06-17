@@ -8,7 +8,7 @@ import net.minecraft.tags.FlatLevelGeneratorPresetTags;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
 
-public class FlatLevelGeneratorPresetTagsProvider extends TagsProvider<FlatLevelGeneratorPreset> {
+public class FlatLevelGeneratorPresetTagsProvider extends KeyTagProvider<FlatLevelGeneratorPreset> {
    public FlatLevelGeneratorPresetTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super(var1, Registries.FLAT_LEVEL_GENERATOR_PRESET, var2);
    }

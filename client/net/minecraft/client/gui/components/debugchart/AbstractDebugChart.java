@@ -3,13 +3,12 @@ package net.minecraft.client.gui.components.debugchart;
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public abstract class AbstractDebugChart {
-   protected static final int COLOR_GREY = 14737632;
+   protected static final int COLOR_GREY = -2039584;
    protected static final int CHART_HEIGHT = 60;
    protected static final int LINE_WIDTH = 1;
    protected final Font font;
@@ -32,7 +31,7 @@ public abstract class AbstractDebugChart {
 
    public void drawChart(GuiGraphics var1, int var2, int var3) {
       int var4 = var1.guiHeight();
-      var1.fill(RenderType.guiOverlay(), var2, var4 - 60, var2 + var3, var4, -1873784752);
+      var1.fill(var2, var4 - 60, var2 + var3, var4, -1873784752);
       long var5 = 0L;
       long var7 = 2147483647L;
       long var9 = -2147483648L;
@@ -49,10 +48,10 @@ public abstract class AbstractDebugChart {
          this.drawDimensions(var1, var4, var14, var15);
       }
 
-      var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4 - 60, -1);
-      var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4 - 1, -1);
-      var1.vLine(RenderType.guiOverlay(), var2, var4 - 60, var4, -1);
-      var1.vLine(RenderType.guiOverlay(), var2 + var3 - 1, var4 - 60, var4, -1);
+      var1.hLine(var2, var2 + var3 - 1, var4 - 60, -1);
+      var1.hLine(var2, var2 + var3 - 1, var4 - 1, -1);
+      var1.vLine(var2, var4 - 60, var4, -1);
+      var1.vLine(var2 + var3 - 1, var4 - 60, var4, -1);
       if (var12 > 0) {
          String var10000 = this.toDisplayString((double)var7);
          String var18 = var10000 + " min";
@@ -64,17 +63,17 @@ public abstract class AbstractDebugChart {
          int var10003 = var2 + 2;
          int var10004 = var4 - 60;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, var18, var10003, var10004 - 9, 14737632);
+         var1.drawString(var10001, var18, var10003, var10004 - 9, -2039584);
          var10001 = this.font;
          var10003 = var2 + var3 / 2;
          var10004 = var4 - 60;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, var19, var10003, var10004 - 9, 14737632);
+         var1.drawCenteredString(var10001, var19, var10003, var10004 - 9, -2039584);
          var10001 = this.font;
          var10003 = var2 + var3 - this.font.width(var20) - 2;
          var10004 = var4 - 60;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, var20, var10003, var10004 - 9, 14737632);
+         var1.drawString(var10001, var20, var10003, var10004 - 9, -2039584);
       }
 
       this.renderAdditionalLinesAndLabels(var1, var2, var3, var4);
@@ -89,7 +88,7 @@ public abstract class AbstractDebugChart {
       long var5 = this.sampleStorage.get(var4);
       int var7 = this.getSampleHeight((double)var5);
       int var8 = this.getSampleColor(var5);
-      var1.fill(RenderType.guiOverlay(), var3, var2 - var7, var3 + 1, var2, var8);
+      var1.fill(var3, var2 - var7, var3 + 1, var2, var8);
    }
 
    protected void drawAdditionalDimensions(GuiGraphics var1, int var2, int var3, int var4) {
@@ -103,11 +102,10 @@ public abstract class AbstractDebugChart {
    }
 
    protected void drawStringWithShade(GuiGraphics var1, String var2, int var3, int var4) {
-      RenderType var10001 = RenderType.guiOverlay();
-      int var10004 = var3 + this.font.width(var2) + 1;
+      int var10003 = var3 + this.font.width(var2) + 1;
       Objects.requireNonNull(this.font);
-      var1.fill(var10001, var3, var4, var10004, var4 + 9, -1873784752);
-      var1.drawString(this.font, var2, var3 + 1, var4 + 1, 14737632, false);
+      var1.fill(var3, var4, var10003, var4 + 9, -1873784752);
+      var1.drawString(this.font, var2, var3 + 1, var4 + 1, -2039584, false);
    }
 
    protected abstract String toDisplayString(double var1);

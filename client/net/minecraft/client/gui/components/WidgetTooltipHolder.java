@@ -4,9 +4,9 @@ import java.time.Duration;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
@@ -36,24 +36,22 @@ public class WidgetTooltipHolder {
       return this.tooltip;
    }
 
-   public void refreshTooltipForNextRenderPass(boolean var1, boolean var2, ScreenRectangle var3) {
+   public void refreshTooltipForNextRenderPass(GuiGraphics var1, int var2, int var3, boolean var4, boolean var5, ScreenRectangle var6) {
       if (this.tooltip == null) {
          this.wasDisplayed = false;
       } else {
-         boolean var4 = var1 || var2 && Minecraft.getInstance().getLastInputType().isKeyboard();
-         if (var4 != this.wasDisplayed) {
-            if (var4) {
+         Minecraft var7 = Minecraft.getInstance();
+         boolean var8 = var4 || var5 && var7.getLastInputType().isKeyboard();
+         if (var8 != this.wasDisplayed) {
+            if (var8) {
                this.displayStartTime = Util.getMillis();
             }
 
-            this.wasDisplayed = var4;
+            this.wasDisplayed = var8;
          }
 
-         if (var4 && Util.getMillis() - this.displayStartTime > this.delay.toMillis()) {
-            Screen var5 = Minecraft.getInstance().screen;
-            if (var5 != null) {
-               var5.setTooltipForNextRenderPass(this.tooltip, this.createTooltipPositioner(var3, var1, var2), var2);
-            }
+         if (var8 && Util.getMillis() - this.displayStartTime > this.delay.toMillis()) {
+            var1.setTooltipForNextFrame(var7.font, this.tooltip.toCharSequence(var7), this.createTooltipPositioner(var6, var4, var5), var2, var3, var5);
          }
 
       }

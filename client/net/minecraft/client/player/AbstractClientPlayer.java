@@ -26,7 +26,7 @@ public abstract class AbstractClientPlayer extends Player {
    public float walkDist;
 
    public AbstractClientPlayer(ClientLevel var1, GameProfile var2) {
-      super(var1, var1.getSharedSpawnPos(), var1.getSharedSpawnAngle(), var2);
+      super(var1, var2);
       this.deltaMovementOnPreviousTick = Vec3.ZERO;
       this.clientLevel = var1;
    }

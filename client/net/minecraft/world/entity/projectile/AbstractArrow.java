@@ -11,13 +11,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -40,8 +37,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -186,7 +184,7 @@ public abstract class AbstractArrow extends Projectile {
          --this.shakeTime;
       }
 
-      if (this.isInWaterOrRain() || var4.is(Blocks.POWDER_SNOW)) {
+      if (this.isInWaterOrRain()) {
          this.clearFire();
       }
 
@@ -586,11 +584,10 @@ public abstract class AbstractArrow extends Projectile {
       return super.canHitEntity(var1) && (this.piercingIgnoreEntityIds == null || !this.piercingIgnoreEntityIds.contains(var1.getId()));
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       var1.putShort("life", (short)this.life);
-      var1.storeNullable("inBlockState", BlockState.CODEC, var2, this.lastState);
+      var1.storeNullable("inBlockState", BlockState.CODEC, this.lastState);
       var1.putByte("shake", (byte)this.shakeTime);
       var1.putBoolean("inGround", this.isInGround());
       var1.store("pickup", AbstractArrow.Pickup.LEGACY_CODEC, this.pickup);
@@ -598,15 +595,14 @@ public abstract class AbstractArrow extends Projectile {
       var1.putBoolean("crit", this.isCritArrow());
       var1.putByte("PierceLevel", this.getPierceLevel());
       var1.store("SoundEvent", BuiltInRegistries.SOUND_EVENT.byNameCodec(), this.soundEvent);
-      var1.store("item", ItemStack.CODEC, var2, this.pickupItemStack);
-      var1.storeNullable("weapon", ItemStack.CODEC, var2, this.firedFromWeapon);
+      var1.store("item", ItemStack.CODEC, this.pickupItemStack);
+      var1.storeNullable("weapon", ItemStack.CODEC, this.firedFromWeapon);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.life = var1.getShortOr("life", (short)0);
-      this.lastState = (BlockState)var1.read("inBlockState", BlockState.CODEC, var2).orElse((Object)null);
+      this.lastState = (BlockState)var1.read("inBlockState", BlockState.CODEC).orElse((Object)null);
       this.shakeTime = var1.getByteOr("shake", (byte)0) & 255;
       this.setInGround(var1.getBooleanOr("inGround", false));
       this.baseDamage = var1.getDoubleOr("damage", 2.0);
@@ -614,8 +610,8 @@ public abstract class AbstractArrow extends Projectile {
       this.setCritArrow(var1.getBooleanOr("crit", false));
       this.setPierceLevel(var1.getByteOr("PierceLevel", (byte)0));
       this.soundEvent = (SoundEvent)var1.read("SoundEvent", BuiltInRegistries.SOUND_EVENT.byNameCodec()).orElse(this.getDefaultHitGroundSoundEvent());
-      this.setPickupItemStack((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(this.getDefaultPickupItem()));
-      this.firedFromWeapon = (ItemStack)var1.read("weapon", ItemStack.CODEC, var2).orElse((Object)null);
+      this.setPickupItemStack((ItemStack)var1.read("item", ItemStack.CODEC).orElse(this.getDefaultPickupItem()));
+      this.firedFromWeapon = (ItemStack)var1.read("weapon", ItemStack.CODEC).orElse((Object)null);
    }
 
    public void setOwner(@Nullable Entity var1) {

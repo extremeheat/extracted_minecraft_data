@@ -22,7 +22,7 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Trigg
    }
 
    public void trigger(ServerPlayer var1, BlockPos var2) {
-      ServerLevel var3 = var1.serverLevel();
+      ServerLevel var3 = var1.level();
       BlockState var4 = var3.getBlockState(var2);
       LootParams var5 = (new LootParams.Builder(var3)).withParameter(LootContextParams.ORIGIN, var2.getCenter()).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.BLOCK_STATE, var4).create(LootContextParamSets.BLOCK_USE);
       LootContext var6 = (new LootContext.Builder(var5)).create(Optional.empty());
@@ -44,7 +44,7 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Trigg
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.BLOCK_USE, ".location"));
+         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.BLOCK_USE, "location"));
       }
    }
 }

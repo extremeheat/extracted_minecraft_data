@@ -110,6 +110,7 @@ public class ChatListener {
          } else {
             Component var5 = var3.decorate(CHAT_VALIDATION_ERROR);
             this.minecraft.gui.getChat().addMessage(var5, (MessageSignature)null, GuiMessageTag.chatError());
+            this.minecraft.getNarrator().saySystemChatQueued(var3.decorateNarration(CHAT_VALIDATION_ERROR));
             this.previousMessageTime = Util.getMillis();
             return true;
          }
@@ -156,7 +157,7 @@ public class ChatListener {
    }
 
    private void narrateChatMessage(ChatType.Bound var1, Component var2) {
-      this.minecraft.getNarrator().sayChat(var1.decorateNarration(var2));
+      this.minecraft.getNarrator().sayChatQueued(var1.decorateNarration(var2));
    }
 
    private ChatTrustLevel evaluateTrustLevel(PlayerChatMessage var1, Component var2, Instant var3) {
@@ -177,12 +178,13 @@ public class ChatListener {
       if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(var1))) {
          if (var2) {
             this.minecraft.gui.setOverlayMessage(var1, false);
+            this.minecraft.getNarrator().saySystemQueued(var1);
          } else {
             this.minecraft.gui.getChat().addMessage(var1);
             this.logSystemMessage(var1, Instant.now());
+            this.minecraft.getNarrator().saySystemChatQueued(var1);
          }
 
-         this.minecraft.getNarrator().say(var1);
       }
    }
 

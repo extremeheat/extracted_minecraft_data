@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -24,6 +23,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Endermite extends Monster {
    private static final int MAX_LIFE = 2400;
@@ -70,12 +71,12 @@ public class Endermite extends Monster {
       this.playSound(SoundEvents.ENDERMITE_STEP, 0.15F, 1.0F);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.life = var1.getIntOr("Lifetime", 0);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Lifetime", this.life);
    }

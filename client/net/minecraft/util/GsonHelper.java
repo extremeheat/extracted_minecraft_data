@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.Strictness;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -430,91 +431,56 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
-   public static <T> T fromNullableJson(Gson var0, Reader var1, Class<T> var2, boolean var3) {
+   public static <T> T fromJson(Gson var0, Reader var1, Class<T> var2) {
       try {
-         JsonReader var4 = new JsonReader(var1);
-         var4.setLenient(var3);
-         return (T)var0.getAdapter(var2).read(var4);
+         JsonReader var3 = new JsonReader(var1);
+         var3.setStrictness(Strictness.STRICT);
+         Object var4 = var0.getAdapter(var2).read(var3);
+         if (var4 == null) {
+            throw new JsonParseException("JSON data was null or empty");
+         } else {
+            return (T)var4;
+         }
       } catch (IOException var5) {
          throw new JsonParseException(var5);
       }
    }
 
-   public static <T> T fromJson(Gson var0, Reader var1, Class<T> var2, boolean var3) {
-      Object var4 = fromNullableJson(var0, var1, var2, var3);
-      if (var4 == null) {
-         throw new JsonParseException("JSON data was null or empty");
-      } else {
-         return (T)var4;
-      }
-   }
-
    @Nullable
-   public static <T> T fromNullableJson(Gson var0, Reader var1, TypeToken<T> var2, boolean var3) {
+   public static <T> T fromNullableJson(Gson var0, Reader var1, TypeToken<T> var2) {
       try {
-         JsonReader var4 = new JsonReader(var1);
-         var4.setLenient(var3);
-         return (T)var0.getAdapter(var2).read(var4);
-      } catch (IOException var5) {
-         throw new JsonParseException(var5);
+         JsonReader var3 = new JsonReader(var1);
+         var3.setStrictness(Strictness.STRICT);
+         return (T)var0.getAdapter(var2).read(var3);
+      } catch (IOException var4) {
+         throw new JsonParseException(var4);
       }
-   }
-
-   public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2, boolean var3) {
-      Object var4 = fromNullableJson(var0, var1, var2, var3);
-      if (var4 == null) {
-         throw new JsonParseException("JSON data was null or empty");
-      } else {
-         return (T)var4;
-      }
-   }
-
-   @Nullable
-   public static <T> T fromNullableJson(Gson var0, String var1, TypeToken<T> var2, boolean var3) {
-      return (T)fromNullableJson(var0, (Reader)(new StringReader(var1)), var2, var3);
-   }
-
-   public static <T> T fromJson(Gson var0, String var1, Class<T> var2, boolean var3) {
-      return (T)fromJson(var0, (Reader)(new StringReader(var1)), var2, var3);
-   }
-
-   @Nullable
-   public static <T> T fromNullableJson(Gson var0, String var1, Class<T> var2, boolean var3) {
-      return (T)fromNullableJson(var0, (Reader)(new StringReader(var1)), var2, var3);
    }
 
    public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2) {
-      return (T)fromJson(var0, var1, var2, false);
+      Object var3 = fromNullableJson(var0, var1, var2);
+      if (var3 == null) {
+         throw new JsonParseException("JSON data was null or empty");
+      } else {
+         return (T)var3;
+      }
    }
 
    @Nullable
    public static <T> T fromNullableJson(Gson var0, String var1, TypeToken<T> var2) {
-      return (T)fromNullableJson(var0, var1, var2, false);
-   }
-
-   public static <T> T fromJson(Gson var0, Reader var1, Class<T> var2) {
-      return (T)fromJson(var0, var1, var2, false);
+      return (T)fromNullableJson(var0, (Reader)(new StringReader(var1)), var2);
    }
 
    public static <T> T fromJson(Gson var0, String var1, Class<T> var2) {
-      return (T)fromJson(var0, var1, var2, false);
-   }
-
-   public static JsonObject parse(String var0, boolean var1) {
-      return parse((Reader)(new StringReader(var0)), var1);
-   }
-
-   public static JsonObject parse(Reader var0, boolean var1) {
-      return (JsonObject)fromJson(GSON, var0, JsonObject.class, var1);
+      return (T)fromJson(var0, (Reader)(new StringReader(var1)), var2);
    }
 
    public static JsonObject parse(String var0) {
-      return parse(var0, false);
+      return parse((Reader)(new StringReader(var0)));
    }
 
    public static JsonObject parse(Reader var0) {
-      return parse(var0, false);
+      return (JsonObject)fromJson(GSON, var0, JsonObject.class);
    }
 
    public static JsonArray parseArray(String var0) {
@@ -522,7 +488,7 @@ public class GsonHelper {
    }
 
    public static JsonArray parseArray(Reader var0) {
-      return (JsonArray)fromJson(GSON, var0, JsonArray.class, false);
+      return (JsonArray)fromJson(GSON, var0, JsonArray.class);
    }
 
    public static String toStableString(JsonElement var0) {

@@ -1,7 +1,5 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
@@ -12,31 +10,20 @@ import javax.annotation.Nullable;
 public class GlBuffer extends GpuBuffer {
    protected static final MemoryPool MEMORY_POOl = TracyClient.createMemoryPool("GPU Buffers");
    protected boolean closed;
-   protected boolean initialized = false;
    @Nullable
    protected final Supplier<String> label;
+   private final DirectStateAccess dsa;
    protected final int handle;
+   @Nullable
+   protected ByteBuffer persistentBuffer;
 
-   protected GlBuffer(GlDebugLabel var1, @Nullable Supplier<String> var2, BufferType var3, BufferUsage var4, int var5, int var6) {
-      super(var3, var4, var5);
-      this.label = var2;
-      this.handle = var6;
-      if (var4.isReadable()) {
-         GlStateManager._glBindBuffer(GlConst.toGl(var3), var6);
-         GlStateManager._glBufferData(GlConst.toGl(var3), (long)var5, GlConst.toGl(var4));
-         MEMORY_POOl.malloc((long)var6, var5);
-         this.initialized = true;
-         var1.applyLabel(this);
-      }
-
-   }
-
-   protected void ensureBufferExists() {
-      if (!this.initialized) {
-         GlStateManager._glBindBuffer(GlConst.toGl(this.type()), this.handle);
-         GlStateManager._glBindBuffer(GlConst.toGl(this.type()), 0);
-      }
-
+   protected GlBuffer(@Nullable Supplier<String> var1, DirectStateAccess var2, int var3, int var4, int var5, @Nullable ByteBuffer var6) {
+      super(var3, var4);
+      this.label = var1;
+      this.dsa = var2;
+      this.handle = var5;
+      this.persistentBuffer = var6;
+      MEMORY_POOl.malloc((long)var5, var4);
    }
 
    public boolean isClosed() {
@@ -46,22 +33,27 @@ public class GlBuffer extends GpuBuffer {
    public void close() {
       if (!this.closed) {
          this.closed = true;
-         GlStateManager._glDeleteBuffers(this.handle);
-         if (this.initialized) {
-            MEMORY_POOl.free((long)this.handle);
+         if (this.persistentBuffer != null) {
+            this.dsa.unmapBuffer(this.handle);
+            this.persistentBuffer = null;
          }
 
+         GlStateManager._glDeleteBuffers(this.handle);
+         MEMORY_POOl.free((long)this.handle);
       }
    }
 
-   public static class ReadView implements GpuBuffer.ReadView {
-      private final int target;
+   public static class GlMappedView implements GpuBuffer.MappedView {
+      private final Runnable unmap;
+      private final GlBuffer buffer;
       private final ByteBuffer data;
+      private boolean closed;
 
-      protected ReadView(int var1, ByteBuffer var2) {
+      protected GlMappedView(Runnable var1, GlBuffer var2, ByteBuffer var3) {
          super();
-         this.target = var1;
-         this.data = var2;
+         this.unmap = var1;
+         this.buffer = var2;
+         this.data = var3;
       }
 
       public ByteBuffer data() {
@@ -69,7 +61,10 @@ public class GlBuffer extends GpuBuffer {
       }
 
       public void close() {
-         GlStateManager._glUnmapBuffer(this.target);
+         if (!this.closed) {
+            this.closed = true;
+            this.unmap.run();
+         }
       }
    }
 }

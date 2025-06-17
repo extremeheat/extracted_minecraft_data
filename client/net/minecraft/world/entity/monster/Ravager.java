@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -38,6 +37,8 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -92,14 +93,14 @@ public class Ravager extends Raider {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 100.0).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.KNOCKBACK_RESISTANCE, 0.75).add(Attributes.ATTACK_DAMAGE, 12.0).add(Attributes.ATTACK_KNOCKBACK, 1.5).add(Attributes.FOLLOW_RANGE, 32.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("AttackTick", this.attackTick);
       var1.putInt("StunTick", this.stunnedTick);
       var1.putInt("RoarTick", this.roarTick);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.attackTick = var1.getIntOr("AttackTick", 0);
       this.stunnedTick = var1.getIntOr("StunTick", 0);
@@ -208,9 +209,9 @@ public class Ravager extends Raider {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var1 = (ServerLevel)var2;
-            Predicate var11 = var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
+            Predicate var6 = var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
 
-            for(LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), var11)) {
+            for(LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), var6)) {
                if (!(var5 instanceof AbstractIllager)) {
                   var5.hurtServer(var1, this.damageSources().mobAttack(this), 6.0F);
                }
@@ -221,20 +222,15 @@ public class Ravager extends Raider {
             }
 
             this.gameEvent(GameEvent.ENTITY_ACTION);
-         } else {
-            for(LivingEntity var15 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), ROAR_TARGET_ON_CLIENT)) {
-               this.strongKnockback(var15);
-            }
-
-            Vec3 var14 = this.getBoundingBox().getCenter();
-
-            for(int var16 = 0; var16 < 40; ++var16) {
-               double var17 = this.random.nextGaussian() * 0.2;
-               double var7 = this.random.nextGaussian() * 0.2;
-               double var9 = this.random.nextGaussian() * 0.2;
-               this.level().addParticle(ParticleTypes.POOF, var14.x, var14.y, var14.z, var17, var7, var9);
-            }
+            var1.broadcastEntityEvent(this, (byte)69);
          }
+      }
+
+   }
+
+   private void applyRoarKnockbackClient() {
+      for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), ROAR_TARGET_ON_CLIENT)) {
+         this.strongKnockback(var3);
       }
 
    }
@@ -252,9 +248,24 @@ public class Ravager extends Raider {
          this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);
       } else if (var1 == 39) {
          this.stunnedTick = 40;
+      } else if (var1 == 69) {
+         this.addRoarParticleEffects();
+         this.applyRoarKnockbackClient();
       }
 
       super.handleEntityEvent(var1);
+   }
+
+   private void addRoarParticleEffects() {
+      Vec3 var1 = this.getBoundingBox().getCenter();
+
+      for(int var2 = 0; var2 < 40; ++var2) {
+         double var3 = this.random.nextGaussian() * 0.2;
+         double var5 = this.random.nextGaussian() * 0.2;
+         double var7 = this.random.nextGaussian() * 0.2;
+         this.level().addParticle(ParticleTypes.POOF, var1.x, var1.y, var1.z, var3, var5, var7);
+      }
+
    }
 
    public int getAttackTick() {

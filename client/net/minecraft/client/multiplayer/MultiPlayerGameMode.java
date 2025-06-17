@@ -41,6 +41,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -368,10 +369,10 @@ public class MultiPlayerGameMode {
    }
 
    public LocalPlayer createPlayer(ClientLevel var1, StatsCounter var2, ClientRecipeBook var3) {
-      return this.createPlayer(var1, var2, var3, false, false);
+      return this.createPlayer(var1, var2, var3, Input.EMPTY, false);
    }
 
-   public LocalPlayer createPlayer(ClientLevel var1, StatsCounter var2, ClientRecipeBook var3, boolean var4, boolean var5) {
+   public LocalPlayer createPlayer(ClientLevel var1, StatsCounter var2, ClientRecipeBook var3, Input var4, boolean var5) {
       return new LocalPlayer(this.minecraft, var1, this.connection, var2, var3, var4, var5);
    }
 

@@ -44,6 +44,7 @@ import net.minecraft.client.renderer.special.BedSpecialRenderer;
 import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.special.ConduitSpecialRenderer;
 import net.minecraft.client.renderer.special.DecoratedPotSpecialRenderer;
+import net.minecraft.client.renderer.special.PlayerHeadSpecialRenderer;
 import net.minecraft.client.renderer.special.ShulkerBoxSpecialRenderer;
 import net.minecraft.client.renderer.special.SkullSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -62,6 +63,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.CreakingHeartBlock;
+import net.minecraft.world.level.block.DriedGhastBlock;
 import net.minecraft.world.level.block.HangingMossBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.LightBlock;
@@ -1477,6 +1479,25 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.TURTLE_EGG).with(PropertyDispatch.initial(BlockStateProperties.EGGS, BlockStateProperties.HATCH).generate((var1, var2) -> createRotatedVariants(this.createTurtleEggModel(var1, var2)))));
    }
 
+   private void createDriedGhastBlock() {
+      ResourceLocation var1 = ModelLocationUtils.getModelLocation(Blocks.DRIED_GHAST, "_hydration_0");
+      this.registerSimpleItemModel(Blocks.DRIED_GHAST, var1);
+      Function var2 = (var1x) -> {
+         String var10000;
+         switch (var1x) {
+            case 1 -> var10000 = "_hydration_1";
+            case 2 -> var10000 = "_hydration_2";
+            case 3 -> var10000 = "_hydration_3";
+            default -> var10000 = "_hydration_0";
+         }
+
+         String var2 = var10000;
+         TextureMapping var3 = TextureMapping.driedGhast(var2);
+         return ModelTemplates.DRIED_GHAST.createWithSuffix(Blocks.DRIED_GHAST, var2, var3, this.modelOutput);
+      };
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.DRIED_GHAST).with(PropertyDispatch.initial(DriedGhastBlock.HYDRATION_LEVEL).generate((var1x) -> plainVariant((ResourceLocation)var2.apply(var1x)))).with(ROTATION_HORIZONTAL_FACING));
+   }
+
    private void createSnifferEgg() {
       this.registerSimpleFlatItemModel(Items.SNIFFER_EGG);
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.SNIFFER_EGG).with(PropertyDispatch.initial(SnifferEggBlock.HATCH).generate((var1) -> {
@@ -1699,7 +1720,12 @@ public class BlockModelGenerators {
       MultiVariant var5 = plainVariant(ModelLocationUtils.decorateBlockModelLocation("skull"));
       this.blockStateOutput.accept(createSimpleBlock(var1, var5));
       this.blockStateOutput.accept(createSimpleBlock(var2, var5));
-      this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var4, new SkullSpecialRenderer.Unbaked(var3)));
+      if (var3 == SkullBlock.Types.PLAYER) {
+         this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var4, new PlayerHeadSpecialRenderer.Unbaked()));
+      } else {
+         this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var4, new SkullSpecialRenderer.Unbaked(var3)));
+      }
+
    }
 
    private void createHeads() {
@@ -2018,6 +2044,7 @@ public class BlockModelGenerators {
       this.createTripwireHook();
       this.createTurtleEgg();
       this.createSnifferEgg();
+      this.createDriedGhastBlock();
       this.createVine();
       this.createMultiface(Blocks.GLOW_LICHEN);
       this.createMultiface(Blocks.SCULK_VEIN);

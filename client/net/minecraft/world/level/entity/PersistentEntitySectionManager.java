@@ -234,7 +234,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       this.chunksToUnload.removeIf((var1) -> this.chunkVisibility.get(var1) != Visibility.HIDDEN ? true : this.processChunkUnload(var1));
    }
 
-   private void processPendingLoads() {
+   public void processPendingLoads() {
       ChunkEntities var1;
       while((var1 = (ChunkEntities)this.loadingInbox.poll()) != null) {
          var1.getEntities().forEach((var1x) -> this.addEntity(var1x, true));

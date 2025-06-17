@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,13 +43,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       return Items.ENDER_PEARL;
    }
 
-   protected void setOwnerThroughUUID(@Nullable UUID var1) {
-      this.deregisterFromCurrentOwner();
-      super.setOwnerThroughUUID(var1);
-      this.registerToCurrentOwner();
-   }
-
-   public void setOwner(@Nullable Entity var1) {
+   protected void setOwner(@Nullable EntityReference<Entity> var1) {
       this.deregisterFromCurrentOwner();
       super.setOwner(var1);
       this.registerToCurrentOwner();
@@ -71,25 +66,33 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    @Nullable
-   protected Entity findOwner(UUID var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         Entity var6 = super.findOwner(var1);
-         if (var6 != null) {
-            return var6;
-         } else {
-            for(ServerLevel var5 : var2.getServer().getAllLevels()) {
-               if (var5 != var2) {
-                  var6 = var5.getEntity(var1);
-                  if (var6 != null) {
-                     return var6;
-                  }
+   public Entity getOwner() {
+      if (this.owner != null) {
+         Level var2 = this.level();
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var1 = (ServerLevel)var2;
+            return this.owner.getEntity((var1x) -> findOwnerInAnyDimension(var1, var1x), Entity.class);
+         }
+      }
+
+      return super.getOwner();
+   }
+
+   @Nullable
+   private static Entity findOwnerInAnyDimension(ServerLevel var0, UUID var1) {
+      Entity var2 = var0.getEntity(var1);
+      if (var2 != null) {
+         return var2;
+      } else {
+         for(ServerLevel var4 : var0.getServer().getAllLevels()) {
+            if (var4 != var0) {
+               var2 = var4.getEntity(var1);
+               if (var2 != null) {
+                  return var2;
                }
             }
-
-            return null;
          }
-      } else {
+
          return null;
       }
    }
@@ -131,7 +134,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                      if (var9 != null) {
                         var9.resetFallDistance();
                         var9.resetCurrentImpulseContext();
-                        var9.hurtServer(var5.serverLevel(), this.damageSources().enderPearl(), 5.0F);
+                        var9.hurtServer(var5.level(), this.damageSources().enderPearl(), 5.0F);
                      }
 
                      this.playSound(var7, var4);
@@ -178,7 +181,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          var2 = SectionPos.blockToSectionCoord(this.position().z());
          var3 = this.getOwner();
          if (var3 instanceof ServerPlayer var4) {
-            if (!var3.isAlive() && var4.serverLevel().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+            if (!var3.isAlive() && var4.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
                this.discard();
                break label30;
             }

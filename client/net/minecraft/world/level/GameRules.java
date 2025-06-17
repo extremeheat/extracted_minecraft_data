@@ -14,6 +14,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicLike;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -29,6 +30,7 @@ import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
@@ -92,6 +94,7 @@ public class GameRules {
    public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
    public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
    public static final Key<BooleanValue> RULE_TNT_EXPLODES;
+   public static final Key<BooleanValue> RULE_LOCATOR_BAR;
    private final Map<Key<?>, Value<?>> rules;
    private final FeatureFlagSet enabledFeatures;
 
@@ -156,7 +159,7 @@ public class GameRules {
    }
 
    public GameRules copy(FeatureFlagSet var1) {
-      return new GameRules((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var1x) -> this.rules.containsKey(var1x.getKey()) ? (Value)this.rules.get(var1x.getKey()) : ((Type)var1x.getValue()).createRule())), var1);
+      return new GameRules((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var1x) -> this.rules.containsKey(var1x.getKey()) ? ((Value)this.rules.get(var1x.getKey())).copy() : ((Type)var1x.getValue()).createRule())), var1);
    }
 
    public void visitGameRuleTypes(GameRuleTypeVisitor var1) {
@@ -265,6 +268,17 @@ public class GameRules {
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
       RULE_TNT_EXPLODES = register("tntExplodes", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
+      RULE_LOCATOR_BAR = register("locatorBar", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true, (var0, var1) -> var0.getAllLevels().forEach((var1x) -> {
+            ServerWaypointManager var2 = var1x.getWaypointManager();
+            if (var1.get()) {
+               List var10000 = var1x.players();
+               Objects.requireNonNull(var2);
+               var10000.forEach(var2::updatePlayer);
+            } else {
+               var2.breakAllConnections();
+            }
+
+         })));
    }
 
    public static enum Category {
@@ -510,6 +524,10 @@ public class GameRules {
 
    public static class BooleanValue extends Value<BooleanValue> {
       private boolean value;
+
+      private static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1, FeatureFlagSet var2) {
+         return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, BooleanValue.class, var2);
+      }
 
       static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1) {
          return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, BooleanValue.class, FeatureFlagSet.of());

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,6 +15,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,6 +26,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class Bogged extends AbstractSkeleton implements Shearable {
@@ -48,12 +50,12 @@ public class Bogged extends AbstractSkeleton implements Shearable {
       var1.define(DATA_SHEARED, false);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("sheared", this.isSheared());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setSheared(var1.getBooleanOr("sheared", false));
    }
@@ -74,7 +76,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
             ServerLevel var4 = (ServerLevel)var5;
             this.shear(var4, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
          }
 
          return InteractionResult.SUCCESS;

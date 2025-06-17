@@ -20,6 +20,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.HeightmapTypeArgument;
+import net.minecraft.commands.arguments.HexColorArgument;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.NbtTagArgument;
@@ -93,6 +94,7 @@ public class ArgumentTypeInfos {
       register(var0, "item_stack", ItemArgument.class, SingletonArgumentInfo.contextAware(ItemArgument::item));
       register(var0, "item_predicate", ItemPredicateArgument.class, SingletonArgumentInfo.contextAware(ItemPredicateArgument::itemPredicate));
       register(var0, "color", ColorArgument.class, SingletonArgumentInfo.contextFree(ColorArgument::color));
+      register(var0, "hex_color", HexColorArgument.class, SingletonArgumentInfo.contextFree(HexColorArgument::hexColor));
       register(var0, "component", ComponentArgument.class, SingletonArgumentInfo.contextAware(ComponentArgument::textComponent));
       register(var0, "style", StyleArgument.class, SingletonArgumentInfo.contextAware(StyleArgument::style));
       register(var0, "message", MessageArgument.class, SingletonArgumentInfo.contextFree(MessageArgument::message));
@@ -130,6 +132,7 @@ public class ArgumentTypeInfos {
       register(var0, "loot_table", ResourceOrIdArgument.LootTableArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootTable));
       register(var0, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate));
       register(var0, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
+      register(var0, "dialog", ResourceOrIdArgument.DialogArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::dialog));
       return register(var0, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
    }
 

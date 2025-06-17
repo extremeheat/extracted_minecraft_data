@@ -23,7 +23,7 @@ public final class ResultField implements Comparable<ResultField> {
    }
 
    public int getColor() {
-      return (this.name.hashCode() & 11184810) + 4473924;
+      return (this.name.hashCode() & 11184810) + -12303292;
    }
 
    // $FF: synthetic method

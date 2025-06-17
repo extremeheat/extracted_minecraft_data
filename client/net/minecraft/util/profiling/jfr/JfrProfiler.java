@@ -150,7 +150,7 @@ public class JfrProfiler implements JvmProfiler {
                var10000.forEach(var2x::enable);
                var2x.setDumpOnExit(true);
                var2x.setToDisk(true);
-               var2x.setName(String.format(Locale.ROOT, "%s-%s-%s", var2.getDescription(), SharedConstants.getCurrentVersion().getName(), var4));
+               var2x.setName(String.format(Locale.ROOT, "%s-%s-%s", var2.getDescription(), SharedConstants.getCurrentVersion().name(), var4));
             });
             Path var5 = Paths.get(String.format(Locale.ROOT, "debug/%s-%s.jfr", var2.getDescription(), var4));
             FileUtil.createDirectoriesSafe(var5.getParent());

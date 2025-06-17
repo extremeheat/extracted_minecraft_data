@@ -11,8 +11,9 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -66,27 +67,21 @@ public class GameModeSwitcherScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (!this.checkToClose()) {
-         var1.pose().pushPose();
-         int var5 = this.width / 2 - 62;
-         int var6 = this.height / 2 - 31 - 27;
-         var1.blit(RenderType::guiTextured, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
-         var1.pose().popPose();
-         super.render(var1, var2, var3, var4);
-         var1.drawCenteredString(this.font, (Component)this.currentlyHovered.getName(), this.width / 2, this.height / 2 - 31 - 20, -1);
-         var1.drawCenteredString(this.font, SELECT_KEY, this.width / 2, this.height / 2 + 5, 16777215);
+         var1.drawCenteredString(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
+         var1.drawCenteredString(this.font, (Component)SELECT_KEY, this.width / 2, this.height / 2 + 5, -1);
          if (!this.setFirstMousePos) {
             this.firstMouseX = var2;
             this.firstMouseY = var3;
             this.setFirstMousePos = true;
          }
 
-         boolean var7 = this.firstMouseX == var2 && this.firstMouseY == var3;
+         boolean var5 = this.firstMouseX == var2 && this.firstMouseY == var3;
 
-         for(GameModeSlot var9 : this.slots) {
-            var9.render(var1, var2, var3, var4);
-            var9.setSelected(this.currentlyHovered == var9.icon);
-            if (!var7 && var9.isHoveredOrFocused()) {
-               this.currentlyHovered = var9.icon;
+         for(GameModeSlot var7 : this.slots) {
+            var7.render(var1, var2, var3, var4);
+            var7.setSelected(this.currentlyHovered == var7.icon);
+            if (!var5 && var7.isHoveredOrFocused()) {
+               this.currentlyHovered = var7.icon;
             }
          }
 
@@ -94,6 +89,9 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      int var5 = this.width / 2 - 62;
+      int var6 = this.height / 2 - 31 - 27;
+      var1.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
    }
 
    private void switchToHoveredGameMode() {
@@ -104,7 +102,7 @@ public class GameModeSwitcherScreen extends Screen {
       if (var0.gameMode != null && var0.player != null) {
          GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
          if (var0.player.hasPermissions(2) && var1 != var2) {
-            var0.player.connection.sendUnsignedCommand(var1.getCommand());
+            var0.player.connection.send(new ServerboundChangeGameModePacket(var1.mode));
          }
 
       }
@@ -139,34 +137,26 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    static enum GameModeIcon {
-      CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.GRASS_BLOCK)),
-      SURVIVAL(Component.translatable("gameMode.survival"), "gamemode survival", new ItemStack(Items.IRON_SWORD)),
-      ADVENTURE(Component.translatable("gameMode.adventure"), "gamemode adventure", new ItemStack(Items.MAP)),
-      SPECTATOR(Component.translatable("gameMode.spectator"), "gamemode spectator", new ItemStack(Items.ENDER_EYE));
+      CREATIVE(Component.translatable("gameMode.creative"), GameType.CREATIVE, new ItemStack(Blocks.GRASS_BLOCK)),
+      SURVIVAL(Component.translatable("gameMode.survival"), GameType.SURVIVAL, new ItemStack(Items.IRON_SWORD)),
+      ADVENTURE(Component.translatable("gameMode.adventure"), GameType.ADVENTURE, new ItemStack(Items.MAP)),
+      SPECTATOR(Component.translatable("gameMode.spectator"), GameType.SPECTATOR, new ItemStack(Items.ENDER_EYE));
 
-      protected static final GameModeIcon[] VALUES = values();
+      static final GameModeIcon[] VALUES = values();
       private static final int ICON_AREA = 16;
-      protected static final int ICON_TOP_LEFT = 5;
+      private static final int ICON_TOP_LEFT = 5;
       final Component name;
-      final String command;
-      final ItemStack renderStack;
+      final GameType mode;
+      private final ItemStack renderStack;
 
-      private GameModeIcon(final Component var3, final String var4, final ItemStack var5) {
+      private GameModeIcon(final Component var3, final GameType var4, final ItemStack var5) {
          this.name = var3;
-         this.command = var4;
+         this.mode = var4;
          this.renderStack = var5;
       }
 
       void drawIcon(GuiGraphics var1, int var2, int var3) {
          var1.renderItem(this.renderStack, var2, var3);
-      }
-
-      Component getName() {
-         return this.name;
-      }
-
-      String getCommand() {
-         return this.command;
       }
 
       GameModeIcon getNext() {
@@ -206,17 +196,17 @@ public class GameModeSwitcherScreen extends Screen {
       private boolean isSelected;
 
       public GameModeSlot(GameModeIcon var1, int var2, int var3) {
-         super(var2, var3, 26, 26, var1.getName());
+         super(var2, var3, 26, 26, var1.name);
          this.icon = var1;
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          this.drawSlot(var1);
-         this.icon.drawIcon(var1, this.getX() + 5, this.getY() + 5);
          if (this.isSelected) {
             this.drawSelection(var1);
          }
 
+         this.icon.drawIcon(var1, this.getX() + 5, this.getY() + 5);
       }
 
       public void updateWidgetNarration(NarrationElementOutput var1) {
@@ -232,11 +222,11 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       private void drawSlot(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
       }
 
       private void drawSelection(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
       }
    }
 }

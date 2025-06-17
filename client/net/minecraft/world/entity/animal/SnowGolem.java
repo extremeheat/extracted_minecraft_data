@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -17,6 +16,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Shearable;
@@ -39,6 +39,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
 
@@ -68,12 +70,12 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       var1.define(DATA_PUMPKIN_ID, (byte)16);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Pumpkin", this.hasPumpkin());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setPumpkin(var1.getBooleanOr("Pumpkin", true));
    }
@@ -132,7 +134,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
             ServerLevel var4 = (ServerLevel)var5;
             this.shear(var4, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
          }
 
          return InteractionResult.SUCCESS;

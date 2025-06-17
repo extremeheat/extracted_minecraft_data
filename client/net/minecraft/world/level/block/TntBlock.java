@@ -11,6 +11,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
@@ -102,7 +103,7 @@ public class TntBlock extends Block {
             var3.setBlock(var4, Blocks.AIR.defaultBlockState(), 11);
             Item var9 = var1.getItem();
             if (var1.is(Items.FLINT_AND_STEEL)) {
-               var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
+               var1.hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var6));
             } else {
                var1.consume(1, var5);
             }

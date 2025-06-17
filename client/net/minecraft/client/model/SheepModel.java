@@ -19,7 +19,7 @@ public class SheepModel extends QuadrupedModel<SheepRenderState> {
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = QuadrupedModel.createBodyMesh(12, CubeDeformation.NONE);
+      MeshDefinition var0 = QuadrupedModel.createBodyMesh(12, false, true, CubeDeformation.NONE);
       PartDefinition var1 = var0.getRoot();
       var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -4.0F, -6.0F, 6.0F, 6.0F, 8.0F), PartPose.offset(0.0F, 6.0F, -8.0F));
       var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(28, 8).addBox(-4.0F, -10.0F, -7.0F, 8.0F, 16.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 5.0F, 2.0F, 1.5707964F, 0.0F, 0.0F));

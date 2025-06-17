@@ -1,6 +1,8 @@
 package net.minecraft.client.gui.screens.options;
 
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Stream;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.Screen;
@@ -10,10 +12,6 @@ import net.minecraft.sounds.SoundSource;
 public class SoundOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.sounds.title");
 
-   private static OptionInstance<?>[] buttonOptions(Options var0) {
-      return new OptionInstance[]{var0.showSubtitles(), var0.directionalAudio()};
-   }
-
    public SoundOptionsScreen(Screen var1, Options var2) {
       super(var1, var2, TITLE);
    }
@@ -22,10 +20,14 @@ public class SoundOptionsScreen extends OptionsSubScreen {
       this.list.addBig(this.options.getSoundSourceOptionInstance(SoundSource.MASTER));
       this.list.addSmall(this.getAllSoundOptionsExceptMaster());
       this.list.addBig(this.options.soundDevice());
-      this.list.addSmall(buttonOptions(this.options));
+      this.list.addSmall(this.options.showSubtitles(), this.options.directionalAudio());
+      this.list.addSmall(this.options.musicFrequency(), this.options.showNowPlayingToast());
    }
 
    private OptionInstance<?>[] getAllSoundOptionsExceptMaster() {
-      return (OptionInstance[])Arrays.stream(SoundSource.values()).filter((var0) -> var0 != SoundSource.MASTER).map((var1) -> this.options.getSoundSourceOptionInstance(var1)).toArray((var0) -> new OptionInstance[var0]);
+      Stream var10000 = Arrays.stream(SoundSource.values()).filter((var0) -> var0 != SoundSource.MASTER);
+      Options var10001 = this.options;
+      Objects.requireNonNull(var10001);
+      return (OptionInstance[])var10000.map(var10001::getSoundSourceOptionInstance).toArray((var0) -> new OptionInstance[var0]);
    }
 }

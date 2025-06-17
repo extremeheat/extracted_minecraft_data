@@ -47,6 +47,7 @@ public class TooltipDisplayComponentFix extends DataFix {
          var1x = fixComponentAndUnwrap(var1x, "minecraft:attribute_modifiers", "modifiers", var5);
          var1x = fixComponentAndUnwrap(var1x, "minecraft:enchantments", "levels", var5);
          var1x = fixComponentAndUnwrap(var1x, "minecraft:stored_enchantments", "levels", var5);
+         var1x = fixComponentAndUnwrap(var1x, "minecraft:jukebox_playable", "song", var5);
          boolean var2 = var1x.get("minecraft:hide_tooltip").result().isPresent();
          var1x = var1x.remove("minecraft:hide_tooltip");
          boolean var3 = var1x.get("minecraft:hide_additional_tooltip").result().isPresent();

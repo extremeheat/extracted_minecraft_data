@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.logging.LogUtils;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class RealmsServerPlayerLists extends ValueObject {
@@ -38,7 +38,7 @@ public class RealmsServerPlayerLists extends ValueObject {
                String var9 = JsonUtils.getStringOr("playerList", var8, (String)null);
                Object var7;
                if (var9 != null) {
-                  JsonElement var10 = JsonParser.parseString(var9);
+                  JsonElement var10 = LenientJsonParser.parse(var9);
                   if (var10.isJsonArray()) {
                      var7 = parsePlayers(var10.getAsJsonArray());
                   } else {

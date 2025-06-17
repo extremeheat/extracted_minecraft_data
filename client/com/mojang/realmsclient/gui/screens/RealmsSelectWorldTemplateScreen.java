@@ -32,7 +32,7 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -224,14 +224,16 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var9 = this.width / 2 - var8 / 2;
 
          for(TextRenderingUtils.LineSegment var11 : var6.segments) {
-            int var12 = var11.isLink() ? 3368635 : -1;
-            int var13 = var1.drawString(this.font, var11.renderedText(), var9, var7, var12);
-            if (var11.isLink() && var2 > var9 && var2 < var13 && var3 > var7 - 3 && var3 < var7 + 8) {
-               this.setTooltipForNextRenderPass(Component.literal(var11.getLinkUrl()));
+            int var12 = var11.isLink() ? -13408581 : -1;
+            String var13 = var11.renderedText();
+            var1.drawString(this.font, var13, var9, var7, var12);
+            int var14 = var9 + this.font.width(var13);
+            if (var11.isLink() && var2 > var9 && var2 < var14 && var3 > var7 - 3 && var3 < var7 + 8) {
+               var1.setTooltipForNextFrame(Component.literal(var11.getLinkUrl()), var2, var3);
                this.currentLink = var11.getLinkUrl();
             }
 
-            var9 = var13;
+            var9 = var14;
          }
       }
 
@@ -330,8 +332,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.blit(RenderType::guiTextured, RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
+         var1.blit(RenderPipelines.GUI_TEXTURED, RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
          boolean var11 = true;
          int var12 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version);
          if (this.websiteButton != null) {
@@ -347,7 +349,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var13 = var4 + 45 + 20;
          int var14 = var3 + 5;
          var1.drawString(RealmsSelectWorldTemplateScreen.this.font, (String)this.template.name, var13, var14, -1);
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, var4 + var5 - var12 - 5, var14, 7105644);
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, var4 + var5 - var12 - 5, var14, -9671572);
          Font var10001 = RealmsSelectWorldTemplateScreen.this.font;
          String var10002 = this.template.author;
          Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
@@ -357,7 +359,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             var10002 = this.template.recommendedPlayers;
             int var10004 = var3 + var6;
             Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
-            var1.drawString(var10001, var10002, var13, var10004 - 9 / 2 - 5, 5000268);
+            var1.drawString(var10001, var10002, var13, var10004 - 9 / 2 - 5, -11776948);
          }
 
       }

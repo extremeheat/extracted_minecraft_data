@@ -45,10 +45,10 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
    public void validate(ValidationContext var1) {
       super.validate(var1);
       if (!var1.allowsReferences()) {
-         var1.reportProblem("Uses reference to " + String.valueOf(this.name.location()) + ", but references are not allowed");
+         var1.reportProblem(new ValidationContext.ReferenceNotAllowedProblem(this.name));
       } else {
          if (var1.resolver().get(this.name).isEmpty()) {
-            var1.reportProblem("Missing loot table used for container: " + String.valueOf(this.name.location()));
+            var1.reportProblem(new ValidationContext.MissingReferenceProblem(this.name));
          }
 
       }

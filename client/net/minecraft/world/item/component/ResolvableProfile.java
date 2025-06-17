@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -21,7 +22,7 @@ public record ResolvableProfile(Optional<String> name, Optional<UUID> id, Proper
    public static final StreamCodec<ByteBuf, ResolvableProfile> STREAM_CODEC;
 
    public ResolvableProfile(Optional<String> var1, Optional<UUID> var2, PropertyMap var3) {
-      this(var1, var2, var3, createProfile(var1, var2, var3));
+      this(var1, var2, var3, createGameProfile(var2, var1, var3));
    }
 
    public ResolvableProfile(GameProfile var1) {
@@ -36,22 +37,40 @@ public record ResolvableProfile(Optional<String> name, Optional<UUID> id, Proper
       this.gameProfile = var4;
    }
 
+   @Nullable
+   public ResolvableProfile pollResolve() {
+      if (this.isResolved()) {
+         return this;
+      } else {
+         Optional var1;
+         if (this.id.isPresent()) {
+            var1 = (Optional)SkullBlockEntity.fetchGameProfile((UUID)this.id.get()).getNow((Object)null);
+         } else {
+            var1 = (Optional)SkullBlockEntity.fetchGameProfile((String)this.name.orElseThrow()).getNow((Object)null);
+         }
+
+         return var1 != null ? this.createProfile(var1) : null;
+      }
+   }
+
    public CompletableFuture<ResolvableProfile> resolve() {
       if (this.isResolved()) {
          return CompletableFuture.completedFuture(this);
       } else {
-         return this.id.isPresent() ? SkullBlockEntity.fetchGameProfile((UUID)this.id.get()).thenApply((var1) -> {
-            GameProfile var2 = (GameProfile)var1.orElseGet(() -> new GameProfile((UUID)this.id.get(), (String)this.name.orElse("")));
-            return new ResolvableProfile(var2);
-         }) : SkullBlockEntity.fetchGameProfile((String)this.name.orElseThrow()).thenApply((var1) -> {
-            GameProfile var2 = (GameProfile)var1.orElseGet(() -> new GameProfile(Util.NIL_UUID, (String)this.name.get()));
-            return new ResolvableProfile(var2);
-         });
+         return this.id.isPresent() ? SkullBlockEntity.fetchGameProfile((UUID)this.id.get()).thenApply(this::createProfile) : SkullBlockEntity.fetchGameProfile((String)this.name.orElseThrow()).thenApply(this::createProfile);
       }
    }
 
-   private static GameProfile createProfile(Optional<String> var0, Optional<UUID> var1, PropertyMap var2) {
-      GameProfile var3 = new GameProfile((UUID)var1.orElse(Util.NIL_UUID), (String)var0.orElse(""));
+   private ResolvableProfile createProfile(Optional<GameProfile> var1) {
+      return new ResolvableProfile((GameProfile)var1.orElseGet(() -> createGameProfile(this.id, this.name)));
+   }
+
+   private static GameProfile createGameProfile(Optional<UUID> var0, Optional<String> var1) {
+      return new GameProfile((UUID)var0.orElse(Util.NIL_UUID), (String)var1.orElse(""));
+   }
+
+   private static GameProfile createGameProfile(Optional<UUID> var0, Optional<String> var1, PropertyMap var2) {
+      GameProfile var3 = createGameProfile(var0, var1);
       var3.getProperties().putAll(var2);
       return var3;
    }

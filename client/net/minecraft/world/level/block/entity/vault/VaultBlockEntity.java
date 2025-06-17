@@ -19,7 +19,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -36,6 +35,8 @@ import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -62,26 +63,24 @@ public class VaultBlockEntity extends BlockEntity {
       return (CompoundTag)Util.make(new CompoundTag(), (var2) -> var2.store("shared_data", VaultSharedData.CODEC, var1.createSerializationContext(NbtOps.INSTANCE), this.sharedData));
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.store("config", VaultConfig.CODEC, var3, this.config);
-      var1.store("shared_data", VaultSharedData.CODEC, var3, this.sharedData);
-      var1.store("server_data", VaultServerData.CODEC, var3, this.serverData);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      var1.store("config", VaultConfig.CODEC, this.config);
+      var1.store("shared_data", VaultSharedData.CODEC, this.sharedData);
+      var1.store("server_data", VaultServerData.CODEC, this.serverData);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      Optional var10000 = var1.read("server_data", VaultServerData.CODEC, var3);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      Optional var10000 = var1.read("server_data", VaultServerData.CODEC);
       VaultServerData var10001 = this.serverData;
       Objects.requireNonNull(var10001);
       var10000.ifPresent(var10001::set);
-      this.config = (VaultConfig)var1.read("config", VaultConfig.CODEC, var3).orElse(VaultConfig.DEFAULT);
-      var10000 = var1.read("shared_data", VaultSharedData.CODEC, var3);
-      VaultSharedData var5 = this.sharedData;
-      Objects.requireNonNull(var5);
-      var10000.ifPresent(var5::set);
+      this.config = (VaultConfig)var1.read("config", VaultConfig.CODEC).orElse(VaultConfig.DEFAULT);
+      var10000 = var1.read("shared_data", VaultSharedData.CODEC);
+      VaultSharedData var3 = this.sharedData;
+      Objects.requireNonNull(var3);
+      var10000.ifPresent(var3::set);
    }
 
    @Nullable

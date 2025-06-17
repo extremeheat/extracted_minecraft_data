@@ -3,7 +3,6 @@ package net.minecraft.world.entity.decoration;
 import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -15,6 +14,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -84,7 +85,12 @@ public abstract class BlockAttachedEntity extends Entity {
    }
 
    public boolean ignoreExplosion(Explosion var1) {
-      return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
+      Entity var2 = var1.getDirectSourceEntity();
+      if (var2 != null && var2.isInWater()) {
+         return true;
+      } else {
+         return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
+      }
    }
 
    public void move(MoverType var1, Vec3 var2) {
@@ -109,11 +115,11 @@ public abstract class BlockAttachedEntity extends Entity {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.store("block_pos", BlockPos.CODEC, this.getPos());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       BlockPos var2 = (BlockPos)var1.read("block_pos", BlockPos.CODEC).orElse((Object)null);
       if (var2 != null && var2.closerThan(this.blockPosition(), 16.0)) {
          this.pos = var2;

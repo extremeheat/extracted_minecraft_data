@@ -3,13 +3,14 @@ package net.minecraft.client.renderer.texture;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import javax.annotation.Nullable;
-import net.minecraft.util.TriState;
 
 public abstract class AbstractTexture implements AutoCloseable {
    @Nullable
    protected GpuTexture texture;
-   protected boolean defaultBlur;
+   @Nullable
+   protected GpuTextureView textureView;
 
    public AbstractTexture() {
       super();
@@ -23,15 +24,19 @@ public abstract class AbstractTexture implements AutoCloseable {
       }
    }
 
-   public void setFilter(TriState var1, boolean var2) {
-      this.setFilter(var1.toBoolean(this.defaultBlur), var2);
-   }
-
    public void setFilter(boolean var1, boolean var2) {
       if (this.texture == null) {
          throw new IllegalStateException("Texture does not exist, can't get change its filter before something initializes it");
       } else {
          this.texture.setTextureFilter(var1 ? FilterMode.LINEAR : FilterMode.NEAREST, var2);
+      }
+   }
+
+   public void setUseMipmaps(boolean var1) {
+      if (this.texture == null) {
+         throw new IllegalStateException("Texture does not exist, can't get change its filter before something initializes it");
+      } else {
+         this.texture.setUseMipmaps(var1);
       }
    }
 
@@ -41,6 +46,11 @@ public abstract class AbstractTexture implements AutoCloseable {
          this.texture = null;
       }
 
+      if (this.textureView != null) {
+         this.textureView.close();
+         this.textureView = null;
+      }
+
    }
 
    public GpuTexture getTexture() {
@@ -48,6 +58,14 @@ public abstract class AbstractTexture implements AutoCloseable {
          throw new IllegalStateException("Texture does not exist, can't get it before something initializes it");
       } else {
          return this.texture;
+      }
+   }
+
+   public GpuTextureView getTextureView() {
+      if (this.textureView == null) {
+         throw new IllegalStateException("Texture view does not exist, can't get it before something initializes it");
+      } else {
+         return this.textureView;
       }
    }
 }

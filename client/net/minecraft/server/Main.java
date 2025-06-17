@@ -33,6 +33,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.GameTestTicker;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.Component;
@@ -231,6 +232,7 @@ public class Main {
                var12.showGui();
             }
 
+            GameTestTicker.SINGLETON.startTicking();
             return var12;
          });
          Thread var38 = new Thread("Server Shutdown Thread") {

@@ -1,7 +1,6 @@
 package net.minecraft.tags;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
@@ -32,6 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.DependencySorter;
+import net.minecraft.util.StrictJsonParser;
 import org.slf4j.Logger;
 
 public class TagLoader<T> {
@@ -58,7 +58,7 @@ public class TagLoader<T> {
                BufferedReader var10 = var9.openAsReader();
 
                try {
-                  JsonElement var11 = JsonParser.parseReader(var10);
+                  JsonElement var11 = StrictJsonParser.parse((Reader)var10);
                   List var12 = (List)var2.computeIfAbsent(var7, (var0) -> new ArrayList());
                   TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow();
                   if (var13.replace()) {

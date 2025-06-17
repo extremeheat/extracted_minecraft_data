@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.texture.atlas;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import java.io.BufferedReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +20,7 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.StrictJsonParser;
 import org.slf4j.Logger;
 
 public class SpriteSourceList {
@@ -72,7 +73,7 @@ public class SpriteSourceList {
             BufferedReader var6 = var5.openAsReader();
 
             try {
-               Dynamic var7 = new Dynamic(JsonOps.INSTANCE, JsonParser.parseReader(var6));
+               Dynamic var7 = new Dynamic(JsonOps.INSTANCE, StrictJsonParser.parse((Reader)var6));
                var3.addAll((Collection)SpriteSources.FILE_CODEC.parse(var7).getOrThrow());
             } catch (Throwable var10) {
                if (var6 != null) {

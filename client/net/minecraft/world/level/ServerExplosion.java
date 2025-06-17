@@ -301,12 +301,11 @@ public class ServerExplosion implements Explosion {
 
    public boolean shouldAffectBlocklikeEntities() {
       boolean var1 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-      boolean var2 = this.source == null || !this.source.isInWater();
-      boolean var3 = this.source == null || this.source.getType() != EntityType.BREEZE_WIND_CHARGE && this.source.getType() != EntityType.WIND_CHARGE;
+      boolean var2 = this.source == null || this.source.getType() != EntityType.BREEZE_WIND_CHARGE && this.source.getType() != EntityType.WIND_CHARGE;
       if (var1) {
-         return var2 && var3;
+         return var2;
       } else {
-         return this.blockInteraction.shouldAffectBlocklikeEntities() && var2 && var3;
+         return this.blockInteraction.shouldAffectBlocklikeEntities() && var2;
       }
    }
 

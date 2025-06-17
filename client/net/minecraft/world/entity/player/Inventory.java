@@ -12,25 +12,28 @@ import net.minecraft.ReportedException;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerInventoryPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Inventory implements Container, Nameable {
    public static final int POP_TIME_DURATION = 5;
    public static final int INVENTORY_SIZE = 36;
    public static final int SELECTION_SIZE = 9;
    public static final int SLOT_OFFHAND = 40;
+   public static final int SLOT_BODY_ARMOR = 41;
+   public static final int SLOT_SADDLE = 42;
    public static final int NOT_FOUND_INDEX = -1;
    public static final Int2ObjectMap<EquipmentSlot> EQUIPMENT_SLOT_MAPPING;
    private final NonNullList<ItemStack> items;
@@ -373,27 +376,22 @@ public class Inventory implements Container, Nameable {
 
    }
 
-   public ListTag save(ListTag var1) {
+   public void save(ValueOutput.TypedOutputList<ItemStackWithSlot> var1) {
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         if (!((ItemStack)this.items.get(var2)).isEmpty()) {
-            CompoundTag var3 = new CompoundTag();
-            var3.putByte("Slot", (byte)var2);
-            var1.add(((ItemStack)this.items.get(var2)).save(this.player.registryAccess(), var3));
+         ItemStack var3 = this.items.get(var2);
+         if (!var3.isEmpty()) {
+            var1.add(new ItemStackWithSlot(var2, var3));
          }
       }
 
-      return var1;
    }
 
-   public void load(ListTag var1) {
+   public void load(ValueInput.TypedInputList<ItemStackWithSlot> var1) {
       this.items.clear();
 
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompoundOrEmpty(var2);
-         int var4 = var3.getByteOr("Slot", (byte)0) & 255;
-         ItemStack var5 = (ItemStack)ItemStack.parse(this.player.registryAccess(), var3).orElse(ItemStack.EMPTY);
-         if (var4 < this.items.size()) {
-            this.setItem(var4, var5);
+      for(ItemStackWithSlot var3 : var1) {
+         if (var3.isValidInContainer(this.items.size())) {
+            this.setItem(var3.slot(), var3.stack());
          }
       }
 
@@ -515,6 +513,6 @@ public class Inventory implements Container, Nameable {
    }
 
    static {
-      EQUIPMENT_SLOT_MAPPING = new Int2ObjectArrayMap(Map.of(EquipmentSlot.FEET.getIndex(36), EquipmentSlot.FEET, EquipmentSlot.LEGS.getIndex(36), EquipmentSlot.LEGS, EquipmentSlot.CHEST.getIndex(36), EquipmentSlot.CHEST, EquipmentSlot.HEAD.getIndex(36), EquipmentSlot.HEAD, 40, EquipmentSlot.OFFHAND));
+      EQUIPMENT_SLOT_MAPPING = new Int2ObjectArrayMap(Map.of(EquipmentSlot.FEET.getIndex(36), EquipmentSlot.FEET, EquipmentSlot.LEGS.getIndex(36), EquipmentSlot.LEGS, EquipmentSlot.CHEST.getIndex(36), EquipmentSlot.CHEST, EquipmentSlot.HEAD.getIndex(36), EquipmentSlot.HEAD, 40, EquipmentSlot.OFFHAND, 41, EquipmentSlot.BODY, 42, EquipmentSlot.SADDLE));
    }
 }

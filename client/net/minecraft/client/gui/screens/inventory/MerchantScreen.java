@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -90,20 +90,20 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          MutableComponent var5 = Component.translatable("merchant.title", this.title, Component.translatable("merchant.level." + var4));
          int var6 = this.font.width((FormattedText)var5);
          int var7 = 49 + this.imageWidth / 2 - var6 / 2;
-         var1.drawString(this.font, (Component)var5, var7, 6, 4210752, false);
+         var1.drawString(this.font, (Component)var5, var7, 6, -12566464, false);
       } else {
-         var1.drawString(this.font, (Component)this.title, 49 + this.imageWidth / 2 - this.font.width((FormattedText)this.title) / 2, 6, 4210752, false);
+         var1.drawString(this.font, (Component)this.title, 49 + this.imageWidth / 2 - this.font.width((FormattedText)this.title) / 2, 6, -12566464, false);
       }
 
-      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
+      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
       int var8 = this.font.width((FormattedText)TRADES_LABEL);
-      var1.drawString(this.font, (Component)TRADES_LABEL, 5 - var8 / 2 + 48, 6, 4210752, false);
+      var1.drawString(this.font, (Component)TRADES_LABEL, 5 - var8 / 2 + 48, 6, -12566464, false);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderType::guiTextured, VILLAGER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, VILLAGER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
       MerchantOffers var7 = ((MerchantMenu)this.menu).getOffers();
       if (!var7.isEmpty()) {
          int var8 = this.shopItem;
@@ -113,7 +113,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
          MerchantOffer var9 = (MerchantOffer)var7.get(var8);
          if (var9.isOutOfStock()) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 28, 21);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 28, 21);
          }
       }
 
@@ -123,17 +123,17 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       int var5 = ((MerchantMenu)this.menu).getTraderLevel();
       int var6 = ((MerchantMenu)this.menu).getTraderXp();
       if (var5 < 5) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EXPERIENCE_BAR_BACKGROUND_SPRITE, var2 + 136, var3 + 16, 102, 5);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EXPERIENCE_BAR_BACKGROUND_SPRITE, var2 + 136, var3 + 16, 102, 5);
          int var7 = VillagerData.getMinXpPerLevel(var5);
          if (var6 >= var7 && VillagerData.canLevelUp(var5)) {
             boolean var8 = true;
             float var9 = 102.0F / (float)(VillagerData.getMaxXpPerLevel(var5) - var7);
             int var10 = Math.min(Mth.floor(var9 * (float)(var6 - var7)), 102);
-            var1.blitSprite(RenderType::guiTextured, EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, var2 + 136, var3 + 16, var10, 5);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, var2 + 136, var3 + 16, var10, 5);
             int var11 = ((MerchantMenu)this.menu).getFutureTraderXp();
             if (var11 > 0) {
                int var12 = Math.min(Mth.floor((float)var11 * var9), 102 - var10);
-               var1.blitSprite(RenderType::guiTextured, EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, var10, 0, var2 + 136 + var10, var3 + 16, var12, 5);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, var10, 0, var2 + 136 + var10, var3 + 16, var12, 5);
             }
 
          }
@@ -151,9 +151,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
             var9 = 113;
          }
 
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SCROLLER_SPRITE, var2 + 94, var3 + 18 + var9, 6, 27);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_SPRITE, var2 + 94, var3 + 18 + var9, 6, 27);
       } else {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SCROLLER_DISABLED_SPRITE, var2 + 94, var3 + 18, 6, 27);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_DISABLED_SPRITE, var2 + 94, var3 + 18, 6, 27);
       }
 
    }
@@ -175,8 +175,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
                ItemStack var14 = var12.getCostA();
                ItemStack var15 = var12.getCostB();
                ItemStack var16 = var12.getResult();
-               var1.pose().pushPose();
-               var1.pose().translate(0.0F, 0.0F, 100.0F);
                int var17 = var8 + 2;
                this.renderAndDecorateCostA(var1, var14, var13, var9, var17);
                if (!var15.isEmpty()) {
@@ -187,7 +185,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
                this.renderButtonArrows(var1, var12, var6, var17);
                var1.renderFakeItem(var16, var6 + 5 + 68, var17);
                var1.renderItemDecorations(this.font, var16, var6 + 5 + 68, var17);
-               var1.pose().popPose();
                var8 += 20;
                ++var10;
             } else {
@@ -202,7 +199,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          }
 
          if (var19.isOutOfStock() && this.isHovering(186, 35, 22, 21, (double)var2, (double)var3) && ((MerchantMenu)this.menu).canRestock()) {
-            var1.renderTooltip(this.font, DEPRECATED_TOOLTIP, var2, var3);
+            var1.setTooltipForNextFrame(this.font, DEPRECATED_TOOLTIP, var2, var3);
          }
 
          for(TradeOfferButton var23 : this.tradeOfferButtons) {
@@ -219,9 +216,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
    private void renderButtonArrows(GuiGraphics var1, MerchantOffer var2, int var3, int var4) {
       if (var2.isOutOfStock()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)TRADE_ARROW_OUT_OF_STOCK_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 10, 9);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TRADE_ARROW_OUT_OF_STOCK_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 10, 9);
       } else {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)TRADE_ARROW_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 10, 9);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TRADE_ARROW_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 10, 9);
       }
 
    }
@@ -233,10 +230,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       } else {
          var1.renderItemDecorations(this.font, var3, var4, var5, var3.getCount() == 1 ? "1" : null);
          var1.renderItemDecorations(this.font, var2, var4 + 14, var5, var2.getCount() == 1 ? "1" : null);
-         var1.pose().pushPose();
-         var1.pose().translate(0.0F, 0.0F, 300.0F);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 9, 2);
-         var1.pose().popPose();
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 9, 2);
       }
 
    }
@@ -302,15 +296,15 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          if (this.isHovered && ((MerchantMenu)MerchantScreen.this.menu).getOffers().size() > this.index + MerchantScreen.this.scrollOff) {
             if (var2 < this.getX() + 20) {
                ItemStack var4 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostA();
-               var1.renderTooltip(MerchantScreen.this.font, var4, var2, var3);
+               var1.setTooltipForNextFrame(MerchantScreen.this.font, var4, var2, var3);
             } else if (var2 < this.getX() + 50 && var2 > this.getX() + 30) {
                ItemStack var6 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostB();
                if (!var6.isEmpty()) {
-                  var1.renderTooltip(MerchantScreen.this.font, var6, var2, var3);
+                  var1.setTooltipForNextFrame(MerchantScreen.this.font, var6, var2, var3);
                }
             } else if (var2 > this.getX() + 65) {
                ItemStack var5 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getResult();
-               var1.renderTooltip(MerchantScreen.this.font, var5, var2, var3);
+               var1.setTooltipForNextFrame(MerchantScreen.this.font, var5, var2, var3);
             }
          }
 

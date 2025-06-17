@@ -16,6 +16,7 @@ import net.minecraft.util.datafix.fixes.References;
 
 public enum DataFixTypes {
    LEVEL(References.LEVEL),
+   LEVEL_SUMMARY(References.LIGHTWEIGHT_LEVEL),
    PLAYER(References.PLAYER),
    CHUNK(References.CHUNK),
    HOTBAR(References.HOTBAR),
@@ -35,7 +36,7 @@ public enum DataFixTypes {
    WORLD_GEN_SETTINGS(References.WORLD_GEN_SETTINGS),
    ENTITY_CHUNK(References.ENTITY_CHUNK);
 
-   public static final Set<DSL.TypeReference> TYPES_FOR_LEVEL_LIST = Set.of(LEVEL.type);
+   public static final Set<DSL.TypeReference> TYPES_FOR_LEVEL_LIST = Set.of(LEVEL_SUMMARY.type);
    private final DSL.TypeReference type;
 
    private DataFixTypes(final DSL.TypeReference var3) {
@@ -43,7 +44,7 @@ public enum DataFixTypes {
    }
 
    static int currentVersion() {
-      return SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+      return SharedConstants.getCurrentVersion().dataVersion().version();
    }
 
    public <A> Codec<A> wrapCodec(final Codec<A> var1, final DataFixer var2, final int var3) {
@@ -81,6 +82,6 @@ public enum DataFixTypes {
 
    // $FF: synthetic method
    private static DataFixTypes[] $values() {
-      return new DataFixTypes[]{LEVEL, PLAYER, CHUNK, HOTBAR, OPTIONS, STRUCTURE, STATS, SAVED_DATA_COMMAND_STORAGE, SAVED_DATA_FORCED_CHUNKS, SAVED_DATA_MAP_DATA, SAVED_DATA_MAP_INDEX, SAVED_DATA_RAIDS, SAVED_DATA_RANDOM_SEQUENCES, SAVED_DATA_SCOREBOARD, SAVED_DATA_STRUCTURE_FEATURE_INDICES, ADVANCEMENTS, POI_CHUNK, WORLD_GEN_SETTINGS, ENTITY_CHUNK};
+      return new DataFixTypes[]{LEVEL, LEVEL_SUMMARY, PLAYER, CHUNK, HOTBAR, OPTIONS, STRUCTURE, STATS, SAVED_DATA_COMMAND_STORAGE, SAVED_DATA_FORCED_CHUNKS, SAVED_DATA_MAP_DATA, SAVED_DATA_MAP_INDEX, SAVED_DATA_RAIDS, SAVED_DATA_RANDOM_SEQUENCES, SAVED_DATA_SCOREBOARD, SAVED_DATA_STRUCTURE_FEATURE_INDICES, ADVANCEMENTS, POI_CHUNK, WORLD_GEN_SETTINGS, ENTITY_CHUNK};
    }
 }

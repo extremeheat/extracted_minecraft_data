@@ -24,7 +24,7 @@ import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -116,7 +116,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          int var6 = this.getRowTop(var5);
          int var7 = this.getRowBottom(var5);
          if (var7 >= this.getY() && var6 <= this.getBottom()) {
-            this.minecraft.getNarrator().say(Component.translatable("multiplayer.lan.server_found", var9.getServerNarration()));
+            this.minecraft.getNarrator().saySystemQueued(Component.translatable("multiplayer.lan.server_found", var9.getServerNarration()));
          }
       }
 
@@ -193,9 +193,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          var1.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, -1);
          var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
-            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, 3158064);
+            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, -13619152);
          } else {
-            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, 3158064);
+            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, -13619152);
          }
 
       }
@@ -260,7 +260,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             ServerSelectionList.THREAD_POOL.submit(() -> {
                try {
                   this.screen.getPinger().pingServer(this.serverData, () -> this.minecraft.execute(this::updateServerList), () -> {
-                     this.serverData.setState(this.serverData.protocol == SharedConstants.getCurrentVersion().getProtocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE);
+                     this.serverData.setState(this.serverData.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE);
                      this.minecraft.execute(this::refreshStatus);
                   });
                } catch (UnknownHostException var2) {
@@ -309,7 +309,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
          int var20 = var4 + var5 - 10 - 5;
          if (this.statusIcon != null) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.statusIcon, var20, var3, 10, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var20, var3, 10, 8);
          }
 
          byte[] var13 = this.serverData.getIconBytes();
@@ -327,12 +327,12 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          int var16 = var20 - var15 - 5;
          var1.drawString(this.minecraft.font, (Component)var14, var16, var3 + 1, -8355712);
          if (this.statusIconTooltip != null && var7 >= var20 && var7 <= var20 + 10 && var8 >= var3 && var8 <= var3 + 8) {
-            this.screen.setTooltipForNextRenderPass(this.statusIconTooltip);
+            var1.setTooltipForNextFrame(this.statusIconTooltip, var7, var8);
          } else if (this.onlinePlayersTooltip != null && var7 >= var16 && var7 <= var16 + var15 && var8 >= var3) {
             int var22 = var3 - 1;
             Objects.requireNonNull(this.minecraft.font);
             if (var8 <= var22 + 9) {
-               this.screen.setTooltipForNextRenderPass(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText));
+               var1.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), var7, var8);
             }
          }
 
@@ -342,25 +342,25 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             int var18 = var8 - var3;
             if (this.canJoin()) {
                if (var17 < 32 && var17 > 16) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 > 0) {
                if (var17 < 16 && var18 < 16) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 < this.screen.getServers().size() - 1) {
                if (var17 < 16 && var18 > 16) {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
                }
             }
          }
@@ -408,7 +408,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       protected void drawIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
-         var1.blit(RenderType::guiTextured, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 
       private boolean canJoin() {

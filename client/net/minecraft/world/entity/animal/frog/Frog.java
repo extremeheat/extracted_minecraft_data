@@ -14,7 +14,6 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -68,6 +67,8 @@ import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.PathfindingContext;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Frog extends Animal {
@@ -159,14 +160,14 @@ public class Frog extends Animal {
       }
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       VariantUtils.writeVariant(var1, this.getVariant());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      VariantUtils.readVariant(var1, this.registryAccess(), Registries.FROG_VARIANT).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, Registries.FROG_VARIANT).ifPresent(this::setVariant);
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -251,7 +252,7 @@ public class Frog extends Animal {
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      FrogVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.FROG_VARIANT).ifPresent(this::setVariant);
       FrogAi.initMemories(this, var1.getRandom());
       return super.finalizeSpawn(var1, var2, var3, var4);
    }

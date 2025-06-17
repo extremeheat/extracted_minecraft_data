@@ -36,7 +36,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
                var3.setOwner((LivingEntity)var4);
             }
 
-            var3.setParticle(ParticleTypes.DRAGON_BREATH);
+            var3.setCustomParticle(ParticleTypes.DRAGON_BREATH);
             var3.setRadius(3.0F);
             var3.setDuration(600);
             var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());

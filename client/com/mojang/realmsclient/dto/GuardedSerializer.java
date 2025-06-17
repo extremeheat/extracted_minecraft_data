@@ -1,14 +1,27 @@
 package com.mojang.realmsclient.dto;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import javax.annotation.Nullable;
 
 public class GuardedSerializer {
-   private final Gson gson = new Gson();
+   ExclusionStrategy strategy = new ExclusionStrategy() {
+      public boolean shouldSkipClass(Class<?> var1) {
+         return false;
+      }
+
+      public boolean shouldSkipField(FieldAttributes var1) {
+         return var1.getAnnotation(Exclude.class) != null;
+      }
+   };
+   private final Gson gson;
 
    public GuardedSerializer() {
       super();
+      this.gson = (new GsonBuilder()).addSerializationExclusionStrategy(this.strategy).addDeserializationExclusionStrategy(this.strategy).create();
    }
 
    public String toJson(ReflectionBasedSerialization var1) {

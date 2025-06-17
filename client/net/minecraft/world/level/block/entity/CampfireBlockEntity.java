@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import com.mojang.logging.LogUtils;
 import java.util.Arrays;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -16,6 +17,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.ContainerHelper;
@@ -32,8 +34,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.slf4j.Logger;
 
 public class CampfireBlockEntity extends BlockEntity implements Clearable {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int BURN_COOL_SPEED = 2;
    private static final int NUM_SLOTS = 4;
    private final NonNullList<ItemStack> items;
@@ -120,17 +127,17 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       return this.items;
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.items.clear();
-      ContainerHelper.loadAllItems(var1, this.items, var2);
+      ContainerHelper.loadAllItems(var1, this.items);
       var1.getIntArray("CookingTimes").ifPresentOrElse((var1x) -> System.arraycopy(var1x, 0, this.cookingProgress, 0, Math.min(this.cookingTime.length, var1x.length)), () -> Arrays.fill(this.cookingProgress, 0));
       var1.getIntArray("CookingTotalTimes").ifPresentOrElse((var1x) -> System.arraycopy(var1x, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var1x.length)), () -> Arrays.fill(this.cookingTime, 0));
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      ContainerHelper.saveAllItems(var1, this.items, true, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      ContainerHelper.saveAllItems(var1, this.items, true);
       var1.putIntArray("CookingTimes", this.cookingProgress);
       var1.putIntArray("CookingTotalTimes", this.cookingTime);
    }
@@ -140,9 +147,11 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    }
 
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      CompoundTag var2 = new CompoundTag();
-      ContainerHelper.saveAllItems(var2, this.items, true, var1);
-      return var2;
+      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
+         ContainerHelper.saveAllItems(var3, this.items, true);
+         return var3.buildResult();
+      }
    }
 
    public boolean placeFood(ServerLevel var1, @Nullable LivingEntity var2, ItemStack var3) {
@@ -192,8 +201,8 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.getItems()));
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
-      var1.remove("Items");
+   public void removeComponentsFromTag(ValueOutput var1) {
+      var1.discard("Items");
    }
 
    // $FF: synthetic method

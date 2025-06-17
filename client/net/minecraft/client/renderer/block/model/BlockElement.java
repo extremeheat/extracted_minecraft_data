@@ -89,8 +89,8 @@ public record BlockElement(Vector3fc from, Vector3fc to, Map<Direction, BlockEle
 
       private float getAngle(JsonObject var1) {
          float var2 = GsonHelper.getAsFloat(var1, "angle");
-         if (var2 != 0.0F && Mth.abs(var2) != 22.5F && Mth.abs(var2) != 45.0F) {
-            throw new JsonParseException("Invalid rotation " + var2 + " found, only -45/-22.5/0/22.5/45 allowed");
+         if (Mth.abs(var2) > 45.0F) {
+            throw new JsonParseException("Invalid rotation " + var2 + " found, only values in [-45,45] range allowed");
          } else {
             return var2;
          }

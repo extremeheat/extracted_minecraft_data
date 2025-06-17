@@ -23,7 +23,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
@@ -34,8 +33,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -64,7 +61,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -94,6 +90,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import org.apache.commons.lang3.function.TriConsumer;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
@@ -275,10 +272,6 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public static Optional<ItemStack> parse(HolderLookup.Provider var0, Tag var1) {
-      return CODEC.parse(var0.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0x) -> LOGGER.error("Tried to load invalid item: '{}'", var0x));
-   }
-
    public boolean isEmpty() {
       return this == EMPTY || this.item == Items.AIR || this.count <= 0;
    }
@@ -394,22 +387,6 @@ public final class ItemStack implements DataComponentHolder {
       return var6;
    }
 
-   public Tag save(HolderLookup.Provider var1, Tag var2) {
-      if (this.isEmpty()) {
-         throw new IllegalStateException("Cannot encode empty ItemStack");
-      } else {
-         return (Tag)CODEC.encode(this, var1.createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow();
-      }
-   }
-
-   public Tag save(HolderLookup.Provider var1) {
-      if (this.isEmpty()) {
-         throw new IllegalStateException("Cannot encode empty ItemStack");
-      } else {
-         return (Tag)CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this).getOrThrow();
-      }
-   }
-
    public int getMaxStackSize() {
       return (Integer)this.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
    }
@@ -480,7 +457,7 @@ public final class ItemStack implements DataComponentHolder {
 
    public void hurtWithoutBreaking(int var1, Player var2) {
       if (var2 instanceof ServerPlayer var3) {
-         int var4 = this.processDurabilityChange(var1, var3.serverLevel(), var3);
+         int var4 = this.processDurabilityChange(var1, var3.level(), var3);
          if (var4 == 0) {
             return;
          }
@@ -490,6 +467,10 @@ public final class ItemStack implements DataComponentHolder {
          });
       }
 
+   }
+
+   public void hurtAndBreak(int var1, LivingEntity var2, InteractionHand var3) {
+      this.hurtAndBreak(var1, var2, LivingEntity.getSlotForHand(var3));
    }
 
    public void hurtAndBreak(int var1, LivingEntity var2, EquipmentSlot var3) {
@@ -910,52 +891,20 @@ public final class ItemStack implements DataComponentHolder {
       if (var2.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
          for(EquipmentSlotGroup var7 : EquipmentSlotGroup.values()) {
             MutableBoolean var8 = new MutableBoolean(true);
-            this.forEachModifier((EquipmentSlotGroup)var7, (var5, var6) -> {
-               if (var8.isTrue()) {
-                  var1.accept(CommonComponents.EMPTY);
-                  var1.accept(Component.translatable("item.modifiers." + var7.getSerializedName()).withStyle(ChatFormatting.GRAY));
-                  var8.setFalse();
+            this.forEachModifier((EquipmentSlotGroup)var7, (TriConsumer)((var4, var5, var6) -> {
+               if (var6 != ItemAttributeModifiers.Display.hidden()) {
+                  if (var8.isTrue()) {
+                     var1.accept(CommonComponents.EMPTY);
+                     var1.accept(Component.translatable("item.modifiers." + var7.getSerializedName()).withStyle(ChatFormatting.GRAY));
+                     var8.setFalse();
+                  }
+
+                  var6.apply(var1, var3, var4, var5);
                }
-
-               this.addModifierTooltip(var1, var3, var5, var6);
-            });
+            }));
          }
 
       }
-   }
-
-   private void addModifierTooltip(Consumer<Component> var1, @Nullable Player var2, Holder<Attribute> var3, AttributeModifier var4) {
-      double var5 = var4.amount();
-      boolean var7 = false;
-      if (var2 != null) {
-         if (var4.is(Item.BASE_ATTACK_DAMAGE_ID)) {
-            var5 += var2.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-            var7 = true;
-         } else if (var4.is(Item.BASE_ATTACK_SPEED_ID)) {
-            var5 += var2.getAttributeBaseValue(Attributes.ATTACK_SPEED);
-            var7 = true;
-         }
-      }
-
-      double var8;
-      if (var4.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_BASE && var4.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-         if (var3.is(Attributes.KNOCKBACK_RESISTANCE)) {
-            var8 = var5 * 10.0;
-         } else {
-            var8 = var5;
-         }
-      } else {
-         var8 = var5 * 100.0;
-      }
-
-      if (var7) {
-         var1.accept(CommonComponents.space().append((Component)Component.translatable("attribute.modifier.equals." + var4.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var8), Component.translatable(((Attribute)var3.value()).getDescriptionId()))).withStyle(ChatFormatting.DARK_GREEN));
-      } else if (var5 > 0.0) {
-         var1.accept(Component.translatable("attribute.modifier.plus." + var4.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var8), Component.translatable(((Attribute)var3.value()).getDescriptionId())).withStyle(((Attribute)var3.value()).getStyle(true)));
-      } else if (var5 < 0.0) {
-         var1.accept(Component.translatable("attribute.modifier.take." + var4.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(-var8), Component.translatable(((Attribute)var3.value()).getDescriptionId())).withStyle(((Attribute)var3.value()).getStyle(false)));
-      }
-
    }
 
    public boolean hasFoil() {
@@ -1027,10 +976,10 @@ public final class ItemStack implements DataComponentHolder {
       return !this.isEmpty() ? this.entityRepresentation : null;
    }
 
-   public void forEachModifier(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
+   public void forEachModifier(EquipmentSlotGroup var1, TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> var2) {
       ItemAttributeModifiers var3 = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
       var3.forEach(var1, var2);
-      EnchantmentHelper.forEachModifier(this, var1, var2);
+      EnchantmentHelper.forEachModifier(this, (EquipmentSlotGroup)var1, (var1x, var2x) -> var2.accept(var1x, var2x, ItemAttributeModifiers.Display.attributeModifiers()));
    }
 
    public void forEachModifier(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {

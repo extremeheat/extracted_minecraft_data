@@ -281,6 +281,10 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_north")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_bottom")).put(TextureSlot.TOP, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_top")).put(TextureSlot.NORTH, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_north")).put(TextureSlot.SOUTH, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_south")).put(TextureSlot.EAST, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_east")).put(TextureSlot.WEST, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_west"));
    }
 
+   public static TextureMapping driedGhast(String var0) {
+      return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_north")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_bottom")).put(TextureSlot.TOP, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_top")).put(TextureSlot.NORTH, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_north")).put(TextureSlot.SOUTH, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_south")).put(TextureSlot.EAST, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_east")).put(TextureSlot.WEST, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_west")).put(TextureSlot.TENTACLES, getBlockTexture(Blocks.DRIED_GHAST, var0 + "_tentacles"));
+   }
+
    public static TextureMapping campfire(Block var0) {
       return (new TextureMapping()).put(TextureSlot.LIT_LOG, getBlockTexture(var0, "_log_lit")).put(TextureSlot.FIRE, getBlockTexture(var0, "_fire"));
    }

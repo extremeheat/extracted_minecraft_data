@@ -48,7 +48,7 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.projectile, ".projectile");
+         var1.validateEntity(this.projectile, "projectile");
       }
    }
 }

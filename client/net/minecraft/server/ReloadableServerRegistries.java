@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import net.minecraft.Util;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.MappedRegistry;
@@ -23,7 +21,6 @@ import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagLoader;
@@ -77,7 +74,7 @@ public class ReloadableServerRegistries {
       ProblemReporter.Collector var1 = new ProblemReporter.Collector();
       ValidationContext var2 = new ValidationContext(var1, LootContextParamSets.ALL_PARAMS, var0);
       LootDataType.values().forEach((var2x) -> validateRegistry(var2, var2x, var0));
-      var1.get().forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x));
+      var1.forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x.description()));
    }
 
    private static LayeredRegistryAccess<RegistryLayer> createUpdatedRegistries(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {
@@ -105,12 +102,8 @@ public class ReloadableServerRegistries {
          this.registries = var1;
       }
 
-      public HolderGetter.Provider lookup() {
+      public HolderLookup.Provider lookup() {
          return this.registries;
-      }
-
-      public Collection<ResourceLocation> getKeys(ResourceKey<? extends Registry<?>> var1) {
-         return this.registries.lookupOrThrow(var1).listElementIds().map(ResourceKey::location).toList();
       }
 
       public LootTable getLootTable(ResourceKey<LootTable> var1) {

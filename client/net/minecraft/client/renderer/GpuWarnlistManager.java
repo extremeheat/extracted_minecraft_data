@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -20,6 +19,7 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
 import org.slf4j.Logger;
@@ -125,7 +125,7 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
             BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
 
             try {
-               var4 = JsonParser.parseReader(var3).getAsJsonObject();
+               var4 = StrictJsonParser.parse((Reader)var3).getAsJsonObject();
             } catch (Throwable var8) {
                if (var3 != null) {
                   try {
@@ -145,7 +145,7 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
 
          return var4;
       } catch (JsonSyntaxException | IOException var10) {
-         LOGGER.warn("Failed to load GPU warnlist");
+         LOGGER.warn("Failed to load GPU warnlist", var10);
          return null;
       }
    }

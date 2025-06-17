@@ -63,9 +63,9 @@ public abstract class PathfinderMob extends Mob {
 
    }
 
-   public boolean handleLeashAtDistance(Entity var1, float var2) {
-      this.restrictTo(var1.blockPosition(), 5);
-      return true;
+   public void whenLeashedTo(Entity var1) {
+      this.setHomeTo(var1.blockPosition(), (int)this.leashElasticDistance() - 1);
+      super.whenLeashedTo(var1);
    }
 
    protected double followLeashSpeed() {

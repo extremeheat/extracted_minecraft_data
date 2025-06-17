@@ -64,7 +64,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Long> LAST_SLEPT;
    public static final MemoryModuleType<Long> LAST_WOKEN;
    public static final MemoryModuleType<Long> LAST_WORKED_AT_POI;
-   public static final MemoryModuleType<AgeableMob> NEAREST_VISIBLE_ADULT;
+   public static final MemoryModuleType<LivingEntity> NEAREST_VISIBLE_ADULT;
    public static final MemoryModuleType<ItemEntity> NEAREST_VISIBLE_WANTED_ITEM;
    public static final MemoryModuleType<Mob> NEAREST_VISIBLE_NEMESIS;
    public static final MemoryModuleType<Integer> PLAY_DEAD_TICKS;

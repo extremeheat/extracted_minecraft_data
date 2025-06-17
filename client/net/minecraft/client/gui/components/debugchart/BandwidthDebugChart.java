@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components.debugchart;
 import java.util.Locale;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.SampleStorage;
 
@@ -32,7 +31,7 @@ public class BandwidthDebugChart extends AbstractDebugChart {
 
    private void drawLineWithLabel(GuiGraphics var1, int var2, int var3, int var4, String var5) {
       this.drawStringWithShade(var1, var5, var2 + 1, var4 + 1);
-      var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4, -1);
+      var1.hLine(var2, var2 + var3 - 1, var4, -1);
    }
 
    protected String toDisplayString(double var1) {

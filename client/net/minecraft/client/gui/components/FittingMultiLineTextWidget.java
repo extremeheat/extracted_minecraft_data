@@ -45,10 +45,10 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
    }
 
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.pose().pushPose();
-      var1.pose().translate((float)this.getInnerLeft(), (float)this.getInnerTop(), 0.0F);
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)this.getInnerLeft(), (float)this.getInnerTop());
       this.multilineWidget.render(var1, var2, var3, var4);
-      var1.pose().popPose();
+      var1.pose().popMatrix();
    }
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {

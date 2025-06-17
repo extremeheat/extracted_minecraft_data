@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -30,11 +31,11 @@ public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> cod
    }
 
    private static <T extends LootContextUser> Validator<T> createSimpleValidator() {
-      return (var0, var1, var2) -> var2.validate(var0.enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
+      return (var0, var1, var2) -> var2.validate(var0.enterElement(new ProblemReporter.RootElementPathElement(var1), var1));
    }
 
    private static Validator<LootTable> createLootTableValidator() {
-      return (var0, var1, var2) -> var2.validate(var0.setContextKeySet(var2.getParamSet()).enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
+      return (var0, var1, var2) -> var2.validate(var0.setContextKeySet(var2.getParamSet()).enterElement(new ProblemReporter.RootElementPathElement(var1), var1));
    }
 
    static {

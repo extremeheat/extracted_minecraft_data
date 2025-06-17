@@ -5,7 +5,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -135,21 +135,21 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       boolean var9 = var8 == this.contents.getSelectedItem();
       ItemStack var10 = (ItemStack)var4.get(var8);
       if (var9) {
-         var7.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_HIGHLIGHT_BACK_SPRITE, var2, var3, 24, 24);
+         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_BACK_SPRITE, var2, var3, 24, 24);
       } else {
-         var7.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_BACKGROUND_SPRITE, var2, var3, 24, 24);
+         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_BACKGROUND_SPRITE, var2, var3, 24, 24);
       }
 
       var7.renderItem(var10, var2 + 4, var3 + 4, var5);
       var7.renderItemDecorations(var6, var10, var2 + 4, var3 + 4);
       if (var9) {
-         var7.blitSprite(RenderType::guiTexturedOverlay, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, var2, var3, 24, 24);
+         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, var2, var3, 24, 24);
       }
 
    }
 
    private static void renderCount(int var0, int var1, int var2, Font var3, GuiGraphics var4) {
-      var4.drawCenteredString(var3, "+" + var2, var0 + 12, var1 + 10, 16777215);
+      var4.drawCenteredString(var3, (String)("+" + var2), var0 + 12, var1 + 10, -1);
    }
 
    private void drawSelectedItemTooltip(Font var1, GuiGraphics var2, int var3, int var4, int var5) {
@@ -158,23 +158,24 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          Component var7 = var6.getStyledHoverName();
          int var8 = var1.width(var7.getVisualOrderText());
          int var9 = var3 + var5 / 2 - 12;
-         var2.renderTooltip(var1, var7, var9 - var8 / 2, var4 - 15, (ResourceLocation)var6.get(DataComponents.TOOLTIP_STYLE));
+         ClientTooltipComponent var10 = ClientTooltipComponent.create(var7.getVisualOrderText());
+         var2.renderTooltip(var1, List.of(var10), var9 - var8 / 2, var4 - 15, DefaultTooltipPositioner.INSTANCE, (ResourceLocation)var6.get(DataComponents.TOOLTIP_STYLE));
       }
 
    }
 
    private void drawProgressbar(int var1, int var2, Font var3, GuiGraphics var4) {
-      var4.blitSprite(RenderType::guiTextured, (ResourceLocation)this.getProgressBarTexture(), var1 + 1, var2, this.getProgressBarFill(), 13);
-      var4.blitSprite(RenderType::guiTextured, (ResourceLocation)PROGRESSBAR_BORDER_SPRITE, var1, var2, 96, 13);
+      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getProgressBarTexture(), var1 + 1, var2, this.getProgressBarFill(), 13);
+      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PROGRESSBAR_BORDER_SPRITE, var1, var2, 96, 13);
       Component var5 = this.getProgressBarFillText();
       if (var5 != null) {
-         var4.drawCenteredString(var3, var5, var1 + 48, var2 + 3, 16777215);
+         var4.drawCenteredString(var3, (Component)var5, var1 + 48, var2 + 3, -1);
       }
 
    }
 
    private static void drawEmptyBundleDescriptionText(int var0, int var1, Font var2, GuiGraphics var3) {
-      var3.drawWordWrap(var2, BUNDLE_EMPTY_DESCRIPTION, var0, var1, 96, 11184810);
+      var3.drawWordWrap(var2, BUNDLE_EMPTY_DESCRIPTION, var0, var1, 96, -5592406);
    }
 
    private static int getEmptyBundleDescriptionTextHeight(Font var0) {

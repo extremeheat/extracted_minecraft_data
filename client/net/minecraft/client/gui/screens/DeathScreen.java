@@ -8,7 +8,8 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -71,24 +72,24 @@ public class DeathScreen extends Screen {
 
    private void exitToTitleScreen() {
       if (this.minecraft.level != null) {
-         this.minecraft.level.disconnect();
+         this.minecraft.level.disconnect(ClientLevel.DEFAULT_QUIT_MESSAGE);
       }
 
-      this.minecraft.disconnect(new GenericMessageScreen(Component.translatable("menu.savingLevel")));
+      this.minecraft.disconnectWithSavingScreen();
       this.minecraft.setScreen(new TitleScreen());
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.pose().pushPose();
-      var1.pose().scale(2.0F, 2.0F, 2.0F);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2 / 2, 30, 16777215);
-      var1.pose().popPose();
+      var1.pose().pushMatrix();
+      var1.pose().scale(2.0F, 2.0F);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2 / 2, 30, -1);
+      var1.pose().popMatrix();
       if (this.causeOfDeath != null) {
-         var1.drawCenteredString(this.font, (Component)this.causeOfDeath, this.width / 2, 85, 16777215);
+         var1.drawCenteredString(this.font, (Component)this.causeOfDeath, this.width / 2, 85, -1);
       }
 
-      var1.drawCenteredString(this.font, (Component)this.deathScore, this.width / 2, 100, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.deathScore, this.width / 2, 100, -1);
       if (this.causeOfDeath != null && var3 > 85) {
          Objects.requireNonNull(this.font);
          if (var3 < 85 + 9) {
@@ -98,7 +99,7 @@ public class DeathScreen extends Screen {
       }
 
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
       }
 
    }
@@ -128,9 +129,12 @@ public class DeathScreen extends Screen {
          Objects.requireNonNull(this.font);
          if (var3 < (double)(85 + 9)) {
             Style var6 = this.getClickedComponentStyleAt((int)var1);
-            if (var6 != null && var6.getClickEvent() != null && var6.getClickEvent().action() == ClickEvent.Action.OPEN_URL) {
-               this.handleComponentClicked(var6);
-               return false;
+            if (var6 != null) {
+               ClickEvent var8 = var6.getClickEvent();
+               if (var8 instanceof ClickEvent.OpenUrl) {
+                  ClickEvent.OpenUrl var7 = (ClickEvent.OpenUrl)var8;
+                  return clickUrlAction(this.minecraft, this, var7.uri());
+               }
             }
          }
       }

@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonElement;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
@@ -23,7 +24,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {
    static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (var0) -> {
@@ -115,8 +116,8 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
                String var3 = (String)var1.orElse("");
                return var0.set("generatorOptions", convert(var3, var0.getOps()));
             } else if ("buffet".equalsIgnoreCase(var0.get("generatorName").asString("")) && var1.isPresent()) {
-               Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1.get(), true));
-               return var0.set("generatorOptions", var2.convert(var0.getOps()));
+               JsonElement var2 = LenientJsonParser.parse((String)var1.get());
+               return var0.set("generatorOptions", (new Dynamic(JsonOps.INSTANCE, var2)).convert(var0.getOps()));
             } else {
                return var0;
             }

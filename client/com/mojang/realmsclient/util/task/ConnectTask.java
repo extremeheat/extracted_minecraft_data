@@ -1,7 +1,7 @@
 package com.mojang.realmsclient.util.task;
 
+import com.mojang.realmsclient.dto.RealmsJoinInformation;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsServerAddress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
@@ -12,9 +12,9 @@ public class ConnectTask extends LongRunningTask {
    private static final Component TITLE = Component.translatable("mco.connect.connecting");
    private final RealmsConnect realmsConnect;
    private final RealmsServer server;
-   private final RealmsServerAddress address;
+   private final RealmsJoinInformation address;
 
-   public ConnectTask(Screen var1, RealmsServer var2, RealmsServerAddress var3) {
+   public ConnectTask(Screen var1, RealmsServer var2, RealmsJoinInformation var3) {
       super();
       this.server = var2;
       this.address = var3;
@@ -22,8 +22,8 @@ public class ConnectTask extends LongRunningTask {
    }
 
    public void run() {
-      if (this.address.address != null) {
-         this.realmsConnect.connect(this.server, ServerAddress.parseString(this.address.address));
+      if (this.address.address() != null) {
+         this.realmsConnect.connect(this.server, ServerAddress.parseString(this.address.address()));
       } else {
          this.abortTask();
       }

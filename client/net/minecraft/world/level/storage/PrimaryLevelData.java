@@ -163,10 +163,10 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       }
 
       CompoundTag var4 = new CompoundTag();
-      var4.putString("Name", SharedConstants.getCurrentVersion().getName());
-      var4.putInt("Id", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-      var4.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().isStable());
-      var4.putString("Series", SharedConstants.getCurrentVersion().getDataVersion().getSeries());
+      var4.putString("Name", SharedConstants.getCurrentVersion().name());
+      var4.putInt("Id", SharedConstants.getCurrentVersion().dataVersion().version());
+      var4.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().stable());
+      var4.putString("Series", SharedConstants.getCurrentVersion().dataVersion().series());
       var2.put("Version", var4);
       NbtUtils.addCurrentDataVersion(var2);
       RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);

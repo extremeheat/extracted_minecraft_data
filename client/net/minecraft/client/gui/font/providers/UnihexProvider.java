@@ -259,7 +259,7 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    public static class Definition implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().fieldOf("size_overrides").forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
       private final ResourceLocation hexFile;
       private final List<OverrideRange> sizeOverrides;
 
@@ -550,7 +550,7 @@ public class UnihexProvider implements GlyphProvider {
                IntBuffer var4 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
                UnihexProvider.unpackBitsToBytes(var4, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
                var4.rewind();
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var4, NativeImage.Format.RGBA, 0, var1, var2, Glyph.this.width(), 16);
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var4, NativeImage.Format.RGBA, 0, 0, var1, var2, Glyph.this.width(), 16);
                MemoryUtil.memFree(var4);
             }
 

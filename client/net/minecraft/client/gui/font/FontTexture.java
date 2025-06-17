@@ -2,6 +2,7 @@ package net.minecraft.client.gui.font;
 
 import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -23,8 +24,10 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       super();
       this.colored = var3;
       this.root = new Node(0, 0, 256, 256);
-      this.texture = RenderSystem.getDevice().createTexture(var1, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1);
+      GpuDevice var4 = RenderSystem.getDevice();
+      this.texture = var4.createTexture(var1, 7, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1, 1);
       this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.textureView = var4.createTextureView(this.texture);
       this.renderTypes = var2;
    }
 
@@ -34,12 +37,12 @@ public class FontTexture extends AbstractTexture implements Dumpable {
          return null;
       } else {
          Node var2 = this.root.insert(var1);
-         if (var2 != null && this.texture != null) {
+         if (var2 != null && this.texture != null && this.textureView != null) {
             var1.upload(var2.x, var2.y, this.texture);
             float var3 = 256.0F;
             float var4 = 256.0F;
             float var5 = 0.01F;
-            return new BakedGlyph(this.renderTypes, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getTop(), var1.getBottom());
+            return new BakedGlyph(this.renderTypes, this.textureView, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getTop(), var1.getBottom());
          } else {
             return null;
          }

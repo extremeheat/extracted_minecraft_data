@@ -30,6 +30,7 @@ public class SelectItemModel<T> implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       Object var8 = this.property.get(var2, var5, var6, var7, var4);
       ItemModel var9 = this.models.get(var8, var5);
       if (var9 != null) {

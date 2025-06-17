@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -91,8 +91,8 @@ public abstract class AbstractScrollArea extends AbstractWidget {
          int var2 = this.scrollBarX();
          int var3 = this.scrollerHeight();
          int var4 = this.scrollBarY();
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SCROLLER_BACKGROUND_SPRITE, var2, this.getY(), 6, this.getHeight());
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SCROLLER_SPRITE, var2, var4, 6, var3);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_BACKGROUND_SPRITE, var2, this.getY(), 6, this.getHeight());
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_SPRITE, var2, var4, 6, var3);
       }
 
    }

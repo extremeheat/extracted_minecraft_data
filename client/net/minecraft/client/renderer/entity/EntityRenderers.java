@@ -124,6 +124,7 @@ public class EntityRenderers {
       register(EntityType.FROG, FrogRenderer::new);
       register(EntityType.FURNACE_MINECART, (var0) -> new MinecartRenderer(var0, ModelLayers.FURNACE_MINECART));
       register(EntityType.GHAST, GhastRenderer::new);
+      register(EntityType.HAPPY_GHAST, HappyGhastRenderer::new);
       register(EntityType.GIANT, (var0) -> new GiantMobRenderer(var0, 6.0F));
       register(EntityType.GLOW_ITEM_FRAME, ItemFrameRenderer::new);
       register(EntityType.GLOW_SQUID, (var0) -> new GlowSquidRenderer(var0, new SquidModel(var0.bakeLayer(ModelLayers.GLOW_SQUID)), new SquidModel(var0.bakeLayer(ModelLayers.GLOW_SQUID_BABY))));

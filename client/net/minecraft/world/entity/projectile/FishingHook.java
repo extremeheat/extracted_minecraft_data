@@ -3,11 +3,11 @@ package net.minecraft.world.entity.projectile;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collections;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -26,6 +26,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,6 +36,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -65,12 +68,14 @@ public class FishingHook extends Projectile {
    private FishHookState currentState;
    private final int luck;
    private final int lureSpeed;
+   private final InterpolationHandler interpolationHandler;
 
    private FishingHook(EntityType<? extends FishingHook> var1, Level var2, int var3, int var4) {
       super(var1, var2);
       this.syncronizedRandom = RandomSource.create();
       this.openWater = true;
       this.currentState = FishingHook.FishHookState.FLYING;
+      this.interpolationHandler = new InterpolationHandler(this);
       this.luck = Math.max(0, var3);
       this.lureSpeed = Math.max(0, var4);
    }
@@ -100,6 +105,11 @@ public class FishingHook extends Projectile {
       this.setXRot((float)(Mth.atan2(var17.y, var17.horizontalDistance()) * 57.2957763671875));
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
+   }
+
+   @Nonnull
+   public InterpolationHandler getInterpolation() {
+      return this.interpolationHandler;
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -134,6 +144,7 @@ public class FishingHook extends Projectile {
 
    public void tick() {
       this.syncronizedRandom.setSeed(this.getUUID().getLeastSignificantBits() ^ this.level().getGameTime());
+      this.getInterpolation().interpolate();
       super.tick();
       Player var1 = this.getPlayerOwner();
       if (var1 == null) {
@@ -214,7 +225,7 @@ public class FishingHook extends Projectile {
             }
          }
 
-         if (!var4.is(FluidTags.WATER)) {
+         if (!var4.is(FluidTags.WATER) && !this.onGround() && this.hookedIn == null) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.03, 0.0));
          }
 
@@ -397,10 +408,10 @@ public class FishingHook extends Projectile {
       return this.openWater;
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
    }
 
    public int retrieve(ItemStack var1) {

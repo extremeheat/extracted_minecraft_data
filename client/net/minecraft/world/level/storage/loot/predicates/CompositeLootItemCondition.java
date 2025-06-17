@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
@@ -36,7 +37,7 @@ public abstract class CompositeLootItemCondition implements LootItemCondition {
       LootItemCondition.super.validate(var1);
 
       for(int var2 = 0; var2 < this.terms.size(); ++var2) {
-         ((LootItemCondition)this.terms.get(var2)).validate(var1.forChild(".term[" + var2 + "]"));
+         ((LootItemCondition)this.terms.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("terms", var2)));
       }
 
    }

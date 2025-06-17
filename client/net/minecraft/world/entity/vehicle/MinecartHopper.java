@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -17,6 +16,8 @@ import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class MinecartHopper extends AbstractMinecartContainer implements Hopper {
    private static final boolean DEFAULT_ENABLED = true;
@@ -113,12 +114,12 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       return new ItemStack(Items.HOPPER_MINECART);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Enabled", this.enabled);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.enabled = var1.getBooleanOr("Enabled", true);
    }

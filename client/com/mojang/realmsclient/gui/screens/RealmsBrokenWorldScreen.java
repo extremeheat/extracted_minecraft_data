@@ -5,11 +5,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsWorldOptions;
+import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.WorldDownload;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsWorldSlotButton;
 import com.mojang.realmsclient.util.RealmsTextureManager;
+import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.OpenServerTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
@@ -22,7 +23,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -73,7 +74,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
          Button var5;
          if (var4) {
             var5 = Button.builder(Component.translatable("mco.brokenworld.play"), (var2x) -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, var3, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
-            var5.active = !((RealmsWorldOptions)this.serverData.slots.get(var3)).empty;
+            var5.active = !((RealmsSlot)this.serverData.slots.get(var3)).options.empty;
          } else {
             var5 = Button.builder(Component.translatable("mco.brokenworld.download"), (var2x) -> this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> this.downloadWorld(var3)))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
          }
@@ -102,10 +103,10 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
       if (this.serverData != null) {
          for(Map.Entry var6 : this.serverData.slots.entrySet()) {
-            if (((RealmsWorldOptions)var6.getValue()).templateImage != null && ((RealmsWorldOptions)var6.getValue()).templateId != -1L) {
-               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsWorldOptions)var6.getValue()).templateId, ((RealmsWorldOptions)var6.getValue()).templateImage, ((RealmsWorldOptions)var6.getValue()).empty);
+            if (((RealmsSlot)var6.getValue()).options.templateImage != null && ((RealmsSlot)var6.getValue()).options.templateId != -1L) {
+               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsSlot)var6.getValue()).options.getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsSlot)var6.getValue()).options.templateId, ((RealmsSlot)var6.getValue()).options.templateImage, ((RealmsSlot)var6.getValue()).options.empty);
             } else {
-               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsWorldOptions)var6.getValue()).empty);
+               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsSlot)var6.getValue()).options.getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsSlot)var6.getValue()).options.empty);
             }
          }
 
@@ -116,19 +117,15 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       return this.leftX + (var1 - 1) * 110;
    }
 
+   public Screen createErrorScreen(RealmsServiceException var1) {
+      return new RealmsGenericErrorScreen(var1, this.lastScreen);
+   }
+
    private void fetchServerData(long var1) {
-      (new Thread(() -> {
-         RealmsClient var3 = RealmsClient.getOrCreate();
-
-         try {
-            this.serverData = var3.getOwnRealm(var1);
-            this.addButtons();
-         } catch (RealmsServiceException var5) {
-            LOGGER.error("Couldn't get own world", var5);
-            this.minecraft.setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen));
-         }
-
-      })).start();
+      RealmsUtil.supplyAsync((var2) -> var2.getOwnRealm(var1), RealmsUtil.openScreenAndLogOnFailure(this::createErrorScreen, "Couldn't get own world")).thenAcceptAsync((var1x) -> {
+         this.serverData = var1x;
+         this.addButtons();
+      }, this.minecraft);
    }
 
    public void doSwitchOrReset() {
@@ -142,7 +139,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
                this.minecraft.execute(() -> RealmsMainScreen.play(var2, this));
             } catch (RealmsServiceException var3) {
                LOGGER.error("Couldn't get own world", var3);
-               this.minecraft.execute(() -> this.minecraft.setScreen(this.lastScreen));
+               this.minecraft.execute(() -> this.minecraft.setScreen(this.createErrorScreen(var3)));
             }
          }
 
@@ -198,12 +195,12 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
       if (var6) {
          float var14 = 0.9F + 0.1F * Mth.cos((float)this.animTick * 0.2F);
-         var1.blit(RenderType::guiTextured, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
       } else {
          int var15 = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
-         var1.blit(RenderType::guiTextured, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
+         var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
       }
 
       var1.drawCenteredString(this.font, (String)var7, var2 + 40, var3 + 66, -1);

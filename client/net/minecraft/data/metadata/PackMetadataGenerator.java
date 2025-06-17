@@ -44,7 +44,7 @@ public class PackMetadataGenerator implements DataProvider {
    }
 
    public static PackMetadataGenerator forFeaturePack(PackOutput var0, Component var1) {
-      return (new PackMetadataGenerator(var0)).add(PackMetadataSection.TYPE, new PackMetadataSection(var1, DetectedVersion.BUILT_IN.getPackVersion(PackType.SERVER_DATA), Optional.empty()));
+      return (new PackMetadataGenerator(var0)).add(PackMetadataSection.TYPE, new PackMetadataSection(var1, DetectedVersion.BUILT_IN.packVersion(PackType.SERVER_DATA), Optional.empty()));
    }
 
    public static PackMetadataGenerator forFeaturePack(PackOutput var0, Component var1, FeatureFlagSet var2) {

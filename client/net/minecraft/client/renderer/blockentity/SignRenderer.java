@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public class SignRenderer extends AbstractSignRenderer {
-   private static final float RENDER_SCALE = 0.6666667F;
+   public static final float RENDER_SCALE = 0.6666667F;
    private static final Vec3 TEXT_OFFSET = new Vec3(0.0, 0.3333333432674408, 0.046666666865348816);
    private final Map<WoodType, Models> signModels;
 
@@ -71,12 +71,16 @@ public class SignRenderer extends AbstractSignRenderer {
 
    public static void renderInHand(PoseStack var0, MultiBufferSource var1, int var2, int var3, Model var4, Material var5) {
       var0.pushPose();
-      translateBase(var0, 0.0F);
-      var0.scale(0.6666667F, -0.6666667F, -0.6666667F);
+      applyInHandTransforms(var0);
       Objects.requireNonNull(var4);
       VertexConsumer var6 = var5.buffer(var1, var4::renderType);
       var4.renderToBuffer(var0, var6, var2, var3);
       var0.popPose();
+   }
+
+   public static void applyInHandTransforms(PoseStack var0) {
+      translateBase(var0, 0.0F);
+      var0.scale(0.6666667F, -0.6666667F, -0.6666667F);
    }
 
    public static Model createSignModel(EntityModelSet var0, WoodType var1, boolean var2) {

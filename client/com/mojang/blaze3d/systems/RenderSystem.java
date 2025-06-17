@@ -3,14 +3,14 @@ package com.mojang.blaze3d.systems;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.TracyFrameCapture;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.shaders.ShaderType;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -28,7 +28,8 @@ import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.renderer.FogParameters;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.Mth;
@@ -43,9 +44,9 @@ import org.slf4j.Logger;
 
 @DontObfuscate
 public class RenderSystem {
-   public static final ScissorState SCISSOR_STATE = new ScissorState();
    static final Logger LOGGER = LogUtils.getLogger();
    public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
+   public static final int PROJECTION_MATRIX_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().get();
    @Nullable
    private static Thread renderThread;
    @Nullable
@@ -68,19 +69,20 @@ public class RenderSystem {
       var0.accept(var1 + 2);
       var0.accept(var1 + 1);
    });
-   private static Matrix4f projectionMatrix = new Matrix4f();
-   private static Matrix4f savedProjectionMatrix = new Matrix4f();
    private static ProjectionType projectionType;
    private static ProjectionType savedProjectionType;
    private static final Matrix4fStack modelViewStack;
    private static Matrix4f textureMatrix;
    public static final int TEXTURE_COUNT = 12;
-   private static final GpuTexture[] shaderTextures;
-   private static final float[] shaderColor;
-   private static float shaderGlintAlpha;
-   private static FogParameters shaderFog;
-   private static final Vector3f[] shaderLightDirections;
-   private static float shaderGameTime;
+   private static final GpuTextureView[] shaderTextures;
+   @Nullable
+   private static GpuBufferSlice shaderFog;
+   @Nullable
+   private static GpuBufferSlice shaderLightDirections;
+   @Nullable
+   private static GpuBufferSlice projectionMatrixBuffer;
+   @Nullable
+   private static GpuBufferSlice savedProjectionMatrixBuffer;
    private static final Vector3f modelOffset;
    private static float shaderLineWidth;
    private static String apiDescription;
@@ -89,6 +91,15 @@ public class RenderSystem {
    @Nullable
    private static GpuBuffer QUAD_VERTEX_BUFFER;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
+   @Nullable
+   public static GpuTextureView outputColorTextureOverride;
+   @Nullable
+   public static GpuTextureView outputDepthTextureOverride;
+   @Nullable
+   private static GpuBuffer globalSettingsUniform;
+   @Nullable
+   private static DynamicUniforms dynamicUniforms;
+   private static ScissorState scissorStateForRenderTypeDraws;
 
    public RenderSystem() {
       super();
@@ -135,6 +146,8 @@ public class RenderSystem {
          var2.endFrame();
       }
 
+      dynamicUniforms.reset();
+      Minecraft.getInstance().levelRenderer.endFrame();
       pollEvents();
    }
 
@@ -149,59 +162,22 @@ public class RenderSystem {
       lastDrawTime = var3;
    }
 
-   public static void enableScissor(int var0, int var1, int var2, int var3) {
-      SCISSOR_STATE.enable(var0, var1, var2, var3);
-   }
-
-   public static void disableScissor() {
-      SCISSOR_STATE.disable();
-   }
-
-   public static void setShaderFog(FogParameters var0) {
-      assertOnRenderThread();
+   public static void setShaderFog(GpuBufferSlice var0) {
       shaderFog = var0;
    }
 
-   public static FogParameters getShaderFog() {
-      assertOnRenderThread();
+   @Nullable
+   public static GpuBufferSlice getShaderFog() {
       return shaderFog;
    }
 
-   public static void setShaderGlintAlpha(double var0) {
-      setShaderGlintAlpha((float)var0);
+   public static void setShaderLights(GpuBufferSlice var0) {
+      shaderLightDirections = var0;
    }
 
-   public static void setShaderGlintAlpha(float var0) {
-      assertOnRenderThread();
-      shaderGlintAlpha = var0;
-   }
-
-   public static float getShaderGlintAlpha() {
-      assertOnRenderThread();
-      return shaderGlintAlpha;
-   }
-
-   public static void setShaderLights(Vector3f var0, Vector3f var1) {
-      assertOnRenderThread();
-      shaderLightDirections[0] = var0;
-      shaderLightDirections[1] = var1;
-   }
-
-   public static Vector3f[] getShaderLights() {
+   @Nullable
+   public static GpuBufferSlice getShaderLights() {
       return shaderLightDirections;
-   }
-
-   public static void setShaderColor(float var0, float var1, float var2, float var3) {
-      assertOnRenderThread();
-      shaderColor[0] = var0;
-      shaderColor[1] = var1;
-      shaderColor[2] = var2;
-      shaderColor[3] = var3;
-   }
-
-   public static float[] getShaderColor() {
-      assertOnRenderThread();
-      return shaderColor;
    }
 
    public static void lineWidth(float var0) {
@@ -212,6 +188,18 @@ public class RenderSystem {
    public static float getShaderLineWidth() {
       assertOnRenderThread();
       return shaderLineWidth;
+   }
+
+   public static void enableScissorForRenderTypeDraws(int var0, int var1, int var2, int var3) {
+      scissorStateForRenderTypeDraws.enable(var0, var1, var2, var3);
+   }
+
+   public static void disableScissorForRenderTypeDraws() {
+      scissorStateForRenderTypeDraws.disable();
+   }
+
+   public static ScissorState getScissorStateForRenderTypeDraws() {
+      return scissorStateForRenderTypeDraws;
    }
 
    public static String getBackendDescription() {
@@ -231,8 +219,9 @@ public class RenderSystem {
    public static void initRenderer(long var0, int var2, boolean var3, BiFunction<ResourceLocation, ShaderType, String> var4, boolean var5) {
       DEVICE = new GlDevice(var0, var2, var3, var4, var5);
       apiDescription = getDevice().getImplementationInformation();
+      dynamicUniforms = new DynamicUniforms();
 
-      try (ByteBufferBuilder var6 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
+      try (ByteBufferBuilder var6 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
          BufferBuilder var7 = new BufferBuilder(var6, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
          var7.addVertex(0.0F, 0.0F, 0.0F);
          var7.addVertex(1.0F, 0.0F, 0.0F);
@@ -240,7 +229,7 @@ public class RenderSystem {
          var7.addVertex(0.0F, 1.0F, 0.0F);
 
          try (MeshData var8 = var7.buildOrThrow()) {
-            QUAD_VERTEX_BUFFER = getDevice().createBuffer(() -> "Quad", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var8.vertexBuffer());
+            QUAD_VERTEX_BUFFER = getDevice().createBuffer(() -> "Quad", 32, var8.vertexBuffer());
          }
       }
 
@@ -251,40 +240,21 @@ public class RenderSystem {
    }
 
    public static void setupDefaultState() {
-      projectionMatrix.identity();
-      savedProjectionMatrix.identity();
       modelViewStack.clear();
       textureMatrix.identity();
    }
 
-   public static void setupOverlayColor(@Nullable GpuTexture var0) {
+   public static void setupOverlayColor(@Nullable GpuTextureView var0) {
       assertOnRenderThread();
       setShaderTexture(1, var0);
    }
 
    public static void teardownOverlayColor() {
       assertOnRenderThread();
-      setShaderTexture(1, (GpuTexture)null);
+      setShaderTexture(1, (GpuTextureView)null);
    }
 
-   public static void setupLevelDiffuseLighting(Vector3f var0, Vector3f var1) {
-      assertOnRenderThread();
-      setShaderLights(var0, var1);
-   }
-
-   public static void setupGuiFlatDiffuseLighting(Vector3f var0, Vector3f var1) {
-      assertOnRenderThread();
-      Matrix4f var2 = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
-      setShaderLights(var2.transformDirection(var0, new Vector3f()), var2.transformDirection(var1, new Vector3f()));
-   }
-
-   public static void setupGui3DDiffuseLighting(Vector3f var0, Vector3f var1) {
-      assertOnRenderThread();
-      Matrix4f var2 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
-      setShaderLights(var2.transformDirection(var0, new Vector3f()), var2.transformDirection(var1, new Vector3f()));
-   }
-
-   public static void setShaderTexture(int var0, @Nullable GpuTexture var1) {
+   public static void setShaderTexture(int var0, @Nullable GpuTextureView var1) {
       assertOnRenderThread();
       if (var0 >= 0 && var0 < shaderTextures.length) {
          shaderTextures[var0] = var1;
@@ -293,14 +263,14 @@ public class RenderSystem {
    }
 
    @Nullable
-   public static GpuTexture getShaderTexture(int var0) {
+   public static GpuTextureView getShaderTexture(int var0) {
       assertOnRenderThread();
       return var0 >= 0 && var0 < shaderTextures.length ? shaderTextures[var0] : null;
    }
 
-   public static void setProjectionMatrix(Matrix4f var0, ProjectionType var1) {
+   public static void setProjectionMatrix(GpuBufferSlice var0, ProjectionType var1) {
       assertOnRenderThread();
-      projectionMatrix = new Matrix4f(var0);
+      projectionMatrixBuffer = var0;
       projectionType = var1;
    }
 
@@ -316,19 +286,20 @@ public class RenderSystem {
 
    public static void backupProjectionMatrix() {
       assertOnRenderThread();
-      savedProjectionMatrix = projectionMatrix;
+      savedProjectionMatrixBuffer = projectionMatrixBuffer;
       savedProjectionType = projectionType;
    }
 
    public static void restoreProjectionMatrix() {
       assertOnRenderThread();
-      projectionMatrix = savedProjectionMatrix;
+      projectionMatrixBuffer = savedProjectionMatrixBuffer;
       projectionType = savedProjectionType;
    }
 
-   public static Matrix4f getProjectionMatrix() {
+   @Nullable
+   public static GpuBufferSlice getProjectionMatrixBuffer() {
       assertOnRenderThread();
-      return projectionMatrix;
+      return projectionMatrixBuffer;
    }
 
    public static Matrix4f getModelViewMatrix() {
@@ -358,14 +329,13 @@ public class RenderSystem {
       return var10000;
    }
 
-   public static void setShaderGameTime(long var0, float var2) {
-      assertOnRenderThread();
-      shaderGameTime = ((float)(var0 % 24000L) + var2) / 24000.0F;
+   public static void setGlobalSettingsUniform(GpuBuffer var0) {
+      globalSettingsUniform = var0;
    }
 
-   public static float getShaderGameTime() {
-      assertOnRenderThread();
-      return shaderGameTime;
+   @Nullable
+   public static GpuBuffer getGlobalSettingsUniform() {
+      return globalSettingsUniform;
    }
 
    public static ProjectionType getProjectionType() {
@@ -397,7 +367,7 @@ public class RenderSystem {
    }
 
    public static void queueFencedTask(Runnable var0) {
-      PENDING_FENCES.addLast(new GpuAsyncTask(var0, new GpuFence()));
+      PENDING_FENCES.addLast(new GpuAsyncTask(var0, getDevice().createCommandEncoder().createFence()));
    }
 
    public static void executePendingTasks() {
@@ -430,22 +400,51 @@ public class RenderSystem {
       return DEVICE;
    }
 
+   public static DynamicUniforms getDynamicUniforms() {
+      if (dynamicUniforms == null) {
+         throw new IllegalStateException("Can't getDynamicUniforms() before device was initialized");
+      } else {
+         return dynamicUniforms;
+      }
+   }
+
+   public static void bindDefaultUniforms(RenderPass var0) {
+      GpuBufferSlice var1 = getProjectionMatrixBuffer();
+      if (var1 != null) {
+         var0.setUniform("Projection", var1);
+      }
+
+      GpuBufferSlice var2 = getShaderFog();
+      if (var2 != null) {
+         var0.setUniform("Fog", var2);
+      }
+
+      GpuBuffer var3 = getGlobalSettingsUniform();
+      if (var3 != null) {
+         var0.setUniform("Globals", var3);
+      }
+
+      GpuBufferSlice var4 = getShaderLights();
+      if (var4 != null) {
+         var0.setUniform("Lighting", var4);
+      }
+
+   }
+
    static {
       projectionType = ProjectionType.PERSPECTIVE;
       savedProjectionType = ProjectionType.PERSPECTIVE;
       modelViewStack = new Matrix4fStack(16);
       textureMatrix = new Matrix4f();
-      shaderTextures = new GpuTexture[12];
-      shaderColor = new float[]{1.0F, 1.0F, 1.0F, 1.0F};
-      shaderGlintAlpha = 1.0F;
-      shaderFog = FogParameters.NO_FOG;
-      shaderLightDirections = new Vector3f[2];
+      shaderTextures = new GpuTextureView[12];
+      shaderFog = null;
       modelOffset = new Vector3f();
       shaderLineWidth = 1.0F;
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
+      scissorStateForRenderTypeDraws = new ScissorState();
    }
 
    public static final class AutoStorageIndexBuffer {
@@ -497,7 +496,7 @@ public class RenderSystem {
                   this.buffer.close();
                }
 
-               this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, var6);
+               this.buffer = RenderSystem.getDevice().createBuffer(() -> "Auto Storage index buffer", 64, var6);
             } finally {
                MemoryUtil.memFree(var6);
             }

@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.Collection;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -18,6 +17,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -39,6 +39,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Creeper extends Monster {
    private static final EntityDataAccessor<Integer> DATA_SWELL_DIR;
@@ -96,7 +98,7 @@ public class Creeper extends Monster {
       var1.define(DATA_IS_IGNITED, false);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("powered", this.isPowered());
       var1.putShort("Fuse", (short)this.maxSwell);
@@ -104,7 +106,7 @@ public class Creeper extends Monster {
       var1.putBoolean("ignited", this.isIgnited());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.entityData.set(DATA_IS_POWERED, var1.getBooleanOr("powered", false));
       this.maxSwell = var1.getShortOr("Fuse", (short)30);
@@ -203,7 +205,7 @@ public class Creeper extends Monster {
             if (!var3.isDamageableItem()) {
                var3.shrink(1);
             } else {
-               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
             }
          }
 

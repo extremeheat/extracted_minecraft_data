@@ -17,7 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -26,6 +26,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -83,7 +84,7 @@ public class PlayerTabOverlay {
          this.visible = var1;
          if (var1) {
             MutableComponent var2 = ComponentUtils.formatList(this.getPlayerInfos(), Component.literal(", "), this::getNameForDisplay);
-            this.minecraft.getNarrator().sayNow((Component)Component.translatable("multiplayer.player.list.narration", var2));
+            this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("multiplayer.player.list.narration", var2));
          }
       }
 
@@ -257,17 +258,14 @@ public class PlayerTabOverlay {
          var6 = PING_1_SPRITE;
       }
 
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 100.0F);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var6, var3 + var2 - 11, var4, 10, 8);
-      var1.pose().popPose();
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var3 + var2 - 11, var4, 10, 8);
    }
 
    private void renderTablistScore(Objective var1, int var2, ScoreDisplayEntry var3, int var4, int var5, UUID var6, GuiGraphics var7) {
       if (var1.getRenderType() == ObjectiveCriteria.RenderType.HEARTS) {
          this.renderTablistHearts(var2, var4, var5, var6, var7, var3.score);
       } else if (var3.formattedScore != null) {
-         var7.drawString(this.minecraft.font, var3.formattedScore, var5 - var3.scoreWidth, var2, 16777215);
+         var7.drawString(this.minecraft.font, (Component)var3.formattedScore, var5 - var3.scoreWidth, var2, -1);
       }
 
    }
@@ -292,32 +290,32 @@ public class PlayerTabOverlay {
                var16 = Component.literal(Float.toString(var14));
             }
 
-            var5.drawString(this.minecraft.font, (Component)var16, (var3 + var2 - this.minecraft.font.width((FormattedText)var16)) / 2, var1, var19);
+            var5.drawString(this.minecraft.font, (Component)var16, (var3 + var2 - this.minecraft.font.width((FormattedText)var16)) / 2, var1, ARGB.opaque(var19));
          } else {
             ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
 
             for(int var13 = var8; var13 < var9; ++var13) {
-               var5.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var2 + var13 * var11, var1, 9, 9);
+               var5.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var2 + var13 * var11, var1, 9, 9);
             }
 
             for(int var18 = 0; var18 < var8; ++var18) {
-               var5.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var2 + var18 * var11, var1, 9, 9);
+               var5.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var2 + var18 * var11, var1, 9, 9);
                if (var10) {
                   if (var18 * 2 + 1 < var7.displayedValue()) {
-                     var5.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_FULL_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                     var5.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_FULL_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
                   }
 
                   if (var18 * 2 + 1 == var7.displayedValue()) {
-                     var5.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_HALF_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                     var5.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_HALF_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
                   }
                }
 
                if (var18 * 2 + 1 < var6) {
-                  var5.blitSprite(RenderType::guiTextured, (ResourceLocation)(var18 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE), var2 + var18 * var11, var1, 9, 9);
+                  var5.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(var18 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE), var2 + var18 * var11, var1, 9, 9);
                }
 
                if (var18 * 2 + 1 == var6) {
-                  var5.blitSprite(RenderType::guiTextured, (ResourceLocation)(var18 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE), var2 + var18 * var11, var1, 9, 9);
+                  var5.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(var18 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE), var2 + var18 * var11, var1, 9, 9);
                }
             }
 

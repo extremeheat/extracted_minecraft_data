@@ -27,7 +27,6 @@ public class OverlayTexture implements AutoCloseable {
          }
       }
 
-      this.texture.setFilter(false, false);
       this.texture.setClamp(true);
       this.texture.upload();
    }
@@ -37,7 +36,7 @@ public class OverlayTexture implements AutoCloseable {
    }
 
    public void setupOverlayColor() {
-      RenderSystem.setupOverlayColor(this.texture.getTexture());
+      RenderSystem.setupOverlayColor(this.texture.getTextureView());
    }
 
    public static int u(float var0) {

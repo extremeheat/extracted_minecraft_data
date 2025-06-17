@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.SnifferAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -16,10 +17,26 @@ public class SnifferModel extends EntityModel<SnifferRenderState> {
    private static final float WALK_ANIMATION_SPEED_MAX = 9.0F;
    private static final float WALK_ANIMATION_SCALE_FACTOR = 100.0F;
    private final ModelPart head;
+   private final KeyframeAnimation sniffSearchAnimation;
+   private final KeyframeAnimation walkAnimation;
+   private final KeyframeAnimation digAnimation;
+   private final KeyframeAnimation longSniffAnimation;
+   private final KeyframeAnimation standUpAnimation;
+   private final KeyframeAnimation happyAnimation;
+   private final KeyframeAnimation sniffSniffAnimation;
+   private final KeyframeAnimation babyTransform;
 
    public SnifferModel(ModelPart var1) {
       super(var1);
       this.head = var1.getChild("bone").getChild("body").getChild("head");
+      this.sniffSearchAnimation = SnifferAnimation.SNIFFER_SNIFF_SEARCH.bake(var1);
+      this.walkAnimation = SnifferAnimation.SNIFFER_WALK.bake(var1);
+      this.digAnimation = SnifferAnimation.SNIFFER_DIG.bake(var1);
+      this.longSniffAnimation = SnifferAnimation.SNIFFER_LONGSNIFF.bake(var1);
+      this.standUpAnimation = SnifferAnimation.SNIFFER_STAND_UP.bake(var1);
+      this.happyAnimation = SnifferAnimation.SNIFFER_HAPPY.bake(var1);
+      this.sniffSniffAnimation = SnifferAnimation.SNIFFER_SNIFFSNIFF.bake(var1);
+      this.babyTransform = SnifferAnimation.BABY_TRANSFORM.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -46,18 +63,18 @@ public class SnifferModel extends EntityModel<SnifferRenderState> {
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
       if (var1.isSearching) {
-         this.animateWalk(SnifferAnimation.SNIFFER_SNIFF_SEARCH, var1.walkAnimationPos, var1.walkAnimationSpeed, 9.0F, 100.0F);
+         this.sniffSearchAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 9.0F, 100.0F);
       } else {
-         this.animateWalk(SnifferAnimation.SNIFFER_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 9.0F, 100.0F);
+         this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 9.0F, 100.0F);
       }
 
-      this.animate(var1.diggingAnimationState, SnifferAnimation.SNIFFER_DIG, var1.ageInTicks);
-      this.animate(var1.sniffingAnimationState, SnifferAnimation.SNIFFER_LONGSNIFF, var1.ageInTicks);
-      this.animate(var1.risingAnimationState, SnifferAnimation.SNIFFER_STAND_UP, var1.ageInTicks);
-      this.animate(var1.feelingHappyAnimationState, SnifferAnimation.SNIFFER_HAPPY, var1.ageInTicks);
-      this.animate(var1.scentingAnimationState, SnifferAnimation.SNIFFER_SNIFFSNIFF, var1.ageInTicks);
+      this.digAnimation.apply(var1.diggingAnimationState, var1.ageInTicks);
+      this.longSniffAnimation.apply(var1.sniffingAnimationState, var1.ageInTicks);
+      this.standUpAnimation.apply(var1.risingAnimationState, var1.ageInTicks);
+      this.happyAnimation.apply(var1.feelingHappyAnimationState, var1.ageInTicks);
+      this.sniffSniffAnimation.apply(var1.scentingAnimationState, var1.ageInTicks);
       if (var1.isBaby) {
-         this.applyStatic(SnifferAnimation.BABY_TRANSFORM);
+         this.babyTransform.applyStatic();
       }
 
    }

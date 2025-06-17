@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -19,6 +18,8 @@ import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartCommandBlock extends AbstractMinecart {
@@ -46,16 +47,16 @@ public class MinecartCommandBlock extends AbstractMinecart {
       var1.define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.commandBlock.load(var1, this.registryAccess());
+      this.commandBlock.load(var1);
       this.getEntityData().set(DATA_ID_COMMAND_NAME, this.getCommandBlock().getCommand());
       this.getEntityData().set(DATA_ID_LAST_OUTPUT, this.getCommandBlock().getLastOutput());
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      this.commandBlock.save(var1, this.registryAccess());
+      this.commandBlock.save(var1);
    }
 
    public BlockState getDefaultDisplayBlockState() {

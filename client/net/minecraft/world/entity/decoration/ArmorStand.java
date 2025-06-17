@@ -1,5 +1,7 @@
 package net.minecraft.world.entity.decoration;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -7,7 +9,6 @@ import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -41,6 +42,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -82,23 +85,11 @@ public class ArmorStand extends LivingEntity {
    private boolean invisible;
    public long lastHit;
    private int disabledSlots;
-   private Rotations headPose;
-   private Rotations bodyPose;
-   private Rotations leftArmPose;
-   private Rotations rightArmPose;
-   private Rotations leftLegPose;
-   private Rotations rightLegPose;
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
       this.invisible = false;
       this.disabledSlots = 0;
-      this.headPose = DEFAULT_HEAD_POSE;
-      this.bodyPose = DEFAULT_BODY_POSE;
-      this.leftArmPose = DEFAULT_LEFT_ARM_POSE;
-      this.rightArmPose = DEFAULT_RIGHT_ARM_POSE;
-      this.leftLegPose = DEFAULT_LEFT_LEG_POSE;
-      this.rightLegPose = DEFAULT_RIGHT_LEG_POSE;
    }
 
    public ArmorStand(Level var1, double var2, double var4, double var6) {
@@ -141,7 +132,7 @@ public class ArmorStand extends LivingEntity {
       return var1 != EquipmentSlot.BODY && var1 != EquipmentSlot.SADDLE && !this.isDisabled(var1);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Small", this.isSmall());
@@ -152,10 +143,10 @@ public class ArmorStand extends LivingEntity {
          var1.putBoolean("Marker", this.isMarker());
       }
 
-      var1.put("Pose", this.writePose());
+      var1.store("Pose", ArmorStand.ArmorStandPose.CODEC, this.getArmorStandPose());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setInvisible(var1.getBooleanOr("Invisible", false));
       this.setSmall(var1.getBooleanOr("Small", false));
@@ -164,45 +155,7 @@ public class ArmorStand extends LivingEntity {
       this.setNoBasePlate(var1.getBooleanOr("NoBasePlate", false));
       this.setMarker(var1.getBooleanOr("Marker", false));
       this.noPhysics = !this.hasPhysics();
-      this.readPose(var1.getCompoundOrEmpty("Pose"));
-   }
-
-   private void readPose(CompoundTag var1) {
-      this.setHeadPose((Rotations)var1.read("Head", Rotations.CODEC).orElse(DEFAULT_HEAD_POSE));
-      this.setBodyPose((Rotations)var1.read("Body", Rotations.CODEC).orElse(DEFAULT_BODY_POSE));
-      this.setLeftArmPose((Rotations)var1.read("LeftArm", Rotations.CODEC).orElse(DEFAULT_LEFT_ARM_POSE));
-      this.setRightArmPose((Rotations)var1.read("RightArm", Rotations.CODEC).orElse(DEFAULT_RIGHT_ARM_POSE));
-      this.setLeftLegPose((Rotations)var1.read("LeftLeg", Rotations.CODEC).orElse(DEFAULT_LEFT_LEG_POSE));
-      this.setRightLegPose((Rotations)var1.read("RightLeg", Rotations.CODEC).orElse(DEFAULT_RIGHT_LEG_POSE));
-   }
-
-   private CompoundTag writePose() {
-      CompoundTag var1 = new CompoundTag();
-      if (!DEFAULT_HEAD_POSE.equals(this.headPose)) {
-         var1.store("Head", Rotations.CODEC, this.headPose);
-      }
-
-      if (!DEFAULT_BODY_POSE.equals(this.bodyPose)) {
-         var1.store("Body", Rotations.CODEC, this.bodyPose);
-      }
-
-      if (!DEFAULT_LEFT_ARM_POSE.equals(this.leftArmPose)) {
-         var1.store("LeftArm", Rotations.CODEC, this.leftArmPose);
-      }
-
-      if (!DEFAULT_RIGHT_ARM_POSE.equals(this.rightArmPose)) {
-         var1.store("RightArm", Rotations.CODEC, this.rightArmPose);
-      }
-
-      if (!DEFAULT_LEFT_LEG_POSE.equals(this.leftLegPose)) {
-         var1.store("LeftLeg", Rotations.CODEC, this.leftLegPose);
-      }
-
-      if (!DEFAULT_RIGHT_LEG_POSE.equals(this.rightLegPose)) {
-         var1.store("RightLeg", Rotations.CODEC, this.rightLegPose);
-      }
-
-      return var1;
+      var1.read("Pose", ArmorStand.ArmorStandPose.CODEC).ifPresent(this::setArmorStandPose);
    }
 
    public boolean isPushable() {
@@ -455,40 +408,6 @@ public class ArmorStand extends LivingEntity {
       this.yHeadRotO = this.yHeadRot = var1;
    }
 
-   public void tick() {
-      super.tick();
-      Rotations var1 = (Rotations)this.entityData.get(DATA_HEAD_POSE);
-      if (!this.headPose.equals(var1)) {
-         this.setHeadPose(var1);
-      }
-
-      Rotations var2 = (Rotations)this.entityData.get(DATA_BODY_POSE);
-      if (!this.bodyPose.equals(var2)) {
-         this.setBodyPose(var2);
-      }
-
-      Rotations var3 = (Rotations)this.entityData.get(DATA_LEFT_ARM_POSE);
-      if (!this.leftArmPose.equals(var3)) {
-         this.setLeftArmPose(var3);
-      }
-
-      Rotations var4 = (Rotations)this.entityData.get(DATA_RIGHT_ARM_POSE);
-      if (!this.rightArmPose.equals(var4)) {
-         this.setRightArmPose(var4);
-      }
-
-      Rotations var5 = (Rotations)this.entityData.get(DATA_LEFT_LEG_POSE);
-      if (!this.leftLegPose.equals(var5)) {
-         this.setLeftLegPose(var5);
-      }
-
-      Rotations var6 = (Rotations)this.entityData.get(DATA_RIGHT_LEG_POSE);
-      if (!this.rightLegPose.equals(var6)) {
-         this.setRightLegPose(var6);
-      }
-
-   }
-
    protected void updateInvisibilityStatus() {
       this.setInvisible(this.invisible);
    }
@@ -562,57 +481,51 @@ public class ArmorStand extends LivingEntity {
    }
 
    public void setHeadPose(Rotations var1) {
-      this.headPose = var1;
       this.entityData.set(DATA_HEAD_POSE, var1);
    }
 
    public void setBodyPose(Rotations var1) {
-      this.bodyPose = var1;
       this.entityData.set(DATA_BODY_POSE, var1);
    }
 
    public void setLeftArmPose(Rotations var1) {
-      this.leftArmPose = var1;
       this.entityData.set(DATA_LEFT_ARM_POSE, var1);
    }
 
    public void setRightArmPose(Rotations var1) {
-      this.rightArmPose = var1;
       this.entityData.set(DATA_RIGHT_ARM_POSE, var1);
    }
 
    public void setLeftLegPose(Rotations var1) {
-      this.leftLegPose = var1;
       this.entityData.set(DATA_LEFT_LEG_POSE, var1);
    }
 
    public void setRightLegPose(Rotations var1) {
-      this.rightLegPose = var1;
       this.entityData.set(DATA_RIGHT_LEG_POSE, var1);
    }
 
    public Rotations getHeadPose() {
-      return this.headPose;
+      return (Rotations)this.entityData.get(DATA_HEAD_POSE);
    }
 
    public Rotations getBodyPose() {
-      return this.bodyPose;
+      return (Rotations)this.entityData.get(DATA_BODY_POSE);
    }
 
    public Rotations getLeftArmPose() {
-      return this.leftArmPose;
+      return (Rotations)this.entityData.get(DATA_LEFT_ARM_POSE);
    }
 
    public Rotations getRightArmPose() {
-      return this.rightArmPose;
+      return (Rotations)this.entityData.get(DATA_RIGHT_ARM_POSE);
    }
 
    public Rotations getLeftLegPose() {
-      return this.leftLegPose;
+      return (Rotations)this.entityData.get(DATA_LEFT_LEG_POSE);
    }
 
    public Rotations getRightLegPose() {
-      return this.rightLegPose;
+      return (Rotations)this.entityData.get(DATA_RIGHT_LEG_POSE);
    }
 
    public boolean isPickable() {
@@ -714,6 +627,19 @@ public class ArmorStand extends LivingEntity {
       return !this.isInvisible() && !this.isMarker();
    }
 
+   public void setArmorStandPose(ArmorStandPose var1) {
+      this.setHeadPose(var1.head());
+      this.setBodyPose(var1.body());
+      this.setLeftArmPose(var1.leftArm());
+      this.setRightArmPose(var1.rightArm());
+      this.setLeftLegPose(var1.leftLeg());
+      this.setRightLegPose(var1.rightLeg());
+   }
+
+   public ArmorStandPose getArmorStandPose() {
+      return new ArmorStandPose(this.getHeadPose(), this.getBodyPose(), this.getLeftArmPose(), this.getRightArmPose(), this.getLeftLegPose(), this.getRightLegPose());
+   }
+
    static {
       BABY_DIMENSIONS = EntityType.ARMOR_STAND.getDimensions().scale(0.5F).withEyeHeight(0.9875F);
       DATA_CLIENT_FLAGS = SynchedEntityData.<Byte>defineId(ArmorStand.class, EntityDataSerializers.BYTE);
@@ -735,5 +661,25 @@ public class ArmorStand extends LivingEntity {
          var10000 = false;
          return var10000;
       };
+   }
+
+   public static record ArmorStandPose(Rotations head, Rotations body, Rotations leftArm, Rotations rightArm, Rotations leftLeg, Rotations rightLeg) {
+      public static final ArmorStandPose DEFAULT;
+      public static final Codec<ArmorStandPose> CODEC;
+
+      public ArmorStandPose(Rotations var1, Rotations var2, Rotations var3, Rotations var4, Rotations var5, Rotations var6) {
+         super();
+         this.head = var1;
+         this.body = var2;
+         this.leftArm = var3;
+         this.rightArm = var4;
+         this.leftLeg = var5;
+         this.rightLeg = var6;
+      }
+
+      static {
+         DEFAULT = new ArmorStandPose(ArmorStand.DEFAULT_HEAD_POSE, ArmorStand.DEFAULT_BODY_POSE, ArmorStand.DEFAULT_LEFT_ARM_POSE, ArmorStand.DEFAULT_RIGHT_ARM_POSE, ArmorStand.DEFAULT_LEFT_LEG_POSE, ArmorStand.DEFAULT_RIGHT_LEG_POSE);
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(Rotations.CODEC.optionalFieldOf("Head", ArmorStand.DEFAULT_HEAD_POSE).forGetter(ArmorStandPose::head), Rotations.CODEC.optionalFieldOf("Body", ArmorStand.DEFAULT_BODY_POSE).forGetter(ArmorStandPose::body), Rotations.CODEC.optionalFieldOf("LeftArm", ArmorStand.DEFAULT_LEFT_ARM_POSE).forGetter(ArmorStandPose::leftArm), Rotations.CODEC.optionalFieldOf("RightArm", ArmorStand.DEFAULT_RIGHT_ARM_POSE).forGetter(ArmorStandPose::rightArm), Rotations.CODEC.optionalFieldOf("LeftLeg", ArmorStand.DEFAULT_LEFT_LEG_POSE).forGetter(ArmorStandPose::leftLeg), Rotations.CODEC.optionalFieldOf("RightLeg", ArmorStand.DEFAULT_RIGHT_LEG_POSE).forGetter(ArmorStandPose::rightLeg)).apply(var0, ArmorStandPose::new));
+      }
    }
 }

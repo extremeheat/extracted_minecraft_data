@@ -36,6 +36,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -69,6 +70,7 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import net.minecraft.world.ticks.SavedTick;
@@ -428,7 +430,9 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
    private static LevelChunk.PostLoadProcessor postLoadChunk(ServerLevel var0, List<CompoundTag> var1, List<CompoundTag> var2) {
       return var1.isEmpty() && var2.isEmpty() ? null : (var3) -> {
          if (!var1.isEmpty()) {
-            var0.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(var1, var0, EntitySpawnReason.LOAD));
+            try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(var3.problemPath(), LOGGER)) {
+               var0.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(TagValueInput.create(var4, var0.registryAccess(), (List)var1), var0, EntitySpawnReason.LOAD));
+            }
          }
 
          for(CompoundTag var5 : var2) {

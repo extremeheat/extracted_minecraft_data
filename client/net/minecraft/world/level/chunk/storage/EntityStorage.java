@@ -1,6 +1,5 @@
 package net.minecraft.world.level.chunk.storage;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -14,13 +13,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.entity.ChunkEntities;
 import net.minecraft.world.level.entity.EntityPersistentStorage;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import org.slf4j.Logger;
 
 public class EntityStorage implements EntityPersistentStorage<Entity> {
@@ -56,15 +60,19 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                      LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{var1, var1, var3});
                      this.level.getServer().reportMisplacedChunk(var3, var1, this.simpleRegionStorage.storageInfo());
                   }
-               } catch (Exception var6) {
-                  LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
-                  this.level.getServer().reportChunkLoadFailure(var6, this.simpleRegionStorage.storageInfo(), var1);
+               } catch (Exception var11) {
+                  LOGGER.warn("Failed to parse chunk {} position info", var1, var11);
+                  this.level.getServer().reportChunkLoadFailure(var11, this.simpleRegionStorage.storageInfo(), var1);
                }
 
-               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
-               ListTag var4 = var7.getListOrEmpty("Entities");
-               List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
-               return new ChunkEntities(var1, var5);
+               CompoundTag var12 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
+
+               try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(var1), LOGGER)) {
+                  ValueInput var5 = TagValueInput.create(var4, this.level.registryAccess(), var12);
+                  ValueInput.ValueInputList var6 = var5.childrenListOrEmpty("Entities");
+                  List var7 = EntityType.loadEntitiesRecursive(var6, this.level, EntitySpawnReason.LOAD).toList();
+                  return new ChunkEntities(var1, var7);
+               }
             }
          };
          ConsecutiveExecutor var10002 = this.entityDeserializerQueue;
@@ -74,7 +82,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    }
 
    private static ChunkEntities<Entity> emptyChunk(ChunkPos var0) {
-      return new ChunkEntities<Entity>(var0, ImmutableList.of());
+      return new ChunkEntities<Entity>(var0, List.of());
    }
 
    public void storeEntities(ChunkEntities<Entity> var1) {
@@ -85,19 +93,23 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
          }
 
       } else {
-         ListTag var3 = new ListTag();
-         var1.getEntities().forEach((var1x) -> {
-            CompoundTag var2 = new CompoundTag();
-            if (var1x.save(var2)) {
-               var3.add(var2);
-            }
+         try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(var2), LOGGER)) {
+            ListTag var4 = new ListTag();
+            var1.getEntities().forEach((var2x) -> {
+               TagValueOutput var3x = TagValueOutput.createWithContext(var3.forChild(var2x.problemPath()), var2x.registryAccess());
+               if (var2x.save(var3x)) {
+                  CompoundTag var4x = var3x.buildResult();
+                  var4.add(var4x);
+               }
 
-         });
-         CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());
-         var4.put("Entities", var3);
-         var4.store("Position", ChunkPos.CODEC, var2);
-         this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, var4), var2);
-         this.emptyChunks.remove(var2.toLong());
+            });
+            CompoundTag var5 = NbtUtils.addCurrentDataVersion(new CompoundTag());
+            var5.put("Entities", var4);
+            var5.store("Position", ChunkPos.CODEC, var2);
+            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, var5), var2);
+            this.emptyChunks.remove(var2.toLong());
+         }
+
       }
    }
 

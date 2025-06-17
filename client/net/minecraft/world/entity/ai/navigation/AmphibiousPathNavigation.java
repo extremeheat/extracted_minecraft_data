@@ -39,4 +39,8 @@ public class AmphibiousPathNavigation extends PathNavigation {
 
    public void setCanFloat(boolean var1) {
    }
+
+   public boolean canNavigateGround() {
+      return true;
+   }
 }

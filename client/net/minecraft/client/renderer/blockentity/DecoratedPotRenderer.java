@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
    private static final String NECK = "neck";
@@ -141,5 +143,12 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, Material var6) {
       var1.render(var2, var6.buffer(var3, RenderType::entitySolid), var4, var5);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      this.neck.getExtentsForGui(var2, var1);
+      this.top.getExtentsForGui(var2, var1);
+      this.bottom.getExtentsForGui(var2, var1);
    }
 }

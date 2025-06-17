@@ -4,15 +4,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -38,6 +35,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
@@ -76,16 +75,17 @@ public class ItemFrame extends HangingEntity {
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
       var1.define(DATA_ITEM, ItemStack.EMPTY);
       var1.define(DATA_ROTATION, 0);
    }
 
    protected void setDirection(Direction var1) {
       Validate.notNull(var1);
-      this.direction = var1;
+      super.setDirectionRaw(var1);
       if (var1.getAxis().isHorizontal()) {
          this.setXRot(0.0F);
-         this.setYRot((float)(this.direction.get2DDataValue() * 90));
+         this.setYRot((float)(var1.get2DDataValue() * 90));
       } else {
          this.setXRot((float)(-90 * var1.getAxisDirection().getStep()));
          this.setYRot(0.0F);
@@ -94,6 +94,11 @@ public class ItemFrame extends HangingEntity {
       this.xRotO = this.getXRot();
       this.yRotO = this.getYRot();
       this.recalculateBoundingBox();
+   }
+
+   protected final void recalculateBoundingBox() {
+      super.recalculateBoundingBox();
+      this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
    }
 
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
@@ -112,8 +117,8 @@ public class ItemFrame extends HangingEntity {
       } else if (!this.level().noCollision(this)) {
          return false;
       } else {
-         BlockState var1 = this.level().getBlockState(this.pos.relative(this.direction.getOpposite()));
-         return var1.isSolid() || this.direction.getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
+         BlockState var1 = this.level().getBlockState(this.pos.relative(this.getDirection().getOpposite()));
+         return var1.isSolid() || this.getDirection().getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
       }
    }
 
@@ -286,6 +291,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+      super.onSyncedDataUpdated(var1);
       if (var1.equals(DATA_ITEM)) {
          this.onItemChanged(this.getItem());
       }
@@ -316,31 +322,29 @@ public class ItemFrame extends HangingEntity {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       ItemStack var2 = this.getItem();
       if (!var2.isEmpty()) {
-         RegistryOps var3 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("Item", ItemStack.CODEC, var3, var2);
+         var1.store("Item", ItemStack.CODEC, var2);
       }
 
       var1.putByte("ItemRotation", (byte)this.getRotation());
       var1.putFloat("ItemDropChance", this.dropChance);
-      var1.store("Facing", Direction.LEGACY_ID_CODEC, this.direction);
+      var1.store("Facing", Direction.LEGACY_ID_CODEC, this.getDirection());
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Fixed", this.fixed);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      ItemStack var3 = (ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY);
-      ItemStack var4 = this.getItem();
-      if (!var4.isEmpty() && !ItemStack.matches(var3, var4)) {
-         this.removeFramedMap(var4);
+      ItemStack var2 = (ItemStack)var1.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+      ItemStack var3 = this.getItem();
+      if (!var3.isEmpty() && !ItemStack.matches(var2, var3)) {
+         this.removeFramedMap(var3);
       }
 
-      this.setItem(var3, false);
+      this.setItem(var2, false);
       this.setRotation(var1.getByteOr("ItemRotation", (byte)0), false);
       this.dropChance = var1.getFloatOr("ItemDropChance", 1.0F);
       this.setDirection((Direction)var1.read("Facing", Direction.LEGACY_ID_CODEC).orElse(Direction.DOWN));
@@ -389,7 +393,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
+      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.platform.Lighting;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
@@ -8,7 +7,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractSignRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -17,7 +16,6 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Vector3f;
 
@@ -83,12 +81,8 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.flush();
-      Lighting.setupForFlatItems();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 40, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 40, -1);
       this.renderSign(var1);
-      var1.flush();
-      Lighting.setupFor3DItems();
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
@@ -115,24 +109,21 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    protected abstract Vector3f getSignTextScale();
 
-   protected void offsetSign(GuiGraphics var1, BlockState var2) {
-      var1.pose().translate((float)this.width / 2.0F, 90.0F, 50.0F);
-   }
+   protected abstract float getSignYOffset();
 
    private void renderSign(GuiGraphics var1) {
-      var1.pose().pushPose();
-      this.offsetSign(var1, this.sign.getBlockState());
-      var1.pose().pushPose();
+      var1.pose().pushMatrix();
+      var1.pose().translate((float)this.width / 2.0F, this.getSignYOffset());
+      var1.pose().pushMatrix();
       this.renderSignBackground(var1);
-      var1.pose().popPose();
+      var1.pose().popMatrix();
       this.renderSignText(var1);
-      var1.pose().popPose();
+      var1.pose().popMatrix();
    }
 
    private void renderSignText(GuiGraphics var1) {
-      var1.pose().translate(0.0F, 0.0F, 4.0F);
       Vector3f var2 = this.getSignTextScale();
-      var1.pose().scale(var2.x(), var2.y(), var2.z());
+      var1.pose().scale(var2.x(), var2.y());
       int var3 = this.text.hasGlowingText() ? this.text.getColor().getTextColor() : AbstractSignRenderer.getDarkColor(this.text);
       boolean var4 = this.frame / 6 % 2 == 0;
       int var5 = this.signField.getCursorPos();
@@ -175,7 +166,7 @@ public abstract class AbstractSignEditScreen extends Screen {
                int var16 = this.font.width(var20.substring(0, var14)) - this.font.width(var20) / 2;
                int var17 = Math.min(var15, var16);
                int var18 = Math.max(var15, var16);
-               var1.fill(RenderType.guiTextHighlight(), var17, var8, var18, var8 + this.sign.getTextLineHeight(), -16776961);
+               var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var17, var8, var18, var8 + this.sign.getTextLineHeight(), -16776961);
             }
          }
       }

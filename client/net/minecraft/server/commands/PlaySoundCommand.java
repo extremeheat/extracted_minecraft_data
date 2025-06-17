@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -33,13 +35,13 @@ public class PlaySoundCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.AVAILABLE_SOUNDS).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)var0x.getSource()).getPlayer()), ResourceLocationArgument.getId(var0x, "sound"), SoundSource.MASTER, ((CommandSourceStack)var0x.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
+      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)var0x.getSource()).getPlayer()), ResourceLocationArgument.getId(var0x, "sound"), SoundSource.MASTER, ((CommandSourceStack)var0x.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
 
       for(SoundSource var5 : SoundSource.values()) {
          var1.then(source(var5));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires((var0x) -> var0x.hasPermission(2))).then(var1));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(2))).then(var1));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> source(SoundSource var0) {
@@ -53,40 +55,44 @@ public class PlaySoundCommand {
    private static int playSound(CommandSourceStack var0, Collection<ServerPlayer> var1, ResourceLocation var2, SoundSource var3, Vec3 var4, float var5, float var6, float var7) throws CommandSyntaxException {
       Holder var8 = Holder.direct(SoundEvent.createVariableRangeEvent(var2));
       double var9 = (double)Mth.square(((SoundEvent)var8.value()).getRange(var5));
-      int var11 = 0;
-      long var12 = var0.getLevel().getRandom().nextLong();
+      ServerLevel var11 = var0.getLevel();
+      long var12 = var11.getRandom().nextLong();
+      ArrayList var14 = new ArrayList();
 
-      for(ServerPlayer var15 : var1) {
-         double var16 = var4.x - var15.getX();
-         double var18 = var4.y - var15.getY();
-         double var20 = var4.z - var15.getZ();
-         double var22 = var16 * var16 + var18 * var18 + var20 * var20;
-         Vec3 var24 = var4;
-         float var25 = var5;
-         if (var22 > var9) {
-            if (var7 <= 0.0F) {
-               continue;
+      for(ServerPlayer var16 : var1) {
+         if (var16.level() == var11) {
+            double var17 = var4.x - var16.getX();
+            double var19 = var4.y - var16.getY();
+            double var21 = var4.z - var16.getZ();
+            double var23 = var17 * var17 + var19 * var19 + var21 * var21;
+            Vec3 var25 = var4;
+            float var26 = var5;
+            if (var23 > var9) {
+               if (var7 <= 0.0F) {
+                  continue;
+               }
+
+               double var27 = Math.sqrt(var23);
+               var25 = new Vec3(var16.getX() + var17 / var27 * 2.0, var16.getY() + var19 / var27 * 2.0, var16.getZ() + var21 / var27 * 2.0);
+               var26 = var7;
             }
 
-            double var26 = Math.sqrt(var22);
-            var24 = new Vec3(var15.getX() + var16 / var26 * 2.0, var15.getY() + var18 / var26 * 2.0, var15.getZ() + var20 / var26 * 2.0);
-            var25 = var7;
+            var16.connection.send(new ClientboundSoundPacket(var8, var3, var25.x(), var25.y(), var25.z(), var26, var6, var12));
+            var14.add(var16);
          }
-
-         var15.connection.send(new ClientboundSoundPacket(var8, var3, var24.x(), var24.y(), var24.z(), var25, var6, var12));
-         ++var11;
       }
 
-      if (var11 == 0) {
+      int var29 = var14.size();
+      if (var29 == 0) {
          throw ERROR_TOO_FAR.create();
       } else {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.single", Component.translationArg(var2), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         if (var29 == 1) {
+            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.single", Component.translationArg(var2), ((ServerPlayer)var14.getFirst()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.multiple", Component.translationArg(var2), var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.multiple", Component.translationArg(var2), var29), true);
          }
 
-         return var11;
+         return var29;
       }
    }
 }

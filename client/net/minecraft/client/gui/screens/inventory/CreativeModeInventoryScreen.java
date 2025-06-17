@@ -23,7 +23,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -71,7 +71,6 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    private static final int SCROLLER_HEIGHT = 15;
    static final SimpleContainer CONTAINER = new SimpleContainer(45);
    private static final Component TRASH_SLOT_TOOLTIP = Component.translatable("inventory.binSlot");
-   private static final int TEXT_COLOR = 16777215;
    private static CreativeModeTab selectedTab = CreativeModeTabs.getDefaultTab();
    private float scrollOffs;
    private boolean scrolling;
@@ -302,7 +301,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          this.searchBox.setMaxLength(50);
          this.searchBox.setBordered(false);
          this.searchBox.setVisible(false);
-         this.searchBox.setTextColor(16777215);
+         this.searchBox.setTextColor(-1);
          this.addWidget(this.searchBox);
          CreativeModeTab var1 = selectedTab;
          selectedTab = CreativeModeTabs.getDefaultTab();
@@ -441,7 +440,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
       if (selectedTab.showTitle()) {
-         var1.drawString(this.font, (Component)selectedTab.getDisplayName(), 8, 6, 4210752, false);
+         var1.drawString(this.font, (Component)selectedTab.getDisplayName(), 8, 6, -12566464, false);
       }
 
    }
@@ -628,8 +627,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.effects.renderEffects(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.render(var1, var2, var3, var4);
+      this.effects.renderTooltip(var1, var2, var3);
 
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (this.checkTabHovering(var1, var6, var2, var3)) {
@@ -638,7 +638,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
 
       if (this.destroyItemSlot != null && selectedTab.getType() == CreativeModeTab.Type.INVENTORY && this.isHovering(this.destroyItemSlot.x, this.destroyItemSlot.y, 16, 16, (double)var2, (double)var3)) {
-         var1.renderTooltip(this.font, TRASH_SLOT_TOOLTIP, var2, var3);
+         var1.setTooltipForNextFrame(this.font, TRASH_SLOT_TOOLTIP, var2, var3);
       }
 
       this.renderTooltip(var1, var2, var3);
@@ -689,14 +689,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          }
       }
 
-      var1.blit(RenderType::guiTextured, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
          ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
       this.renderTabButton(var1, selectedTab);
@@ -738,7 +738,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       int var5 = this.getTabX(var2);
       int var6 = this.getTabY(var2);
       if (this.isHovering(var5 + 3, var6 + 3, 21, 27, (double)var3, (double)var4)) {
-         var1.renderTooltip(this.font, var2.getDisplayName(), var3, var4);
+         var1.setTooltipForNextFrame(this.font, var2.getDisplayName(), var3, var4);
          return true;
       } else {
          return false;
@@ -758,15 +758,10 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 100.0F);
-      var6 += 5;
-      var7 += 8 + (var4 ? 1 : -1);
-      ItemStack var9 = var2.getIconItem();
-      var1.renderItem(var9, var6, var7);
-      var1.renderItemDecorations(this.font, var9, var6, var7);
-      var1.pose().popPose();
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
+      int var9 = var6 + 13 - 8;
+      int var10 = var7 + 16 - 8 + (var4 ? 1 : -1);
+      var1.renderItem(var2.getIconItem(), var9, var10);
    }
 
    public boolean isInventoryOpen() {
@@ -794,7 +789,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          Component var12 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
          MutableComponent var13 = Component.translatable("inventory.hotbarSaved", var12, var11);
          var0.gui.setOverlayMessage(var13, false);
-         var0.getNarrator().sayNow((Component)var13);
+         var0.getNarrator().saySystemNow((Component)var13);
          var6.save();
       }
 

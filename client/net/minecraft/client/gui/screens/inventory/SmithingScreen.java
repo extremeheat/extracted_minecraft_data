@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -39,8 +39,10 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    private static final Vector3f ARMOR_STAND_TRANSLATION;
    private static final Quaternionf ARMOR_STAND_ANGLE;
    private static final int ARMOR_STAND_SCALE = 25;
-   private static final int ARMOR_STAND_OFFSET_Y = 75;
-   private static final int ARMOR_STAND_OFFSET_X = 141;
+   private static final int ARMOR_STAND_LEFT = 121;
+   private static final int ARMOR_STAND_TOP = 20;
+   private static final int ARMOR_STAND_RIGHT = 161;
+   private static final int ARMOR_STAND_BOTTOM = 80;
    private final CyclingSlotBackground templateIcon = new CyclingSlotBackground(0);
    private final CyclingSlotBackground baseIcon = new CyclingSlotBackground(1);
    private final CyclingSlotBackground additionalIcon = new CyclingSlotBackground(2);
@@ -95,7 +97,11 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       this.templateIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       this.baseIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       this.additionalIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
-      InventoryScreen.renderEntityInInventory(var1, (float)(this.leftPos + 141), (float)(this.topPos + 75), 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, this.armorStandPreview);
+      int var5 = this.leftPos + 121;
+      int var6 = this.topPos + 20;
+      int var7 = this.leftPos + 161;
+      int var8 = this.topPos + 80;
+      InventoryScreen.renderEntityInInventory(var1, var5, var6, var7, var8, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, this.armorStandPreview);
    }
 
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
@@ -122,7 +128,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if (this.hasRecipeError()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
       }
 
    }
@@ -155,7 +161,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
          }
       }
 
-      var4.ifPresent((var4x) -> var1.renderTooltip(this.font, this.font.split(var4x, 115), var2, var3));
+      var4.ifPresent((var4x) -> var1.setTooltipForNextFrame(this.font, this.font.split(var4x, 115), var2, var3));
    }
 
    private boolean hasRecipeError() {
@@ -164,7 +170,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    static {
       EMPTY_SLOT_SMITHING_TEMPLATES = List.of(EMPTY_SLOT_SMITHING_TEMPLATE_ARMOR_TRIM, EMPTY_SLOT_SMITHING_TEMPLATE_NETHERITE_UPGRADE);
-      ARMOR_STAND_TRANSLATION = new Vector3f();
+      ARMOR_STAND_TRANSLATION = new Vector3f(0.0F, 1.0F, 0.0F);
       ARMOR_STAND_ANGLE = (new Quaternionf()).rotationXYZ(0.43633232F, 0.0F, 3.1415927F);
    }
 }

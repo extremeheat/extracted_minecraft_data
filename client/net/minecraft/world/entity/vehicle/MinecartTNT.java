@@ -3,7 +3,6 @@ package net.minecraft.world.entity.vehicle;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -26,6 +25,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class MinecartTNT extends AbstractMinecart {
    private static final byte EVENT_PRIME = 10;
@@ -181,14 +182,14 @@ public class MinecartTNT extends AbstractMinecart {
       return !this.isPrimed() || !var4.is(BlockTags.RAILS) && !var2.getBlockState(var3.above()).is(BlockTags.RAILS) ? super.shouldBlockExplode(var1, var2, var3, var4, var5) : false;
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.fuse = var1.getIntOr("fuse", -1);
       this.explosionPowerBase = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
       this.explosionSpeedFactor = Mth.clamp(var1.getFloatOr("explosion_speed_factor", 1.0F), 0.0F, 128.0F);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("fuse", this.fuse);
       if (this.explosionPowerBase != 4.0F) {

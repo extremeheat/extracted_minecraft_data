@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,15 +34,11 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.renderFg(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
-   protected void renderFg(GuiGraphics var1, int var2, int var3, float var4) {
-   }
-
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      var1.blit(RenderType::guiTextured, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       this.renderErrorIcon(var1, this.leftPos, this.topPos);
    }
 

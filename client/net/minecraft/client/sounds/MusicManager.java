@@ -1,13 +1,17 @@
 package net.minecraft.client.sounds;
 
+import com.mojang.serialization.Codec;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
+import net.minecraft.util.OptionEnum;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 
 public class MusicManager {
    private static final int STARTING_DELAY = 100;
@@ -15,12 +19,15 @@ public class MusicManager {
    private final Minecraft minecraft;
    @Nullable
    private SoundInstance currentMusic;
+   private MusicFrequency gameMusicFrequency;
    private float currentGain = 1.0F;
    private int nextSongDelay = 100;
+   private boolean toastShown = false;
 
    public MusicManager(Minecraft var1) {
       super();
       this.minecraft = var1;
+      this.gameMusicFrequency = (MusicFrequency)var1.options.musicFrequency().get();
    }
 
    public void tick() {
@@ -40,16 +47,16 @@ public class MusicManager {
          if (this.currentMusic != null) {
             if (var1.canReplace(this.currentMusic)) {
                this.minecraft.getSoundManager().stop(this.currentMusic);
-               this.nextSongDelay = Mth.nextInt(this.random, 0, var4.getMinDelay() / 2);
+               this.nextSongDelay = Mth.nextInt(this.random, 0, var4.minDelay() / 2);
             }
 
             if (!this.minecraft.getSoundManager().isActive(this.currentMusic)) {
                this.currentMusic = null;
-               this.nextSongDelay = Math.min(this.nextSongDelay, Mth.nextInt(this.random, var4.getMinDelay(), var4.getMaxDelay()));
+               this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(var4, this.random));
             }
          }
 
-         this.nextSongDelay = Math.min(this.nextSongDelay, var4.getMaxDelay());
+         this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(var4, this.random));
          if (this.currentMusic == null && this.nextSongDelay-- <= 0) {
             this.startPlaying(var1);
          }
@@ -58,14 +65,27 @@ public class MusicManager {
    }
 
    public void startPlaying(MusicInfo var1) {
-      this.currentMusic = SimpleSoundInstance.forMusic((SoundEvent)var1.music().getEvent().value());
-      if (this.currentMusic.getSound() != SoundManager.EMPTY_SOUND) {
-         this.minecraft.getSoundManager().play(this.currentMusic);
-         this.minecraft.getSoundManager().setVolume(this.currentMusic, var1.volume());
+      SoundEvent var2 = (SoundEvent)var1.music().event().value();
+      this.currentMusic = SimpleSoundInstance.forMusic(var2, var1.volume());
+      switch (this.minecraft.getSoundManager().play(this.currentMusic)) {
+         case STARTED:
+            this.minecraft.getToastManager().showNowPlayingToast();
+            this.toastShown = true;
+            break;
+         case STARTED_SILENTLY:
+            this.toastShown = false;
       }
 
       this.nextSongDelay = 2147483647;
       this.currentGain = var1.volume();
+   }
+
+   public void showNowPlayingToastIfNeeded() {
+      if (!this.toastShown) {
+         this.minecraft.getToastManager().showNowPlayingToast();
+         this.toastShown = true;
+      }
+
    }
 
    public void stopPlaying(Music var1) {
@@ -79,6 +99,7 @@ public class MusicManager {
       if (this.currentMusic != null) {
          this.minecraft.getSoundManager().stop(this.currentMusic);
          this.currentMusic = null;
+         this.minecraft.getToastManager().hideNowPlayingToast();
       }
 
       this.nextSongDelay += 100;
@@ -114,6 +135,70 @@ public class MusicManager {
    }
 
    public boolean isPlayingMusic(Music var1) {
-      return this.currentMusic == null ? false : ((SoundEvent)var1.getEvent().value()).location().equals(this.currentMusic.getLocation());
+      return this.currentMusic == null ? false : ((SoundEvent)var1.event().value()).location().equals(this.currentMusic.getLocation());
+   }
+
+   @Nullable
+   public String getCurrentMusicTranslationKey() {
+      if (this.currentMusic != null) {
+         Sound var1 = this.currentMusic.getSound();
+         if (var1 != null) {
+            return var1.getLocation().toShortLanguageKey();
+         }
+      }
+
+      return null;
+   }
+
+   public void setMinutesBetweenSongs(MusicFrequency var1) {
+      this.gameMusicFrequency = var1;
+      this.nextSongDelay = this.gameMusicFrequency.getNextSongDelay(this.minecraft.getSituationalMusic().music(), this.random);
+   }
+
+   public static enum MusicFrequency implements OptionEnum, StringRepresentable {
+      DEFAULT(20),
+      FREQUENT(10),
+      CONSTANT(0);
+
+      public static final Codec<MusicFrequency> CODEC = StringRepresentable.<MusicFrequency>fromEnum(MusicFrequency::values);
+      private static final String KEY_PREPEND = "options.music_frequency.";
+      private final int id;
+      private final int maxFrequency;
+      private final String key;
+
+      private MusicFrequency(final int var3) {
+         this.id = var3;
+         this.maxFrequency = var3 * 1200;
+         this.key = "options.music_frequency." + this.name().toLowerCase();
+      }
+
+      int getNextSongDelay(@Nullable Music var1, RandomSource var2) {
+         if (var1 == null) {
+            return this.maxFrequency;
+         } else if (this == CONSTANT) {
+            return 100;
+         } else {
+            int var3 = Math.min(var1.minDelay(), this.maxFrequency);
+            int var4 = Math.min(var1.maxDelay(), this.maxFrequency);
+            return Mth.nextInt(var2, var3, var4);
+         }
+      }
+
+      public int getId() {
+         return this.id;
+      }
+
+      public String getKey() {
+         return this.key;
+      }
+
+      public String getSerializedName() {
+         return this.name();
+      }
+
+      // $FF: synthetic method
+      private static MusicFrequency[] $values() {
+         return new MusicFrequency[]{DEFAULT, FREQUENT, CONSTANT};
+      }
    }
 }

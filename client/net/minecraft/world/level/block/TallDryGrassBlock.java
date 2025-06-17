@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.sounds.AmbientDesertBlockSoundsPlayer;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -26,6 +27,10 @@ public class TallDryGrassBlock extends DryVegetationBlock implements Bonemealabl
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
+   }
+
+   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
+      AmbientDesertBlockSoundsPlayer.playAmbientDryGrassSounds(var2, var3, var4);
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {

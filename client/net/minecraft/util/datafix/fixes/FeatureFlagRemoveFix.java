@@ -24,7 +24,7 @@ public class FeatureFlagRemoveFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.LEVEL), (var1) -> var1.update(DSL.remainderFinder(), this::fixTag));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.LIGHTWEIGHT_LEVEL), (var1) -> var1.update(DSL.remainderFinder(), this::fixTag));
    }
 
    private <T> Dynamic<T> fixTag(Dynamic<T> var1) {

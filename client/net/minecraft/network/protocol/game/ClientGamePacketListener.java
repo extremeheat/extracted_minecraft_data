@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.ping.ClientPongPacketListener;
 
-public interface ClientGamePacketListener extends ClientPongPacketListener, ClientCommonPacketListener {
+public interface ClientGamePacketListener extends ClientCommonPacketListener, ClientPongPacketListener {
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
    }
@@ -240,4 +240,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleSetPlayerInventory(ClientboundSetPlayerInventoryPacket var1);
 
    void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus var1);
+
+   void handleWaypoint(ClientboundTrackedWaypointPacket var1);
 }

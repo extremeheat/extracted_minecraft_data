@@ -2,6 +2,7 @@ package com.mojang.blaze3d.vertex;
 
 public class DefaultVertexFormat {
    public static final VertexFormat BLIT_SCREEN;
+   public static final VertexFormat EMPTY;
    public static final VertexFormat BLOCK;
    public static final VertexFormat NEW_ENTITY;
    public static final VertexFormat PARTICLE;
@@ -21,6 +22,7 @@ public class DefaultVertexFormat {
 
    static {
       BLIT_SCREEN = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).build();
+      EMPTY = VertexFormat.builder().build();
       BLOCK = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV0", VertexFormatElement.UV0).add("UV2", VertexFormatElement.UV2).add("Normal", VertexFormatElement.NORMAL).padding(1).build();
       NEW_ENTITY = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV0", VertexFormatElement.UV0).add("UV1", VertexFormatElement.UV1).add("UV2", VertexFormatElement.UV2).add("Normal", VertexFormatElement.NORMAL).padding(1).build();
       PARTICLE = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("Color", VertexFormatElement.COLOR).add("UV2", VertexFormatElement.UV2).build();

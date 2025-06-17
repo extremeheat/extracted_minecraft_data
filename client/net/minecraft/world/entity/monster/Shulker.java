@@ -10,7 +10,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -55,6 +54,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -141,14 +142,14 @@ public class Shulker extends AbstractGolem implements Enemy {
       return new ShulkerBodyRotationControl(this);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setAttachFace((Direction)var1.read("AttachFace", Direction.LEGACY_ID_CODEC).orElse(DEFAULT_ATTACH_FACE));
       this.entityData.set(DATA_PEEK_ID, var1.getByteOr("Peek", (byte)0));
       this.entityData.set(DATA_COLOR_ID, var1.getByteOr("Color", (byte)16));
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("AttachFace", Direction.LEGACY_ID_CODEC, this.getAttachFace());
       var1.putByte("Peek", (Byte)this.entityData.get(DATA_PEEK_ID));
@@ -420,7 +421,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   public boolean canBeCollidedWith() {
+   public boolean canBeCollidedWith(@Nullable Entity var1) {
       return this.isAlive();
    }
 

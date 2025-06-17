@@ -50,7 +50,7 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
 
       public static Version current() {
          WorldVersion var0 = SharedConstants.getCurrentVersion();
-         return new Version(var0.getName(), var0.getProtocolVersion());
+         return new Version(var0.name(), var0.protocolVersion());
       }
    }
 

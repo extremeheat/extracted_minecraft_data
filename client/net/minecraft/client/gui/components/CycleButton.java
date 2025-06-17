@@ -206,9 +206,13 @@ public class CycleButton<T> extends AbstractButton {
          return this;
       }
 
-      public Builder<T> displayOnlyValue() {
-         this.displayOnlyValue = true;
+      public Builder<T> displayOnlyValue(boolean var1) {
+         this.displayOnlyValue = var1;
          return this;
+      }
+
+      public Builder<T> displayOnlyValue() {
+         return this.displayOnlyValue(true);
       }
 
       public CycleButton<T> create(Component var1, OnValueChange<T> var2) {
@@ -266,6 +270,7 @@ public class CycleButton<T> extends AbstractButton {
       }
    }
 
+   @FunctionalInterface
    public interface OnValueChange<T> {
       void onValueChange(CycleButton<T> var1, T var2);
    }

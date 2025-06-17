@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Objects;
@@ -9,15 +10,21 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.storage.TagValueOutput;
+import org.slf4j.Logger;
 
 public class AdventureModePredicate {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<AdventureModePredicate> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, AdventureModePredicate> STREAM_CODEC;
    public static final Component CAN_BREAK_HEADER;
@@ -43,14 +50,24 @@ public class AdventureModePredicate {
          } else if (var0.getEntity() == null && var1.getEntity() == null) {
             return true;
          } else if (var0.getEntity() != null && var1.getEntity() != null) {
-            RegistryAccess var3 = var0.getLevel().registryAccess();
-            return Objects.equals(var0.getEntity().saveWithId(var3), var1.getEntity().saveWithId(var3));
+            try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(LOGGER)) {
+               RegistryAccess var4 = var0.getLevel().registryAccess();
+               CompoundTag var5 = saveBlockEntity(var0.getEntity(), var4, var3);
+               CompoundTag var6 = saveBlockEntity(var1.getEntity(), var4, var3);
+               return Objects.equals(var5, var6);
+            }
          } else {
             return false;
          }
       } else {
          return false;
       }
+   }
+
+   private static CompoundTag saveBlockEntity(BlockEntity var0, RegistryAccess var1, ProblemReporter var2) {
+      TagValueOutput var3 = TagValueOutput.createWithContext(var2.forChild(var0.problemPath()), var1);
+      var0.saveWithId(var3);
+      return var3.buildResult();
    }
 
    public boolean test(BlockInWorld var1) {

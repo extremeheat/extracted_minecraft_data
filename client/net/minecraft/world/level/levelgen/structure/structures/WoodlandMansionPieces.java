@@ -1023,7 +1023,7 @@ public class WoodlandMansionPieces {
       }
 
       public String get1x1(RandomSource var1) {
-         int var10000 = var1.nextInt(4);
+         int var10000 = var1.nextInt(5);
          return "1x1_b" + (var10000 + 1);
       }
 

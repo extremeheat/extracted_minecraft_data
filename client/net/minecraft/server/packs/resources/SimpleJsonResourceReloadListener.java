@@ -2,7 +2,6 @@ package net.minecraft.server.packs.resources;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
@@ -17,6 +16,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
@@ -60,7 +60,7 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
             BufferedReader var9 = ((Resource)var6.getValue()).openAsReader();
 
             try {
-               var3.parse(var2, JsonParser.parseReader(var9)).ifSuccess((var2x) -> {
+               var3.parse(var2, StrictJsonParser.parse((Reader)var9)).ifSuccess((var2x) -> {
                   if (var4.putIfAbsent(var8, var2x) != null) {
                      throw new IllegalStateException("Duplicate data file ignored with ID " + String.valueOf(var8));
                   }

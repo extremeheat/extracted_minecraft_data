@@ -649,7 +649,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
 
    }
 
-   public void disconnect() {
+   public void onBlockEntityAdded(BlockEntity var1) {
    }
 
    public long getGameTime() {
@@ -713,15 +713,19 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    }
 
    public boolean isRainingAt(BlockPos var1) {
+      return this.precipitationAt(var1) == Biome.Precipitation.RAIN;
+   }
+
+   public Biome.Precipitation precipitationAt(BlockPos var1) {
       if (!this.isRaining()) {
-         return false;
+         return Biome.Precipitation.NONE;
       } else if (!this.canSeeSky(var1)) {
-         return false;
+         return Biome.Precipitation.NONE;
       } else if (this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var1).getY() > var1.getY()) {
-         return false;
+         return Biome.Precipitation.NONE;
       } else {
          Biome var2 = (Biome)this.getBiome(var1).value();
-         return var2.getPrecipitationAt(var1, this.getSeaLevel()) == Biome.Precipitation.RAIN;
+         return var2.getPrecipitationAt(var1, this.getSeaLevel());
       }
    }
 

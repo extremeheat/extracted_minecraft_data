@@ -25,6 +25,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
@@ -51,6 +52,7 @@ import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.TickContainerAccess;
 import org.slf4j.Logger;
@@ -379,6 +381,7 @@ public class LevelChunk extends ChunkAccess {
             this.addGameEventListener(var1, var2);
          }
 
+         this.level.onBlockEntityAdded(var1);
          this.updateBlockEntityTicker(var1);
       }
 
@@ -436,7 +439,7 @@ public class LevelChunk extends ChunkAccess {
    public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
       BlockEntity var3 = this.getBlockEntity(var1);
       if (var3 != null && !var3.isRemoved()) {
-         CompoundTag var5 = var3.saveWithFullMetadata(this.level.registryAccess());
+         CompoundTag var5 = var3.saveWithFullMetadata((HolderLookup.Provider)this.level.registryAccess());
          var5.putBoolean("keepPacked", false);
          return var5;
       } else {
@@ -513,13 +516,17 @@ public class LevelChunk extends ChunkAccess {
 
       var2.forEach(this::setHeightmap);
       this.initializeLightSources();
-      var3.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(var1x, var2x, var3x) -> {
-         BlockEntity var4 = this.getBlockEntity(var1x, LevelChunk.EntityCreationType.IMMEDIATE);
-         if (var4 != null && var3x != null && var4.getType() == var2x) {
-            var4.loadWithComponents(var3x, this.level.registryAccess());
-         }
 
-      });
+      try (ProblemReporter.ScopedCollector var10 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         var3.accept((ClientboundLevelChunkPacketData.BlockEntityTagOutput)(var2x, var3x, var4) -> {
+            BlockEntity var5 = this.getBlockEntity(var2x, LevelChunk.EntityCreationType.IMMEDIATE);
+            if (var5 != null && var4 != null && var5.getType() == var3x) {
+               var5.loadWithComponents(TagValueInput.create(var10.forChild(var5.problemPath()), this.level.registryAccess(), var4));
+            }
+
+         });
+      }
+
    }
 
    public void replaceBiomes(FriendlyByteBuf var1) {
@@ -646,6 +653,7 @@ public class LevelChunk extends ChunkAccess {
             this.addGameEventListener(var1, var2);
          }
 
+         this.level.onBlockEntityAdded(var1);
          this.updateBlockEntityTicker(var1);
       });
    }

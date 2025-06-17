@@ -80,7 +80,7 @@ public class LevelLoadingScreen extends Screen {
       int var10000 = this.progressListener.getDiameter();
       Objects.requireNonNull(this.font);
       int var9 = var10000 + 9 + 2;
-      var1.drawCenteredString(this.font, this.getFormattedProgress(), var7, var8 - var9, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.getFormattedProgress(), var7, var8 - var9, -1);
    }
 
    public static void renderChunks(GuiGraphics var0, StoringChunkProgressListener var1, int var2, int var3, int var4, int var5) {

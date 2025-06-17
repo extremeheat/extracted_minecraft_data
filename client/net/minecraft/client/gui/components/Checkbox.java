@@ -8,7 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -19,7 +19,7 @@ public class Checkbox extends AbstractButton {
    private static final ResourceLocation CHECKBOX_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_selected");
    private static final ResourceLocation CHECKBOX_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_highlighted");
    private static final ResourceLocation CHECKBOX_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox");
-   private static final int TEXT_COLOR = 14737632;
+   private static final int TEXT_COLOR = -2039584;
    private static final int SPACING = 4;
    private static final int BOX_PADDING = 8;
    private boolean selected;
@@ -29,7 +29,7 @@ public class Checkbox extends AbstractButton {
    Checkbox(int var1, int var2, int var3, Component var4, Font var5, boolean var6, OnValueChange var7) {
       super(var1, var2, 0, 0, var4);
       this.width = this.getAdjustedWidth(var3, var4, var5);
-      this.textWidget = (new MultiLineTextWidget(var4, var5)).setMaxWidth(this.width).setColor(14737632);
+      this.textWidget = (new MultiLineTextWidget(var4, var5)).setMaxWidth(this.width).setColor(-2039584);
       this.height = this.getAdjustedHeight(var5);
       this.selected = var6;
       this.onValueChange = var7;
@@ -88,7 +88,7 @@ public class Checkbox extends AbstractButton {
       }
 
       int var8 = getBoxSize(var6);
-      var1.blitSprite(RenderType::guiTextured, var7, this.getX(), this.getY(), var8, var8, ARGB.white(this.alpha));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, this.getX(), this.getY(), var8, var8, ARGB.white(this.alpha));
       int var9 = this.getX() + var8 + 4;
       int var10 = this.getY() + var8 / 2 - this.textWidget.getHeight() / 2;
       this.textWidget.setPosition(var9, var10);

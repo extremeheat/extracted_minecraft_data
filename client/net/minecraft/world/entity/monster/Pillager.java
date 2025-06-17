@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -51,6 +50,8 @@ import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProvider
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Pillager extends AbstractIllager implements CrossbowAttackMob, InventoryCarrier {
    private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW;
@@ -106,9 +107,9 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return ItemTags.PILLAGER_PREFERRED_WEAPONS;
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      this.writeInventoryToTag(var1, this.registryAccess());
+      this.writeInventoryToTag(var1);
    }
 
    public AbstractIllager.IllagerArmPose getArmPose() {
@@ -121,9 +122,9 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       }
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.readInventoryFromTag(var1, this.registryAccess());
+      this.readInventoryFromTag(var1);
       this.setCanPickUpLoot(true);
    }
 

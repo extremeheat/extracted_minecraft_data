@@ -56,19 +56,14 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    public final void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
-         this.isHovered = var1.containsPointInScissor(var2, var3) && var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
+         this.isHovered = var1.containsPointInScissor(var2, var3) && this.areCoordinatesInRectangle((double)var2, (double)var3);
          this.renderWidget(var1, var2, var3, var4);
-         this.tooltip.refreshTooltipForNextRenderPass(this.isHovered(), this.isFocused(), this.getRectangle());
+         this.tooltip.refreshTooltipForNextRenderPass(var1, var2, var3, this.isHovered(), this.isFocused(), this.getRectangle());
       }
    }
 
    public void setTooltip(@Nullable Tooltip var1) {
       this.tooltip.set(var1);
-   }
-
-   @Nullable
-   public Tooltip getTooltip() {
-      return this.tooltip.get();
    }
 
    public void setTooltipDelay(Duration var1) {
@@ -175,7 +170,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    public boolean isMouseOver(double var1, double var3) {
-      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)this.getRight() && var3 < (double)this.getBottom();
+      return this.active && this.visible && this.areCoordinatesInRectangle(var1, var3);
    }
 
    public void playDownSound(SoundManager var1) {
@@ -292,6 +287,10 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    public ScreenRectangle getRectangle() {
       return LayoutElement.super.getRectangle();
+   }
+
+   private boolean areCoordinatesInRectangle(double var1, double var3) {
+      return var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)this.getRight() && var3 < (double)this.getBottom();
    }
 
    public void setRectangle(int var1, int var2, int var3, int var4) {

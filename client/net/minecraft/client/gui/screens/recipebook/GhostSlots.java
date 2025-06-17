@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.context.ContextMap;
@@ -56,7 +55,7 @@ public class GhostSlots {
 
          ItemStack var8 = var5.getItem(this.slotSelectTime.currentIndex());
          var1.renderFakeItem(var8, var6, var7);
-         var1.fill(RenderType.guiGhostRecipeOverlay(), var6, var7, var6 + 16, var7 + 16, 822083583);
+         var1.fill(var6, var7, var6 + 16, var7 + 16, 822083583);
          if (var5.isResultSlot) {
             var1.renderItemDecorations(var2.font, var8, var6, var7);
          }
@@ -69,7 +68,7 @@ public class GhostSlots {
          GhostSlot var6 = (GhostSlot)this.ingredients.get(var5);
          if (var6 != null) {
             ItemStack var7 = var6.getItem(this.slotSelectTime.currentIndex());
-            var1.renderComponentTooltip(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4, (ResourceLocation)var7.get(DataComponents.TOOLTIP_STYLE));
+            var1.setComponentTooltipForNextFrame(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4, (ResourceLocation)var7.get(DataComponents.TOOLTIP_STYLE));
          }
 
       }

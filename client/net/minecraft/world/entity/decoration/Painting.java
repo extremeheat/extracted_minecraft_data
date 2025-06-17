@@ -12,7 +12,6 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -31,6 +30,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -43,10 +44,12 @@ public class Painting extends HangingEntity {
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
       var1.define(DATA_PAINTING_VARIANT_ID, VariantUtils.getAny(this.registryAccess(), Registries.PAINTING_VARIANT));
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+      super.onSyncedDataUpdated(var1);
       if (DATA_PAINTING_VARIANT_ID.equals(var1)) {
          this.recalculateBoundingBox();
       }
@@ -125,17 +128,17 @@ public class Painting extends HangingEntity {
       this.setDirection(var3);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
-      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.direction);
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.getDirection());
       super.addAdditionalSaveData(var1);
       VariantUtils.writeVariant(var1, this.getVariant());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
-      this.direction = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
+   protected void readAdditionalSaveData(ValueInput var1) {
+      Direction var2 = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
       super.readAdditionalSaveData(var1);
-      this.setDirection(this.direction);
-      VariantUtils.readVariant(var1, this.registryAccess(), Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
+      this.setDirection(var2);
+      VariantUtils.readVariant(var1, Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
    }
 
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
@@ -184,7 +187,7 @@ public class Painting extends HangingEntity {
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
+      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

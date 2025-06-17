@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.util.Set;
 import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BannerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static final int MAX_PATTERNS = 16;
@@ -99,5 +101,14 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static void renderPatternLayer(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, DyeColor var6) {
       int var7 = var6.getTextureDiffuseColor();
       var4.render(var0, var5.buffer(var1, RenderType::entityNoOutline), var2, var3, var7);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      var2.translate(0.5F, 0.0F, 0.5F);
+      var2.scale(0.6666667F, -0.6666667F, -0.6666667F);
+      this.standingModel.root().getExtentsForGui(var2, var1);
+      this.standingFlagModel.setupAnim(0.0F);
+      this.standingFlagModel.root().getExtentsForGui(var2, var1);
    }
 }

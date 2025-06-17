@@ -12,6 +12,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 public class TestBlockEntity extends BlockEntity {
@@ -28,13 +30,13 @@ public class TestBlockEntity extends BlockEntity {
       this.mode = (TestBlockMode)var2.getValue(TestBlock.MODE);
    }
 
-   public void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void saveAdditional(ValueOutput var1) {
       var1.store("mode", TestBlockMode.CODEC, this.mode);
       var1.putString("message", this.message);
       var1.putBoolean("powered", this.powered);
    }
 
-   public void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(ValueInput var1) {
       this.mode = (TestBlockMode)var1.read("mode", TestBlockMode.CODEC).orElse(TestBlockMode.FAIL);
       this.message = var1.getStringOr("message", "");
       this.powered = var1.getBooleanOr("powered", false);

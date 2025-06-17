@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -21,6 +22,7 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -32,6 +34,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProce
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class StructureBlockEntity extends BlockEntity implements BoundingBoxRenderable {
    private static final int SCAN_CORNER_BLOCKS_RANGE = 5;
@@ -84,8 +88,8 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       this.mode = (StructureMode)var2.getValue(StructureBlock.MODE);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putString("name", this.getStructureName());
       var1.putString("author", this.author);
       var1.putString("metadata", this.metaData);
@@ -107,19 +111,19 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       var1.putLong("seed", this.seed);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.setStructureName(var1.getStringOr("name", ""));
       this.author = var1.getStringOr("author", "");
       this.metaData = var1.getStringOr("metadata", "");
-      int var3 = Mth.clamp(var1.getIntOr("posX", DEFAULT_POS.getX()), -48, 48);
-      int var4 = Mth.clamp(var1.getIntOr("posY", DEFAULT_POS.getY()), -48, 48);
-      int var5 = Mth.clamp(var1.getIntOr("posZ", DEFAULT_POS.getZ()), -48, 48);
-      this.structurePos = new BlockPos(var3, var4, var5);
-      int var6 = Mth.clamp(var1.getIntOr("sizeX", DEFAULT_SIZE.getX()), 0, 48);
-      int var7 = Mth.clamp(var1.getIntOr("sizeY", DEFAULT_SIZE.getY()), 0, 48);
-      int var8 = Mth.clamp(var1.getIntOr("sizeZ", DEFAULT_SIZE.getZ()), 0, 48);
-      this.structureSize = new Vec3i(var6, var7, var8);
+      int var2 = Mth.clamp(var1.getIntOr("posX", DEFAULT_POS.getX()), -48, 48);
+      int var3 = Mth.clamp(var1.getIntOr("posY", DEFAULT_POS.getY()), -48, 48);
+      int var4 = Mth.clamp(var1.getIntOr("posZ", DEFAULT_POS.getZ()), -48, 48);
+      this.structurePos = new BlockPos(var2, var3, var4);
+      int var5 = Mth.clamp(var1.getIntOr("sizeX", DEFAULT_SIZE.getX()), 0, 48);
+      int var6 = Mth.clamp(var1.getIntOr("sizeY", DEFAULT_SIZE.getY()), 0, 48);
+      int var7 = Mth.clamp(var1.getIntOr("sizeZ", DEFAULT_SIZE.getZ()), 0, 48);
+      this.structureSize = new Vec3i(var5, var6, var7);
       this.rotation = (Rotation)var1.read("rotation", Rotation.LEGACY_CODEC).orElse(DEFAULT_ROTATION);
       this.mirror = (Mirror)var1.read("mirror", Mirror.LEGACY_CODEC).orElse(DEFAULT_MIRROR);
       this.mode = (StructureMode)var1.read("mode", StructureMode.LEGACY_CODEC).orElse(StructureMode.DATA);
@@ -156,7 +160,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       if (!var1.canUseGameMasterBlocks()) {
          return false;
       } else {
-         if (var1.getCommandSenderWorld().isClientSide) {
+         if (var1.level().isClientSide) {
             var1.openStructureBlock(this);
          }
 
@@ -331,29 +335,29 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
          if (var3 instanceof ServerLevel) {
             ServerLevel var2 = (ServerLevel)var3;
             BlockPos var4 = this.getBlockPos().offset(this.structurePos);
-            return saveStructure(var2, this.structureName, var4, this.structureSize, this.ignoreEntities, this.author, var1);
+            return saveStructure(var2, this.structureName, var4, this.structureSize, this.ignoreEntities, this.author, var1, List.of());
          }
       }
 
       return false;
    }
 
-   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6) {
-      StructureTemplateManager var7 = var0.getStructureManager();
+   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6, List<Block> var7) {
+      StructureTemplateManager var8 = var0.getStructureManager();
 
-      StructureTemplate var8;
+      StructureTemplate var9;
       try {
-         var8 = var7.getOrCreate(var1);
-      } catch (ResourceLocationException var11) {
+         var9 = var8.getOrCreate(var1);
+      } catch (ResourceLocationException var12) {
          return false;
       }
 
-      var8.fillFromWorld(var0, var2, var3, !var4, Blocks.STRUCTURE_VOID);
-      var8.setAuthor(var5);
+      var9.fillFromWorld(var0, var2, var3, !var4, Stream.concat(var7.stream(), Stream.of(Blocks.STRUCTURE_VOID)).toList());
+      var9.setAuthor(var5);
       if (var6) {
          try {
-            return var7.save(var1);
-         } catch (ResourceLocationException var10) {
+            return var8.save(var1);
+         } catch (ResourceLocationException var11) {
             return false;
          }
       } else {

@@ -5,8 +5,8 @@ import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.Backup;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
-import com.mojang.realmsclient.gui.screens.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
+import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScreen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
 
@@ -40,7 +40,7 @@ public class RestoreTask extends LongRunningTask {
                return;
             }
 
-            setScreen(this.lastScreen.getNewScreen());
+            setScreen(this.lastScreen);
             return;
          } catch (RetryCallException var4) {
             if (this.aborted()) {

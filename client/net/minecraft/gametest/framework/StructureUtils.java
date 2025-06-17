@@ -17,6 +17,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.village.poi.PoiManager;
+import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
@@ -25,7 +27,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
@@ -120,13 +121,7 @@ public class StructureUtils {
    }
 
    public static Stream<BlockPos> findTestBlocks(BlockPos var0, int var1, ServerLevel var2) {
-      BoundingBox var3 = getBoundingBoxAtGround(var0, var1, var2);
-      return BlockPos.betweenClosedStream(var3).filter((var1x) -> var2.getBlockState(var1x).is(Blocks.TEST_INSTANCE_BLOCK)).map(BlockPos::immutable);
-   }
-
-   private static BoundingBox getBoundingBoxAtGround(BlockPos var0, int var1, ServerLevel var2) {
-      BlockPos var3 = BlockPos.containing((double)var0.getX(), (double)var2.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var0).getY(), (double)var0.getZ());
-      return (new BoundingBox(var3)).inflatedBy(var1, 10, var1);
+      return var2.getPoiManager().findAll((var0x) -> var0x.is(PoiTypes.TEST_INSTANCE), (var0x) -> true, var0, var1, PoiManager.Occupancy.ANY).map(BlockPos::immutable);
    }
 
    public static Stream<BlockPos> lookedAtTestPos(BlockPos var0, Entity var1, ServerLevel var2) {

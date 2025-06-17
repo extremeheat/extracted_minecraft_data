@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulator;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulators;
@@ -36,6 +37,6 @@ public class ModifyContainerContents extends LootItemConditionalFunction {
 
    public void validate(ValidationContext var1) {
       super.validate(var1);
-      this.modifier.validate(var1.forChild(".modifier"));
+      this.modifier.validate(var1.forChild(new ProblemReporter.FieldPathElement("modifier")));
    }
 }

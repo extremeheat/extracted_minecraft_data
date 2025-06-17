@@ -1,8 +1,6 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.gson.JsonObject;
-import com.mojang.realmsclient.util.JsonUtils;
-import java.util.Objects;
+import com.google.gson.annotations.SerializedName;
 import javax.annotation.Nullable;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.util.StringUtil;
@@ -10,57 +8,70 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 
-public class RealmsWorldOptions extends ValueObject {
-   public final boolean pvp;
-   public final boolean spawnMonsters;
-   public final int spawnProtection;
-   public final boolean commandBlocks;
-   public final boolean forceGameMode;
-   public final int difficulty;
-   public final int gameMode;
-   public final boolean hardcore;
-   private final String slotName;
-   public final String version;
-   public final RealmsServer.Compatibility compatibility;
+public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSerialization {
+   @SerializedName("pvp")
+   public boolean pvp = true;
+   @SerializedName("spawnMonsters")
+   public boolean spawnMonsters = true;
+   @SerializedName("spawnProtection")
+   public int spawnProtection = 0;
+   @SerializedName("commandBlocks")
+   public boolean commandBlocks = false;
+   @SerializedName("forceGameMode")
+   public boolean forceGameMode = false;
+   @SerializedName("difficulty")
+   public int difficulty = 2;
+   @SerializedName("gameMode")
+   public int gameMode = 0;
+   @SerializedName("slotName")
+   private String slotName = "";
+   @SerializedName("version")
+   public String version = "";
+   @SerializedName("compatibility")
+   public RealmsServer.Compatibility compatibility;
+   @SerializedName("worldTemplateId")
    public long templateId;
    @Nullable
+   @SerializedName("worldTemplateImage")
    public String templateImage;
    public boolean empty;
-   private static final boolean DEFAULT_FORCE_GAME_MODE = false;
-   private static final boolean DEFAULT_PVP = true;
-   private static final boolean DEFAULT_SPAWN_MONSTERS = true;
-   private static final int DEFAULT_SPAWN_PROTECTION = 0;
-   private static final boolean DEFAULT_COMMAND_BLOCKS = false;
-   private static final int DEFAULT_DIFFICULTY = 2;
-   private static final int DEFAULT_GAME_MODE = 0;
-   private static final boolean DEFAULT_HARDCORE_MODE = false;
-   private static final String DEFAULT_SLOT_NAME = "";
-   private static final String DEFAULT_VERSION = "";
-   private static final RealmsServer.Compatibility DEFAULT_COMPATIBILITY;
-   private static final long DEFAULT_TEMPLATE_ID = -1L;
-   private static final String DEFAULT_TEMPLATE_IMAGE;
 
-   public RealmsWorldOptions(boolean var1, boolean var2, int var3, boolean var4, int var5, int var6, boolean var7, boolean var8, String var9, String var10, RealmsServer.Compatibility var11) {
+   private RealmsWorldOptions() {
       super();
+      this.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
+      this.templateId = -1L;
+      this.templateImage = null;
+   }
+
+   public RealmsWorldOptions(boolean var1, boolean var2, int var3, boolean var4, int var5, int var6, boolean var7, String var8, String var9, RealmsServer.Compatibility var10) {
+      super();
+      this.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
+      this.templateId = -1L;
+      this.templateImage = null;
       this.pvp = var1;
       this.spawnMonsters = var2;
       this.spawnProtection = var3;
       this.commandBlocks = var4;
       this.difficulty = var5;
       this.gameMode = var6;
-      this.hardcore = var7;
-      this.forceGameMode = var8;
-      this.slotName = var9;
-      this.version = var10;
-      this.compatibility = var11;
+      this.forceGameMode = var7;
+      this.slotName = var8;
+      this.version = var9;
+      this.compatibility = var10;
    }
 
    public static RealmsWorldOptions createDefaults() {
-      return new RealmsWorldOptions(true, true, 0, false, 2, 0, false, false, "", "", DEFAULT_COMPATIBILITY);
+      return new RealmsWorldOptions();
    }
 
    public static RealmsWorldOptions createDefaultsWith(GameType var0, boolean var1, Difficulty var2, boolean var3, String var4, String var5) {
-      return new RealmsWorldOptions(true, true, 0, var1, var2.getId(), var0.getId(), var3, false, var5, var4, DEFAULT_COMPATIBILITY);
+      RealmsWorldOptions var6 = createDefaults();
+      var6.commandBlocks = var1;
+      var6.difficulty = var2.getId();
+      var6.gameMode = var0.getId();
+      var6.slotName = var5;
+      var6.version = var4;
+      return var6;
    }
 
    public static RealmsWorldOptions createFromSettings(LevelSettings var0, boolean var1, String var2) {
@@ -77,11 +88,29 @@ public class RealmsWorldOptions extends ValueObject {
       this.empty = var1;
    }
 
-   public static RealmsWorldOptions parse(JsonObject var0, RealmsSettings var1) {
-      RealmsWorldOptions var2 = new RealmsWorldOptions(JsonUtils.getBooleanOr("pvp", var0, true), JsonUtils.getBooleanOr("spawnMonsters", var0, true), JsonUtils.getIntOr("spawnProtection", var0, 0), JsonUtils.getBooleanOr("commandBlocks", var0, false), JsonUtils.getIntOr("difficulty", var0, 2), JsonUtils.getIntOr("gameMode", var0, 0), var1.hardcore(), JsonUtils.getBooleanOr("forceGameMode", var0, false), JsonUtils.getRequiredStringOr("slotName", var0, ""), JsonUtils.getRequiredStringOr("version", var0, ""), RealmsServer.getCompatibility(JsonUtils.getRequiredStringOr("compatibility", var0, RealmsServer.Compatibility.UNVERIFIABLE.name())));
-      var2.templateId = JsonUtils.getLongOr("worldTemplateId", var0, -1L);
-      var2.templateImage = JsonUtils.getStringOr("worldTemplateImage", var0, DEFAULT_TEMPLATE_IMAGE);
-      return var2;
+   public static RealmsWorldOptions parse(GuardedSerializer var0, String var1) {
+      RealmsWorldOptions var2 = (RealmsWorldOptions)var0.fromJson(var1, RealmsWorldOptions.class);
+      if (var2 == null) {
+         return createDefaults();
+      } else {
+         finalize(var2);
+         return var2;
+      }
+   }
+
+   private static void finalize(RealmsWorldOptions var0) {
+      if (var0.slotName == null) {
+         var0.slotName = "";
+      }
+
+      if (var0.version == null) {
+         var0.version = "";
+      }
+
+      if (var0.compatibility == null) {
+         var0.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
+      }
+
    }
 
    public String getSlotName(int var1) {
@@ -96,66 +125,12 @@ public class RealmsWorldOptions extends ValueObject {
       return I18n.get("mco.configure.world.slot", var1);
    }
 
-   public String toJson() {
-      JsonObject var1 = new JsonObject();
-      if (!this.pvp) {
-         var1.addProperty("pvp", this.pvp);
-      }
-
-      if (!this.spawnMonsters) {
-         var1.addProperty("spawnMonsters", this.spawnMonsters);
-      }
-
-      if (this.spawnProtection != 0) {
-         var1.addProperty("spawnProtection", this.spawnProtection);
-      }
-
-      if (this.commandBlocks) {
-         var1.addProperty("commandBlocks", this.commandBlocks);
-      }
-
-      if (this.difficulty != 2) {
-         var1.addProperty("difficulty", this.difficulty);
-      }
-
-      if (this.gameMode != 0) {
-         var1.addProperty("gameMode", this.gameMode);
-      }
-
-      if (this.hardcore) {
-         var1.addProperty("hardcore", this.hardcore);
-      }
-
-      if (this.forceGameMode) {
-         var1.addProperty("forceGameMode", this.forceGameMode);
-      }
-
-      if (!Objects.equals(this.slotName, "")) {
-         var1.addProperty("slotName", this.slotName);
-      }
-
-      if (!Objects.equals(this.version, "")) {
-         var1.addProperty("version", this.version);
-      }
-
-      if (this.compatibility != DEFAULT_COMPATIBILITY) {
-         var1.addProperty("compatibility", this.compatibility.name());
-      }
-
-      return var1.toString();
-   }
-
    public RealmsWorldOptions clone() {
-      return new RealmsWorldOptions(this.pvp, this.spawnMonsters, this.spawnProtection, this.commandBlocks, this.difficulty, this.gameMode, this.hardcore, this.forceGameMode, this.slotName, this.version, this.compatibility);
+      return new RealmsWorldOptions(this.pvp, this.spawnMonsters, this.spawnProtection, this.commandBlocks, this.difficulty, this.gameMode, this.forceGameMode, this.slotName, this.version, this.compatibility);
    }
 
    // $FF: synthetic method
    public Object clone() throws CloneNotSupportedException {
       return this.clone();
-   }
-
-   static {
-      DEFAULT_COMPATIBILITY = RealmsServer.Compatibility.UNVERIFIABLE;
-      DEFAULT_TEMPLATE_IMAGE = null;
    }
 }

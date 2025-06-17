@@ -3,6 +3,7 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.Util;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -15,10 +16,10 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class ItemBlockRenderTypes {
-   private static final Map<Block, RenderType> TYPE_BY_BLOCK = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      RenderType var1 = RenderType.tripwire();
+   private static final Map<Block, ChunkSectionLayer> TYPE_BY_BLOCK = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+      ChunkSectionLayer var1 = ChunkSectionLayer.TRIPWIRE;
       var0.put(Blocks.TRIPWIRE, var1);
-      RenderType var2 = RenderType.cutoutMipped();
+      ChunkSectionLayer var2 = ChunkSectionLayer.CUTOUT_MIPPED;
       var0.put(Blocks.GRASS_BLOCK, var2);
       var0.put(Blocks.IRON_BARS, var2);
       var0.put(Blocks.GLASS_PANE, var2);
@@ -37,7 +38,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.FLOWERING_AZALEA_LEAVES, var2);
       var0.put(Blocks.MANGROVE_ROOTS, var2);
       var0.put(Blocks.MANGROVE_LEAVES, var2);
-      RenderType var3 = RenderType.cutout();
+      ChunkSectionLayer var3 = ChunkSectionLayer.CUTOUT;
       var0.put(Blocks.OAK_SAPLING, var3);
       var0.put(Blocks.SPRUCE_SAPLING, var3);
       var0.put(Blocks.BIRCH_SAPLING, var3);
@@ -308,7 +309,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.WAXED_OXIDIZED_COPPER_GRATE, var3);
       var0.put(Blocks.FIREFLY_BUSH, var3);
       var0.put(Blocks.CACTUS_FLOWER, var3);
-      RenderType var4 = RenderType.translucent();
+      ChunkSectionLayer var4 = ChunkSectionLayer.TRANSLUCENT;
       var0.put(Blocks.ICE, var4);
       var0.put(Blocks.NETHER_PORTAL, var4);
       var0.put(Blocks.WHITE_STAINED_GLASS, var4);
@@ -349,10 +350,9 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.BUBBLE_COLUMN, var4);
       var0.put(Blocks.TINTED_GLASS, var4);
    });
-   private static final Map<Fluid, RenderType> TYPE_BY_FLUID = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      RenderType var1 = RenderType.translucent();
-      var0.put(Fluids.FLOWING_WATER, var1);
-      var0.put(Fluids.WATER, var1);
+   private static final Map<Fluid, ChunkSectionLayer> LAYER_BY_FLUID = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+      var0.put(Fluids.FLOWING_WATER, ChunkSectionLayer.TRANSLUCENT);
+      var0.put(Fluids.WATER, ChunkSectionLayer.TRANSLUCENT);
    });
    private static boolean renderCutout;
 
@@ -360,13 +360,13 @@ public class ItemBlockRenderTypes {
       super();
    }
 
-   public static RenderType getChunkRenderType(BlockState var0) {
+   public static ChunkSectionLayer getChunkRenderType(BlockState var0) {
       Block var1 = var0.getBlock();
       if (var1 instanceof LeavesBlock) {
-         return renderCutout ? RenderType.cutoutMipped() : RenderType.solid();
+         return renderCutout ? ChunkSectionLayer.CUTOUT_MIPPED : ChunkSectionLayer.SOLID;
       } else {
-         RenderType var2 = (RenderType)TYPE_BY_BLOCK.get(var1);
-         return var2 != null ? var2 : RenderType.solid();
+         ChunkSectionLayer var2 = (ChunkSectionLayer)TYPE_BY_BLOCK.get(var1);
+         return var2 != null ? var2 : ChunkSectionLayer.SOLID;
       }
    }
 
@@ -375,9 +375,19 @@ public class ItemBlockRenderTypes {
       if (var1 instanceof LeavesBlock) {
          return renderCutout ? RenderType.cutoutMipped() : RenderType.solid();
       } else {
-         RenderType var2 = (RenderType)TYPE_BY_BLOCK.get(var1);
+         ChunkSectionLayer var2 = (ChunkSectionLayer)TYPE_BY_BLOCK.get(var1);
          if (var2 != null) {
-            return var2 == RenderType.translucent() ? RenderType.translucentMovingBlock() : var2;
+            RenderType var10000;
+            switch (var2) {
+               case SOLID -> var10000 = RenderType.solid();
+               case CUTOUT_MIPPED -> var10000 = RenderType.cutoutMipped();
+               case CUTOUT -> var10000 = RenderType.cutout();
+               case TRANSLUCENT -> var10000 = RenderType.translucentMovingBlock();
+               case TRIPWIRE -> var10000 = RenderType.tripwire();
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            return var10000;
          } else {
             return RenderType.solid();
          }
@@ -385,8 +395,8 @@ public class ItemBlockRenderTypes {
    }
 
    public static RenderType getRenderType(BlockState var0) {
-      RenderType var1 = getChunkRenderType(var0);
-      return var1 == RenderType.translucent() ? Sheets.translucentItemSheet() : Sheets.cutoutBlockSheet();
+      ChunkSectionLayer var1 = getChunkRenderType(var0);
+      return var1 == ChunkSectionLayer.TRANSLUCENT ? Sheets.translucentItemSheet() : Sheets.cutoutBlockSheet();
    }
 
    public static RenderType getRenderType(ItemStack var0) {
@@ -399,9 +409,9 @@ public class ItemBlockRenderTypes {
       }
    }
 
-   public static RenderType getRenderLayer(FluidState var0) {
-      RenderType var1 = (RenderType)TYPE_BY_FLUID.get(var0.getType());
-      return var1 != null ? var1 : RenderType.solid();
+   public static ChunkSectionLayer getRenderLayer(FluidState var0) {
+      ChunkSectionLayer var1 = (ChunkSectionLayer)LAYER_BY_FLUID.get(var0.getType());
+      return var1 != null ? var1 : ChunkSectionLayer.SOLID;
    }
 
    public static void setFancy(boolean var0) {

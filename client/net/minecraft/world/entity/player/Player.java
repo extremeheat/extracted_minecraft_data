@@ -7,10 +7,12 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
@@ -21,10 +23,10 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -35,6 +37,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -48,11 +51,13 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -113,13 +118,18 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
+import org.slf4j.Logger;
 
 public abstract class Player extends LivingEntity {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final HumanoidArm DEFAULT_MAIN_HAND;
    public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
    public static final int MAX_HEALTH = 20;
@@ -196,19 +206,18 @@ public abstract class Player extends LivingEntity {
    private boolean ignoreFallDamageFromCurrentImpulse;
    private int currentImpulseContextResetGraceTime;
 
-   public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
+   public Player(Level var1, GameProfile var2) {
       super(EntityType.PLAYER, var1);
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
       this.ignoreFallDamageFromCurrentImpulse = false;
       this.currentImpulseContextResetGraceTime = 0;
-      this.setUUID(var4.getId());
-      this.gameProfile = var4;
+      this.setUUID(var2.getId());
+      this.gameProfile = var2;
       this.inventory = new Inventory(this, this.equipment);
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
-      this.snapTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
    }
 
    protected EntityEquipment createEquipment() {
@@ -229,7 +238,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0).add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.ATTACK_SPEED).add(Attributes.LUCK).add(Attributes.BLOCK_INTERACTION_RANGE, 4.5).add(Attributes.ENTITY_INTERACTION_RANGE, 3.0).add(Attributes.BLOCK_BREAK_SPEED).add(Attributes.SUBMERGED_MINING_SPEED).add(Attributes.SNEAKING_SPEED).add(Attributes.MINING_EFFICIENCY).add(Attributes.SWEEPING_DAMAGE_RATIO);
+      return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0).add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.ATTACK_SPEED).add(Attributes.LUCK).add(Attributes.BLOCK_INTERACTION_RANGE, 4.5).add(Attributes.ENTITY_INTERACTION_RANGE, 3.0).add(Attributes.BLOCK_BREAK_SPEED).add(Attributes.SUBMERGED_MINING_SPEED).add(Attributes.SNEAKING_SPEED).add(Attributes.MINING_EFFICIENCY).add(Attributes.SWEEPING_DAMAGE_RATIO).add(Attributes.WAYPOINT_TRANSMIT_RANGE, 6.0E7).add(Attributes.WAYPOINT_RECEIVE_RANGE, 6.0E7);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -721,11 +730,10 @@ public abstract class Player extends LivingEntity {
       return !var1.requiresCorrectToolForDrops() || this.inventory.getSelectedItem().isCorrectToolForDrops(var1);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setUUID(this.gameProfile.getId());
-      ListTag var2 = var1.getListOrEmpty("Inventory");
-      this.inventory.load(var2);
+      this.inventory.load(var1.listOrEmpty("Inventory", ItemStackWithSlot.CODEC));
       this.inventory.setSelectedSlot(var1.getIntOr("SelectedItemSlot", 0));
       this.sleepCounter = var1.getShortOr("SleepTimer", (short)0);
       this.experienceProgress = var1.getFloatOr("XpP", 0.0F);
@@ -738,21 +746,24 @@ public abstract class Player extends LivingEntity {
 
       this.setScore(var1.getIntOr("Score", 0));
       this.foodData.readAdditionalSaveData(var1);
-      this.abilities.loadSaveData(var1);
+      Optional var10000 = var1.read("abilities", Abilities.Packed.CODEC);
+      Abilities var10001 = this.abilities;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::apply);
       this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.abilities.getWalkingSpeed());
-      var1.getList("EnderItems").ifPresent((var1x) -> this.enderChestInventory.fromTag(var1x, this.registryAccess()));
-      this.setShoulderEntityLeft(var1.getCompoundOrEmpty("ShoulderEntityLeft"));
-      this.setShoulderEntityRight(var1.getCompoundOrEmpty("ShoulderEntityRight"));
+      this.enderChestInventory.fromSlots(var1.listOrEmpty("EnderItems", ItemStackWithSlot.CODEC));
+      this.setShoulderEntityLeft((CompoundTag)var1.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
+      this.setShoulderEntityRight((CompoundTag)var1.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
       this.setLastDeathLocation(var1.read("LastDeathLocation", GlobalPos.CODEC));
       this.currentImpulseImpactPos = (Vec3)var1.read("current_explosion_impact_pos", Vec3.CODEC).orElse((Object)null);
       this.ignoreFallDamageFromCurrentImpulse = var1.getBooleanOr("ignore_fall_damage_from_current_explosion", false);
       this.currentImpulseContextResetGraceTime = var1.getIntOr("current_impulse_context_reset_grace_time", 0);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       NbtUtils.addCurrentDataVersion(var1);
-      var1.put("Inventory", this.inventory.save(new ListTag()));
+      this.inventory.save(var1.list("Inventory", ItemStackWithSlot.CODEC));
       var1.putInt("SelectedItemSlot", this.inventory.getSelectedSlot());
       var1.putShort("SleepTimer", (short)this.sleepCounter);
       var1.putFloat("XpP", this.experienceProgress);
@@ -761,14 +772,14 @@ public abstract class Player extends LivingEntity {
       var1.putInt("XpSeed", this.enchantmentSeed);
       var1.putInt("Score", this.getScore());
       this.foodData.addAdditionalSaveData(var1);
-      this.abilities.addSaveData(var1);
-      var1.put("EnderItems", this.enderChestInventory.createTag(this.registryAccess()));
+      var1.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
+      this.enderChestInventory.storeAsSlots(var1.list("EnderItems", ItemStackWithSlot.CODEC));
       if (!this.getShoulderEntityLeft().isEmpty()) {
-         var1.put("ShoulderEntityLeft", this.getShoulderEntityLeft());
+         var1.store("ShoulderEntityLeft", CompoundTag.CODEC, this.getShoulderEntityLeft());
       }
 
       if (!this.getShoulderEntityRight().isEmpty()) {
-         var1.put("ShoulderEntityRight", this.getShoulderEntityRight());
+         var1.store("ShoulderEntityRight", CompoundTag.CODEC, this.getShoulderEntityRight());
       }
 
       this.lastDeathLocation.ifPresent((var1x) -> var1.store("LastDeathLocation", GlobalPos.CODEC, var1x));
@@ -911,6 +922,9 @@ public abstract class Player extends LivingEntity {
 
    public OptionalInt openMenu(@Nullable MenuProvider var1) {
       return OptionalInt.empty();
+   }
+
+   public void openDialog(Holder<Dialog> var1) {
    }
 
    public void sendMerchantOffers(int var1, MerchantOffers var2, int var3, int var4, boolean var5, boolean var6) {
@@ -1644,15 +1658,20 @@ public abstract class Player extends LivingEntity {
    }
 
    private void respawnEntityOnShoulder(CompoundTag var1) {
-      if (!this.level().isClientSide && !var1.isEmpty()) {
-         EntityType.create(var1, this.level(), EntitySpawnReason.LOAD).ifPresent((var1x) -> {
-            if (var1x instanceof TamableAnimal var2) {
-               var2.setOwner(this);
-            }
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         if (!var1.isEmpty()) {
+            try (ProblemReporter.ScopedCollector var8 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+               EntityType.create(TagValueInput.create(var8.forChild(() -> ".shoulder"), var2.registryAccess(), var1), var2, EntitySpawnReason.LOAD).ifPresent((var2x) -> {
+                  if (var2x instanceof TamableAnimal var3) {
+                     var3.setOwner(this);
+                  }
 
-            var1x.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
-            ((ServerLevel)this.level()).addWithUUID(var1x);
-         });
+                  var2x.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
+                  var2.addWithUUID(var2x);
+               });
+            }
+         }
       }
 
    }

@@ -46,12 +46,12 @@ public class TestBlockEditScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
       if (this.mode != TestBlockMode.START) {
-         var1.drawString(this.font, (Component)MESSAGE_LABEL, this.width / 2 - 153, 70, 10526880);
+         var1.drawString(this.font, (Component)MESSAGE_LABEL, this.width / 2 - 153, 70, -6250336);
       }
 
-      var1.drawString(this.font, (Component)this.mode.getDetailedMessage(), this.width / 2 - 153, 174, 10526880);
+      var1.drawString(this.font, (Component)this.mode.getDetailedMessage(), this.width / 2 - 153, 174, -6250336);
    }
 
    public boolean isPauseScreen() {

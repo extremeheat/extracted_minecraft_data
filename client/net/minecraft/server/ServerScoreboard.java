@@ -15,6 +15,7 @@ import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -92,6 +93,7 @@ public class ServerScoreboard extends Scoreboard {
    public boolean addPlayerToTeam(String var1, PlayerTeam var2) {
       if (super.addPlayerToTeam(var1, var2)) {
          this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createPlayerPacket(var2, var1, ClientboundSetPlayerTeamPacket.Action.ADD));
+         this.updatePlayerWaypoint(var1);
          this.setDirty();
          return true;
       } else {
@@ -102,6 +104,7 @@ public class ServerScoreboard extends Scoreboard {
    public void removePlayerFromTeam(String var1, PlayerTeam var2) {
       super.removePlayerFromTeam(var1, var2);
       this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createPlayerPacket(var2, var1, ClientboundSetPlayerTeamPacket.Action.REMOVE));
+      this.updatePlayerWaypoint(var1);
       this.setDirty();
    }
 
@@ -137,12 +140,14 @@ public class ServerScoreboard extends Scoreboard {
    public void onTeamChanged(PlayerTeam var1) {
       super.onTeamChanged(var1);
       this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(var1, false));
+      this.updateTeamWaypoints(var1);
       this.setDirty();
    }
 
    public void onTeamRemoved(PlayerTeam var1) {
       super.onTeamRemoved(var1);
       this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createRemovePacket(var1));
+      this.updateTeamWaypoints(var1);
       this.setDirty();
    }
 
@@ -236,6 +241,24 @@ public class ServerScoreboard extends Scoreboard {
       return var2;
    }
 
+   private void updatePlayerWaypoint(String var1) {
+      ServerPlayer var2 = this.server.getPlayerList().getPlayerByName(var1);
+      if (var2 != null) {
+         ServerLevel var4 = var2.level();
+         if (var4 instanceof ServerLevel) {
+            var4.getWaypointManager().remakeConnections(var2);
+         }
+      }
+
+   }
+
+   private void updateTeamWaypoints(PlayerTeam var1) {
+      for(ServerLevel var3 : this.server.getAllLevels()) {
+         var1.getPlayers().stream().map((var1x) -> this.server.getPlayerList().getPlayerByName(var1x)).filter(Objects::nonNull).forEach((var1x) -> var3.getWaypointManager().remakeConnections(var1x));
+      }
+
+   }
+
    static {
       TYPE = new SavedDataType<ScoreboardSaveData>("scoreboard", (var0) -> var0.levelOrThrow().getScoreboard().createData(), (var0) -> {
          ServerScoreboard var1 = var0.levelOrThrow().getScoreboard();
@@ -243,18 +266,5 @@ public class ServerScoreboard extends Scoreboard {
          Objects.requireNonNull(var1);
          return var10000.xmap(var1::createData, ScoreboardSaveData::pack);
       }, DataFixTypes.SAVED_DATA_SCOREBOARD);
-   }
-
-   public static enum Method {
-      CHANGE,
-      REMOVE;
-
-      private Method() {
-      }
-
-      // $FF: synthetic method
-      private static Method[] $values() {
-         return new Method[]{CHANGE, REMOVE};
-      }
    }
 }

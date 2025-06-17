@@ -89,6 +89,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"door", DoorBlock.CODEC);
       Registry.register(var0, (String)"double_plant", DoublePlantBlock.CODEC);
       Registry.register(var0, (String)"dragon_egg", DragonEggBlock.CODEC);
+      Registry.register(var0, (String)"dried_ghast", DriedGhastBlock.CODEC);
       Registry.register(var0, (String)"drop_experience", DropExperienceBlock.CODEC);
       Registry.register(var0, (String)"dropper", DropperBlock.CODEC);
       Registry.register(var0, (String)"enchantment_table", EnchantingTableBlock.CODEC);
@@ -227,7 +228,6 @@ public class BlockTypes {
       Registry.register(var0, (String)"tall_grass", TallGrassBlock.CODEC);
       Registry.register(var0, (String)"tall_seagrass", TallSeagrassBlock.CODEC);
       Registry.register(var0, (String)"target", TargetBlock.CODEC);
-      Registry.register(var0, (String)"terracotta", TerracottaBlock.CODEC);
       Registry.register(var0, (String)"test", TestBlock.CODEC);
       Registry.register(var0, (String)"test_instance", TestInstanceBlock.CODEC);
       Registry.register(var0, (String)"tinted_glass", TintedGlassBlock.CODEC);

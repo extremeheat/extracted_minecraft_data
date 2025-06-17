@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -11,8 +12,6 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -50,6 +49,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID;
@@ -71,7 +72,6 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
       super(var1, var2);
-      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> this.setVillagerData(this.getVillagerData().withProfession(var1x)));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -80,20 +80,20 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       var1.define(DATA_VILLAGER_DATA, Villager.createDefaultVillagerData());
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
-      var1.storeNullable("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers);
+      var1.storeNullable("Offers", MerchantOffers.CODEC, this.tradeOffers);
       var1.storeNullable("Gossips", GossipContainer.CODEC, this.gossips);
       var1.putInt("ConversionTime", this.isConverting() ? this.villagerConversionTime : -1);
       var1.storeNullable("ConversionPlayer", UUIDUtil.CODEC, this.conversionStarter);
       var1.putInt("Xp", this.villagerXp);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
-      this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse((Object)null);
+      this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC).orElse((Object)null);
       this.gossips = (GossipContainer)var1.read("Gossips", GossipContainer.CODEC).orElse((Object)null);
       int var2 = var1.getIntOr("ConversionTime", -1);
       if (var2 != -1) {
@@ -268,7 +268,13 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.setVillagerData(this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
+      VillagerData var5 = this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition())));
+      Optional var6 = BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random);
+      if (var6.isPresent()) {
+         var5 = var5.withProfession((Holder)var6.get());
+      }
+
+      this.setVillagerData(var5);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

@@ -109,7 +109,7 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
    private void refreshRecipeResult() {
       Player var2 = this.player;
       if (var2 instanceof ServerPlayer var1) {
-         ServerLevel var5 = var1.serverLevel();
+         ServerLevel var5 = var1.level();
          CraftingInput var3 = this.container.asCraftInput();
          ItemStack var4 = (ItemStack)CrafterBlock.getPotentialResults(var5, var3).map((var2x) -> ((CraftingRecipe)var2x.value()).assemble(var3, var5.registryAccess())).orElse(ItemStack.EMPTY);
          this.resultContainer.setItem(0, var4);

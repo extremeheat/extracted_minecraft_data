@@ -50,10 +50,14 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
          this.renderBackground(var1, var2, var3, var4);
       } else {
-         super.render(var1, var2, var3, var4);
+         super.renderContents(var1, var2, var3, var4);
       }
 
+      var1.nextStratum();
       this.recipeBookComponent.render(var1, var2, var3, var4);
+      var1.nextStratum();
+      this.renderCarriedItem(var1, var2, var3);
+      this.renderSnapbackItem(var1);
       this.renderTooltip(var1, var2, var3);
       this.recipeBookComponent.renderTooltip(var1, var2, var3, this.hoveredSlot);
    }

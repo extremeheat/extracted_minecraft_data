@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ServerboundPaddleBoatPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -45,6 +44,8 @@ import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -112,10 +113,10 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    public static boolean canVehicleCollide(Entity var0, Entity var1) {
-      return (var1.canBeCollidedWith() || var1.isPushable()) && !var0.isPassengerOfSameVehicle(var1);
+      return (var1.canBeCollidedWith(var0) || var1.isPushable()) && !var0.isPassengerOfSameVehicle(var1);
    }
 
-   public boolean canBeCollidedWith() {
+   public boolean canBeCollidedWith(@Nullable Entity var1) {
       return true;
    }
 
@@ -349,14 +350,15 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    public Vec3 getLeashOffset() {
-      return new Vec3(0.0, (double)(0.88F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.64F));
+      return new Vec3(0.0, (double)(0.88F * this.getBbHeight()), (double)(0.64F * this.getBbWidth()));
    }
 
-   public void elasticRangeLeashBehaviour(Entity var1, float var2) {
-      Vec3 var3 = var1.position().subtract(this.position()).normalize().scale((double)var2 - 6.0);
-      Vec3 var4 = this.getDeltaMovement();
-      boolean var5 = var4.dot(var3) > 0.0;
-      this.setDeltaMovement(var4.add(var3.scale(var5 ? 0.15000000596046448 : 0.20000000298023224)));
+   public boolean supportQuadLeash() {
+      return true;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.0, 0.64, 0.382, 0.88);
    }
 
    private Status getStatus() {
@@ -657,11 +659,11 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       this.clampRotation(var1);
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       this.writeLeashData(var1, this.leashData);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.readLeashData(var1);
    }
 

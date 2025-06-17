@@ -22,7 +22,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.reporting.ReportPlayerScreen;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -44,7 +44,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    private boolean isRemoved;
    private boolean hasRecentMessages;
    private final boolean reportingEnabled;
-   private final boolean hasDraftReport;
+   private boolean hasDraftReport;
    private final boolean chatReportable;
    @Nullable
    private Button hideButton;
@@ -80,7 +80,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       ReportingContext var7 = var1.getReportingContext();
       this.reportingEnabled = var7.sender().isEnabled();
       this.chatReportable = var6;
-      this.hasDraftReport = var7.hasDraftReportFor(var3);
+      this.refreshHasDraftReport(var7);
       MutableComponent var8 = Component.translatable("gui.socialInteractions.narration.hide", var4);
       MutableComponent var9 = Component.translatable("gui.socialInteractions.narration.show", var4);
       PlayerSocialManager var10 = var1.getPlayerSocialManager();
@@ -123,6 +123,10 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          this.children = ImmutableList.of();
       }
 
+   }
+
+   public void refreshHasDraftReport(ReportingContext var1) {
+      this.hasDraftReport = var1.hasDraftReportFor(this.id);
    }
 
    private Tooltip createReportButtonTooltip() {
@@ -170,7 +174,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       }
 
       if (this.hasDraftReport && this.reportButton != null) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
       }
 
    }
@@ -218,7 +222,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    private void onHiddenOrShown(boolean var1, Component var2) {
       this.updateHideAndShowButton(var1);
       this.minecraft.gui.getChat().addMessage(var2);
-      this.minecraft.getNarrator().sayNow(var2);
+      this.minecraft.getNarrator().saySystemNow(var2);
    }
 
    private void updateHideAndShowButton(boolean var1) {

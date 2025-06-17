@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
@@ -33,6 +33,7 @@ public class BossHealthOverlay {
 
    public void render(GuiGraphics var1) {
       if (!this.events.isEmpty()) {
+         var1.nextStratum();
          ProfilerFiller var2 = Profiler.get();
          var2.push("bossHealth");
          int var3 = var1.guiWidth();
@@ -45,7 +46,7 @@ public class BossHealthOverlay {
             int var10 = this.minecraft.font.width((FormattedText)var9);
             int var11 = var3 / 2 - var10 / 2;
             int var12 = var4 - 9;
-            var1.drawString(this.minecraft.font, var9, var11, var12, 16777215);
+            var1.drawString(this.minecraft.font, (Component)var9, var11, var12, -1);
             Objects.requireNonNull(this.minecraft.font);
             var4 += 10 + 9;
             if (var4 >= var1.guiHeight() / 3) {
@@ -67,9 +68,9 @@ public class BossHealthOverlay {
    }
 
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
-      var1.blitSprite(RenderType::guiTextured, var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
-         var1.blitSprite(RenderType::guiTextured, var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
       }
 
    }

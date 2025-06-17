@@ -1,6 +1,8 @@
 package com.mojang.realmsclient.dto;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.mojang.util.UUIDTypeAdapter;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
@@ -9,6 +11,7 @@ public class PlayerInfo extends ValueObject implements ReflectionBasedSerializat
    @Nullable
    private String name;
    @SerializedName("uuid")
+   @JsonAdapter(UUIDTypeAdapter.class)
    private UUID uuid;
    @SerializedName("operator")
    private boolean operator;

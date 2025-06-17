@@ -17,7 +17,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -92,6 +91,8 @@ import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Fox extends Animal {
@@ -365,7 +366,7 @@ public class Fox extends Animal {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("Trusted", TRUSTED_LIST_CODEC, this.getTrustedEntities().toList());
       var1.putBoolean("Sleeping", this.isSleeping());
@@ -374,7 +375,7 @@ public class Fox extends Animal {
       var1.putBoolean("Crouching", this.isCrouching());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.clearTrusted();
       ((List)var1.read("Trusted", TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity);
@@ -533,10 +534,6 @@ public class Fox extends Animal {
 
    public void setIsPouncing(boolean var1) {
       this.setFlag(16, var1);
-   }
-
-   public boolean isJumping() {
-      return this.jumping;
    }
 
    public boolean isFullyCrouched() {

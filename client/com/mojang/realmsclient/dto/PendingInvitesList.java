@@ -3,10 +3,9 @@ package com.mojang.realmsclient.dto;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import java.util.List;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class PendingInvitesList extends ValueObject {
@@ -21,13 +20,10 @@ public class PendingInvitesList extends ValueObject {
       PendingInvitesList var1 = new PendingInvitesList();
 
       try {
-         JsonParser var2 = new JsonParser();
-         JsonObject var3 = var2.parse(var0).getAsJsonObject();
-         if (var3.get("invites").isJsonArray()) {
-            Iterator var4 = var3.get("invites").getAsJsonArray().iterator();
-
-            while(var4.hasNext()) {
-               var1.pendingInvites.add(PendingInvite.parse(((JsonElement)var4.next()).getAsJsonObject()));
+         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
+         if (var2.get("invites").isJsonArray()) {
+            for(JsonElement var4 : var2.get("invites").getAsJsonArray()) {
+               var1.pendingInvites.add(PendingInvite.parse(var4.getAsJsonObject()));
             }
          }
       } catch (Exception var5) {

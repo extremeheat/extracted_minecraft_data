@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.BreezeAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -22,6 +23,12 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
    private final ModelPart windMid;
    private final ModelPart windBottom;
    private final ModelPart rods;
+   private final KeyframeAnimation idleAnimation;
+   private final KeyframeAnimation shootAnimation;
+   private final KeyframeAnimation slideAnimation;
+   private final KeyframeAnimation slideBackAnimation;
+   private final KeyframeAnimation inhaleAnimation;
+   private final KeyframeAnimation jumpAnimation;
 
    public BreezeModel(ModelPart var1) {
       super(var1, RenderType::entityTranslucent);
@@ -32,6 +39,12 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
       this.head = var1.getChild("body").getChild("head");
       this.eyes = this.head.getChild("eyes");
       this.rods = var1.getChild("body").getChild("rods");
+      this.idleAnimation = BreezeAnimation.IDLE.bake(var1);
+      this.shootAnimation = BreezeAnimation.SHOOT.bake(var1);
+      this.slideAnimation = BreezeAnimation.SLIDE.bake(var1);
+      this.slideBackAnimation = BreezeAnimation.SLIDE_BACK.bake(var1);
+      this.inhaleAnimation = BreezeAnimation.INHALE.bake(var1);
+      this.jumpAnimation = BreezeAnimation.JUMP.bake(var1);
    }
 
    public static LayerDefinition createBodyLayer(int var0, int var1) {
@@ -53,12 +66,12 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
 
    public void setupAnim(BreezeRenderState var1) {
       super.setupAnim(var1);
-      this.animate(var1.idle, BreezeAnimation.IDLE, var1.ageInTicks);
-      this.animate(var1.shoot, BreezeAnimation.SHOOT, var1.ageInTicks);
-      this.animate(var1.slide, BreezeAnimation.SLIDE, var1.ageInTicks);
-      this.animate(var1.slideBack, BreezeAnimation.SLIDE_BACK, var1.ageInTicks);
-      this.animate(var1.inhale, BreezeAnimation.INHALE, var1.ageInTicks);
-      this.animate(var1.longJump, BreezeAnimation.JUMP, var1.ageInTicks);
+      this.idleAnimation.apply(var1.idle, var1.ageInTicks);
+      this.shootAnimation.apply(var1.shoot, var1.ageInTicks);
+      this.slideAnimation.apply(var1.slide, var1.ageInTicks);
+      this.slideBackAnimation.apply(var1.slideBack, var1.ageInTicks);
+      this.inhaleAnimation.apply(var1.inhale, var1.ageInTicks);
+      this.jumpAnimation.apply(var1.longJump, var1.ageInTicks);
    }
 
    public ModelPart head() {

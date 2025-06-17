@@ -61,7 +61,7 @@ public class MeleeAttackGoal extends Goal {
          return false;
       } else if (!this.followingTargetEvenIfNotSeen) {
          return !this.mob.getNavigation().isDone();
-      } else if (!this.mob.isWithinRestriction(var1.blockPosition())) {
+      } else if (!this.mob.isWithinHome(var1.blockPosition())) {
          return false;
       } else {
          if (var1 instanceof Player) {

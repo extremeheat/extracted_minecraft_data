@@ -11,14 +11,12 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.FilteredText;
 import net.minecraft.sounds.SoundEvent;
@@ -30,6 +28,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -94,19 +94,17 @@ public class SignBlockEntity extends BlockEntity {
       return 90;
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.store("front_text", SignText.DIRECT_CODEC, var3, this.frontText);
-      var1.store("back_text", SignText.DIRECT_CODEC, var3, this.backText);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      var1.store("front_text", SignText.DIRECT_CODEC, this.frontText);
+      var1.store("back_text", SignText.DIRECT_CODEC, this.backText);
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
-      this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC).map(this::loadLines).orElseGet(SignText::new);
+      this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC).map(this::loadLines).orElseGet(SignText::new);
       this.isWaxed = var1.getBooleanOr("is_waxed", false);
    }
 
@@ -189,34 +187,45 @@ public class SignBlockEntity extends BlockEntity {
       return this.isWaxed() && this.getText(var1).hasAnyClickCommands(var2);
    }
 
-   public boolean executeClickCommandsIfPresent(Player var1, Level var2, BlockPos var3, boolean var4) {
+   public boolean executeClickCommandsIfPresent(ServerLevel var1, Player var2, BlockPos var3, boolean var4) {
       boolean var5 = false;
 
-      for(Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
+      for(Component var9 : this.getText(var4).getMessages(var2.isTextFilteringEnabled())) {
          Style var10 = var9.getStyle();
          ClickEvent var11 = var10.getClickEvent();
-         if (var11 instanceof ClickEvent.RunCommand var12) {
-            ClickEvent.RunCommand var10000 = var12;
-
-            try {
-               var16 = var10000.command();
-            } catch (Throwable var15) {
-               throw new MatchException(var15.toString(), var15);
-            }
-
-            String var14 = var16;
-            var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var14);
-            var5 = true;
+         byte var13 = 0;
+         //$FF: var13->value
+         //0->net/minecraft/network/chat/ClickEvent$RunCommand
+         //1->net/minecraft/network/chat/ClickEvent$ShowDialog
+         //2->net/minecraft/network/chat/ClickEvent$Custom
+         switch (var11.typeSwitch<invokedynamic>(var11, var13)) {
+            case -1:
+            default:
+               break;
+            case 0:
+               ClickEvent.RunCommand var14 = (ClickEvent.RunCommand)var11;
+               var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var2, var1, var3), var14.command());
+               var5 = true;
+               break;
+            case 1:
+               ClickEvent.ShowDialog var15 = (ClickEvent.ShowDialog)var11;
+               var2.openDialog(var15.dialog());
+               var5 = true;
+               break;
+            case 2:
+               ClickEvent.Custom var16 = (ClickEvent.Custom)var11;
+               var1.getServer().handleCustomClickAction(var16.id(), var16.payload());
+               var5 = true;
          }
       }
 
       return var5;
    }
 
-   private static CommandSourceStack createCommandSourceStack(@Nullable Player var0, Level var1, BlockPos var2) {
+   private static CommandSourceStack createCommandSourceStack(@Nullable Player var0, ServerLevel var1, BlockPos var2) {
       String var3 = var0 == null ? "Sign" : var0.getName().getString();
       Object var4 = var0 == null ? Component.literal("Sign") : var0.getDisplayName();
-      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, (ServerLevel)var1, 2, var3, (Component)var4, var1.getServer(), var0);
+      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var1, 2, var3, (Component)var4, var1.getServer(), var0);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

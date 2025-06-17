@@ -30,12 +30,14 @@ import net.minecraft.client.resources.sounds.AmbientSoundHandler;
 import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
 import net.minecraft.client.resources.sounds.BubbleColumnAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.ElytraOnPlayerSoundInstance;
+import net.minecraft.client.resources.sounds.RidingHappyGhastSoundInstance;
 import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -50,6 +52,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -65,6 +68,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
@@ -114,7 +118,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean lastOnGround;
    private boolean lastHorizontalCollision;
    private boolean crouching;
-   private boolean wasShiftKeyDown;
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
@@ -122,6 +125,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private Input lastSentInput;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
+   public int experienceDisplayStartTick;
    public float yBob;
    public float xBob;
    public float yBobO;
@@ -134,24 +138,20 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Nullable
    private InteractionHand usingItemHand;
    private boolean handsBusy;
-   private boolean autoJumpEnabled;
+   private boolean autoJumpEnabled = true;
    private int autoJumpTime;
    private boolean wasFallFlying;
    private int waterVisionTime;
-   private boolean showDeathScreen;
-   private boolean doLimitedCrafting;
+   private boolean showDeathScreen = true;
+   private boolean doLimitedCrafting = false;
 
-   public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, boolean var6, boolean var7) {
+   public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, Input var6, boolean var7) {
       super(var2, var3.getLocalGameProfile());
-      this.lastSentInput = Input.EMPTY;
-      this.autoJumpEnabled = true;
-      this.showDeathScreen = true;
-      this.doLimitedCrafting = false;
       this.minecraft = var1;
       this.connection = var3;
       this.stats = var4;
       this.recipeBook = var5;
-      this.wasShiftKeyDown = var6;
+      this.lastSentInput = var6;
       this.wasSprinting = var7;
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, var1.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
@@ -168,6 +168,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          if (var1 instanceof AbstractMinecart) {
             this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, true));
             this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, false));
+         } else if (var1 instanceof HappyGhast) {
+            this.minecraft.getSoundManager().play(new RidingHappyGhastSoundInstance(this, (HappyGhast)var1));
          }
 
          return true;
@@ -192,7 +194,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
-         this.sendShiftKeyState();
          if (!this.lastSentInput.equals(this.input.keyPresses)) {
             this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
             this.lastSentInput = this.input.keyPresses;
@@ -262,16 +263,6 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.lastOnGround = this.onGround();
          this.lastHorizontalCollision = this.horizontalCollision;
          this.autoJumpEnabled = (Boolean)this.minecraft.options.autoJump().get();
-      }
-
-   }
-
-   private void sendShiftKeyState() {
-      boolean var1 = this.isShiftKeyDown();
-      if (var1 != this.wasShiftKeyDown) {
-         ServerboundPlayerCommandPacket.Action var2 = var1 ? ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY : ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY;
-         this.connection.send(new ServerboundPlayerCommandPacket(this, var2));
-         this.wasShiftKeyDown = var1;
       }
 
    }
@@ -427,6 +418,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.experienceProgress = var1;
       this.totalExperience = var2;
       this.experienceLevel = var3;
+      this.experienceDisplayStartTick = this.tickCount;
    }
 
    public void handleEntityEvent(byte var1) {
@@ -556,6 +548,10 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void openJigsawBlock(JigsawBlockEntity var1) {
       this.minecraft.setScreen(new JigsawBlockEditScreen(var1));
+   }
+
+   public void openDialog(Holder<Dialog> var1) {
+      this.connection.showDialog(var1, this.minecraft.screen);
    }
 
    public void openItemGui(ItemStack var1, InteractionHand var2) {
@@ -1104,5 +1100,9 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public TickThrottler getDropSpamThrottler() {
       return this.dropSpamThrottler;
+   }
+
+   public Input getLastSentInput() {
+      return this.lastSentInput;
    }
 }

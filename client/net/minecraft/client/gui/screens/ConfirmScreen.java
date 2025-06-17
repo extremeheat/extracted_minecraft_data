@@ -1,25 +1,26 @@
 package net.minecraft.client.gui.screens;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.List;
-import java.util.Objects;
-import net.minecraft.client.gui.GuiGraphics;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 
 public class ConfirmScreen extends Screen {
-   private static final int MARGIN = 20;
    private final Component message;
-   private MultiLineLabel multilineMessage;
-   protected Component yesButton;
-   protected Component noButton;
+   protected LinearLayout layout;
+   protected Component yesButtonComponent;
+   protected Component noButtonComponent;
+   @Nullable
+   protected Button yesButton;
+   @Nullable
+   protected Button noButton;
    private int delayTicker;
    protected final BooleanConsumer callback;
-   private final List<Button> exitButtons;
 
    public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3) {
       this(var1, var2, var3, CommonComponents.GUI_YES, CommonComponents.GUI_NO);
@@ -27,12 +28,11 @@ public class ConfirmScreen extends Screen {
 
    public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3, Component var4, Component var5) {
       super(var2);
-      this.multilineMessage = MultiLineLabel.EMPTY;
-      this.exitButtons = Lists.newArrayList();
+      this.layout = LinearLayout.vertical().spacing(8);
       this.callback = var1;
       this.message = var3;
-      this.yesButton = var4;
-      this.noButton = var5;
+      this.yesButtonComponent = var4;
+      this.noButtonComponent = var5;
    }
 
    public Component getNarrationMessage() {
@@ -41,59 +41,41 @@ public class ConfirmScreen extends Screen {
 
    protected void init() {
       super.init();
-      this.multilineMessage = MultiLineLabel.create(this.font, this.message, this.width - 50);
-      int var1 = Mth.clamp(this.messageTop() + this.messageHeight() + 20, this.height / 6 + 96, this.height - 24);
-      this.exitButtons.clear();
+      this.layout.defaultCellSetting().alignHorizontallyCenter();
+      this.layout.addChild(new StringWidget(this.title, this.font));
+      this.layout.addChild((new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.width - 50).setMaxRows(15).setCentered(true));
+      this.addAdditionalText();
+      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(4));
+      var1.defaultCellSetting().paddingTop(16);
       this.addButtons(var1);
+      this.layout.visitWidgets(this::addRenderableWidget);
+      this.repositionElements();
    }
 
-   protected void addButtons(int var1) {
-      this.addExitButton(Button.builder(this.yesButton, (var1x) -> this.callback.accept(true)).bounds(this.width / 2 - 155, var1, 150, 20).build());
-      this.addExitButton(Button.builder(this.noButton, (var1x) -> this.callback.accept(false)).bounds(this.width / 2 - 155 + 160, var1, 150, 20).build());
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   protected void addExitButton(Button var1) {
-      this.exitButtons.add((Button)this.addRenderableWidget(var1));
+   protected void addAdditionalText() {
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, this.titleTop(), 16777215);
-      this.multilineMessage.renderCentered(var1, this.width / 2, this.messageTop());
-   }
-
-   private int titleTop() {
-      int var1 = (this.height - this.messageHeight()) / 2;
-      int var10000 = var1 - 20;
-      Objects.requireNonNull(this.font);
-      return Mth.clamp(var10000 - 9, 10, 80);
-   }
-
-   private int messageTop() {
-      return this.titleTop() + 20;
-   }
-
-   private int messageHeight() {
-      int var10000 = this.multilineMessage.getLineCount();
-      Objects.requireNonNull(this.font);
-      return var10000 * 9;
+   protected void addButtons(LinearLayout var1) {
+      this.yesButton = (Button)var1.addChild(Button.builder(this.yesButtonComponent, (var1x) -> this.callback.accept(true)).build());
+      this.noButton = (Button)var1.addChild(Button.builder(this.noButtonComponent, (var1x) -> this.callback.accept(false)).build());
    }
 
    public void setDelay(int var1) {
       this.delayTicker = var1;
-
-      for(Button var3 : this.exitButtons) {
-         var3.active = false;
-      }
-
+      this.yesButton.active = false;
+      this.noButton.active = false;
    }
 
    public void tick() {
       super.tick();
       if (--this.delayTicker == 0) {
-         for(Button var2 : this.exitButtons) {
-            var2.active = true;
-         }
+         this.yesButton.active = true;
+         this.noButton.active = true;
       }
 
    }

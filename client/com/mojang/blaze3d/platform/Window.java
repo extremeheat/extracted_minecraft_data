@@ -52,7 +52,7 @@ public final class Window implements AutoCloseable {
    private int framebufferHeight;
    private int guiScaledWidth;
    private int guiScaledHeight;
-   private double guiScale;
+   private int guiScale;
    private String errorSection = "";
    private boolean dirty;
    private boolean vsync;
@@ -448,12 +448,13 @@ public final class Window implements AutoCloseable {
       return var3;
    }
 
-   public void setGuiScale(double var1) {
+   public void setGuiScale(int var1) {
       this.guiScale = var1;
-      int var3 = (int)((double)this.framebufferWidth / var1);
-      this.guiScaledWidth = (double)this.framebufferWidth / var1 > (double)var3 ? var3 + 1 : var3;
-      int var4 = (int)((double)this.framebufferHeight / var1);
-      this.guiScaledHeight = (double)this.framebufferHeight / var1 > (double)var4 ? var4 + 1 : var4;
+      double var2 = (double)var1;
+      int var4 = (int)((double)this.framebufferWidth / var2);
+      this.guiScaledWidth = (double)this.framebufferWidth / var2 > (double)var4 ? var4 + 1 : var4;
+      int var5 = (int)((double)this.framebufferHeight / var2);
+      this.guiScaledHeight = (double)this.framebufferHeight / var2 > (double)var5 ? var5 + 1 : var5;
    }
 
    public void setTitle(String var1) {
@@ -512,7 +513,7 @@ public final class Window implements AutoCloseable {
       return this.y;
    }
 
-   public double getGuiScale() {
+   public int getGuiScale() {
       return this.guiScale;
    }
 

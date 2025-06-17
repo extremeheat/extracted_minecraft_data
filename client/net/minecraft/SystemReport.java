@@ -32,8 +32,8 @@ public class SystemReport {
 
    public SystemReport() {
       super();
-      this.setDetail("Minecraft Version", SharedConstants.getCurrentVersion().getName());
-      this.setDetail("Minecraft Version ID", SharedConstants.getCurrentVersion().getId());
+      this.setDetail("Minecraft Version", SharedConstants.getCurrentVersion().name());
+      this.setDetail("Minecraft Version ID", SharedConstants.getCurrentVersion().id());
       this.setDetail("Operating System", OPERATING_SYSTEM);
       this.setDetail("Java Version", JAVA_VERSION);
       this.setDetail("Java VM Version", JAVA_VM_VERSION);

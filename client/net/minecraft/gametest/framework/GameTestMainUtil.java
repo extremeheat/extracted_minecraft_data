@@ -70,7 +70,11 @@ public class GameTestMainUtil {
 
          LevelStorageSource.LevelStorageAccess var6 = LevelStorageSource.createDefault(Paths.get(var3)).createAccess("gametestworld");
          PackRepository var5 = ServerPacksSource.createPackRepository(var6);
-         MinecraftServer.spin((var3x) -> GameTestServer.create(var3x, var6, var5, optionalFromOption(var2, tests), var2.has(verify)));
+         MinecraftServer.spin((var3x) -> {
+            GameTestServer var4 = GameTestServer.create(var3x, var6, var5, optionalFromOption(var2, tests), var2.has(verify));
+            GameTestTicker.SINGLETON.startTicking();
+            return var4;
+         });
       }
    }
 

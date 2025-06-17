@@ -2,14 +2,10 @@ package net.minecraft.world.level.block.entity;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.sounds.SoundEvents;
@@ -25,6 +21,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public abstract class BaseContainerBlockEntity extends BlockEntity implements Container, MenuProvider, Nameable {
    private LockCode lockKey;
@@ -36,19 +34,16 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       this.lockKey = LockCode.NO_LOCK;
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      this.lockKey = LockCode.fromTag(var1, var2);
-      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.lockKey = LockCode.fromTag(var1);
+      this.name = parseCustomNameSafe(var1, "CustomName");
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      this.lockKey.addToTag(var1, var2);
-      if (this.name != null) {
-         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.name).getOrThrow());
-      }
-
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
+      this.lockKey.addToTag(var1);
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
    }
 
    public Component getName() {
@@ -149,9 +144,9 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.getItems()));
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
-      var1.remove("CustomName");
-      var1.remove("lock");
-      var1.remove("Items");
+   public void removeComponentsFromTag(ValueOutput var1) {
+      var1.discard("CustomName");
+      var1.discard("lock");
+      var1.discard("Items");
    }
 }

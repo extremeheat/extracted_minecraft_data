@@ -6,7 +6,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -18,6 +17,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -49,7 +50,7 @@ public class Interaction extends Entity implements Attackable, Targeting {
       var1.define(DATA_RESPONSE_ID, false);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.setWidth(var1.getFloatOr("width", 1.0F));
       this.setHeight(var1.getFloatOr("height", 1.0F));
       this.attack = (PlayerAction)var1.read("attack", Interaction.PlayerAction.CODEC).orElse((Object)null);
@@ -58,7 +59,7 @@ public class Interaction extends Entity implements Attackable, Targeting {
       this.setBoundingBox(this.makeBoundingBox());
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
       var1.storeNullable("attack", Interaction.PlayerAction.CODEC, this.attack);

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.goal;
 
-import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -32,7 +31,6 @@ public class GoalSelector {
       this.availableGoals.add(new WrappedGoal(var1, var2));
    }
 
-   @VisibleForTesting
    public void removeAllGoals(Predicate<Goal> var1) {
       this.availableGoals.removeIf((var1x) -> var1.test(var1x.getGoal()));
    }

@@ -1,28 +1,24 @@
 package net.minecraft.network.protocol.login;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.resources.RegistryOps;
 
-public class ClientboundLoginDisconnectPacket implements Packet<ClientLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundLoginDisconnectPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundLoginDisconnectPacket>codec(ClientboundLoginDisconnectPacket::write, ClientboundLoginDisconnectPacket::new);
-   private final Component reason;
+public record ClientboundLoginDisconnectPacket(Component reason) implements Packet<ClientLoginPacketListener> {
+   private static final RegistryOps<JsonElement> OPS;
+   public static final StreamCodec<ByteBuf, ClientboundLoginDisconnectPacket> STREAM_CODEC;
 
    public ClientboundLoginDisconnectPacket(Component var1) {
       super();
       this.reason = var1;
-   }
-
-   private ClientboundLoginDisconnectPacket(FriendlyByteBuf var1) {
-      super();
-      this.reason = Component.Serializer.fromJsonLenient(var1.readUtf(262144), RegistryAccess.EMPTY);
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(Component.Serializer.toJson(this.reason, RegistryAccess.EMPTY));
    }
 
    public PacketType<ClientboundLoginDisconnectPacket> type() {
@@ -33,7 +29,8 @@ public class ClientboundLoginDisconnectPacket implements Packet<ClientLoginPacke
       var1.handleDisconnect(this);
    }
 
-   public Component getReason() {
-      return this.reason;
+   static {
+      OPS = RegistryAccess.EMPTY.createSerializationContext(JsonOps.INSTANCE);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.lenientJson(262144).apply(ByteBufCodecs.fromCodec(OPS, ComponentSerialization.CODEC)), ClientboundLoginDisconnectPacket::reason, ClientboundLoginDisconnectPacket::new);
    }
 }

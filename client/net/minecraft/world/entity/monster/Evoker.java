@@ -4,8 +4,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -73,20 +71,8 @@ public class Evoker extends SpellcasterIllager {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FOLLOW_RANGE, 12.0).add(Attributes.MAX_HEALTH, 24.0);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-   }
-
-   public void readAdditionalSaveData(CompoundTag var1) {
-      super.readAdditionalSaveData(var1);
-   }
-
    public SoundEvent getCelebrateSound() {
       return SoundEvents.EVOKER_CELEBRATE;
-   }
-
-   public void addAdditionalSaveData(CompoundTag var1) {
-      super.addAdditionalSaveData(var1);
    }
 
    protected boolean considersEntityAsAlly(Entity var1) {

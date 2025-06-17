@@ -2,10 +2,13 @@ package net.minecraft.client.gui.components;
 
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.SingleKeyCache;
 
 public class MultiLineTextWidget extends AbstractStringWidget {
@@ -13,6 +16,9 @@ public class MultiLineTextWidget extends AbstractStringWidget {
    private OptionalInt maxRows;
    private final SingleKeyCache<CacheKey, MultiLineLabel> cache;
    private boolean centered;
+   private boolean allowHoverComponents;
+   @Nullable
+   private Consumer<Style> componentClickHandler;
 
    public MultiLineTextWidget(Component var1, Font var2) {
       this(0, 0, var1, var2);
@@ -23,6 +29,8 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       this.maxWidth = OptionalInt.empty();
       this.maxRows = OptionalInt.empty();
       this.centered = false;
+      this.allowHoverComponents = false;
+      this.componentClickHandler = null;
       this.cache = Util.<CacheKey, MultiLineLabel>singleKeyCache((var1x) -> var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.maxWidth, var1x.maxRows.getAsInt(), var1x.message) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth));
       this.active = false;
    }
@@ -44,6 +52,12 @@ public class MultiLineTextWidget extends AbstractStringWidget {
 
    public MultiLineTextWidget setCentered(boolean var1) {
       this.centered = var1;
+      return this;
+   }
+
+   public MultiLineTextWidget configureStyleHandling(boolean var1, @Nullable Consumer<Style> var2) {
+      this.allowHoverComponents = var1;
+      this.componentClickHandler = var2;
       return this;
    }
 
@@ -70,6 +84,35 @@ public class MultiLineTextWidget extends AbstractStringWidget {
          var5.renderLeftAligned(var1, var6, var7, var8, var9);
       }
 
+      if (this.allowHoverComponents) {
+         Style var10 = this.getComponentStyleAt((double)var2, (double)var3);
+         if (this.isHovered()) {
+            var1.renderComponentHoverEffect(this.getFont(), var10, var2, var3);
+         }
+      }
+
+   }
+
+   @Nullable
+   private Style getComponentStyleAt(double var1, double var3) {
+      MultiLineLabel var5 = this.cache.getValue(this.getFreshCacheKey());
+      int var6 = this.getX();
+      int var7 = this.getY();
+      Objects.requireNonNull(this.getFont());
+      byte var8 = 9;
+      return this.centered ? var5.getStyleAtCentered(var6 + this.getWidth() / 2, var7, var8, var1, var3) : var5.getStyleAtLeftAligned(var6, var7, var8, var1, var3);
+   }
+
+   public void onClick(double var1, double var3) {
+      if (this.componentClickHandler != null) {
+         Style var5 = this.getComponentStyleAt(var1, var3);
+         if (var5 != null) {
+            this.componentClickHandler.accept(var5);
+            return;
+         }
+      }
+
+      super.onClick(var1, var3);
    }
 
    private CacheKey getFreshCacheKey() {

@@ -25,8 +25,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
@@ -40,7 +40,7 @@ public class FillCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fill").requires((var0x) -> var0x.hasPermission(2))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(wrapWithMode(var1, Commands.argument("block", BlockStateArgument.block(var1)), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "from"), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "to"), (var0x) -> BlockStateArgument.getBlock(var0x, "block"), (var0x) -> null).then(((LiteralArgumentBuilder)Commands.literal("replace").executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to")), BlockStateArgument.getBlock(var0x, "block"), FillCommand.Mode.REPLACE, (Predicate)null, false))).then(wrapWithMode(var1, Commands.argument("filter", BlockPredicateArgument.blockPredicate(var1)), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "from"), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "to"), (var0x) -> BlockStateArgument.getBlock(var0x, "block"), (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "filter")))).then(Commands.literal("keep").executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to")), BlockStateArgument.getBlock(var0x, "block"), FillCommand.Mode.REPLACE, (var0) -> var0.getLevel().isEmptyBlock(var0.getPos()), false)))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fill").requires(Commands.hasPermission(2))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(wrapWithMode(var1, Commands.argument("block", BlockStateArgument.block(var1)), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "from"), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "to"), (var0x) -> BlockStateArgument.getBlock(var0x, "block"), (var0x) -> null).then(((LiteralArgumentBuilder)Commands.literal("replace").executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to")), BlockStateArgument.getBlock(var0x, "block"), FillCommand.Mode.REPLACE, (Predicate)null, false))).then(wrapWithMode(var1, Commands.argument("filter", BlockPredicateArgument.blockPredicate(var1)), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "from"), (var0x) -> BlockPosArgument.getLoadedBlockPos(var0x, "to"), (var0x) -> BlockStateArgument.getBlock(var0x, "block"), (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "filter")))).then(Commands.literal("keep").executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BoundingBox.fromCorners(BlockPosArgument.getLoadedBlockPos(var0x, "from"), BlockPosArgument.getLoadedBlockPos(var0x, "to")), BlockStateArgument.getBlock(var0x, "block"), FillCommand.Mode.REPLACE, (var0) -> var0.getLevel().isEmptyBlock(var0.getPos()), false)))))));
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> wrapWithMode(CommandBuildContext var0, ArgumentBuilder<CommandSourceStack, ?> var1, InCommandFunction<CommandContext<CommandSourceStack>, BlockPos> var2, InCommandFunction<CommandContext<CommandSourceStack>, BlockPos> var3, InCommandFunction<CommandContext<CommandSourceStack>, BlockInput> var4, NullableCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var5) {
@@ -60,25 +60,37 @@ public class FillCommand {
          } else {
             int var10 = 0;
 
+            record 1UpdatedPosition(BlockPos pos, BlockState oldState) {
+               final BlockPos pos;
+               final BlockState oldState;
+
+               _UpdatedPosition/* $FF was: 1UpdatedPosition*/(BlockPos var1, BlockState var2) {
+                  super();
+                  this.pos = var1;
+                  this.oldState = var2;
+               }
+            }
+
             for(BlockPos var12 : BlockPos.betweenClosed(var1.minX(), var1.minY(), var1.minZ(), var1.maxX(), var1.maxY(), var1.maxZ())) {
                if (var4 == null || var4.test(new BlockInWorld(var9, var12, true))) {
-                  boolean var13 = false;
+                  BlockState var13 = var9.getBlockState(var12);
+                  boolean var14 = false;
                   if (var3.affector.affect(var9, var12)) {
-                     var13 = true;
+                     var14 = true;
                   }
 
-                  BlockInput var14 = var3.filter.filter(var1, var12, var2, var9);
-                  if (var14 == null) {
-                     if (var13) {
+                  BlockInput var15 = var3.filter.filter(var1, var12, var2, var9);
+                  if (var15 == null) {
+                     if (var14) {
                         ++var10;
                      }
-                  } else if (!var14.place(var9, var12, 2 | (var5 ? 816 : 256))) {
-                     if (var13) {
+                  } else if (!var15.place(var9, var12, 2 | (var5 ? 816 : 256))) {
+                     if (var14) {
                         ++var10;
                      }
                   } else {
                      if (!var5) {
-                        var8.add(var12.immutable());
+                        var8.add(new 1UpdatedPosition(var12.immutable(), var13));
                      }
 
                      ++var10;
@@ -86,9 +98,8 @@ public class FillCommand {
                }
             }
 
-            for(BlockPos var16 : var8) {
-               Block var17 = var9.getBlockState(var16).getBlock();
-               var9.updateNeighborsAt(var16, var17);
+            for(1UpdatedPosition var17 : var8) {
+               var9.updateNeighboursOnBlockSet(var17.pos, var17.oldState);
             }
 
             if (var10 == 0) {

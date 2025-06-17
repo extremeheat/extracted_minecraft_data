@@ -8,7 +8,7 @@ import net.minecraft.tags.WorldPresetTags;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
-public class WorldPresetTagsProvider extends TagsProvider<WorldPreset> {
+public class WorldPresetTagsProvider extends KeyTagProvider<WorldPreset> {
    public WorldPresetTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super(var1, Registries.WORLD_PRESET, var2);
    }

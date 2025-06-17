@@ -11,10 +11,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +38,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, RecipeCraftingHolder, StackedContentsCompatible {
@@ -116,10 +116,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       return this.litTimeRemaining > 0;
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      ContainerHelper.loadAllItems(var1, this.items, var2);
+      ContainerHelper.loadAllItems(var1, this.items);
       this.cookingTimer = var1.getShortOr("cooking_time_spent", (short)0);
       this.cookingTotalTime = var1.getShortOr("cooking_total_time", (short)0);
       this.litTimeRemaining = var1.getShortOr("lit_time_remaining", (short)0);
@@ -128,13 +128,13 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       this.recipesUsed.putAll((Map)var1.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.putShort("cooking_time_spent", (short)this.cookingTimer);
       var1.putShort("cooking_total_time", (short)this.cookingTotalTime);
       var1.putShort("lit_time_remaining", (short)this.litTimeRemaining);
       var1.putShort("lit_total_time", (short)this.litTotalTime);
-      ContainerHelper.saveAllItems(var1, this.items, var2);
+      ContainerHelper.saveAllItems(var1, this.items);
       var1.store("RecipesUsed", RECIPES_USED_CODEC, this.recipesUsed);
    }
 
@@ -334,7 +334,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    public void awardUsedRecipesAndPopExperience(ServerPlayer var1) {
-      List var2 = this.getRecipesToAwardAndPopExperience(var1.serverLevel(), var1.position());
+      List var2 = this.getRecipesToAwardAndPopExperience(var1.level(), var1.position());
       var1.awardRecipes(var2);
 
       for(RecipeHolder var4 : var2) {

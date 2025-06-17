@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -9,6 +8,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Marker extends Entity {
    public Marker(EntityType<?> var1, Level var2) {
@@ -22,10 +23,10 @@ public class Marker extends Entity {
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {

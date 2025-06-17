@@ -32,6 +32,12 @@ public abstract class GlDebugLabel {
    public void applyLabel(VertexArrayCache.VertexArray var1) {
    }
 
+   public void pushDebugGroup(Supplier<String> var1) {
+   }
+
+   public void popDebugGroup() {
+   }
+
    public static GlDebugLabel create(GLCapabilities var0, boolean var1, Set<String> var2) {
       if (var1) {
          if (var0.GL_KHR_debug && GlDevice.USE_GL_KHR_debug) {
@@ -68,7 +74,6 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(GlBuffer var1) {
-         var1.ensureBufferExists();
          Supplier var2 = var1.label;
          if (var2 != null) {
             KHRDebug.glObjectLabel(33504, var1.handle, StringUtil.truncateStringIfNecessary((String)var2.get(), this.maxLabelLength, true));
@@ -92,6 +97,14 @@ public abstract class GlDebugLabel {
          KHRDebug.glObjectLabel(32884, var1.id, StringUtil.truncateStringIfNecessary(var1.format.toString(), this.maxLabelLength, true));
       }
 
+      public void pushDebugGroup(Supplier<String> var1) {
+         KHRDebug.glPushDebugGroup(33354, 0, (CharSequence)var1.get());
+      }
+
+      public void popDebugGroup() {
+         KHRDebug.glPopDebugGroup();
+      }
+
       public boolean exists() {
          return true;
       }
@@ -103,7 +116,6 @@ public abstract class GlDebugLabel {
       }
 
       public void applyLabel(GlBuffer var1) {
-         var1.ensureBufferExists();
          Supplier var2 = var1.label;
          if (var2 != null) {
             EXTDebugLabel.glLabelObjectEXT(37201, var1.handle, StringUtil.truncateStringIfNecessary((String)var2.get(), 256, true));

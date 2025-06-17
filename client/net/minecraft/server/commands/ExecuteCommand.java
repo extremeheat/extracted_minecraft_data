@@ -15,9 +15,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +39,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -84,7 +83,6 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.commands.data.DataAccessor;
@@ -92,6 +90,7 @@ import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Attackable;
 import net.minecraft.world.entity.Entity;
@@ -110,6 +109,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -121,26 +122,24 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
+import org.slf4j.Logger;
 
 public class ExecuteCommand {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TEST_AREA = 32768;
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.execute.blocks.toobig", var0, var1));
    private static final SimpleCommandExceptionType ERROR_CONDITIONAL_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.execute.conditional.fail"));
    private static final DynamicCommandExceptionType ERROR_CONDITIONAL_FAILED_COUNT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.execute.conditional.fail_count", var0));
    @VisibleForTesting
    public static final Dynamic2CommandExceptionType ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.execute.function.instantiationFailure", var0, var1));
-   private static final SuggestionProvider<CommandSourceStack> SUGGEST_PREDICATE = (var0, var1) -> {
-      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.PREDICATE), var1);
-   };
 
    public ExecuteCommand() {
       super();
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      LiteralCommandNode var2 = var0.register((LiteralArgumentBuilder)Commands.literal("execute").requires((var0x) -> var0x.hasPermission(2)));
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("execute").requires((var0x) -> var0x.hasPermission(2))).then(Commands.literal("run").redirect(var0.getRoot()))).then(addConditionals(var2, Commands.literal("if"), true, var1))).then(addConditionals(var2, Commands.literal("unless"), false, var1))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, (var0x) -> {
+      LiteralCommandNode var2 = var0.register((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(2)));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(2))).then(Commands.literal("run").redirect(var0.getRoot()))).then(addConditionals(var2, Commands.literal("if"), true, var1))).then(addConditionals(var2, Commands.literal("unless"), false, var1))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, (var0x) -> {
          ArrayList var1 = Lists.newArrayList();
 
          for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
@@ -192,7 +191,7 @@ public class ExecuteCommand {
          }
 
          return var1;
-      }))))).then(Commands.argument("pos", Vec3Argument.vec3()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).facing(Vec3Argument.getVec3(var0x, "pos")))))).then(Commands.literal("align").then(Commands.argument("axes", SwizzleArgument.swizzle()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withPosition(((CommandSourceStack)var0x.getSource()).getPosition().align(SwizzleArgument.getSwizzle(var0x, "axes"))))))).then(Commands.literal("anchored").then(Commands.argument("anchor", EntityAnchorArgument.anchor()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withAnchor(EntityAnchorArgument.getAnchor(var0x, "anchor")))))).then(Commands.literal("in").then(Commands.argument("dimension", DimensionArgument.dimension()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withLevel(DimensionArgument.getDimension(var0x, "dimension")))))).then(Commands.literal("summon").then(Commands.argument("entity", ResourceArgument.resource(var1, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.SUMMONABLE_ENTITIES).redirect(var2, (var0x) -> spawnEntityAndRedirect((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity")))))).then(createRelationOperations(var2, Commands.literal("on"))));
+      }))))).then(Commands.argument("pos", Vec3Argument.vec3()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).facing(Vec3Argument.getVec3(var0x, "pos")))))).then(Commands.literal("align").then(Commands.argument("axes", SwizzleArgument.swizzle()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withPosition(((CommandSourceStack)var0x.getSource()).getPosition().align(SwizzleArgument.getSwizzle(var0x, "axes"))))))).then(Commands.literal("anchored").then(Commands.argument("anchor", EntityAnchorArgument.anchor()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withAnchor(EntityAnchorArgument.getAnchor(var0x, "anchor")))))).then(Commands.literal("in").then(Commands.argument("dimension", DimensionArgument.dimension()).redirect(var2, (var0x) -> ((CommandSourceStack)var0x.getSource()).withLevel(DimensionArgument.getDimension(var0x, "dimension")))))).then(Commands.literal("summon").then(Commands.argument("entity", ResourceArgument.resource(var1, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES)).redirect(var2, (var0x) -> spawnEntityAndRedirect((CommandSourceStack)var0x.getSource(), ResourceArgument.getSummonableEntityType(var0x, "entity")))))).then(createRelationOperations(var2, Commands.literal("on"))));
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> wrapStores(LiteralCommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2) {
@@ -254,7 +253,7 @@ public class ExecuteCommand {
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2, CommandBuildContext var3) {
-      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)), var2, (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "block").test(new BlockInWorld(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true))))))).then(Commands.literal("biome").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)), var2, (var0x) -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME).test(((CommandSourceStack)var0x.getSource()).getLevel().getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos")))))))).then(Commands.literal("loaded").then(addConditional(var0, Commands.argument("pos", BlockPosArgument.blockPos()), var2, (var0x) -> isChunkLoaded(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getBlockPos(var0x, "pos")))))).then(Commands.literal("dimension").then(addConditional(var0, Commands.argument("dimension", DimensionArgument.dimension()), var2, (var0x) -> DimensionArgument.getDimension(var0x, "dimension") == ((CommandSourceStack)var0x.getSource()).getLevel())))).then(Commands.literal("score").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.literal("=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 == var1))))))).then(Commands.literal("<").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 < var1))))))).then(Commands.literal("<=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 <= var1))))))).then(Commands.literal(">").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 > var1))))))).then(Commands.literal(">=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 >= var1))))))).then(Commands.literal("matches").then(addConditional(var0, Commands.argument("range", RangeArgument.intRange()), var2, (var0x) -> checkScore(var0x, RangeArgument.Ints.getRange(var0x, "range"))))))))).then(Commands.literal("blocks").then(Commands.argument("start", BlockPosArgument.blockPos()).then(Commands.argument("end", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos()).then(addIfBlocksConditional(var0, Commands.literal("all"), var2, false))).then(addIfBlocksConditional(var0, Commands.literal("masked"), var2, true))))))).then(Commands.literal("entity").then(((RequiredArgumentBuilder)Commands.argument("entities", EntityArgument.entities()).fork(var0, (var1x) -> expect(var1x, var2, !EntityArgument.getOptionalEntities(var1x, "entities").isEmpty()))).executes(createNumericConditionalHandler(var2, (var0x) -> EntityArgument.getOptionalEntities(var0x, "entities").size()))))).then(Commands.literal("predicate").then(addConditional(var0, Commands.argument("predicate", ResourceOrIdArgument.lootPredicate(var3)).suggests(SUGGEST_PREDICATE), var2, (var0x) -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceOrIdArgument.getLootPredicate(var0x, "predicate")))))).then(Commands.literal("function").then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).fork(var0, new ExecuteIfFunctionCustomModifier(var2))))).then(((LiteralArgumentBuilder)Commands.literal("items").then(Commands.literal("entity").then(Commands.argument("entities", EntityArgument.entities()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(var3)).fork(var0, (var1x) -> expect(var1x, var2, countItems(EntityArgument.getEntities(var1x, "entities"), SlotsArgument.getSlots(var1x, "slots"), ItemPredicateArgument.getItemPredicate(var1x, "item_predicate")) > 0))).executes(createNumericConditionalHandler(var2, (var0x) -> countItems(EntityArgument.getEntities(var0x, "entities"), SlotsArgument.getSlots(var0x, "slots"), ItemPredicateArgument.getItemPredicate(var0x, "item_predicate"))))))))).then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(var3)).fork(var0, (var1x) -> expect(var1x, var2, countItems((CommandSourceStack)var1x.getSource(), BlockPosArgument.getLoadedBlockPos(var1x, "pos"), SlotsArgument.getSlots(var1x, "slots"), ItemPredicateArgument.getItemPredicate(var1x, "item_predicate")) > 0))).executes(createNumericConditionalHandler(var2, (var0x) -> countItems((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotsArgument.getSlots(var0x, "slots"), ItemPredicateArgument.getItemPredicate(var0x, "item_predicate")))))))));
+      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)), var2, (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "block").test(new BlockInWorld(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true))))))).then(Commands.literal("biome").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)), var2, (var0x) -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME).test(((CommandSourceStack)var0x.getSource()).getLevel().getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos")))))))).then(Commands.literal("loaded").then(addConditional(var0, Commands.argument("pos", BlockPosArgument.blockPos()), var2, (var0x) -> isChunkLoaded(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getBlockPos(var0x, "pos")))))).then(Commands.literal("dimension").then(addConditional(var0, Commands.argument("dimension", DimensionArgument.dimension()), var2, (var0x) -> DimensionArgument.getDimension(var0x, "dimension") == ((CommandSourceStack)var0x.getSource()).getLevel())))).then(Commands.literal("score").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.literal("=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 == var1))))))).then(Commands.literal("<").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 < var1))))))).then(Commands.literal("<=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 <= var1))))))).then(Commands.literal(">").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 > var1))))))).then(Commands.literal(">=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> checkScore(var0x, (IntBiPredicate)((var0, var1) -> var0 >= var1))))))).then(Commands.literal("matches").then(addConditional(var0, Commands.argument("range", RangeArgument.intRange()), var2, (var0x) -> checkScore(var0x, RangeArgument.Ints.getRange(var0x, "range"))))))))).then(Commands.literal("blocks").then(Commands.argument("start", BlockPosArgument.blockPos()).then(Commands.argument("end", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos()).then(addIfBlocksConditional(var0, Commands.literal("all"), var2, false))).then(addIfBlocksConditional(var0, Commands.literal("masked"), var2, true))))))).then(Commands.literal("entity").then(((RequiredArgumentBuilder)Commands.argument("entities", EntityArgument.entities()).fork(var0, (var1x) -> expect(var1x, var2, !EntityArgument.getOptionalEntities(var1x, "entities").isEmpty()))).executes(createNumericConditionalHandler(var2, (var0x) -> EntityArgument.getOptionalEntities(var0x, "entities").size()))))).then(Commands.literal("predicate").then(addConditional(var0, Commands.argument("predicate", ResourceOrIdArgument.lootPredicate(var3)), var2, (var0x) -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceOrIdArgument.getLootPredicate(var0x, "predicate")))))).then(Commands.literal("function").then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).fork(var0, new ExecuteIfFunctionCustomModifier(var2))))).then(((LiteralArgumentBuilder)Commands.literal("items").then(Commands.literal("entity").then(Commands.argument("entities", EntityArgument.entities()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(var3)).fork(var0, (var1x) -> expect(var1x, var2, countItems(EntityArgument.getEntities(var1x, "entities"), SlotsArgument.getSlots(var1x, "slots"), ItemPredicateArgument.getItemPredicate(var1x, "item_predicate")) > 0))).executes(createNumericConditionalHandler(var2, (var0x) -> countItems(EntityArgument.getEntities(var0x, "entities"), SlotsArgument.getSlots(var0x, "slots"), ItemPredicateArgument.getItemPredicate(var0x, "item_predicate"))))))))).then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("slots", SlotsArgument.slots()).then(((RequiredArgumentBuilder)Commands.argument("item_predicate", ItemPredicateArgument.itemPredicate(var3)).fork(var0, (var1x) -> expect(var1x, var2, countItems((CommandSourceStack)var1x.getSource(), BlockPosArgument.getLoadedBlockPos(var1x, "pos"), SlotsArgument.getSlots(var1x, "slots"), ItemPredicateArgument.getItemPredicate(var1x, "item_predicate")) > 0))).executes(createNumericConditionalHandler(var2, (var0x) -> countItems((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotsArgument.getSlots(var0x, "slots"), ItemPredicateArgument.getItemPredicate(var0x, "item_predicate")))))))));
 
       for(DataCommands.DataProvider var5 : DataCommands.SOURCE_PROVIDERS) {
          var1.then(var5.wrap(Commands.literal("data"), (var3x) -> var3x.then(((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).fork(var0, (var2x) -> expect(var2x, var2, checkMatchingData(var5.access(var2x), NbtPathArgument.getPath(var2x, "path")) > 0))).executes(createNumericConditionalHandler(var2, (var1) -> checkMatchingData(var5.access(var1), NbtPathArgument.getPath(var1, "path")))))));
@@ -403,49 +402,55 @@ public class ExecuteCommand {
       if (var8 > 32768) {
          throw ERROR_AREA_TOO_LARGE.create(32768, var8);
       } else {
-         RegistryAccess var9 = var0.registryAccess();
-         int var10 = 0;
+         int var9 = 0;
+         RegistryAccess var10 = var0.registryAccess();
 
-         for(int var11 = var5.minZ(); var11 <= var5.maxZ(); ++var11) {
-            for(int var12 = var5.minY(); var12 <= var5.maxY(); ++var12) {
-               for(int var13 = var5.minX(); var13 <= var5.maxX(); ++var13) {
-                  BlockPos var14 = new BlockPos(var13, var12, var11);
-                  BlockPos var15 = var14.offset(var7);
-                  BlockState var16 = var0.getBlockState(var14);
-                  if (!var4 || !var16.is(Blocks.AIR)) {
-                     if (var16 != var0.getBlockState(var15)) {
-                        return OptionalInt.empty();
+         try (ProblemReporter.ScopedCollector var11 = new ProblemReporter.ScopedCollector(LOGGER)) {
+            for(int var12 = var5.minZ(); var12 <= var5.maxZ(); ++var12) {
+               for(int var13 = var5.minY(); var13 <= var5.maxY(); ++var13) {
+                  for(int var14 = var5.minX(); var14 <= var5.maxX(); ++var14) {
+                     BlockPos var15 = new BlockPos(var14, var13, var12);
+                     BlockPos var16 = var15.offset(var7);
+                     BlockState var17 = var0.getBlockState(var15);
+                     if (!var4 || !var17.is(Blocks.AIR)) {
+                        if (var17 != var0.getBlockState(var16)) {
+                           return OptionalInt.empty();
+                        }
+
+                        BlockEntity var18 = var0.getBlockEntity(var15);
+                        BlockEntity var19 = var0.getBlockEntity(var16);
+                        if (var18 != null) {
+                           if (var19 == null) {
+                              return OptionalInt.empty();
+                           }
+
+                           if (var19.getType() != var18.getType()) {
+                              return OptionalInt.empty();
+                           }
+
+                           if (!var18.components().equals(var19.components())) {
+                              return OptionalInt.empty();
+                           }
+
+                           TagValueOutput var20 = TagValueOutput.createWithContext(var11.forChild(var18.problemPath()), var10);
+                           var18.saveCustomOnly((ValueOutput)var20);
+                           CompoundTag var21 = var20.buildResult();
+                           TagValueOutput var22 = TagValueOutput.createWithContext(var11.forChild(var19.problemPath()), var10);
+                           var19.saveCustomOnly((ValueOutput)var22);
+                           CompoundTag var23 = var22.buildResult();
+                           if (!var21.equals(var23)) {
+                              return OptionalInt.empty();
+                           }
+                        }
+
+                        ++var9;
                      }
-
-                     BlockEntity var17 = var0.getBlockEntity(var14);
-                     BlockEntity var18 = var0.getBlockEntity(var15);
-                     if (var17 != null) {
-                        if (var18 == null) {
-                           return OptionalInt.empty();
-                        }
-
-                        if (var18.getType() != var17.getType()) {
-                           return OptionalInt.empty();
-                        }
-
-                        if (!var17.components().equals(var18.components())) {
-                           return OptionalInt.empty();
-                        }
-
-                        CompoundTag var19 = var17.saveCustomOnly(var9);
-                        CompoundTag var20 = var18.saveCustomOnly(var9);
-                        if (!var19.equals(var20)) {
-                           return OptionalInt.empty();
-                        }
-                     }
-
-                     ++var10;
                   }
                }
             }
          }
 
-         return OptionalInt.of(var10);
+         return OptionalInt.of(var9);
       }
    }
 

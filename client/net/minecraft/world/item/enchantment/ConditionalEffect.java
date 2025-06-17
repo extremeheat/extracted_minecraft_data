@@ -22,7 +22,7 @@ public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> require
          ProblemReporter.Collector var2 = new ProblemReporter.Collector();
          ValidationContext var3 = new ValidationContext(var2, var0);
          var1.validate(var3);
-         return (DataResult)var2.getReport().map((var0x) -> DataResult.error(() -> "Validation error in enchantment effect condition: " + var0x)).orElseGet(() -> DataResult.success(var1));
+         return !var2.isEmpty() ? DataResult.error(() -> "Validation error in enchantment effect condition: " + var2.getReport()) : DataResult.success(var1);
       });
    }
 

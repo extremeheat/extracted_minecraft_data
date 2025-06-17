@@ -2,7 +2,6 @@ package com.mojang.realmsclient.dto;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public class RealmsNotification {
@@ -59,7 +59,7 @@ public class RealmsNotification {
       ArrayList var1 = new ArrayList();
 
       try {
-         for(JsonElement var4 : JsonParser.parseString(var0).getAsJsonObject().get("notifications").getAsJsonArray()) {
+         for(JsonElement var4 : LenientJsonParser.parse(var0).getAsJsonObject().get("notifications").getAsJsonArray()) {
             var1.add(parse(var4.getAsJsonObject()));
          }
       } catch (Exception var5) {

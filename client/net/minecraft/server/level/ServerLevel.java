@@ -71,6 +71,7 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.SleepStatus;
+import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
@@ -172,6 +173,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.LevelTicks;
+import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.slf4j.Logger;
 
 public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLevel {
@@ -189,6 +191,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    private final ServerLevelData serverLevelData;
    private int lastSpawnChunkRadius;
    final EntityTickList entityTickList = new EntityTickList();
+   private final ServerWaypointManager waypointManager;
    private final PersistentEntitySectionManager<Entity> entityManager;
    private final GameEventDispatcher gameEventDispatcher;
    public boolean noSave;
@@ -252,6 +255,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.sleepStatus = new SleepStatus();
       this.gameEventDispatcher = new GameEventDispatcher(this);
       this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var13, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.TYPE));
+      this.waypointManager = new ServerWaypointManager();
    }
 
    /** @deprecated */
@@ -587,6 +591,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.server.getScoreboard();
    }
 
+   public ServerWaypointManager getWaypointManager() {
+      return this.waypointManager;
+   }
+
    private void advanceWeatherCycle() {
       boolean var1 = this.isRaining();
       if (this.dimensionType().hasSkyLight()) {
@@ -735,6 +743,21 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       } else {
          var2.stopRiding();
       }
+   }
+
+   public void updateNeighboursOnBlockSet(BlockPos var1, BlockState var2) {
+      BlockState var3 = this.getBlockState(var1);
+      Block var4 = var3.getBlock();
+      boolean var5 = !var2.is(var4);
+      if (var5) {
+         var2.affectNeighborsAfterRemoval(this, var1, false);
+      }
+
+      this.updateNeighborsAt(var1, var3.getBlock());
+      if (var3.hasAnalogOutputSignal()) {
+         this.updateNeighbourForOutputSignal(var1, var4);
+      }
+
    }
 
    public boolean mayInteract(Entity var1, BlockPos var2) {
@@ -1573,6 +1596,23 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.pathTypesByPosCache;
    }
 
+   public void waitForChunkAndEntities(ChunkPos var1, int var2) {
+      List var3 = ChunkPos.rangeClosed(var1, var2).toList();
+      this.chunkSource.addTicketWithRadius(TicketType.UNKNOWN, var1, var2);
+      var3.forEach((var1x) -> this.getChunk(var1x.x, var1x.z));
+      this.server.managedBlock(() -> {
+         this.entityManager.processPendingLoads();
+
+         for(ChunkPos var3x : var3) {
+            if (!this.areEntitiesLoaded(var3x.toLong())) {
+               return false;
+            }
+         }
+
+         return true;
+      });
+   }
+
    public void close() throws IOException {
       super.close();
       this.entityManager.close();
@@ -1676,9 +1716,19 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       }
 
       public void onCreated(Entity var1) {
+         if (var1 instanceof WaypointTransmitter var2) {
+            if (var2.isTransmittingWaypoint()) {
+               ServerLevel.this.getWaypointManager().trackWaypoint(var2);
+            }
+         }
+
       }
 
       public void onDestroyed(Entity var1) {
+         if (var1 instanceof WaypointTransmitter var2) {
+            ServerLevel.this.getWaypointManager().untrackWaypoint(var2);
+         }
+
          ServerLevel.this.getScoreboard().entityRemoved(var1);
       }
 
@@ -1694,20 +1744,30 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          ServerLevel.this.getChunkSource().addEntity(var1);
          if (var1 instanceof ServerPlayer var2) {
             ServerLevel.this.players.add(var2);
+            if (var2.isReceivingWaypoints()) {
+               ServerLevel.this.getWaypointManager().addPlayer(var2);
+            }
+
             ServerLevel.this.updateSleepingPlayerList();
          }
 
-         if (var1 instanceof Mob var7) {
+         if (var1 instanceof WaypointTransmitter var7) {
+            if (var7.isTransmittingWaypoint()) {
+               ServerLevel.this.getWaypointManager().trackWaypoint(var7);
+            }
+         }
+
+         if (var1 instanceof Mob var8) {
             if (ServerLevel.this.isUpdatingNavigations) {
                String var3 = "onTrackingStart called during navigation iteration";
                Util.logAndPauseIfInIde("onTrackingStart called during navigation iteration", new IllegalStateException("onTrackingStart called during navigation iteration"));
             }
 
-            ServerLevel.this.navigatingMobs.add(var7);
+            ServerLevel.this.navigatingMobs.add(var8);
          }
 
-         if (var1 instanceof EnderDragon var8) {
-            for(EnderDragonPart var6 : var8.getSubEntities()) {
+         if (var1 instanceof EnderDragon var9) {
+            for(EnderDragonPart var6 : var9.getSubEntities()) {
                ServerLevel.this.dragonParts.put(var6.getId(), var6);
             }
          }
@@ -1719,6 +1779,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          ServerLevel.this.getChunkSource().removeEntity(var1);
          if (var1 instanceof ServerPlayer var2) {
             ServerLevel.this.players.remove(var2);
+            ServerLevel.this.getWaypointManager().removePlayer(var2);
             ServerLevel.this.updateSleepingPlayerList();
          }
 

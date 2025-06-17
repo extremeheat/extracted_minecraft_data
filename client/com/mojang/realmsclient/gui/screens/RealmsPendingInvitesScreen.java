@@ -19,7 +19,7 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -62,7 +62,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          List var2 = var1.stream().map((var1x) -> new Entry(var1x)).toList();
          this.pendingInvitationSelectionList.replaceEntries(var2);
          if (var2.isEmpty()) {
-            this.minecraft.getNarrator().say(NO_PENDING_INVITES_TEXT);
+            this.minecraft.getNarrator().saySystemQueued(NO_PENDING_INVITES_TEXT);
          }
 
       }, this.screenExecutor);
@@ -116,12 +116,12 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       this.toolTip = null;
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 12, -1);
-      if (this.toolTip != null) {
-         var1.renderTooltip(this.font, this.toolTip, var2, var3);
-      }
-
       if (this.pendingInvites.isDone() && this.pendingInvitationSelectionList.hasPendingInvites()) {
          var1.drawCenteredString(this.font, (Component)NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, -1);
+      }
+
+      if (this.toolTip != null) {
+         var1.setTooltipForNextFrame(this.font, this.toolTip, var2, var3);
       }
 
    }
@@ -177,8 +177,8 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
       private void renderPendingInvitationItem(GuiGraphics var1, PendingInvite var2, int var3, int var4, int var5, int var6) {
          var1.drawString(RealmsPendingInvitesScreen.this.font, (String)var2.realmName, var3 + 38, var4 + 1, -1);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, 7105644);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, 7105644);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, -9671572);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, -9671572);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
          RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.realmOwnerUuid);
       }
@@ -194,7 +194,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          }
 
          protected void draw(GuiGraphics var1, int var2, int var3, boolean var4) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)(var4 ? RealmsPendingInvitesScreen.ACCEPT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.ACCEPT_SPRITE), var2, var3, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(var4 ? RealmsPendingInvitesScreen.ACCEPT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.ACCEPT_SPRITE), var2, var3, 18, 18);
             if (var4) {
                RealmsPendingInvitesScreen.this.toolTip = RealmsPendingInvitesScreen.ACCEPT_INVITE;
             }
@@ -212,7 +212,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          }
 
          protected void draw(GuiGraphics var1, int var2, int var3, boolean var4) {
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)(var4 ? RealmsPendingInvitesScreen.REJECT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.REJECT_SPRITE), var2, var3, 18, 18);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(var4 ? RealmsPendingInvitesScreen.REJECT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.REJECT_SPRITE), var2, var3, 18, 18);
             if (var4) {
                RealmsPendingInvitesScreen.this.toolTip = RealmsPendingInvitesScreen.REJECT_INVITE;
             }

@@ -13,7 +13,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -79,14 +78,14 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Wolf extends TamableAnimal implements NeutralMob {
@@ -220,7 +219,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.playSound(SoundEvents.WOLF_STEP, 0.15F, 1.0F);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("CollarColor", DyeColor.LEGACY_ID_CODEC, this.getCollarColor());
       VariantUtils.writeVariant(var1, this.getVariant());
@@ -228,9 +227,9 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.getSoundVariant().unwrapKey().ifPresent((var1x) -> var1.store("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT), var1x));
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      VariantUtils.readVariant(var1, this.registryAccess(), Registries.WOLF_VARIANT).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, Registries.WOLF_VARIANT).ifPresent(this::setVariant);
       this.setCollarColor((DyeColor)var1.read("CollarColor", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLLAR_COLOR));
       this.readPersistentAngerSaveData(this.level(), var1);
       var1.read("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);
@@ -241,14 +240,14 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       if (var4 instanceof WolfPackData var5) {
          this.setVariant(var5.type);
       } else {
-         Optional var6 = WolfVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition()));
+         Optional var6 = VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.WOLF_VARIANT);
          if (var6.isPresent()) {
             this.setVariant((Holder)var6.get());
             var4 = new WolfPackData((Holder)var6.get());
          }
       }
 
-      this.setSoundVariant(WolfSoundVariants.pickRandomSoundVariant(this.registryAccess(), this.random));
+      this.setSoundVariant(WolfSoundVariants.pickRandomSoundVariant(this.registryAccess(), var1.getRandom()));
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
@@ -382,7 +381,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          ItemStack var4 = this.getBodyArmorItem();
          int var5 = var4.getDamageValue();
          int var6 = var4.getMaxDamage();
-         var4.hurtAndBreak(Mth.ceil(var3), this, EquipmentSlot.BODY);
+         var4.hurtAndBreak(Mth.ceil(var3), this, (EquipmentSlot)EquipmentSlot.BODY);
          if (Crackiness.WOLF_ARMOR.byDamage(var5, var6) != Crackiness.WOLF_ARMOR.byDamage(this.getBodyArmorItem())) {
             this.playSound(SoundEvents.WOLF_ARMOR_CRACK);
             var1.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, Items.ARMADILLO_SCUTE.getDefaultInstance()), this.getX(), this.getY() + 1.0, this.getZ(), 20, 0.2, 0.1, 0.2, 0.1);
@@ -409,23 +408,27 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.BODY});
    }
 
+   protected boolean canShearEquipment(Player var1) {
+      return this.isOwnedBy(var1);
+   }
+
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       Item var4 = var3.getItem();
       if (this.isTame()) {
          if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
             this.usePlayerItem(var1, var2, var3);
-            FoodProperties var12 = (FoodProperties)var3.get(DataComponents.FOOD);
-            float var14 = var12 != null ? (float)var12.nutrition() : 1.0F;
-            this.heal(2.0F * var14);
+            FoodProperties var10 = (FoodProperties)var3.get(DataComponents.FOOD);
+            float var11 = var10 != null ? (float)var10.nutrition() : 1.0F;
+            this.heal(2.0F * var11);
             return InteractionResult.SUCCESS;
          } else {
             if (var4 instanceof DyeItem) {
                DyeItem var5 = (DyeItem)var4;
                if (this.isOwnedBy(var1)) {
-                  DyeColor var11 = var5.getDyeColor();
-                  if (var11 != this.getCollarColor()) {
-                     this.setCollarColor(var11);
+                  DyeColor var9 = var5.getDyeColor();
+                  if (var9 != this.getCollarColor()) {
+                     this.setCollarColor(var9);
                      var3.consume(1, var1);
                      return InteractionResult.SUCCESS;
                   }
@@ -438,38 +441,24 @@ public class Wolf extends TamableAnimal implements NeutralMob {
                this.setBodyArmorItem(var3.copyWithCount(1));
                var3.consume(1, var1);
                return InteractionResult.SUCCESS;
-            } else if (!var3.is(Items.SHEARS) || !this.isOwnedBy(var1) || !this.isWearingBodyArmor() || EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) && !var1.isCreative()) {
-               if (this.isInSittingPose() && this.isWearingBodyArmor() && this.isOwnedBy(var1) && this.getBodyArmorItem().isDamaged() && this.getBodyArmorItem().isValidRepairItem(var3)) {
-                  var3.shrink(1);
-                  this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
-                  ItemStack var10 = this.getBodyArmorItem();
-                  int var13 = (int)((float)var10.getMaxDamage() * 0.125F);
-                  var10.setDamageValue(Math.max(0, var10.getDamageValue() - var13));
-                  return InteractionResult.SUCCESS;
-               } else {
-                  InteractionResult var9 = super.mobInteract(var1, var2);
-                  if (!var9.consumesAction() && this.isOwnedBy(var1)) {
-                     this.setOrderedToSit(!this.isOrderedToSit());
-                     this.jumping = false;
-                     this.navigation.stop();
-                     this.setTarget((LivingEntity)null);
-                     return InteractionResult.SUCCESS.withoutItem();
-                  } else {
-                     return var9;
-                  }
-               }
-            } else {
-               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
-               this.playSound(SoundEvents.ARMOR_UNEQUIP_WOLF);
-               ItemStack var6 = this.getBodyArmorItem();
-               this.setBodyArmorItem(ItemStack.EMPTY);
-               Level var8 = this.level();
-               if (var8 instanceof ServerLevel) {
-                  ServerLevel var7 = (ServerLevel)var8;
-                  this.spawnAtLocation(var7, var6);
-               }
-
+            } else if (this.isInSittingPose() && this.isWearingBodyArmor() && this.isOwnedBy(var1) && this.getBodyArmorItem().isDamaged() && this.getBodyArmorItem().isValidRepairItem(var3)) {
+               var3.shrink(1);
+               this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
+               ItemStack var8 = this.getBodyArmorItem();
+               int var7 = (int)((float)var8.getMaxDamage() * 0.125F);
+               var8.setDamageValue(Math.max(0, var8.getDamageValue() - var7));
                return InteractionResult.SUCCESS;
+            } else {
+               InteractionResult var6 = super.mobInteract(var1, var2);
+               if (!var6.consumesAction() && this.isOwnedBy(var1)) {
+                  this.setOrderedToSit(!this.isOrderedToSit());
+                  this.jumping = false;
+                  this.navigation.stop();
+                  this.setTarget((LivingEntity)null);
+                  return InteractionResult.SUCCESS.withoutItem();
+               } else {
+                  return var6;
+               }
             }
          }
       } else if (!this.level().isClientSide && var3.is(Items.BONE) && !this.isAngry()) {

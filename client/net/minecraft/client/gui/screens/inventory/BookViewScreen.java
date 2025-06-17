@@ -4,13 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -30,6 +30,7 @@ public class BookViewScreen extends Screen {
    public static final int PAGE_TEXT_Y_OFFSET = 30;
    private static final int BACKGROUND_TEXTURE_WIDTH = 256;
    private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
+   private static final Component TITLE = Component.translatable("book.view.title");
    public static final BookAccess EMPTY_ACCESS = new BookAccess(List.of());
    public static final ResourceLocation BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
    protected static final int TEXT_WIDTH = 114;
@@ -54,7 +55,7 @@ public class BookViewScreen extends Screen {
    }
 
    private BookViewScreen(BookAccess var1, boolean var2) {
-      super(GameNarrator.NO_TITLE);
+      super(TITLE);
       this.cachedPageComponents = Collections.emptyList();
       this.cachedPage = -1;
       this.pageMsg = CommonComponents.EMPTY;
@@ -88,6 +89,14 @@ public class BookViewScreen extends Screen {
    protected void init() {
       this.createMenuControls();
       this.createPageControlButtons();
+   }
+
+   public Component getNarrationMessage() {
+      return CommonComponents.joinLines(super.getNarrationMessage(), this.getPageNumberMessage(), this.bookAccess.getPage(this.currentPage));
+   }
+
+   private Component getPageNumberMessage() {
+      return Component.translatable("book.pageIndicator", this.currentPage + 1, Math.max(this.getNumPages(), 1));
    }
 
    protected void createMenuControls() {
@@ -149,14 +158,14 @@ public class BookViewScreen extends Screen {
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
       if (this.cachedPage != this.currentPage) {
-         FormattedText var7 = this.bookAccess.getPage(this.currentPage);
+         Component var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);
-         this.pageMsg = Component.translatable("book.pageIndicator", this.currentPage + 1, Math.max(this.getNumPages(), 1));
+         this.pageMsg = this.getPageNumberMessage();
       }
 
       this.cachedPage = this.currentPage;
       int var11 = this.font.width((FormattedText)this.pageMsg);
-      var1.drawString(this.font, (Component)this.pageMsg, var5 - var11 + 192 - 44, 18, 0, false);
+      var1.drawString(this.font, (Component)this.pageMsg, var5 - var11 + 192 - 44, 18, -16777216, false);
       Objects.requireNonNull(this.font);
       int var8 = Math.min(128 / 9, this.cachedPageComponents.size());
 
@@ -165,7 +174,7 @@ public class BookViewScreen extends Screen {
          Font var10001 = this.font;
          int var10003 = var5 + 36;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (FormattedCharSequence)var10, var10003, 32 + var9 * 9, 0, false);
+         var1.drawString(var10001, var10, var10003, 32 + var9 * 9, -16777216, false);
       }
 
       Style var12 = this.getClickedComponentStyleAt((double)var2, (double)var3);
@@ -177,7 +186,7 @@ public class BookViewScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
-      var1.blit(RenderType::guiTextured, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -191,34 +200,48 @@ public class BookViewScreen extends Screen {
       return super.mouseClicked(var1, var3, var5);
    }
 
-   public boolean handleComponentClicked(Style var1) {
-      ClickEvent var2 = var1.getClickEvent();
-      if (var2 == null) {
-         return false;
-      } else if (var2 instanceof ClickEvent.ChangePage) {
-         ClickEvent.ChangePage var7 = (ClickEvent.ChangePage)var2;
-         ClickEvent.ChangePage var10000 = var7;
+   protected void handleClickEvent(Minecraft var1, ClickEvent var2) {
+      LocalPlayer var3 = (LocalPlayer)Objects.requireNonNull(var1.player, "Player not available");
+      Objects.requireNonNull(var2);
+      byte var5 = 0;
+      //$FF: var5->value
+      //0->net/minecraft/network/chat/ClickEvent$ChangePage
+      //1->net/minecraft/network/chat/ClickEvent$RunCommand
+      switch (var2.typeSwitch<invokedynamic>(var2, var5)) {
+         case 0:
+            ClickEvent.ChangePage var6 = (ClickEvent.ChangePage)var2;
+            ClickEvent.ChangePage var15 = var6;
 
-         try {
-            var8 = var10000.page();
-         } catch (Throwable var6) {
-            throw new MatchException(var6.toString(), var6);
-         }
+            try {
+               var16 = var15.page();
+            } catch (Throwable var12) {
+               throw new MatchException(var12.toString(), var12);
+            }
 
-         int var5 = var8;
-         return this.forcePage(var5 - 1);
-      } else {
-         boolean var3 = super.handleComponentClicked(var1);
-         if (var3 && var2.action() == ClickEvent.Action.RUN_COMMAND) {
-            this.closeScreen();
-         }
+            int var13 = var16;
+            this.forcePage(var13 - 1);
+            break;
+         case 1:
+            ClickEvent.RunCommand var8 = (ClickEvent.RunCommand)var2;
+            ClickEvent.RunCommand var10000 = var8;
 
-         return var3;
+            try {
+               var14 = var10000.command();
+            } catch (Throwable var11) {
+               throw new MatchException(var11.toString(), var11);
+            }
+
+            String var10 = var14;
+            this.closeContainerOnServer();
+            clickCommandAction(var3, var10, (Screen)null);
+            break;
+         default:
+            defaultHandleGameClickEvent(var2, var1, this);
       }
+
    }
 
-   protected void closeScreen() {
-      this.minecraft.setScreen((Screen)null);
+   protected void closeContainerOnServer() {
    }
 
    @Nullable
@@ -262,8 +285,8 @@ public class BookViewScreen extends Screen {
          return this.pages.size();
       }
 
-      public FormattedText getPage(int var1) {
-         return var1 >= 0 && var1 < this.getPageCount() ? (FormattedText)this.pages.get(var1) : FormattedText.EMPTY;
+      public Component getPage(int var1) {
+         return var1 >= 0 && var1 < this.getPageCount() ? (Component)this.pages.get(var1) : CommonComponents.EMPTY;
       }
 
       @Nullable

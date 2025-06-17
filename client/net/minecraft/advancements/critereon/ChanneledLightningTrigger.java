@@ -60,7 +60,7 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntities(this.victims, ".victims");
+         var1.validateEntities(this.victims, "victims");
       }
    }
 }

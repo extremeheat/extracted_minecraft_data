@@ -3,13 +3,11 @@ package net.minecraft.world.entity.projectile;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -21,12 +19,15 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -35,15 +36,13 @@ import net.minecraft.world.phys.Vec3;
 public class ShulkerBullet extends Projectile {
    private static final double SPEED = 0.15;
    @Nullable
-   private Entity finalTarget;
+   private EntityReference<Entity> finalTarget;
    @Nullable
    private Direction currentMoveDirection;
    private int flightSteps;
    private double targetDeltaX;
    private double targetDeltaY;
    private double targetDeltaZ;
-   @Nullable
-   private UUID targetId;
 
    public ShulkerBullet(EntityType<? extends ShulkerBullet> var1, Level var2) {
       super(var1, var2);
@@ -55,16 +54,16 @@ public class ShulkerBullet extends Projectile {
       this.setOwner(var2);
       Vec3 var5 = var2.getBoundingBox().getCenter();
       this.snapTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
-      this.finalTarget = var3;
+      this.finalTarget = new EntityReference<Entity>(var3);
       this.currentMoveDirection = Direction.UP;
-      this.selectNextMoveDirection(var4);
+      this.selectNextMoveDirection(var4, var3);
    }
 
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       if (this.finalTarget != null) {
          var1.store("Target", UUIDUtil.CODEC, this.finalTarget.getUUID());
@@ -77,14 +76,14 @@ public class ShulkerBullet extends Projectile {
       var1.putDouble("TZD", this.targetDeltaZ);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.flightSteps = var1.getIntOr("Steps", 0);
       this.targetDeltaX = var1.getDoubleOr("TXD", 0.0);
       this.targetDeltaY = var1.getDoubleOr("TYD", 0.0);
       this.targetDeltaZ = var1.getDoubleOr("TZD", 0.0);
       this.currentMoveDirection = (Direction)var1.read("Dir", Direction.LEGACY_ID_CODEC).orElse((Object)null);
-      this.targetId = (UUID)var1.read("Target", UUIDUtil.CODEC).orElse((Object)null);
+      this.finalTarget = EntityReference.<Entity>read(var1, "Target");
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -99,74 +98,74 @@ public class ShulkerBullet extends Projectile {
       this.currentMoveDirection = var1;
    }
 
-   private void selectNextMoveDirection(@Nullable Direction.Axis var1) {
-      double var3 = 0.5;
-      BlockPos var2;
-      if (this.finalTarget == null) {
-         var2 = this.blockPosition().below();
+   private void selectNextMoveDirection(@Nullable Direction.Axis var1, @Nullable Entity var2) {
+      double var4 = 0.5;
+      BlockPos var3;
+      if (var2 == null) {
+         var3 = this.blockPosition().below();
       } else {
-         var3 = (double)this.finalTarget.getBbHeight() * 0.5;
-         var2 = BlockPos.containing(this.finalTarget.getX(), this.finalTarget.getY() + var3, this.finalTarget.getZ());
+         var4 = (double)var2.getBbHeight() * 0.5;
+         var3 = BlockPos.containing(var2.getX(), var2.getY() + var4, var2.getZ());
       }
 
-      double var5 = (double)var2.getX() + 0.5;
-      double var7 = (double)var2.getY() + var3;
-      double var9 = (double)var2.getZ() + 0.5;
-      Direction var11 = null;
-      if (!var2.closerToCenterThan(this.position(), 2.0)) {
-         BlockPos var12 = this.blockPosition();
-         ArrayList var13 = Lists.newArrayList();
+      double var6 = (double)var3.getX() + 0.5;
+      double var8 = (double)var3.getY() + var4;
+      double var10 = (double)var3.getZ() + 0.5;
+      Direction var12 = null;
+      if (!var3.closerToCenterThan(this.position(), 2.0)) {
+         BlockPos var13 = this.blockPosition();
+         ArrayList var14 = Lists.newArrayList();
          if (var1 != Direction.Axis.X) {
-            if (var12.getX() < var2.getX() && this.level().isEmptyBlock(var12.east())) {
-               var13.add(Direction.EAST);
-            } else if (var12.getX() > var2.getX() && this.level().isEmptyBlock(var12.west())) {
-               var13.add(Direction.WEST);
+            if (var13.getX() < var3.getX() && this.level().isEmptyBlock(var13.east())) {
+               var14.add(Direction.EAST);
+            } else if (var13.getX() > var3.getX() && this.level().isEmptyBlock(var13.west())) {
+               var14.add(Direction.WEST);
             }
          }
 
          if (var1 != Direction.Axis.Y) {
-            if (var12.getY() < var2.getY() && this.level().isEmptyBlock(var12.above())) {
-               var13.add(Direction.UP);
-            } else if (var12.getY() > var2.getY() && this.level().isEmptyBlock(var12.below())) {
-               var13.add(Direction.DOWN);
+            if (var13.getY() < var3.getY() && this.level().isEmptyBlock(var13.above())) {
+               var14.add(Direction.UP);
+            } else if (var13.getY() > var3.getY() && this.level().isEmptyBlock(var13.below())) {
+               var14.add(Direction.DOWN);
             }
          }
 
          if (var1 != Direction.Axis.Z) {
-            if (var12.getZ() < var2.getZ() && this.level().isEmptyBlock(var12.south())) {
-               var13.add(Direction.SOUTH);
-            } else if (var12.getZ() > var2.getZ() && this.level().isEmptyBlock(var12.north())) {
-               var13.add(Direction.NORTH);
+            if (var13.getZ() < var3.getZ() && this.level().isEmptyBlock(var13.south())) {
+               var14.add(Direction.SOUTH);
+            } else if (var13.getZ() > var3.getZ() && this.level().isEmptyBlock(var13.north())) {
+               var14.add(Direction.NORTH);
             }
          }
 
-         var11 = Direction.getRandom(this.random);
-         if (var13.isEmpty()) {
-            for(int var14 = 5; !this.level().isEmptyBlock(var12.relative(var11)) && var14 > 0; --var14) {
-               var11 = Direction.getRandom(this.random);
+         var12 = Direction.getRandom(this.random);
+         if (var14.isEmpty()) {
+            for(int var15 = 5; !this.level().isEmptyBlock(var13.relative(var12)) && var15 > 0; --var15) {
+               var12 = Direction.getRandom(this.random);
             }
          } else {
-            var11 = (Direction)var13.get(this.random.nextInt(var13.size()));
+            var12 = (Direction)var14.get(this.random.nextInt(var14.size()));
          }
 
-         var5 = this.getX() + (double)var11.getStepX();
-         var7 = this.getY() + (double)var11.getStepY();
-         var9 = this.getZ() + (double)var11.getStepZ();
+         var6 = this.getX() + (double)var12.getStepX();
+         var8 = this.getY() + (double)var12.getStepY();
+         var10 = this.getZ() + (double)var12.getStepZ();
       }
 
-      this.setMoveDirection(var11);
-      double var20 = var5 - this.getX();
-      double var21 = var7 - this.getY();
-      double var16 = var9 - this.getZ();
-      double var18 = Math.sqrt(var20 * var20 + var21 * var21 + var16 * var16);
-      if (var18 == 0.0) {
+      this.setMoveDirection(var12);
+      double var21 = var6 - this.getX();
+      double var22 = var8 - this.getY();
+      double var17 = var10 - this.getZ();
+      double var19 = Math.sqrt(var21 * var21 + var22 * var22 + var17 * var17);
+      if (var19 == 0.0) {
          this.targetDeltaX = 0.0;
          this.targetDeltaY = 0.0;
          this.targetDeltaZ = 0.0;
       } else {
-         this.targetDeltaX = var20 / var18 * 0.15;
-         this.targetDeltaY = var21 / var18 * 0.15;
-         this.targetDeltaZ = var16 / var18 * 0.15;
+         this.targetDeltaX = var21 / var19 * 0.15;
+         this.targetDeltaY = var22 / var19 * 0.15;
+         this.targetDeltaZ = var17 / var19 * 0.15;
       }
 
       this.hasImpulse = true;
@@ -186,59 +185,57 @@ public class ShulkerBullet extends Projectile {
 
    public void tick() {
       super.tick();
-      HitResult var1 = null;
+      Entity var1 = !this.level().isClientSide() ? (Entity)EntityReference.get(this.finalTarget, this.level(), Entity.class) : null;
+      HitResult var2 = null;
       if (!this.level().isClientSide) {
-         if (this.finalTarget == null && this.targetId != null) {
-            this.finalTarget = ((ServerLevel)this.level()).getEntity(this.targetId);
-            if (this.finalTarget == null) {
-               this.targetId = null;
-            }
+         if (var1 == null) {
+            this.finalTarget = null;
          }
 
-         if (this.finalTarget == null || !this.finalTarget.isAlive() || this.finalTarget instanceof Player && this.finalTarget.isSpectator()) {
+         if (var1 == null || !var1.isAlive() || var1 instanceof Player && var1.isSpectator()) {
             this.applyGravity();
          } else {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
             this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
-            Vec3 var2 = this.getDeltaMovement();
-            this.setDeltaMovement(var2.add((this.targetDeltaX - var2.x) * 0.2, (this.targetDeltaY - var2.y) * 0.2, (this.targetDeltaZ - var2.z) * 0.2));
+            Vec3 var3 = this.getDeltaMovement();
+            this.setDeltaMovement(var3.add((this.targetDeltaX - var3.x) * 0.2, (this.targetDeltaY - var3.y) * 0.2, (this.targetDeltaZ - var3.z) * 0.2));
          }
 
-         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+         var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       }
 
-      Vec3 var6 = this.getDeltaMovement();
-      this.setPos(this.position().add(var6));
+      Vec3 var7 = this.getDeltaMovement();
+      this.setPos(this.position().add(var7));
       this.applyEffectsFromBlocks();
       if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
          this.handlePortal();
       }
 
-      if (var1 != null && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
-         this.hitTargetOrDeflectSelf(var1);
+      if (var2 != null && this.isAlive() && var2.getType() != HitResult.Type.MISS) {
+         this.hitTargetOrDeflectSelf(var2);
       }
 
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level().isClientSide) {
-         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
-      } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
+         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var7.x, this.getY() - var7.y + 0.15, this.getZ() - var7.z, 0.0, 0.0, 0.0);
+      } else if (var1 != null) {
          if (this.flightSteps > 0) {
             --this.flightSteps;
             if (this.flightSteps == 0) {
-               this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis());
+               this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis(), var1);
             }
          }
 
          if (this.currentMoveDirection != null) {
-            BlockPos var3 = this.blockPosition();
-            Direction.Axis var4 = this.currentMoveDirection.getAxis();
-            if (this.level().loadedAndEntityCanStandOn(var3.relative(this.currentMoveDirection), this)) {
-               this.selectNextMoveDirection(var4);
+            BlockPos var4 = this.blockPosition();
+            Direction.Axis var5 = this.currentMoveDirection.getAxis();
+            if (this.level().loadedAndEntityCanStandOn(var4.relative(this.currentMoveDirection), this)) {
+               this.selectNextMoveDirection(var5, var1);
             } else {
-               BlockPos var5 = this.finalTarget.blockPosition();
-               if (var4 == Direction.Axis.X && var3.getX() == var5.getX() || var4 == Direction.Axis.Z && var3.getZ() == var5.getZ() || var4 == Direction.Axis.Y && var3.getY() == var5.getY()) {
-                  this.selectNextMoveDirection(var4);
+               BlockPos var6 = var1.blockPosition();
+               if (var5 == Direction.Axis.X && var4.getX() == var6.getX() || var5 == Direction.Axis.Z && var4.getZ() == var6.getZ() || var5 == Direction.Axis.Y && var4.getY() == var6.getY()) {
+                  this.selectNextMoveDirection(var5, var1);
                }
             }
          }

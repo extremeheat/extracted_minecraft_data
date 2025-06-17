@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.logging.LogUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
@@ -37,9 +38,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -50,8 +53,10 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
+import org.slf4j.Logger;
 
 public class EntitySelectorOptions {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<String, Option> OPTIONS = Maps.newHashMap();
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.unknown", var0));
    public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.inapplicable", var0));
@@ -304,15 +309,18 @@ public class EntitySelectorOptions {
             boolean var1 = var0.shouldInvertValue();
             CompoundTag var2 = TagParser.parseCompoundAsArgument(var0.getReader());
             var0.addPredicate((var2x) -> {
-               CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
-               if (var2x instanceof ServerPlayer var4) {
-                  ItemStack var5 = var4.getInventory().getSelectedItem();
-                  if (!var5.isEmpty()) {
-                     var3.put("SelectedItem", var5.save(var4.registryAccess()));
+               try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(var2x.problemPath(), LOGGER)) {
+                  TagValueOutput var4 = TagValueOutput.createWithContext(var3, var2x.registryAccess());
+                  var2x.saveWithoutId(var4);
+                  if (var2x instanceof ServerPlayer var5) {
+                     ItemStack var6 = var5.getInventory().getSelectedItem();
+                     if (!var6.isEmpty()) {
+                        var4.store("SelectedItem", ItemStack.CODEC, var6);
+                     }
                   }
-               }
 
-               return NbtUtils.compareNbt(var2, var3, true) != var1;
+                  return NbtUtils.compareNbt(var2, var4.buildResult(), true) != var1;
+               }
             });
          }, (var0) -> true, Component.translatable("argument.entity.options.nbt.description"));
          register("scores", (var0) -> {

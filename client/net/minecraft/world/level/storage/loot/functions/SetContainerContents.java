@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulator;
 import net.minecraft.world.level.storage.loot.ContainerComponentManipulators;
@@ -51,7 +52,7 @@ public class SetContainerContents extends LootItemConditionalFunction {
       super.validate(var1);
 
       for(int var2 = 0; var2 < this.entries.size(); ++var2) {
-         ((LootPoolEntryContainer)this.entries.get(var2)).validate(var1.forChild(".entry[" + var2 + "]"));
+         ((LootPoolEntryContainer)this.entries.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("entries", var2)));
       }
 
    }

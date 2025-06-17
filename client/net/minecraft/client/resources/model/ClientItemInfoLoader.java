@@ -1,6 +1,5 @@
 package net.minecraft.client.resources.model;
 
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.io.BufferedReader;
@@ -20,6 +19,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.PlaceholderLookupProvider;
+import net.minecraft.util.StrictJsonParser;
 import org.slf4j.Logger;
 
 public class ClientItemInfoLoader {
@@ -44,7 +44,7 @@ public class ClientItemInfoLoader {
                   try {
                      PlaceholderLookupProvider var5 = new PlaceholderLookupProvider(var2);
                      RegistryOps var6 = var5.createSerializationContext(JsonOps.INSTANCE);
-                     ClientItem var7 = (ClientItem)ClientItem.CODEC.parse(var6, JsonParser.parseReader(var4x)).ifError((var2x) -> LOGGER.error("Couldn't parse item model '{}' from pack '{}': {}", new Object[]{var3, var4.sourcePackId(), var2x.message()})).result().map((var1) -> var5.hasRegisteredPlaceholders() ? var1.withRegistrySwapper(var5.createSwapper()) : var1).orElse((Object)null);
+                     ClientItem var7 = (ClientItem)ClientItem.CODEC.parse(var6, StrictJsonParser.parse((Reader)var4x)).ifError((var2x) -> LOGGER.error("Couldn't parse item model '{}' from pack '{}': {}", new Object[]{var3, var4.sourcePackId(), var2x.message()})).result().map((var1) -> var5.hasRegisteredPlaceholders() ? var1.withRegistrySwapper(var5.createSwapper()) : var1).orElse((Object)null);
                      var8 = new PendingLoad(var3, var7);
                   } catch (Throwable var10) {
                      if (var4x != null) {

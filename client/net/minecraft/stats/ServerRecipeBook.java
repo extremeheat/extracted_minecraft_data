@@ -5,16 +5,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.protocol.game.ClientboundRecipeBookAddPacket;
 import net.minecraft.network.protocol.game.ClientboundRecipeBookRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundRecipeBookSettingsPacket;
@@ -28,7 +27,6 @@ import org.slf4j.Logger;
 public class ServerRecipeBook extends RecipeBook {
    public static final String RECIPE_BOOK_TAG = "recipeBook";
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Codec<List<ResourceKey<Recipe<?>>>> RECIPE_LIST_CODEC;
    private final DisplayResolver displayResolver;
    @VisibleForTesting
    protected final Set<ResourceKey<Recipe<?>>> known = Sets.newIdentityHashSet();
@@ -99,34 +97,6 @@ public class ServerRecipeBook extends RecipeBook {
       return var3.size();
    }
 
-   public CompoundTag toNbt() {
-      CompoundTag var1 = new CompoundTag();
-      this.getBookSettings().write(var1);
-      ListTag var2 = new ListTag();
-
-      for(ResourceKey var4 : this.known) {
-         var2.add(StringTag.valueOf(var4.location().toString()));
-      }
-
-      var1.put("recipes", var2);
-      ListTag var6 = new ListTag();
-
-      for(ResourceKey var5 : this.highlight) {
-         var6.add(StringTag.valueOf(var5.location().toString()));
-      }
-
-      var1.put("toBeDisplayed", var6);
-      return var1;
-   }
-
-   public void fromNbt(CompoundTag var1, Predicate<ResourceKey<Recipe<?>>> var2) {
-      this.setBookSettings(RecipeBookSettings.read(var1));
-      List var3 = (List)var1.read("recipes", RECIPE_LIST_CODEC).orElse(List.of());
-      this.loadRecipes(var3, this::add, var2);
-      List var4 = (List)var1.read("toBeDisplayed", RECIPE_LIST_CODEC).orElse(List.of());
-      this.loadRecipes(var4, this::addHighlight, var2);
-   }
-
    private void loadRecipes(List<ResourceKey<Recipe<?>>> var1, Consumer<ResourceKey<Recipe<?>>> var2, Predicate<ResourceKey<Recipe<?>>> var3) {
       for(ResourceKey var5 : var1) {
          if (!var3.test(var5)) {
@@ -139,7 +109,7 @@ public class ServerRecipeBook extends RecipeBook {
    }
 
    public void sendInitialRecipeBook(ServerPlayer var1) {
-      var1.connection.send(new ClientboundRecipeBookSettingsPacket(this.getBookSettings()));
+      var1.connection.send(new ClientboundRecipeBookSettingsPacket(this.getBookSettings().copy()));
       ArrayList var2 = new ArrayList(this.known.size());
 
       for(ResourceKey var4 : this.known) {
@@ -150,15 +120,45 @@ public class ServerRecipeBook extends RecipeBook {
    }
 
    public void copyOverData(ServerRecipeBook var1) {
+      this.apply(var1.pack());
+   }
+
+   public Packed pack() {
+      return new Packed(this.bookSettings.copy(), List.copyOf(this.known), List.copyOf(this.highlight));
+   }
+
+   private void apply(Packed var1) {
       this.known.clear();
       this.highlight.clear();
-      this.bookSettings.replaceFrom(var1.bookSettings);
+      this.bookSettings.replaceFrom(var1.settings);
       this.known.addAll(var1.known);
       this.highlight.addAll(var1.highlight);
    }
 
-   static {
-      RECIPE_LIST_CODEC = Recipe.KEY_CODEC.listOf();
+   public void loadUntrusted(Packed var1, Predicate<ResourceKey<Recipe<?>>> var2) {
+      this.bookSettings.replaceFrom(var1.settings);
+      List var10001 = var1.known;
+      Set var10002 = this.known;
+      Objects.requireNonNull(var10002);
+      this.loadRecipes(var10001, var10002::add, var2);
+      var10001 = var1.highlight;
+      var10002 = this.highlight;
+      Objects.requireNonNull(var10002);
+      this.loadRecipes(var10001, var10002::add, var2);
+   }
+
+   public static record Packed(RecipeBookSettings settings, List<ResourceKey<Recipe<?>>> known, List<ResourceKey<Recipe<?>>> highlight) {
+      final RecipeBookSettings settings;
+      final List<ResourceKey<Recipe<?>>> known;
+      final List<ResourceKey<Recipe<?>>> highlight;
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RecipeBookSettings.MAP_CODEC.forGetter(Packed::settings), Recipe.KEY_CODEC.listOf().fieldOf("recipes").forGetter(Packed::known), Recipe.KEY_CODEC.listOf().fieldOf("toBeDisplayed").forGetter(Packed::highlight)).apply(var0, Packed::new));
+
+      public Packed(RecipeBookSettings var1, List<ResourceKey<Recipe<?>>> var2, List<ResourceKey<Recipe<?>>> var3) {
+         super();
+         this.settings = var1;
+         this.known = var2;
+         this.highlight = var3;
+      }
    }
 
    @FunctionalInterface

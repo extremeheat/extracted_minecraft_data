@@ -12,7 +12,7 @@ import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuCategory;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -55,7 +55,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
    }
 
    public boolean isEnabled() {

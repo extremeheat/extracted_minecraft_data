@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.SequencedMap;
 import net.minecraft.Util;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.resources.model.ModelBakery;
 
 public class RenderBuffers {
@@ -17,10 +18,10 @@ public class RenderBuffers {
       super();
       this.sectionBufferPool = SectionBufferBuilderPool.allocate(var1);
       SequencedMap var2 = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var1x) -> {
-         var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(RenderType.solid()));
-         var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(RenderType.cutout()));
-         var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.buffer(RenderType.cutoutMipped()));
-         var1x.put(Sheets.translucentItemSheet(), this.fixedBufferPack.buffer(RenderType.translucent()));
+         var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.SOLID));
+         var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT));
+         var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT_MIPPED));
+         var1x.put(Sheets.translucentItemSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.TRANSLUCENT));
          put(var1x, Sheets.shieldSheet());
          put(var1x, Sheets.bedSheet());
          put(var1x, Sheets.shulkerBoxSheet());

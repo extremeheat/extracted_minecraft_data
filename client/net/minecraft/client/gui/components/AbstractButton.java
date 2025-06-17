@@ -4,11 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.CommonInputs;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 
 public abstract class AbstractButton extends AbstractWidget {
    protected static final int TEXT_MARGIN = 2;
@@ -22,9 +21,9 @@ public abstract class AbstractButton extends AbstractWidget {
 
    protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
-      var1.blitSprite(RenderType::guiTextured, SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-      int var6 = this.active ? 16777215 : 10526880;
-      this.renderString(var1, var5.font, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
+      this.renderString(var1, var5.font, var6);
    }
 
    public void renderString(GuiGraphics var1, Font var2, int var3) {

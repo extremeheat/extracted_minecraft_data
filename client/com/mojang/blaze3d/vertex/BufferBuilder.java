@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import org.lwjgl.system.MemoryUtil;
 
 public class BufferBuilder implements VertexConsumer {
+   private static final int MAX_VERTEX_COUNT = 16777215;
    private static final long NOT_BUILDING = -1L;
    private static final long UNKNOWN_ELEMENT = -1L;
    private static final boolean IS_LITTLE_ENDIAN;
@@ -88,10 +89,14 @@ public class BufferBuilder implements VertexConsumer {
    private long beginVertex() {
       this.ensureBuilding();
       this.endLastVertex();
-      ++this.vertices;
-      long var1 = this.buffer.reserve(this.vertexSize);
-      this.vertexPointer = var1;
-      return var1;
+      if (this.vertices >= 16777215) {
+         throw new IllegalStateException("Trying to write too many vertices (>16777215) into BufferBuilder");
+      } else {
+         ++this.vertices;
+         long var1 = this.buffer.reserve(this.vertexSize);
+         this.vertexPointer = var1;
+         return var1;
+      }
    }
 
    private long beginElement(VertexFormatElement var1) {

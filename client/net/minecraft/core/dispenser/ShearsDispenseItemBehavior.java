@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -29,7 +28,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       ServerLevel var3 = var1.level();
       if (!var3.isClientSide()) {
          BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-         this.setSuccess(tryShearBeehive(var3, var4) || tryShearLivingEntity(var3, var4, var2));
+         this.setSuccess(tryShearBeehive(var3, var4) || tryShearEntity(var3, var4, var2));
          if (this.isSuccess()) {
             var2.hurtAndBreak(1, var3, (ServerPlayer)null, (var0) -> {
             });
@@ -55,8 +54,12 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       return false;
    }
 
-   private static boolean tryShearLivingEntity(ServerLevel var0, BlockPos var1, ItemStack var2) {
-      for(LivingEntity var5 : var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS)) {
+   private static boolean tryShearEntity(ServerLevel var0, BlockPos var1, ItemStack var2) {
+      for(Entity var5 : var0.getEntitiesOfClass(Entity.class, new AABB(var1), EntitySelector.NO_SPECTATORS)) {
+         if (var5.shearOffAllLeashConnections((Player)null)) {
+            return true;
+         }
+
          if (var5 instanceof Shearable var6) {
             if (var6.readyForShearing()) {
                var6.shear(var0, SoundSource.BLOCKS, var2);

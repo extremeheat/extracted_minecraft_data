@@ -52,8 +52,6 @@ public enum BanReason {
          case 22:
          case 24:
          case 26:
-         case 35:
-         case 36:
          case 37:
          case 38:
          case 39:
@@ -105,6 +103,8 @@ public enum BanReason {
             var10000 = NUDITY_OR_PORNOGRAPHY;
             break;
          case 33:
+         case 35:
+         case 36:
             var10000 = SEXUALLY_INAPPROPRIATE;
             break;
          case 34:

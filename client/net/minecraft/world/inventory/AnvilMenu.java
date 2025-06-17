@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
@@ -85,6 +86,12 @@ public class AnvilMenu extends ItemCombinerMenu {
       }
 
       this.cost.set(0);
+      if (var1 instanceof ServerPlayer var4) {
+         if (!StringUtil.isBlank(this.itemName) && !this.inputSlots.getItem(0).getHoverName().getString().equals(this.itemName)) {
+            var4.getTextFilter().processStreamMessage(this.itemName);
+         }
+      }
+
       this.inputSlots.setItem(0, ItemStack.EMPTY);
       this.access.execute((var1x, var2x) -> {
          BlockState var3 = var1x.getBlockState(var2x);

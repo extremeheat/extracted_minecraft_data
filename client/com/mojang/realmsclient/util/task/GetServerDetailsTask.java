@@ -2,14 +2,14 @@ package com.mojang.realmsclient.util.task;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
+import com.mojang.realmsclient.dto.RealmsJoinInformation;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.dto.RealmsServerAddress;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.gui.screens.RealmsBrokenWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
+import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoConnectTaskScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
-import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTickTaskScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.gui.screens.RealmsTermsScreen;
 import java.net.URL;
@@ -43,7 +43,7 @@ public class GetServerDetailsTask extends LongRunningTask {
    }
 
    public void run() {
-      RealmsServerAddress var1;
+      RealmsJoinInformation var1;
       try {
          var1 = this.fetchServerAddress();
       } catch (CancellationException var4) {
@@ -72,10 +72,10 @@ public class GetServerDetailsTask extends LongRunningTask {
          return;
       }
 
-      if (var1.address == null) {
+      if (var1.address() == null) {
          this.error(Component.translatable("mco.errorMessage.connectionFailure"));
       } else {
-         boolean var2 = var1.resourcePackUrl != null && var1.resourcePackHash != null;
+         boolean var2 = var1.resourcePackUrl() != null && var1.resourcePackHash() != null;
          Object var8 = var2 ? this.resourcePackDownloadConfirmationScreen(var1, generatePackId(this.server), this::connectScreen) : this.connectScreen(var1);
          setScreen((Screen)var8);
       }
@@ -89,7 +89,7 @@ public class GetServerDetailsTask extends LongRunningTask {
       return TITLE;
    }
 
-   private RealmsServerAddress fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
+   private RealmsJoinInformation fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
       RealmsClient var1 = RealmsClient.getOrCreate();
 
       for(int var2 = 0; var2 < 40; ++var2) {
@@ -107,11 +107,11 @@ public class GetServerDetailsTask extends LongRunningTask {
       throw new TimeoutException();
    }
 
-   public RealmsLongRunningMcoTaskScreen connectScreen(RealmsServerAddress var1) {
-      return new RealmsLongRunningMcoTickTaskScreen(this.lastScreen, new ConnectTask(this.lastScreen, this.server, var1));
+   public RealmsLongRunningMcoTaskScreen connectScreen(RealmsJoinInformation var1) {
+      return new RealmsLongRunningMcoConnectTaskScreen(this.lastScreen, var1, new ConnectTask(this.lastScreen, this.server, var1));
    }
 
-   private PopupScreen resourcePackDownloadConfirmationScreen(RealmsServerAddress var1, UUID var2, Function<RealmsServerAddress, Screen> var3) {
+   private PopupScreen resourcePackDownloadConfirmationScreen(RealmsJoinInformation var1, UUID var2, Function<RealmsJoinInformation, Screen> var3) {
       MutableComponent var4 = Component.translatable("mco.configure.world.resourcepack.question");
       return RealmsPopups.infoPopupScreen(this.lastScreen, var4, (var4x) -> {
          setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
@@ -124,17 +124,17 @@ public class GetServerDetailsTask extends LongRunningTask {
       });
    }
 
-   private CompletableFuture<?> scheduleResourcePackDownload(RealmsServerAddress var1, UUID var2) {
+   private CompletableFuture<?> scheduleResourcePackDownload(RealmsJoinInformation var1, UUID var2) {
       try {
-         if (var1.resourcePackUrl == null) {
+         if (var1.resourcePackUrl() == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("resourcePackUrl was null"));
-         } else if (var1.resourcePackHash == null) {
+         } else if (var1.resourcePackHash() == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("resourcePackHash was null"));
          } else {
             DownloadedPackSource var3 = Minecraft.getInstance().getDownloadedPackSource();
             CompletableFuture var4 = var3.waitForPackFeedback(var2);
             var3.allowServerPacks();
-            var3.pushPack(var2, new URL(var1.resourcePackUrl), var1.resourcePackHash);
+            var3.pushPack(var2, new URL(var1.resourcePackUrl()), var1.resourcePackHash());
             return var4;
          }
       } catch (Exception var5) {

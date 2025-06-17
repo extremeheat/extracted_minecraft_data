@@ -22,9 +22,7 @@ import net.minecraft.client.resources.sounds.SoundEventRegistration;
 import net.minecraft.client.resources.sounds.SoundEventRegistrationSerializer;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -55,9 +53,9 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    private final SoundEngine soundEngine;
    private final Map<ResourceLocation, Resource> soundCache = new HashMap();
 
-   public SoundManager(Options var1) {
+   public SoundManager(Options var1, MusicManager var2) {
       super();
-      this.soundEngine = new SoundEngine(this, var1, ResourceProvider.fromMap(this.soundCache));
+      this.soundEngine = new SoundEngine(var2, this, var1, ResourceProvider.fromMap(this.soundCache));
    }
 
    protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -166,8 +164,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.queueTickingSound(var1);
    }
 
-   public void play(SoundInstance var1) {
-      this.soundEngine.play(var1);
+   public SoundEngine.PlayResult play(SoundInstance var1) {
+      return this.soundEngine.play(var1);
    }
 
    public void playDelayed(SoundInstance var1, int var2) {
@@ -178,8 +176,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.updateSource(var1);
    }
 
-   public void pause() {
-      this.soundEngine.pause();
+   public void pauseAllExcept(SoundSource... var1) {
+      this.soundEngine.pauseAllExcept(var1);
    }
 
    public void stop() {
@@ -203,10 +201,6 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    }
 
    public void updateSourceVolume(SoundSource var1, float var2) {
-      if (var1 == SoundSource.MASTER && var2 <= 0.0F) {
-         this.stop();
-      }
-
       this.soundEngine.updateCategoryVolume(var1, var2);
    }
 
@@ -253,7 +247,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       INTENTIONALLY_EMPTY_SOUND_EVENT = new WeighedSoundEvents(INTENTIONALLY_EMPTY_SOUND_LOCATION, (String)null);
       INTENTIONALLY_EMPTY_SOUND = new Sound(INTENTIONALLY_EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
       LOGGER = LogUtils.getLogger();
-      GSON = (new GsonBuilder()).registerTypeHierarchyAdapter(Component.class, new Component.SerializerAdapter(RegistryAccess.EMPTY)).registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer()).create();
+      GSON = (new GsonBuilder()).registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer()).create();
       SOUND_EVENT_REGISTRATION_TYPE = new TypeToken<Map<String, SoundEventRegistration>>() {
       };
    }

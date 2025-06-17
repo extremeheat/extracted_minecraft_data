@@ -10,8 +10,8 @@ public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, Sour
    public static final BlendFunction GLINT;
    public static final BlendFunction OVERLAY;
    public static final BlendFunction TRANSLUCENT;
+   public static final BlendFunction TRANSLUCENT_PREMULTIPLIED_ALPHA;
    public static final BlendFunction ADDITIVE;
-   public static final BlendFunction PANORAMA;
    public static final BlendFunction ENTITY_OUTLINE_BLIT;
 
    public BlendFunction(SourceFactor var1, DestFactor var2) {
@@ -31,8 +31,8 @@ public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, Sour
       GLINT = new BlendFunction(SourceFactor.SRC_COLOR, DestFactor.ONE, SourceFactor.ZERO, DestFactor.ONE);
       OVERLAY = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE, SourceFactor.ONE, DestFactor.ZERO);
       TRANSLUCENT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
+      TRANSLUCENT_PREMULTIPLIED_ALPHA = new BlendFunction(SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
       ADDITIVE = new BlendFunction(SourceFactor.ONE, DestFactor.ONE);
-      PANORAMA = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
       ENTITY_OUTLINE_BLIT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ZERO, DestFactor.ONE);
    }
 }

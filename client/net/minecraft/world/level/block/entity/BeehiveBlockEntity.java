@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
@@ -12,7 +13,6 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -39,11 +40,16 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.slf4j.Logger;
 
 public class BeehiveBlockEntity extends BlockEntity {
+   static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_FLOWER_POS = "flower_pos";
    private static final String BEES = "bees";
-   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "drop_chances", "ArmorItems", "Brain", "CanPickUpLoot", "DeathTime", "fall_distance", "FallFlying", "Fire", "HandItems", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "SleepingX", "SleepingY", "SleepingZ", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
+   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "drop_chances", "equipment", "Brain", "CanPickUpLoot", "DeathTime", "fall_distance", "FallFlying", "Fire", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "sleeping_pos", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
    public static final int MAX_OCCUPANTS = 3;
    private static final int MIN_TICKS_BEFORE_REENTERING_HIVE = 400;
    private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
@@ -246,15 +252,15 @@ public class BeehiveBlockEntity extends BlockEntity {
       DebugPackets.sendHiveInfo(var0, var1, var2, var3);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.stored.clear();
       ((List)var1.read("bees", BeehiveBlockEntity.Occupant.LIST_CODEC).orElse(List.of())).forEach(this::storeBee);
       this.savedFlowerPos = (BlockPos)var1.read("flower_pos", BlockPos.CODEC).orElse((Object)null);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.store("bees", BeehiveBlockEntity.Occupant.LIST_CODEC, this.getBees());
       var1.storeNullable("flower_pos", BlockPos.CODEC, this.savedFlowerPos);
    }
@@ -271,9 +277,9 @@ public class BeehiveBlockEntity extends BlockEntity {
       var1.set(DataComponents.BEES, new Bees(this.getBees()));
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
+   public void removeComponentsFromTag(ValueOutput var1) {
       super.removeComponentsFromTag(var1);
-      var1.remove("bees");
+      var1.discard("bees");
    }
 
    private List<Occupant> getBees() {
@@ -332,13 +338,19 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
 
       public static Occupant of(Entity var0) {
-         CompoundTag var1 = new CompoundTag();
-         var0.save(var1);
-         List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
-         Objects.requireNonNull(var1);
-         var10000.forEach(var1::remove);
-         boolean var2 = var1.getBooleanOr("HasNectar", false);
-         return new Occupant(CustomData.of(var1), 0, var2 ? 2400 : 600);
+         Occupant var5;
+         try (ProblemReporter.ScopedCollector var1 = new ProblemReporter.ScopedCollector(var0.problemPath(), BeehiveBlockEntity.LOGGER)) {
+            TagValueOutput var2 = TagValueOutput.createWithContext(var1, var0.registryAccess());
+            var0.save(var2);
+            List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
+            Objects.requireNonNull(var2);
+            var10000.forEach(var2::discard);
+            CompoundTag var3 = var2.buildResult();
+            boolean var4 = var3.getBooleanOr("HasNectar", false);
+            var5 = new Occupant(CustomData.of(var3), 0, var4 ? 2400 : 600);
+         }
+
+         return var5;
       }
 
       public static Occupant create(int var0) {
@@ -353,7 +365,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var3);
          var10000.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.LOAD, (var0) -> var0);
+         Entity var4 = EntityType.loadEntityRecursive((CompoundTag)var3, var1, EntitySpawnReason.LOAD, (var0) -> var0);
          if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {
             var4.setNoGravity(true);
             if (var4 instanceof Bee) {

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -48,8 +47,6 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Turtle;
@@ -65,6 +62,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Zombie extends Monster {
    private static final ResourceLocation SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
@@ -141,10 +140,10 @@ public class Zombie extends Monster {
    }
 
    public void setCanBreakDoors(boolean var1) {
-      if (GoalUtils.hasGroundPathNavigation(this)) {
+      if (this.navigation.canNavigateGround()) {
          if (this.canBreakDoors != var1) {
             this.canBreakDoors = var1;
-            ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var1);
+            this.navigation.setCanOpenDoors(var1);
             if (var1) {
                this.goalSelector.addGoal(1, this.breakDoorGoal);
             } else {
@@ -379,7 +378,7 @@ public class Zombie extends Monster {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("IsBaby", this.isBaby());
       var1.putBoolean("CanBreakDoors", this.canBreakDoors());
@@ -387,7 +386,7 @@ public class Zombie extends Monster {
       var1.putInt("DrownedConversionTime", this.isUnderWaterConverting() ? this.conversionTime : -1);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setBaby(var1.getBooleanOr("IsBaby", false));
       this.setCanBreakDoors(var1.getBooleanOr("CanBreakDoors", false));

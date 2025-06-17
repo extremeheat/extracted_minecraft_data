@@ -1,10 +1,13 @@
 package net.minecraft.world.level;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Abilities;
@@ -19,6 +22,7 @@ public enum GameType implements StringRepresentable {
    public static final GameType DEFAULT_MODE = SURVIVAL;
    public static final StringRepresentable.EnumCodec<GameType> CODEC = StringRepresentable.<GameType>fromEnum(GameType::values);
    private static final IntFunction<GameType> BY_ID = ByIdMap.<GameType>continuous(GameType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StreamCodec<ByteBuf, GameType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, GameType::getId);
    /** @deprecated */
    @Deprecated
    public static final Codec<GameType> LEGACY_ID_CODEC = Codec.INT.xmap(GameType::byId, GameType::getId);

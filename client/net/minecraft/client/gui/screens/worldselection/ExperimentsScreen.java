@@ -4,24 +4,16 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.ScreenDirection;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
@@ -41,7 +33,7 @@ public class ExperimentsScreen extends Screen {
    private final Consumer<PackRepository> output;
    private final Object2BooleanMap<Pack> packs = new Object2BooleanLinkedOpenHashMap();
    @Nullable
-   private ScrollArea scrollArea;
+   private ScrollableLayout scrollArea;
 
    public ExperimentsScreen(Screen var1, PackRepository var2, Consumer<PackRepository> var3) {
       super(TITLE);
@@ -64,7 +56,8 @@ public class ExperimentsScreen extends Screen {
       SwitchGrid.Builder var2 = SwitchGrid.builder(299).withInfoUnderneath(2, true).withRowSpacing(4);
       this.packs.forEach((var2x, var3x) -> var2.addSwitch(getHumanReadableTitle(var2x), () -> this.packs.getBoolean(var2x), (var2xx) -> this.packs.put(var2x, var2xx)).withInfo(var2x.getDescription()));
       Layout var3 = var2.build().layout();
-      this.scrollArea = new ScrollArea(var3, 310, 130);
+      this.scrollArea = new ScrollableLayout(this.minecraft, var3, 130);
+      this.scrollArea.setMinWidth(310);
       var1.addChild(this.scrollArea);
       LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).build());
@@ -81,11 +74,10 @@ public class ExperimentsScreen extends Screen {
    }
 
    protected void repositionElements() {
-      this.scrollArea.setHeight(130);
+      this.scrollArea.setMaxHeight(130);
       this.layout.arrangeElements();
       int var1 = this.height - this.layout.getFooterHeight() - this.scrollArea.getRectangle().bottom();
-      this.scrollArea.setHeight(this.scrollArea.getHeight() + var1);
-      this.scrollArea.refreshScrollAmount();
+      this.scrollArea.setMaxHeight(this.scrollArea.getHeight() + var1);
    }
 
    public Component getNarrationMessage() {
@@ -113,85 +105,5 @@ public class ExperimentsScreen extends Screen {
 
    static {
       INFO = Component.translatable("selectWorld.experiments.info").withStyle(ChatFormatting.RED);
-   }
-
-   public class ScrollArea extends AbstractContainerWidget {
-      private final List<AbstractWidget> children = new ArrayList();
-      private final Layout layout;
-
-      public ScrollArea(final Layout var2, final int var3, final int var4) {
-         super(0, 0, var3, var4, CommonComponents.EMPTY);
-         this.layout = var2;
-         var2.visitWidgets(this::addWidget);
-      }
-
-      public void addWidget(AbstractWidget var1) {
-         this.children.add(var1);
-      }
-
-      protected int contentHeight() {
-         return this.layout.getHeight();
-      }
-
-      protected double scrollRate() {
-         return 10.0;
-      }
-
-      protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.enableScissor(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height);
-         var1.pose().pushPose();
-         var1.pose().translate(0.0, -this.scrollAmount(), 0.0);
-
-         for(AbstractWidget var6 : this.children) {
-            var6.render(var1, var2, var3, var4);
-         }
-
-         var1.pose().popPose();
-         var1.disableScissor();
-         this.renderScrollbar(var1);
-      }
-
-      protected void updateWidgetNarration(NarrationElementOutput var1) {
-      }
-
-      public ScreenRectangle getBorderForArrowNavigation(ScreenDirection var1) {
-         return new ScreenRectangle(this.getX(), this.getY(), this.width, this.contentHeight());
-      }
-
-      public void setFocused(@Nullable GuiEventListener var1) {
-         super.setFocused(var1);
-         if (var1 != null) {
-            ScreenRectangle var2 = this.getRectangle();
-            ScreenRectangle var3 = var1.getRectangle();
-            int var4 = (int)((double)var3.top() - this.scrollAmount() - (double)var2.top());
-            int var5 = (int)((double)var3.bottom() - this.scrollAmount() - (double)var2.bottom());
-            if (var4 < 0) {
-               this.setScrollAmount(this.scrollAmount() + (double)var4 - 14.0);
-            } else if (var5 > 0) {
-               this.setScrollAmount(this.scrollAmount() + (double)var5 + 14.0);
-            }
-
-         }
-      }
-
-      public List<? extends GuiEventListener> children() {
-         return this.children;
-      }
-
-      public void setX(int var1) {
-         super.setX(var1);
-         this.layout.setX(var1);
-         this.layout.arrangeElements();
-      }
-
-      public void setY(int var1) {
-         super.setY(var1);
-         this.layout.setY(var1);
-         this.layout.arrangeElements();
-      }
-
-      public Collection<? extends NarratableEntry> getNarratables() {
-         return this.children;
-      }
    }
 }

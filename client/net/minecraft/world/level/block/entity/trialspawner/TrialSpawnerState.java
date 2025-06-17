@@ -53,8 +53,8 @@ public enum TrialSpawnerState implements StringRepresentable {
    }
 
    TrialSpawnerState tickAndGetNext(BlockPos var1, TrialSpawner var2, ServerLevel var3) {
-      TrialSpawnerData var4 = var2.getData();
-      TrialSpawnerConfig var5 = var2.getConfig();
+      TrialSpawnerStateData var4 = var2.getStateData();
+      TrialSpawnerConfig var5 = var2.activeConfig();
       TrialSpawnerState var10000;
       switch (this.ordinal()) {
          case 0:
@@ -154,8 +154,8 @@ public enum TrialSpawnerState implements StringRepresentable {
    }
 
    private void spawnOminousOminousItemSpawner(ServerLevel var1, BlockPos var2, TrialSpawner var3) {
-      TrialSpawnerData var4 = var3.getData();
-      TrialSpawnerConfig var5 = var3.getConfig();
+      TrialSpawnerStateData var4 = var3.getStateData();
+      TrialSpawnerConfig var5 = var3.activeConfig();
       ItemStack var6 = (ItemStack)var4.getDispensingItems(var1, var5, var2).getRandom(var1.random).orElse(ItemStack.EMPTY);
       if (!var6.isEmpty()) {
          if (this.timeToSpawnItemSpawner(var1, var4)) {
@@ -165,14 +165,14 @@ public enum TrialSpawnerState implements StringRepresentable {
                var1.addFreshEntity(var5);
                float var6x = (var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.2F + 1.0F;
                var1.playSound((Entity)null, BlockPos.containing(var4x), SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM_BEGIN, SoundSource.BLOCKS, 1.0F, var6x);
-               var4.cooldownEndsAt = var1.getGameTime() + var3.getOminousConfig().ticksBetweenItemSpawners();
+               var4.cooldownEndsAt = var1.getGameTime() + var3.ominousConfig().ticksBetweenItemSpawners();
             });
          }
 
       }
    }
 
-   private static Optional<Vec3> calculatePositionToSpawnSpawner(ServerLevel var0, BlockPos var1, TrialSpawner var2, TrialSpawnerData var3) {
+   private static Optional<Vec3> calculatePositionToSpawnSpawner(ServerLevel var0, BlockPos var1, TrialSpawner var2, TrialSpawnerStateData var3) {
       Stream var10000 = var3.detectedPlayers.stream();
       Objects.requireNonNull(var0);
       List var4 = var10000.map(var0::getPlayerByUUID).filter(Objects::nonNull).filter((var2x) -> !var2x.isCreative() && !var2x.isSpectator() && var2x.isAlive() && var2x.distanceToSqr(var1.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange())).toList();
@@ -206,7 +206,7 @@ public enum TrialSpawnerState implements StringRepresentable {
       }
    }
 
-   private boolean timeToSpawnItemSpawner(ServerLevel var1, TrialSpawnerData var2) {
+   private boolean timeToSpawnItemSpawner(ServerLevel var1, TrialSpawnerStateData var2) {
       return var1.getGameTime() >= var2.cooldownEndsAt;
    }
 

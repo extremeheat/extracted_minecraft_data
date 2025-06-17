@@ -3,7 +3,7 @@ package com.mojang.realmsclient.client.worldupload;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.FileUpload;
 import com.mojang.realmsclient.client.RealmsClient;
-import com.mojang.realmsclient.dto.RealmsWorldOptions;
+import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.UploadInfo;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
@@ -25,23 +25,21 @@ public class RealmsWorldUpload {
    public static final int UPLOAD_RETRIES = 20;
    private final RealmsClient client = RealmsClient.getOrCreate();
    private final Path worldFolder;
-   private final RealmsWorldOptions worldOptions;
+   private final RealmsSlot realmsSlot;
    private final User user;
    private final long realmId;
-   private final int slotId;
    private final RealmsWorldUploadStatusTracker statusCallback;
    private volatile boolean cancelled;
    @Nullable
    private FileUpload uploadTask;
 
-   public RealmsWorldUpload(Path var1, RealmsWorldOptions var2, User var3, long var4, int var6, RealmsWorldUploadStatusTracker var7) {
+   public RealmsWorldUpload(Path var1, RealmsSlot var2, User var3, long var4, RealmsWorldUploadStatusTracker var6) {
       super();
       this.worldFolder = var1;
-      this.worldOptions = var2;
+      this.realmsSlot = var2;
       this.user = var3;
       this.realmId = var4;
-      this.slotId = var6;
-      this.statusCallback = var7;
+      this.statusCallback = var6;
    }
 
    public CompletableFuture<?> packAndUpload() {
@@ -52,7 +50,7 @@ public class RealmsWorldUpload {
             UploadInfo var2 = this.requestUploadInfoWithRetries();
             var1 = RealmsUploadWorldPacker.pack(this.worldFolder, () -> this.cancelled);
             this.statusCallback.setUploading();
-            FileUpload var3 = new FileUpload(var1, this.realmId, this.slotId, var2, this.user, SharedConstants.getCurrentVersion().getName(), this.worldOptions.version, this.statusCallback.getUploadStatus());
+            FileUpload var3 = new FileUpload(var1, this.realmId, this.realmsSlot.slotId, var2, this.user, SharedConstants.getCurrentVersion().name(), this.realmsSlot.options.version, this.statusCallback.getUploadStatus());
             this.uploadTask = var3;
             UploadResult var4 = var3.upload();
             String var5 = var4.getSimplifiedErrorMessage();
@@ -61,7 +59,7 @@ public class RealmsWorldUpload {
             }
 
             UploadTokenCache.invalidate(this.realmId);
-            this.client.updateSlot(this.realmId, this.slotId, this.worldOptions);
+            this.client.updateSlot(this.realmId, this.realmsSlot.slotId, this.realmsSlot.options, this.realmsSlot.settings);
          } catch (IOException var11) {
             throw new RealmsUploadFailedException(var11.getMessage());
          } catch (RealmsServiceException var12) {

@@ -868,6 +868,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.FROGSPAWN);
          var1.accept((ItemLike)Items.TURTLE_EGG);
          var1.accept((ItemLike)Items.SNIFFER_EGG);
+         var1.accept((ItemLike)Items.DRIED_GHAST);
          var1.accept((ItemLike)Items.WHEAT_SEEDS);
          var1.accept((ItemLike)Items.COCOA_BEANS);
          var1.accept((ItemLike)Items.PUMPKIN_SEEDS);
@@ -1275,6 +1276,22 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ELYTRA);
          generateFireworksAllDurations(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
          var1.accept((ItemLike)Items.SADDLE);
+         var1.accept((ItemLike)Items.WHITE_HARNESS);
+         var1.accept((ItemLike)Items.LIGHT_GRAY_HARNESS);
+         var1.accept((ItemLike)Items.GRAY_HARNESS);
+         var1.accept((ItemLike)Items.BLACK_HARNESS);
+         var1.accept((ItemLike)Items.BROWN_HARNESS);
+         var1.accept((ItemLike)Items.RED_HARNESS);
+         var1.accept((ItemLike)Items.ORANGE_HARNESS);
+         var1.accept((ItemLike)Items.YELLOW_HARNESS);
+         var1.accept((ItemLike)Items.LIME_HARNESS);
+         var1.accept((ItemLike)Items.GREEN_HARNESS);
+         var1.accept((ItemLike)Items.CYAN_HARNESS);
+         var1.accept((ItemLike)Items.LIGHT_BLUE_HARNESS);
+         var1.accept((ItemLike)Items.BLUE_HARNESS);
+         var1.accept((ItemLike)Items.PURPLE_HARNESS);
+         var1.accept((ItemLike)Items.MAGENTA_HARNESS);
+         var1.accept((ItemLike)Items.PINK_HARNESS);
          var1.accept((ItemLike)Items.CARROT_ON_A_STICK);
          var1.accept((ItemLike)Items.WARPED_FUNGUS_ON_A_STICK);
          var1.accept((ItemLike)Items.OAK_BOAT);
@@ -1326,6 +1343,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MUSIC_DISC_RELIC);
          var1.accept((ItemLike)Items.MUSIC_DISC_5);
          var1.accept((ItemLike)Items.MUSIC_DISC_PIGSTEP);
+         var1.accept((ItemLike)Items.MUSIC_DISC_TEARS);
       }).build());
       Registry.register(var0, (ResourceKey)COMBAT, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 1).title(Component.translatable("itemGroup.combat")).icon(() -> new ItemStack(Items.NETHERITE_SWORD)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.WOODEN_SWORD);
@@ -1627,6 +1645,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.GLOW_SQUID_SPAWN_EGG);
          var1.accept((ItemLike)Items.GOAT_SPAWN_EGG);
          var1.accept((ItemLike)Items.GUARDIAN_SPAWN_EGG);
+         var1.accept((ItemLike)Items.HAPPY_GHAST_SPAWN_EGG);
          var1.accept((ItemLike)Items.HOGLIN_SPAWN_EGG);
          var1.accept((ItemLike)Items.HORSE_SPAWN_EGG);
          var1.accept((ItemLike)Items.HUSK_SPAWN_EGG);

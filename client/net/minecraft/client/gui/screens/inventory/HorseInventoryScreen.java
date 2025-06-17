@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -28,9 +28,9 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderType::guiTextured, HORSE_INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, HORSE_INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (this.inventoryColumns > 0) {
-         var1.blitSprite(RenderType::guiTextured, CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
       }
 
       if (this.horse.canUseSlot(EquipmentSlot.SADDLE) && this.horse.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE)) {
@@ -46,7 +46,7 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    }
 
    private void drawSlot(GuiGraphics var1, int var2, int var3) {
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_SPRITE, var2, var3, 18, 18);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_SPRITE, var2, var3, 18, 18);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

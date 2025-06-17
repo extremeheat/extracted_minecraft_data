@@ -21,7 +21,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -31,6 +30,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class SculkSpreader {
    public static final int MAX_GROWTH_RATE_RADIUS = 24;
@@ -98,12 +99,12 @@ public class SculkSpreader {
       this.cursors.clear();
    }
 
-   public void load(CompoundTag var1) {
+   public void load(ValueInput var1) {
       this.cursors.clear();
       ((List)var1.read("cursors", SculkSpreader.ChargeCursor.CODEC.sizeLimitedListOf(32)).orElse(List.of())).forEach(this::addCursor);
    }
 
-   public void save(CompoundTag var1) {
+   public void save(ValueOutput var1) {
       var1.store("cursors", SculkSpreader.ChargeCursor.CODEC.listOf(), this.cursors);
    }
 

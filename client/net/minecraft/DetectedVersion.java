@@ -10,46 +10,25 @@ import java.io.Reader;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.DataVersion;
 import org.slf4j.Logger;
 
-public class DetectedVersion implements WorldVersion {
+public class DetectedVersion {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final WorldVersion BUILT_IN = new DetectedVersion();
-   private final String id;
-   private final String name;
-   private final boolean stable;
-   private final DataVersion worldVersion;
-   private final int protocolVersion;
-   private final int resourcePackVersion;
-   private final int dataPackVersion;
-   private final Date buildTime;
+   public static final WorldVersion BUILT_IN = createFromConstants();
 
-   private DetectedVersion() {
+   public DetectedVersion() {
       super();
-      this.id = UUID.randomUUID().toString().replaceAll("-", "");
-      this.name = "1.21.5";
-      this.stable = true;
-      this.worldVersion = new DataVersion(4325, "main");
-      this.protocolVersion = SharedConstants.getProtocolVersion();
-      this.resourcePackVersion = 55;
-      this.dataPackVersion = 71;
-      this.buildTime = new Date();
    }
 
-   private DetectedVersion(JsonObject var1) {
-      super();
-      this.id = GsonHelper.getAsString(var1, "id");
-      this.name = GsonHelper.getAsString(var1, "name");
-      this.stable = GsonHelper.getAsBoolean(var1, "stable");
-      this.worldVersion = new DataVersion(GsonHelper.getAsInt(var1, "world_version"), GsonHelper.getAsString(var1, "series_id", DataVersion.MAIN_SERIES));
-      this.protocolVersion = GsonHelper.getAsInt(var1, "protocol_version");
-      JsonObject var2 = GsonHelper.getAsJsonObject(var1, "pack_version");
-      this.resourcePackVersion = GsonHelper.getAsInt(var2, "resource");
-      this.dataPackVersion = GsonHelper.getAsInt(var2, "data");
-      this.buildTime = Date.from(ZonedDateTime.parse(GsonHelper.getAsString(var1, "build_time")).toInstant());
+   private static WorldVersion createFromConstants() {
+      return new WorldVersion.Simple(UUID.randomUUID().toString().replaceAll("-", ""), "1.21.6", new DataVersion(4435, "main"), SharedConstants.getProtocolVersion(), 63, 80, new Date(), true);
+   }
+
+   private static WorldVersion createFromJson(JsonObject var0) {
+      JsonObject var1 = GsonHelper.getAsJsonObject(var0, "pack_version");
+      return new WorldVersion.Simple(GsonHelper.getAsString(var0, "id"), GsonHelper.getAsString(var0, "name"), new DataVersion(GsonHelper.getAsInt(var0, "world_version"), GsonHelper.getAsString(var0, "series_id", "main")), GsonHelper.getAsInt(var0, "protocol_version"), GsonHelper.getAsInt(var1, "resource"), GsonHelper.getAsInt(var1, "data"), Date.from(ZonedDateTime.parse(GsonHelper.getAsString(var0, "build_time")).toInstant()), GsonHelper.getAsBoolean(var0, "stable"));
    }
 
    public static WorldVersion tryDetectVersion() {
@@ -58,7 +37,7 @@ public class DetectedVersion implements WorldVersion {
 
          WorldVersion var9;
          label63: {
-            DetectedVersion var2;
+            WorldVersion var2;
             try {
                if (var0 == null) {
                   LOGGER.warn("Missing version information!");
@@ -69,7 +48,7 @@ public class DetectedVersion implements WorldVersion {
                InputStreamReader var1 = new InputStreamReader(var0);
 
                try {
-                  var2 = new DetectedVersion(GsonHelper.parse((Reader)var1));
+                  var2 = createFromJson(GsonHelper.parse((Reader)var1));
                } catch (Throwable var6) {
                   try {
                      var1.close();
@@ -108,33 +87,5 @@ public class DetectedVersion implements WorldVersion {
       } catch (JsonParseException | IOException var8) {
          throw new IllegalStateException("Game version information is corrupt", var8);
       }
-   }
-
-   public String getId() {
-      return this.id;
-   }
-
-   public String getName() {
-      return this.name;
-   }
-
-   public DataVersion getDataVersion() {
-      return this.worldVersion;
-   }
-
-   public int getProtocolVersion() {
-      return this.protocolVersion;
-   }
-
-   public int getPackVersion(PackType var1) {
-      return var1 == PackType.SERVER_DATA ? this.dataPackVersion : this.resourcePackVersion;
-   }
-
-   public Date getBuildTime() {
-      return this.buildTime;
-   }
-
-   public boolean isStable() {
-      return this.stable;
    }
 }

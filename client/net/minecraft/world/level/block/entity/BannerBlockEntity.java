@@ -7,18 +7,18 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class BannerBlockEntity extends BlockEntity implements Nameable {
    public static final int MAX_PATTERNS = 6;
@@ -47,21 +47,19 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       return this.name;
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
-         var1.store("patterns", BannerPatternLayers.CODEC, var3, this.patterns);
+         var1.store("patterns", BannerPatternLayers.CODEC, this.patterns);
       }
 
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var3, this.name);
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      this.patterns = (BannerPatternLayers)var1.read("patterns", BannerPatternLayers.CODEC, var3).orElse(BannerPatternLayers.EMPTY);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.name = parseCustomNameSafe(var1, "CustomName");
+      this.patterns = (BannerPatternLayers)var1.read("patterns", BannerPatternLayers.CODEC).orElse(BannerPatternLayers.EMPTY);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -98,9 +96,9 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       var1.set(DataComponents.CUSTOM_NAME, this.name);
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
-      var1.remove("patterns");
-      var1.remove("CustomName");
+   public void removeComponentsFromTag(ValueOutput var1) {
+      var1.discard("patterns");
+      var1.discard("CustomName");
    }
 
    // $FF: synthetic method

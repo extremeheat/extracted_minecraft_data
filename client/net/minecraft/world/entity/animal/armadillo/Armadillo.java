@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -33,6 +32,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -47,6 +47,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class Armadillo extends Animal {
@@ -237,13 +239,13 @@ public class Armadillo extends Animal {
       }
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("state", Armadillo.ArmadilloState.CODEC, this.getState());
       var1.putInt("scute_time", this.scuteTime);
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.switchToState((ArmadilloState)var1.read("state", Armadillo.ArmadilloState.CODEC).orElse(Armadillo.ArmadilloState.IDLE));
       var1.getInt("scute_time").ifPresent((var1x) -> this.scuteTime = var1x);
@@ -293,7 +295,7 @@ public class Armadillo extends Animal {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BRUSH) && this.brushOffScute()) {
-         var3.hurtAndBreak(16, var1, getSlotForHand(var2));
+         var3.hurtAndBreak(16, var1, (EquipmentSlot)getSlotForHand(var2));
          return InteractionResult.SUCCESS;
       } else {
          return (InteractionResult)(this.isScared() ? InteractionResult.FAIL : super.mobInteract(var1, var2));

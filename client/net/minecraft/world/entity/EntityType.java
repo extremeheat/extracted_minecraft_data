@@ -3,7 +3,6 @@ package net.minecraft.world.entity;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -21,8 +20,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
@@ -31,6 +28,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Bee;
@@ -40,6 +38,7 @@ import net.minecraft.world.entity.animal.Cod;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.entity.animal.Ocelot;
@@ -171,6 +170,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.pathfinder.NodeEvaluator;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -239,6 +240,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Frog> FROG;
    public static final EntityType<MinecartFurnace> FURNACE_MINECART;
    public static final EntityType<Ghast> GHAST;
+   public static final EntityType<HappyGhast> HAPPY_GHAST;
    public static final EntityType<Giant> GIANT;
    public static final EntityType<GlowItemFrame> GLOW_ITEM_FRAME;
    public static final EntityType<GlowSquid> GLOW_SQUID;
@@ -563,7 +565,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (T)(!this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1));
    }
 
-   public static Optional<Entity> create(CompoundTag var0, Level var1, EntitySpawnReason var2) {
+   public static Optional<Entity> create(ValueInput var0, Level var1, EntitySpawnReason var2) {
       return Util.<Entity>ifElse(by(var0).map((var2x) -> var2x.create(var1, var2)), (var1x) -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getStringOr("id", "[invalid]")));
    }
 
@@ -587,17 +589,22 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.dimensions;
    }
 
-   public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return var0.read("id", CODEC);
+   public static Optional<EntityType<?>> by(ValueInput var0) {
+      return var0.<EntityType<?>>read("id", CODEC);
    }
 
    @Nullable
    public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
-      return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> {
-         ListTag var5 = var0.getListOrEmpty("Passengers");
+      try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(LOGGER)) {
+         return loadEntityRecursive(TagValueInput.create(var4, var1.registryAccess(), var0), var1, var2, var3);
+      }
+   }
 
-         for(int var6 = 0; var6 < var5.size(); ++var6) {
-            Entity var7 = loadEntityRecursive(var5.getCompoundOrEmpty(var6), var1, var2, var3);
+   @Nullable
+   public static Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
+      return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> {
+         for(ValueInput var6 : var0.childrenListOrEmpty("Passengers")) {
+            Entity var7 = loadEntityRecursive(var6, var1, var2, var3);
             if (var7 != null) {
                var7.startRiding(var4, true);
             }
@@ -607,14 +614,14 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       }).orElse((Object)null);
    }
 
-   public static Stream<Entity> loadEntitiesRecursive(List<? extends Tag> var0, Level var1, EntitySpawnReason var2) {
-      return var0.stream().flatMap((var0x) -> var0x.asCompound().stream()).mapMulti((var2x, var3) -> loadEntityRecursive(var2x, var1, var2, (var1x) -> {
+   public static Stream<Entity> loadEntitiesRecursive(ValueInput.ValueInputList var0, Level var1, EntitySpawnReason var2) {
+      return var0.stream().mapMulti((var2x, var3) -> loadEntityRecursive((ValueInput)var2x, var1, var2, (var1x) -> {
             var3.accept(var1x);
             return var1x;
          }));
    }
 
-   private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1, EntitySpawnReason var2) {
+   private static Optional<Entity> loadStaticEntity(ValueInput var0, Level var1, EntitySpawnReason var2) {
       try {
          return create(var0, var1, var2);
       } catch (RuntimeException var4) {
@@ -736,6 +743,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       FROG = register("frog", EntityType.Builder.of(Frog::new, MobCategory.CREATURE).sized(0.5F, 0.5F).passengerAttachments(new Vec3(0.0, 0.375, -0.25)).clientTrackingRange(10));
       FURNACE_MINECART = register("furnace_minecart", EntityType.Builder.of(MinecartFurnace::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       GHAST = register("ghast", EntityType.Builder.of(Ghast::new, MobCategory.MONSTER).fireImmune().sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(4.0625F).ridingOffset(0.5F).clientTrackingRange(10));
+      HAPPY_GHAST = register("happy_ghast", EntityType.Builder.of(HappyGhast::new, MobCategory.CREATURE).sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(new Vec3(0.0, 4.0, 1.7), new Vec3(-1.7, 4.0, 0.0), new Vec3(0.0, 4.0, -1.7), new Vec3(1.7, 4.0, 0.0)).ridingOffset(0.5F).clientTrackingRange(10));
       GIANT = register("giant", EntityType.Builder.of(Giant::new, MobCategory.MONSTER).sized(3.6F, 12.0F).eyeHeight(10.44F).ridingOffset(-3.75F).clientTrackingRange(10));
       GLOW_ITEM_FRAME = register("glow_item_frame", EntityType.Builder.of(GlowItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647));
       GLOW_SQUID = register("glow_squid", EntityType.Builder.of(GlowSquid::new, MobCategory.UNDERGROUND_WATER_CREATURE).sized(0.8F, 0.8F).eyeHeight(0.4F).clientTrackingRange(10));

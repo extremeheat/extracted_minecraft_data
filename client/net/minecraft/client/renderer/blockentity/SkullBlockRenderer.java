@@ -99,10 +99,14 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    }
 
    public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1) {
-      return getRenderType(var0, var1, (ResourceLocation)null);
+      return var0 == SkullBlock.Types.PLAYER && var1 != null ? getPlayerSkinRenderType(Minecraft.getInstance().getSkinManager().getInsecureSkin(var1.gameProfile()).texture()) : getSkullRenderType(var0, (ResourceLocation)null);
    }
 
-   public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1, @Nullable ResourceLocation var2) {
-      return var0 == SkullBlock.Types.PLAYER && var1 != null ? RenderType.entityTranslucent(var2 != null ? var2 : Minecraft.getInstance().getSkinManager().getInsecureSkin(var1.gameProfile()).texture()) : RenderType.entityCutoutNoCullZOffset(var2 != null ? var2 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
+   public static RenderType getSkullRenderType(SkullBlock.Type var0, @Nullable ResourceLocation var1) {
+      return RenderType.entityCutoutNoCullZOffset(var1 != null ? var1 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
+   }
+
+   public static RenderType getPlayerSkinRenderType(ResourceLocation var0) {
+      return RenderType.entityTranslucent(var0);
    }
 }

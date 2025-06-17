@@ -3,27 +3,40 @@ package net.minecraft.client.gui.screens;
 import com.mojang.realmsclient.RealmsMainScreen;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.toasts.NowPlayingToast;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.gui.screens.multiplayer.ServerLinksScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.dialog.Dialogs;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
 
 public class PauseScreen extends Screen {
@@ -39,14 +52,12 @@ public class PauseScreen extends Screen {
    private static final Component SEND_FEEDBACK = Component.translatable("menu.sendFeedback");
    private static final Component REPORT_BUGS = Component.translatable("menu.reportBugs");
    private static final Component FEEDBACK_SUBSCREEN = Component.translatable("menu.feedback");
-   private static final Component SERVER_LINKS = Component.translatable("menu.server_links");
    private static final Component OPTIONS = Component.translatable("menu.options");
    private static final Component SHARE_TO_LAN = Component.translatable("menu.shareToLan");
    private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
-   private static final Component RETURN_TO_MENU = Component.translatable("menu.returnToMenu");
-   private static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
    private static final Component GAME = Component.translatable("menu.game");
    private static final Component PAUSED = Component.translatable("menu.paused");
+   private static final Tooltip CUSTOM_OPTIONS_TOOLTIP = Tooltip.create(Component.translatable("menu.custom_options.tooltip"));
    private final boolean showPauseMenu;
    @Nullable
    private Button disconnectButton;
@@ -81,12 +92,11 @@ public class PauseScreen extends Screen {
       }).width(204).build(), 2, var1.newCellSettings().paddingTop(50));
       var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
       var2.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
-      ServerLinks var3 = this.minecraft.player.connection.serverLinks();
+      Optional var3 = this.getCustomAdditions();
       if (var3.isEmpty()) {
          addFeedbackButtons(this, var2);
       } else {
-         var2.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
-         var2.addChild(this.openScreenButton(SERVER_LINKS, () -> new ServerLinksScreen(this, var3)));
+         this.addFeedbackSubscreenAndCustomDialogButtons(this.minecraft, (Holder)var3.get(), var2);
       }
 
       var2.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options)));
@@ -96,50 +106,82 @@ public class PauseScreen extends Screen {
          var2.addChild(this.openScreenButton(PLAYER_REPORTING, () -> new SocialInteractionsScreen(this)));
       }
 
-      Component var4 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : CommonComponents.GUI_DISCONNECT;
-      this.disconnectButton = (Button)var2.addChild(Button.builder(var4, (var1x) -> {
+      this.disconnectButton = (Button)var2.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (var1x) -> {
          var1x.active = false;
-         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::onDisconnect, true);
+         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> disconnectFromWorld(this.minecraft, ClientLevel.DEFAULT_QUIT_MESSAGE), true);
       }).width(204).build(), 2);
       var1.arrangeElements();
       FrameLayout.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.25F);
       var1.visitWidgets(this::addRenderableWidget);
    }
 
-   static void addFeedbackButtons(Screen var0, GridLayout.RowHelper var1) {
-      var1.addChild(openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().isStable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK));
-      ((Button)var1.addChild(openLinkButton(var0, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK))).active = !SharedConstants.getCurrentVersion().getDataVersion().isSideSeries();
-   }
+   private Optional<? extends Holder<Dialog>> getCustomAdditions() {
+      Registry var1 = this.minecraft.player.connection.registryAccess().lookupOrThrow(Registries.DIALOG);
+      Optional var2 = var1.get(DialogTags.PAUSE_SCREEN_ADDITIONS);
+      if (var2.isPresent()) {
+         HolderSet var3 = (HolderSet)var2.get();
+         if (var3.size() > 0) {
+            if (var3.size() == 1) {
+               return Optional.of(var3.get(0));
+            }
 
-   private void onDisconnect() {
-      boolean var1 = this.minecraft.isLocalServer();
-      ServerData var2 = this.minecraft.getCurrentServer();
-      this.minecraft.level.disconnect();
-      if (var1) {
-         this.minecraft.disconnect(new GenericMessageScreen(SAVING_LEVEL));
-      } else {
-         this.minecraft.disconnect();
+            return var1.get(Dialogs.CUSTOM_OPTIONS);
+         }
       }
 
-      TitleScreen var3 = new TitleScreen();
-      if (var1) {
-         this.minecraft.setScreen(var3);
-      } else if (var2 != null && var2.isRealm()) {
-         this.minecraft.setScreen(new RealmsMainScreen(var3));
+      ServerLinks var4 = this.minecraft.player.connection.serverLinks();
+      return !var4.isEmpty() ? var1.get(Dialogs.SERVER_LINKS) : Optional.empty();
+   }
+
+   static void addFeedbackButtons(Screen var0, GridLayout.RowHelper var1) {
+      var1.addChild(openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK));
+      ((Button)var1.addChild(openLinkButton(var0, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK))).active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
+   }
+
+   private void addFeedbackSubscreenAndCustomDialogButtons(Minecraft var1, Holder<Dialog> var2, GridLayout.RowHelper var3) {
+      var3.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
+      var3.addChild(Button.builder(((Dialog)var2.value()).common().computeExternalTitle(), (var3x) -> var1.player.connection.showDialog(var2, this)).width(98).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
+   }
+
+   public static void disconnectFromWorld(Minecraft var0, Component var1) {
+      boolean var2 = var0.isLocalServer();
+      ServerData var3 = var0.getCurrentServer();
+      if (var0.level != null) {
+         var0.level.disconnect(var1);
+      }
+
+      if (var2) {
+         var0.disconnectWithSavingScreen();
       } else {
-         this.minecraft.setScreen(new JoinMultiplayerScreen(var3));
+         var0.disconnectWithProgressScreen();
+      }
+
+      TitleScreen var4 = new TitleScreen();
+      if (var2) {
+         var0.setScreen(var4);
+      } else if (var3 != null && var3.isRealm()) {
+         var0.setScreen(new RealmsMainScreen(var4));
+      } else {
+         var0.setScreen(new JoinMultiplayerScreen(var4));
       }
 
    }
 
    public void tick() {
-      super.tick();
+      if (this.rendersNowPlayingToast()) {
+         NowPlayingToast.tickMusicNotes();
+      }
+
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      if (this.rendersNowPlayingToast()) {
+         NowPlayingToast.renderToast(var1, this.font);
+      }
+
       if (this.showPauseMenu && this.minecraft != null && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
       }
 
    }
@@ -149,6 +191,11 @@ public class PauseScreen extends Screen {
          super.renderBackground(var1, var2, var3, var4);
       }
 
+   }
+
+   public boolean rendersNowPlayingToast() {
+      Options var1 = this.minecraft.options;
+      return (Boolean)var1.showNowPlayingToast().get() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
    }
 
    private Button openScreenButton(Component var1, Supplier<Screen> var2) {

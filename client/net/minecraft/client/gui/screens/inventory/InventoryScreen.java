@@ -1,19 +1,19 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.platform.Lighting;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
@@ -53,12 +53,13 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.effects.renderEffects(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.render(var1, var2, var3, var4);
+      this.effects.renderTooltip(var1, var2, var3);
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;
    }
@@ -74,7 +75,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(RenderType::guiTextured, INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 8, var5 + 75, var6 + 78, 30, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
    }
 
@@ -100,7 +101,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       float var21 = var9.getScale();
       Vector3f var22 = new Vector3f(0.0F, var9.getBbHeight() / 2.0F + var6 * var21, 0.0F);
       float var23 = (float)var5 / var21;
-      renderEntityInInventory(var0, var10, var11, var23, var22, var14, var15, var9);
+      renderEntityInInventory(var0, var1, var2, var3, var4, var23, var22, var14, var15, var9);
       var9.yBodyRot = var16;
       var9.setYRot(var17);
       var9.setXRot(var18);
@@ -109,25 +110,12 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       var0.disableScissor();
    }
 
-   public static void renderEntityInInventory(GuiGraphics var0, float var1, float var2, float var3, Vector3f var4, Quaternionf var5, @Nullable Quaternionf var6, LivingEntity var7) {
-      var0.pose().pushPose();
-      var0.pose().translate((double)var1, (double)var2, 50.0);
-      var0.pose().scale(var3, var3, -var3);
-      var0.pose().translate(var4.x, var4.y, var4.z);
-      var0.pose().mulPose((Quaternionfc)var5);
-      var0.flush();
-      Lighting.setupForEntityInInventory();
-      EntityRenderDispatcher var8 = Minecraft.getInstance().getEntityRenderDispatcher();
-      if (var6 != null) {
-         var8.overrideCameraOrientation(var6.conjugate(new Quaternionf()).rotateY(3.1415927F));
-      }
-
-      var8.setRenderShadow(false);
-      var0.drawSpecial((var3x) -> var8.render(var7, 0.0, 0.0, 0.0, 1.0F, var0.pose(), var3x, 15728880));
-      var0.flush();
-      var8.setRenderShadow(true);
-      var0.pose().popPose();
-      Lighting.setupFor3DItems();
+   public static void renderEntityInInventory(GuiGraphics var0, int var1, int var2, int var3, int var4, float var5, Vector3f var6, Quaternionf var7, @Nullable Quaternionf var8, LivingEntity var9) {
+      EntityRenderDispatcher var10 = Minecraft.getInstance().getEntityRenderDispatcher();
+      EntityRenderer var11 = var10.getRenderer(var9);
+      EntityRenderState var12 = var11.createRenderState(var9, 1.0F);
+      var12.hitboxesRenderState = null;
+      var0.submitEntityRenderState(var12, var5, var6, var7, var8, var1, var2, var3, var4);
    }
 
    public boolean mouseReleased(double var1, double var3, int var5) {

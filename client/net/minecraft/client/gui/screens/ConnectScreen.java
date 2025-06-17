@@ -71,7 +71,7 @@ public class ConnectScreen extends Screen {
             var7.updateStatus(Component.translatable("connect.transferring"));
          }
 
-         var1.disconnect();
+         var1.disconnectWithProgressScreen();
          var1.prepareForMultiplayer();
          var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3.ip));
          var1.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, var3.ip, var3.name);
@@ -208,9 +208,9 @@ public class ConnectScreen extends Screen {
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
          this.lastNarration = var5;
-         this.minecraft.getNarrator().sayNow((Component)Component.translatable("narrator.joining"));
+         this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("narrator.joining"));
       }
 
-      var1.drawCenteredString(this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.status, this.width / 2, this.height / 2 - 50, -1);
    }
 }

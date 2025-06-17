@@ -2,8 +2,8 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 
 public class PanoramaRenderer {
    public static final ResourceLocation PANORAMA_OVERLAY = ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama_overlay.png");
@@ -17,17 +17,22 @@ public class PanoramaRenderer {
       this.minecraft = Minecraft.getInstance();
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4, float var5) {
-      float var6 = this.minecraft.getDeltaTracker().getRealtimeDeltaTicks();
-      float var7 = (float)((double)var6 * (Double)this.minecraft.options.panoramaSpeed().get());
-      this.spin = wrap(this.spin + var7 * 0.1F, 360.0F);
-      var1.flush();
-      this.cubeMap.render(this.minecraft, 10.0F, -this.spin, var4);
-      var1.flush();
-      var1.blit(RenderType::guiTextured, PANORAMA_OVERLAY, 0, 0, 0.0F, 0.0F, var2, var3, 16, 128, 16, 128, ARGB.white(var4));
+   public void render(GuiGraphics var1, int var2, int var3, boolean var4) {
+      if (var4) {
+         float var5 = this.minecraft.getDeltaTracker().getRealtimeDeltaTicks();
+         float var6 = (float)((double)var5 * (Double)this.minecraft.options.panoramaSpeed().get());
+         this.spin = wrap(this.spin + var6 * 0.1F, 360.0F);
+      }
+
+      this.cubeMap.render(this.minecraft, 10.0F, -this.spin);
+      var1.blit(RenderPipelines.GUI_TEXTURED, PANORAMA_OVERLAY, 0, 0, 0.0F, 0.0F, var2, var3, 16, 128, 16, 128);
    }
 
    private static float wrap(float var0, float var1) {
       return var0 > var1 ? var0 - var1 : var0;
+   }
+
+   public void registerTextures(TextureManager var1) {
+      this.cubeMap.registerTextures(var1);
    }
 }

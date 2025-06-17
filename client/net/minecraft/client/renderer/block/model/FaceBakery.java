@@ -13,18 +13,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4f;
 
 public class FaceBakery {
    public static final int VERTEX_INT_SIZE = 8;
-   private static final float RESCALE_22_5 = 1.0F / (float)Math.cos(0.39269909262657166) - 1.0F;
-   private static final float RESCALE_45 = 1.0F / (float)Math.cos(0.7853981852531433) - 1.0F;
    public static final int VERTEX_COUNT = 4;
    private static final int COLOR_INDEX = 3;
    public static final int UV_INDEX = 4;
+   private static final Vector3fc NO_RESCALE = new Vector3f(1.0F, 1.0F, 1.0F);
+   private static final Vector3fc BLOCK_MIDDLE = new Vector3f(0.5F, 0.5F, 0.5F);
 
    public FaceBakery() {
       super();
@@ -137,52 +135,42 @@ public class FaceBakery {
 
    private static void applyElementRotation(Vector3f var0, @Nullable BlockElementRotation var1) {
       if (var1 != null) {
-         Vector3f var2;
-         Vector3f var3;
-         switch (var1.axis()) {
-            case X:
-               var2 = new Vector3f(1.0F, 0.0F, 0.0F);
-               var3 = new Vector3f(0.0F, 1.0F, 1.0F);
-               break;
-            case Y:
-               var2 = new Vector3f(0.0F, 1.0F, 0.0F);
-               var3 = new Vector3f(1.0F, 0.0F, 1.0F);
-               break;
-            case Z:
-               var2 = new Vector3f(0.0F, 0.0F, 1.0F);
-               var3 = new Vector3f(1.0F, 1.0F, 0.0F);
-               break;
-            default:
-               throw new IllegalArgumentException("There are only 3 axes");
+         Vector3fc var2 = var1.axis().getPositive().getUnitVec3f();
+         Matrix4f var3 = (new Matrix4f()).rotation(var1.angle() * 0.017453292F, var2);
+         Vector3fc var4 = var1.rescale() ? computeRescale(var1) : NO_RESCALE;
+         rotateVertexBy(var0, var1.origin(), var3, var4);
+      }
+   }
+
+   private static Vector3fc computeRescale(BlockElementRotation var0) {
+      if (var0.angle() == 0.0F) {
+         return NO_RESCALE;
+      } else {
+         float var1 = Math.abs(var0.angle());
+         float var2 = 1.0F / Mth.cos(var1 * 0.017453292F);
+         Vector3f var10000;
+         switch (var0.axis()) {
+            case X -> var10000 = new Vector3f(1.0F, var2, var2);
+            case Y -> var10000 = new Vector3f(var2, 1.0F, var2);
+            case Z -> var10000 = new Vector3f(var2, var2, 1.0F);
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
 
-         Quaternionf var4 = (new Quaternionf()).rotationAxis(var1.angle() * 0.017453292F, var2);
-         if (var1.rescale()) {
-            if (Math.abs(var1.angle()) == 22.5F) {
-               var3.mul(RESCALE_22_5);
-            } else {
-               var3.mul(RESCALE_45);
-            }
-
-            var3.add(1.0F, 1.0F, 1.0F);
-         } else {
-            var3.set(1.0F, 1.0F, 1.0F);
-         }
-
-         rotateVertexBy(var0, new Vector3f(var1.origin()), (new Matrix4f()).rotation(var4), var3);
+         return var10000;
       }
    }
 
    private static void applyModelRotation(Vector3f var0, Transformation var1) {
       if (var1 != Transformation.identity()) {
-         rotateVertexBy(var0, new Vector3f(0.5F, 0.5F, 0.5F), var1.getMatrix(), new Vector3f(1.0F, 1.0F, 1.0F));
+         rotateVertexBy(var0, BLOCK_MIDDLE, var1.getMatrix(), NO_RESCALE);
       }
    }
 
    private static void rotateVertexBy(Vector3f var0, Vector3fc var1, Matrix4fc var2, Vector3fc var3) {
-      Vector4f var4 = var2.transform(new Vector4f(var0.x() - var1.x(), var0.y() - var1.y(), var0.z() - var1.z(), 1.0F));
-      var4.mul(new Vector4f(var3, 1.0F));
-      var0.set(var4.x() + var1.x(), var4.y() + var1.y(), var4.z() + var1.z());
+      var0.sub(var1);
+      var2.transformPosition(var0);
+      var0.mul(var3);
+      var0.add(var1);
    }
 
    private static Direction calculateFacing(int[] var0) {

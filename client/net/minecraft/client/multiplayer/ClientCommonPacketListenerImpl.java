@@ -29,10 +29,15 @@ import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.dialog.DialogConnectionAccess;
+import net.minecraft.client.gui.screens.dialog.DialogScreen;
+import net.minecraft.client.gui.screens.dialog.DialogScreens;
+import net.minecraft.client.gui.screens.dialog.WaitingForResponseScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
+import net.minecraft.core.Holder;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.ServerboundPacketListener;
@@ -41,6 +46,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
+import net.minecraft.network.protocol.common.ClientboundClearDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
@@ -49,6 +55,7 @@ import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
+import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
@@ -59,9 +66,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
 import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
-import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.thread.BlockableEventLoop;
 import org.slf4j.Logger;
 
@@ -81,7 +88,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    private final List<DeferredPacket> deferredPackets = new ArrayList();
    protected final Map<ResourceLocation, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
-   protected ServerLinks serverLinks;
+   private ServerLinks serverLinks;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super();
@@ -94,6 +101,10 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.serverCookies = var3.serverCookies();
       this.customReportDetails = var3.customReportDetails();
       this.serverLinks = var3.serverLinks();
+   }
+
+   public ServerLinks serverLinks() {
+      return this.serverLinks;
    }
 
    public void onPacketError(Packet var1, Exception var2) {
@@ -224,6 +235,76 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.serverLinks = new ServerLinks(var3.build());
    }
 
+   public void handleShowDialog(ClientboundShowDialogPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      this.showDialog(var1.dialog(), this.minecraft.screen);
+   }
+
+   protected abstract DialogConnectionAccess createDialogAccess();
+
+   public void showDialog(Holder<Dialog> var1, @Nullable Screen var2) {
+      this.showDialog(var1, this.createDialogAccess(), var2);
+   }
+
+   protected void showDialog(Holder<Dialog> var1, DialogConnectionAccess var2, @Nullable Screen var3) {
+      if (var3 instanceof DialogScreen.WarningScreen var8) {
+         Screen var10 = var8.returnScreen();
+         Screen var10000;
+         if (var10 instanceof DialogScreen var7) {
+            var10000 = var7.previousScreen();
+         } else {
+            var10000 = var10;
+         }
+
+         Screen var11 = var10000;
+         DialogScreen var12 = DialogScreens.createFromData((Dialog)var1.value(), var11, var2);
+         if (var12 != null) {
+            var8.updateReturnScreen(var12);
+         } else {
+            LOGGER.warn("Failed to show dialog for data {}", var1);
+         }
+
+      } else {
+         Screen var4;
+         if (var3 instanceof DialogScreen var5) {
+            var4 = var5.previousScreen();
+         } else if (var3 instanceof WaitingForResponseScreen var6) {
+            var4 = var6.previousScreen();
+         } else {
+            var4 = var3;
+         }
+
+         DialogScreen var9 = DialogScreens.createFromData((Dialog)var1.value(), var4, var2);
+         if (var9 != null) {
+            this.minecraft.setScreen(var9);
+         } else {
+            LOGGER.warn("Failed to show dialog for data {}", var1);
+         }
+
+      }
+   }
+
+   public void handleClearDialog(ClientboundClearDialogPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      this.clearDialog();
+   }
+
+   public void clearDialog() {
+      Screen var3 = this.minecraft.screen;
+      if (var3 instanceof DialogScreen.WarningScreen var1) {
+         var3 = var1.returnScreen();
+         if (var3 instanceof DialogScreen var4) {
+            var1.updateReturnScreen(var4.previousScreen());
+         }
+      } else {
+         var3 = this.minecraft.screen;
+         if (var3 instanceof DialogScreen var2) {
+            this.minecraft.setScreen(var2.previousScreen());
+         }
+      }
+
+   }
+
    public void handleTransfer(ClientboundTransferPacket var1) {
       this.isTransferring = true;
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
@@ -282,7 +363,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    protected Screen createDisconnectScreen(DisconnectionDetails var1) {
       Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
-      return (Screen)(this.serverData != null && this.serverData.isRealm() ? new DisconnectedRealmsScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1.reason()) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1));
+      return this.serverData != null && this.serverData.isRealm() ? new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1, CommonComponents.GUI_BACK) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1);
    }
 
    @Nullable

@@ -31,6 +31,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -61,7 +62,7 @@ public class CommandSuggestions {
    private int commandUsagePosition;
    private int commandUsageWidth;
    @Nullable
-   private ParseResults<SharedSuggestionProvider> currentParse;
+   private ParseResults<ClientSuggestionProvider> currentParse;
    @Nullable
    private CompletableFuture<Suggestions> pendingSuggestions;
    @Nullable
@@ -303,7 +304,7 @@ public class CommandSuggestions {
       return var1.startsWith(var0) ? var1.substring(var0.length()) : null;
    }
 
-   private static FormattedCharSequence formatText(ParseResults<SharedSuggestionProvider> var0, String var1, int var2) {
+   private static FormattedCharSequence formatText(ParseResults<ClientSuggestionProvider> var0, String var1, int var2) {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
       int var5 = -1;
@@ -455,7 +456,7 @@ public class CommandSuggestions {
          if (var14) {
             Message var15 = ((Suggestion)this.suggestionList.get(this.current)).getTooltip();
             if (var15 != null) {
-               var1.renderTooltip(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
+               var1.setTooltipForNextFrame(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
             }
          }
 
@@ -536,7 +537,7 @@ public class CommandSuggestions {
          Suggestion var2 = (Suggestion)this.suggestionList.get(this.current);
          CommandSuggestions.this.input.setSuggestion(CommandSuggestions.calculateSuggestionSuffix(CommandSuggestions.this.input.getValue(), var2.apply(this.originalContents)));
          if (this.lastNarratedEntry != this.current) {
-            CommandSuggestions.this.minecraft.getNarrator().sayNow(this.getNarrationMessage());
+            CommandSuggestions.this.minecraft.getNarrator().saySystemNow(this.getNarrationMessage());
          }
 
       }

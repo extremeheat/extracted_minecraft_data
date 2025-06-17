@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -66,6 +67,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
 
    }
 
+   @Nullable
    public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.END ? Level.OVERWORLD : Level.END;
       ServerLevel var5 = var1.getServer().getLevel(var4);
@@ -85,7 +87,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
                var8 = var8.subtract(0.0, 1.0, 0.0);
             }
          } else {
-            var9 = 0.0F;
+            var9 = var5.getSharedSpawnAngle();
             var10 = Relative.union(Relative.DELTA, Relative.ROTATION);
             if (var2 instanceof ServerPlayer) {
                ServerPlayer var11 = (ServerPlayer)var2;

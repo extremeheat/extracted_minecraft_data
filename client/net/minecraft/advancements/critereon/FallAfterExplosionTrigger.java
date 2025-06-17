@@ -24,7 +24,7 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
    public void trigger(ServerPlayer var1, Vec3 var2, @Nullable Entity var3) {
       Vec3 var4 = var1.position();
       LootContext var5 = var3 != null ? EntityPredicate.createContext(var1, var3) : null;
-      this.trigger(var1, (var4x) -> var4x.matches(var1.serverLevel(), var2, var4, var5));
+      this.trigger(var1, (var4x) -> var4x.matches(var1.level(), var2, var4, var5));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance, Optional<ContextAwarePredicate> cause) implements SimpleCriterionTrigger.SimpleInstance {
@@ -44,7 +44,7 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.cause(), ".cause");
+         var1.validateEntity(this.cause(), "cause");
       }
 
       public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3, @Nullable LootContext var4) {

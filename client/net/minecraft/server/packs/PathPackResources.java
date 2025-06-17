@@ -12,6 +12,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,10 +21,12 @@ import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class PathPackResources extends AbstractPackResources {
@@ -80,7 +83,7 @@ public class PathPackResources extends AbstractPackResources {
       Path var4 = FileUtil.resolvePath(var1, var2);
 
       try {
-         Stream var5 = Files.find(var4, 2147483647, (var0x, var1x) -> var1x.isRegularFile(), new FileVisitOption[0]);
+         Stream var5 = Files.find(var4, 2147483647, PathPackResources::isRegularFile, new FileVisitOption[0]);
 
          try {
             var5.forEach((var3x) -> {
@@ -113,6 +116,14 @@ public class PathPackResources extends AbstractPackResources {
          LOGGER.error("Failed to list path {}", var4, var11);
       }
 
+   }
+
+   private static boolean isRegularFile(Path var0, BasicFileAttributes var1) {
+      if (!SharedConstants.IS_RUNNING_IN_IDE) {
+         return var1.isRegularFile();
+      } else {
+         return var1.isRegularFile() && !StringUtils.equalsIgnoreCase(var0.getFileName().toString(), ".ds_store");
+      }
    }
 
    public Set<String> getNamespaces(PackType var1) {

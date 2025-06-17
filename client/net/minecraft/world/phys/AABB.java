@@ -242,6 +242,10 @@ public class AABB {
       return this.intersects(Math.min(var1.x, var2.x), Math.min(var1.y, var2.y), Math.min(var1.z, var2.z), Math.max(var1.x, var2.x), Math.max(var1.y, var2.y), Math.max(var1.z, var2.z));
    }
 
+   public boolean intersects(BlockPos var1) {
+      return this.intersects((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 1), (double)(var1.getZ() + 1));
+   }
+
    public boolean contains(Vec3 var1) {
       return this.contains(var1.x, var1.y, var1.z);
    }
@@ -378,6 +382,13 @@ public class AABB {
       double var2 = Math.max(Math.max(this.minX - var1.x, var1.x - this.maxX), 0.0);
       double var4 = Math.max(Math.max(this.minY - var1.y, var1.y - this.maxY), 0.0);
       double var6 = Math.max(Math.max(this.minZ - var1.z, var1.z - this.maxZ), 0.0);
+      return Mth.lengthSquared(var2, var4, var6);
+   }
+
+   public double distanceToSqr(AABB var1) {
+      double var2 = Math.max(Math.max(this.minX - var1.maxX, var1.minX - this.maxX), 0.0);
+      double var4 = Math.max(Math.max(this.minY - var1.maxY, var1.minY - this.maxY), 0.0);
+      double var6 = Math.max(Math.max(this.minZ - var1.maxZ, var1.minZ - this.maxZ), 0.0);
       return Mth.lengthSquared(var2, var4, var6);
    }
 

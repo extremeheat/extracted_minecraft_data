@@ -1,18 +1,17 @@
 package com.mojang.blaze3d;
 
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.jtracy.TracyClient;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderPipelines;
 
 public class TracyFrameCapture implements AutoCloseable {
@@ -23,9 +22,8 @@ public class TracyFrameCapture implements AutoCloseable {
    private int targetHeight;
    private int width;
    private int height;
-   @Nullable
    private GpuTexture frameBuffer;
-   @Nullable
+   private GpuTextureView frameBufferView;
    private GpuBuffer pixelbuffer;
    private int lastCaptureDelay;
    private boolean capturedThisFrame;
@@ -34,6 +32,12 @@ public class TracyFrameCapture implements AutoCloseable {
    public TracyFrameCapture() {
       super();
       this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
+      this.width = 320;
+      this.height = 180;
+      GpuDevice var1 = RenderSystem.getDevice();
+      this.frameBuffer = var1.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, this.width, this.height, 1, 1);
+      this.frameBufferView = var1.createTextureView(this.frameBuffer);
+      this.pixelbuffer = var1.createBuffer(() -> "Tracy Frame Capture buffer", 9, this.width * this.height * 4);
    }
 
    private void resize(int var1, int var2) {
@@ -53,22 +57,19 @@ public class TracyFrameCapture implements AutoCloseable {
       if (this.width != var1 || this.height != var2) {
          this.width = var1;
          this.height = var2;
-         if (this.frameBuffer != null) {
-            this.frameBuffer.close();
-         }
-
-         this.frameBuffer = RenderSystem.getDevice().createTexture("Tracy Frame Capture", TextureFormat.RGBA8, var1, var2, 1);
-         if (this.pixelbuffer != null) {
-            this.pixelbuffer.close();
-         }
-
-         this.pixelbuffer = RenderSystem.getDevice().createBuffer(() -> "Tracy Frame Capture buffer", BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, var1 * var2 * 4);
+         GpuDevice var4 = RenderSystem.getDevice();
+         this.frameBuffer.close();
+         this.frameBuffer = var4.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, var1, var2, 1, 1);
+         this.frameBufferView.close();
+         this.frameBufferView = var4.createTextureView(this.frameBuffer);
+         this.pixelbuffer.close();
+         this.pixelbuffer = var4.createBuffer(() -> "Tracy Frame Capture buffer", 9, var1 * var2 * 4);
       }
 
    }
 
    public void capture(RenderTarget var1) {
-      if (this.status == TracyFrameCapture.Status.WAITING_FOR_CAPTURE && !this.capturedThisFrame && var1.getColorTexture() != null && this.pixelbuffer != null && this.frameBuffer != null) {
+      if (this.status == TracyFrameCapture.Status.WAITING_FOR_CAPTURE && !this.capturedThisFrame && var1.getColorTexture() != null) {
          this.capturedThisFrame = true;
          if (var1.width != this.targetWidth || var1.height != this.targetHeight) {
             this.targetWidth = var1.width;
@@ -81,12 +82,12 @@ public class TracyFrameCapture implements AutoCloseable {
          RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
          GpuBuffer var4 = var3.getBuffer(6);
 
-         try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(this.frameBuffer, OptionalInt.empty())) {
+         try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
             var5.setPipeline(RenderPipelines.TRACY_BLIT);
             var5.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
             var5.setIndexBuffer(var4, var3.type());
-            var5.bindSampler("InSampler", var1.getColorTexture());
-            var5.drawIndexed(0, 6);
+            var5.bindSampler("InSampler", var1.getColorTextureView());
+            var5.drawIndexed(0, 0, 6, 1);
          }
 
          var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
@@ -95,10 +96,10 @@ public class TracyFrameCapture implements AutoCloseable {
    }
 
    public void upload() {
-      if (this.status == TracyFrameCapture.Status.WAITING_FOR_UPLOAD && this.pixelbuffer != null) {
+      if (this.status == TracyFrameCapture.Status.WAITING_FOR_UPLOAD) {
          this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
 
-         try (GpuBuffer.ReadView var1 = RenderSystem.getDevice().createCommandEncoder().readBuffer(this.pixelbuffer)) {
+         try (GpuBuffer.MappedView var1 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.pixelbuffer, true, false)) {
             TracyClient.frameImage(var1.data(), this.width, this.height, this.lastCaptureDelay, true);
          }
 
@@ -112,14 +113,9 @@ public class TracyFrameCapture implements AutoCloseable {
    }
 
    public void close() {
-      if (this.frameBuffer != null) {
-         this.frameBuffer.close();
-      }
-
-      if (this.pixelbuffer != null) {
-         this.pixelbuffer.close();
-      }
-
+      this.frameBuffer.close();
+      this.frameBufferView.close();
+      this.pixelbuffer.close();
    }
 
    static enum Status {

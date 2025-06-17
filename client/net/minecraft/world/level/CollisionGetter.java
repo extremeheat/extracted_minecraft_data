@@ -85,12 +85,22 @@ public interface CollisionGetter extends BlockGetter {
       return var3.isEmpty() ? var4 : Iterables.concat(var3, var4);
    }
 
+   default Iterable<VoxelShape> getPreMoveCollisions(@Nullable Entity var1, AABB var2, Vec3 var3) {
+      List var4 = this.getEntityCollisions(var1, var2);
+      Iterable var5 = this.getBlockCollisionsFromContext(CollisionContext.withPosition(var1, var3.y), var2);
+      return var4.isEmpty() ? var5 : Iterables.concat(var4, var5);
+   }
+
    default Iterable<VoxelShape> getBlockCollisions(@Nullable Entity var1, AABB var2) {
-      return () -> new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var1x);
+      return this.getBlockCollisionsFromContext(var1 == null ? CollisionContext.empty() : CollisionContext.of(var1), var2);
    }
 
    default Iterable<VoxelShape> getBlockAndLiquidCollisions(@Nullable Entity var1, AABB var2) {
-      return () -> new BlockCollisions(this, CollisionContext.of(var1, true), var2, false, (var0, var1x) -> var1x);
+      return this.getBlockCollisionsFromContext(var1 == null ? CollisionContext.empty() : CollisionContext.of(var1, true), var2);
+   }
+
+   private Iterable<VoxelShape> getBlockCollisionsFromContext(CollisionContext var1, AABB var2) {
+      return () -> new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var1x);
    }
 
    @Nullable

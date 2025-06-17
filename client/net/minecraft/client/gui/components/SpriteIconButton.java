@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -32,7 +32,7 @@ public abstract class SpriteIconButton extends Button {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(RenderType::guiTextured, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
       }
 
       public void renderString(GuiGraphics var1, Font var2, int var3) {
@@ -48,7 +48,7 @@ public abstract class SpriteIconButton extends Button {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() - this.spriteWidth - 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(RenderType::guiTextured, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
       }
 
       public void renderString(GuiGraphics var1, Font var2, int var3) {

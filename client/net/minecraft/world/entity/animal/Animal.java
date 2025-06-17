@@ -2,14 +2,11 @@ package net.minecraft.world.entity.animal;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -19,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -35,13 +33,15 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public abstract class Animal extends AgeableMob {
    protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
    private static final int DEFAULT_IN_LOVE_TIME = 0;
    private int inLove = 0;
    @Nullable
-   private UUID loveCause;
+   private EntityReference<ServerPlayer> loveCause;
 
    protected Animal(EntityType<? extends Animal> var1, Level var2) {
       super(var1, var2);
@@ -88,16 +88,16 @@ public abstract class Animal extends AgeableMob {
       return var2.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("InLove", this.inLove);
-      var1.storeNullable("LoveCause", UUIDUtil.CODEC, this.loveCause);
+      EntityReference.store(this.loveCause, var1, "LoveCause");
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.inLove = var1.getIntOr("InLove", 0);
-      this.loveCause = (UUID)var1.read("LoveCause", UUIDUtil.CODEC).orElse((Object)null);
+      this.loveCause = EntityReference.<ServerPlayer>read(var1, "LoveCause");
    }
 
    public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
@@ -127,11 +127,14 @@ public abstract class Animal extends AgeableMob {
       ItemStack var3 = var1.getItemInHand(var2);
       if (this.isFood(var3)) {
          int var4 = this.getAge();
-         if (!this.level().isClientSide && var4 == 0 && this.canFallInLove()) {
-            this.usePlayerItem(var1, var2, var3);
-            this.setInLove(var1);
-            this.playEatingSound();
-            return InteractionResult.SUCCESS_SERVER;
+         if (var1 instanceof ServerPlayer) {
+            ServerPlayer var5 = (ServerPlayer)var1;
+            if (var4 == 0 && this.canFallInLove()) {
+               this.usePlayerItem(var1, var2, var3);
+               this.setInLove(var5);
+               this.playEatingSound();
+               return InteractionResult.SUCCESS_SERVER;
+            }
          }
 
          if (this.isBaby()) {
@@ -171,8 +174,8 @@ public abstract class Animal extends AgeableMob {
 
    public void setInLove(@Nullable Player var1) {
       this.inLove = 600;
-      if (var1 != null) {
-         this.loveCause = var1.getUUID();
+      if (var1 instanceof ServerPlayer var2) {
+         this.loveCause = new EntityReference<ServerPlayer>(var2);
       }
 
       this.level().broadcastEntityEvent(this, (byte)18);
@@ -188,12 +191,10 @@ public abstract class Animal extends AgeableMob {
 
    @Nullable
    public ServerPlayer getLoveCause() {
-      if (this.loveCause == null) {
-         return null;
-      } else {
-         Player var1 = this.level().getPlayerByUUID(this.loveCause);
-         return var1 instanceof ServerPlayer ? (ServerPlayer)var1 : null;
-      }
+      EntityReference var10000 = this.loveCause;
+      Level var10001 = this.level();
+      Objects.requireNonNull(var10001);
+      return (ServerPlayer)EntityReference.get(var10000, var10001::getPlayerByUUID, ServerPlayer.class);
    }
 
    public boolean isInLove() {

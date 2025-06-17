@@ -21,18 +21,23 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    public static final double BACKED_UP_CLOSE_ENOUGH_DIST = 3.5;
    private final Function<LivingEntity, Float> speedModifier;
    private final Function<LivingEntity, Double> closeEnoughDistance;
+   private final boolean lookInTheEyes;
 
    public FollowTemptation(Function<LivingEntity, Float> var1) {
       this(var1, (var0) -> 2.5);
    }
 
    public FollowTemptation(Function<LivingEntity, Float> var1, Function<LivingEntity, Double> var2) {
+      this(var1, var2, false);
+   }
+
+   public FollowTemptation(Function<LivingEntity, Float> var1, Function<LivingEntity, Double> var2, boolean var3) {
       super((Map)Util.make(() -> {
          ImmutableMap.Builder var0 = ImmutableMap.builder();
          var0.put(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED);
          var0.put(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED);
          var0.put(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT);
-         var0.put(MemoryModuleType.IS_TEMPTED, MemoryStatus.REGISTERED);
+         var0.put(MemoryModuleType.IS_TEMPTED, MemoryStatus.VALUE_ABSENT);
          var0.put(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_PRESENT);
          var0.put(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT);
          var0.put(MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT);
@@ -40,6 +45,7 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
       }));
       this.speedModifier = var1;
       this.closeEnoughDistance = var2;
+      this.lookInTheEyes = var3;
    }
 
    protected float getSpeedModifier(PathfinderMob var1) {
@@ -65,7 +71,7 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {
       Brain var5 = var2.getBrain();
       var5.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, 100);
-      var5.setMemory(MemoryModuleType.IS_TEMPTED, false);
+      var5.eraseMemory(MemoryModuleType.IS_TEMPTED);
       var5.eraseMemory(MemoryModuleType.WALK_TARGET);
       var5.eraseMemory(MemoryModuleType.LOOK_TARGET);
    }
@@ -78,7 +84,7 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
       if (var2.distanceToSqr(var5) < Mth.square(var7)) {
          var6.eraseMemory(MemoryModuleType.WALK_TARGET);
       } else {
-         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, false), this.getSpeedModifier(var2), 2));
+         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, this.lookInTheEyes, this.lookInTheEyes), this.getSpeedModifier(var2), 2));
       }
 
    }

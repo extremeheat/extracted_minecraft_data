@@ -132,7 +132,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
             return;
          }
 
-         ServerPlayer var4 = var2.getPlayerForLogin(this.gameProfile, this.clientInformation);
+         ServerPlayer var4 = new ServerPlayer(this.server, this.server.overworld(), this.gameProfile, this.clientInformation);
          var2.placeNewPlayer(this.connection, var4, this.createCookie(this.clientInformation));
       } catch (Exception var5) {
          LOGGER.error("Couldn't place player in world", var5);

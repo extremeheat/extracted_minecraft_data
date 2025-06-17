@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
-import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
@@ -12,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -31,6 +31,7 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.FilterMask;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.thread.ConsecutiveExecutor;
 import org.slf4j.Logger;
@@ -149,7 +150,7 @@ public abstract class ServerTextFilter implements AutoCloseable {
             }
 
             try {
-               var13 = Streams.parse(new JsonReader(new InputStreamReader(var4, StandardCharsets.UTF_8))).getAsJsonObject();
+               var13 = LenientJsonParser.parse((Reader)(new InputStreamReader(var4, StandardCharsets.UTF_8))).getAsJsonObject();
             } finally {
                this.drainStream(var4);
             }
@@ -235,7 +236,7 @@ public abstract class ServerTextFilter implements AutoCloseable {
       var2.setRequestMethod("POST");
       var2.setRequestProperty("Content-Type", "application/json; charset=utf-8");
       var2.setRequestProperty("Accept", "application/json");
-      var2.setRequestProperty("User-Agent", "Minecraft server" + SharedConstants.getCurrentVersion().getName());
+      var2.setRequestProperty("User-Agent", "Minecraft server" + SharedConstants.getCurrentVersion().name());
       return var2;
    }
 

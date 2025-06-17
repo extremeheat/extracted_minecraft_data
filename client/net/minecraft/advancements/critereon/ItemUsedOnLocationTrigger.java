@@ -9,9 +9,11 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -31,7 +33,7 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
    }
 
    public void trigger(ServerPlayer var1, BlockPos var2, ItemStack var3) {
-      ServerLevel var4 = var1.serverLevel();
+      ServerLevel var4 = var1.level();
       BlockState var5 = var4.getBlockState(var2);
       LootParams var6 = (new LootParams.Builder(var4)).withParameter(LootContextParams.ORIGIN, var2.getCenter()).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.BLOCK_STATE, var5).withParameter(LootContextParams.TOOL, var3).create(LootContextParamSets.ADVANCEMENT_LOCATION);
       LootContext var7 = (new LootContext.Builder(var6)).create(Optional.empty());
@@ -57,6 +59,24 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
          return CriteriaTriggers.PLACED_BLOCK.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var1)));
       }
 
+      public static <T extends Comparable<T>> Criterion<TriggerInstance> placedBlockWithProperties(Block var0, Property<T> var1, String var2) {
+         StatePropertiesPredicate.Builder var3 = StatePropertiesPredicate.Builder.properties().hasProperty(var1, var2);
+         ContextAwarePredicate var4 = ContextAwarePredicate.create(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var0).setProperties(var3).build());
+         return CriteriaTriggers.PLACED_BLOCK.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var4)));
+      }
+
+      public static Criterion<TriggerInstance> placedBlockWithProperties(Block var0, Property<Boolean> var1, boolean var2) {
+         return placedBlockWithProperties(var0, var1, String.valueOf(var2));
+      }
+
+      public static Criterion<TriggerInstance> placedBlockWithProperties(Block var0, Property<Integer> var1, int var2) {
+         return placedBlockWithProperties(var0, var1, String.valueOf(var2));
+      }
+
+      public static <T extends Comparable<T> & StringRepresentable> Criterion<TriggerInstance> placedBlockWithProperties(Block var0, Property<T> var1, T var2) {
+         return placedBlockWithProperties(var0, var1, ((StringRepresentable)var2).getSerializedName());
+      }
+
       private static TriggerInstance itemUsedOnLocation(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
          ContextAwarePredicate var2 = ContextAwarePredicate.create(LocationCheck.checkLocation(var0).build(), MatchTool.toolMatches(var1).build());
          return new TriggerInstance(Optional.empty(), Optional.of(var2));
@@ -76,7 +96,7 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, ".location"));
+         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, "location"));
       }
    }
 }

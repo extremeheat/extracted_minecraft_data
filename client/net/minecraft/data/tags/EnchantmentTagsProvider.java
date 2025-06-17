@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-public abstract class EnchantmentTagsProvider extends TagsProvider<Enchantment> {
+public abstract class EnchantmentTagsProvider extends KeyTagProvider<Enchantment> {
    public EnchantmentTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super(var1, Registries.ENCHANTMENT, var2);
    }

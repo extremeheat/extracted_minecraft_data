@@ -82,17 +82,64 @@ public class GameConfig {
       }
    }
 
-   public static record QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
-      public QuickPlayData(@Nullable String var1, @Nullable String var2, @Nullable String var3, @Nullable String var4) {
+   public sealed interface QuickPlayVariant permits GameConfig.QuickPlaySinglePlayerData, GameConfig.QuickPlayMultiplayerData, GameConfig.QuickPlayRealmsData, GameConfig.QuickPlayDisabled {
+      QuickPlayVariant DISABLED = new QuickPlayDisabled();
+
+      boolean isEnabled();
+   }
+
+   public static record QuickPlaySinglePlayerData(@Nullable String worldId) implements QuickPlayVariant {
+      public QuickPlaySinglePlayerData(@Nullable String var1) {
          super();
-         this.path = var1;
-         this.singleplayer = var2;
-         this.multiplayer = var3;
-         this.realms = var4;
+         this.worldId = var1;
       }
 
       public boolean isEnabled() {
-         return !StringUtil.isBlank(this.singleplayer) || !StringUtil.isBlank(this.multiplayer) || !StringUtil.isBlank(this.realms);
+         return true;
+      }
+   }
+
+   public static record QuickPlayMultiplayerData(String serverAddress) implements QuickPlayVariant {
+      public QuickPlayMultiplayerData(String var1) {
+         super();
+         this.serverAddress = var1;
+      }
+
+      public boolean isEnabled() {
+         return !StringUtil.isBlank(this.serverAddress);
+      }
+   }
+
+   public static record QuickPlayRealmsData(String realmId) implements QuickPlayVariant {
+      public QuickPlayRealmsData(String var1) {
+         super();
+         this.realmId = var1;
+      }
+
+      public boolean isEnabled() {
+         return !StringUtil.isBlank(this.realmId);
+      }
+   }
+
+   public static record QuickPlayDisabled() implements QuickPlayVariant {
+      public QuickPlayDisabled() {
+         super();
+      }
+
+      public boolean isEnabled() {
+         return false;
+      }
+   }
+
+   public static record QuickPlayData(@Nullable String logPath, QuickPlayVariant variant) {
+      public QuickPlayData(@Nullable String var1, QuickPlayVariant var2) {
+         super();
+         this.logPath = var1;
+         this.variant = var2;
+      }
+
+      public boolean isEnabled() {
+         return this.variant.isEnabled();
       }
    }
 }

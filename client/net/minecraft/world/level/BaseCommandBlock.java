@@ -9,19 +9,17 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class BaseCommandBlock implements CommandSource {
@@ -54,14 +52,13 @@ public abstract class BaseCommandBlock implements CommandSource {
       return this.lastOutput == null ? CommonComponents.EMPTY : this.lastOutput;
    }
 
-   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
+   public void save(ValueOutput var1) {
       var1.putString("Command", this.command);
       var1.putInt("SuccessCount", this.successCount);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var3, this.customName);
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.customName);
       var1.putBoolean("TrackOutput", this.trackOutput);
       if (this.trackOutput) {
-         var1.storeNullable("LastOutput", ComponentSerialization.CODEC, var3, this.lastOutput);
+         var1.storeNullable("LastOutput", ComponentSerialization.CODEC, this.lastOutput);
       }
 
       var1.putBoolean("UpdateLastExecution", this.updateLastExecution);
@@ -69,16 +66,15 @@ public abstract class BaseCommandBlock implements CommandSource {
          var1.putLong("LastExecution", this.lastExecution);
       }
 
-      return var1;
    }
 
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   public void load(ValueInput var1) {
       this.command = var1.getStringOr("Command", "");
       this.successCount = var1.getIntOr("SuccessCount", 0);
-      this.setCustomName(BlockEntity.parseCustomNameSafe(var1.get("CustomName"), var2));
+      this.setCustomName(BlockEntity.parseCustomNameSafe(var1, "CustomName"));
       this.trackOutput = var1.getBooleanOr("TrackOutput", true);
       if (this.trackOutput) {
-         this.lastOutput = BlockEntity.parseCustomNameSafe(var1.get("LastOutput"), var2);
+         this.lastOutput = BlockEntity.parseCustomNameSafe(var1, "LastOutput");
       } else {
          this.lastOutput = null;
       }
@@ -185,7 +181,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       if (!var1.canUseGameMasterBlocks()) {
          return InteractionResult.PASS;
       } else {
-         if (var1.getCommandSenderWorld().isClientSide) {
+         if (var1.level().isClientSide) {
             var1.openMinecartCommandBlock(this);
          }
 

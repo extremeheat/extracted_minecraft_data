@@ -1,5 +1,6 @@
 package net.minecraft.client.resources.sounds;
 
+import javax.annotation.Nullable;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
@@ -8,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 
 public abstract class AbstractSoundInstance implements SoundInstance {
+   @Nullable
    protected Sound sound;
    protected final SoundSource source;
    protected final ResourceLocation location;
@@ -40,6 +42,7 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       return this.location;
    }
 
+   @Nullable
    public WeighedSoundEvents resolve(SoundManager var1) {
       if (this.location.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
          this.sound = SoundManager.INTENTIONALLY_EMPTY_SOUND;
@@ -56,6 +59,7 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       }
    }
 
+   @Nullable
    public Sound getSound() {
       return this.sound;
    }

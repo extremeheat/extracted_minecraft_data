@@ -8,7 +8,7 @@ import net.minecraft.tags.BannerPatternTags;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatterns;
 
-public class BannerPatternTagsProvider extends TagsProvider<BannerPattern> {
+public class BannerPatternTagsProvider extends KeyTagProvider<BannerPattern> {
    public BannerPatternTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super(var1, Registries.BANNER_PATTERN, var2);
    }

@@ -1,14 +1,11 @@
 package net.minecraft.world.entity.animal.sheep;
 
-import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -17,7 +14,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -27,6 +23,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,30 +47,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
    private static final EntityDataAccessor<Byte> DATA_WOOL_ID;
-   private static final Map<DyeColor, Integer> COLOR_BY_DYE;
    private static final DyeColor DEFAULT_COLOR;
    private static final boolean DEFAULT_SHEARED = false;
    private int eatAnimationTick;
    private EatBlockGoal eatBlockGoal;
-
-   private static int createSheepColor(DyeColor var0) {
-      if (var0 == DyeColor.WHITE) {
-         return -1644826;
-      } else {
-         int var1 = var0.getTextureDiffuseColor();
-         float var2 = 0.75F;
-         return ARGB.color(255, Mth.floor((float)ARGB.red(var1) * 0.75F), Mth.floor((float)ARGB.green(var1) * 0.75F), Mth.floor((float)ARGB.blue(var1) * 0.75F));
-      }
-   }
-
-   public static int getColor(DyeColor var0) {
-      return (Integer)COLOR_BY_DYE.get(var0);
-   }
 
    public Sheep(EntityType<? extends Sheep> var1, Level var2) {
       super(var1, var2);
@@ -155,7 +139,7 @@ public class Sheep extends Animal implements Shearable {
             if (this.readyForShearing()) {
                this.shear(var4, SoundSource.PLAYERS, var3);
                this.gameEvent(GameEvent.SHEAR, var1);
-               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
                return InteractionResult.SUCCESS_SERVER;
             }
          }
@@ -184,13 +168,13 @@ public class Sheep extends Animal implements Shearable {
       return this.isAlive() && !this.isSheared() && !this.isBaby();
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Sheared", this.isSheared());
       var1.store("Color", DyeColor.LEGACY_ID_CODEC, this.getColor());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setSheared(var1.getBooleanOr("Sheared", false));
       this.setColor((DyeColor)var1.read("Color", DyeColor.LEGACY_ID_CODEC).orElse(DEFAULT_COLOR));
@@ -294,7 +278,6 @@ public class Sheep extends Animal implements Shearable {
 
    static {
       DATA_WOOL_ID = SynchedEntityData.<Byte>defineId(Sheep.class, EntityDataSerializers.BYTE);
-      COLOR_BY_DYE = Util.<DyeColor, Integer>makeEnumMap(DyeColor.class, Sheep::createSheepColor);
       DEFAULT_COLOR = DyeColor.WHITE;
    }
 }

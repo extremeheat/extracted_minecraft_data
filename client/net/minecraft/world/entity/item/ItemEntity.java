@@ -5,13 +5,10 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -20,6 +17,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -33,6 +31,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemEntity extends Entity implements TraceableEntity {
@@ -49,9 +49,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private int pickupDelay;
    private int health;
    @Nullable
-   private UUID thrower;
-   @Nullable
-   private Entity cachedThrower;
+   private EntityReference<Entity> thrower;
    @Nullable
    private UUID target;
    public final float bobOffs;
@@ -93,26 +91,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Nullable
    public Entity getOwner() {
-      if (this.cachedThrower != null && !this.cachedThrower.isRemoved()) {
-         return this.cachedThrower;
-      } else {
-         if (this.thrower != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var1 = (ServerLevel)var2;
-               this.cachedThrower = var1.getEntity(this.thrower);
-               return this.cachedThrower;
-            }
-         }
-
-         return null;
-      }
+      return (Entity)EntityReference.get(this.thrower, this.level(), Entity.class);
    }
 
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof ItemEntity var2) {
-         this.cachedThrower = var2.cachedThrower;
+         this.thrower = var2.thrower;
       }
 
    }
@@ -316,28 +301,25 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
       var1.putShort("PickupDelay", (short)this.pickupDelay);
-      var1.storeNullable("Thrower", UUIDUtil.CODEC, this.thrower);
+      EntityReference.store(this.thrower, var1, "Thrower");
       var1.storeNullable("Owner", UUIDUtil.CODEC, this.target);
       if (!this.getItem().isEmpty()) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("Item", ItemStack.CODEC, var2, this.getItem());
+         var1.store("Item", ItemStack.CODEC, this.getItem());
       }
 
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.health = var1.getShortOr("Health", (short)5);
       this.age = var1.getShortOr("Age", (short)0);
       this.pickupDelay = var1.getShortOr("PickupDelay", (short)0);
       this.target = (UUID)var1.read("Owner", UUIDUtil.CODEC).orElse((Object)null);
-      this.thrower = (UUID)var1.read("Thrower", UUIDUtil.CODEC).orElse((Object)null);
-      this.cachedThrower = null;
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
+      this.thrower = EntityReference.<Entity>read(var1, "Thrower");
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
       if (this.getItem().isEmpty()) {
          this.discard();
       }
@@ -403,8 +385,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public void setThrower(Entity var1) {
-      this.thrower = var1.getUUID();
-      this.cachedThrower = var1;
+      this.thrower = new EntityReference<Entity>(var1);
    }
 
    public int getAge() {

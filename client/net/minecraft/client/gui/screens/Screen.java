@@ -21,10 +21,10 @@ import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabOrderedElement;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -35,17 +35,15 @@ import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.CubeMap;
-import net.minecraft.client.renderer.PanoramaRenderer;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -55,14 +53,13 @@ import org.slf4j.Logger;
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   protected static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
-   protected static final PanoramaRenderer PANORAMA;
-   public static final ResourceLocation MENU_BACKGROUND;
-   public static final ResourceLocation HEADER_SEPARATOR;
-   public static final ResourceLocation FOOTER_SEPARATOR;
-   private static final ResourceLocation INWORLD_MENU_BACKGROUND;
-   public static final ResourceLocation INWORLD_HEADER_SEPARATOR;
-   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR;
+   public static final ResourceLocation MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
+   public static final ResourceLocation HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
+   public static final ResourceLocation FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
+   private static final ResourceLocation INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
+   public static final ResourceLocation INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
+   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
+   protected static final float FADE_IN_TIME = 2000.0F;
    protected final Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
    private final List<NarratableEntry> narratables = Lists.newArrayList();
@@ -85,8 +82,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    protected CycleButton<NarratorStatus> narratorButton;
    @Nullable
    private NarratableEntry lastNarratable;
-   @Nullable
-   private DeferredTooltipRendering deferredTooltipRendering;
    protected final Executor screenExecutor = (var1x) -> this.minecraft.execute(() -> {
          if (this.minecraft.screen == this) {
             var1x.run();
@@ -108,17 +103,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public final void renderWithTooltip(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.nextStratum();
+      this.renderBackground(var1, var2, var3, var4);
+      var1.nextStratum();
       this.render(var1, var2, var3, var4);
-      if (this.deferredTooltipRendering != null) {
-         var1.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(), this.deferredTooltipRendering.positioner(), var2, var3);
-         this.deferredTooltipRendering = null;
-      }
-
+      var1.renderDeferredTooltip();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1, var2, var3, var4);
-
       for(Renderable var6 : this.renderables) {
          var6.render(var1, var2, var3, var4);
       }
@@ -264,111 +256,157 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    protected void insertText(String var1, boolean var2) {
    }
 
-   public boolean handleComponentClicked(@Nullable Style var1) {
-      if (var1 == null) {
+   public boolean handleComponentClicked(Style var1) {
+      ClickEvent var2 = var1.getClickEvent();
+      if (hasShiftDown()) {
+         if (var1.getInsertion() != null) {
+            this.insertText(var1.getInsertion(), false);
+         }
+      } else if (var2 != null) {
+         this.handleClickEvent(this.minecraft, var2);
+         return true;
+      }
+
+      return false;
+   }
+
+   protected void handleClickEvent(Minecraft var1, ClickEvent var2) {
+      defaultHandleGameClickEvent(var2, var1, this);
+   }
+
+   protected static void defaultHandleGameClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
+      LocalPlayer var3 = (LocalPlayer)Objects.requireNonNull(var1.player, "Player not available");
+      Objects.requireNonNull(var0);
+      byte var5 = 0;
+      //$FF: var5->value
+      //0->net/minecraft/network/chat/ClickEvent$RunCommand
+      //1->net/minecraft/network/chat/ClickEvent$ShowDialog
+      //2->net/minecraft/network/chat/ClickEvent$Custom
+      switch (var0.typeSwitch<invokedynamic>(var0, var5)) {
+         case 0:
+            ClickEvent.RunCommand var6 = (ClickEvent.RunCommand)var0;
+            ClickEvent.RunCommand var10000 = var6;
+
+            try {
+               var12 = var10000.command();
+            } catch (Throwable var10) {
+               throw new MatchException(var10.toString(), var10);
+            }
+
+            String var11 = var12;
+            clickCommandAction(var3, var11, var2);
+            break;
+         case 1:
+            ClickEvent.ShowDialog var8 = (ClickEvent.ShowDialog)var0;
+            var3.connection.showDialog(var8.dialog(), var2);
+            break;
+         case 2:
+            ClickEvent.Custom var9 = (ClickEvent.Custom)var0;
+            var3.connection.send(new ServerboundCustomClickActionPacket(var9.id(), var9.payload()));
+            if (var1.screen != var2) {
+               var1.setScreen(var2);
+            }
+            break;
+         default:
+            defaultHandleClickEvent(var0, var1, var2);
+      }
+
+   }
+
+   protected static void defaultHandleClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {
+      Objects.requireNonNull(var0);
+      byte var5 = 0;
+      boolean var20;
+      //$FF: var5->value
+      //0->net/minecraft/network/chat/ClickEvent$OpenUrl
+      //1->net/minecraft/network/chat/ClickEvent$OpenFile
+      //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
+      //3->net/minecraft/network/chat/ClickEvent$CopyToClipboard
+      switch (var0.typeSwitch<invokedynamic>(var0, var5)) {
+         case 0:
+            ClickEvent.OpenUrl var6 = (ClickEvent.OpenUrl)var0;
+            ClickEvent.OpenUrl var23 = var6;
+
+            try {
+               var24 = var23.uri();
+            } catch (Throwable var16) {
+               throw new MatchException(var16.toString(), var16);
+            }
+
+            URI var17 = var24;
+            clickUrlAction(var1, var2, var17);
+            var20 = false;
+            break;
+         case 1:
+            ClickEvent.OpenFile var8 = (ClickEvent.OpenFile)var0;
+            Util.getPlatform().openFile(var8.file());
+            var20 = true;
+            break;
+         case 2:
+            ClickEvent.SuggestCommand var9 = (ClickEvent.SuggestCommand)var0;
+            ClickEvent.SuggestCommand var21 = var9;
+
+            try {
+               var22 = var21.command();
+            } catch (Throwable var15) {
+               throw new MatchException(var15.toString(), var15);
+            }
+
+            String var18 = var22;
+            if (var2 != null) {
+               var2.insertText(var18, true);
+            }
+
+            var20 = true;
+            break;
+         case 3:
+            ClickEvent.CopyToClipboard var11 = (ClickEvent.CopyToClipboard)var0;
+            ClickEvent.CopyToClipboard var10000 = var11;
+
+            try {
+               var19 = var10000.value();
+            } catch (Throwable var14) {
+               throw new MatchException(var14.toString(), var14);
+            }
+
+            String var13 = var19;
+            var1.keyboardHandler.setClipboard(var13);
+            var20 = true;
+            break;
+         default:
+            LOGGER.error("Don't know how to handle {}", var0);
+            var20 = true;
+      }
+
+      boolean var3 = var20;
+      if (var3 && var1.screen != var2) {
+         var1.setScreen(var2);
+      }
+
+   }
+
+   protected static boolean clickUrlAction(Minecraft var0, @Nullable Screen var1, URI var2) {
+      if (!(Boolean)var0.options.chatLinks().get()) {
          return false;
       } else {
-         ClickEvent var2 = var1.getClickEvent();
-         if (hasShiftDown()) {
-            if (var1.getInsertion() != null) {
-               this.insertText(var1.getInsertion(), false);
-            }
-         } else if (var2 != null) {
-            Objects.requireNonNull(var2);
-            byte var4 = 0;
-            //$FF: var4->value
-            //0->net/minecraft/network/chat/ClickEvent$OpenUrl
-            //1->net/minecraft/network/chat/ClickEvent$OpenFile
-            //2->net/minecraft/network/chat/ClickEvent$SuggestCommand
-            //3->net/minecraft/network/chat/ClickEvent$RunCommand
-            //4->net/minecraft/network/chat/ClickEvent$CopyToClipboard
-            switch (var2.typeSwitch<invokedynamic>(var2, var4)) {
-               case 0:
-                  ClickEvent.OpenUrl var5 = (ClickEvent.OpenUrl)var2;
-                  ClickEvent.OpenUrl var27 = var5;
+         if ((Boolean)var0.options.chatLinksPrompt().get()) {
+            var0.setScreen(new ConfirmLinkScreen((var3) -> {
+               if (var3) {
+                  Util.getPlatform().openUri(var2);
+               }
 
-                  try {
-                     var28 = var27.uri();
-                  } catch (Throwable var18) {
-                     throw new MatchException(var18.toString(), var18);
-                  }
-
-                  URI var19 = var28;
-                  if (!(Boolean)this.minecraft.options.chatLinks().get()) {
-                     return false;
-                  }
-
-                  if ((Boolean)this.minecraft.options.chatLinksPrompt().get()) {
-                     this.minecraft.setScreen(new ConfirmLinkScreen((var2x) -> {
-                        if (var2x) {
-                           Util.getPlatform().openUri(var19);
-                        }
-
-                        this.minecraft.setScreen(this);
-                     }, var19.toString(), false));
-                  } else {
-                     Util.getPlatform().openUri(var19);
-                  }
-                  break;
-               case 1:
-                  ClickEvent.OpenFile var7 = (ClickEvent.OpenFile)var2;
-                  Util.getPlatform().openFile(var7.file());
-                  break;
-               case 2:
-                  ClickEvent.SuggestCommand var8 = (ClickEvent.SuggestCommand)var2;
-                  ClickEvent.SuggestCommand var25 = var8;
-
-                  try {
-                     var26 = var25.command();
-                  } catch (Throwable var17) {
-                     throw new MatchException(var17.toString(), var17);
-                  }
-
-                  String var20 = var26;
-                  this.insertText(var20, true);
-                  break;
-               case 3:
-                  ClickEvent.RunCommand var10 = (ClickEvent.RunCommand)var2;
-                  ClickEvent.RunCommand var23 = var10;
-
-                  try {
-                     var24 = var23.command();
-                  } catch (Throwable var16) {
-                     throw new MatchException(var16.toString(), var16);
-                  }
-
-                  String var21 = var24;
-                  String var11 = var21;
-                  if (var21.startsWith("/")) {
-                     var11 = var21.substring(1);
-                  }
-
-                  if (!this.minecraft.player.connection.sendUnsignedCommand(var11)) {
-                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var11);
-                  }
-                  break;
-               case 4:
-                  ClickEvent.CopyToClipboard var12 = (ClickEvent.CopyToClipboard)var2;
-                  ClickEvent.CopyToClipboard var10000 = var12;
-
-                  try {
-                     var22 = var10000.value();
-                  } catch (Throwable var15) {
-                     throw new MatchException(var15.toString(), var15);
-                  }
-
-                  String var14 = var22;
-                  this.minecraft.keyboardHandler.setClipboard(var14);
-                  break;
-               default:
-                  LOGGER.error("Don't know how to handle {}", var2);
-            }
-
-            return true;
+               var0.setScreen(var1);
+            }, var2.toString(), false));
+         } else {
+            Util.getPlatform().openUri(var2);
          }
 
-         return false;
+         return true;
       }
+   }
+
+   protected static void clickCommandAction(LocalPlayer var0, String var1, @Nullable Screen var2) {
+      var0.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(var1), var2);
    }
 
    public final void init(Minecraft var1, int var2, int var3) {
@@ -395,6 +433,15 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.setInitialFocus();
    }
 
+   protected void fadeWidgets(float var1) {
+      for(GuiEventListener var3 : this.children()) {
+         if (var3 instanceof AbstractWidget var4) {
+            var4.setAlpha(var1);
+         }
+      }
+
+   }
+
    public List<? extends GuiEventListener> children() {
       return this.children;
    }
@@ -416,16 +463,20 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.renderPanorama(var1, var4);
       }
 
-      this.renderBlurredBackground();
+      this.renderBlurredBackground(var1);
       this.renderMenuBackground(var1);
    }
 
-   protected void renderBlurredBackground() {
-      this.minecraft.gameRenderer.processBlurEffect();
+   protected void renderBlurredBackground(GuiGraphics var1) {
+      float var2 = (float)this.minecraft.options.getMenuBackgroundBlurriness();
+      if (var2 >= 1.0F) {
+         var1.blurBeforeThisStratum();
+      }
+
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
+      this.minecraft.gameRenderer.getPanorama().render(var1, this.width, this.height, true);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -438,7 +489,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public static void renderMenuBackgroundTexture(GuiGraphics var0, ResourceLocation var1, int var2, int var3, float var4, float var5, int var6, int var7) {
       boolean var8 = true;
-      var0.blit(RenderType::guiTextured, var1, var2, var3, var4, var5, var6, var7, 32, 32);
+      var0.blit(RenderPipelines.GUI_TEXTURED, var1, var2, var3, var4, var5, var6, var7, 32, 32);
    }
 
    public void renderTransparentBackground(GuiGraphics var1) {
@@ -565,7 +616,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.narrationState.update(this::updateNarrationState);
       String var2 = this.narrationState.collectNarrationText(!var1);
       if (!var2.isEmpty()) {
-         this.minecraft.getNarrator().sayNow(var2);
+         this.minecraft.getNarrator().saySystemNow(var2);
       }
 
    }
@@ -641,29 +692,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    }
 
-   protected void clearTooltipForNextRenderPass() {
-      this.deferredTooltipRendering = null;
-   }
-
-   public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1) {
-      this.setTooltipForNextRenderPass(var1, DefaultTooltipPositioner.INSTANCE, true);
-   }
-
-   public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1, ClientTooltipPositioner var2, boolean var3) {
-      if (this.deferredTooltipRendering == null || var3) {
-         this.deferredTooltipRendering = new DeferredTooltipRendering(var1, var2);
-      }
-
-   }
-
-   public void setTooltipForNextRenderPass(Component var1) {
-      this.setTooltipForNextRenderPass(Tooltip.splitTooltip(this.minecraft, var1));
-   }
-
-   public void setTooltipForNextRenderPass(Tooltip var1, ClientTooltipPositioner var2, boolean var3) {
-      this.setTooltipForNextRenderPass(var1.toCharSequence(this.minecraft), var2, var3);
-   }
-
    public Font getFont() {
       return this.font;
    }
@@ -682,13 +710,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    static {
-      PANORAMA = new PanoramaRenderer(CUBE_MAP);
-      MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
-      HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
-      FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
-      INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
-      INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
-      INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
       NARRATE_SUPPRESS_AFTER_INIT_TIME = TimeUnit.SECONDS.toMillis(2L);
       NARRATE_DELAY_NARRATOR_ENABLED = NARRATE_SUPPRESS_AFTER_INIT_TIME;
    }
@@ -703,14 +724,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.entry = var1;
          this.index = var2;
          this.priority = var3;
-      }
-   }
-
-   static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
-         super();
-         this.tooltip = var1;
-         this.positioner = var2;
       }
    }
 }

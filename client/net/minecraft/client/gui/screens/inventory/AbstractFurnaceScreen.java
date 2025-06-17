@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.FurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -37,15 +37,15 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(RenderType::guiTextured, this.texture, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (((AbstractFurnaceMenu)this.menu).isLit()) {
          boolean var7 = true;
          int var8 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
-         var1.blitSprite(RenderType::guiTextured, this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
       }
 
       boolean var9 = true;
       int var10 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
-      var1.blitSprite(RenderType::guiTextured, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
    }
 }

@@ -1,8 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
 import java.util.Objects;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -11,10 +9,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -25,6 +25,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractChestedHorse extends AbstractHorse {
    private static final EntityDataAccessor<Boolean> DATA_ID_CHEST;
@@ -73,38 +76,30 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("ChestedHorse", this.hasChest());
       if (this.hasChest()) {
-         ListTag var2 = new ListTag();
+         ValueOutput.TypedOutputList var2 = var1.list("Items", ItemStackWithSlot.CODEC);
 
          for(int var3 = 0; var3 < this.inventory.getContainerSize(); ++var3) {
             ItemStack var4 = this.inventory.getItem(var3);
             if (!var4.isEmpty()) {
-               CompoundTag var5 = new CompoundTag();
-               var5.putByte("Slot", (byte)var3);
-               var2.add(var4.save(this.registryAccess(), var5));
+               var2.add(new ItemStackWithSlot(var3, var4));
             }
          }
-
-         var1.put("Items", var2);
       }
 
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setChest(var1.getBooleanOr("ChestedHorse", false));
       this.createInventory();
       if (this.hasChest()) {
-         ListTag var2 = var1.getListOrEmpty("Items");
-
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            CompoundTag var4 = var2.getCompoundOrEmpty(var3);
-            int var5 = var4.getByteOr("Slot", (byte)0) & 255;
-            if (var5 < this.inventory.getContainerSize()) {
-               this.inventory.setItem(var5, (ItemStack)ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
+         for(ItemStackWithSlot var3 : var1.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
+            if (var3.isValidInContainer(this.inventory.getContainerSize())) {
+               this.inventory.setItem(var3.slot(), var3.stack());
             }
          }
       }
@@ -170,6 +165,10 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       this.playChestEquipsSound();
       var2.consume(1, var1);
       this.createInventory();
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.04, 0.41, 0.18, 0.73);
    }
 
    protected void playChestEquipsSound() {

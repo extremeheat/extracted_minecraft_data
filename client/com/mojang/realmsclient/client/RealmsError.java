@@ -2,7 +2,6 @@ package com.mojang.realmsclient.client;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.exception.RealmsHttpException;
 import java.util.Locale;
@@ -10,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
 public interface RealmsError {
@@ -29,7 +29,7 @@ public interface RealmsError {
          return RealmsError.CustomError.noPayload(var0);
       } else {
          try {
-            JsonObject var2 = JsonParser.parseString(var1).getAsJsonObject();
+            JsonObject var2 = LenientJsonParser.parse(var1).getAsJsonObject();
             String var3 = GsonHelper.getAsString(var2, "reason", (String)null);
             String var4 = GsonHelper.getAsString(var2, "errorMsg", (String)null);
             int var5 = GsonHelper.getAsInt(var2, "errorCode", -1);
@@ -122,6 +122,8 @@ public interface RealmsError {
    public static record CustomError(int httpCode, @Nullable Component payload) implements RealmsError {
       public static final CustomError SERVICE_BUSY = new CustomError(429, Component.translatable("mco.errorMessage.serviceBusy"));
       public static final Component RETRY_MESSAGE = Component.translatable("mco.errorMessage.retry");
+      public static final String BODY_TAG = "<body>";
+      public static final String CLOSING_BODY_TAG = "</body>";
 
       public CustomError(int var1, @Nullable Component var2) {
          super();
@@ -131,6 +133,10 @@ public interface RealmsError {
 
       public static CustomError unknownCompatibilityResponse(String var0) {
          return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.unknownCompatibility", var0));
+      }
+
+      public static CustomError configurationError() {
+         return new CustomError(500, Component.translatable("mco.errorMessage.realmsService.configurationError"));
       }
 
       public static CustomError connectivityError(RealmsHttpException var0) {
@@ -143,6 +149,17 @@ public interface RealmsError {
 
       public static CustomError noPayload(int var0) {
          return new CustomError(var0, (Component)null);
+      }
+
+      public static CustomError htmlPayload(int var0, String var1) {
+         int var2 = var1.indexOf("<body>");
+         int var3 = var1.indexOf("</body>");
+         if (var2 >= 0 && var3 > var2) {
+            return new CustomError(var0, Component.literal(var1.substring(var2 + "<body>".length(), var3).trim()));
+         } else {
+            LOGGER.error("Got an error with an unreadable html body {}", var1);
+            return new CustomError(var0, (Component)null);
+         }
       }
 
       public int errorCode() {

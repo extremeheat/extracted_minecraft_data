@@ -24,7 +24,6 @@ public abstract class ReloadableTexture extends AbstractTexture {
    public void apply(TextureContents var1) {
       boolean var2 = var1.clamp();
       boolean var3 = var1.blur();
-      this.defaultBlur = var3;
 
       try (NativeImage var4 = var1.image()) {
          this.doLoad(var4, var3, var2);
@@ -32,11 +31,12 @@ public abstract class ReloadableTexture extends AbstractTexture {
 
    }
 
-   private void doLoad(NativeImage var1, boolean var2, boolean var3) {
+   protected void doLoad(NativeImage var1, boolean var2, boolean var3) {
       GpuDevice var4 = RenderSystem.getDevice();
       ResourceLocation var10002 = this.resourceId;
       Objects.requireNonNull(var10002);
-      this.texture = var4.createTexture(var10002::toString, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1);
+      this.texture = var4.createTexture(var10002::toString, 5, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1, 1);
+      this.textureView = var4.createTextureView(this.texture);
       this.setFilter(var2, false);
       this.setClamp(var3);
       var4.createCommandEncoder().writeToTexture(this.texture, var1);

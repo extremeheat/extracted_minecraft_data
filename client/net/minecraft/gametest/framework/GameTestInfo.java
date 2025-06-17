@@ -283,19 +283,30 @@ public class GameTestInfo {
       this.listeners.add(var1);
    }
 
+   @Nullable
    public GameTestInfo prepareTestStructure() {
-      this.testInstanceBlockEntity = this.createTestInstanceBlock((BlockPos)Objects.requireNonNull(this.testBlockPos), this.extraRotation, this.level);
-      this.placeStructure();
-      return this;
+      TestInstanceBlockEntity var1 = this.createTestInstanceBlock((BlockPos)Objects.requireNonNull(this.testBlockPos), this.extraRotation, this.level);
+      if (var1 != null) {
+         this.testInstanceBlockEntity = var1;
+         this.placeStructure();
+         return this;
+      } else {
+         return null;
+      }
    }
 
+   @Nullable
    private TestInstanceBlockEntity createTestInstanceBlock(BlockPos var1, Rotation var2, ServerLevel var3) {
       var3.setBlockAndUpdate(var1, Blocks.TEST_INSTANCE_BLOCK.defaultBlockState());
-      TestInstanceBlockEntity var4 = (TestInstanceBlockEntity)Objects.requireNonNull((TestInstanceBlockEntity)var3.getBlockEntity(var1));
-      ResourceKey var5 = this.getTestHolder().key();
-      Vec3i var6 = (Vec3i)TestInstanceBlockEntity.getStructureSize(var3, var5).orElse(new Vec3i(1, 1, 1));
-      var4.set(new TestInstanceBlockEntity.Data(Optional.of(var5), var6, var2, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
-      return var4;
+      BlockEntity var5 = var3.getBlockEntity(var1);
+      if (var5 instanceof TestInstanceBlockEntity var4) {
+         ResourceKey var7 = this.getTestHolder().key();
+         Vec3i var6 = (Vec3i)TestInstanceBlockEntity.getStructureSize(var3, var7).orElse(new Vec3i(1, 1, 1));
+         var4.set(new TestInstanceBlockEntity.Data(Optional.of(var7), var6, var2, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
+         return var4;
+      } else {
+         return null;
+      }
    }
 
    int getTick() {

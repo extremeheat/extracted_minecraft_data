@@ -34,7 +34,7 @@ public class RaidCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getResolvedComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(3))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((var0x) -> start((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "omenlvl")))))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(Commands.literal("check").executes((var0x) -> check((CommandSourceStack)var0x.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(var1)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getResolvedComponent(var0x, "type")))))).then(Commands.literal("spawnleader").executes((var0x) -> spawnLeader((CommandSourceStack)var0x.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((var0x) -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))))).then(Commands.literal("glow").executes((var0x) -> glow((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int glow(CommandSourceStack var0) throws CommandSyntaxException {
@@ -95,11 +95,11 @@ public class RaidCommand {
    private static int start(CommandSourceStack var0, int var1) throws CommandSyntaxException {
       ServerPlayer var2 = var0.getPlayerOrException();
       BlockPos var3 = var2.blockPosition();
-      if (var2.serverLevel().isRaided(var3)) {
+      if (var2.level().isRaided(var3)) {
          var0.sendFailure(Component.literal("Raid already started close by"));
          return -1;
       } else {
-         Raids var4 = var2.serverLevel().getRaids();
+         Raids var4 = var2.level().getRaids();
          Raid var5 = var4.createOrExtendRaid(var2, var2.blockPosition());
          if (var5 != null) {
             var5.setRaidOmenLevel(var1);
@@ -116,7 +116,7 @@ public class RaidCommand {
    private static int stop(CommandSourceStack var0) throws CommandSyntaxException {
       ServerPlayer var1 = var0.getPlayerOrException();
       BlockPos var2 = var1.blockPosition();
-      Raid var3 = var1.serverLevel().getRaidAt(var2);
+      Raid var3 = var1.level().getRaidAt(var2);
       if (var3 != null) {
          var3.stop();
          var0.sendSuccess(() -> Component.literal("Stopped raid"), false);
@@ -154,6 +154,6 @@ public class RaidCommand {
 
    @Nullable
    private static Raid getRaid(ServerPlayer var0) {
-      return var0.serverLevel().getRaidAt(var0.blockPosition());
+      return var0.level().getRaidAt(var0.blockPosition());
    }
 }

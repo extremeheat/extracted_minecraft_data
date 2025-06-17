@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 
 public class StateSwitchingButton extends AbstractWidget {
@@ -34,7 +34,7 @@ public class StateSwitchingButton extends AbstractWidget {
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.sprites != null) {
-         var1.blitSprite(RenderType::guiTextured, this.sprites.get(this.isStateTriggered, this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprites.get(this.isStateTriggered, this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
       }
    }
 }

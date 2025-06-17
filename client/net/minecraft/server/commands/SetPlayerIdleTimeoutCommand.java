@@ -13,7 +13,7 @@ public class SetPlayerIdleTimeoutCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setidletimeout").requires((var0x) -> var0x.hasPermission(3))).then(Commands.argument("minutes", IntegerArgumentType.integer(0)).executes((var0x) -> setIdleTimeout((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "minutes")))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setidletimeout").requires(Commands.hasPermission(3))).then(Commands.argument("minutes", IntegerArgumentType.integer(0)).executes((var0x) -> setIdleTimeout((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "minutes")))));
    }
 
    private static int setIdleTimeout(CommandSourceStack var0, int var1) {

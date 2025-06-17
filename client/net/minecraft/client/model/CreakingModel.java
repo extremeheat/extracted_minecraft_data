@@ -1,6 +1,7 @@
 package net.minecraft.client.model;
 
 import java.util.List;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.CreakingAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -14,6 +15,10 @@ public class CreakingModel extends EntityModel<CreakingRenderState> {
    public static final List<ModelPart> NO_PARTS = List.of();
    private final ModelPart head;
    private final List<ModelPart> headParts;
+   private final KeyframeAnimation walkAnimation;
+   private final KeyframeAnimation attackAnimation;
+   private final KeyframeAnimation invulnerableAnimation;
+   private final KeyframeAnimation deathAnimation;
 
    public CreakingModel(ModelPart var1) {
       super(var1);
@@ -21,6 +26,10 @@ public class CreakingModel extends EntityModel<CreakingRenderState> {
       ModelPart var3 = var2.getChild("upper_body");
       this.head = var3.getChild("head");
       this.headParts = List.of(this.head);
+      this.walkAnimation = CreakingAnimation.CREAKING_WALK.bake(var2);
+      this.attackAnimation = CreakingAnimation.CREAKING_ATTACK.bake(var2);
+      this.invulnerableAnimation = CreakingAnimation.CREAKING_INVULNERABLE.bake(var2);
+      this.deathAnimation = CreakingAnimation.CREAKING_DEATH.bake(var2);
    }
 
    private static MeshDefinition createMesh() {
@@ -47,12 +56,12 @@ public class CreakingModel extends EntityModel<CreakingRenderState> {
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
       if (var1.canMove) {
-         this.animateWalk(CreakingAnimation.CREAKING_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 1.0F, 1.0F);
+         this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 1.0F, 1.0F);
       }
 
-      this.animate(var1.attackAnimationState, CreakingAnimation.CREAKING_ATTACK, var1.ageInTicks);
-      this.animate(var1.invulnerabilityAnimationState, CreakingAnimation.CREAKING_INVULNERABLE, var1.ageInTicks);
-      this.animate(var1.deathAnimationState, CreakingAnimation.CREAKING_DEATH, var1.ageInTicks);
+      this.attackAnimation.apply(var1.attackAnimationState, var1.ageInTicks);
+      this.invulnerableAnimation.apply(var1.invulnerabilityAnimationState, var1.ageInTicks);
+      this.deathAnimation.apply(var1.deathAnimationState, var1.ageInTicks);
    }
 
    public List<ModelPart> getHeadModelParts(CreakingRenderState var1) {

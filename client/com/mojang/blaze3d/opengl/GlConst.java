@@ -1,8 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.DontObfuscate;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -28,7 +26,9 @@ public class GlConst {
    public static final int GL_TRIANGLES = 4;
    public static final int GL_WRITE_ONLY = 35001;
    public static final int GL_READ_ONLY = 35000;
+   public static final int GL_READ_WRITE = 35002;
    public static final int GL_MAP_READ_BIT = 1;
+   public static final int GL_MAP_WRITE_BIT = 2;
    public static final int GL_EQUAL = 514;
    public static final int GL_LEQUAL = 515;
    public static final int GL_LESS = 513;
@@ -102,6 +102,7 @@ public class GlConst {
    public static final int GL_PACK_ROW_LENGTH = 3330;
    public static final int GL_MAX_TEXTURE_SIZE = 3379;
    public static final int GL_TEXTURE_2D = 3553;
+   public static final int[] CUBEMAP_TARGETS = new int[]{34069, 34070, 34071, 34072, 34073, 34074};
    public static final int GL_DEPTH_COMPONENT = 6402;
    public static final int GL_DEPTH_COMPONENT32 = 33191;
    public static final int GL_FRAMEBUFFER = 36160;
@@ -211,22 +212,6 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(BufferType var0) {
-      char var10000;
-      switch (var0) {
-         case VERTICES -> var10000 = '\u8892';
-         case INDICES -> var10000 = '\u8893';
-         case PIXEL_PACK -> var10000 = '\u88eb';
-         case COPY_READ -> var10000 = '\u8f36';
-         case COPY_WRITE -> var10000 = '\u8f37';
-         case PIXEL_UNPACK -> var10000 = '\u88ec';
-         case UNIFORM -> var10000 = '\u8a11';
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
-   }
-
    public static int toGl(VertexFormat.Mode var0) {
       byte var10000;
       switch (var0) {
@@ -268,24 +253,6 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(BufferUsage var0) {
-      char var10000;
-      switch (var0) {
-         case DYNAMIC_WRITE -> var10000 = '\u88e8';
-         case STATIC_WRITE -> var10000 = '\u88e4';
-         case STREAM_WRITE -> var10000 = '\u88e0';
-         case STATIC_READ -> var10000 = '\u88e5';
-         case DYNAMIC_READ -> var10000 = '\u88e9';
-         case STREAM_READ -> var10000 = '\u88e1';
-         case DYNAMIC_COPY -> var10000 = '\u88ea';
-         case STATIC_COPY -> var10000 = '\u88e6';
-         case STREAM_COPY -> var10000 = '\u88e2';
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      return var10000;
-   }
-
    public static int toGl(AddressMode var0) {
       char var10000;
       switch (var0) {
@@ -318,6 +285,7 @@ public class GlConst {
       switch (var0) {
          case RGBA8 -> var10000 = '\u8058';
          case RED8 -> var10000 = '\u8229';
+         case RED8I -> var10000 = '\u8231';
          case DEPTH32 -> var10000 = '\u81a7';
          default -> throw new MatchException((String)null, (Throwable)null);
       }
@@ -330,6 +298,7 @@ public class GlConst {
       switch (var0) {
          case RGBA8 -> var10000 = 6408;
          case RED8 -> var10000 = 6403;
+         case RED8I -> var10000 = 6403;
          case DEPTH32 -> var10000 = 6402;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
@@ -342,6 +311,7 @@ public class GlConst {
       switch (var0) {
          case RGBA8 -> var10000 = 5121;
          case RED8 -> var10000 = 5121;
+         case RED8I -> var10000 = 5121;
          case DEPTH32 -> var10000 = 5126;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
@@ -358,5 +328,37 @@ public class GlConst {
       }
 
       return var10000;
+   }
+
+   public static int bufferUsageToGlFlag(int var0) {
+      int var1 = 0;
+      if ((var0 & 1) != 0) {
+         var1 |= 65;
+      }
+
+      if ((var0 & 2) != 0) {
+         var1 |= 66;
+      }
+
+      if ((var0 & 8) != 0) {
+         var1 |= 256;
+      }
+
+      if ((var0 & 4) != 0) {
+         var1 |= 512;
+      }
+
+      return var1;
+   }
+
+   public static int bufferUsageToGlEnum(int var0) {
+      boolean var1 = (var0 & 4) != 0;
+      if ((var0 & 2) != 0) {
+         return var1 ? '\u88e0' : '\u88e4';
+      } else if ((var0 & 1) != 0) {
+         return var1 ? '\u88e1' : '\u88e5';
+      } else {
+         return 35044;
+      }
    }
 }

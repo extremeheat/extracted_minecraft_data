@@ -85,7 +85,7 @@ public class DimensionDataStorage implements AutoCloseable {
       try {
          Path var2 = this.getDataFile(var1.id());
          if (Files.exists(var2, new LinkOption[0])) {
-            CompoundTag var3 = this.readTagFromDisk(var1.id(), var1.dataFixType(), SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            CompoundTag var3 = this.readTagFromDisk(var1.id(), var1.dataFixType(), SharedConstants.getCurrentVersion().dataVersion().version());
             RegistryOps var4 = this.registries.createSerializationContext(NbtOps.INSTANCE);
             return (T)(((Codec)var1.codec().apply(this.context)).parse(var4, var3.get("data")).resultOrPartial((var1x) -> LOGGER.error("Failed to parse saved data for '{}': {}", var1, var1x)).orElse((Object)null));
          }

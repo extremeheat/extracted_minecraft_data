@@ -250,7 +250,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
          }
       }
 
-      return new Dynamic(var2, var2.createMap(ImmutableMap.of(var2.createString("Sections"), var2.createMap(var3), var2.createString("DataVersion"), var2.createInt(SharedConstants.getCurrentVersion().getDataVersion().getVersion()))));
+      return new Dynamic(var2, var2.createMap(ImmutableMap.of(var2.createString("Sections"), var2.createMap(var3), var2.createString("DataVersion"), var2.createInt(SharedConstants.getCurrentVersion().dataVersion().version()))));
    }
 
    private static long getKey(ChunkPos var0, int var1) {
@@ -296,7 +296,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
       public static <T> PackedChunk<T> parse(Codec<T> var0, DynamicOps<Tag> var1, Tag var2, SimpleRegionStorage var3, LevelHeightAccessor var4) {
          Dynamic var5 = new Dynamic(var1, var2);
          int var6 = SectionStorage.getVersion(var5);
-         int var7 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+         int var7 = SharedConstants.getCurrentVersion().dataVersion().version();
          boolean var8 = var6 != var7;
          Dynamic var9 = var3.upgradeChunkTag(var5, var6);
          OptionalDynamic var10 = var9.get("Sections");

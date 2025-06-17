@@ -18,19 +18,15 @@ public abstract class DimensionSpecialEffects {
       var0.put(BuiltinDimensionTypes.NETHER_EFFECTS, new NetherEffects());
       var0.put(BuiltinDimensionTypes.END_EFFECTS, new EndEffects());
    });
-   private final float cloudLevel;
-   private final boolean hasGround;
    private final SkyType skyType;
    private final boolean forceBrightLightmap;
    private final boolean constantAmbientLight;
 
-   public DimensionSpecialEffects(float var1, boolean var2, SkyType var3, boolean var4, boolean var5) {
+   public DimensionSpecialEffects(SkyType var1, boolean var2, boolean var3) {
       super();
-      this.cloudLevel = var1;
-      this.hasGround = var2;
-      this.skyType = var3;
-      this.forceBrightLightmap = var4;
-      this.constantAmbientLight = var5;
+      this.skyType = var1;
+      this.forceBrightLightmap = var2;
+      this.constantAmbientLight = var3;
    }
 
    public static DimensionSpecialEffects forType(DimensionType var0) {
@@ -43,14 +39,6 @@ public abstract class DimensionSpecialEffects {
 
    public int getSunriseOrSunsetColor(float var1) {
       return 0;
-   }
-
-   public float getCloudHeight() {
-      return this.cloudLevel;
-   }
-
-   public boolean hasGround() {
-      return this.hasGround;
    }
 
    public abstract Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2);
@@ -85,7 +73,7 @@ public abstract class DimensionSpecialEffects {
 
    public static class NetherEffects extends DimensionSpecialEffects {
       public NetherEffects() {
-         super(0.0F / 0.0F, true, DimensionSpecialEffects.SkyType.NONE, false, true);
+         super(DimensionSpecialEffects.SkyType.NONE, false, true);
       }
 
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
@@ -98,11 +86,10 @@ public abstract class DimensionSpecialEffects {
    }
 
    public static class OverworldEffects extends DimensionSpecialEffects {
-      public static final int CLOUD_LEVEL = 192;
       private static final float SUNRISE_AND_SUNSET_TIMESPAN = 0.4F;
 
       public OverworldEffects() {
-         super(192.0F, true, DimensionSpecialEffects.SkyType.OVERWORLD, false, false);
+         super(DimensionSpecialEffects.SkyType.OVERWORLD, false, false);
       }
 
       public boolean isSunriseOrSunset(float var1) {
@@ -128,7 +115,7 @@ public abstract class DimensionSpecialEffects {
 
    public static class EndEffects extends DimensionSpecialEffects {
       public EndEffects() {
-         super(0.0F / 0.0F, false, DimensionSpecialEffects.SkyType.END, true, false);
+         super(DimensionSpecialEffects.SkyType.END, true, false);
       }
 
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {

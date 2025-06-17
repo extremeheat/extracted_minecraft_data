@@ -18,7 +18,7 @@ public class SetWorldSpawnCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setworldspawn").requires((var0x) -> var0x.hasPermission(2))).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPosArgument.getSpawnablePos(var0x, "pos"), 0.0F))).then(Commands.argument("angle", AngleArgument.angle()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPosArgument.getSpawnablePos(var0x, "pos"), AngleArgument.getAngle(var0x, "angle"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setworldspawn").requires(Commands.hasPermission(2))).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPosArgument.getSpawnablePos(var0x, "pos"), 0.0F))).then(Commands.argument("angle", AngleArgument.angle()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), BlockPosArgument.getSpawnablePos(var0x, "pos"), AngleArgument.getAngle(var0x, "angle"))))));
    }
 
    private static int setSpawn(CommandSourceStack var0, BlockPos var1, float var2) {

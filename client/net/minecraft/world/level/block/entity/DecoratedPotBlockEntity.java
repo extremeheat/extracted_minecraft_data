@@ -9,10 +9,8 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.player.Player;
@@ -21,6 +19,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
@@ -43,24 +43,23 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
       this.decorations = PotDecorations.EMPTY;
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       if (!this.decorations.equals(PotDecorations.EMPTY)) {
          var1.store("sherds", PotDecorations.CODEC, this.decorations);
       }
 
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
-         var1.store("item", ItemStack.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.item);
+         var1.store("item", ItemStack.CODEC, this.item);
       }
 
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.decorations = (PotDecorations)var1.read("sherds", PotDecorations.CODEC).orElse(PotDecorations.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
-         RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-         this.item = (ItemStack)var1.read("item", ItemStack.CODEC, var3).orElse(ItemStack.EMPTY);
+         this.item = (ItemStack)var1.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
       } else {
          this.item = ItemStack.EMPTY;
       }
@@ -118,10 +117,10 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
       this.item = ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyOne();
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
+   public void removeComponentsFromTag(ValueOutput var1) {
       super.removeComponentsFromTag(var1);
-      var1.remove("sherds");
-      var1.remove("item");
+      var1.discard("sherds");
+      var1.discard("item");
    }
 
    public ItemStack getTheItem() {

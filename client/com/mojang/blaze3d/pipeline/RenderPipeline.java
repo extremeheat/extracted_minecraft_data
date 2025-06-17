@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.LogicOp;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.ResourceLocation;
 
@@ -35,8 +37,10 @@ public class RenderPipeline {
    private final VertexFormat.Mode vertexFormatMode;
    private final float depthBiasScaleFactor;
    private final float depthBiasConstant;
+   private final int sortKey;
+   private static int sortKeySeed;
 
-   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18) {
+   protected RenderPipeline(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18, int var19) {
       super();
       this.location = var1;
       this.vertexShader = var2;
@@ -56,6 +60,15 @@ public class RenderPipeline {
       this.vertexFormatMode = var16;
       this.depthBiasScaleFactor = var17;
       this.depthBiasConstant = var18;
+      this.sortKey = var19;
+   }
+
+   public int getSortKey() {
+      return this.sortKey;
+   }
+
+   public static void updateSortKeySeed() {
+      sortKeySeed = Math.round(100000.0F * (float)Math.random());
    }
 
    public String toString() {
@@ -150,6 +163,7 @@ public class RenderPipeline {
 
    @DontObfuscate
    public static class Builder {
+      private static int nextPipelineSortKey;
       private Optional<ResourceLocation> location = Optional.empty();
       private Optional<ResourceLocation> fragmentShader = Optional.empty();
       private Optional<ResourceLocation> vertexShader = Optional.empty();
@@ -244,8 +258,25 @@ public class RenderPipeline {
             this.uniforms = Optional.of(new ArrayList());
          }
 
-         ((List)this.uniforms.get()).add(new UniformDescription(var1, var2));
-         return this;
+         if (var2 == UniformType.TEXEL_BUFFER) {
+            throw new IllegalArgumentException("Cannot use texel buffer without specifying texture format");
+         } else {
+            ((List)this.uniforms.get()).add(new UniformDescription(var1, var2));
+            return this;
+         }
+      }
+
+      public Builder withUniform(String var1, UniformType var2, TextureFormat var3) {
+         if (this.uniforms.isEmpty()) {
+            this.uniforms = Optional.of(new ArrayList());
+         }
+
+         if (var2 != UniformType.TEXEL_BUFFER) {
+            throw new IllegalArgumentException("Only texel buffer can specify texture format");
+         } else {
+            ((List)this.uniforms.get()).add(new UniformDescription(var1, var3));
+            return this;
+         }
       }
 
       public Builder withDepthTestFunction(DepthTestFunction var1) {
@@ -402,17 +433,29 @@ public class RenderPipeline {
          } else if (this.vertexFormatMode.isEmpty()) {
             throw new IllegalStateException("Missing vertex mode");
          } else {
-            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant);
+            return new RenderPipeline((ResourceLocation)this.location.get(), (ResourceLocation)this.vertexShader.get(), (ResourceLocation)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant, nextPipelineSortKey++);
          }
       }
    }
 
    @DontObfuscate
-   public static record UniformDescription(String name, UniformType type) {
+   public static record UniformDescription(String name, UniformType type, @Nullable TextureFormat textureFormat) {
       public UniformDescription(String var1, UniformType var2) {
+         this(var1, var2, (TextureFormat)null);
+         if (var2 == UniformType.TEXEL_BUFFER) {
+            throw new IllegalArgumentException("Texel buffer needs a texture format");
+         }
+      }
+
+      public UniformDescription(String var1, TextureFormat var2) {
+         this(var1, UniformType.TEXEL_BUFFER, var2);
+      }
+
+      public UniformDescription(String var1, UniformType var2, @Nullable TextureFormat var3) {
          super();
          this.name = var1;
          this.type = var2;
+         this.textureFormat = var3;
       }
    }
 

@@ -46,6 +46,7 @@ public final class TextureSlot {
    public static final TextureSlot CONTENT;
    public static final TextureSlot INNER_TOP;
    public static final TextureSlot FLOWERBED;
+   public static final TextureSlot TENTACLES;
    private final String id;
    @Nullable
    private final TextureSlot parent;
@@ -120,5 +121,6 @@ public final class TextureSlot {
       CONTENT = create("content");
       INNER_TOP = create("inner_top");
       FLOWERBED = create("flowerbed");
+      TENTACLES = create("tentacles");
    }
 }

@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.CommonInputs;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -20,6 +20,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    private static final ResourceLocation SLIDER_HANDLE_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_handle");
    private static final ResourceLocation SLIDER_HANDLE_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_handle_highlighted");
    protected static final int TEXT_MARGIN = 2;
+   public static final int DEFAULT_HEIGHT = 20;
    private static final int HANDLE_WIDTH = 8;
    private static final int HANDLE_HALF_WIDTH = 4;
    protected double value;
@@ -56,10 +57,10 @@ public abstract class AbstractSliderButton extends AbstractWidget {
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
-      var1.blitSprite(RenderType::guiTextured, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
-      int var6 = this.active ? 16777215 : 10526880;
-      this.renderScrollingString(var1, var5.font, 2, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
+      int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
+      this.renderScrollingString(var1, var5.font, 2, var6);
    }
 
    public void onClick(double var1, double var3) {

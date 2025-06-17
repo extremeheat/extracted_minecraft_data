@@ -5,9 +5,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -29,6 +27,8 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -199,23 +199,23 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
       return Component.translatable("container.shulkerBox");
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
-      this.loadFromTag(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
+      this.loadFromTag(var1);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.itemStacks, false, var2);
+         ContainerHelper.saveAllItems(var1, this.itemStacks, false);
       }
 
    }
 
-   public void loadFromTag(CompoundTag var1, HolderLookup.Provider var2) {
+   public void loadFromTag(ValueInput var1) {
       this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.itemStacks, var2);
+         ContainerHelper.loadAllItems(var1, this.itemStacks);
       }
 
    }

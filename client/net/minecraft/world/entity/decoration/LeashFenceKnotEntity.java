@@ -1,9 +1,7 @@
 package net.minecraft.world.entity.decoration;
 
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -20,9 +18,10 @@ import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.LeadItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -53,51 +52,63 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public void dropItem(ServerLevel var1, @Nullable Entity var2) {
-      this.playSound(SoundEvents.LEASH_KNOT_BREAK, 1.0F, 1.0F);
+      this.playSound(SoundEvents.LEAD_UNTIED, 1.0F, 1.0F);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
       if (this.level().isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
-         boolean var3 = false;
-         List var4 = LeadItem.leashableInArea(this.level(), this.getPos(), (var2x) -> {
-            Entity var3 = var2x.getLeashHolder();
-            return var3 == var1 || var3 == this;
-         });
-
-         for(Leashable var6 : var4) {
-            if (var6.getLeashHolder() == var1) {
-               var6.setLeashedTo(this, true);
-               var3 = true;
-            }
-         }
-
-         boolean var8 = false;
-         if (!var3) {
-            this.discard();
-            if (var1.getAbilities().instabuild) {
-               for(Leashable var7 : var4) {
-                  if (var7.isLeashed() && var7.getLeashHolder() == this) {
-                     var7.removeLeash();
-                     var8 = true;
-                  }
+         if (var1.getItemInHand(var2).is(Items.SHEARS)) {
+            InteractionResult var3 = super.interact(var1, var2);
+            if (var3 instanceof InteractionResult.Success) {
+               InteractionResult.Success var4 = (InteractionResult.Success)var3;
+               if (var4.wasItemInteraction()) {
+                  return var3;
                }
             }
          }
 
-         if (var3 || var8) {
-            this.gameEvent(GameEvent.BLOCK_ATTACH, var1);
+         boolean var9 = false;
+
+         for(Leashable var6 : Leashable.leashableLeashedTo(var1)) {
+            if (var6.canHaveALeashAttachedTo(this)) {
+               var6.setLeashedTo(this, true);
+               var9 = true;
+            }
          }
 
-         return InteractionResult.SUCCESS;
+         boolean var11 = false;
+         if (!var9 && !var1.isSecondaryUseActive()) {
+            for(Leashable var8 : Leashable.leashableLeashedTo(this)) {
+               if (var8.canHaveALeashAttachedTo(var1)) {
+                  var8.setLeashedTo(var1, true);
+                  var11 = true;
+               }
+            }
+         }
+
+         if (!var9 && !var11) {
+            return super.interact(var1, var2);
+         } else {
+            this.gameEvent(GameEvent.BLOCK_ATTACH, var1);
+            this.playSound(SoundEvents.LEAD_TIED);
+            return InteractionResult.SUCCESS;
+         }
       }
+   }
+
+   public void notifyLeasheeRemoved(Leashable var1) {
+      if (Leashable.leashableLeashedTo(this).isEmpty()) {
+         this.discard();
+      }
+
    }
 
    public boolean survives() {
@@ -121,7 +132,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public void playPlacementSound() {
-      this.playSound(SoundEvents.LEASH_KNOT_PLACE, 1.0F, 1.0F);
+      this.playSound(SoundEvents.LEAD_TIED, 1.0F, 1.0F);
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {

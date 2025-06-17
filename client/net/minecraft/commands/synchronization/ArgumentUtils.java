@@ -1,6 +1,5 @@
 package net.minecraft.commands.synchronization;
 
-import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
@@ -10,10 +9,14 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.commands.PermissionCheck;
 import org.slf4j.Logger;
 
 public class ArgumentUtils {
@@ -46,21 +49,17 @@ public class ArgumentUtils {
       return (var0 & 2) != 0;
    }
 
-   private static <A extends ArgumentType<?>> void serializeCap(JsonObject var0, ArgumentTypeInfo.Template<A> var1) {
-      serializeCap(var0, var1.type(), var1);
-   }
-
-   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void serializeCap(JsonObject var0, ArgumentTypeInfo<A, T> var1, ArgumentTypeInfo.Template<A> var2) {
+   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void serializeArgumentCap(JsonObject var0, ArgumentTypeInfo<A, T> var1, ArgumentTypeInfo.Template<A> var2) {
       var1.serializeToJson(var2, var0);
    }
 
    private static <T extends ArgumentType<?>> void serializeArgumentToJson(JsonObject var0, T var1) {
       ArgumentTypeInfo.Template var2 = ArgumentTypeInfos.unpack(var1);
       var0.addProperty("type", "argument");
-      var0.addProperty("parser", BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getKey(var2.type()).toString());
+      var0.addProperty("parser", String.valueOf(BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getKey(var2.type())));
       JsonObject var3 = new JsonObject();
-      serializeCap(var3, var2);
-      if (var3.size() > 0) {
+      serializeArgumentCap(var3, var2.type(), var2);
+      if (!var3.isEmpty()) {
          var0.add("properties", var3);
       }
 
@@ -68,25 +67,38 @@ public class ArgumentUtils {
 
    public static <S> JsonObject serializeNodeToJson(CommandDispatcher<S> var0, CommandNode<S> var1) {
       JsonObject var2 = new JsonObject();
-      if (var1 instanceof RootCommandNode) {
-         var2.addProperty("type", "root");
-      } else if (var1 instanceof LiteralCommandNode) {
-         var2.addProperty("type", "literal");
-      } else if (var1 instanceof ArgumentCommandNode) {
-         ArgumentCommandNode var3 = (ArgumentCommandNode)var1;
-         serializeArgumentToJson(var2, var3.getType());
-      } else {
-         LOGGER.error("Could not serialize node {} ({})!", var1, var1.getClass());
-         var2.addProperty("type", "unknown");
+      Objects.requireNonNull(var1);
+      byte var4 = 0;
+      //$FF: var4->value
+      //0->com/mojang/brigadier/tree/RootCommandNode
+      //1->com/mojang/brigadier/tree/LiteralCommandNode
+      //2->com/mojang/brigadier/tree/ArgumentCommandNode
+      switch (var1.typeSwitch<invokedynamic>(var1, var4)) {
+         case 0:
+            RootCommandNode var5 = (RootCommandNode)var1;
+            var2.addProperty("type", "root");
+            break;
+         case 1:
+            LiteralCommandNode var6 = (LiteralCommandNode)var1;
+            var2.addProperty("type", "literal");
+            break;
+         case 2:
+            ArgumentCommandNode var7 = (ArgumentCommandNode)var1;
+            serializeArgumentToJson(var2, var7.getType());
+            break;
+         default:
+            LOGGER.error("Could not serialize node {} ({})!", var1, var1.getClass());
+            var2.addProperty("type", "unknown");
       }
 
-      JsonObject var8 = new JsonObject();
+      Collection var3 = var1.getChildren();
+      if (!var3.isEmpty()) {
+         JsonObject var8 = new JsonObject();
 
-      for(CommandNode var5 : var1.getChildren()) {
-         var8.add(var5.getName(), serializeNodeToJson(var0, var5));
-      }
+         for(CommandNode var14 : var3) {
+            var8.add(var14.getName(), serializeNodeToJson(var0, var14));
+         }
 
-      if (var8.size() > 0) {
          var2.add("children", var8);
       }
 
@@ -94,16 +106,21 @@ public class ArgumentUtils {
          var2.addProperty("executable", true);
       }
 
-      if (var1.getRedirect() != null) {
-         Collection var9 = var0.getPath(var1.getRedirect());
-         if (!var9.isEmpty()) {
-            JsonArray var10 = new JsonArray();
+      Predicate var12 = var1.getRequirement();
+      if (var12 instanceof PermissionCheck var9) {
+         var2.addProperty("required_level", var9.requiredLevel());
+      }
 
-            for(String var7 : var9) {
-               var10.add(var7);
+      if (var1.getRedirect() != null) {
+         Collection var10 = var0.getPath(var1.getRedirect());
+         if (!var10.isEmpty()) {
+            JsonArray var13 = new JsonArray();
+
+            for(String var16 : var10) {
+               var13.add(var16);
             }
 
-            var2.add("redirect", var10);
+            var2.add("redirect", var13);
          }
       }
 
@@ -111,8 +128,8 @@ public class ArgumentUtils {
    }
 
    public static <T> Set<ArgumentType<?>> findUsedArgumentTypes(CommandNode<T> var0) {
-      Set var1 = Sets.newIdentityHashSet();
-      HashSet var2 = Sets.newHashSet();
+      ReferenceOpenHashSet var1 = new ReferenceOpenHashSet();
+      HashSet var2 = new HashSet();
       findUsedArgumentTypes(var0, var2, var1);
       return var2;
    }

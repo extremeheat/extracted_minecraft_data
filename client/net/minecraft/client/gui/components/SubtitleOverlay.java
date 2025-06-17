@@ -73,6 +73,9 @@ public class SubtitleOverlay implements SoundEventListener {
             }
 
             var30 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
+            if (!this.audibleSubtitles.isEmpty()) {
+               var1.nextStratum();
+            }
 
             for(Subtitle var33 : this.audibleSubtitles) {
                boolean var13 = true;
@@ -90,9 +93,9 @@ public class SubtitleOverlay implements SoundEventListener {
                   float var25 = 1.0F;
                   int var26 = this.minecraft.font.width((FormattedText)var14);
                   int var27 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var15.time) / (float)(3000.0 * var9)));
-                  var1.pose().pushPose();
-                  var1.pose().translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var29 * (var23 + 1)) * 1.0F, 0.0F);
-                  var1.pose().scale(1.0F, 1.0F, 1.0F);
+                  var1.pose().pushMatrix();
+                  var1.pose().translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var29 * (var23 + 1)) * 1.0F);
+                  var1.pose().scale(1.0F, 1.0F);
                   var1.fill(-var22 - 1, -var24 - 1, var22 + 1, var24 + 1, this.minecraft.options.getBackgroundColor(0.8F));
                   int var28 = ARGB.color(255, var27, var27, var27);
                   if (!var21) {
@@ -104,7 +107,7 @@ public class SubtitleOverlay implements SoundEventListener {
                   }
 
                   var1.drawString(this.minecraft.font, var14, -var26 / 2, -var24, var28);
-                  var1.pose().popPose();
+                  var1.pose().popMatrix();
                   ++var29;
                }
             }

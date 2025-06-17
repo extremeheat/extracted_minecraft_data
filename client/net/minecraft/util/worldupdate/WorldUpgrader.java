@@ -391,7 +391,7 @@ public class WorldUpgrader implements AutoCloseable {
          if (var4 != null) {
             int var5 = ChunkStorage.getVersion(var4);
             CompoundTag var6 = this.upgradeTag(var1, var4);
-            boolean var7 = var5 < SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            boolean var7 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
             if (var7 || WorldUpgrader.this.recreateRegionFiles) {
                if (this.previousWriteFuture != null) {
                   this.previousWriteFuture.join();
@@ -449,7 +449,7 @@ public class WorldUpgrader implements AutoCloseable {
                WorldUpgrader.LOGGER.warn("Chunk {} has invalid position {}", var2, var8);
             }
 
-            boolean var9 = var5 < SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+            boolean var9 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
             if (WorldUpgrader.this.eraseCache) {
                var9 = var9 || var7.contains("Heightmaps");
                var7.remove("Heightmaps");

@@ -21,7 +21,6 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -299,12 +298,6 @@ public class GlStateManager {
 
    public static void _glDeleteBuffers(int var0) {
       RenderSystem.assertOnRenderThread();
-      if (ON_LINUX) {
-         GL32C.glBindBuffer(34962, var0);
-         GL32C.glBufferData(34962, 0L, 35048);
-         GL32C.glBindBuffer(34962, 0);
-      }
-
       --numBuffers;
       PLOT_BUFFERS.setValue((double)numBuffers);
       GL15.glDeleteBuffers(var0);

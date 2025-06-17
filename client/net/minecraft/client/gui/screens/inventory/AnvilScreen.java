@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -42,8 +42,13 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setMaxLength(50);
       this.name.setResponder(this::onNameChanged);
       this.name.setValue("");
-      this.addWidget(this.name);
+      this.addRenderableWidget(this.name);
       this.name.setEditable(((AnvilMenu)this.menu).getSlot(0).hasItem());
+   }
+
+   protected void containerTick() {
+      super.containerTick();
+      this.minecraft.player.experienceDisplayStartTick = this.minecraft.player.tickCount;
    }
 
    protected void setInitialFocus() {
@@ -83,17 +88,17 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       super.renderLabels(var1, var2, var3);
       int var4 = ((AnvilMenu)this.menu).getCost();
       if (var4 > 0) {
-         int var5 = 8453920;
+         int var5 = -8323296;
          Object var6;
          if (var4 >= 40 && !this.minecraft.player.hasInfiniteMaterials()) {
             var6 = TOO_EXPENSIVE_TEXT;
-            var5 = 16736352;
+            var5 = -40864;
          } else if (!((AnvilMenu)this.menu).getSlot(2).hasItem()) {
             var6 = null;
          } else {
             var6 = Component.translatable("container.repair.cost", var4);
             if (!((AnvilMenu)this.menu).getSlot(2).mayPickup(this.player)) {
-               var5 = 16736352;
+               var5 = -40864;
             }
          }
 
@@ -109,16 +114,12 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
-   }
-
-   public void renderFg(GuiGraphics var1, int var2, int var3, float var4) {
-      this.name.render(var1, var2, var3, var4);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if ((((AnvilMenu)this.menu).getSlot(0).hasItem() || ((AnvilMenu)this.menu).getSlot(1).hasItem()) && !((AnvilMenu)this.menu).getSlot(((AnvilMenu)this.menu).getResultSlot()).hasItem()) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
       }
 
    }

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
+import java.util.Set;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
    private final Model headModel;
@@ -79,13 +81,26 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
 
    private void renderPiece(PoseStack var1, MultiBufferSource var2, Model var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
       var1.pushPose();
-      var1.translate(0.0F, 0.5625F, var8 ? -1.0F : 0.0F);
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
-      var1.translate(0.5F, 0.5F, 0.5F);
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F + var4.toYRot()));
-      var1.translate(-0.5F, -0.5F, -0.5F);
+      preparePose(var1, var8, var4);
       VertexConsumer var9 = var5.buffer(var2, RenderType::entitySolid);
       var3.renderToBuffer(var1, var9, var6, var7);
       var1.popPose();
+   }
+
+   private static void preparePose(PoseStack var0, boolean var1, Direction var2) {
+      var0.translate(0.0F, 0.5625F, var1 ? -1.0F : 0.0F);
+      var0.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
+      var0.translate(0.5F, 0.5F, 0.5F);
+      var0.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F + var2.toYRot()));
+      var0.translate(-0.5F, -0.5F, -0.5F);
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      preparePose(var2, false, Direction.SOUTH);
+      this.headModel.root().getExtentsForGui(var2, var1);
+      var2.setIdentity();
+      preparePose(var2, true, Direction.SOUTH);
+      this.footModel.root().getExtentsForGui(var2, var1);
    }
 }

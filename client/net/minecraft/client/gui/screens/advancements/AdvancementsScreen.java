@@ -15,7 +15,7 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
@@ -128,7 +128,9 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       super.render(var1, var2, var3, var4);
       int var5 = (this.width - 252) / 2;
       int var6 = (this.height - 140) / 2;
-      this.renderInside(var1, var2, var3, var5, var6);
+      var1.nextStratum();
+      this.renderInside(var1, var5, var6);
+      var1.nextStratum();
       this.renderWindow(var1, var5, var6);
       this.renderTooltips(var1, var2, var3, var5, var6);
    }
@@ -157,28 +159,28 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
    }
 
-   private void renderInside(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      AdvancementTab var6 = this.selectedTab;
-      if (var6 == null) {
-         var1.fill(var4 + 9, var5 + 18, var4 + 9 + 234, var5 + 18 + 113, -16777216);
-         int var7 = var4 + 9 + 117;
+   private void renderInside(GuiGraphics var1, int var2, int var3) {
+      AdvancementTab var4 = this.selectedTab;
+      if (var4 == null) {
+         var1.fill(var2 + 9, var3 + 18, var2 + 9 + 234, var3 + 18 + 113, -16777216);
+         int var5 = var2 + 9 + 117;
          Font var10001 = this.font;
          Component var10002 = NO_ADVANCEMENTS_LABEL;
-         int var10004 = var5 + 18 + 56;
+         int var10004 = var3 + 18 + 56;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var10002, var7, var10004 - 9 / 2, -1);
+         var1.drawCenteredString(var10001, (Component)var10002, var5, var10004 - 9 / 2, -1);
          var10001 = this.font;
          var10002 = VERY_SAD_LABEL;
-         var10004 = var5 + 18 + 113;
+         var10004 = var3 + 18 + 113;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var10002, var7, var10004 - 9, -1);
+         var1.drawCenteredString(var10001, (Component)var10002, var5, var10004 - 9, -1);
       } else {
-         var6.drawContents(var1, var4 + 9, var5 + 18);
+         var4.drawContents(var1, var2 + 9, var3 + 18);
       }
    }
 
    public void renderWindow(GuiGraphics var1, int var2, int var3) {
-      var1.blit(RenderType::guiTextured, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
          for(AdvancementTab var5 : this.tabs.values()) {
             var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
@@ -189,21 +191,22 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          }
       }
 
-      var1.drawString(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, var2 + 8, var3 + 6, 4210752, false);
+      var1.drawString(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, var2 + 8, var3 + 6, -12566464, false);
    }
 
    private void renderTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       if (this.selectedTab != null) {
-         var1.pose().pushPose();
-         var1.pose().translate((float)(var4 + 9), (float)(var5 + 18), 400.0F);
+         var1.pose().pushMatrix();
+         var1.pose().translate((float)(var4 + 9), (float)(var5 + 18));
+         var1.nextStratum();
          this.selectedTab.drawTooltips(var1, var2 - var4 - 9, var3 - var5 - 18, var4, var5);
-         var1.pose().popPose();
+         var1.pose().popMatrix();
       }
 
       if (this.tabs.size() > 1) {
          for(AdvancementTab var7 : this.tabs.values()) {
             if (var7.isMouseOver(var4, var5, (double)var2, (double)var3)) {
-               var1.renderTooltip(this.font, var7.getTitle(), var2, var3);
+               var1.setTooltipForNextFrame(this.font, var7.getTitle(), var2, var3);
             }
          }
       }

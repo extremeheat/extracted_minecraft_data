@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -42,6 +41,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class TropicalFish extends AbstractSchoolingFish {
    public static final Variant DEFAULT_VARIANT;
@@ -78,12 +79,12 @@ public class TropicalFish extends AbstractSchoolingFish {
       var1.define(DATA_ID_TYPE_VARIANT, DEFAULT_VARIANT.getPackedId());
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("Variant", TropicalFish.Variant.CODEC, new Variant(this.getPackedVariant()));
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       Variant var2 = (Variant)var1.read("Variant", TropicalFish.Variant.CODEC).orElse(DEFAULT_VARIANT);
       this.setPackedVariant(var2.getPackedId());

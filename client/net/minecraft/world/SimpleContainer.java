@@ -4,14 +4,14 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class SimpleContainer implements Container, StackedContentsCompatible {
    private final int size;
@@ -209,22 +209,23 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    }
 
-   public void fromTag(ListTag var1, HolderLookup.Provider var2) {
+   public void fromItemList(ValueInput.TypedInputList<ItemStack> var1) {
       this.clearContent();
-      var1.compoundStream().flatMap((var1x) -> ItemStack.parse(var2, var1x).stream()).forEach(this::addItem);
+
+      for(ItemStack var3 : var1) {
+         this.addItem(var3);
+      }
+
    }
 
-   public ListTag createTag(HolderLookup.Provider var1) {
-      ListTag var2 = new ListTag();
-
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
-         ItemStack var4 = this.getItem(var3);
-         if (!var4.isEmpty()) {
-            var2.add(var4.save(var1));
+   public void storeAsItemList(ValueOutput.TypedOutputList<ItemStack> var1) {
+      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
+         ItemStack var3 = this.getItem(var2);
+         if (!var3.isEmpty()) {
+            var1.add(var3);
          }
       }
 
-      return var2;
    }
 
    public NonNullList<ItemStack> getItems() {

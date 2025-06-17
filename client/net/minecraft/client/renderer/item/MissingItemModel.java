@@ -25,6 +25,7 @@ public class MissingItemModel implements ItemModel {
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+      var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       var8.setRenderType(Sheets.cutoutBlockSheet());
       this.properties.applyToLayer(var8, var4);

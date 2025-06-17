@@ -107,7 +107,7 @@ public class Raids extends SavedData {
       if (var1.isSpectator()) {
          return null;
       } else {
-         ServerLevel var3 = var1.serverLevel();
+         ServerLevel var3 = var1.level();
          if (var3.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
             return null;
          } else {

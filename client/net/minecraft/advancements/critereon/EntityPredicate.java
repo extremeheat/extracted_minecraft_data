@@ -68,7 +68,7 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
    }
 
    public boolean matches(ServerPlayer var1, @Nullable Entity var2) {
-      return this.matches(var1.serverLevel(), var1.position(), var2);
+      return this.matches(var1.level(), var1.position(), var2);
    }
 
    public boolean matches(ServerLevel var1, @Nullable Vec3 var2, @Nullable Entity var3) {
@@ -147,7 +147,7 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
    }
 
    public static LootContext createContext(ServerPlayer var0, Entity var1) {
-      LootParams var2 = (new LootParams.Builder(var0.serverLevel())).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var0.position()).create(LootContextParamSets.ADVANCEMENT_ENTITY);
+      LootParams var2 = (new LootParams.Builder(var0.level())).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var0.position()).create(LootContextParamSets.ADVANCEMENT_ENTITY);
       return (new LootContext.Builder(var2)).create(Optional.empty());
    }
 

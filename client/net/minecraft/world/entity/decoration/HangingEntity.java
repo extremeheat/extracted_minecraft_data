@@ -4,6 +4,9 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -21,11 +24,11 @@ import org.apache.commons.lang3.Validate;
 
 public abstract class HangingEntity extends BlockAttachedEntity {
    protected static final Predicate<Entity> HANGING_ENTITY = (var0) -> var0 instanceof HangingEntity;
-   protected Direction direction;
+   private static final EntityDataAccessor<Direction> DATA_DIRECTION;
+   private static final Direction DEFAULT_DIRECTION;
 
    protected HangingEntity(EntityType<? extends HangingEntity> var1, Level var2) {
       super(var1, var2);
-      this.direction = Direction.SOUTH;
    }
 
    protected HangingEntity(EntityType<? extends HangingEntity> var1, Level var2, BlockPos var3) {
@@ -33,18 +36,38 @@ public abstract class HangingEntity extends BlockAttachedEntity {
       this.pos = var3;
    }
 
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_DIRECTION, DEFAULT_DIRECTION);
+   }
+
+   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+      super.onSyncedDataUpdated(var1);
+      if (var1.equals(DATA_DIRECTION)) {
+         this.setDirection(this.getDirection());
+      }
+
+   }
+
+   public Direction getDirection() {
+      return (Direction)this.entityData.get(DATA_DIRECTION);
+   }
+
+   protected void setDirectionRaw(Direction var1) {
+      this.entityData.set(DATA_DIRECTION, var1);
+   }
+
    protected void setDirection(Direction var1) {
       Objects.requireNonNull(var1);
       Validate.isTrue(var1.getAxis().isHorizontal());
-      this.direction = var1;
-      this.setYRot((float)(this.direction.get2DDataValue() * 90));
+      this.setDirectionRaw(var1);
+      this.setYRot((float)(var1.get2DDataValue() * 90));
       this.yRotO = this.getYRot();
       this.recalculateBoundingBox();
    }
 
-   protected final void recalculateBoundingBox() {
-      if (this.direction != null) {
-         AABB var1 = this.calculateBoundingBox(this.pos, this.direction);
+   protected void recalculateBoundingBox() {
+      if (this.getDirection() != null) {
+         AABB var1 = this.calculateBoundingBox(this.pos, this.getDirection());
          Vec3 var2 = var1.getCenter();
          this.setPosRaw(var2.x, var2.y, var2.z);
          this.setBoundingBox(var1);
@@ -66,44 +89,48 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    }
 
    protected AABB calculateSupportBox() {
-      return this.getBoundingBox().move(this.direction.step().mul(-0.5F)).deflate(1.0E-7);
-   }
-
-   public Direction getDirection() {
-      return this.direction;
+      return this.getBoundingBox().move(this.getDirection().step().mul(-0.5F)).deflate(1.0E-7);
    }
 
    public abstract void playPlacementSound();
 
    public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
-      ItemEntity var4 = new ItemEntity(this.level(), this.getX() + (double)((float)this.direction.getStepX() * 0.15F), this.getY() + (double)var3, this.getZ() + (double)((float)this.direction.getStepZ() * 0.15F), var2);
+      ItemEntity var4 = new ItemEntity(this.level(), this.getX() + (double)((float)this.getDirection().getStepX() * 0.15F), this.getY() + (double)var3, this.getZ() + (double)((float)this.getDirection().getStepZ() * 0.15F), var2);
       var4.setDefaultPickUpDelay();
       this.level().addFreshEntity(var4);
       return var4;
    }
 
    public float rotate(Rotation var1) {
-      if (this.direction.getAxis() != Direction.Axis.Y) {
+      Direction var2 = this.getDirection();
+      if (var2.getAxis() != Direction.Axis.Y) {
          switch (var1) {
-            case CLOCKWISE_180 -> this.direction = this.direction.getOpposite();
-            case COUNTERCLOCKWISE_90 -> this.direction = this.direction.getCounterClockWise();
-            case CLOCKWISE_90 -> this.direction = this.direction.getClockWise();
+            case CLOCKWISE_180 -> var2 = var2.getOpposite();
+            case COUNTERCLOCKWISE_90 -> var2 = var2.getCounterClockWise();
+            case CLOCKWISE_90 -> var2 = var2.getClockWise();
          }
+
+         this.setDirection(var2);
       }
 
-      float var2 = Mth.wrapDegrees(this.getYRot());
+      float var3 = Mth.wrapDegrees(this.getYRot());
       float var10000;
       switch (var1) {
-         case CLOCKWISE_180 -> var10000 = var2 + 180.0F;
-         case COUNTERCLOCKWISE_90 -> var10000 = var2 + 90.0F;
-         case CLOCKWISE_90 -> var10000 = var2 + 270.0F;
-         default -> var10000 = var2;
+         case CLOCKWISE_180 -> var10000 = var3 + 180.0F;
+         case COUNTERCLOCKWISE_90 -> var10000 = var3 + 90.0F;
+         case CLOCKWISE_90 -> var10000 = var3 + 270.0F;
+         default -> var10000 = var3;
       }
 
       return var10000;
    }
 
    public float mirror(Mirror var1) {
-      return this.rotate(var1.getRotation(this.direction));
+      return this.rotate(var1.getRotation(this.getDirection()));
+   }
+
+   static {
+      DATA_DIRECTION = SynchedEntityData.<Direction>defineId(HangingEntity.class, EntityDataSerializers.DIRECTION);
+      DEFAULT_DIRECTION = Direction.SOUTH;
    }
 }

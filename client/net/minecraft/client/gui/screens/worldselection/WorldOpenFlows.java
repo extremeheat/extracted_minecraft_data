@@ -267,7 +267,7 @@ public class WorldOpenFlows {
                var8.withColor(-2142128);
             }
 
-            MutableComponent var9 = Component.translatable(var7, var2.getWorldVersionName(), SharedConstants.getCurrentVersion().getName());
+            MutableComponent var9 = Component.translatable(var7, var2.getWorldVersionName(), SharedConstants.getCurrentVersion().name());
             this.minecraft.setScreen(new BackupConfirmScreen(() -> {
                var1.safeClose();
                var4.run();

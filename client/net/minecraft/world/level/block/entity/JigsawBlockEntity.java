@@ -21,6 +21,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class JigsawBlockEntity extends BlockEntity {
    public static final Codec<ResourceKey<StructureTemplatePool>> POOL_CODEC;
@@ -110,8 +112,8 @@ public class JigsawBlockEntity extends BlockEntity {
       this.selectionPriority = var1;
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       var1.store("name", ResourceLocation.CODEC, this.name);
       var1.store("target", ResourceLocation.CODEC, this.target);
       var1.store("pool", POOL_CODEC, this.pool);
@@ -121,8 +123,8 @@ public class JigsawBlockEntity extends BlockEntity {
       var1.putInt("selection_priority", this.selectionPriority);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.name = (ResourceLocation)var1.read("name", ResourceLocation.CODEC).orElse(EMPTY_ID);
       this.target = (ResourceLocation)var1.read("target", ResourceLocation.CODEC).orElse(EMPTY_ID);
       this.pool = (ResourceKey)var1.read("pool", POOL_CODEC).orElse(Pools.EMPTY);

@@ -34,8 +34,8 @@ import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Turtle;
@@ -59,19 +59,19 @@ import net.minecraft.world.phys.Vec3;
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
    boolean searchingForLand;
-   protected final WaterBoundPathNavigation waterNavigation;
-   protected final GroundPathNavigation groundNavigation;
 
    public Drowned(EntityType<? extends Drowned> var1, Level var2) {
       super(var1, var2);
       this.moveControl = new DrownedMoveControl(this);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
-      this.waterNavigation = new WaterBoundPathNavigation(this, var2);
-      this.groundNavigation = new GroundPathNavigation(this, var2);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Zombie.createAttributes().add(Attributes.STEP_HEIGHT, 1.0);
+   }
+
+   protected PathNavigation createNavigation(Level var1) {
+      return new AmphibiousPathNavigation(this, var1);
    }
 
    protected void addBehaviourGoals() {
@@ -207,13 +207,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public void updateSwimming() {
       if (!this.level().isClientSide) {
-         if (this.isEffectiveAi() && this.isUnderWater() && this.wantsToSwim()) {
-            this.navigation = this.waterNavigation;
-            this.setSwimming(true);
-         } else {
-            this.navigation = this.groundNavigation;
-            this.setSwimming(false);
-         }
+         this.setSwimming(this.isEffectiveAi() && this.isUnderWater() && this.wantsToSwim());
       }
 
    }
@@ -353,7 +347,6 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
       public void start() {
          this.drowned.setSearchingForLand(false);
-         this.drowned.navigation = this.drowned.groundNavigation;
          super.start();
       }
 

@@ -27,6 +27,10 @@ public class FlatLayerInfo {
       return this.block.defaultBlockState();
    }
 
+   public FlatLayerInfo heightLimited(int var1) {
+      return this.height > var1 ? new FlatLayerInfo(var1, this.block) : this;
+   }
+
    public String toString() {
       String var10000 = this.height != 1 ? this.height + "*" : "";
       return var10000 + String.valueOf(BuiltInRegistries.BLOCK.getKey(this.block));

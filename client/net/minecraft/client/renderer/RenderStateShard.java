@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.TriState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -78,8 +77,8 @@ public abstract class RenderStateShard {
    }
 
    static {
-      BLOCK_SHEET_MIPPED = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, TriState.FALSE, true);
-      BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, TriState.FALSE, false);
+      BLOCK_SHEET_MIPPED = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, true);
+      BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false);
       NO_TEXTURE = new EmptyTextureStateShard();
       DEFAULT_TEXTURING = new TexturingStateShard("default_texturing", () -> {
       }, () -> {
@@ -159,8 +158,8 @@ public abstract class RenderStateShard {
                Entry var2 = (Entry)var1.get(var1x);
                TextureManager var3 = Minecraft.getInstance().getTextureManager();
                AbstractTexture var4 = var3.getTexture(var2.id);
-               var4.setFilter(var2.blur, var2.mipmap);
-               RenderSystem.setShaderTexture(var1x, var4.getTexture());
+               var4.setUseMipmaps(var2.mipmap);
+               RenderSystem.setShaderTexture(var1x, var4.getTextureView());
             }
 
          }, () -> {
@@ -176,16 +175,14 @@ public abstract class RenderStateShard {
          return new Builder();
       }
 
-      static record Entry(ResourceLocation id, boolean blur, boolean mipmap) {
+      static record Entry(ResourceLocation id, boolean mipmap) {
          final ResourceLocation id;
-         final boolean blur;
          final boolean mipmap;
 
-         Entry(ResourceLocation var1, boolean var2, boolean var3) {
+         Entry(ResourceLocation var1, boolean var2) {
             super();
             this.id = var1;
-            this.blur = var2;
-            this.mipmap = var3;
+            this.mipmap = var2;
          }
       }
 
@@ -196,8 +193,8 @@ public abstract class RenderStateShard {
             super();
          }
 
-         public Builder add(ResourceLocation var1, boolean var2, boolean var3) {
-            this.builder.add(new Entry(var1, var2, var3));
+         public Builder add(ResourceLocation var1, boolean var2) {
+            this.builder.add(new Entry(var1, var2));
             return this;
          }
 
@@ -209,25 +206,23 @@ public abstract class RenderStateShard {
 
    protected static class TextureStateShard extends EmptyTextureStateShard {
       private final Optional<ResourceLocation> texture;
-      private final TriState blur;
       private final boolean mipmap;
 
-      public TextureStateShard(ResourceLocation var1, TriState var2, boolean var3) {
+      public TextureStateShard(ResourceLocation var1, boolean var2) {
          super(() -> {
-            TextureManager var3x = Minecraft.getInstance().getTextureManager();
-            AbstractTexture var4 = var3x.getTexture(var1);
-            var4.setFilter(var2, var3);
-            RenderSystem.setShaderTexture(0, var4.getTexture());
+            TextureManager var2x = Minecraft.getInstance().getTextureManager();
+            AbstractTexture var3 = var2x.getTexture(var1);
+            var3.setUseMipmaps(var2);
+            RenderSystem.setShaderTexture(0, var3.getTextureView());
          }, () -> {
          });
          this.texture = Optional.of(var1);
-         this.blur = var2;
-         this.mipmap = var3;
+         this.mipmap = var2;
       }
 
       public String toString() {
          String var10000 = this.name;
-         return var10000 + "[" + String.valueOf(this.texture) + "(blur=" + String.valueOf(this.blur) + ", mipmap=" + this.mipmap + ")]";
+         return var10000 + "[" + String.valueOf(this.texture) + "(mipmap=" + this.mipmap + ")]";
       }
 
       protected Optional<ResourceLocation> cutoutTexture() {

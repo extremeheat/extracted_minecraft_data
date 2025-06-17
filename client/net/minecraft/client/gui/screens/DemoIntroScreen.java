@@ -6,7 +6,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonLinks;
@@ -43,18 +43,18 @@ public class DemoIntroScreen extends Screen {
       super.renderBackground(var1, var2, var3, var4);
       int var5 = (this.width - 248) / 2;
       int var6 = (this.height - 166) / 2;
-      var1.blit(RenderType::guiTextured, DEMO_BACKGROUND_LOCATION, var5, var6, 0.0F, 0.0F, 248, 166, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, DEMO_BACKGROUND_LOCATION, var5, var6, 0.0F, 0.0F, 248, 166, 256, 256);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       int var5 = (this.width - 248) / 2 + 10;
       int var6 = (this.height - 166) / 2 + 8;
-      var1.drawString(this.font, this.title, var5, var6, 2039583, false);
-      var6 = this.movementMessage.renderLeftAlignedNoShadow(var1, var5, var6 + 12, 12, 5197647);
+      var1.drawString(this.font, this.title, var5, var6, -14737633, false);
+      var6 = this.movementMessage.renderLeftAlignedNoShadow(var1, var5, var6 + 12, 12, -11579569);
       MultiLineLabel var10000 = this.durationMessage;
       int var10003 = var6 + 20;
       Objects.requireNonNull(this.font);
-      var10000.renderLeftAlignedNoShadow(var1, var5, var10003, 9, 2039583);
+      var10000.renderLeftAlignedNoShadow(var1, var5, var10003, 9, -14737633);
    }
 }

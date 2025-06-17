@@ -36,7 +36,7 @@ public class PerfCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires((var0x) -> var0x.hasPermission(4))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(4))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int startProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {
@@ -63,7 +63,7 @@ public class PerfCommand {
    }
 
    private static void saveResults(CommandSourceStack var0, Path var1, MinecraftServer var2) {
-      String var3 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var2.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().getId());
+      String var3 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var2.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().id());
 
       String var4;
       try {

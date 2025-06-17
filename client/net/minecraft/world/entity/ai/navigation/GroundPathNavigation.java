@@ -45,11 +45,11 @@ public class GroundPathNavigation extends PathNavigation {
          if (var3.getBlockState((BlockPos)var1).isAir()) {
             BlockPos.MutableBlockPos var4 = ((BlockPos)var1).mutable().move(Direction.DOWN);
 
-            while(var4.getY() > this.level.getMinY() && var3.getBlockState(var4).isAir()) {
+            while(var4.getY() >= this.level.getMinY() && var3.getBlockState(var4).isAir()) {
                var4.move(Direction.DOWN);
             }
 
-            if (var4.getY() > this.level.getMinY()) {
+            if (var4.getY() >= this.level.getMinY()) {
                return super.createPath(var4.above(), var2);
             }
 
@@ -119,6 +119,10 @@ public class GroundPathNavigation extends PathNavigation {
 
    }
 
+   public boolean canNavigateGround() {
+      return true;
+   }
+
    protected boolean hasValidPathType(PathType var1) {
       if (var1 == PathType.WATER) {
          return false;
@@ -127,10 +131,6 @@ public class GroundPathNavigation extends PathNavigation {
       } else {
          return var1 != PathType.OPEN;
       }
-   }
-
-   public void setCanOpenDoors(boolean var1) {
-      this.nodeEvaluator.setCanOpenDoors(var1);
    }
 
    public void setAvoidSun(boolean var1) {

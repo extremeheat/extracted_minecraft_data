@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -170,7 +170,7 @@ public class AdvancementWidget {
             var5 = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
@@ -243,20 +243,20 @@ public class AdvancementWidget {
       int var24 = var8 + var12;
       if (!this.description.isEmpty()) {
          if (var16) {
-            var1.blitSprite(RenderType::guiTextured, TITLE_BOX_SPRITE, var23, var10 - var24, this.width, var24);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, TITLE_BOX_SPRITE, var23, var10 - var24, this.width, var24);
          } else {
-            var1.blitSprite(RenderType::guiTextured, TITLE_BOX_SPRITE, var23, var9, this.width, var24);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, TITLE_BOX_SPRITE, var23, var9, this.width, var24);
          }
       }
 
       if (var18 != var19) {
-         var1.blitSprite(RenderType::guiTextured, var18.boxSprite(), 200, var8, 0, 0, var23, var9, var21, var8);
-         var1.blitSprite(RenderType::guiTextured, var19.boxSprite(), 200, var8, 200 - var22, 0, var23 + var21, var9, var22, var8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), 200, var8, 0, 0, var23, var9, var21, var8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var19.boxSprite(), 200, var8, 200 - var22, 0, var23 + var21, var9, var22, var8);
       } else {
-         var1.blitSprite(RenderType::guiTextured, var18.boxSprite(), var23, var9, this.width, var8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), var23, var9, this.width, var8);
       }
 
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       int var25 = var23 + 5;
       if (var13) {
          this.drawMultilineText(var1, this.titleLines, var25, var9 + 9, -1);

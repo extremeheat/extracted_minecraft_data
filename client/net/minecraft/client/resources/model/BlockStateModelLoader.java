@@ -2,7 +2,6 @@ package net.minecraft.client.resources.model;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.io.BufferedReader;
@@ -21,6 +20,7 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -55,7 +55,7 @@ public class BlockStateModelLoader {
                         BufferedReader var8 = var7.openAsReader();
 
                         try {
-                           JsonElement var9 = JsonParser.parseReader(var8);
+                           JsonElement var9 = StrictJsonParser.parse((Reader)var8);
                            BlockModelDefinition var10 = (BlockModelDefinition)BlockModelDefinition.CODEC.parse(JsonOps.INSTANCE, var9).getOrThrow(JsonParseException::new);
                            var5x.add(new LoadedBlockModelDefinition(var7.sourcePackId(), var10));
                         } catch (Throwable var13) {

@@ -1,8 +1,11 @@
 package net.minecraft.world;
 
+import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
@@ -14,6 +17,7 @@ public enum Difficulty implements StringRepresentable {
 
    public static final StringRepresentable.EnumCodec<Difficulty> CODEC = StringRepresentable.<Difficulty>fromEnum(Difficulty::values);
    private static final IntFunction<Difficulty> BY_ID = ByIdMap.<Difficulty>continuous(Difficulty::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final StreamCodec<ByteBuf, Difficulty> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Difficulty::getId);
    private final int id;
    private final String key;
 
@@ -34,6 +38,8 @@ public enum Difficulty implements StringRepresentable {
       return Component.translatable("options.difficulty." + this.key + ".info");
    }
 
+   /** @deprecated */
+   @Deprecated
    public static Difficulty byId(int var0) {
       return (Difficulty)BY_ID.apply(var0);
    }

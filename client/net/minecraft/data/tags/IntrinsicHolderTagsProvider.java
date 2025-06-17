@@ -2,7 +2,6 @@ package net.minecraft.data.tags;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.PackOutput;
@@ -23,43 +22,8 @@ public abstract class IntrinsicHolderTagsProvider<T> extends TagsProvider<T> {
       this.keyExtractor = var5;
    }
 
-   protected IntrinsicTagAppender<T> tag(TagKey<T> var1) {
+   protected TagAppender<T, T> tag(TagKey<T> var1) {
       TagBuilder var2 = this.getOrCreateRawBuilder(var1);
-      return new IntrinsicTagAppender<T>(var2, this.keyExtractor);
-   }
-
-   // $FF: synthetic method
-   protected TagsProvider.TagAppender tag(final TagKey var1) {
-      return this.tag(var1);
-   }
-
-   protected static class IntrinsicTagAppender<T> extends TagsProvider.TagAppender<T> {
-      private final Function<T, ResourceKey<T>> keyExtractor;
-
-      IntrinsicTagAppender(TagBuilder var1, Function<T, ResourceKey<T>> var2) {
-         super(var1);
-         this.keyExtractor = var2;
-      }
-
-      public IntrinsicTagAppender<T> addTag(TagKey<T> var1) {
-         super.addTag(var1);
-         return this;
-      }
-
-      public final IntrinsicTagAppender<T> add(T var1) {
-         this.add((ResourceKey)this.keyExtractor.apply(var1));
-         return this;
-      }
-
-      @SafeVarargs
-      public final IntrinsicTagAppender<T> add(T... var1) {
-         Stream.of(var1).map(this.keyExtractor).forEach(this::add);
-         return this;
-      }
-
-      // $FF: synthetic method
-      public TagsProvider.TagAppender addTag(final TagKey var1) {
-         return this.addTag(var1);
-      }
+      return TagAppender.forBuilder(var2).map(this.keyExtractor);
    }
 }

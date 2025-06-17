@@ -1,8 +1,5 @@
 package com.mojang.blaze3d.systems;
 
-import com.mojang.blaze3d.DontObfuscate;
-
-@DontObfuscate
 public class ScissorState {
    private boolean enabled;
    private int x;
@@ -26,31 +23,23 @@ public class ScissorState {
       this.enabled = false;
    }
 
-   public boolean isEnabled() {
+   public boolean enabled() {
       return this.enabled;
    }
 
-   public int getX() {
+   public int x() {
       return this.x;
    }
 
-   public int getY() {
+   public int y() {
       return this.y;
    }
 
-   public int getWidth() {
+   public int width() {
       return this.width;
    }
 
-   public int getHeight() {
+   public int height() {
       return this.height;
-   }
-
-   public void copyFrom(ScissorState var1) {
-      this.enabled = var1.enabled;
-      this.x = var1.x;
-      this.y = var1.y;
-      this.width = var1.width;
-      this.height = var1.height;
    }
 }

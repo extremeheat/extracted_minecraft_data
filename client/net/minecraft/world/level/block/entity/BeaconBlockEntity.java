@@ -19,7 +19,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
@@ -49,6 +48,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 
 public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Nameable, BeaconBeamOwner {
@@ -273,7 +274,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       return this.saveCustomOnly(var1);
    }
 
-   private static void storeEffect(CompoundTag var0, String var1, @Nullable Holder<MobEffect> var2) {
+   private static void storeEffect(ValueOutput var0, String var1, @Nullable Holder<MobEffect> var2) {
       if (var2 != null) {
          var2.unwrapKey().ifPresent((var2x) -> var0.putString(var1, var2x.location().toString()));
       }
@@ -281,28 +282,28 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    @Nullable
-   private static Holder<MobEffect> loadEffect(CompoundTag var0, String var1) {
+   private static Holder<MobEffect> loadEffect(ValueInput var0, String var1) {
       Optional var10000 = var0.read(var1, BuiltInRegistries.MOB_EFFECT.holderByNameCodec());
       Set var10001 = VALID_EFFECTS;
       Objects.requireNonNull(var10001);
       return (Holder)var10000.filter(var10001::contains).orElse((Object)null);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   protected void loadAdditional(ValueInput var1) {
+      super.loadAdditional(var1);
       this.primaryPower = loadEffect(var1, "primary_effect");
       this.secondaryPower = loadEffect(var1, "secondary_effect");
-      this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
-      this.lockKey = LockCode.fromTag(var1, var2);
+      this.name = parseCustomNameSafe(var1, "CustomName");
+      this.lockKey = LockCode.fromTag(var1);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.saveAdditional(var1, var2);
+   protected void saveAdditional(ValueOutput var1) {
+      super.saveAdditional(var1);
       storeEffect(var1, "primary_effect", this.primaryPower);
       storeEffect(var1, "secondary_effect", this.secondaryPower);
       var1.putInt("Levels", this.levels);
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
-      this.lockKey.addToTag(var1, var2);
+      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
+      this.lockKey.addToTag(var1);
    }
 
    public void setCustomName(@Nullable Component var1) {
@@ -342,9 +343,9 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    }
 
-   public void removeComponentsFromTag(CompoundTag var1) {
-      var1.remove("CustomName");
-      var1.remove("lock");
+   public void removeComponentsFromTag(ValueOutput var1) {
+      var1.discard("CustomName");
+      var1.discard("lock");
    }
 
    public void setLevel(Level var1) {

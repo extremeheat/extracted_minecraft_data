@@ -1,17 +1,16 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Fireball extends AbstractHurtingProjectile implements ItemSupplier {
@@ -50,16 +49,14 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
       var1.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("Item", ItemStack.CODEC, var2, this.getItem());
+      var1.store("Item", ItemStack.CODEC, this.getItem());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(this.getDefaultItem()));
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {

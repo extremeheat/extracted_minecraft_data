@@ -143,154 +143,15 @@ public class PoweredRailBlock extends BaseRailBlock {
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch (var2) {
-         case CLOCKWISE_180:
-            switch ((RailShape)var1.getValue(SHAPE)) {
-               case ASCENDING_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
-               }
-               case ASCENDING_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_EAST);
-               }
-               case ASCENDING_NORTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
-               }
-               case ASCENDING_SOUTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_NORTH);
-               }
-               case SOUTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_WEST);
-               }
-               case SOUTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_EAST);
-               }
-               case NORTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_EAST);
-               }
-               case NORTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_WEST);
-               }
-            }
-         case COUNTERCLOCKWISE_90:
-            switch ((RailShape)var1.getValue(SHAPE)) {
-               case NORTH_SOUTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.EAST_WEST);
-               }
-               case EAST_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_SOUTH);
-               }
-               case ASCENDING_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_NORTH);
-               }
-               case ASCENDING_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
-               }
-               case ASCENDING_NORTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
-               }
-               case ASCENDING_SOUTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_EAST);
-               }
-               case SOUTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_EAST);
-               }
-               case SOUTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_EAST);
-               }
-               case NORTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_WEST);
-               }
-               case NORTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_WEST);
-               }
-            }
-         case CLOCKWISE_90:
-            switch ((RailShape)var1.getValue(SHAPE)) {
-               case NORTH_SOUTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.EAST_WEST);
-               }
-               case EAST_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_SOUTH);
-               }
-               case ASCENDING_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
-               }
-               case ASCENDING_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_NORTH);
-               }
-               case ASCENDING_NORTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_EAST);
-               }
-               case ASCENDING_SOUTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
-               }
-               case SOUTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_WEST);
-               }
-               case SOUTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_WEST);
-               }
-               case NORTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_EAST);
-               }
-               case NORTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_EAST);
-               }
-            }
-         default:
-            return var1;
-      }
+      RailShape var3 = (RailShape)var1.getValue(SHAPE);
+      RailShape var4 = this.rotate(var3, var2);
+      return (BlockState)var1.setValue(SHAPE, var4);
    }
 
    protected BlockState mirror(BlockState var1, Mirror var2) {
       RailShape var3 = (RailShape)var1.getValue(SHAPE);
-      switch (var2) {
-         case LEFT_RIGHT:
-            switch (var3) {
-               case ASCENDING_NORTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
-               }
-               case ASCENDING_SOUTH -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_NORTH);
-               }
-               case SOUTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_EAST);
-               }
-               case SOUTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_WEST);
-               }
-               case NORTH_WEST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_WEST);
-               }
-               case NORTH_EAST -> {
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_EAST);
-               }
-               default -> {
-                  return super.mirror(var1, var2);
-               }
-            }
-         case FRONT_BACK:
-            switch (var3) {
-               case ASCENDING_EAST:
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
-               case ASCENDING_WEST:
-                  return (BlockState)var1.setValue(SHAPE, RailShape.ASCENDING_EAST);
-               case ASCENDING_NORTH:
-               case ASCENDING_SOUTH:
-               default:
-                  break;
-               case SOUTH_EAST:
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_WEST);
-               case SOUTH_WEST:
-                  return (BlockState)var1.setValue(SHAPE, RailShape.SOUTH_EAST);
-               case NORTH_WEST:
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_EAST);
-               case NORTH_EAST:
-                  return (BlockState)var1.setValue(SHAPE, RailShape.NORTH_WEST);
-            }
-      }
-
-      return super.mirror(var1, var2);
+      RailShape var4 = this.mirror(var3, var2);
+      return (BlockState)var1.setValue(SHAPE, var4);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

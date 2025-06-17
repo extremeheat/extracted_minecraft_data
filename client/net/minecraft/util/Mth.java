@@ -275,6 +275,14 @@ public class Mth {
       return var1 + 1;
    }
 
+   public static int smallestSquareSide(int var0) {
+      if (var0 < 0) {
+         throw new IllegalArgumentException("itemCount must be greater than or equal to zero");
+      } else {
+         return ceil(Math.sqrt((double)var0));
+      }
+   }
+
    public static boolean isPowerOfTwo(int var0) {
       return var0 != 0 && (var0 & var0 - 1) == 0;
    }

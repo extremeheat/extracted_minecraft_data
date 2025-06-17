@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -45,7 +46,7 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       super.validate(var1);
 
       for(int var2 = 0; var2 < this.functions.size(); ++var2) {
-         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(".functions[" + var2 + "]"));
+         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("functions", var2)));
       }
 
    }

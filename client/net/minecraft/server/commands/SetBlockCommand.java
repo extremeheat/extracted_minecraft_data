@@ -16,6 +16,7 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
 public class SetBlockCommand {
@@ -27,7 +28,7 @@ public class SetBlockCommand {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       Predicate var2 = (var0x) -> var0x.getLevel().isEmptyBlock(var0x.getPos());
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires((var0x) -> var0x.hasPermission(2))).then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("block", BlockStateArgument.block(var1)).executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false))).then(Commands.literal("destroy").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.DESTROY, (Predicate)null, false)))).then(Commands.literal("keep").executes((var1x) -> setBlock((CommandSourceStack)var1x.getSource(), BlockPosArgument.getLoadedBlockPos(var1x, "pos"), BlockStateArgument.getBlock(var1x, "block"), SetBlockCommand.Mode.REPLACE, var2, false)))).then(Commands.literal("replace").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false)))).then(Commands.literal("strict").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, true))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires(Commands.hasPermission(2))).then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("block", BlockStateArgument.block(var1)).executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false))).then(Commands.literal("destroy").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.DESTROY, (Predicate)null, false)))).then(Commands.literal("keep").executes((var1x) -> setBlock((CommandSourceStack)var1x.getSource(), BlockPosArgument.getLoadedBlockPos(var1x, "pos"), BlockStateArgument.getBlock(var1x, "block"), SetBlockCommand.Mode.REPLACE, var2, false)))).then(Commands.literal("replace").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false)))).then(Commands.literal("strict").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, true))))));
    }
 
    private static int setBlock(CommandSourceStack var0, BlockPos var1, BlockInput var2, Mode var3, @Nullable Predicate<BlockInWorld> var4, boolean var5) throws CommandSyntaxException {
@@ -45,11 +46,12 @@ public class SetBlockCommand {
             var7 = true;
          }
 
+         BlockState var8 = var6.getBlockState(var1);
          if (var7 && !var2.place(var6, var1, 2 | (var5 ? 816 : 256))) {
             throw ERROR_FAILED.create();
          } else {
             if (!var5) {
-               var6.updateNeighborsAt(var1, var2.getState().getBlock());
+               var6.updateNeighboursOnBlockSet(var1, var8);
             }
 
             var0.sendSuccess(() -> Component.translatable("commands.setblock.success", var1.getX(), var1.getY(), var1.getZ()), true);

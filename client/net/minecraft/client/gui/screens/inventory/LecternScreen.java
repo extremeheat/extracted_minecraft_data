@@ -93,7 +93,7 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
       this.setPage(this.menu.getPage());
    }
 
-   protected void closeScreen() {
+   protected void closeContainerOnServer() {
       this.minecraft.player.closeContainer();
    }
 

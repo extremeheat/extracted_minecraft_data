@@ -51,7 +51,7 @@ public class HashCache {
 
    public HashCache(Path var1, Collection<String> var2, WorldVersion var3) throws IOException {
       super();
-      this.versionId = var3.getName();
+      this.versionId = var3.name();
       this.rootDir = var1;
       this.cacheDir = var1.resolve(".cache");
       Files.createDirectories(this.cacheDir);

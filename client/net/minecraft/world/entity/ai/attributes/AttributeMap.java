@@ -3,14 +3,14 @@ package net.minecraft.world.entity.ai.attributes;
 import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 
 public class AttributeMap {
@@ -137,20 +137,22 @@ public class AttributeMap {
       }
    }
 
-   public ListTag save() {
-      ListTag var1 = new ListTag();
+   public List<AttributeInstance.Packed> pack() {
+      ArrayList var1 = new ArrayList(this.attributes.values().size());
 
       for(AttributeInstance var3 : this.attributes.values()) {
-         var1.add(var3.save());
+         var1.add(var3.pack());
       }
 
       return var1;
    }
 
-   public void load(ListTag var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompoundOrEmpty(var2);
-         var3.read("id", AttributeInstance.TYPE_CODEC).map(this::getInstance).ifPresent((var1x) -> var1x.load(var3));
+   public void apply(List<AttributeInstance.Packed> var1) {
+      for(AttributeInstance.Packed var3 : var1) {
+         AttributeInstance var4 = this.getInstance(var3.attribute());
+         if (var4 != null) {
+            var4.apply(var3);
+         }
       }
 
    }

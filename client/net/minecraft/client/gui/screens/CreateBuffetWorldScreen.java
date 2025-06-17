@@ -111,7 +111,7 @@ public class CreateBuffetWorldScreen extends Screen {
          }
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.drawString(CreateBuffetWorldScreen.this.font, this.name, var4 + 5, var3 + 2, 16777215);
+            var1.drawString(CreateBuffetWorldScreen.this.font, (Component)this.name, var4 + 5, var3 + 2, -1);
          }
 
          public boolean mouseClicked(double var1, double var3, int var5) {

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.vehicle;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -23,6 +22,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public abstract class AbstractChestBoat extends AbstractBoat implements HasCustomInventoryScreen, ContainerEntity {
@@ -45,14 +46,14 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       return 1;
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1, this.registryAccess());
+      this.addChestVehicleSaveData(var1);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1, this.registryAccess());
+      this.readChestVehicleSaveData(var1);
    }
 
    public void destroy(ServerLevel var1, DamageSource var2) {
@@ -69,27 +70,23 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (!var1.isSecondaryUseActive()) {
-         InteractionResult var3 = super.interact(var1, var2);
-         if (var3 != InteractionResult.PASS) {
-            return var3;
-         }
-      }
-
-      if (this.canAddPassenger(var1) && !var1.isSecondaryUseActive()) {
+      InteractionResult var3 = super.interact(var1, var2);
+      if (var3 != InteractionResult.PASS) {
+         return var3;
+      } else if (this.canAddPassenger(var1) && !var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
       } else {
-         InteractionResult var6 = this.interactWithContainerVehicle(var1);
-         if (var6.consumesAction()) {
-            Level var5 = var1.level();
-            if (var5 instanceof ServerLevel) {
-               ServerLevel var4 = (ServerLevel)var5;
+         InteractionResult var4 = this.interactWithContainerVehicle(var1);
+         if (var4.consumesAction()) {
+            Level var6 = var1.level();
+            if (var6 instanceof ServerLevel) {
+               ServerLevel var5 = (ServerLevel)var6;
                this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-               PiglinAi.angerNearbyPiglins(var4, var1, true);
+               PiglinAi.angerNearbyPiglins(var5, var1, true);
             }
          }
 
-         return var6;
+         return var4;
       }
    }
 

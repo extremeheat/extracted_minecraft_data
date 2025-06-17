@@ -174,7 +174,7 @@ public class GameTestRunner {
    }
 
    public interface StructureSpawner {
-      StructureSpawner IN_PLACE = (var0) -> Optional.of(var0.prepareTestStructure().startExecution(1));
+      StructureSpawner IN_PLACE = (var0) -> Optional.ofNullable(var0.prepareTestStructure()).map((var0x) -> var0x.startExecution(1));
       StructureSpawner NOT_SET = (var0) -> Optional.empty();
 
       Optional<GameTestInfo> spawnStructure(GameTestInfo var1);

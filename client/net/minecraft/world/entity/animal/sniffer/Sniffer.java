@@ -40,6 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -133,6 +134,14 @@ public class Sniffer extends Animal {
 
    private Vec3 getHeadPosition() {
       return this.position().add(this.getForward().scale(2.25));
+   }
+
+   public boolean supportQuadLeash() {
+      return true;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, -0.01, 0.63, 0.38, 1.15);
    }
 
    private State getState() {

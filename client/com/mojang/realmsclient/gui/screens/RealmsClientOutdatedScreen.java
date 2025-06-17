@@ -12,7 +12,7 @@ import net.minecraft.realms.RealmsScreen;
 
 public class RealmsClientOutdatedScreen extends RealmsScreen {
    private static final Component INCOMPATIBLE_TITLE = Component.translatable("mco.client.incompatible.title").withColor(-65536);
-   private static final Component INCOMPATIBLE_CLIENT_VERSION = Component.literal(SharedConstants.getCurrentVersion().getName()).withColor(-65536);
+   private static final Component INCOMPATIBLE_CLIENT_VERSION = Component.literal(SharedConstants.getCurrentVersion().name()).withColor(-65536);
    private static final Component UNSUPPORTED_SNAPSHOT_VERSION;
    private static final Component OUTDATED_STABLE_VERSION;
    private final Screen lastScreen;
@@ -42,7 +42,7 @@ public class RealmsClientOutdatedScreen extends RealmsScreen {
    }
 
    private Component getErrorMessage() {
-      return SharedConstants.getCurrentVersion().isStable() ? OUTDATED_STABLE_VERSION : UNSUPPORTED_SNAPSHOT_VERSION;
+      return SharedConstants.getCurrentVersion().stable() ? OUTDATED_STABLE_VERSION : UNSUPPORTED_SNAPSHOT_VERSION;
    }
 
    static {

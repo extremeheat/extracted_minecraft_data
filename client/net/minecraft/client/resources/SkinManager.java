@@ -79,8 +79,13 @@ public class SkinManager {
    }
 
    public PlayerSkin getInsecureSkin(GameProfile var1) {
-      PlayerSkin var2 = (PlayerSkin)((Optional)this.getOrLoad(var1).getNow(Optional.empty())).orElse((Object)null);
+      PlayerSkin var2 = this.getInsecureSkin(var1, (PlayerSkin)null);
       return var2 != null ? var2 : DefaultPlayerSkin.get(var1);
+   }
+
+   @Nullable
+   public PlayerSkin getInsecureSkin(GameProfile var1, @Nullable PlayerSkin var2) {
+      return (PlayerSkin)((Optional)this.getOrLoad(var1).getNow(Optional.empty())).orElse(var2);
    }
 
    public CompletableFuture<Optional<PlayerSkin>> getOrLoad(GameProfile var1) {

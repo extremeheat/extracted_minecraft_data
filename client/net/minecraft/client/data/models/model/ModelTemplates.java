@@ -132,6 +132,7 @@ public class ModelTemplates {
    public static final ModelTemplate PISTON_HEAD_SHORT;
    public static final ModelTemplate SEAGRASS;
    public static final ModelTemplate TURTLE_EGG;
+   public static final ModelTemplate DRIED_GHAST;
    public static final ModelTemplate TWO_TURTLE_EGGS;
    public static final ModelTemplate THREE_TURTLE_EGGS;
    public static final ModelTemplate FOUR_TURTLE_EGGS;
@@ -317,6 +318,7 @@ public class ModelTemplates {
       PISTON_HEAD_SHORT = create("template_piston_head_short", TextureSlot.PLATFORM, TextureSlot.SIDE, TextureSlot.UNSTICKY);
       SEAGRASS = create("template_seagrass", TextureSlot.TEXTURE);
       TURTLE_EGG = create("template_turtle_egg", TextureSlot.ALL);
+      DRIED_GHAST = create("dried_ghast", TextureSlot.PARTICLE, TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.NORTH, TextureSlot.SOUTH, TextureSlot.EAST, TextureSlot.WEST, TextureSlot.TENTACLES);
       TWO_TURTLE_EGGS = create("template_two_turtle_eggs", TextureSlot.ALL);
       THREE_TURTLE_EGGS = create("template_three_turtle_eggs", TextureSlot.ALL);
       FOUR_TURTLE_EGGS = create("template_four_turtle_eggs", TextureSlot.ALL);

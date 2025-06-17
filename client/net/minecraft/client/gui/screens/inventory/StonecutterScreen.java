@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -50,10 +50,10 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(RenderType::guiTextured, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int var7 = (int)(41.0F * this.scrollOffs);
       ResourceLocation var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var5 + 119, var6 + 15 + var7, 12, 15);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var5 + 119, var6 + 15 + var7, 12, 15);
       int var9 = this.leftPos + 52;
       int var10 = this.topPos + 14;
       int var11 = this.startIndex + 12;
@@ -76,7 +76,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
                ContextMap var12 = SlotDisplayContext.fromLevel(this.minecraft.level);
                SlotDisplay var13 = ((SelectableRecipe.SingleInputEntry)var7.entries().get(var8)).recipe().optionDisplay();
-               var1.renderTooltip(this.font, var13.resolveForFirstStack(var12), var2, var3);
+               var1.setTooltipForNextFrame(this.font, var13.resolveForFirstStack(var12), var2, var3);
             }
          }
       }
@@ -98,7 +98,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             var12 = RECIPE_SPRITE;
          }
 
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var9, var11 - 1, 16, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var9, var11 - 1, 16, 18);
       }
 
    }

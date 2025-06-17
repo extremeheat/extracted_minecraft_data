@@ -20,6 +20,7 @@ public class CommonComponents {
    public static final Component GUI_OPEN_IN_BROWSER = Component.translatable("chat.link.open");
    public static final Component GUI_COPY_LINK_TO_CLIPBOARD = Component.translatable("gui.copy_link_to_clipboard");
    public static final Component GUI_DISCONNECT = Component.translatable("menu.disconnect");
+   public static final Component GUI_RETURN_TO_MENU = Component.translatable("menu.returnToMenu");
    public static final Component TRANSFER_CONNECT_FAILED = Component.translatable("connect.failed.transfer");
    public static final Component CONNECT_FAILED = Component.translatable("connect.failed");
    public static final Component NEW_LINE = Component.literal("\n");
@@ -49,6 +50,10 @@ public class CommonComponents {
 
    public static Component optionStatus(boolean var0) {
       return var0 ? OPTION_ON : OPTION_OFF;
+   }
+
+   public static Component disconnectButtonLabel(boolean var0) {
+      return var0 ? GUI_RETURN_TO_MENU : GUI_DISCONNECT;
    }
 
    public static MutableComponent optionStatus(Component var0, boolean var1) {

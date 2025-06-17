@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.Container;
@@ -130,11 +131,11 @@ public class LootTable {
 
    public void validate(ValidationContext var1) {
       for(int var2 = 0; var2 < this.pools.size(); ++var2) {
-         ((LootPool)this.pools.get(var2)).validate(var1.forChild(".pools[" + var2 + "]"));
+         ((LootPool)this.pools.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("pools", var2)));
       }
 
       for(int var3 = 0; var3 < this.functions.size(); ++var3) {
-         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(".functions[" + var3 + "]"));
+         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("functions", var3)));
       }
 
    }

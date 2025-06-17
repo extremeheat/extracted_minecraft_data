@@ -136,14 +136,6 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
 
    public static int getDarkColor(SignText var0) {
       int var1 = var0.getColor().getTextColor();
-      if (var1 == DyeColor.BLACK.getTextColor() && var0.hasGlowingText()) {
-         return -988212;
-      } else {
-         double var2 = 0.4;
-         int var4 = (int)((double)ARGB.red(var1) * 0.4);
-         int var5 = (int)((double)ARGB.green(var1) * 0.4);
-         int var6 = (int)((double)ARGB.blue(var1) * 0.4);
-         return ARGB.color(0, var4, var5, var6);
-      }
+      return var1 == DyeColor.BLACK.getTextColor() && var0.hasGlowingText() ? -988212 : ARGB.scaleRGB(var1, 0.4F);
    }
 }

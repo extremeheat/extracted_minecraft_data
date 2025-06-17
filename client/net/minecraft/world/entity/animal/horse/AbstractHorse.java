@@ -10,7 +10,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -36,6 +35,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.PlayerRideableJumping;
@@ -70,6 +70,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -115,7 +117,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private int standCounter;
    public int tailCounter;
    public int sprintCounter;
-   protected boolean isJumping;
    protected SimpleContainer inventory;
    protected int temper = 0;
    protected float playerJumpPendingScale;
@@ -188,24 +189,24 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.owner = var1 != null ? new EntityReference(var1) : null;
    }
 
-   public boolean isJumping() {
-      return this.isJumping;
-   }
-
    public void setTamed(boolean var1) {
       this.setFlag(2, var1);
    }
 
-   public void setIsJumping(boolean var1) {
-      this.isJumping = var1;
-   }
-
-   public boolean handleLeashAtDistance(Entity var1, float var2) {
-      if (var2 > 6.0F && this.isEating()) {
+   public void onElasticLeashPull() {
+      super.onElasticLeashPull();
+      if (this.isEating()) {
          this.setEating(false);
       }
 
+   }
+
+   public boolean supportQuadLeash() {
       return true;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.04, 0.52, 0.23, 0.87);
    }
 
    public boolean isEating() {
@@ -427,6 +428,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          var4 = 3.0F;
          var5 = 60;
          var6 = 3;
+      } else if (var2.is(Items.CARROT)) {
+         var4 = 3.0F;
+         var5 = 60;
+         var6 = 3;
       } else if (var2.is(Items.GOLDEN_CARROT)) {
          var4 = 4.0F;
          var5 = 60;
@@ -473,7 +478,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    protected void doPlayerRide(Player var1) {
       this.setEating(false);
-      this.setStanding(false);
+      this.clearStanding();
       if (!this.level().isClientSide) {
          var1.setYRot(this.getYRot());
          var1.setXRot(this.getXRot());
@@ -559,9 +564,8 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          this.setFlag(64, false);
       }
 
-      if (this.isEffectiveAi() && this.standCounter > 0 && ++this.standCounter > 20) {
-         this.standCounter = 0;
-         this.setStanding(false);
+      if (this.standCounter > 0 && --this.standCounter <= 0) {
+         this.clearStanding();
       }
 
       if (this.tailCounter > 0 && ++this.tailCounter > 8) {
@@ -658,12 +662,15 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.setFlag(16, var1);
    }
 
-   public void setStanding(boolean var1) {
-      if (var1) {
-         this.setEating(false);
-      }
+   public void setStanding(int var1) {
+      this.setEating(false);
+      this.setFlag(32, true);
+      this.standCounter = var1;
+   }
 
-      this.setFlag(32, var1);
+   public void clearStanding() {
+      this.setFlag(32, false);
+      this.standCounter = 0;
    }
 
    @Nullable
@@ -672,15 +679,14 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    public void standIfPossible() {
-      if (this.canPerformRearing() && this.isEffectiveAi()) {
-         this.standCounter = 1;
-         this.setStanding(true);
+      if (this.canPerformRearing() && (this.isEffectiveAi() || !this.level().isClientSide)) {
+         this.setStanding(20);
       }
 
    }
 
    public void makeMad() {
-      if (!this.isStanding()) {
+      if (!this.isStanding() && !this.level().isClientSide) {
          this.standIfPossible();
          this.makeSound(this.getAngrySound());
       }
@@ -709,7 +715,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          }
 
          if (this.onGround()) {
-            this.setIsJumping(false);
             if (this.playerJumpPendingScale > 0.0F && !this.isJumping()) {
                this.executeRidersJump(this.playerJumpPendingScale, var2);
             }
@@ -746,7 +751,6 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       double var3 = (double)this.getJumpPower(var1);
       Vec3 var5 = this.getDeltaMovement();
       this.setDeltaMovement(var5.x, var3, var5.z);
-      this.setIsJumping(true);
       this.hasImpulse = true;
       if (var2.z > 0.0) {
          float var6 = Mth.sin(this.getYRot() * 0.017453292F);
@@ -760,19 +764,16 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.playSound(SoundEvents.HORSE_JUMP, 0.4F, 1.0F);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("EatingHaystack", this.isEating());
       var1.putBoolean("Bred", this.isBred());
       var1.putInt("Temper", this.getTemper());
       var1.putBoolean("Tame", this.isTamed());
-      if (this.owner != null) {
-         this.owner.store(var1, "Owner");
-      }
-
+      EntityReference.store(this.owner, var1, "Owner");
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setEating(var1.getBooleanOr("EatingHaystack", false));
       this.setBred(var1.getBooleanOr("Bred", false));

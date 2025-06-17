@@ -1,13 +1,10 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.core.BlockPos;
+import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -18,14 +15,17 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeOfEnder extends Entity implements ItemSupplier {
    private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
+   private static final float TOO_FAR_SIGNAL_HEIGHT = 8.0F;
+   private static final float TOO_FAR_DISTANCE = 12.0F;
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
-   private double tx;
-   private double ty;
-   private double tz;
+   @Nullable
+   private Vec3 target;
    private int life;
    private boolean surviveAfterDeath;
 
@@ -69,76 +69,33 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       }
    }
 
-   public void signalTo(BlockPos var1) {
-      double var2 = (double)var1.getX();
-      int var4 = var1.getY();
-      double var5 = (double)var1.getZ();
-      double var7 = var2 - this.getX();
-      double var9 = var5 - this.getZ();
-      double var11 = Math.sqrt(var7 * var7 + var9 * var9);
-      if (var11 > 12.0) {
-         this.tx = this.getX() + var7 / var11 * 12.0;
-         this.tz = this.getZ() + var9 / var11 * 12.0;
-         this.ty = this.getY() + 8.0;
+   public void signalTo(Vec3 var1) {
+      Vec3 var2 = var1.subtract(this.position());
+      double var3 = var2.horizontalDistance();
+      if (var3 > 12.0) {
+         this.target = this.position().add(var2.x / var3 * 12.0, 8.0, var2.z / var3 * 12.0);
       } else {
-         this.tx = var2;
-         this.ty = (double)var4;
-         this.tz = var5;
+         this.target = var1;
       }
 
       this.life = 0;
       this.surviveAfterDeath = this.random.nextInt(5) > 0;
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      this.setDeltaMovement(var1, var3, var5);
-      if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
-         double var7 = Math.sqrt(var1 * var1 + var5 * var5);
-         this.setYRot((float)(Mth.atan2(var1, var5) * 57.2957763671875));
-         this.setXRot((float)(Mth.atan2(var3, var7) * 57.2957763671875));
-         this.yRotO = this.getYRot();
-         this.xRotO = this.getXRot();
-      }
-
-   }
-
    public void tick() {
       super.tick();
-      Vec3 var1 = this.getDeltaMovement();
-      double var2 = this.getX() + var1.x;
-      double var4 = this.getY() + var1.y;
-      double var6 = this.getZ() + var1.z;
-      double var8 = var1.horizontalDistance();
-      this.setXRot(Projectile.lerpRotation(this.xRotO, (float)(Mth.atan2(var1.y, var8) * 57.2957763671875)));
-      this.setYRot(Projectile.lerpRotation(this.yRotO, (float)(Mth.atan2(var1.x, var1.z) * 57.2957763671875)));
-      if (!this.level().isClientSide) {
-         double var10 = this.tx - var2;
-         double var12 = this.tz - var6;
-         float var14 = (float)Math.sqrt(var10 * var10 + var12 * var12);
-         float var15 = (float)Mth.atan2(var12, var10);
-         double var16 = Mth.lerp(0.0025, var8, (double)var14);
-         double var18 = var1.y;
-         if (var14 < 1.0F) {
-            var16 *= 0.8;
-            var18 *= 0.8;
-         }
-
-         int var20 = this.getY() < this.ty ? 1 : -1;
-         var1 = new Vec3(Math.cos((double)var15) * var16, var18 + ((double)var20 - var18) * 0.014999999664723873, Math.sin((double)var15) * var16);
-         this.setDeltaMovement(var1);
+      Vec3 var1 = this.position().add(this.getDeltaMovement());
+      if (!this.level().isClientSide() && this.target != null) {
+         this.setDeltaMovement(updateDeltaMovement(this.getDeltaMovement(), var1, this.target));
       }
 
-      float var21 = 0.25F;
-      if (this.isInWater()) {
-         for(int var11 = 0; var11 < 4; ++var11) {
-            this.level().addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25, var4 - var1.y * 0.25, var6 - var1.z * 0.25, var1.x, var1.y, var1.z);
-         }
-      } else {
-         this.level().addParticle(ParticleTypes.PORTAL, var2 - var1.x * 0.25 + this.random.nextDouble() * 0.6 - 0.3, var4 - var1.y * 0.25 - 0.5, var6 - var1.z * 0.25 + this.random.nextDouble() * 0.6 - 0.3, var1.x, var1.y, var1.z);
+      if (this.level().isClientSide()) {
+         Vec3 var2 = var1.subtract(this.getDeltaMovement().scale(0.25));
+         this.spawnParticles(var2, this.getDeltaMovement());
       }
 
-      if (!this.level().isClientSide) {
-         this.setPos(var2, var4, var6);
+      this.setPos(var1);
+      if (!this.level().isClientSide()) {
          ++this.life;
          if (this.life > 80 && !this.level().isClientSide) {
             this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
@@ -149,20 +106,41 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
                this.level().levelEvent(2003, this.blockPosition(), 0);
             }
          }
-      } else {
-         this.setPos(var2, var4, var6);
       }
 
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      var1.store("Item", ItemStack.CODEC, var2, this.getItem());
+   private void spawnParticles(Vec3 var1, Vec3 var2) {
+      if (this.isInWater()) {
+         for(int var3 = 0; var3 < 4; ++var3) {
+            this.level().addParticle(ParticleTypes.BUBBLE, var1.x, var1.y, var1.z, var2.x, var2.y, var2.z);
+         }
+      } else {
+         this.level().addParticle(ParticleTypes.PORTAL, var1.x + this.random.nextDouble() * 0.6 - 0.3, var1.y - 0.5, var1.z + this.random.nextDouble() * 0.6 - 0.3, var2.x, var2.y, var2.z);
+      }
+
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC, var2).orElse(this.getDefaultItem()));
+   private static Vec3 updateDeltaMovement(Vec3 var0, Vec3 var1, Vec3 var2) {
+      Vec3 var3 = new Vec3(var2.x - var1.x, 0.0, var2.z - var1.z);
+      double var4 = var3.length();
+      double var6 = Mth.lerp(0.0025, var0.horizontalDistance(), var4);
+      double var8 = var0.y;
+      if (var4 < 1.0) {
+         var6 *= 0.8;
+         var8 *= 0.8;
+      }
+
+      double var10 = var1.y - var0.y < var2.y ? 1.0 : -1.0;
+      return var3.scale(var6 / var4).add(0.0, var8 + (var10 - var8) * 0.015, 0.0);
+   }
+
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      var1.store("Item", ItemStack.CODEC, this.getItem());
+   }
+
+   protected void readAdditionalSaveData(ValueInput var1) {
+      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {

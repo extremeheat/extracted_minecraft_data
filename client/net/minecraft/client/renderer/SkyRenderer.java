@@ -1,12 +1,11 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -24,12 +23,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.TriState;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class SkyRenderer implements AutoCloseable {
    private static final ResourceLocation SUN_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/sun.png");
@@ -52,19 +51,19 @@ public class SkyRenderer implements AutoCloseable {
       this.starBuffer = this.buildStars();
       this.endSkyBuffer = buildEndSky();
 
-      try (ByteBufferBuilder var1 = new ByteBufferBuilder(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
+      try (ByteBufferBuilder var1 = ByteBufferBuilder.exactlySized(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
          BufferBuilder var2 = new BufferBuilder(var1, VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
          this.buildSkyDisc(var2, 16.0F);
 
          try (MeshData var3 = var2.buildOrThrow()) {
-            this.topSkyBuffer = RenderSystem.getDevice().createBuffer(() -> "Top sky vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var3.vertexBuffer());
+            this.topSkyBuffer = RenderSystem.getDevice().createBuffer(() -> "Top sky vertex buffer", 32, var3.vertexBuffer());
          }
 
          var2 = new BufferBuilder(var1, VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
          this.buildSkyDisc(var2, -16.0F);
 
          try (MeshData var13 = var2.buildOrThrow()) {
-            this.bottomSkyBuffer = RenderSystem.getDevice().createBuffer(() -> "Bottom sky vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var13.vertexBuffer());
+            this.bottomSkyBuffer = RenderSystem.getDevice().createBuffer(() -> "Bottom sky vertex buffer", 32, var13.vertexBuffer());
          }
       }
 
@@ -75,7 +74,7 @@ public class SkyRenderer implements AutoCloseable {
       float var2 = 100.0F;
 
       GpuBuffer var19;
-      try (ByteBufferBuilder var3 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
+      try (ByteBufferBuilder var3 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 1500 * 4)) {
          BufferBuilder var4 = new BufferBuilder(var3, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
          for(int var5 = 0; var5 < 1500; ++var5) {
@@ -97,7 +96,7 @@ public class SkyRenderer implements AutoCloseable {
 
          try (MeshData var18 = var4.buildOrThrow()) {
             this.starIndexCount = var18.drawState().indexCount();
-            var19 = RenderSystem.getDevice().createBuffer(() -> "Stars vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var18.vertexBuffer());
+            var19 = RenderSystem.getDevice().createBuffer(() -> "Stars vertex buffer", 40, var18.vertexBuffer());
          }
       }
 
@@ -115,38 +114,40 @@ public class SkyRenderer implements AutoCloseable {
    }
 
    public void renderSkyDisc(float var1, float var2, float var3) {
-      RenderSystem.setShaderColor(var1, var2, var3, 1.0F);
-      GpuTexture var4 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
-      GpuTexture var5 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
+      GpuBufferSlice var4 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(var1, var2, var3, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+      GpuTextureView var5 = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
+      GpuTextureView var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
 
-      try (RenderPass var6 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var4, OptionalInt.empty(), var5, OptionalDouble.empty())) {
-         var6.setPipeline(RenderPipelines.SKY);
-         var6.setVertexBuffer(0, this.topSkyBuffer);
-         var6.draw(0, 10);
+      try (RenderPass var7 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky disc", var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+         var7.setPipeline(RenderPipelines.SKY);
+         RenderSystem.bindDefaultUniforms(var7);
+         var7.setUniform("DynamicTransforms", var4);
+         var7.setVertexBuffer(0, this.topSkyBuffer);
+         var7.draw(0, 10);
       }
 
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    public void renderDarkDisc() {
-      RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
       Matrix4fStack var1 = RenderSystem.getModelViewStack();
       var1.pushMatrix();
       var1.translate(0.0F, 12.0F, 0.0F);
-      GpuTexture var2 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
-      GpuTexture var3 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
+      GpuBufferSlice var2 = RenderSystem.getDynamicUniforms().writeTransform(var1, new Vector4f(0.0F, 0.0F, 0.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+      GpuTextureView var3 = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
+      GpuTextureView var4 = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
 
-      try (RenderPass var4 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var2, OptionalInt.empty(), var3, OptionalDouble.empty())) {
-         var4.setPipeline(RenderPipelines.SKY);
-         var4.setVertexBuffer(0, this.bottomSkyBuffer);
-         var4.draw(0, 10);
+      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky dark", var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
+         var5.setPipeline(RenderPipelines.SKY);
+         RenderSystem.bindDefaultUniforms(var5);
+         var5.setUniform("DynamicTransforms", var2);
+         var5.setVertexBuffer(0, this.bottomSkyBuffer);
+         var5.draw(0, 10);
       }
 
       var1.popMatrix();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
-   public void renderSunMoonAndStars(PoseStack var1, MultiBufferSource.BufferSource var2, float var3, int var4, float var5, float var6, FogParameters var7) {
+   public void renderSunMoonAndStars(PoseStack var1, MultiBufferSource.BufferSource var2, float var3, int var4, float var5, float var6) {
       var1.pushPose();
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var3 * 360.0F));
@@ -154,7 +155,7 @@ public class SkyRenderer implements AutoCloseable {
       this.renderMoon(var4, var5, var2, var1);
       var2.endBatch();
       if (var6 > 0.0F) {
-         this.renderStars(var7, var6, var1);
+         this.renderStars(var6, var1);
       }
 
       var1.popPose();
@@ -190,27 +191,26 @@ public class SkyRenderer implements AutoCloseable {
       var13.addVertex(var15, -20.0F, -100.0F, -20.0F).setUv(var10, var9).setColor(var14);
    }
 
-   private void renderStars(FogParameters var1, float var2, PoseStack var3) {
-      Matrix4fStack var4 = RenderSystem.getModelViewStack();
-      var4.pushMatrix();
-      var4.mul(var3.last().pose());
-      RenderSystem.setShaderColor(var2, var2, var2, var2);
-      RenderSystem.setShaderFog(FogParameters.NO_FOG);
-      RenderPipeline var5 = RenderPipelines.STARS;
-      GpuTexture var6 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
-      GpuTexture var7 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
-      GpuBuffer var8 = this.starIndices.getBuffer(this.starIndexCount);
+   private void renderStars(float var1, PoseStack var2) {
+      Matrix4fStack var3 = RenderSystem.getModelViewStack();
+      var3.pushMatrix();
+      var3.mul(var2.last().pose());
+      RenderPipeline var4 = RenderPipelines.STARS;
+      GpuTextureView var5 = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
+      GpuTextureView var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
+      GpuBuffer var7 = this.starIndices.getBuffer(this.starIndexCount);
+      GpuBufferSlice var8 = RenderSystem.getDynamicUniforms().writeTransform(var3, new Vector4f(var1, var1, var1, var1), new Vector3f(), new Matrix4f(), 0.0F);
 
-      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
-         var9.setPipeline(var5);
+      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Stars", var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+         var9.setPipeline(var4);
+         RenderSystem.bindDefaultUniforms(var9);
+         var9.setUniform("DynamicTransforms", var8);
          var9.setVertexBuffer(0, this.starBuffer);
-         var9.setIndexBuffer(var8, this.starIndices.type());
-         var9.drawIndexed(0, this.starIndexCount);
+         var9.setIndexBuffer(var7, this.starIndices.type());
+         var9.drawIndexed(0, 0, this.starIndexCount, 1);
       }
 
-      RenderSystem.setShaderFog(var1);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      var4.popMatrix();
+      var3.popMatrix();
    }
 
    public void renderSunriseAndSunset(PoseStack var1, MultiBufferSource.BufferSource var2, float var3, int var4) {
@@ -238,7 +238,7 @@ public class SkyRenderer implements AutoCloseable {
 
    private static GpuBuffer buildEndSky() {
       GpuBuffer var10;
-      try (ByteBufferBuilder var0 = new ByteBufferBuilder(24 * DefaultVertexFormat.POSITION_TEX_COLOR.getVertexSize())) {
+      try (ByteBufferBuilder var0 = ByteBufferBuilder.exactlySized(24 * DefaultVertexFormat.POSITION_TEX_COLOR.getVertexSize())) {
          BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
          for(int var2 = 0; var2 < 6; ++var2) {
@@ -258,7 +258,7 @@ public class SkyRenderer implements AutoCloseable {
          }
 
          try (MeshData var9 = var1.buildOrThrow()) {
-            var10 = RenderSystem.getDevice().createBuffer(() -> "End sky vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var9.vertexBuffer());
+            var10 = RenderSystem.getDevice().createBuffer(() -> "End sky vertex buffer", 40, var9.vertexBuffer());
          }
       }
 
@@ -268,18 +268,21 @@ public class SkyRenderer implements AutoCloseable {
    public void renderEndSky() {
       TextureManager var1 = Minecraft.getInstance().getTextureManager();
       AbstractTexture var2 = var1.getTexture(END_SKY_LOCATION);
-      var2.setFilter(TriState.FALSE, false);
+      var2.setUseMipmaps(false);
       RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
       GpuBuffer var4 = var3.getBuffer(36);
-      GpuTexture var5 = Minecraft.getInstance().getMainRenderTarget().getColorTexture();
-      GpuTexture var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTexture();
+      GpuTextureView var5 = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
+      GpuTextureView var6 = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
+      GpuBufferSlice var7 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
 
-      try (RenderPass var7 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
-         var7.setPipeline(RenderPipelines.END_SKY);
-         var7.bindSampler("Sampler0", var2.getTexture());
-         var7.setVertexBuffer(0, this.endSkyBuffer);
-         var7.setIndexBuffer(var4, var3.type());
-         var7.drawIndexed(0, 36);
+      try (RenderPass var8 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End sky", var5, OptionalInt.empty(), var6, OptionalDouble.empty())) {
+         var8.setPipeline(RenderPipelines.END_SKY);
+         RenderSystem.bindDefaultUniforms(var8);
+         var8.setUniform("DynamicTransforms", var7);
+         var8.bindSampler("Sampler0", var2.getTextureView());
+         var8.setVertexBuffer(0, this.endSkyBuffer);
+         var8.setIndexBuffer(var4, var3.type());
+         var8.drawIndexed(0, 0, 36, 1);
       }
 
    }

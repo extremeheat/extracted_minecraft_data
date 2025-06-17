@@ -25,7 +25,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    private static final RepeatedNarrator REPEATED_NARRATOR = new RepeatedNarrator(Duration.ofSeconds(5L));
    private final List<LongRunningTask> queuedTasks;
    private final Screen lastScreen;
-   private final LinearLayout layout = LinearLayout.vertical();
+   protected final LinearLayout layout = LinearLayout.vertical();
    private volatile Component title;
    @Nullable
    private LoadingDotsWidget loadingDotsWidget;
@@ -77,8 +77,9 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
 
    public void init() {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
+      this.layout.addChild(realmsLogo());
       this.loadingDotsWidget = new LoadingDotsWidget(this.font, this.title);
-      this.layout.addChild(this.loadingDotsWidget, (Consumer)((var0) -> var0.paddingBottom(30)));
+      this.layout.addChild(this.loadingDotsWidget, (Consumer)((var0) -> var0.paddingTop(10).paddingBottom(30)));
       this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.cancel()).build());
       this.layout.visitWidgets((var1) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);

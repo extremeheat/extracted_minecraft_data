@@ -45,22 +45,27 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
    public Optional<GameTestInfo> spawnStructure(GameTestInfo var1) {
       BlockPos var2 = new BlockPos(this.nextTestNorthWestCorner);
       var1.setTestBlockPos(var2);
-      var1.prepareTestStructure().startExecution(1);
-      AABB var3 = var1.getTestInstanceBlockEntity().getStructureBounds();
-      this.rowBounds = this.rowBounds.minmax(var3);
-      this.nextTestNorthWestCorner.move((int)var3.getXsize() + 5, 0, 0);
-      if ((float)this.nextTestNorthWestCorner.getX() > this.maxX) {
-         this.maxX = (float)this.nextTestNorthWestCorner.getX();
-      }
+      GameTestInfo var3 = var1.prepareTestStructure();
+      if (var3 == null) {
+         return Optional.empty();
+      } else {
+         var3.startExecution(1);
+         AABB var4 = var1.getTestInstanceBlockEntity().getStructureBounds();
+         this.rowBounds = this.rowBounds.minmax(var4);
+         this.nextTestNorthWestCorner.move((int)var4.getXsize() + 5, 0, 0);
+         if ((float)this.nextTestNorthWestCorner.getX() > this.maxX) {
+            this.maxX = (float)this.nextTestNorthWestCorner.getX();
+         }
 
-      if (++this.currentRowCount >= this.testsPerRow) {
-         this.currentRowCount = 0;
-         this.nextTestNorthWestCorner.move(0, 0, (int)this.rowBounds.getZsize() + 6);
-         this.nextTestNorthWestCorner.setX(this.firstTestNorthWestCorner.getX());
-         this.rowBounds = new AABB(this.nextTestNorthWestCorner);
-      }
+         if (++this.currentRowCount >= this.testsPerRow) {
+            this.currentRowCount = 0;
+            this.nextTestNorthWestCorner.move(0, 0, (int)this.rowBounds.getZsize() + 6);
+            this.nextTestNorthWestCorner.setX(this.firstTestNorthWestCorner.getX());
+            this.rowBounds = new AABB(this.nextTestNorthWestCorner);
+         }
 
-      this.testInLastBatch.add(var1);
-      return Optional.of(var1);
+         this.testInLastBatch.add(var1);
+         return Optional.of(var1);
+      }
    }
 }

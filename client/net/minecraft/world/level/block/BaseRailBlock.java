@@ -147,6 +147,183 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
 
    public abstract Property<RailShape> getShapeProperty();
 
+   protected RailShape rotate(RailShape var1, Rotation var2) {
+      RailShape var10000;
+      switch (var2) {
+         case CLOCKWISE_180:
+            switch (var1) {
+               case ASCENDING_EAST:
+                  var10000 = RailShape.ASCENDING_WEST;
+                  return var10000;
+               case ASCENDING_WEST:
+                  var10000 = RailShape.ASCENDING_EAST;
+                  return var10000;
+               case ASCENDING_NORTH:
+                  var10000 = RailShape.ASCENDING_SOUTH;
+                  return var10000;
+               case ASCENDING_SOUTH:
+                  var10000 = RailShape.ASCENDING_NORTH;
+                  return var10000;
+               case NORTH_SOUTH:
+                  var10000 = RailShape.NORTH_SOUTH;
+                  return var10000;
+               case EAST_WEST:
+                  var10000 = RailShape.EAST_WEST;
+                  return var10000;
+               case SOUTH_EAST:
+                  var10000 = RailShape.NORTH_WEST;
+                  return var10000;
+               case SOUTH_WEST:
+                  var10000 = RailShape.NORTH_EAST;
+                  return var10000;
+               case NORTH_WEST:
+                  var10000 = RailShape.SOUTH_EAST;
+                  return var10000;
+               case NORTH_EAST:
+                  var10000 = RailShape.SOUTH_WEST;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
+            }
+         case COUNTERCLOCKWISE_90:
+            switch (var1) {
+               case ASCENDING_EAST:
+                  var10000 = RailShape.ASCENDING_NORTH;
+                  return var10000;
+               case ASCENDING_WEST:
+                  var10000 = RailShape.ASCENDING_SOUTH;
+                  return var10000;
+               case ASCENDING_NORTH:
+                  var10000 = RailShape.ASCENDING_WEST;
+                  return var10000;
+               case ASCENDING_SOUTH:
+                  var10000 = RailShape.ASCENDING_EAST;
+                  return var10000;
+               case NORTH_SOUTH:
+                  var10000 = RailShape.EAST_WEST;
+                  return var10000;
+               case EAST_WEST:
+                  var10000 = RailShape.NORTH_SOUTH;
+                  return var10000;
+               case SOUTH_EAST:
+                  var10000 = RailShape.NORTH_EAST;
+                  return var10000;
+               case SOUTH_WEST:
+                  var10000 = RailShape.SOUTH_EAST;
+                  return var10000;
+               case NORTH_WEST:
+                  var10000 = RailShape.SOUTH_WEST;
+                  return var10000;
+               case NORTH_EAST:
+                  var10000 = RailShape.NORTH_WEST;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
+            }
+         case CLOCKWISE_90:
+            switch (var1) {
+               case ASCENDING_EAST:
+                  var10000 = RailShape.ASCENDING_SOUTH;
+                  return var10000;
+               case ASCENDING_WEST:
+                  var10000 = RailShape.ASCENDING_NORTH;
+                  return var10000;
+               case ASCENDING_NORTH:
+                  var10000 = RailShape.ASCENDING_EAST;
+                  return var10000;
+               case ASCENDING_SOUTH:
+                  var10000 = RailShape.ASCENDING_WEST;
+                  return var10000;
+               case NORTH_SOUTH:
+                  var10000 = RailShape.EAST_WEST;
+                  return var10000;
+               case EAST_WEST:
+                  var10000 = RailShape.NORTH_SOUTH;
+                  return var10000;
+               case SOUTH_EAST:
+                  var10000 = RailShape.SOUTH_WEST;
+                  return var10000;
+               case SOUTH_WEST:
+                  var10000 = RailShape.NORTH_WEST;
+                  return var10000;
+               case NORTH_WEST:
+                  var10000 = RailShape.NORTH_EAST;
+                  return var10000;
+               case NORTH_EAST:
+                  var10000 = RailShape.SOUTH_EAST;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
+            }
+         default:
+            var10000 = var1;
+            return var10000;
+      }
+   }
+
+   protected RailShape mirror(RailShape var1, Mirror var2) {
+      RailShape var10000;
+      switch (var2) {
+         case LEFT_RIGHT:
+            switch (var1) {
+               case ASCENDING_NORTH:
+                  var10000 = RailShape.ASCENDING_SOUTH;
+                  return var10000;
+               case ASCENDING_SOUTH:
+                  var10000 = RailShape.ASCENDING_NORTH;
+                  return var10000;
+               case NORTH_SOUTH:
+               case EAST_WEST:
+               default:
+                  var10000 = var1;
+                  return var10000;
+               case SOUTH_EAST:
+                  var10000 = RailShape.NORTH_EAST;
+                  return var10000;
+               case SOUTH_WEST:
+                  var10000 = RailShape.NORTH_WEST;
+                  return var10000;
+               case NORTH_WEST:
+                  var10000 = RailShape.SOUTH_WEST;
+                  return var10000;
+               case NORTH_EAST:
+                  var10000 = RailShape.SOUTH_EAST;
+                  return var10000;
+            }
+         case FRONT_BACK:
+            switch (var1) {
+               case ASCENDING_EAST:
+                  var10000 = RailShape.ASCENDING_WEST;
+                  return var10000;
+               case ASCENDING_WEST:
+                  var10000 = RailShape.ASCENDING_EAST;
+                  return var10000;
+               case ASCENDING_NORTH:
+               case ASCENDING_SOUTH:
+               case NORTH_SOUTH:
+               case EAST_WEST:
+               default:
+                  var10000 = var1;
+                  return var10000;
+               case SOUTH_EAST:
+                  var10000 = RailShape.SOUTH_WEST;
+                  return var10000;
+               case SOUTH_WEST:
+                  var10000 = RailShape.SOUTH_EAST;
+                  return var10000;
+               case NORTH_WEST:
+                  var10000 = RailShape.NORTH_EAST;
+                  return var10000;
+               case NORTH_EAST:
+                  var10000 = RailShape.NORTH_WEST;
+                  return var10000;
+            }
+         default:
+            var10000 = var1;
+            return var10000;
+      }
+   }
+
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
          var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));

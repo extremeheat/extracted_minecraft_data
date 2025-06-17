@@ -278,21 +278,21 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          this.disconnectListener = var5;
          this.runOnceConnected((var7) -> {
             this.setupInboundProtocol(var4, var5);
-            var7.sendPacket(new ClientIntentionPacket(SharedConstants.getCurrentVersion().getProtocolVersion(), var1, var2, var6), (PacketSendListener)null, true);
+            var7.sendPacket(new ClientIntentionPacket(SharedConstants.getCurrentVersion().protocolVersion(), var1, var2, var6), (ChannelFutureListener)null, true);
             this.setupOutboundProtocol(var3);
          });
       }
    }
 
    public void send(Packet<?> var1) {
-      this.send(var1, (PacketSendListener)null);
+      this.send(var1, (ChannelFutureListener)null);
    }
 
-   public void send(Packet<?> var1, @Nullable PacketSendListener var2) {
+   public void send(Packet<?> var1, @Nullable ChannelFutureListener var2) {
       this.send(var1, var2, true);
    }
 
-   public void send(Packet<?> var1, @Nullable PacketSendListener var2, boolean var3) {
+   public void send(Packet<?> var1, @Nullable ChannelFutureListener var2, boolean var3) {
       if (this.isConnected()) {
          this.flushQueue();
          this.sendPacket(var1, var2, var3);
@@ -312,7 +312,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    }
 
-   private void sendPacket(Packet<?> var1, @Nullable PacketSendListener var2, boolean var3) {
+   private void sendPacket(Packet<?> var1, @Nullable ChannelFutureListener var2, boolean var3) {
       ++this.sentPackets;
       if (this.channel.eventLoop().inEventLoop()) {
          this.doSendPacket(var1, var2, var3);
@@ -322,24 +322,16 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    }
 
-   private void doSendPacket(Packet<?> var1, @Nullable PacketSendListener var2, boolean var3) {
-      ChannelFuture var4 = var3 ? this.channel.writeAndFlush(var1) : this.channel.write(var1);
+   private void doSendPacket(Packet<?> var1, @Nullable ChannelFutureListener var2, boolean var3) {
       if (var2 != null) {
-         var4.addListener((var2x) -> {
-            if (var2x.isSuccess()) {
-               var2.onSuccess();
-            } else {
-               Packet var3 = var2.onFailure();
-               if (var3 != null) {
-                  ChannelFuture var4 = this.channel.writeAndFlush(var3);
-                  var4.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-               }
-            }
-
-         });
+         ChannelFuture var4 = var3 ? this.channel.writeAndFlush(var1) : this.channel.write(var1);
+         var4.addListener(var2);
+      } else if (var3) {
+         this.channel.writeAndFlush(var1, this.channel.voidPromise());
+      } else {
+         this.channel.write(var1, this.channel.voidPromise());
       }
 
-      var4.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
    }
 
    public void flushChannel() {

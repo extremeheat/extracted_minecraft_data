@@ -188,8 +188,8 @@ public abstract class RecipeProvider {
       this.shaped(RecipeCategory.DECORATIONS, var1, 6).group("hanging_sign").define('#', var2).define('X', Items.CHAIN).pattern("X X").pattern("###").pattern("###").unlockedBy("has_stripped_logs", this.has(var2)).save(this.output);
    }
 
-   protected void colorBlockWithDye(List<Item> var1, List<Item> var2, String var3) {
-      this.colorWithDye(var1, var2, (Item)null, var3, RecipeCategory.BUILDING_BLOCKS);
+   protected void colorItemWithDye(List<Item> var1, List<Item> var2, String var3, RecipeCategory var4) {
+      this.colorWithDye(var1, var2, (Item)null, var3, var4);
    }
 
    protected void colorWithDye(List<Item> var1, List<Item> var2, @Nullable Item var3, String var4, RecipeCategory var5) {
@@ -220,6 +220,14 @@ public abstract class RecipeProvider {
 
    protected void stainedGlassFromGlassAndDye(ItemLike var1, ItemLike var2) {
       this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 8).define('#', Blocks.GLASS).define('X', var2).pattern("###").pattern("#X#").pattern("###").group("stained_glass").unlockedBy("has_glass", this.has(Blocks.GLASS)).save(this.output);
+   }
+
+   protected void dryGhast(ItemLike var1) {
+      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 1).define('#', Items.GHAST_TEAR).define('X', Items.SOUL_SAND).pattern("###").pattern("#X#").pattern("###").group("dry_ghast").unlockedBy(getHasName(Items.GHAST_TEAR), this.has(Items.GHAST_TEAR)).save(this.output);
+   }
+
+   protected void harness(ItemLike var1, ItemLike var2) {
+      this.shaped(RecipeCategory.COMBAT, var1).define('#', var2).define('G', Items.GLASS).define('L', Items.LEATHER).pattern("LLL").pattern("G#G").group("harness").unlockedBy("has_dried_ghast", this.has(Blocks.DRIED_GHAST)).save(this.output);
    }
 
    protected void stainedGlassPaneFromStainedGlass(ItemLike var1, ItemLike var2) {

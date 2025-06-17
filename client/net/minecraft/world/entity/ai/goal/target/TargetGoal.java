@@ -91,7 +91,7 @@ public abstract class TargetGoal extends Goal {
          return false;
       } else if (!var2.test(getServerLevel(this.mob), this.mob, var1)) {
          return false;
-      } else if (!this.mob.isWithinRestriction(var1.blockPosition())) {
+      } else if (!this.mob.isWithinHome(var1.blockPosition())) {
          return false;
       } else {
          if (this.mustReach) {

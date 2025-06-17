@@ -70,6 +70,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Axolotl extends Animal implements Bucketable {
@@ -111,13 +113,13 @@ public class Axolotl extends Animal implements Bucketable {
       var1.define(FROM_BUCKET, false);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("Variant", Axolotl.Variant.LEGACY_CODEC, this.getVariant());
       var1.putBoolean("FromBucket", this.fromBucket());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setVariant((Variant)var1.read("Variant", Axolotl.Variant.LEGACY_CODEC).orElse(Axolotl.Variant.DEFAULT));
       this.setFromBucket(var1.getBooleanOr("FromBucket", false));

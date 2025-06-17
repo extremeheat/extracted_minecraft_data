@@ -8,7 +8,7 @@ import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -52,21 +52,18 @@ public class SpectatorGui implements SpectatorMenuListener {
             this.menu.exit();
          } else {
             int var3 = var1.guiWidth() / 2;
-            var1.pose().pushPose();
-            var1.pose().translate(0.0F, 0.0F, -90.0F);
             int var4 = Mth.floor((float)var1.guiHeight() - 22.0F * var2);
             SpectatorPage var5 = this.menu.getCurrentPage();
             this.renderPage(var1, var2, var3, var4, var5);
-            var1.pose().popPose();
          }
       }
    }
 
    protected void renderPage(GuiGraphics var1, float var2, int var3, int var4, SpectatorPage var5) {
       int var6 = ARGB.white(var2);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
       if (var5.getSelectedSlot() >= 0) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
       }
 
       for(int var7 = 0; var7 < 9; ++var7) {
@@ -77,31 +74,28 @@ public class SpectatorGui implements SpectatorMenuListener {
 
    private void renderSlot(GuiGraphics var1, int var2, int var3, float var4, float var5, SpectatorMenuItem var6) {
       if (var6 != SpectatorMenu.EMPTY_SLOT) {
-         var1.pose().pushPose();
-         var1.pose().translate((float)var3, var4, 0.0F);
+         var1.pose().pushMatrix();
+         var1.pose().translate((float)var3, var4);
          float var7 = var6.isEnabled() ? 1.0F : 0.25F;
          var6.renderIcon(var1, var7, var5);
-         var1.pose().popPose();
-         int var8 = (int)(var5 * 255.0F);
-         if (var8 > 3 && var6.isEnabled()) {
-            Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
-            var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var9), (int)var4 + 6 + 3, 16777215 + (var8 << 24));
+         var1.pose().popMatrix();
+         if (var5 > 0.0F && var6.isEnabled()) {
+            Component var8 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
+            var1.drawString(this.minecraft.font, var8, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var8), (int)var4 + 6 + 3, ARGB.color(var5, -1));
          }
       }
 
    }
 
-   public void renderTooltip(GuiGraphics var1) {
-      int var2 = (int)(this.getHotbarAlpha() * 255.0F);
-      if (var2 > 3 && this.menu != null) {
+   public void renderAction(GuiGraphics var1) {
+      float var2 = this.getHotbarAlpha();
+      if (var2 > 0.0F && this.menu != null) {
          SpectatorMenuItem var3 = this.menu.getSelectedItem();
          Component var4 = var3 == SpectatorMenu.EMPTY_SLOT ? this.menu.getSelectedCategory().getPrompt() : var3.getName();
-         if (var4 != null) {
-            int var5 = this.minecraft.font.width((FormattedText)var4);
-            int var6 = (var1.guiWidth() - var5) / 2;
-            int var7 = var1.guiHeight() - 35;
-            var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, ARGB.color(var2, -1));
-         }
+         int var5 = this.minecraft.font.width((FormattedText)var4);
+         int var6 = (var1.guiWidth() - var5) / 2;
+         int var7 = var1.guiHeight() - 35;
+         var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, ARGB.color(var2, -1));
       }
 
    }

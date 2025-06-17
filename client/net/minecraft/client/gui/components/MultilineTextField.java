@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,9 +12,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
+import org.slf4j.Logger;
 
 public class MultilineTextField {
-   public static final int NO_CHARACTER_LIMIT = 2147483647;
+   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final int NO_LIMIT = 2147483647;
    private static final int LINE_SEEK_PIXEL_BIAS = 2;
    private final Font font;
    private final List<StringView> displayLines = Lists.newArrayList();
@@ -22,6 +25,7 @@ public class MultilineTextField {
    private int selectCursor;
    private boolean selecting;
    private int characterLimit = 2147483647;
+   private int lineLimit = 2147483647;
    private final int width;
    private Consumer<String> valueListener = (var0) -> {
    };
@@ -47,8 +51,20 @@ public class MultilineTextField {
       }
    }
 
+   public void setLineLimit(int var1) {
+      if (var1 < 0) {
+         throw new IllegalArgumentException("Character limit cannot be negative");
+      } else {
+         this.lineLimit = var1;
+      }
+   }
+
    public boolean hasCharacterLimit() {
       return this.characterLimit != 2147483647;
+   }
+
+   public boolean hasLineLimit() {
+      return this.lineLimit != 2147483647;
    }
 
    public void setValueListener(Consumer<String> var1) {
@@ -60,10 +76,17 @@ public class MultilineTextField {
    }
 
    public void setValue(String var1) {
-      this.value = this.truncateFullText(var1);
-      this.cursor = this.value.length();
-      this.selectCursor = this.cursor;
-      this.onValueChange();
+      this.setValue(var1, false);
+   }
+
+   public void setValue(String var1, boolean var2) {
+      String var3 = this.truncateFullText(var1);
+      if (var2 || !this.overflowsLineLimit(var3)) {
+         this.value = var3;
+         this.cursor = this.value.length();
+         this.selectCursor = this.cursor;
+         this.onValueChange();
+      }
    }
 
    public String value() {
@@ -74,10 +97,13 @@ public class MultilineTextField {
       if (!var1.isEmpty() || this.hasSelection()) {
          String var2 = this.truncateInsertionText(StringUtil.filterText(var1, true));
          StringView var3 = this.getSelected();
-         this.value = (new StringBuilder(this.value)).replace(var3.beginIndex, var3.endIndex, var2).toString();
-         this.cursor = var3.beginIndex + var2.length();
-         this.selectCursor = this.cursor;
-         this.onValueChange();
+         String var4 = (new StringBuilder(this.value)).replace(var3.beginIndex, var3.endIndex, var2).toString();
+         if (!this.overflowsLineLimit(var4)) {
+            this.value = var4;
+            this.cursor = var3.beginIndex + var2.length();
+            this.selectCursor = this.cursor;
+            this.onValueChange();
+         }
       }
    }
 
@@ -272,8 +298,8 @@ public class MultilineTextField {
    private StringView getCursorLineView(int var1) {
       int var2 = this.getLineAtCursor();
       if (var2 < 0) {
-         int var10002 = this.cursor;
-         throw new IllegalStateException("Cursor is not within text (cursor = " + var10002 + ", length = " + this.value.length() + ")");
+         LOGGER.error("Cursor is not within text (cursor = {}, length = {})", this.cursor, this.value.length());
+         return (StringView)this.displayLines.getLast();
       } else {
          return (StringView)this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
       }
@@ -345,12 +371,17 @@ public class MultilineTextField {
    }
 
    private String truncateInsertionText(String var1) {
+      String var2 = var1;
       if (this.hasCharacterLimit()) {
-         int var2 = this.characterLimit - this.value.length();
-         return StringUtil.truncateStringIfNecessary(var1, var2, false);
-      } else {
-         return var1;
+         int var3 = this.characterLimit - this.value.length();
+         var2 = StringUtil.truncateStringIfNecessary(var1, var3, false);
       }
+
+      return var2;
+   }
+
+   private boolean overflowsLineLimit(String var1) {
+      return this.hasLineLimit() && this.font.getSplitter().splitLines(var1, this.width, Style.EMPTY).size() + (StringUtil.endsWithNewLine(var1) ? 1 : 0) > this.lineLimit;
    }
 
    protected static record StringView(int beginIndex, int endIndex) {

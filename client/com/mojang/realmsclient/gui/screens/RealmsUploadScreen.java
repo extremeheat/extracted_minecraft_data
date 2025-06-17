@@ -8,7 +8,10 @@ import com.mojang.realmsclient.client.UploadStatus;
 import com.mojang.realmsclient.client.worldupload.RealmsUploadException;
 import com.mojang.realmsclient.client.worldupload.RealmsWorldUpload;
 import com.mojang.realmsclient.client.worldupload.RealmsWorldUploadStatusTracker;
+import com.mojang.realmsclient.dto.RealmsSetting;
+import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
+import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
@@ -16,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -198,7 +202,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       this.uploadStatus.refreshBytesPerSecond();
       if (this.narrationRateLimiter.tryAcquire(1)) {
          Component var1 = this.createProgressNarrationMessage();
-         this.minecraft.getNarrator().sayNow(var1);
+         this.minecraft.getNarrator().saySystemNow(var1);
       }
 
    }
@@ -221,11 +225,12 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    private void upload() {
       Path var1 = this.minecraft.gameDirectory.toPath().resolve("saves").resolve(this.selectedLevel.getLevelId());
       RealmsWorldOptions var2 = RealmsWorldOptions.createFromSettings(this.selectedLevel.getSettings(), true, this.selectedLevel.levelVersion().minecraftVersionName());
-      RealmsWorldUpload var3 = new RealmsWorldUpload(var1, var2, this.minecraft.getUser(), this.realmId, this.slotId, this);
-      if (!this.currentUpload.compareAndSet((Object)null, var3)) {
+      RealmsSlot var3 = new RealmsSlot(this.slotId, var2, List.of(RealmsSetting.hardcoreSetting(this.selectedLevel.getSettings().hardcore())));
+      RealmsWorldUpload var4 = new RealmsWorldUpload(var1, var3, this.minecraft.getUser(), this.realmId, this);
+      if (!this.currentUpload.compareAndSet((Object)null, var4)) {
          throw new IllegalStateException("Tried to start uploading but was already uploading");
       } else {
-         var3.packAndUpload().handleAsync((var1x, var2x) -> {
+         var4.packAndUpload().handleAsync((var1x, var2x) -> {
             if (var2x != null) {
                if (var2x instanceof CompletionException) {
                   CompletionException var3 = (CompletionException)var2x;

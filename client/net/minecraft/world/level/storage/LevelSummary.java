@@ -103,9 +103,9 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
    public BackupStatus backupStatus() {
       WorldVersion var1 = SharedConstants.getCurrentVersion();
-      int var2 = var1.getDataVersion().getVersion();
-      int var3 = this.levelVersion.minecraftVersion().getVersion();
-      if (!var1.isStable() && var3 < var2) {
+      int var2 = var1.dataVersion().version();
+      int var3 = this.levelVersion.minecraftVersion().version();
+      if (!var1.stable() && var3 < var2) {
          return LevelSummary.BackupStatus.UPGRADE_TO_SNAPSHOT;
       } else {
          return var3 > var2 ? LevelSummary.BackupStatus.DOWNGRADE : LevelSummary.BackupStatus.NONE;
@@ -125,7 +125,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public boolean isCompatible() {
-      return SharedConstants.getCurrentVersion().getDataVersion().isCompatible(this.levelVersion.minecraftVersion());
+      return SharedConstants.getCurrentVersion().dataVersion().isCompatible(this.levelVersion.minecraftVersion());
    }
 
    public Component getInfo() {

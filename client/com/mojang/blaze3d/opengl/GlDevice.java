@@ -1,8 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GpuOutOfMemoryException;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -11,6 +9,7 @@ import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
@@ -32,6 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
@@ -42,6 +42,7 @@ public class GlDevice implements GpuDevice {
    protected static boolean USE_GL_EXT_debug_label = true;
    protected static boolean USE_GL_ARB_debug_output = true;
    protected static boolean USE_GL_ARB_direct_state_access = true;
+   protected static boolean USE_GL_ARB_buffer_storage = true;
    private final CommandEncoder encoder;
    @Nullable
    private final GlDebug debugLog;
@@ -52,7 +53,9 @@ public class GlDevice implements GpuDevice {
    private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
    private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
    private final VertexArrayCache vertexArrayCache;
+   private final BufferStorage bufferStorage;
    private final Set<String> enabledExtensions = new HashSet();
+   private final int uniformOffsetAlignment;
 
    public GlDevice(long var1, int var3, boolean var4, BiFunction<ResourceLocation, ShaderType, String> var5, boolean var6) {
       super();
@@ -63,10 +66,13 @@ public class GlDevice implements GpuDevice {
       this.debugLog = GlDebug.enableDebugCallback(var3, var4, this.enabledExtensions);
       this.debugLabels = GlDebugLabel.create(var7, var6, this.enabledExtensions);
       this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels, this.enabledExtensions);
+      this.bufferStorage = BufferStorage.create(var7, this.enabledExtensions);
       this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions);
       this.maxSupportedTextureSize = var8;
       this.defaultShaderSource = var5;
       this.encoder = new GlCommandEncoder(this);
+      this.uniformOffsetAlignment = GL11.glGetInteger(35380);
+      GL11.glEnable(34895);
    }
 
    public GlDebugLabel debugLabels() {
@@ -77,60 +83,128 @@ public class GlDevice implements GpuDevice {
       return this.encoder;
    }
 
-   public GpuTexture createTexture(@Nullable Supplier<String> var1, TextureFormat var2, int var3, int var4, int var5) {
-      return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5);
+   public GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+      return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5, var6, var7);
    }
 
-   public GpuTexture createTexture(@Nullable String var1, TextureFormat var2, int var3, int var4, int var5) {
-      if (var5 < 1) {
+   public GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+      if (var7 < 1) {
          throw new IllegalArgumentException("mipLevels must be at least 1");
+      } else if (var6 < 1) {
+         throw new IllegalArgumentException("depthOrLayers must be at least 1");
       } else {
+         boolean var8 = (var2 & 16) != 0;
+         if (var8) {
+            if (var4 != var5) {
+               throw new IllegalArgumentException("Cubemap compatible textures must be square, but size is " + var4 + "x" + var5);
+            }
+
+            if (var6 % 6 != 0) {
+               throw new IllegalArgumentException("Cubemap compatible textures must have a layer count with a multiple of 6, was " + var6);
+            }
+
+            if (var6 > 6) {
+               throw new UnsupportedOperationException("Array textures are not yet supported");
+            }
+         } else if (var6 > 1) {
+            throw new UnsupportedOperationException("Array or 3D textures are not yet supported");
+         }
+
          GlStateManager.clearGlErrors();
-         int var6 = GlStateManager._genTexture();
+         int var9 = GlStateManager._genTexture();
          if (var1 == null) {
-            var1 = String.valueOf(var6);
+            var1 = String.valueOf(var9);
          }
 
-         GlStateManager._bindTexture(var6);
-         GlStateManager._texParameter(3553, 33085, var5 - 1);
-         GlStateManager._texParameter(3553, 33082, 0);
-         GlStateManager._texParameter(3553, 33083, var5 - 1);
-         if (var2.hasDepthAspect()) {
-            GlStateManager._texParameter(3553, 34892, 0);
-         }
-
-         for(int var7 = 0; var7 < var5; ++var7) {
-            GlStateManager._texImage2D(3553, var7, GlConst.toGlInternalId(var2), var3 >> var7, var4 >> var7, 0, GlConst.toGlExternalId(var2), GlConst.toGlType(var2), (IntBuffer)null);
-         }
-
-         int var9 = GlStateManager._getError();
-         if (var9 == 1285) {
-            throw new GpuOutOfMemoryException("Could not allocate texture of " + var3 + "x" + var4 + " for " + var1);
-         } else if (var9 != 0) {
-            throw new IllegalStateException("OpenGL error " + var9);
+         char var10;
+         if (var8) {
+            GL11.glBindTexture(34067, var9);
+            var10 = '\u8513';
          } else {
-            GlTexture var8 = new GlTexture(var1, var2, var3, var4, var5, var6);
-            this.debugLabels.applyLabel(var8);
-            return var8;
+            GlStateManager._bindTexture(var9);
+            var10 = 3553;
+         }
+
+         GlStateManager._texParameter(var10, 33085, var7 - 1);
+         GlStateManager._texParameter(var10, 33082, 0);
+         GlStateManager._texParameter(var10, 33083, var7 - 1);
+         if (var3.hasDepthAspect()) {
+            GlStateManager._texParameter(var10, 34892, 0);
+         }
+
+         if (var8) {
+            for(int var14 : GlConst.CUBEMAP_TARGETS) {
+               for(int var15 = 0; var15 < var7; ++var15) {
+                  GlStateManager._texImage2D(var14, var15, GlConst.toGlInternalId(var3), var4 >> var15, var5 >> var15, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+               }
+            }
+         } else {
+            for(int var16 = 0; var16 < var7; ++var16) {
+               GlStateManager._texImage2D(var10, var16, GlConst.toGlInternalId(var3), var4 >> var16, var5 >> var16, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+            }
+         }
+
+         int var17 = GlStateManager._getError();
+         if (var17 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate texture of " + var4 + "x" + var5 + " for " + var1);
+         } else if (var17 != 0) {
+            throw new IllegalStateException("OpenGL error " + var17);
+         } else {
+            GlTexture var18 = new GlTexture(var2, var1, var3, var4, var5, var6, var7, var9);
+            this.debugLabels.applyLabel(var18);
+            return var18;
          }
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, BufferType var2, BufferUsage var3, int var4) {
-      if (var4 <= 0) {
+   public GpuTextureView createTextureView(GpuTexture var1) {
+      return this.createTextureView(var1, 0, var1.getMipLevels());
+   }
+
+   public GpuTextureView createTextureView(GpuTexture var1, int var2, int var3) {
+      if (var1.isClosed()) {
+         throw new IllegalArgumentException("Can't create texture view with closed texture");
+      } else if (var2 >= 0 && var2 + var3 <= var1.getMipLevels()) {
+         return new GlTextureView((GlTexture)var1, var2, var3);
+      } else {
+         throw new IllegalArgumentException(var3 + " mip levels starting from " + var2 + " would be out of range for texture with only " + var1.getMipLevels() + " mip levels");
+      }
+   }
+
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, int var3) {
+      if (var3 <= 0) {
          throw new IllegalArgumentException("Buffer size must be greater than zero");
       } else {
-         return new GlBuffer(this.debugLabels, var1, var2, var3, var4, GlStateManager._glGenBuffers());
+         GlStateManager.clearGlErrors();
+         GlBuffer var4 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
+         int var5 = GlStateManager._getError();
+         if (var5 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate buffer of " + var3 + " for " + String.valueOf(var1));
+         } else if (var5 != 0) {
+            throw new IllegalStateException("OpenGL error " + var5);
+         } else {
+            this.debugLabels.applyLabel(var4);
+            return var4;
+         }
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, BufferType var2, BufferUsage var3, ByteBuffer var4) {
-      if (!var4.hasRemaining()) {
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, ByteBuffer var3) {
+      if (!var3.hasRemaining()) {
          throw new IllegalArgumentException("Buffer source must not be empty");
       } else {
-         GlBuffer var5 = new GlBuffer(this.debugLabels, var1, var2, var3, var4.remaining(), GlStateManager._glGenBuffers());
-         this.encoder.writeToBuffer(var5, var4, 0);
-         return var5;
+         GlStateManager.clearGlErrors();
+         long var4 = (long)var3.remaining();
+         GlBuffer var6 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
+         int var7 = GlStateManager._getError();
+         if (var7 == 1285) {
+            throw new GpuOutOfMemoryException("Could not allocate buffer of " + var4 + " for " + String.valueOf(var1));
+         } else if (var7 != 0) {
+            throw new IllegalStateException("OpenGL error " + var7);
+         } else {
+            this.debugLabels.applyLabel(var6);
+            return var6;
+         }
       }
    }
 
@@ -185,6 +259,10 @@ public class GlDevice implements GpuDevice {
 
    public int getMaxTextureSize() {
       return this.maxSupportedTextureSize;
+   }
+
+   public int getUniformOffsetAlignment() {
+      return this.uniformOffsetAlignment;
    }
 
    public void clearPipelineCache() {
@@ -279,6 +357,10 @@ public class GlDevice implements GpuDevice {
 
    public VertexArrayCache vertexArrayCache() {
       return this.vertexArrayCache;
+   }
+
+   public BufferStorage getBufferStorage() {
+      return this.bufferStorage;
    }
 
    // $FF: synthetic method

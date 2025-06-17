@@ -189,7 +189,7 @@ public class EditGameRulesScreen extends Screen {
          this.input.setValue(Integer.toString(var5.get()));
          this.input.setResponder((var2x) -> {
             if (var5.tryDeserialize(var2x)) {
-               this.input.setTextColor(14737632);
+               this.input.setTextColor(-2039584);
                EditGameRulesScreen.this.clearInvalid(this);
             } else {
                this.input.setTextColor(-65536);
@@ -259,7 +259,7 @@ public class EditGameRulesScreen extends Screen {
          super.renderWidget(var1, var2, var3, var4);
          RuleEntry var5 = (RuleEntry)this.getHovered();
          if (var5 != null && var5.tooltip != null) {
-            EditGameRulesScreen.this.setTooltipForNextRenderPass(var5.tooltip);
+            var1.setTooltipForNextFrame(var5.tooltip, var2, var3);
          }
 
       }

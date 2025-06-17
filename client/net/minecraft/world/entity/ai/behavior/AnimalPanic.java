@@ -19,6 +19,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
@@ -30,15 +31,25 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private static final int PANIC_DISTANCE_VERTICAL = 4;
    private final float speedMultiplier;
    private final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes;
+   private final Function<E, Vec3> positionGetter;
 
    public AnimalPanic(float var1) {
-      this(var1, (var0) -> DamageTypeTags.PANIC_CAUSES);
+      this(var1, (var0) -> DamageTypeTags.PANIC_CAUSES, (var0) -> LandRandomPos.getPos(var0, 5, 4));
+   }
+
+   public AnimalPanic(float var1, int var2) {
+      this(var1, (var0) -> DamageTypeTags.PANIC_CAUSES, (var1x) -> AirAndWaterRandomPos.getPos(var1x, 5, 4, var2, var1x.getViewVector(0.0F).x, var1x.getViewVector(0.0F).z, 1.5707963705062866));
    }
 
    public AnimalPanic(float var1, Function<PathfinderMob, TagKey<DamageType>> var2) {
+      this(var1, var2, (var0) -> LandRandomPos.getPos(var0, 5, 4));
+   }
+
+   public AnimalPanic(float var1, Function<PathfinderMob, TagKey<DamageType>> var2, Function<E, Vec3> var3) {
       super(Map.of(MemoryModuleType.IS_PANICKING, MemoryStatus.REGISTERED, MemoryModuleType.HURT_BY, MemoryStatus.REGISTERED), 100, 120);
       this.speedMultiplier = var1;
       this.panicCausingDamageTypes = var2;
+      this.positionGetter = var3;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
@@ -52,6 +63,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    protected void start(ServerLevel var1, E var2, long var3) {
       var2.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
       var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+      var2.getNavigation().stop();
    }
 
    protected void stop(ServerLevel var1, E var2, long var3) {
@@ -78,7 +90,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
          }
       }
 
-      return LandRandomPos.getPos(var1, 5, 4);
+      return (Vec3)this.positionGetter.apply(var1);
    }
 
    private Optional<BlockPos> lookForWater(BlockGetter var1, Entity var2) {

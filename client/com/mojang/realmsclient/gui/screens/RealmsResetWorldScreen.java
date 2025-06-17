@@ -27,7 +27,7 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -203,8 +203,8 @@ public class RealmsResetWorldScreen extends RealmsScreen {
 
          int var7 = this.getX();
          int var8 = this.getY();
-         var1.blit(RenderType::guiTextured, this.image, var7 + 2, var8 + 2, 0.0F, 0.0F, 56, 56, 56, 56, 56, 56, var6);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var7, var8, 60, 60, var6);
+         var1.blit(RenderPipelines.GUI_TEXTURED, this.image, var7 + 2, var8 + 2, 0.0F, 0.0F, 56, 56, 56, 56, 56, 56, var6);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var7, var8, 60, 60, var6);
          int var9 = var5 ? -6250336 : -1;
          var1.drawCenteredString(RealmsResetWorldScreen.this.font, this.getMessage(), var7 + 28, var8 - 14, var9);
       }

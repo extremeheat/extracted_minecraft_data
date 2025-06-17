@@ -83,7 +83,7 @@ public class InterpolationHandler {
          double var1 = 1.0 / (double)this.interpolationData.steps;
          if (this.previousTickPosition != null) {
             Vec3 var3 = this.entity.position().subtract(this.previousTickPosition);
-            if (this.entity.level().noCollision(this.entity, this.entity.makeBoundingBox().move(this.interpolationData.position.add(var3)))) {
+            if (this.entity.level().noCollision(this.entity, this.entity.makeBoundingBox(this.interpolationData.position.add(var3)))) {
                this.interpolationData.addDelta(var3);
             }
          }

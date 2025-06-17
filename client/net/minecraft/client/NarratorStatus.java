@@ -39,6 +39,10 @@ public enum NarratorStatus {
       return this == ALL || this == SYSTEM;
    }
 
+   public boolean shouldNarrateSystemOrChat() {
+      return this == ALL || this == SYSTEM || this == CHAT;
+   }
+
    // $FF: synthetic method
    private static NarratorStatus[] $values() {
       return new NarratorStatus[]{OFF, ALL, CHAT, SYSTEM};

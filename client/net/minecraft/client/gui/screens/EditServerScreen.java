@@ -72,9 +72,9 @@ public class EditServerScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, 16777215);
-      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, 10526880);
-      var1.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, 10526880);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
+      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
+      var1.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
       this.nameEdit.render(var1, var2, var3, var4);
       this.ipEdit.render(var1, var2, var3, var4);
    }

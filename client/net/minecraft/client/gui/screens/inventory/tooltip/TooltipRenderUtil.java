@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.inventory.tooltip;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 
 public class TooltipRenderUtil {
@@ -21,16 +21,13 @@ public class TooltipRenderUtil {
       super();
    }
 
-   public static void renderTooltipBackground(GuiGraphics var0, int var1, int var2, int var3, int var4, int var5, @Nullable ResourceLocation var6) {
-      int var7 = var1 - 3 - 9;
-      int var8 = var2 - 3 - 9;
-      int var9 = var3 + 3 + 3 + 18;
-      int var10 = var4 + 3 + 3 + 18;
-      var0.pose().pushPose();
-      var0.pose().translate(0.0F, 0.0F, (float)var5);
-      var0.blitSprite(RenderType::guiTextured, getBackgroundSprite(var6), var7, var8, var9, var10);
-      var0.blitSprite(RenderType::guiTextured, getFrameSprite(var6), var7, var8, var9, var10);
-      var0.pose().popPose();
+   public static void renderTooltipBackground(GuiGraphics var0, int var1, int var2, int var3, int var4, @Nullable ResourceLocation var5) {
+      int var6 = var1 - 3 - 9;
+      int var7 = var2 - 3 - 9;
+      int var8 = var3 + 3 + 3 + 18;
+      int var9 = var4 + 3 + 3 + 18;
+      var0.blitSprite(RenderPipelines.GUI_TEXTURED, getBackgroundSprite(var5), var6, var7, var8, var9);
+      var0.blitSprite(RenderPipelines.GUI_TEXTURED, getFrameSprite(var5), var6, var7, var8, var9);
    }
 
    private static ResourceLocation getBackgroundSprite(@Nullable ResourceLocation var0) {

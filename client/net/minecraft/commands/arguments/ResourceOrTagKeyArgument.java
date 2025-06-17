@@ -63,12 +63,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      if (var4 instanceof SharedSuggestionProvider var3) {
-         return var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ALL, var2, var1);
-      } else {
-         return var2.buildFuture();
-      }
+      return SharedSuggestionProvider.listSuggestions(var1, var2, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ALL);
    }
 
    public Collection<String> getExamples() {

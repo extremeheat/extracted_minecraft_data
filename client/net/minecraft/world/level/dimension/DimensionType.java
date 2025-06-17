@@ -1,8 +1,6 @@
 package net.minecraft.world.level.dimension;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.nio.file.Path;
@@ -24,7 +22,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean hasCeiling, boolean ultraWarm, boolean natural, double coordinateScale, boolean bedWorks, boolean respawnAnchorWorks, int minY, int height, int logicalHeight, TagKey<Block> infiniburn, ResourceLocation effectsLocation, float ambientLight, MonsterSettings monsterSettings) {
+public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean hasCeiling, boolean ultraWarm, boolean natural, double coordinateScale, boolean bedWorks, boolean respawnAnchorWorks, int minY, int height, int logicalHeight, TagKey<Block> infiniburn, ResourceLocation effectsLocation, float ambientLight, Optional<Integer> cloudHeight, MonsterSettings monsterSettings) {
    public static final int BITS_FOR_Y;
    public static final int MIN_HEIGHT = 16;
    public static final int Y_SIZE;
@@ -38,7 +36,7 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
    public static final float[] MOON_BRIGHTNESS_PER_PHASE;
    public static final Codec<Holder<DimensionType>> CODEC;
 
-   public DimensionType(OptionalLong var1, boolean var2, boolean var3, boolean var4, boolean var5, double var6, boolean var8, boolean var9, int var10, int var11, int var12, TagKey<Block> var13, ResourceLocation var14, float var15, MonsterSettings var16) {
+   public DimensionType(OptionalLong var1, boolean var2, boolean var3, boolean var4, boolean var5, double var6, boolean var8, boolean var9, int var10, int var11, int var12, TagKey<Block> var13, ResourceLocation var14, float var15, Optional<Integer> var16, MonsterSettings var17) {
       super();
       if (var11 < 16) {
          throw new IllegalStateException("height has to be at least 16");
@@ -65,30 +63,9 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
          this.infiniburn = var13;
          this.effectsLocation = var14;
          this.ambientLight = var15;
-         this.monsterSettings = var16;
+         this.cloudHeight = var16;
+         this.monsterSettings = var17;
       }
-   }
-
-   /** @deprecated */
-   @Deprecated
-   public static DataResult<ResourceKey<Level>> parseLegacy(Dynamic<?> var0) {
-      Optional var1 = var0.asNumber().result();
-      if (var1.isPresent()) {
-         int var2 = ((Number)var1.get()).intValue();
-         if (var2 == -1) {
-            return DataResult.success(Level.NETHER);
-         }
-
-         if (var2 == 0) {
-            return DataResult.success(Level.OVERWORLD);
-         }
-
-         if (var2 == 1) {
-            return DataResult.success(Level.END);
-         }
-      }
-
-      return Level.RESOURCE_KEY_CODEC.parse(var0);
    }
 
    public static double getTeleportationScale(DimensionType var0, DimensionType var1) {
@@ -144,7 +121,7 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
       MIN_Y = MAX_Y - Y_SIZE + 1;
       WAY_ABOVE_MAX_Y = MAX_Y << 4;
       WAY_BELOW_MIN_Y = MIN_Y << 4;
-      DIRECT_CODEC = ExtraCodecs.<DimensionType>catchDecoderException(RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.asOptionalLong(Codec.LONG.lenientOptionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime), Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight), Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling), Codec.BOOL.fieldOf("ultrawarm").forGetter(DimensionType::ultraWarm), Codec.BOOL.fieldOf("natural").forGetter(DimensionType::natural), Codec.doubleRange(9.999999747378752E-6, 3.0E7).fieldOf("coordinate_scale").forGetter(DimensionType::coordinateScale), Codec.BOOL.fieldOf("bed_works").forGetter(DimensionType::bedWorks), Codec.BOOL.fieldOf("respawn_anchor_works").forGetter(DimensionType::respawnAnchorWorks), Codec.intRange(MIN_Y, MAX_Y).fieldOf("min_y").forGetter(DimensionType::minY), Codec.intRange(16, Y_SIZE).fieldOf("height").forGetter(DimensionType::height), Codec.intRange(0, Y_SIZE).fieldOf("logical_height").forGetter(DimensionType::logicalHeight), TagKey.hashedCodec(Registries.BLOCK).fieldOf("infiniburn").forGetter(DimensionType::infiniburn), ResourceLocation.CODEC.fieldOf("effects").orElse(BuiltinDimensionTypes.OVERWORLD_EFFECTS).forGetter(DimensionType::effectsLocation), Codec.FLOAT.fieldOf("ambient_light").forGetter(DimensionType::ambientLight), DimensionType.MonsterSettings.CODEC.forGetter(DimensionType::monsterSettings)).apply(var0, DimensionType::new)));
+      DIRECT_CODEC = ExtraCodecs.<DimensionType>catchDecoderException(RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.asOptionalLong(Codec.LONG.lenientOptionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime), Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight), Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling), Codec.BOOL.fieldOf("ultrawarm").forGetter(DimensionType::ultraWarm), Codec.BOOL.fieldOf("natural").forGetter(DimensionType::natural), Codec.doubleRange(9.999999747378752E-6, 3.0E7).fieldOf("coordinate_scale").forGetter(DimensionType::coordinateScale), Codec.BOOL.fieldOf("bed_works").forGetter(DimensionType::bedWorks), Codec.BOOL.fieldOf("respawn_anchor_works").forGetter(DimensionType::respawnAnchorWorks), Codec.intRange(MIN_Y, MAX_Y).fieldOf("min_y").forGetter(DimensionType::minY), Codec.intRange(16, Y_SIZE).fieldOf("height").forGetter(DimensionType::height), Codec.intRange(0, Y_SIZE).fieldOf("logical_height").forGetter(DimensionType::logicalHeight), TagKey.hashedCodec(Registries.BLOCK).fieldOf("infiniburn").forGetter(DimensionType::infiniburn), ResourceLocation.CODEC.fieldOf("effects").orElse(BuiltinDimensionTypes.OVERWORLD_EFFECTS).forGetter(DimensionType::effectsLocation), Codec.FLOAT.fieldOf("ambient_light").forGetter(DimensionType::ambientLight), Codec.intRange(MIN_Y, MAX_Y).optionalFieldOf("cloud_height").forGetter(DimensionType::cloudHeight), DimensionType.MonsterSettings.CODEC.forGetter(DimensionType::monsterSettings)).apply(var0, DimensionType::new)));
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.DIMENSION_TYPE);
       MOON_BRIGHTNESS_PER_PHASE = new float[]{1.0F, 0.75F, 0.5F, 0.25F, 0.0F, 0.25F, 0.5F, 0.75F};
       CODEC = RegistryFileCodec.<Holder<DimensionType>>create(Registries.DIMENSION_TYPE, DIRECT_CODEC);

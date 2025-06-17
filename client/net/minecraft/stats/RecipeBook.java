@@ -30,7 +30,7 @@ public class RecipeBook {
    }
 
    public RecipeBookSettings getBookSettings() {
-      return this.bookSettings.copy();
+      return this.bookSettings;
    }
 
    public void setBookSetting(RecipeBookType var1, boolean var2, boolean var3) {

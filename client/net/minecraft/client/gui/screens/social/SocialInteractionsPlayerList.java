@@ -184,4 +184,8 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
       }
 
    }
+
+   public void refreshHasDraftReport() {
+      this.players.forEach((var1) -> var1.refreshHasDraftReport(this.minecraft.getReportingContext()));
+   }
 }

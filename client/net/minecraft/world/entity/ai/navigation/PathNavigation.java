@@ -424,4 +424,10 @@ public abstract class PathNavigation {
    public boolean isStuck() {
       return this.isStuck;
    }
+
+   public abstract boolean canNavigateGround();
+
+   public void setCanOpenDoors(boolean var1) {
+      this.nodeEvaluator.setCanOpenDoors(var1);
+   }
 }

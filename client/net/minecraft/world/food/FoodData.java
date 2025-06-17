@@ -1,11 +1,12 @@
 package net.minecraft.world.food;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class FoodData {
    private static final int DEFAULT_TICK_TIMER = 0;
@@ -33,7 +34,7 @@ public class FoodData {
    }
 
    public void tick(ServerPlayer var1) {
-      ServerLevel var2 = var1.serverLevel();
+      ServerLevel var2 = var1.level();
       Difficulty var3 = var2.getDifficulty();
       if (this.exhaustionLevel > 4.0F) {
          this.exhaustionLevel -= 4.0F;
@@ -75,14 +76,14 @@ public class FoodData {
 
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   public void readAdditionalSaveData(ValueInput var1) {
       this.foodLevel = var1.getIntOr("foodLevel", 20);
       this.tickTimer = var1.getIntOr("foodTickTimer", 0);
       this.saturationLevel = var1.getFloatOr("foodSaturationLevel", 5.0F);
       this.exhaustionLevel = var1.getFloatOr("foodExhaustionLevel", 0.0F);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   public void addAdditionalSaveData(ValueOutput var1) {
       var1.putInt("foodLevel", this.foodLevel);
       var1.putInt("foodTickTimer", this.tickTimer);
       var1.putFloat("foodSaturationLevel", this.saturationLevel);

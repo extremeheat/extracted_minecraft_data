@@ -4,11 +4,12 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public interface NeutralMob {
    String TAG_ANGER_TIME = "AngerTime";
@@ -25,12 +26,12 @@ public interface NeutralMob {
 
    void startPersistentAngerTimer();
 
-   default void addPersistentAngerSaveData(CompoundTag var1) {
+   default void addPersistentAngerSaveData(ValueOutput var1) {
       var1.putInt("AngerTime", this.getRemainingPersistentAngerTime());
       var1.storeNullable("AngryAt", UUIDUtil.CODEC, this.getPersistentAngerTarget());
    }
 
-   default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
+   default void readPersistentAngerSaveData(Level var1, ValueInput var2) {
       this.setRemainingPersistentAngerTime(var2.getIntOr("AngerTime", 0));
       if (var1 instanceof ServerLevel var3) {
          UUID var4 = (UUID)var2.read("AngryAt", UUIDUtil.CODEC).orElse((Object)null);

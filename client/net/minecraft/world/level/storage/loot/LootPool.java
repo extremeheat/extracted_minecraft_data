@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
@@ -96,19 +97,19 @@ public class LootPool {
 
    public void validate(ValidationContext var1) {
       for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
-         ((LootItemCondition)this.conditions.get(var2)).validate(var1.forChild(".condition[" + var2 + "]"));
+         ((LootItemCondition)this.conditions.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("conditions", var2)));
       }
 
       for(int var3 = 0; var3 < this.functions.size(); ++var3) {
-         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(".functions[" + var3 + "]"));
+         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("functions", var3)));
       }
 
       for(int var4 = 0; var4 < this.entries.size(); ++var4) {
-         ((LootPoolEntryContainer)this.entries.get(var4)).validate(var1.forChild(".entries[" + var4 + "]"));
+         ((LootPoolEntryContainer)this.entries.get(var4)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("entries", var4)));
       }
 
-      this.rolls.validate(var1.forChild(".rolls"));
-      this.bonusRolls.validate(var1.forChild(".bonusRolls"));
+      this.rolls.validate(var1.forChild(new ProblemReporter.FieldPathElement("rolls")));
+      this.bonusRolls.validate(var1.forChild(new ProblemReporter.FieldPathElement("bonus_rolls")));
    }
 
    public static Builder lootPool() {

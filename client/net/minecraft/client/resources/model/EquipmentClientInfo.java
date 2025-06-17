@@ -121,7 +121,8 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
       DONKEY_SADDLE("donkey_saddle"),
       MULE_SADDLE("mule_saddle"),
       ZOMBIE_HORSE_SADDLE("zombie_horse_saddle"),
-      SKELETON_HORSE_SADDLE("skeleton_horse_saddle");
+      SKELETON_HORSE_SADDLE("skeleton_horse_saddle"),
+      HAPPY_GHAST_BODY("happy_ghast_body");
 
       public static final Codec<LayerType> CODEC = StringRepresentable.<LayerType>fromEnum(LayerType::values);
       private final String id;
@@ -140,7 +141,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
 
       // $FF: synthetic method
       private static LayerType[] $values() {
-         return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE};
+         return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE, HAPPY_GHAST_BODY};
       }
    }
 }

@@ -9,11 +9,12 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
@@ -54,7 +55,7 @@ public class AdvancementToast implements Toast {
 
    public void render(GuiGraphics var1, Font var2, long var3) {
       DisplayInfo var5 = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (var5 != null) {
          List var6 = var2.split(var5.getTitle(), 125);
          int var7 = var5.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
@@ -65,17 +66,17 @@ public class AdvancementToast implements Toast {
             boolean var8 = true;
             float var9 = 300.0F;
             if (var3 < 1500L) {
-               int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | 67108864;
-               var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 11, var7 | var10, false);
+               int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F);
+               var1.drawString(var2, (Component)var5.getType().getDisplayName(), 30, 11, ARGB.color(var10, var7), false);
             } else {
-               int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | 67108864;
+               int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
                int var10000 = this.height() / 2;
                int var10001 = var6.size();
                Objects.requireNonNull(var2);
                int var11 = var10000 - var10001 * 9 / 2;
 
                for(FormattedCharSequence var13 : var6) {
-                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, 16777215 | var14, false);
+                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.color(var14, -1), false);
                   Objects.requireNonNull(var2);
                   var11 += 9;
                }

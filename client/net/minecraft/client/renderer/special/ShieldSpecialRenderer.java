@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import org.joml.Vector3f;
 
 public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
    private final ShieldModel model;
@@ -49,6 +51,12 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       }
 
       var3.popPose();
+   }
+
+   public void getExtents(Set<Vector3f> var1) {
+      PoseStack var2 = new PoseStack();
+      var2.scale(1.0F, -1.0F, -1.0F);
+      this.model.root().getExtentsForGui(var2, var1);
    }
 
    // $FF: synthetic method

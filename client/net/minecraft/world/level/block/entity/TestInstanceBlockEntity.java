@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.io.IOException;
@@ -30,8 +29,6 @@ import net.minecraft.gametest.framework.RetryOptions;
 import net.minecraft.gametest.framework.StructureUtils;
 import net.minecraft.gametest.framework.TestCommand;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -54,6 +51,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 
 public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOwner, BoundingBoxRenderable {
@@ -151,21 +150,15 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      CompoundTag var2 = new CompoundTag();
-      this.saveAdditional(var2, var1);
-      return var2;
+      return this.saveCustomOnly(var1);
    }
 
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      Tag var3 = var1.get("data");
-      if (var3 != null) {
-         TestInstanceBlockEntity.Data.CODEC.parse(NbtOps.INSTANCE, var3).ifSuccess(this::set);
-      }
+   protected void loadAdditional(ValueInput var1) {
+      var1.read("data", TestInstanceBlockEntity.Data.CODEC).ifPresent(this::set);
    }
 
-   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      DataResult var3 = TestInstanceBlockEntity.Data.CODEC.encode(this.data, NbtOps.INSTANCE, new CompoundTag());
-      var3.ifSuccess((var1x) -> var1.put("data", var1x));
+   protected void saveAdditional(ValueOutput var1) {
+      var1.store("data", TestInstanceBlockEntity.Data.CODEC, this.data);
    }
 
    public BoundingBoxRenderable.Mode renderMode() {
@@ -232,7 +225,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
          Level var5 = this.level;
          if (var5 instanceof ServerLevel) {
             ServerLevel var4 = (ServerLevel)var5;
-            StructureBlockEntity.saveStructure(var4, (ResourceLocation)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true);
+            StructureBlockEntity.saveStructure(var4, (ResourceLocation)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true, List.of(Blocks.AIR));
          }
 
          return var3;

@@ -1,11 +1,20 @@
 package net.minecraft.data.advancements.packs;
 
+import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRequirements;
@@ -47,9 +56,12 @@ import net.minecraft.advancements.critereon.TradeTrigger;
 import net.minecraft.advancements.critereon.UsedTotemTrigger;
 import net.minecraft.advancements.critereon.UsingItemTrigger;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.predicates.DataComponentPredicates;
 import net.minecraft.core.component.predicates.JukeboxPlayablePredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -59,11 +71,13 @@ import net.minecraft.data.recipes.packs.VanillaRecipeProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -76,9 +90,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComparatorBlock;
 import net.minecraft.world.level.block.CopperBulbBlock;
+import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.predicates.AllOfCondition;
@@ -86,13 +103,16 @@ import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.slf4j.Logger;
 
 public class VanillaAdventureAdvancements implements AdvancementSubProvider {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DISTANCE_FROM_BOTTOM_TO_TOP = 384;
    private static final int Y_COORDINATE_AT_TOP = 320;
    private static final int Y_COORDINATE_AT_BOTTOM = -64;
    private static final int BEDROCK_THICKNESS = 5;
-   protected static final List<EntityType<?>> MOBS_TO_KILL;
+   private static final Map<MobCategory, Set<EntityType<?>>> EXCEPTIONS_BY_EXPECTED_CATEGORIES;
+   private static final List<EntityType<?>> MOBS_TO_KILL;
 
    public VanillaAdventureAdvancements() {
       super();
@@ -115,7 +135,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       createAdventuringTime(var1, var2, var7, MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD);
       AdvancementHolder var8 = Advancement.Builder.advancement().parent(var6).display((ItemLike)Items.EMERALD, Component.translatable("advancements.adventure.trade.title"), Component.translatable("advancements.adventure.trade.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("traded", TradeTrigger.TriggerInstance.tradedWithVillager()).save(var2, "adventure/trade");
       Advancement.Builder.advancement().parent(var8).display((ItemLike)Items.EMERALD, Component.translatable("advancements.adventure.trade_at_world_height.title"), Component.translatable("advancements.adventure.trade_at_world_height.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("trade_at_world_height", TradeTrigger.TriggerInstance.tradedWithVillager(EntityPredicate.Builder.entity().located(LocationPredicate.Builder.atYLocation(MinMaxBounds.Doubles.atLeast(319.0))))).save(var2, "adventure/trade_at_world_height");
-      AdvancementHolder var9 = createMonsterHunterAdvancement(var6, var2, var3, MOBS_TO_KILL);
+      AdvancementHolder var9 = createMonsterHunterAdvancement(var6, var2, var3, validateMobsToKill(MOBS_TO_KILL, var3));
       AdvancementHolder var10 = Advancement.Builder.advancement().parent(var9).display((ItemLike)Items.BOW, Component.translatable("advancements.adventure.shoot_arrow.title"), Component.translatable("advancements.adventure.shoot_arrow.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("shot_arrow", PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(DamagePredicate.Builder.damageInstance().type(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE)).direct(EntityPredicate.Builder.entity().of(var3, EntityTypeTags.ARROWS))))).save(var2, "adventure/shoot_arrow");
       AdvancementHolder var11 = Advancement.Builder.advancement().parent(var9).display((ItemLike)Items.TRIDENT, Component.translatable("advancements.adventure.throw_trident.title"), Component.translatable("advancements.adventure.throw_trident.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("shot_trident", PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(DamagePredicate.Builder.damageInstance().type(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE)).direct(EntityPredicate.Builder.entity().of(var3, EntityType.TRIDENT))))).save(var2, "adventure/throw_trident");
       Advancement.Builder.advancement().parent(var11).display((ItemLike)Items.TRIDENT, Component.translatable("advancements.adventure.very_very_frightening.title"), Component.translatable("advancements.adventure.very_very_frightening.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("struck_villager", ChanneledLightningTrigger.TriggerInstance.channeledLightning(EntityPredicate.Builder.entity().of(var3, EntityType.VILLAGER))).save(var2, "adventure/very_very_frightening");
@@ -155,6 +175,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       Advancement.Builder.advancement().parent(var6).display((ItemLike)Items.LODESTONE, Component.translatable("advancements.adventure.use_lodestone.title"), Component.translatable("advancements.adventure.use_lodestone.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("use_lodestone", ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var5, Blocks.LODESTONE)), ItemPredicate.Builder.item().of(var4, Items.COMPASS))).save(var2, "adventure/use_lodestone");
       Advancement.Builder.advancement().parent(var19).display((ItemLike)Items.WIND_CHARGE, Component.translatable("advancements.adventure.who_needs_rockets.title"), Component.translatable("advancements.adventure.who_needs_rockets.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("who_needs_rockets", FallAfterExplosionTrigger.TriggerInstance.fallAfterExplosion(DistancePredicate.vertical(MinMaxBounds.Doubles.atLeast(7.0)), EntityPredicate.Builder.entity().of(var3, EntityType.WIND_CHARGE))).save(var2, "adventure/who_needs_rockets");
       Advancement.Builder.advancement().parent(var19).display((ItemLike)Items.MACE, Component.translatable("advancements.adventure.overoverkill.title"), Component.translatable("advancements.adventure.overoverkill.description"), (ResourceLocation)null, AdvancementType.CHALLENGE, true, true, false).rewards(AdvancementRewards.Builder.experience(50)).addCriterion("overoverkill", PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(DamagePredicate.Builder.damageInstance().dealtDamage(MinMaxBounds.Doubles.atLeast(100.0)).type(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_MACE_SMASH)).direct(EntityPredicate.Builder.entity().of(var3, EntityType.PLAYER).equipment(EntityEquipmentPredicate.Builder.equipment().mainhand(ItemPredicate.Builder.item().of(var4, Items.MACE))))))).save(var2, "adventure/overoverkill");
+      Advancement.Builder.advancement().parent(var6).display((ItemLike)Blocks.CREAKING_HEART, Component.translatable("advancements.adventure.heart_transplanter.title"), Component.translatable("advancements.adventure.heart_transplanter.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).requirements(AdvancementRequirements.Strategy.OR).addCriterion("place_creaking_heart_dormant", ItemUsedOnLocationTrigger.TriggerInstance.placedBlockWithProperties(Blocks.CREAKING_HEART, BlockStateProperties.CREAKING_HEART_STATE, (Comparable)CreakingHeartState.DORMANT)).addCriterion("place_creaking_heart_awake", ItemUsedOnLocationTrigger.TriggerInstance.placedBlockWithProperties(Blocks.CREAKING_HEART, BlockStateProperties.CREAKING_HEART_STATE, (Comparable)CreakingHeartState.AWAKE)).addCriterion("place_pale_oak_log", placedBlockActivatesCreakingHeart(var5, BlockTags.PALE_OAK_LOGS)).save(var2, "adventure/heart_transplanter");
    }
 
    public static AdvancementHolder createMonsterHunterAdvancement(AdvancementHolder var0, Consumer<AdvancementHolder> var1, HolderGetter<EntityType<?>> var2, List<EntityType<?>> var3) {
@@ -178,6 +199,19 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          LootItemBlockStatePropertyCondition.Builder var4 = (new LootItemBlockStatePropertyCondition.Builder(Blocks.COMPARATOR)).setProperties(var3);
          LootItemCondition.Builder var5 = LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var0, var1)), new BlockPos(var2x.getUnitVec3i()));
          return AllOfCondition.allOf(var4, var5);
+      }).toArray((var0x) -> new LootItemCondition.Builder[var0x]);
+      return ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(AnyOfCondition.anyOf(var2));
+   }
+
+   private static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedBlockActivatesCreakingHeart(HolderGetter<Block> var0, TagKey<Block> var1) {
+      LootItemCondition.Builder[] var2 = (LootItemCondition.Builder[])Stream.of(Direction.values()).map((var2x) -> {
+         StatePropertiesPredicate.Builder var3 = StatePropertiesPredicate.Builder.properties().hasProperty(CreakingHeartBlock.AXIS, (Comparable)var2x.getAxis());
+         BlockPredicate.Builder var4 = BlockPredicate.Builder.block().of(var0, var1).setProperties(var3);
+         Vec3i var5 = var2x.getUnitVec3i();
+         LootItemCondition.Builder var6 = LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(var4));
+         LootItemCondition.Builder var7 = LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var0, Blocks.CREAKING_HEART).setProperties(var3)), new BlockPos(var5));
+         LootItemCondition.Builder var8 = LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(var4), new BlockPos(var5.multiply(2)));
+         return AllOfCondition.allOf(var6, var7, var8);
       }).toArray((var0x) -> new LootItemCondition.Builder[var0x]);
       return ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(AnyOfCondition.anyOf(var2));
    }
@@ -223,7 +257,42 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       return var0;
    }
 
+   private static List<EntityType<?>> validateMobsToKill(List<EntityType<?>> var0, HolderLookup<EntityType<?>> var1) {
+      ArrayList var2 = new ArrayList();
+      Set var3 = Set.copyOf(var0);
+      Set var4 = (Set)var3.stream().map(EntityType::getCategory).collect(Collectors.toSet());
+      Sets.SetView var5 = Sets.symmetricDifference(EXCEPTIONS_BY_EXPECTED_CATEGORIES.keySet(), var4);
+      if (!var5.isEmpty()) {
+         var2.add("Found EntityType with MobCategory only in either expected exceptions or kill_all_mobs advancement: %s".formatted(var5.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+      }
+
+      Sets.SetView var6 = Sets.intersection((Set)EXCEPTIONS_BY_EXPECTED_CATEGORIES.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()), var3);
+      if (!var6.isEmpty()) {
+         var2.add("Found EntityType in both expected exceptions and kill_all_mobs advancement: %s".formatted(var6.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+      }
+
+      Stream var10000 = var1.listElements().map(Holder.Reference::value);
+      Objects.requireNonNull(var3);
+      Map var7 = (Map)var10000.filter(Predicate.not(var3::contains)).collect(Collectors.groupingBy(EntityType::getCategory, Collectors.toSet()));
+      EXCEPTIONS_BY_EXPECTED_CATEGORIES.forEach((var2x, var3x) -> {
+         Sets.SetView var4 = Sets.difference((Set)var7.getOrDefault(var2x, Set.of()), var3x);
+         if (!var4.isEmpty()) {
+            var2.add("Found (new?) EntityType with MobCategory %s which are in neither expected exceptions nor kill_all_mobs advancement: %s".formatted(var2x, var4.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+         }
+
+      });
+      if (!var2.isEmpty()) {
+         Logger var10001 = LOGGER;
+         Objects.requireNonNull(var10001);
+         var2.forEach(var10001::error);
+         throw new IllegalStateException("Found inconsistencies with kill_all_mobs advancement");
+      } else {
+         return var0;
+      }
+   }
+
    static {
+      EXCEPTIONS_BY_EXPECTED_CATEGORIES = Map.of(MobCategory.MONSTER, Set.of(EntityType.GIANT, EntityType.ILLUSIONER, EntityType.WARDEN));
       MOBS_TO_KILL = Arrays.asList(EntityType.BLAZE, EntityType.BOGGED, EntityType.BREEZE, EntityType.CAVE_SPIDER, EntityType.CREAKING, EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDER_DRAGON, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.EVOKER, EntityType.GHAST, EntityType.GUARDIAN, EntityType.HOGLIN, EntityType.HUSK, EntityType.MAGMA_CUBE, EntityType.PHANTOM, EntityType.PIGLIN, EntityType.PIGLIN_BRUTE, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER, EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.STRAY, EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH, EntityType.WITHER_SKELETON, EntityType.WITHER, EntityType.ZOGLIN, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIE, EntityType.ZOMBIFIED_PIGLIN);
    }
 }

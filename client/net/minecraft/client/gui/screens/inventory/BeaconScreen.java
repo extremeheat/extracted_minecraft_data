@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -109,22 +108,19 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawCenteredString(this.font, (Component)PRIMARY_EFFECT_LABEL, 62, 10, 14737632);
-      var1.drawCenteredString(this.font, (Component)SECONDARY_EFFECT_LABEL, 169, 10, 14737632);
+      var1.drawCenteredString(this.font, (Component)PRIMARY_EFFECT_LABEL, 62, 10, -2039584);
+      var1.drawCenteredString(this.font, (Component)SECONDARY_EFFECT_LABEL, 169, 10, -2039584);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderType::guiTextured, BEACON_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 100.0F);
+      var1.blit(RenderPipelines.GUI_TEXTURED, BEACON_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       var1.renderItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
       var1.renderItem(new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
       var1.renderItem(new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
       var1.renderItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
       var1.renderItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
-      var1.pose().popPose();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -155,7 +151,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
             var5 = BeaconScreen.BUTTON_SPRITE;
          }
 
-         var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
          this.renderIcon(var1);
       }
 
@@ -178,7 +174,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private final boolean isPrimary;
       protected final int tier;
       private Holder<MobEffect> effect;
-      private TextureAtlasSprite sprite;
+      private ResourceLocation sprite;
 
       public BeaconPowerButton(final int var2, final int var3, final Holder<MobEffect> var4, final boolean var5, final int var6) {
          super(var2, var3);
@@ -189,7 +185,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       protected void setEffect(Holder<MobEffect> var1) {
          this.effect = var1;
-         this.sprite = Minecraft.getInstance().getMobEffectTextures().get(var1);
+         this.sprite = Gui.getMobEffectSprite(var1);
          this.setTooltip(Tooltip.create(this.createEffectDescription(var1), (Component)null));
       }
 
@@ -210,7 +206,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
 
       public void updateStatus(int var1) {
@@ -253,7 +249,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
    }
 

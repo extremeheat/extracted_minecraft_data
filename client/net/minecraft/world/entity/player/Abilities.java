@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.player;
 
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public class Abilities {
    private static final boolean DEFAULT_INVULNERABLE = false;
@@ -22,29 +23,6 @@ public class Abilities {
       super();
    }
 
-   public void addSaveData(CompoundTag var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.putBoolean("invulnerable", this.invulnerable);
-      var2.putBoolean("flying", this.flying);
-      var2.putBoolean("mayfly", this.mayfly);
-      var2.putBoolean("instabuild", this.instabuild);
-      var2.putBoolean("mayBuild", this.mayBuild);
-      var2.putFloat("flySpeed", this.flyingSpeed);
-      var2.putFloat("walkSpeed", this.walkingSpeed);
-      var1.put("abilities", var2);
-   }
-
-   public void loadSaveData(CompoundTag var1) {
-      CompoundTag var2 = var1.getCompoundOrEmpty("abilities");
-      this.invulnerable = var2.getBooleanOr("invulnerable", false);
-      this.flying = var2.getBooleanOr("flying", false);
-      this.mayfly = var2.getBooleanOr("mayfly", false);
-      this.instabuild = var2.getBooleanOr("instabuild", false);
-      this.flyingSpeed = var2.getFloatOr("flySpeed", 0.05F);
-      this.walkingSpeed = var2.getFloatOr("walkSpeed", 0.1F);
-      this.mayBuild = var2.getBooleanOr("mayBuild", true);
-   }
-
    public float getFlyingSpeed() {
       return this.flyingSpeed;
    }
@@ -59,5 +37,41 @@ public class Abilities {
 
    public void setWalkingSpeed(float var1) {
       this.walkingSpeed = var1;
+   }
+
+   public Packed pack() {
+      return new Packed(this.invulnerable, this.flying, this.mayfly, this.instabuild, this.mayBuild, this.flyingSpeed, this.walkingSpeed);
+   }
+
+   public void apply(Packed var1) {
+      this.invulnerable = var1.invulnerable;
+      this.flying = var1.flying;
+      this.mayfly = var1.mayFly;
+      this.instabuild = var1.instabuild;
+      this.mayBuild = var1.mayBuild;
+      this.flyingSpeed = var1.flyingSpeed;
+      this.walkingSpeed = var1.walkingSpeed;
+   }
+
+   public static record Packed(boolean invulnerable, boolean flying, boolean mayFly, boolean instabuild, boolean mayBuild, float flyingSpeed, float walkingSpeed) {
+      final boolean invulnerable;
+      final boolean flying;
+      final boolean mayFly;
+      final boolean instabuild;
+      final boolean mayBuild;
+      final float flyingSpeed;
+      final float walkingSpeed;
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.fieldOf("invulnerable").orElse(false).forGetter(Packed::invulnerable), Codec.BOOL.fieldOf("flying").orElse(false).forGetter(Packed::flying), Codec.BOOL.fieldOf("mayfly").orElse(false).forGetter(Packed::mayFly), Codec.BOOL.fieldOf("instabuild").orElse(false).forGetter(Packed::instabuild), Codec.BOOL.fieldOf("mayBuild").orElse(true).forGetter(Packed::mayBuild), Codec.FLOAT.fieldOf("flySpeed").orElse(0.05F).forGetter(Packed::flyingSpeed), Codec.FLOAT.fieldOf("walkSpeed").orElse(0.1F).forGetter(Packed::walkingSpeed)).apply(var0, Packed::new));
+
+      public Packed(boolean var1, boolean var2, boolean var3, boolean var4, boolean var5, float var6, float var7) {
+         super();
+         this.invulnerable = var1;
+         this.flying = var2;
+         this.mayFly = var3;
+         this.instabuild = var4;
+         this.mayBuild = var5;
+         this.flyingSpeed = var6;
+         this.walkingSpeed = var7;
+      }
    }
 }

@@ -68,7 +68,7 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<TriggerInsta
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.entity, ".entity");
+         var1.validateEntity(this.entity, "entity");
       }
    }
 }

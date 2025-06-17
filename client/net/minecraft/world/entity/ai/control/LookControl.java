@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.control;
 import java.util.Optional;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 
@@ -26,11 +25,11 @@ public class LookControl implements Control {
    }
 
    public void setLookAt(Entity var1) {
-      this.setLookAt(var1.getX(), getWantedY(var1), var1.getZ());
+      this.setLookAt(var1.getX(), var1.getEyeY(), var1.getZ());
    }
 
    public void setLookAt(Entity var1, float var2, float var3) {
-      this.setLookAt(var1.getX(), getWantedY(var1), var1.getZ(), var2, var3);
+      this.setLookAt(var1.getX(), var1.getEyeY(), var1.getZ(), var2, var3);
    }
 
    public void setLookAt(double var1, double var3, double var5) {
@@ -101,9 +100,5 @@ public class LookControl implements Control {
       double var1 = this.wantedX - this.mob.getX();
       double var3 = this.wantedZ - this.mob.getZ();
       return !(Math.abs(var3) > 9.999999747378752E-6) && !(Math.abs(var1) > 9.999999747378752E-6) ? Optional.empty() : Optional.of((float)(Mth.atan2(var3, var1) * 57.2957763671875) - 90.0F);
-   }
-
-   private static double getWantedY(Entity var0) {
-      return var0 instanceof LivingEntity ? var0.getEyeY() : (var0.getBoundingBox().minY + var0.getBoundingBox().maxY) / 2.0;
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.math.LongMath;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -25,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
@@ -50,7 +50,7 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
 
          Map var4;
          try {
-            var4 = (Map)CODEC.parse(JsonOps.INSTANCE, JsonParser.parseReader(var3)).result().orElseThrow();
+            var4 = (Map)CODEC.parse(JsonOps.INSTANCE, StrictJsonParser.parse((Reader)var3)).result().orElseThrow();
          } catch (Throwable var7) {
             if (var3 != null) {
                try {

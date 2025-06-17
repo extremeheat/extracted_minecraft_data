@@ -26,8 +26,8 @@ public class ServerData {
    @Nullable
    public ServerStatus.Players players;
    public long ping;
-   public int protocol = SharedConstants.getCurrentVersion().getProtocolVersion();
-   public Component version = Component.literal(SharedConstants.getCurrentVersion().getName());
+   public int protocol = SharedConstants.getCurrentVersion().protocolVersion();
+   public Component version = Component.literal(SharedConstants.getCurrentVersion().name());
    public List<Component> playerList = Collections.emptyList();
    private ServerPackStatus packStatus;
    @Nullable

@@ -78,7 +78,7 @@ public class MobEffects {
       RESISTANCE = register("resistance", new MobEffect(MobEffectCategory.BENEFICIAL, 9520880));
       FIRE_RESISTANCE = register("fire_resistance", new MobEffect(MobEffectCategory.BENEFICIAL, 16750848));
       WATER_BREATHING = register("water_breathing", new MobEffect(MobEffectCategory.BENEFICIAL, 10017472));
-      INVISIBILITY = register("invisibility", new MobEffect(MobEffectCategory.BENEFICIAL, 16185078));
+      INVISIBILITY = register("invisibility", (new MobEffect(MobEffectCategory.BENEFICIAL, 16185078)).addAttributeModifier(Attributes.WAYPOINT_TRANSMIT_RANGE, ResourceLocation.withDefaultNamespace("effect.waypoint_transmit_range_hide"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
       BLINDNESS = register("blindness", new MobEffect(MobEffectCategory.HARMFUL, 2039587));
       NIGHT_VISION = register("night_vision", new MobEffect(MobEffectCategory.BENEFICIAL, 12779366));
       HUNGER = register("hunger", new HungerMobEffect(MobEffectCategory.HARMFUL, 5797459));

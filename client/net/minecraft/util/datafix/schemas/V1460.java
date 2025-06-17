@@ -142,7 +142,8 @@ public class V1460 extends NamespacedSchema {
    }
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      var1.registerType(false, References.LEVEL, () -> DSL.optionalFields("CustomBossEvents", DSL.compoundList(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1)))));
+      var1.registerType(false, References.LEVEL, () -> DSL.optionalFields("CustomBossEvents", DSL.compoundList(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1))), References.LIGHTWEIGHT_LEVEL.in(var1)));
+      var1.registerType(false, References.LIGHTWEIGHT_LEVEL, DSL::remainder);
       var1.registerType(false, References.RECIPE, () -> DSL.constType(namespacedString()));
       var1.registerType(false, References.PLAYER, () -> DSL.optionalFields(new Pair[]{Pair.of("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1))), Pair.of("ender_pearls", DSL.list(References.ENTITY_TREE.in(var1))), Pair.of("Inventory", DSL.list(References.ITEM_STACK.in(var1))), Pair.of("EnderItems", DSL.list(References.ITEM_STACK.in(var1))), Pair.of("ShoulderEntityLeft", References.ENTITY_TREE.in(var1)), Pair.of("ShoulderEntityRight", References.ENTITY_TREE.in(var1)), Pair.of("recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1))))}));
       var1.registerType(false, References.CHUNK, () -> DSL.fields("Level", DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1)), "TileEntities", DSL.list(DSL.or(References.BLOCK_ENTITY.in(var1), DSL.remainder())), "TileTicks", DSL.list(DSL.fields("i", References.BLOCK_NAME.in(var1))), "Sections", DSL.list(DSL.optionalFields("Palette", DSL.list(References.BLOCK_STATE.in(var1)))))));
@@ -161,7 +162,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.STATS, () -> DSL.optionalFields("stats", DSL.optionalFields(new Pair[]{Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:crafted", (TypeTemplate)var4.get()), Pair.of("minecraft:used", (TypeTemplate)var4.get()), Pair.of("minecraft:broken", (TypeTemplate)var4.get()), Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()), Pair.of("minecraft:dropped", (TypeTemplate)var4.get()), Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))})));
       var1.registerType(false, References.SAVED_DATA_COMMAND_STORAGE, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_TICKETS, DSL::remainder);
-      var1.registerType(false, References.SAVED_DATA_MAP_DATA, () -> DSL.optionalFields("banners", DSL.list(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1)))));
+      var1.registerType(false, References.SAVED_DATA_MAP_DATA, () -> DSL.optionalFields("data", DSL.optionalFields("banners", DSL.list(DSL.optionalFields("Name", References.TEXT_COMPONENT.in(var1))))));
       var1.registerType(false, References.SAVED_DATA_MAP_INDEX, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RAIDS, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA_RANDOM_SEQUENCES, DSL::remainder);

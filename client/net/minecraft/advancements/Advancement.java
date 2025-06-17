@@ -80,7 +80,7 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
 
    public void validate(ProblemReporter var1, HolderGetter.Provider var2) {
       this.criteria.forEach((var2x, var3) -> {
-         CriterionValidator var4 = new CriterionValidator(var1.forChild(var2x), var2);
+         CriterionValidator var4 = new CriterionValidator(var1.forChild(new ProblemReporter.RootFieldPathElement(var2x)), var2);
          var3.triggerInstance().validate(var4);
       });
    }

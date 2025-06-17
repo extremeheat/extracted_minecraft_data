@@ -278,7 +278,7 @@ public class LevelStorageSource {
                CompoundTag var5 = (CompoundTag)var10;
                CompoundTag var6 = var5.getCompoundOrEmpty("Data");
                int var7 = NbtUtils.getDataVersion(var6, -1);
-               Dynamic var8 = DataFixTypes.LEVEL.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, var6), var7);
+               Dynamic var8 = DataFixTypes.LEVEL_SUMMARY.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, var6), var7);
                return this.makeLevelSummary(var8, var1, var2);
             }
 

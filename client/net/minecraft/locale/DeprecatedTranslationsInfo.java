@@ -1,16 +1,17 @@
 package net.minecraft.locale;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.util.StrictJsonParser;
 import org.slf4j.Logger;
 
 public record DeprecatedTranslationsInfo(List<String> removed, Map<String, String> renamed) {
@@ -25,7 +26,7 @@ public record DeprecatedTranslationsInfo(List<String> removed, Map<String, Strin
    }
 
    public static DeprecatedTranslationsInfo loadFromJson(InputStream var0) {
-      JsonElement var1 = JsonParser.parseReader(new InputStreamReader(var0, StandardCharsets.UTF_8));
+      JsonElement var1 = StrictJsonParser.parse((Reader)(new InputStreamReader(var0, StandardCharsets.UTF_8)));
       return (DeprecatedTranslationsInfo)CODEC.parse(JsonOps.INSTANCE, var1).getOrThrow((var0x) -> new IllegalStateException("Failed to parse deprecated language data: " + var0x));
    }
 

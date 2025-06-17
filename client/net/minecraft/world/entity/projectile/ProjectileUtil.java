@@ -19,7 +19,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public final class ProjectileUtil {
-   private static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
+   public static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
 
    public ProjectileUtil() {
       super();
@@ -29,14 +29,14 @@ public final class ProjectileUtil {
       Vec3 var2 = var0.getDeltaMovement();
       Level var3 = var0.level();
       Vec3 var4 = var0.position();
-      return getHitResult(var4, var0, var1, var2, var3, 0.3F, ClipContext.Block.COLLIDER);
+      return getHitResult(var4, var0, var1, var2, var3, computeMargin(var0), ClipContext.Block.COLLIDER);
    }
 
    public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {
       Vec3 var3 = var0.getDeltaMovement();
       Level var4 = var0.level();
       Vec3 var5 = var0.position();
-      return getHitResult(var5, var0, var1, var3, var4, 0.3F, var2);
+      return getHitResult(var5, var0, var1, var3, var4, computeMargin(var0), var2);
    }
 
    public static HitResult getHitResultOnViewVector(Entity var0, Predicate<Entity> var1, double var2) {
@@ -103,8 +103,12 @@ public final class ProjectileUtil {
    }
 
    @Nullable
-   public static EntityHitResult getEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
-      return getEntityHitResult(var0, var1, var2, var3, var4, var5, 0.3F);
+   public static EntityHitResult getEntityHitResult(Level var0, Projectile var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
+      return getEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1));
+   }
+
+   public static float computeMargin(Entity var0) {
+      return Math.max(0.0F, Math.min(0.3F, (float)(var0.tickCount - 2) / 20.0F));
    }
 
    @Nullable

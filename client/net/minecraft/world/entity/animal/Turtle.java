@@ -3,7 +3,6 @@ package net.minecraft.world.entity.animal;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -60,6 +59,8 @@ import net.minecraft.world.level.block.TurtleEggBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class Turtle extends Animal {
@@ -112,13 +113,13 @@ public class Turtle extends Animal {
       var1.define(LAYING_EGG, false);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("home_pos", BlockPos.CODEC, this.homePos);
       var1.putBoolean("has_egg", this.hasEgg());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.setHomePos((BlockPos)var1.read("home_pos", BlockPos.CODEC).orElse(this.blockPosition()));
       super.readAdditionalSaveData(var1);
       this.setHasEgg(var1.getBooleanOr("has_egg", false));

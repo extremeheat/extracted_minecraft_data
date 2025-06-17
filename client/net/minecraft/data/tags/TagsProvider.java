@@ -87,11 +87,6 @@ public abstract class TagsProvider<T> implements DataProvider {
       });
    }
 
-   protected TagAppender<T> tag(TagKey<T> var1) {
-      TagBuilder var2 = this.getOrCreateRawBuilder(var1);
-      return new TagAppender<T>(var2);
-   }
-
    protected TagBuilder getOrCreateRawBuilder(TagKey<T> var1) {
       return (TagBuilder)this.builders.computeIfAbsent(var1.location(), (var0) -> TagBuilder.create());
    }
@@ -116,52 +111,6 @@ public abstract class TagsProvider<T> implements DataProvider {
 
       default boolean contains(TagKey<T> var1) {
          return ((Optional)this.apply(var1)).isPresent();
-      }
-   }
-
-   protected static class TagAppender<T> {
-      private final TagBuilder builder;
-
-      protected TagAppender(TagBuilder var1) {
-         super();
-         this.builder = var1;
-      }
-
-      public final TagAppender<T> add(ResourceKey<T> var1) {
-         this.builder.addElement(var1.location());
-         return this;
-      }
-
-      @SafeVarargs
-      public final TagAppender<T> add(ResourceKey<T>... var1) {
-         for(ResourceKey var5 : var1) {
-            this.builder.addElement(var5.location());
-         }
-
-         return this;
-      }
-
-      public final TagAppender<T> addAll(List<ResourceKey<T>> var1) {
-         for(ResourceKey var3 : var1) {
-            this.builder.addElement(var3.location());
-         }
-
-         return this;
-      }
-
-      public TagAppender<T> addOptional(ResourceLocation var1) {
-         this.builder.addOptionalElement(var1);
-         return this;
-      }
-
-      public TagAppender<T> addTag(TagKey<T> var1) {
-         this.builder.addTag(var1.location());
-         return this;
-      }
-
-      public TagAppender<T> addOptionalTag(ResourceLocation var1) {
-         this.builder.addOptionalTag(var1);
-         return this;
       }
    }
 }

@@ -69,18 +69,16 @@ public abstract class VertexArrayCache {
             switch (var5.usage()) {
                case POSITION:
                case GENERIC:
-                  GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), false, var2, (long)var0.getOffset(var5));
-                  break;
-               case NORMAL:
-               case COLOR:
-                  GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), true, var2, (long)var0.getOffset(var5));
-                  break;
                case UV:
                   if (var5.type() == VertexFormatElement.Type.FLOAT) {
                      GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), false, var2, (long)var0.getOffset(var5));
                   } else {
                      GlStateManager._vertexAttribIPointer(var4, var5.count(), GlConst.toGl(var5.type()), var2, (long)var0.getOffset(var5));
                   }
+                  break;
+               case NORMAL:
+               case COLOR:
+                  GlStateManager._vertexAttribPointer(var4, var5.count(), GlConst.toGl(var5.type()), true, var2, (long)var0.getOffset(var5));
             }
          }
 
@@ -90,10 +88,18 @@ public abstract class VertexArrayCache {
    static class Separate extends VertexArrayCache {
       private final Map<VertexFormat, VertexArray> cache = new HashMap();
       private final GlDebugLabel debugLabels;
+      private final boolean needsMesaWorkaround;
 
       public Separate(GlDebugLabel var1) {
          super();
          this.debugLabels = var1;
+         if ("Mesa".equals(GlStateManager._getString(7936))) {
+            String var2 = GlStateManager._getString(7938);
+            this.needsMesaWorkaround = var2.contains("25.0.0") || var2.contains("25.0.1") || var2.contains("25.0.2");
+         } else {
+            this.needsMesaWorkaround = false;
+         }
+
       }
 
       public void bindVertexArray(VertexFormat var1, GlBuffer var2) {
@@ -110,18 +116,16 @@ public abstract class VertexArrayCache {
                switch (var7.usage()) {
                   case POSITION:
                   case GENERIC:
-                     ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), false, var1.getOffset(var7));
-                     break;
-                  case NORMAL:
-                  case COLOR:
-                     ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), true, var1.getOffset(var7));
-                     break;
                   case UV:
                      if (var7.type() == VertexFormatElement.Type.FLOAT) {
                         ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), false, var1.getOffset(var7));
                      } else {
                         ARBVertexAttribBinding.glVertexAttribIFormat(var6, var7.count(), GlConst.toGl(var7.type()), var1.getOffset(var7));
                      }
+                     break;
+                  case NORMAL:
+                  case COLOR:
+                     ARBVertexAttribBinding.glVertexAttribFormat(var6, var7.count(), GlConst.toGl(var7.type()), true, var1.getOffset(var7));
                }
 
                ARBVertexAttribBinding.glVertexAttribBinding(var6, 0);
@@ -133,7 +137,7 @@ public abstract class VertexArrayCache {
          } else {
             GlStateManager._glBindVertexArray(var3.id);
             if (var3.lastVertexBuffer != var2) {
-               if (var3.lastVertexBuffer != null && var3.lastVertexBuffer.handle == var2.handle) {
+               if (this.needsMesaWorkaround && var3.lastVertexBuffer != null && var3.lastVertexBuffer.handle == var2.handle) {
                   ARBVertexAttribBinding.glBindVertexBuffer(0, 0, 0L, 0);
                }
 

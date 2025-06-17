@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -9,9 +9,20 @@ import net.minecraft.resources.ResourceLocation;
 public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
    private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
    private static final int INNER_PADDING = 4;
+   public static final int DEFAULT_TOTAL_PADDING = 8;
+   private boolean showBackground;
+   private boolean showDecorations;
 
    public AbstractTextAreaWidget(int var1, int var2, int var3, int var4, Component var5) {
       super(var1, var2, var3, var4, var5);
+      this.showBackground = true;
+      this.showDecorations = true;
+   }
+
+   public AbstractTextAreaWidget(int var1, int var2, int var3, int var4, Component var5, boolean var6, boolean var7) {
+      this(var1, var2, var3, var4, var5);
+      this.showBackground = var6;
+      this.showDecorations = var7;
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -35,19 +46,25 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
-         this.renderBackground(var1);
+         if (this.showBackground) {
+            this.renderBackground(var1);
+         }
+
          var1.enableScissor(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1);
-         var1.pose().pushPose();
-         var1.pose().translate(0.0, -this.scrollAmount(), 0.0);
+         var1.pose().pushMatrix();
+         var1.pose().translate(0.0F, (float)(-this.scrollAmount()));
          this.renderContents(var1, var2, var3, var4);
-         var1.pose().popPose();
+         var1.pose().popMatrix();
          var1.disableScissor();
-         this.renderDecorations(var1);
+         this.renderScrollbar(var1);
+         if (this.showDecorations) {
+            this.renderDecorations(var1);
+         }
+
       }
    }
 
    protected void renderDecorations(GuiGraphics var1) {
-      this.renderScrollbar(var1);
    }
 
    protected int innerPadding() {
@@ -76,7 +93,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
 
    protected void renderBorder(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       ResourceLocation var6 = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
-      var1.blitSprite(RenderType::guiTextured, var6, var2, var3, var4, var5);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var6, var2, var3, var4, var5);
    }
 
    protected boolean withinContentAreaTopBottom(int var1, int var2) {

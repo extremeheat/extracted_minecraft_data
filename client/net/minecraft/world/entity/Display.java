@@ -9,9 +9,6 @@ import java.util.Optional;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
@@ -19,7 +16,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Brightness;
@@ -34,6 +30,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -192,7 +190,7 @@ public abstract class Display extends Entity {
       var1.define(DATA_GLOW_COLOR_OVERRIDE_ID, -1);
    }
 
-   protected void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       this.setTransformation((Transformation)var1.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.identity()));
       this.setTransformationInterpolationDuration(var1.getIntOr("interpolation_duration", 0));
       this.setTransformationInterpolationDelay(var1.getIntOr("start_interpolation", 0));
@@ -215,7 +213,7 @@ public abstract class Display extends Entity {
       this.entityData.set(DATA_RIGHT_ROTATION_ID, var1.getRightRotation());
    }
 
-   protected void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       var1.store("transformation", Transformation.EXTENDED_CODEC, createTransformation(this.entityData));
       var1.store("billboard", Display.BillboardConstraints.CODEC, this.getBillboardConstraints());
       var1.putInt("interpolation_duration", this.getTransformationInterpolationDuration());
@@ -501,17 +499,17 @@ public abstract class Display extends Entity {
          return (ItemDisplayContext)ItemDisplayContext.BY_ID.apply((Byte)this.entityData.get(DATA_ITEM_DISPLAY_ID));
       }
 
-      protected void readAdditionalSaveData(CompoundTag var1) {
+      protected void readAdditionalSaveData(ValueInput var1) {
          super.readAdditionalSaveData(var1);
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         this.setItemStack((ItemStack)var1.read("item", ItemStack.CODEC, var2).orElse(ItemStack.EMPTY));
+         this.setItemStack((ItemStack)var1.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
          this.setItemTransform((ItemDisplayContext)var1.read("item_display", ItemDisplayContext.CODEC).orElse(ItemDisplayContext.NONE));
       }
 
-      protected void addAdditionalSaveData(CompoundTag var1) {
+      protected void addAdditionalSaveData(ValueOutput var1) {
          super.addAdditionalSaveData(var1);
-         if (!this.getItemStack().isEmpty()) {
-            var1.store("item", ItemStack.CODEC, this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getItemStack());
+         ItemStack var2 = this.getItemStack();
+         if (!var2.isEmpty()) {
+            var1.store("item", ItemStack.CODEC, var2);
          }
 
          var1.store("item_display", ItemDisplayContext.CODEC, this.getItemTransform());
@@ -577,16 +575,14 @@ public abstract class Display extends Entity {
          this.entityData.set(DATA_BLOCK_STATE_ID, var1);
       }
 
-      protected void readAdditionalSaveData(CompoundTag var1) {
+      protected void readAdditionalSaveData(ValueInput var1) {
          super.readAdditionalSaveData(var1);
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC, var2).orElse(Blocks.AIR.defaultBlockState()));
+         this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC).orElse(Blocks.AIR.defaultBlockState()));
       }
 
-      protected void addAdditionalSaveData(CompoundTag var1) {
+      protected void addAdditionalSaveData(ValueOutput var1) {
          super.addAdditionalSaveData(var1);
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("block_state", BlockState.CODEC, var2, this.getBlockState());
+         var1.store("block_state", BlockState.CODEC, this.getBlockState());
       }
 
       @Nullable
@@ -699,11 +695,11 @@ public abstract class Display extends Entity {
          this.entityData.set(DATA_STYLE_FLAGS_ID, var1);
       }
 
-      private static byte loadFlag(byte var0, CompoundTag var1, String var2, byte var3) {
+      private static byte loadFlag(byte var0, ValueInput var1, String var2, byte var3) {
          return var1.getBooleanOr(var2, false) ? (byte)(var0 | var3) : var0;
       }
 
-      protected void readAdditionalSaveData(CompoundTag var1) {
+      protected void readAdditionalSaveData(ValueInput var1) {
          super.readAdditionalSaveData(var1);
          this.setLineWidth(var1.getIntOr("line_width", 200));
          this.setTextOpacity(var1.getByteOr("text_opacity", (byte)-1));
@@ -725,47 +721,40 @@ public abstract class Display extends Entity {
          }
 
          this.setFlags(var2);
-         Tag var4 = var1.get("text");
-         if (var4 != null) {
-            RegistryOps var5 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-
+         Optional var4 = var1.read("text", ComponentSerialization.CODEC);
+         if (var4.isPresent()) {
             try {
-               Component var6 = (Component)ComponentSerialization.CODEC.parse(var5, var4).getOrThrow();
-               if (var6 != null) {
-                  Level var8 = this.level();
-                  if (var8 instanceof ServerLevel) {
-                     ServerLevel var7 = (ServerLevel)var8;
-                     CommandSourceStack var13 = this.createCommandSourceStackForNameResolution(var7).withPermission(2);
-                     MutableComponent var9 = ComponentUtils.updateForEntity(var13, var6, this, 0);
-                     this.setText(var9);
-                     return;
-                  }
+               Level var6 = this.level();
+               if (var6 instanceof ServerLevel) {
+                  ServerLevel var5 = (ServerLevel)var6;
+                  CommandSourceStack var11 = this.createCommandSourceStackForNameResolution(var5).withPermission(2);
+                  MutableComponent var7 = ComponentUtils.updateForEntity(var11, (Component)var4.get(), this, 0);
+                  this.setText(var7);
+               } else {
+                  this.setText(Component.empty());
                }
-
-               this.setText(Component.empty());
-            } catch (Exception var10) {
-               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var10);
+            } catch (Exception var8) {
+               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var8);
             }
          }
 
       }
 
-      private static void storeFlag(byte var0, CompoundTag var1, String var2, byte var3) {
+      private static void storeFlag(byte var0, ValueOutput var1, String var2, byte var3) {
          var1.putBoolean(var2, (var0 & var3) != 0);
       }
 
-      protected void addAdditionalSaveData(CompoundTag var1) {
+      protected void addAdditionalSaveData(ValueOutput var1) {
          super.addAdditionalSaveData(var1);
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("text", ComponentSerialization.CODEC, var2, this.getText());
+         var1.store("text", ComponentSerialization.CODEC, this.getText());
          var1.putInt("line_width", this.getLineWidth());
          var1.putInt("background", this.getBackgroundColor());
          var1.putByte("text_opacity", this.getTextOpacity());
-         byte var3 = this.getFlags();
-         storeFlag(var3, var1, "shadow", (byte)1);
-         storeFlag(var3, var1, "see_through", (byte)2);
-         storeFlag(var3, var1, "default_background", (byte)4);
-         var1.store("alignment", Display.TextDisplay.Align.CODEC, getAlign(var3));
+         byte var2 = this.getFlags();
+         storeFlag(var2, var1, "shadow", (byte)1);
+         storeFlag(var2, var1, "see_through", (byte)2);
+         storeFlag(var2, var1, "default_background", (byte)4);
+         var1.store("alignment", Display.TextDisplay.Align.CODEC, getAlign(var2));
       }
 
       protected void updateRenderSubState(boolean var1, float var2) {

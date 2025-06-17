@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -85,15 +86,15 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
             var10000 = null;
          }
 
-         SignApplicator var12 = var10000;
-         boolean var13 = var12 != null && var5.mayBuild();
-         if (!var3.isClientSide) {
-            if (var13 && !var8.isWaxed() && !this.otherPlayerIsEditingSign(var5, var8)) {
-               boolean var14 = var8.isFacingFrontText(var5);
-               if (var12.canApplyToSign(var8.getText(var14), var5) && var12.tryApplyToSign(var3, var8, var14, var5)) {
-                  var8.executeClickCommandsIfPresent(var5, var3, var4, var14);
+         SignApplicator var13 = var10000;
+         boolean var14 = var13 != null && var5.mayBuild();
+         if (var3 instanceof ServerLevel var15) {
+            if (var14 && !var8.isWaxed() && !this.otherPlayerIsEditingSign(var5, var8)) {
+               boolean var12 = var8.isFacingFrontText(var5);
+               if (var13.canApplyToSign(var8.getText(var12), var5) && var13.tryApplyToSign(var15, var8, var12, var5)) {
+                  var8.executeClickCommandsIfPresent(var15, var5, var4, var12);
                   var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
-                  var3.gameEvent(GameEvent.BLOCK_CHANGE, var8.getBlockPos(), GameEvent.Context.of(var5, var8.getBlockState()));
+                  var15.gameEvent(GameEvent.BLOCK_CHANGE, var8.getBlockPos(), GameEvent.Context.of(var5, var8.getBlockState()));
                   var1.consume(1, var5);
                   return InteractionResult.SUCCESS;
                } else {
@@ -103,7 +104,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
          } else {
-            return !var13 && !var8.isWaxed() ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
+            return !var14 && !var8.isWaxed() ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
          }
       } else {
          return InteractionResult.PASS;
@@ -113,22 +114,23 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var7 = var2.getBlockEntity(var3);
       if (var7 instanceof SignBlockEntity var6) {
-         if (var2.isClientSide) {
-            Util.pauseInIde(new IllegalStateException("Expected to only call this on server"));
-         }
-
-         boolean var9 = var6.isFacingFrontText(var4);
-         boolean var8 = var6.executeClickCommandsIfPresent(var4, var2, var3, var9);
-         if (var6.isWaxed()) {
-            var2.playSound((Entity)null, var6.getBlockPos(), var6.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
-            return InteractionResult.SUCCESS_SERVER;
-         } else if (var8) {
-            return InteractionResult.SUCCESS_SERVER;
-         } else if (!this.otherPlayerIsEditingSign(var4, var6) && var4.mayBuild() && this.hasEditableText(var4, var6, var9)) {
-            this.openTextEdit(var4, var6, var9);
-            return InteractionResult.SUCCESS_SERVER;
+         if (var2 instanceof ServerLevel var10) {
+            boolean var8 = var6.isFacingFrontText(var4);
+            boolean var9 = var6.executeClickCommandsIfPresent(var10, var4, var3, var8);
+            if (var6.isWaxed()) {
+               var10.playSound((Entity)null, var6.getBlockPos(), var6.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
+               return InteractionResult.SUCCESS_SERVER;
+            } else if (var9) {
+               return InteractionResult.SUCCESS_SERVER;
+            } else if (!this.otherPlayerIsEditingSign(var4, var6) && var4.mayBuild() && this.hasEditableText(var4, var6, var8)) {
+               this.openTextEdit(var4, var6, var8);
+               return InteractionResult.SUCCESS_SERVER;
+            } else {
+               return InteractionResult.PASS;
+            }
          } else {
-            return InteractionResult.PASS;
+            Util.pauseInIde(new IllegalStateException("Expected to only call this on server"));
+            return InteractionResult.CONSUME;
          }
       } else {
          return InteractionResult.PASS;

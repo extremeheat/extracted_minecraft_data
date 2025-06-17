@@ -29,6 +29,14 @@ public interface Toast {
       return NO_TOKEN;
    }
 
+   default float xPos(int var1, float var2) {
+      return (float)var1 - (float)this.width() * var2;
+   }
+
+   default float yPos(int var1) {
+      return (float)(var1 * this.height());
+   }
+
    default int width() {
       return 160;
    }
@@ -39,6 +47,9 @@ public interface Toast {
 
    default int occcupiedSlotCount() {
       return Mth.positiveCeilDiv(this.height(), 32);
+   }
+
+   default void onFinishedRendering() {
    }
 
    public static enum Visibility {

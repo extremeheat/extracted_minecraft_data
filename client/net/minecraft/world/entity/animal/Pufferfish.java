@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.List;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -25,6 +24,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class Pufferfish extends AbstractFish {
    private static final EntityDataAccessor<Integer> PUFF_STATE;
@@ -63,12 +64,12 @@ public class Pufferfish extends AbstractFish {
       super.onSyncedDataUpdated(var1);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("PuffState", this.getPuffState());
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.setPuffState(Math.min(var1.getIntOr("PuffState", 0), 2));
    }
@@ -137,7 +138,7 @@ public class Pufferfish extends AbstractFish {
    public void playerTouch(Player var1) {
       int var2 = this.getPuffState();
       if (var1 instanceof ServerPlayer var3) {
-         if (var2 > 0 && var1.hurtServer(var3.serverLevel(), this.damageSources().mobAttack(this), (float)(1 + var2))) {
+         if (var2 > 0 && var1.hurtServer(var3.level(), this.damageSources().mobAttack(this), (float)(1 + var2))) {
             if (!this.isSilent()) {
                var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PUFFER_FISH_STING, 0.0F));
             }
@@ -146,10 +147,6 @@ public class Pufferfish extends AbstractFish {
          }
       }
 
-   }
-
-   protected SoundEvent getAmbientSound() {
-      return SoundEvents.PUFFER_FISH_AMBIENT;
    }
 
    protected SoundEvent getDeathSound() {

@@ -21,7 +21,7 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -55,6 +55,7 @@ public class SocialInteractionsScreen extends Screen {
    private final HeaderAndFooterLayout layout;
    @Nullable
    private final Screen lastScreen;
+   @Nullable
    SocialInteractionsPlayerList socialInteractionsPlayerList;
    EditBox searchBox;
    private String lastSearch;
@@ -128,6 +129,13 @@ public class SocialInteractionsScreen extends Screen {
       this.repositionElements();
    }
 
+   public void added() {
+      if (this.socialInteractionsPlayerList != null) {
+         this.socialInteractionsPlayerList.refreshHasDraftReport();
+      }
+
+   }
+
    protected void repositionElements() {
       this.layout.arrangeElements();
       this.socialInteractionsPlayerList.updateSizeAndPosition(this.width, this.listEnd() - 88, 88);
@@ -179,12 +187,12 @@ public class SocialInteractionsScreen extends Screen {
 
       GameNarrator var7 = this.minecraft.getNarrator();
       if (!this.searchBox.getValue().isEmpty() && this.socialInteractionsPlayerList.isEmpty() && !this.searchBox.isFocused()) {
-         var7.sayNow(EMPTY_SEARCH);
+         var7.saySystemNow(EMPTY_SEARCH);
       } else if (var2) {
          if (var1 == SocialInteractionsScreen.Page.HIDDEN) {
-            var7.sayNow(EMPTY_HIDDEN);
+            var7.saySystemNow(EMPTY_HIDDEN);
          } else if (var1 == SocialInteractionsScreen.Page.BLOCKED) {
-            var7.sayNow(EMPTY_BLOCKED);
+            var7.saySystemNow(EMPTY_BLOCKED);
          }
       }
 
@@ -193,8 +201,8 @@ public class SocialInteractionsScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderBackground(var1, var2, var3, var4);
       int var5 = this.marginX() + 3;
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

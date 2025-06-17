@@ -1,20 +1,14 @@
 package net.minecraft.world.entity.animal.wolf;
 
-import java.util.Optional;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.variant.BiomeCheck;
-import net.minecraft.world.entity.variant.PriorityProvider;
-import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -56,10 +50,6 @@ public class WolfVariants {
       ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_tame");
       ResourceLocation var6 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_angry");
       var0.register(var1, new WolfVariant(new WolfVariant.AssetInfo(new ClientAsset(var4), new ClientAsset(var5), new ClientAsset(var6)), var3));
-   }
-
-   public static Optional<? extends Holder<WolfVariant>> selectVariantToSpawn(RandomSource var0, RegistryAccess var1, SpawnContext var2) {
-      return PriorityProvider.pick(var1.lookupOrThrow(Registries.WOLF_VARIANT).listElements(), Holder::value, var0, var2);
    }
 
    public static void bootstrap(BootstrapContext<WolfVariant> var0) {

@@ -8,7 +8,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class ThrownExperienceBottle extends ThrowableItemProjectile {
    public ThrownExperienceBottle(EntityType<? extends ThrownExperienceBottle> var1, Level var2) {
@@ -33,10 +35,17 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
 
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (this.level() instanceof ServerLevel) {
-         this.level().levelEvent(2002, this.blockPosition(), -13083194);
-         int var2 = 3 + this.level().random.nextInt(5) + this.level().random.nextInt(5);
-         ExperienceOrb.award((ServerLevel)this.level(), var1.getLocation(), var2);
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         var2.levelEvent(2002, this.blockPosition(), -13083194);
+         int var6 = 3 + var2.random.nextInt(5) + var2.random.nextInt(5);
+         if (var1 instanceof BlockHitResult var4) {
+            Vec3 var5 = var4.getDirection().getUnitVec3();
+            ExperienceOrb.awardWithDirection(var2, var1.getLocation(), var5, var6);
+         } else {
+            ExperienceOrb.awardWithDirection(var2, var1.getLocation(), this.getDeltaMovement().scale(-1.0), var6);
+         }
+
          this.discard();
       }
 

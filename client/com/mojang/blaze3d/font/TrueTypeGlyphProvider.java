@@ -210,7 +210,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
                try (NativeImage var5 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false)) {
                   if (var5.copyFromFont(var4, Glyph.this.index)) {
-                     RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var5, 0, var1, var2, Glyph.this.width, Glyph.this.height, 0, 0);
+                     RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var5, 0, 0, var1, var2, Glyph.this.width, Glyph.this.height, 0, 0);
                   }
                }
 

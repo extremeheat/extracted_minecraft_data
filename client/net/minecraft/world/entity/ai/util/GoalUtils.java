@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
@@ -14,11 +13,11 @@ public class GoalUtils {
    }
 
    public static boolean hasGroundPathNavigation(Mob var0) {
-      return var0.getNavigation() instanceof GroundPathNavigation;
+      return var0.getNavigation().canNavigateGround();
    }
 
    public static boolean mobRestricted(PathfinderMob var0, int var1) {
-      return var0.hasRestriction() && var0.getRestrictCenter().closerToCenterThan(var0.position(), (double)(var0.getRestrictRadius() + (float)var1) + 1.0);
+      return var0.hasHome() && var0.getHomePosition().closerToCenterThan(var0.position(), (double)(var0.getHomeRadius() + var1 + 1));
    }
 
    public static boolean isOutsideLimits(BlockPos var0, PathfinderMob var1) {
@@ -26,7 +25,7 @@ public class GoalUtils {
    }
 
    public static boolean isRestricted(boolean var0, PathfinderMob var1, BlockPos var2) {
-      return var0 && !var1.isWithinRestriction(var2);
+      return var0 && !var1.isWithinHome(var2);
    }
 
    public static boolean isNotStable(PathNavigation var0, BlockPos var1) {

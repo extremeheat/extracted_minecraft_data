@@ -128,7 +128,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
    void upload(int var1, int var2, int var3, int var4, NativeImage[] var5, GpuTexture var6) {
       for(int var7 = 0; var7 < this.byMipLevel.length; ++var7) {
-         RenderSystem.getDevice().createCommandEncoder().writeToTexture(var6, var5[var7], var7, var1 >> var7, var2 >> var7, this.width >> var7, this.height >> var7, var3 >> var7, var4 >> var7);
+         RenderSystem.getDevice().createCommandEncoder().writeToTexture(var6, var5[var7], var7, 0, var1 >> var7, var2 >> var7, this.width >> var7, this.height >> var7, var3 >> var7, var4 >> var7);
       }
 
    }

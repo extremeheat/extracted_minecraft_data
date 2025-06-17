@@ -84,6 +84,10 @@ public class ClientboundLevelChunkPacketData {
          var5.write(var0);
       }
 
+      if (var0.writerIndex() != var0.capacity()) {
+         int var10002 = var0.capacity();
+         throw new IllegalStateException("Didn't fill chunk buffer: expected " + var10002 + " bytes, got " + var0.writerIndex());
+      }
    }
 
    public Consumer<BlockEntityTagOutput> getBlockEntitiesTagsConsumer(int var1, int var2) {

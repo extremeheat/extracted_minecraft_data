@@ -1,46 +1,58 @@
 package net.minecraft.stats;
 
-import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.util.Pair;
-import java.util.EnumMap;
-import java.util.Map;
+import com.google.common.annotations.VisibleForTesting;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.util.function.UnaryOperator;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.inventory.RecipeBookType;
 
 public final class RecipeBookSettings {
-   public static final StreamCodec<FriendlyByteBuf, RecipeBookSettings> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, RecipeBookSettings>ofMember(RecipeBookSettings::write, RecipeBookSettings::read);
-   private static final Map<RecipeBookType, Pair<String, String>> TAG_FIELDS;
-   private final Map<RecipeBookType, TypeSettings> states;
-
-   private RecipeBookSettings(Map<RecipeBookType, TypeSettings> var1) {
-      super();
-      this.states = var1;
-   }
+   public static final StreamCodec<FriendlyByteBuf, RecipeBookSettings> STREAM_CODEC;
+   public static final MapCodec<RecipeBookSettings> MAP_CODEC;
+   private TypeSettings crafting;
+   private TypeSettings furnace;
+   private TypeSettings blastFurnace;
+   private TypeSettings smoker;
 
    public RecipeBookSettings() {
-      this(new EnumMap(RecipeBookType.class));
+      this(RecipeBookSettings.TypeSettings.DEFAULT, RecipeBookSettings.TypeSettings.DEFAULT, RecipeBookSettings.TypeSettings.DEFAULT, RecipeBookSettings.TypeSettings.DEFAULT);
    }
 
-   private TypeSettings getSettings(RecipeBookType var1) {
-      return (TypeSettings)this.states.getOrDefault(var1, RecipeBookSettings.TypeSettings.DEFAULT);
+   private RecipeBookSettings(TypeSettings var1, TypeSettings var2, TypeSettings var3, TypeSettings var4) {
+      super();
+      this.crafting = var1;
+      this.furnace = var2;
+      this.blastFurnace = var3;
+      this.smoker = var4;
+   }
+
+   @VisibleForTesting
+   public TypeSettings getSettings(RecipeBookType var1) {
+      TypeSettings var10000;
+      switch (var1) {
+         case CRAFTING -> var10000 = this.crafting;
+         case FURNACE -> var10000 = this.furnace;
+         case BLAST_FURNACE -> var10000 = this.blastFurnace;
+         case SMOKER -> var10000 = this.smoker;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    private void updateSettings(RecipeBookType var1, UnaryOperator<TypeSettings> var2) {
-      this.states.compute(var1, (var1x, var2x) -> {
-         if (var2x == null) {
-            var2x = RecipeBookSettings.TypeSettings.DEFAULT;
-         }
+      switch (var1) {
+         case CRAFTING -> this.crafting = (TypeSettings)var2.apply(this.crafting);
+         case FURNACE -> this.furnace = (TypeSettings)var2.apply(this.furnace);
+         case BLAST_FURNACE -> this.blastFurnace = (TypeSettings)var2.apply(this.blastFurnace);
+         case SMOKER -> this.smoker = (TypeSettings)var2.apply(this.smoker);
+      }
 
-         var2x = (TypeSettings)var2.apply(var2x);
-         if (var2x.equals(RecipeBookSettings.TypeSettings.DEFAULT)) {
-            var2x = null;
-         }
-
-         return var2x;
-      });
    }
 
    public boolean isOpen(RecipeBookType var1) {
@@ -59,77 +71,33 @@ public final class RecipeBookSettings {
       this.updateSettings(var1, (var1x) -> var1x.setFiltering(var2));
    }
 
-   private static RecipeBookSettings read(FriendlyByteBuf var0) {
-      EnumMap var1 = new EnumMap(RecipeBookType.class);
-
-      for(RecipeBookType var5 : RecipeBookType.values()) {
-         boolean var6 = var0.readBoolean();
-         boolean var7 = var0.readBoolean();
-         if (var6 || var7) {
-            var1.put(var5, new TypeSettings(var6, var7));
-         }
-      }
-
-      return new RecipeBookSettings(var1);
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      for(RecipeBookType var5 : RecipeBookType.values()) {
-         TypeSettings var6 = (TypeSettings)this.states.getOrDefault(var5, RecipeBookSettings.TypeSettings.DEFAULT);
-         var1.writeBoolean(var6.open);
-         var1.writeBoolean(var6.filtering);
-      }
-
-   }
-
-   public static RecipeBookSettings read(CompoundTag var0) {
-      EnumMap var1 = new EnumMap(RecipeBookType.class);
-      TAG_FIELDS.forEach((var2, var3) -> {
-         boolean var4 = var0.getBooleanOr((String)var3.getFirst(), RecipeBookSettings.TypeSettings.DEFAULT.open());
-         boolean var5 = var0.getBooleanOr((String)var3.getSecond(), RecipeBookSettings.TypeSettings.DEFAULT.filtering());
-         if (var4 || var5) {
-            var1.put(var2, new TypeSettings(var4, var5));
-         }
-
-      });
-      return new RecipeBookSettings(var1);
-   }
-
-   public void write(CompoundTag var1) {
-      TAG_FIELDS.forEach((var2, var3) -> {
-         TypeSettings var4 = (TypeSettings)this.states.getOrDefault(var2, RecipeBookSettings.TypeSettings.DEFAULT);
-         var1.putBoolean((String)var3.getFirst(), var4.open);
-         var1.putBoolean((String)var3.getSecond(), var4.filtering);
-      });
-   }
-
    public RecipeBookSettings copy() {
-      return new RecipeBookSettings(new EnumMap(this.states));
+      return new RecipeBookSettings(this.crafting, this.furnace, this.blastFurnace, this.smoker);
    }
 
    public void replaceFrom(RecipeBookSettings var1) {
-      this.states.clear();
-      this.states.putAll(var1.states);
-   }
-
-   public boolean equals(Object var1) {
-      return this == var1 || var1 instanceof RecipeBookSettings && this.states.equals(((RecipeBookSettings)var1).states);
-   }
-
-   public int hashCode() {
-      return this.states.hashCode();
+      this.crafting = var1.crafting;
+      this.furnace = var1.furnace;
+      this.blastFurnace = var1.blastFurnace;
+      this.smoker = var1.smoker;
    }
 
    static {
-      TAG_FIELDS = ImmutableMap.of(RecipeBookType.CRAFTING, Pair.of("isGuiOpen", "isFilteringCraftable"), RecipeBookType.FURNACE, Pair.of("isFurnaceGuiOpen", "isFurnaceFilteringCraftable"), RecipeBookType.BLAST_FURNACE, Pair.of("isBlastingFurnaceGuiOpen", "isBlastingFurnaceFilteringCraftable"), RecipeBookType.SMOKER, Pair.of("isSmokerGuiOpen", "isSmokerFilteringCraftable"));
+      STREAM_CODEC = StreamCodec.composite(RecipeBookSettings.TypeSettings.STREAM_CODEC, (var0) -> var0.crafting, RecipeBookSettings.TypeSettings.STREAM_CODEC, (var0) -> var0.furnace, RecipeBookSettings.TypeSettings.STREAM_CODEC, (var0) -> var0.blastFurnace, RecipeBookSettings.TypeSettings.STREAM_CODEC, (var0) -> var0.smoker, RecipeBookSettings::new);
+      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RecipeBookSettings.TypeSettings.CRAFTING_MAP_CODEC.forGetter((var0x) -> var0x.crafting), RecipeBookSettings.TypeSettings.FURNACE_MAP_CODEC.forGetter((var0x) -> var0x.furnace), RecipeBookSettings.TypeSettings.BLAST_FURNACE_MAP_CODEC.forGetter((var0x) -> var0x.blastFurnace), RecipeBookSettings.TypeSettings.SMOKER_MAP_CODEC.forGetter((var0x) -> var0x.smoker)).apply(var0, RecipeBookSettings::new));
    }
 
-   static record TypeSettings(boolean open, boolean filtering) {
+   public static record TypeSettings(boolean open, boolean filtering) {
       final boolean open;
       final boolean filtering;
       public static final TypeSettings DEFAULT = new TypeSettings(false, false);
+      public static final MapCodec<TypeSettings> CRAFTING_MAP_CODEC = codec("isGuiOpen", "isFilteringCraftable");
+      public static final MapCodec<TypeSettings> FURNACE_MAP_CODEC = codec("isFurnaceGuiOpen", "isFurnaceFilteringCraftable");
+      public static final MapCodec<TypeSettings> BLAST_FURNACE_MAP_CODEC = codec("isBlastingFurnaceGuiOpen", "isBlastingFurnaceFilteringCraftable");
+      public static final MapCodec<TypeSettings> SMOKER_MAP_CODEC = codec("isSmokerGuiOpen", "isSmokerFilteringCraftable");
+      public static final StreamCodec<ByteBuf, TypeSettings> STREAM_CODEC;
 
-      TypeSettings(boolean var1, boolean var2) {
+      public TypeSettings(boolean var1, boolean var2) {
          super();
          this.open = var1;
          this.filtering = var2;
@@ -145,6 +113,14 @@ public final class RecipeBookSettings {
 
       public TypeSettings setFiltering(boolean var1) {
          return new TypeSettings(this.open, var1);
+      }
+
+      private static MapCodec<TypeSettings> codec(String var0, String var1) {
+         return RecordCodecBuilder.mapCodec((var2) -> var2.group(Codec.BOOL.optionalFieldOf(var0, false).forGetter(TypeSettings::open), Codec.BOOL.optionalFieldOf(var1, false).forGetter(TypeSettings::filtering)).apply(var2, TypeSettings::new));
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, TypeSettings::open, ByteBufCodecs.BOOL, TypeSettings::filtering, TypeSettings::new);
       }
    }
 }

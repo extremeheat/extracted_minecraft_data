@@ -38,6 +38,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
@@ -45,8 +46,6 @@ import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -56,6 +55,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
@@ -95,9 +95,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerRecipeBook;
@@ -131,9 +133,11 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -183,6 +187,8 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
@@ -202,13 +208,15 @@ public class ServerPlayer extends Player {
    public static final int ENDER_PEARL_TICKET_RADIUS = 2;
    public static final String ENDER_PEARLS_TAG = "ender_pearls";
    public static final String ENDER_PEARL_DIMENSION_TAG = "ender_pearl_dimension";
+   public static final String TAG_DIMENSION = "Dimension";
    private static final AttributeModifier CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER;
    private static final AttributeModifier CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER;
    private static final Component SPAWN_SET_MESSAGE;
+   private static final AttributeModifier WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER;
    private static final boolean DEFAULT_SEEN_CREDITS = false;
    private static final boolean DEFAULT_SPAWN_EXTRA_PARTICLES_ON_FALL = false;
    public ServerGamePacketListenerImpl connection;
-   public final MinecraftServer server;
+   private final MinecraftServer server;
    public final ServerPlayerGameMode gameMode;
    private final PlayerAdvancements advancements;
    private final ServerStatsCounter stats;
@@ -268,7 +276,7 @@ public class ServerPlayer extends Player {
    public boolean wonGame;
 
    public ServerPlayer(MinecraftServer var1, ServerLevel var2, GameProfile var3, ClientInformation var4) {
-      super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3);
+      super(var2, var3);
       this.chatVisibility = ChatVisiblity.FULL;
       this.particleStatus = ParticleStatus.ALL;
       this.canChatColor = true;
@@ -351,7 +359,7 @@ public class ServerPlayer extends Player {
       };
       this.commandSource = new CommandSource() {
          public boolean acceptsSuccess() {
-            return ServerPlayer.this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+            return ServerPlayer.this.level().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
          }
 
          public boolean acceptsFailure() {
@@ -372,7 +380,6 @@ public class ServerPlayer extends Player {
       this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
-      this.snapTo(this.adjustSpawnLocation(var2, var2.getSharedSpawnPos()).getBottomCenter(), 0.0F, 0.0F);
       this.updateOptions(var4);
       this.object = null;
    }
@@ -443,12 +450,12 @@ public class ServerPlayer extends Player {
       return var1 <= 16 ? var1 - 1 : 17;
    }
 
-   public void readAdditionalSaveData(CompoundTag var1) {
+   protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.wardenSpawnTracker = (WardenSpawnTracker)var1.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
       this.enteredNetherPosition = (Vec3)var1.read("entered_nether_pos", Vec3.CODEC).orElse((Object)null);
       this.seenCredits = var1.getBooleanOr("seenCredits", false);
-      this.recipeBook.fromNbt(var1.getCompoundOrEmpty("recipeBook"), (var1x) -> this.server.getRecipeManager().byKey(var1x).isPresent());
+      var1.read("recipeBook", ServerRecipeBook.Packed.CODEC).ifPresent((var1x) -> this.recipeBook.loadUntrusted(var1x, (var1) -> this.server.getRecipeManager().byKey(var1).isPresent()));
       if (this.isSleeping()) {
          this.stopSleeping();
       }
@@ -458,14 +465,14 @@ public class ServerPlayer extends Player {
       this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
    }
 
-   public void addAdditionalSaveData(CompoundTag var1) {
+   protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.store("warden_spawn_tracker", WardenSpawnTracker.CODEC, this.wardenSpawnTracker);
       this.storeGameTypes(var1);
       var1.putBoolean("seenCredits", this.seenCredits);
       var1.storeNullable("entered_nether_pos", Vec3.CODEC, this.enteredNetherPosition);
       this.saveParentVehicle(var1);
-      var1.put("recipeBook", this.recipeBook.toNbt());
+      var1.store("recipeBook", ServerRecipeBook.Packed.CODEC, this.recipeBook.pack());
       var1.putString("Dimension", this.level().dimension().location().toString());
       var1.storeNullable("respawn", ServerPlayer.RespawnConfig.CODEC, this.respawnConfig);
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
@@ -473,27 +480,24 @@ public class ServerPlayer extends Player {
       this.saveEnderPearls(var1);
    }
 
-   private void saveParentVehicle(CompoundTag var1) {
+   private void saveParentVehicle(ValueOutput var1) {
       Entity var2 = this.getRootVehicle();
       Entity var3 = this.getVehicle();
       if (var3 != null && var2 != this && var2.hasExactlyOnePlayerPassenger()) {
-         CompoundTag var4 = new CompoundTag();
-         CompoundTag var5 = new CompoundTag();
-         var2.save(var5);
+         ValueOutput var4 = var1.child("RootVehicle");
          var4.store("Attach", UUIDUtil.CODEC, var3.getUUID());
-         var4.put("Entity", var5);
-         var1.put("RootVehicle", var4);
+         var2.save(var4.child("Entity"));
       }
 
    }
 
-   public void loadAndSpawnParentVehicle(CompoundTag var1) {
-      Optional var2 = var1.getCompound("RootVehicle");
+   public void loadAndSpawnParentVehicle(ValueInput var1) {
+      Optional var2 = var1.child("RootVehicle");
       if (!var2.isEmpty()) {
-         ServerLevel var3 = this.serverLevel();
-         Entity var4 = EntityType.loadEntityRecursive(((CompoundTag)var2.get()).getCompoundOrEmpty("Entity"), var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
+         ServerLevel var3 = this.level();
+         Entity var4 = EntityType.loadEntityRecursive((ValueInput)((ValueInput)var2.get()).childOrEmpty("Entity"), var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
          if (var4 != null) {
-            UUID var5 = (UUID)((CompoundTag)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
+            UUID var5 = (UUID)((ValueInput)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
             if (var4.getUUID().equals(var5)) {
                this.startRiding(var4, true);
             } else {
@@ -518,36 +522,33 @@ public class ServerPlayer extends Player {
       }
    }
 
-   private void saveEnderPearls(CompoundTag var1) {
+   private void saveEnderPearls(ValueOutput var1) {
       if (!this.enderPearls.isEmpty()) {
-         ListTag var2 = new ListTag();
+         ValueOutput.ValueOutputList var2 = var1.childrenList("ender_pearls");
 
          for(ThrownEnderpearl var4 : this.enderPearls) {
             if (var4.isRemoved()) {
                LOGGER.warn("Trying to save removed ender pearl, skipping");
             } else {
-               CompoundTag var5 = new CompoundTag();
+               ValueOutput var5 = var2.addChild();
                var4.save(var5);
                var5.store("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC, var4.level().dimension());
-               var2.add(var5);
             }
          }
-
-         var1.put("ender_pearls", var2);
       }
 
    }
 
-   public void loadAndSpawnEnderPearls(CompoundTag var1) {
-      var1.getList("ender_pearls").ifPresent((var1x) -> var1x.compoundStream().forEach(this::loadAndSpawnEnderPearl));
+   public void loadAndSpawnEnderPearls(ValueInput var1) {
+      var1.childrenListOrEmpty("ender_pearls").forEach(this::loadAndSpawnEnderPearl);
    }
 
-   private void loadAndSpawnEnderPearl(CompoundTag var1) {
+   private void loadAndSpawnEnderPearl(ValueInput var1) {
       Optional var2 = var1.read("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC);
       if (!var2.isEmpty()) {
-         ServerLevel var3 = this.serverLevel().getServer().getLevel((ResourceKey)var2.get());
+         ServerLevel var3 = this.level().getServer().getLevel((ResourceKey)var2.get());
          if (var3 != null) {
-            Entity var4 = EntityType.loadEntityRecursive(var1, var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
+            Entity var4 = EntityType.loadEntityRecursive((ValueInput)var1, var3, EntitySpawnReason.LOAD, (var1x) -> !var3.addWithUUID(var1x) ? null : var1x);
             if (var4 != null) {
                placeEnderPearlTicket(var3, var4.chunkPosition());
             } else {
@@ -627,7 +628,7 @@ public class ServerPlayer extends Player {
       if (var1 != this) {
          if (var1.isAlive()) {
             this.absSnapTo(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot());
-            this.serverLevel().getChunkSource().move(this);
+            this.level().getChunkSource().move(this);
             if (this.wantsToStopRiding()) {
                this.setCamera(this);
             }
@@ -663,6 +664,15 @@ public class ServerPlayer extends Player {
             var2.addOrUpdateTransientModifier(CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER);
          } else {
             var2.removeModifier(CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER);
+         }
+      }
+
+      AttributeInstance var3 = this.getAttribute(Attributes.WAYPOINT_TRANSMIT_RANGE);
+      if (var3 != null) {
+         if (this.isCrouching()) {
+            var3.addOrUpdateTransientModifier(WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER);
+         } else {
+            var3.removeModifier(WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER);
          }
       }
 
@@ -737,7 +747,7 @@ public class ServerPlayer extends Player {
 
    private void synchronizeSpecialItemUpdates(ItemStack var1) {
       MapId var2 = (MapId)var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
+      MapItemSavedData var3 = MapItem.getSavedData((MapId)var2, this.level());
       if (var3 != null) {
          Packet var4 = var3.getUpdatePacket(var2, this);
          if (var4 != null) {
@@ -748,7 +758,7 @@ public class ServerPlayer extends Player {
    }
 
    protected void tickRegeneration() {
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.serverLevel().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
          if (this.tickCount % 20 == 0) {
             if (this.getHealth() < this.getMaxHealth()) {
                this.heal(1.0F);
@@ -807,7 +817,7 @@ public class ServerPlayer extends Player {
 
    public void die(DamageSource var1) {
       this.gameEvent(GameEvent.ENTITY_DIE);
-      boolean var2 = this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
+      boolean var2 = this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
       if (var2) {
          Component var3 = this.getCombatTracker().getDeathMessage();
          this.connection.send(new ClientboundPlayerCombatKillPacket(this.getId(), var3), PacketSendListener.exceptionallySend(() -> {
@@ -832,12 +842,12 @@ public class ServerPlayer extends Player {
       }
 
       this.removeEntitiesOnShoulder();
-      if (this.serverLevel().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+      if (this.level().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
          this.tellNeutralMobsThatIDied();
       }
 
       if (!this.isSpectator()) {
-         this.dropAllDeathLoot(this.serverLevel(), var1);
+         this.dropAllDeathLoot(this.level(), var1);
       }
 
       this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
@@ -862,7 +872,7 @@ public class ServerPlayer extends Player {
 
    private void tellNeutralMobsThatIDied() {
       AABB var1 = (new AABB(this.blockPosition())).inflate(32.0, 10.0, 32.0);
-      this.level().getEntitiesOfClass(Mob.class, var1, EntitySelector.NO_SPECTATORS).stream().filter((var0) -> var0 instanceof NeutralMob).forEach((var1x) -> ((NeutralMob)var1x).playerDied(this.serverLevel(), this));
+      this.level().getEntitiesOfClass(Mob.class, var1, EntitySelector.NO_SPECTATORS).stream().filter((var0) -> var0 instanceof NeutralMob).forEach((var1x) -> ((NeutralMob)var1x).playerDied(this.level(), this));
    }
 
    public void awardKillScore(Entity var1, DamageSource var2) {
@@ -944,6 +954,23 @@ public class ServerPlayer extends Player {
       }
    }
 
+   public boolean isReceivingWaypoints() {
+      return this.getAttributeValue(Attributes.WAYPOINT_RECEIVE_RANGE) > 0.0;
+   }
+
+   protected void onAttributeUpdated(Holder<Attribute> var1) {
+      if (var1.is(Attributes.WAYPOINT_RECEIVE_RANGE)) {
+         ServerWaypointManager var2 = this.level().getWaypointManager();
+         if (this.getAttributes().getValue(var1) > 0.0) {
+            var2.addPlayer(this);
+         } else {
+            var2.removePlayer(this);
+         }
+      }
+
+      super.onAttributeUpdated(var1);
+   }
+
    private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(ServerLevel var0, RespawnConfig var1, boolean var2) {
       BlockPos var3 = var1.pos;
       float var4 = var1.angle;
@@ -971,7 +998,7 @@ public class ServerPlayer extends Player {
 
    public void showEndCredits() {
       this.unRide();
-      this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+      this.level().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
       if (!this.wonGame) {
          this.wonGame = true;
          this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.WIN_GAME, 0.0F));
@@ -990,7 +1017,7 @@ public class ServerPlayer extends Player {
          }
 
          ServerLevel var2 = var1.newLevel();
-         ServerLevel var3 = this.serverLevel();
+         ServerLevel var3 = this.level();
          ResourceKey var4 = var3.dimension();
          if (!var1.asPassenger()) {
             this.removeVehicle();
@@ -1033,6 +1060,7 @@ public class ServerPlayer extends Player {
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
             this.lastSentFood = -1;
+            this.teleportSpectators(var1, var3);
             return this;
          }
       }
@@ -1087,7 +1115,7 @@ public class ServerPlayer extends Player {
                   double var3 = 8.0;
                   double var5 = 5.0;
                   Vec3 var7 = Vec3.atBottomCenterOf(var1);
-                  List var8 = this.level().getEntitiesOfClass(Monster.class, new AABB(var7.x() - 8.0, var7.y() - 5.0, var7.z() - 8.0, var7.x() + 8.0, var7.y() + 5.0, var7.z() + 8.0), (var1x) -> var1x.isPreventingPlayerRest(this.serverLevel(), this));
+                  List var8 = this.level().getEntitiesOfClass(Monster.class, new AABB(var7.x() - 8.0, var7.y() - 5.0, var7.z() - 8.0, var7.x() + 8.0, var7.y() + 5.0, var7.z() + 8.0), (var1x) -> var1x.isPreventingPlayerRest(this.level(), this));
                   if (!var8.isEmpty()) {
                      return Either.left(Player.BedSleepingProblem.NOT_SAFE);
                   }
@@ -1097,11 +1125,11 @@ public class ServerPlayer extends Player {
                   this.awardStat(Stats.SLEEP_IN_BED);
                   CriteriaTriggers.SLEPT_IN_BED.trigger(this);
                });
-               if (!this.serverLevel().canSleepThroughNights()) {
+               if (!this.level().canSleepThroughNights()) {
                   this.displayClientMessage(Component.translatable("sleep.not_possible"), true);
                }
 
-               ((ServerLevel)this.level()).updateSleepingPlayerList();
+               this.level().updateSleepingPlayerList();
                return var9;
             }
          }
@@ -1131,7 +1159,7 @@ public class ServerPlayer extends Player {
 
    public void stopSleepInBed(boolean var1, boolean var2) {
       if (this.isSleeping()) {
-         this.serverLevel().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(this, 2));
+         this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(this, 2));
       }
 
       super.stopSleepInBed(var1, var2);
@@ -1156,7 +1184,7 @@ public class ServerPlayer extends Player {
       if (this.spawnExtraParticlesOnFall && var3 && this.fallDistance > 0.0) {
          Vec3 var6 = var5.getCenter().add(0.0, 0.5, 0.0);
          int var7 = (int)Mth.clamp(50.0 * this.fallDistance, 0.0, 200.0);
-         this.serverLevel().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, var7, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
+         this.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, var7, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
          this.spawnExtraParticlesOnFall = false;
       }
 
@@ -1180,6 +1208,10 @@ public class ServerPlayer extends Player {
    public void openTextEdit(SignBlockEntity var1, boolean var2) {
       this.connection.send(new ClientboundBlockUpdatePacket(this.level(), var1.getBlockPos()));
       this.connection.send(new ClientboundOpenSignEditorPacket(var1.getBlockPos(), var2));
+   }
+
+   public void openDialog(Holder<Dialog> var1) {
+      this.connection.send(new ClientboundShowDialogPacket(var1));
    }
 
    private void nextContainerCounter() {
@@ -1326,6 +1358,8 @@ public class ServerPlayer extends Player {
             this.awardStat(Stats.HORSE_ONE_CM, var7);
          } else if (var8 instanceof Strider) {
             this.awardStat(Stats.STRIDER_ONE_CM, var7);
+         } else if (var8 instanceof HappyGhast) {
+            this.awardStat(Stats.HAPPY_GHAST_ONE_CM, var7);
          }
 
       }
@@ -1442,7 +1476,7 @@ public class ServerPlayer extends Player {
       } else {
          this.getAttributes().assignBaseValues(var1.getAttributes());
          this.setHealth(this.getMaxHealth());
-         if (this.serverLevel().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
+         if (this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
             this.getInventory().replaceWith(var1.getInventory());
             this.experienceLevel = var1.experienceLevel;
             this.totalExperience = var1.totalExperience;
@@ -1527,11 +1561,11 @@ public class ServerPlayer extends Player {
    }
 
    public void crit(Entity var1) {
-      this.serverLevel().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 4));
+      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 4));
    }
 
    public void magicCrit(Entity var1) {
-      this.serverLevel().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 5));
+      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 5));
    }
 
    public void onUpdateAbilities() {
@@ -1541,8 +1575,8 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public ServerLevel serverLevel() {
-      return (ServerLevel)this.level();
+   public ServerLevel level() {
+      return (ServerLevel)super.level();
    }
 
    public boolean setGameMode(GameType var1) {
@@ -1558,7 +1592,7 @@ public class ServerPlayer extends Player {
          } else {
             this.setCamera(this);
             if (var2) {
-               EnchantmentHelper.runLocationChangedEffects(this.serverLevel(), this);
+               EnchantmentHelper.runLocationChangedEffects(this.level(), this);
             }
          }
 
@@ -1578,7 +1612,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.serverLevel(), this.getPermissionLevel(), this.getName().getString(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getName().getString(), this.getDisplayName(), this.server, this);
    }
 
    public void sendSystemMessage(Component var1) {
@@ -1699,7 +1733,7 @@ public class ServerPlayer extends Player {
          }
 
          if (var1 != null) {
-            this.serverLevel().getChunkSource().move(this);
+            this.level().getChunkSource().move(this);
          }
 
          this.connection.send(new ClientboundSetCameraPacket(this.camera));
@@ -1814,7 +1848,7 @@ public class ServerPlayer extends Player {
    }
 
    @Nullable
-   private static GameType readPlayerMode(@Nullable CompoundTag var0, String var1) {
+   private static GameType readPlayerMode(@Nullable ValueInput var0, String var1) {
       return var0 != null ? (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null) : null;
    }
 
@@ -1827,11 +1861,11 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void loadGameTypes(@Nullable CompoundTag var1) {
+   public void loadGameTypes(@Nullable ValueInput var1) {
       this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
    }
 
-   private void storeGameTypes(CompoundTag var1) {
+   private void storeGameTypes(ValueOutput var1) {
       var1.store("playerGameType", GameType.LEGACY_ID_CODEC, this.gameMode.getGameModeForPlayer());
       GameType var2 = this.gameMode.getPreviousGameModeForPlayer();
       var1.storeNullable("previousPlayerGameType", GameType.LEGACY_ID_CODEC, var2);
@@ -1965,7 +1999,7 @@ public class ServerPlayer extends Player {
    }
 
    protected float getEnchantedDamage(Entity var1, float var2, DamageSource var3) {
-      return EnchantmentHelper.modifyDamage(this.serverLevel(), this.getWeaponItem(), var1, var3, var2);
+      return EnchantmentHelper.modifyDamage(this.level(), this.getWeaponItem(), var1, var3, var2);
    }
 
    public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {
@@ -2017,6 +2051,11 @@ public class ServerPlayer extends Player {
    }
 
    // $FF: synthetic method
+   public Level level() {
+      return this.level();
+   }
+
+   // $FF: synthetic method
    @Nullable
    public Entity teleport(final TeleportTransition var1) {
       return this.teleport(var1);
@@ -2026,6 +2065,7 @@ public class ServerPlayer extends Player {
       CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("creative_mode_block_range"), 0.5, AttributeModifier.Operation.ADD_VALUE);
       CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("creative_mode_entity_range"), 2.0, AttributeModifier.Operation.ADD_VALUE);
       SPAWN_SET_MESSAGE = Component.translatable("block.minecraft.set_spawn");
+      WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("waypoint_transmit_range_crouch"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
    }
 
    static record RespawnPosAngle(Vec3 position, float yaw) {

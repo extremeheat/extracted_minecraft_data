@@ -934,6 +934,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.MANGROVE_PROPAGULE, (LootTable.Builder)this.applyExplosionDecay(Blocks.MANGROVE_PROPAGULE, LootTable.lootTable().withPool(LootPool.lootPool().when(var6).add(LootItem.lootTableItem(Items.MANGROVE_PROPAGULE)))));
       this.add(Blocks.TORCHFLOWER_CROP, (LootTable.Builder)this.applyExplosionDecay(Blocks.TORCHFLOWER_CROP, LootTable.lootTable().withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.TORCHFLOWER_SEEDS)))));
       this.dropSelf(Blocks.SNIFFER_EGG);
+      this.dropSelf(Blocks.DRIED_GHAST);
       this.add(Blocks.PITCHER_CROP, (var1x) -> this.createPitcherCropLoot());
       this.dropSelf(Blocks.PITCHER_PLANT);
       this.add(Blocks.PITCHER_PLANT, (LootTable.Builder)this.applyExplosionDecay(Blocks.PITCHER_PLANT, LootTable.lootTable().withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.PITCHER_PLANT).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.PITCHER_PLANT).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER)))))));

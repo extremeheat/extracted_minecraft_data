@@ -9,13 +9,10 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -26,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +47,7 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.tutorial.TutorialSteps;
@@ -69,6 +66,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.HumanoidArm;
@@ -107,6 +105,7 @@ public class Options {
    private static final Component INACTIVITY_FPS_LIMIT_TOOLTIP_AFK = Component.translatable("options.inactivityFpsLimit.afk.tooltip");
    private final OptionInstance<InactivityFpsLimit> inactivityFpsLimit;
    private final OptionInstance<CloudStatus> cloudStatus;
+   private final OptionInstance<Integer> cloudRange;
    private static final Component GRAPHICS_TOOLTIP_FAST = Component.translatable("options.graphics.fast.tooltip");
    private static final Component GRAPHICS_TOOLTIP_FABULOUS;
    private static final Component GRAPHICS_TOOLTIP_FANCY;
@@ -217,6 +216,7 @@ public class Options {
    public final KeyMapping keyFullscreen;
    public final KeyMapping keySpectatorOutlines;
    public final KeyMapping keyAdvancements;
+   public final KeyMapping keyQuickActions;
    public final KeyMapping[] keyHotbarSlots;
    public final KeyMapping keySaveHotbarActivator;
    public final KeyMapping keyLoadHotbarActivator;
@@ -251,6 +251,10 @@ public class Options {
    public String languageCode;
    private final OptionInstance<String> soundDevice;
    public boolean onboardAccessibility;
+   private static final Component MUSIC_FREQUENCY_TOOLTIP;
+   private final OptionInstance<MusicManager.MusicFrequency> musicFrequency;
+   private static final Component NOW_PLAYING_TOAST_TOOLTIP;
+   private final OptionInstance<Boolean> showNowPlayingToast;
    public boolean syncWrites;
    public boolean startedCleanly;
 
@@ -292,6 +296,10 @@ public class Options {
 
    public OptionInstance<CloudStatus> cloudStatus() {
       return this.cloudStatus;
+   }
+
+   public OptionInstance<Integer> cloudRange() {
+      return this.cloudRange;
    }
 
    public OptionInstance<GraphicsStatus> graphicsMode() {
@@ -501,6 +509,10 @@ public class Options {
       return this.reducedDebugInfo;
    }
 
+   public final float getFinalSoundSourceVolume(SoundSource var1) {
+      return var1 == SoundSource.MASTER ? this.getSoundSourceVolume(var1) : this.getSoundSourceVolume(var1) * this.getSoundSourceVolume(SoundSource.MASTER);
+   }
+
    public final float getSoundSourceVolume(SoundSource var1) {
       return ((Double)this.getSoundSourceOptionInstance(var1).get()).floatValue();
    }
@@ -614,6 +626,14 @@ public class Options {
       this.save();
    }
 
+   public OptionInstance<MusicManager.MusicFrequency> musicFrequency() {
+      return this.musicFrequency;
+   }
+
+   public OptionInstance<Boolean> showNowPlayingToast() {
+      return this.showNowPlayingToast;
+   }
+
    public Options(Minecraft var1, File var2) {
       super();
       this.darkMojangStudiosBackground = OptionInstance.createBoolean("options.darkMojangStudiosBackgroundColor", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND), false);
@@ -644,6 +664,7 @@ public class Options {
       });
       this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var0) -> {
       });
+      this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var0) -> Minecraft.getInstance().levelRenderer.getCloudRenderer().markForRebuild());
       this.graphicsMode = new OptionInstance<GraphicsStatus>("options.graphics", (var0) -> {
          Tooltip var10000;
          switch (var0) {
@@ -814,10 +835,11 @@ public class Options {
       this.keyFullscreen = new KeyMapping("key.fullscreen", 300, "key.categories.misc");
       this.keySpectatorOutlines = new KeyMapping("key.spectatorOutlines", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
       this.keyAdvancements = new KeyMapping("key.advancements", 76, "key.categories.misc");
+      this.keyQuickActions = new KeyMapping("key.quickActions", 71, "key.categories.misc");
       this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, "key.categories.inventory"), new KeyMapping("key.hotbar.2", 50, "key.categories.inventory"), new KeyMapping("key.hotbar.3", 51, "key.categories.inventory"), new KeyMapping("key.hotbar.4", 52, "key.categories.inventory"), new KeyMapping("key.hotbar.5", 53, "key.categories.inventory"), new KeyMapping("key.hotbar.6", 54, "key.categories.inventory"), new KeyMapping("key.hotbar.7", 55, "key.categories.inventory"), new KeyMapping("key.hotbar.8", 56, "key.categories.inventory"), new KeyMapping("key.hotbar.9", 57, "key.categories.inventory")};
       this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, "key.categories.creative");
       this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, "key.categories.creative");
-      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements}, this.keyHotbarSlots);
+      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions}, this.keyHotbarSlots);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (var0, var1x) -> {
@@ -847,7 +869,8 @@ public class Options {
       });
       this.glintSpeed = new OptionInstance<Double>("options.glintSpeed", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
       });
-      this.glintStrength = new OptionInstance<Double>("options.glintStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.75, RenderSystem::setShaderGlintAlpha);
+      this.glintStrength = new OptionInstance<Double>("options.glintStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.75, (var0) -> {
+      });
       this.damageTiltStrength = new OptionInstance<Double>("options.damageTiltStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
       });
       this.gamma = new OptionInstance<Double>("options.gamma", OptionInstance.noTooltip(), (var0, var1x) -> {
@@ -881,6 +904,15 @@ public class Options {
          var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
+      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
+      this.showNowPlayingToast = OptionInstance.createBoolean("options.showNowPlayingToast", OptionInstance.cachedConstantTooltip(NOW_PLAYING_TOAST_TOOLTIP), false, (var1x) -> {
+         if (var1x) {
+            this.minecraft.getToastManager().createNowPlayingToast();
+         } else {
+            this.minecraft.getToastManager().removeNowPlayingToast();
+         }
+
+      });
       this.startedCleanly = true;
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
@@ -929,6 +961,7 @@ public class Options {
       var1.process("particles", this.particles);
       var1.process("reducedDebugInfo", this.reducedDebugInfo);
       var1.process("renderClouds", this.cloudStatus);
+      var1.process("cloudRange", this.cloudRange);
       var1.process("renderDistance", this.renderDistance);
       var1.process("simulationDistance", this.simulationDistance);
       var1.process("screenEffectScale", this.screenEffectScale);
@@ -1008,6 +1041,8 @@ public class Options {
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
       this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
+      var1.process("showNowPlayingToast", this.showNowPlayingToast);
+      var1.process("musicFrequency", this.musicFrequency);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1098,9 +1133,8 @@ public class Options {
             public <T> void process(String var1, OptionInstance<T> var2) {
                String var3 = this.getValue(var1);
                if (var3 != null) {
-                  JsonReader var4 = new JsonReader(new StringReader(var3.isEmpty() ? "\"\"" : var3));
-                  JsonElement var5 = JsonParser.parseReader(var4);
-                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var5).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
+                  JsonElement var4 = LenientJsonParser.parse(var3.isEmpty() ? "\"\"" : var3);
+                  DataResult var10000 = var2.codec().parse(JsonOps.INSTANCE, var4).ifError((var2x) -> Options.LOGGER.error("Error parsing option value {} for option {}: {}", new Object[]{var3, var2, var2x.message()}));
                   Objects.requireNonNull(var2);
                   var10000.ifSuccess(var2::set);
                }
@@ -1187,7 +1221,7 @@ public class Options {
          final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8));
 
          try {
-            var1.println("version:" + SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            var1.println("version:" + SharedConstants.getCurrentVersion().dataVersion().version());
             this.processOptions(new FieldAccess() {
                public void writePrefix(String var1x) {
                   var1.print(var1x);
@@ -1298,7 +1332,7 @@ public class Options {
    }
 
    public CloudStatus getCloudsType() {
-      return this.getEffectiveRenderDistance() >= 4 ? (CloudStatus)this.cloudStatus.get() : CloudStatus.OFF;
+      return this.cloudStatus.get();
    }
 
    public boolean useNativeTransport() {
@@ -1428,6 +1462,8 @@ public class Options {
       ACCESSIBILITY_TOOLTIP_GLINT_SPEED = Component.translatable("options.glintSpeed.tooltip");
       ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH = Component.translatable("options.glintStrength.tooltip");
       ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH = Component.translatable("options.damageTiltStrength.tooltip");
+      MUSIC_FREQUENCY_TOOLTIP = Component.translatable("options.music_frequency.tooltip");
+      NOW_PLAYING_TOAST_TOOLTIP = Component.translatable("options.showNowPlayingToast.tooltip");
    }
 
    interface FieldAccess extends OptionAccess {

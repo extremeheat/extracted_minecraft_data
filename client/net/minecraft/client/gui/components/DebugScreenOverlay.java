@@ -3,16 +3,15 @@ package net.minecraft.client.gui.components;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -40,6 +39,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.Camera;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -50,6 +50,7 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -90,11 +91,15 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class DebugScreenOverlay {
-   private static final float CROSSHAIR_LENGTH = 10.0F;
+   private static final float CROSSHAIR_SCALE = 0.01F;
    private static final int CROSHAIR_INDEX_COUNT = 18;
-   private static final int COLOR_GREY = 14737632;
+   private static final int COLOR_GREY = -2039584;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
    private static final int MARGIN_TOP = 2;
@@ -144,17 +149,17 @@ public class DebugScreenOverlay {
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
 
-      try (ByteBufferBuilder var2 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
+      try (ByteBufferBuilder var2 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
          BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
          var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
-         var3.addVertex(10.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+         var3.addVertex(1.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
          var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
-         var3.addVertex(0.0F, 10.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+         var3.addVertex(0.0F, 1.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
          var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
-         var3.addVertex(0.0F, 0.0F, 10.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+         var3.addVertex(0.0F, 0.0F, 1.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
 
          try (MeshData var4 = var3.buildOrThrow()) {
-            this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "Crosshair vertex buffer", BufferType.VERTICES, BufferUsage.STATIC_WRITE, var4.vertexBuffer());
+            this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "Crosshair vertex buffer", 32, var4.vertexBuffer());
          }
       }
 
@@ -173,6 +178,7 @@ public class DebugScreenOverlay {
       this.liquid = var3.pick(20.0, 0.0F, true);
       this.drawGameInformation(var1);
       this.drawSystemInformation(var1);
+      var1.nextStratum();
       this.profilerPieChart.setBottomOffset(10);
       if (this.renderFpsCharts) {
          int var4 = var1.guiWidth();
@@ -240,7 +246,7 @@ public class DebugScreenOverlay {
             int var12 = this.font.width(var11);
             int var13 = var3 ? 2 : var1.guiWidth() - 2 - var12;
             int var14 = 2 + var4 * var10;
-            var1.drawString(this.font, var11, var13, var14, 14737632, false);
+            var1.drawString(this.font, var11, var13, var14, -2039584, false);
          }
       }
 
@@ -273,13 +279,13 @@ public class DebugScreenOverlay {
          String var11 = var10 ? "-" : String.format(Locale.ROOT, "%.1f", var8.millisecondsPerTick());
          var1 = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", var2.getCurrentSmoothedTickTime(), var11, var7, var5, var6);
       } else {
-         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.lambda$fillCrashReport$0(), var7, var5, var6);
+         var1 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var3.serverBrand(), var7, var5, var6);
       }
 
       BlockPos var28 = this.minecraft.getCameraEntity().blockPosition();
       if (this.minecraft.showOnlyReducedInfo()) {
          String[] var48 = new String[9];
-         String var52 = SharedConstants.getCurrentVersion().getName();
+         String var52 = SharedConstants.getCurrentVersion().name();
          var48[0] = "Minecraft " + var52 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ")";
          var48[1] = this.minecraft.fpsString;
          var48[2] = var1;
@@ -312,7 +318,7 @@ public class DebugScreenOverlay {
          Level var14 = this.getLevel();
          Object var15 = var14 instanceof ServerLevel ? ((ServerLevel)var14).getForceLoadedChunks() : LongSets.EMPTY_SET;
          String[] var10000 = new String[7];
-         String var10003 = SharedConstants.getCurrentVersion().getName();
+         String var10003 = SharedConstants.getCurrentVersion().name();
          var10000[0] = "Minecraft " + var10003 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType()) + ")";
          var10000[1] = this.minecraft.fpsString;
          var10000[2] = var1;
@@ -616,27 +622,33 @@ public class DebugScreenOverlay {
       this.bandwidthLogger.reset();
    }
 
-   public void render3dCrosshair() {
-      RenderPipeline var1 = RenderPipelines.LINES;
-      RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-      RenderTarget var2 = Minecraft.getInstance().getMainRenderTarget();
-      GpuTexture var3 = var2.getColorTexture();
-      GpuTexture var4 = var2.getDepthTexture();
-      GpuBuffer var5 = this.crosshairIndicies.getBuffer(18);
+   public void render3dCrosshair(Camera var1) {
+      Matrix4fStack var2 = RenderSystem.getModelViewStack();
+      var2.pushMatrix();
+      var2.translate(0.0F, 0.0F, -1.0F);
+      var2.rotateX(var1.getXRot() * 0.017453292F);
+      var2.rotateY(var1.getYRot() * 0.017453292F);
+      float var3 = 0.01F * (float)this.minecraft.getWindow().getGuiScale();
+      var2.scale(-var3, var3, -var3);
+      RenderPipeline var4 = RenderPipelines.LINES;
+      RenderTarget var5 = Minecraft.getInstance().getMainRenderTarget();
+      GpuTextureView var6 = var5.getColorTextureView();
+      GpuTextureView var7 = var5.getDepthTextureView();
+      GpuBuffer var8 = this.crosshairIndicies.getBuffer(18);
+      GpuBufferSlice[] var9 = RenderSystem.getDynamicUniforms().writeTransforms(new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(0.0F, 0.0F, 0.0F, 1.0F), new Vector3f(), new Matrix4f(), 4.0F), new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 2.0F));
 
-      try (RenderPass var6 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(var3, OptionalInt.empty(), var4, OptionalDouble.empty())) {
-         var6.setPipeline(var1);
-         RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-         RenderSystem.lineWidth(4.0F);
-         var6.setVertexBuffer(0, this.crosshairBuffer);
-         var6.setIndexBuffer(var5, this.crosshairIndicies.type());
-         var6.drawIndexed(0, 18);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         RenderSystem.lineWidth(2.0F);
-         var6.drawIndexed(0, 18);
-         RenderSystem.lineWidth(1.0F);
+      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
+         var10.setPipeline(var4);
+         RenderSystem.bindDefaultUniforms(var10);
+         var10.setVertexBuffer(0, this.crosshairBuffer);
+         var10.setIndexBuffer(var8, this.crosshairIndicies.type());
+         var10.setUniform("DynamicTransforms", var9[0]);
+         var10.drawIndexed(0, 0, 18, 1);
+         var10.setUniform("DynamicTransforms", var9[1]);
+         var10.drawIndexed(0, 0, 18, 1);
       }
 
+      var2.popMatrix();
    }
 
    static {
