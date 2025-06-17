@@ -23,7 +23,7 @@ public class DetectedVersion {
    }
 
    private static WorldVersion createFromConstants() {
-      return new WorldVersion.Simple(UUID.randomUUID().toString().replaceAll("-", ""), "1.21.6-rc1", new DataVersion(4434, "main"), SharedConstants.getProtocolVersion(), 63, 80, new Date(), false);
+      return new WorldVersion.Simple(UUID.randomUUID().toString().replaceAll("-", ""), "1.21.6", new DataVersion(4435, "main"), SharedConstants.getProtocolVersion(), 63, 80, new Date(), true);
    }
 
    private static WorldVersion createFromJson(JsonObject var0) {
