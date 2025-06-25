@@ -59,6 +59,7 @@ public class PaintingVariants {
    public static final ResourceKey<PaintingVariant> POND = create("pond");
    public static final ResourceKey<PaintingVariant> SUNFLOWERS = create("sunflowers");
    public static final ResourceKey<PaintingVariant> TIDES = create("tides");
+   public static final ResourceKey<PaintingVariant> DENNIS = create("dennis");
 
    public PaintingVariants() {
       super();
@@ -115,6 +116,7 @@ public class PaintingVariants {
       register(var0, POND, 3, 4);
       register(var0, SUNFLOWERS, 3, 3);
       register(var0, TIDES, 3, 3);
+      register(var0, DENNIS, 3, 3);
    }
 
    private static void register(BootstrapContext<PaintingVariant> var0, ResourceKey<PaintingVariant> var1, int var2, int var3) {

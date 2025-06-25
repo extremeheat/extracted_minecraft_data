@@ -10,7 +10,7 @@ import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedItemRenderState> {
@@ -48,7 +48,7 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
       float var7 = (float)var3.x() + 8.0F;
       float var8 = (float)var3.y() + 8.0F;
       var2.translate((var7 - var5) / 16.0F, (var6 - var8) / 16.0F, 0.0F);
-      ItemStackRenderState var9 = var3.itemStackRenderState();
+      TrackingItemStackRenderState var9 = var3.itemStackRenderState();
       boolean var10 = !var9.usesBlockLight();
       if (var10) {
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
@@ -66,7 +66,7 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
    }
 
    public boolean textureIsReadyToBlit(OversizedItemRenderState var1) {
-      ItemStackRenderState var2 = var1.guiItemRenderState().itemStackRenderState();
+      TrackingItemStackRenderState var2 = var1.guiItemRenderState().itemStackRenderState();
       return !var2.isAnimated() && var2.getModelIdentity().equals(this.modelOnTextureIdentity);
    }
 

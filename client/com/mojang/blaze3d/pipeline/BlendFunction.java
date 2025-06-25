@@ -13,6 +13,7 @@ public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, Sour
    public static final BlendFunction TRANSLUCENT_PREMULTIPLIED_ALPHA;
    public static final BlendFunction ADDITIVE;
    public static final BlendFunction ENTITY_OUTLINE_BLIT;
+   public static final BlendFunction INVERT;
 
    public BlendFunction(SourceFactor var1, DestFactor var2) {
       this(var1, var2, var1, var2);
@@ -34,5 +35,6 @@ public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, Sour
       TRANSLUCENT_PREMULTIPLIED_ALPHA = new BlendFunction(SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
       ADDITIVE = new BlendFunction(SourceFactor.ONE, DestFactor.ONE);
       ENTITY_OUTLINE_BLIT = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ZERO, DestFactor.ONE);
+      INVERT = new BlendFunction(SourceFactor.ONE_MINUS_DST_COLOR, DestFactor.ONE_MINUS_SRC_COLOR, SourceFactor.ONE, DestFactor.ZERO);
    }
 }

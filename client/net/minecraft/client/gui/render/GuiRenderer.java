@@ -55,7 +55,7 @@ import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -69,7 +69,7 @@ import org.slf4j.Logger;
 public class GuiRenderer implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final float MAX_GUI_Z = 10000.0F;
-   public static final float MIN_GUI_Z = 0.0F;
+   private static final float MIN_GUI_Z = 0.0F;
    private static final float GUI_Z_NEAR = 1000.0F;
    public static final int GUI_3D_Z_FAR = 1000;
    public static final int GUI_3D_Z_NEAR = -1000;
@@ -244,7 +244,7 @@ public class GuiRenderer implements AutoCloseable {
          this.previousScissorArea = var5;
       }
 
-      var1.buildVertices(this.bufferBuilder, 0.0F + (float)var2 * 0.01F);
+      var1.buildVertices(this.bufferBuilder, 0.0F + (float)var2);
    }
 
    private void prepareText() {
@@ -289,7 +289,7 @@ public class GuiRenderer implements AutoCloseable {
             if (var6x.oversizedItemBounds() != null) {
                var6.setTrue();
             } else {
-               ItemStackRenderState var7 = var6x.itemStackRenderState();
+               TrackingItemStackRenderState var7 = var6x.itemStackRenderState();
                AtlasPosition var8 = (AtlasPosition)this.atlasPositions.get(var7.getModelIdentity());
                if (var8 == null || var7.isAnimated() && var8.lastAnimatedOnFrame != this.frameNumber) {
                   if (this.itemAtlasX + var2 > var3) {
@@ -333,7 +333,7 @@ public class GuiRenderer implements AutoCloseable {
          if (var6.getValue()) {
             this.renderState.forEachItem((var2x) -> {
                if (var2x.oversizedItemBounds() != null) {
-                  ItemStackRenderState var3 = var2x.itemStackRenderState();
+                  TrackingItemStackRenderState var3 = var2x.itemStackRenderState();
                   OversizedItemRenderer var4 = (OversizedItemRenderer)this.oversizedItemRenderers.computeIfAbsent(var3.getModelIdentity(), (var1x) -> new OversizedItemRenderer(this.bufferSource));
                   ScreenRectangle var5 = var2x.oversizedItemBounds();
                   OversizedItemRenderState var6 = new OversizedItemRenderState(var2x, var5.left(), var5.top(), var5.right(), var5.bottom());
@@ -359,7 +359,7 @@ public class GuiRenderer implements AutoCloseable {
 
    }
 
-   private void renderItemToAtlas(ItemStackRenderState var1, PoseStack var2, int var3, int var4, int var5) {
+   private void renderItemToAtlas(TrackingItemStackRenderState var1, PoseStack var2, int var3, int var4, int var5) {
       var2.pushPose();
       var2.translate((float)var3 + (float)var5 / 2.0F, (float)var4 + (float)var5 / 2.0F, 0.0F);
       var2.scale((float)var5, (float)(-var5), (float)var5);
@@ -565,7 +565,7 @@ public class GuiRenderer implements AutoCloseable {
       return new BufferBuilder(this.byteBufferBuilder, var1.getVertexFormatMode(), var1.getVertexFormat());
    }
 
-   private boolean scissorChanged(ScreenRectangle var1, @Nullable ScreenRectangle var2) {
+   private boolean scissorChanged(@Nullable ScreenRectangle var1, @Nullable ScreenRectangle var2) {
       if (var1 == var2) {
          return false;
       } else if (var1 != null) {

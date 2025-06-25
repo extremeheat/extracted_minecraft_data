@@ -1315,6 +1315,7 @@ public class Items {
    public static final Item MUSIC_DISC_CREATOR;
    public static final Item MUSIC_DISC_CREATOR_MUSIC_BOX;
    public static final Item MUSIC_DISC_FAR;
+   public static final Item MUSIC_DISC_LAVA_CHICKEN;
    public static final Item MUSIC_DISC_MALL;
    public static final Item MUSIC_DISC_MELLOHI;
    public static final Item MUSIC_DISC_STAL;
@@ -2807,6 +2808,7 @@ public class Items {
       MUSIC_DISC_CREATOR = registerItem("music_disc_creator", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CREATOR));
       MUSIC_DISC_CREATOR_MUSIC_BOX = registerItem("music_disc_creator_music_box", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.CREATOR_MUSIC_BOX));
       MUSIC_DISC_FAR = registerItem("music_disc_far", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.FAR));
+      MUSIC_DISC_LAVA_CHICKEN = registerItem("music_disc_lava_chicken", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.LAVA_CHICKEN));
       MUSIC_DISC_MALL = registerItem("music_disc_mall", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.MALL));
       MUSIC_DISC_MELLOHI = registerItem("music_disc_mellohi", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.MELLOHI));
       MUSIC_DISC_STAL = registerItem("music_disc_stal", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.STAL));

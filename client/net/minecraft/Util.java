@@ -495,6 +495,11 @@ public class Util {
       }
    }
 
+   public static boolean isAarch64() {
+      String var0 = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
+      return var0.equals("aarch64");
+   }
+
    public static URI parseAndValidateUntrustedUri(String var0) throws URISyntaxException {
       URI var1 = new URI(var0);
       String var2 = var1.getScheme();

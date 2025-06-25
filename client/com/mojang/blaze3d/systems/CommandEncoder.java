@@ -34,6 +34,8 @@ public interface CommandEncoder {
 
    GpuBuffer.MappedView mapBuffer(GpuBufferSlice var1, boolean var2, boolean var3);
 
+   void copyToBuffer(GpuBufferSlice var1, GpuBufferSlice var2);
+
    void writeToTexture(GpuTexture var1, NativeImage var2);
 
    void writeToTexture(GpuTexture var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10);

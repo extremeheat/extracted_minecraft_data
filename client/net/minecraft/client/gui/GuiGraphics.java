@@ -40,7 +40,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -176,6 +176,11 @@ public class GuiGraphics {
 
    private void submitColoredRectangle(RenderPipeline var1, TextureSetup var2, int var3, int var4, int var5, int var6, int var7, @Nullable Integer var8) {
       this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8 != null ? var8 : var7, this.scissorStack.peek()));
+   }
+
+   public void textHighlight(int var1, int var2, int var3, int var4) {
+      this.fill(RenderPipelines.GUI_INVERT, var1, var2, var3, var4, -1);
+      this.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var1, var2, var3, var4, -16776961);
    }
 
    public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
@@ -418,7 +423,7 @@ public class GuiGraphics {
 
    private void renderItem(@Nullable LivingEntity var1, @Nullable Level var2, ItemStack var3, int var4, int var5, int var6) {
       if (!var3.isEmpty()) {
-         ItemStackRenderState var7 = new ItemStackRenderState();
+         TrackingItemStackRenderState var7 = new TrackingItemStackRenderState();
          this.minecraft.getItemModelResolver().updateForTopItem(var7, var3, ItemDisplayContext.GUI, var2, var1, var6);
 
          try {

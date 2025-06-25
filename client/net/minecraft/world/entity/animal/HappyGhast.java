@@ -3,6 +3,7 @@ package net.minecraft.world.entity.animal;
 import com.mojang.serialization.Dynamic;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -75,6 +76,15 @@ public class HappyGhast extends Animal {
    }
 
    private void setServerStillTimeout(int var1) {
+      if (this.serverStillTimeout <= 0 && var1 > 0) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
+            var2.getChunkSource().chunkMap.broadcast(this, ClientboundEntityPositionSyncPacket.of(this));
+         }
+      }
+
       this.serverStillTimeout = var1;
       this.syncStayStillFlag();
    }
@@ -483,7 +493,7 @@ public class HappyGhast extends Animal {
 
    private boolean scanPlayerAboveGhast() {
       AABB var1 = this.getBoundingBox();
-      AABB var2 = new AABB(var1.minX - 1.0, var1.maxY, var1.minZ - 1.0, var1.maxX + 1.0, var1.maxY + var1.getYsize() / 2.0, var1.maxZ + 1.0);
+      AABB var2 = new AABB(var1.minX - 1.0, var1.maxY - 9.999999747378752E-6, var1.minZ - 1.0, var1.maxX + 1.0, var1.maxY + var1.getYsize() / 2.0, var1.maxZ + 1.0);
 
       for(Player var4 : this.level().players()) {
          if (!var4.isSpectator()) {

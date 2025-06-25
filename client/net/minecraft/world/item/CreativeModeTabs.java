@@ -1344,6 +1344,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MUSIC_DISC_5);
          var1.accept((ItemLike)Items.MUSIC_DISC_PIGSTEP);
          var1.accept((ItemLike)Items.MUSIC_DISC_TEARS);
+         var1.accept((ItemLike)Items.MUSIC_DISC_LAVA_CHICKEN);
       }).build());
       Registry.register(var0, (ResourceKey)COMBAT, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 1).title(Component.translatable("itemGroup.combat")).icon(() -> new ItemStack(Items.NETHERITE_SWORD)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.WOODEN_SWORD);

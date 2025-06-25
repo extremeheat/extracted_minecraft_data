@@ -34,7 +34,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class FogRenderer implements AutoCloseable {
    public static final int FOG_UBO_SIZE = (new Std140SizeCalculator()).putVec4().putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().get();
-   private static final List<FogEnvironment> FOG_ENVIRONMENTS = Lists.newArrayList(new FogEnvironment[]{new LavaFogEnvironment(), new PowderedSnowFogEnvironment(), new WaterFogEnvironment(), new BlindnessFogEnvironment(), new DarknessFogEnvironment(), new DimensionOrBossFogEnvironment(), new AtmosphericFogEnvironment()});
+   private static final List<FogEnvironment> FOG_ENVIRONMENTS = Lists.newArrayList(new FogEnvironment[]{new LavaFogEnvironment(), new PowderedSnowFogEnvironment(), new BlindnessFogEnvironment(), new DarknessFogEnvironment(), new WaterFogEnvironment(), new DimensionOrBossFogEnvironment(), new AtmosphericFogEnvironment()});
    private static boolean fogEnabled = true;
    private final GpuBuffer emptyBuffer;
    private final MappableRingBuffer regularBuffer;

@@ -286,6 +286,37 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
+   public void copyToBuffer(GpuBufferSlice var1, GpuBufferSlice var2) {
+      if (this.inRenderPass) {
+         throw new IllegalStateException("Close the existing render pass before performing additional commands");
+      } else {
+         GlBuffer var3 = (GlBuffer)var1.buffer();
+         if (var3.closed) {
+            throw new IllegalStateException("Source buffer already closed");
+         } else if ((var3.usage() & 8) == 0) {
+            throw new IllegalStateException("Source buffer needs USAGE_COPY_DST to be a destination for a copy");
+         } else {
+            GlBuffer var4 = (GlBuffer)var2.buffer();
+            if (var4.closed) {
+               throw new IllegalStateException("Target buffer already closed");
+            } else if ((var4.usage() & 8) == 0) {
+               throw new IllegalStateException("Target buffer needs USAGE_COPY_DST to be a destination for a copy");
+            } else if (var1.length() != var2.length()) {
+               int var6 = var1.length();
+               throw new IllegalArgumentException("Cannot copy from slice of size " + var6 + " to slice of size " + var2.length() + ", they must be equal");
+            } else if (var1.offset() + var1.length() > var3.size) {
+               int var5 = var1.length();
+               throw new IllegalArgumentException("Cannot copy more data than the source buffer holds (attempting to copy " + var5 + " bytes at offset " + var1.offset() + " from " + var3.size + " size buffer)");
+            } else if (var2.offset() + var2.length() > var4.size) {
+               int var10002 = var2.length();
+               throw new IllegalArgumentException("Cannot copy more data than the target buffer can hold (attempting to copy " + var10002 + " bytes at offset " + var2.offset() + " to " + var4.size + " size buffer)");
+            } else {
+               this.device.directStateAccess().copyBufferSubData(var3.handle, var4.handle, var1.offset(), var2.offset(), var1.length());
+            }
+         }
+      }
+   }
+
    public void writeToTexture(GpuTexture var1, NativeImage var2) {
       int var3 = var1.getWidth(0);
       int var4 = var1.getHeight(0);

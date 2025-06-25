@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import org.lwjgl.opengl.ARBBufferStorage;
 import org.lwjgl.opengl.ARBDirectStateAccess;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLCapabilities;
 
 public abstract class DirectStateAccess {
@@ -46,6 +47,8 @@ public abstract class DirectStateAccess {
    abstract void blitFrameBuffers(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12);
 
    abstract void flushMappedBufferRange(int var1, int var2, int var3);
+
+   abstract void copyBufferSubData(int var1, int var2, int var3, int var4, int var5);
 
    static class Core extends DirectStateAccess {
       Core() {
@@ -105,6 +108,10 @@ public abstract class DirectStateAccess {
       void flushMappedBufferRange(int var1, int var2, int var3) {
          ARBDirectStateAccess.glFlushMappedNamedBufferRange(var1, (long)var2, (long)var3);
       }
+
+      void copyBufferSubData(int var1, int var2, int var3, int var4, int var5) {
+         ARBDirectStateAccess.glCopyNamedBufferSubData(var1, var2, (long)var3, (long)var4, (long)var5);
+      }
    }
 
    static class Emulated extends DirectStateAccess {
@@ -163,6 +170,14 @@ public abstract class DirectStateAccess {
       void flushMappedBufferRange(int var1, int var2, int var3) {
          GlStateManager._glBindBuffer(36663, var1);
          GL30.glFlushMappedBufferRange(36663, (long)var2, (long)var3);
+         GlStateManager._glBindBuffer(36663, 0);
+      }
+
+      void copyBufferSubData(int var1, int var2, int var3, int var4, int var5) {
+         GlStateManager._glBindBuffer(36662, var1);
+         GlStateManager._glBindBuffer(36663, var2);
+         GL31.glCopyBufferSubData(36662, 36663, (long)var3, (long)var4, (long)var5);
+         GlStateManager._glBindBuffer(36662, 0);
          GlStateManager._glBindBuffer(36663, 0);
       }
 

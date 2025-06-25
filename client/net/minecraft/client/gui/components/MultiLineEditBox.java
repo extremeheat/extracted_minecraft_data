@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -166,10 +165,10 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                         var17 = this.font.width(var5.substring(var22.beginIndex(), var19.endIndex()));
                      }
 
-                     int var25 = var20 + var24;
-                     int var26 = var20 + var17;
+                     int var10001 = var20 + var24;
+                     int var25 = var20 + var17;
                      Objects.requireNonNull(this.font);
-                     this.renderHighlight(var1, var25, var11, var26, var11 + 9);
+                     var1.textHighlight(var10001, var11, var25, var11 + 9);
                   }
 
                   Objects.requireNonNull(this.font);
@@ -199,10 +198,6 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    protected double scrollRate() {
       Objects.requireNonNull(this.font);
       return 9.0 / 2.0;
-   }
-
-   private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
    }
 
    private void scrollToCursor() {
