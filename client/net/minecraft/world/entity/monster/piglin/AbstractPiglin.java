@@ -13,7 +13,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
@@ -39,7 +38,7 @@ public abstract class AbstractPiglin extends Monster {
 
    private void applyOpenDoorsAbility() {
       if (GoalUtils.hasGroundPathNavigation(this)) {
-         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
+         this.getNavigation().setCanOpenDoors(true);
       }
 
    }

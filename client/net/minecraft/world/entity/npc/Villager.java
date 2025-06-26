@@ -66,7 +66,6 @@ import net.minecraft.world.entity.ai.gossip.GossipType;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.sensing.GolemSensor;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
@@ -148,7 +147,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       this.lastRestockGameTime = 0L;
       this.numberOfRestocksToday = 0;
       this.assignProfessionWhenSpawned = false;
-      ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
+      this.getNavigation().setCanOpenDoors(true);
       this.getNavigation().setCanFloat(true);
       this.getNavigation().setRequiredPathLength(48.0F);
       this.setCanPickUpLoot(true);
