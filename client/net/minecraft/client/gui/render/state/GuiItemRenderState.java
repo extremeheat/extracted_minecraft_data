@@ -2,7 +2,7 @@ package net.minecraft.client.gui.render.state;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix3x2f;
@@ -10,7 +10,7 @@ import org.joml.Matrix3x2f;
 public final class GuiItemRenderState implements ScreenArea {
    private final String name;
    private final Matrix3x2f pose;
-   private final ItemStackRenderState itemStackRenderState;
+   private final TrackingItemStackRenderState itemStackRenderState;
    private final int x;
    private final int y;
    @Nullable
@@ -20,7 +20,7 @@ public final class GuiItemRenderState implements ScreenArea {
    @Nullable
    private final ScreenRectangle bounds;
 
-   public GuiItemRenderState(String var1, Matrix3x2f var2, ItemStackRenderState var3, int var4, int var5, @Nullable ScreenRectangle var6) {
+   public GuiItemRenderState(String var1, Matrix3x2f var2, TrackingItemStackRenderState var3, int var4, int var5, @Nullable ScreenRectangle var6) {
       super();
       this.name = var1;
       this.pose = var2;
@@ -64,7 +64,7 @@ public final class GuiItemRenderState implements ScreenArea {
       return this.pose;
    }
 
-   public ItemStackRenderState itemStackRenderState() {
+   public TrackingItemStackRenderState itemStackRenderState() {
       return this.itemStackRenderState;
    }
 

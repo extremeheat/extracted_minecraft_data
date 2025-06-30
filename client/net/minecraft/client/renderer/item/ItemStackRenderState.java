@@ -27,7 +27,6 @@ public class ItemStackRenderState {
    private int activeLayerCount;
    private boolean animated;
    private boolean oversizedInGui;
-   private final List<Object> modelIdentityElements;
    @Nullable
    private AABB cachedModelBoundingBox;
    private LayerRenderState[] layers;
@@ -35,7 +34,6 @@ public class ItemStackRenderState {
    public ItemStackRenderState() {
       super();
       this.displayContext = ItemDisplayContext.NONE;
-      this.modelIdentityElements = new ArrayList();
       this.layers = new LayerRenderState[]{new LayerRenderState()};
    }
 
@@ -79,15 +77,6 @@ public class ItemStackRenderState {
    }
 
    public void appendModelIdentityElement(Object var1) {
-      this.modelIdentityElements.add(var1);
-   }
-
-   public Object getModelIdentity() {
-      return this.modelIdentityElements;
-   }
-
-   public void clearModelIdentity() {
-      this.modelIdentityElements.clear();
    }
 
    private LayerRenderState firstLayer() {

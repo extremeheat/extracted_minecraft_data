@@ -7,7 +7,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractSignRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -166,7 +165,7 @@ public abstract class AbstractSignEditScreen extends Screen {
                int var16 = this.font.width(var20.substring(0, var14)) - this.font.width(var20) / 2;
                int var17 = Math.min(var15, var16);
                int var18 = Math.max(var15, var16);
-               var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var17, var8, var18, var8 + this.sign.getTextLineHeight(), -16776961);
+               var1.textHighlight(var17, var8, var18, var8 + this.sign.getTextLineHeight());
             }
          }
       }

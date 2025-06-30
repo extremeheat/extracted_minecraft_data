@@ -4,7 +4,6 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.LogicOp;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.shaders.UniformType;
@@ -104,6 +103,7 @@ public class RenderPipelines {
    public static final RenderPipeline STARS;
    public static final RenderPipeline CELESTIAL;
    public static final RenderPipeline GUI;
+   public static final RenderPipeline GUI_INVERT;
    public static final RenderPipeline GUI_TEXT_HIGHLIGHT;
    public static final RenderPipeline GUI_TEXTURED;
    public static final RenderPipeline GUI_TEXTURED_PREMULTIPLIED_ALPHA;
@@ -221,7 +221,8 @@ public class RenderPipelines {
       STARS = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/stars").withVertexShader("core/stars").withFragmentShader("core/stars").withBlend(BlendFunction.OVERLAY).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
       CELESTIAL = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/celestial").withVertexShader("core/position_tex_color").withFragmentShader("core/position_tex_color").withSampler("Sampler0").withBlend(BlendFunction.OVERLAY).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).build());
       GUI = register(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui").build());
-      GUI_TEXT_HIGHLIGHT = register(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui_text_highlight").withColorLogic(LogicOp.OR_REVERSE).build());
+      GUI_INVERT = register(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui_invert").withBlend(BlendFunction.INVERT).build());
+      GUI_TEXT_HIGHLIGHT = register(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui_text_highlight").withBlend(BlendFunction.ADDITIVE).build());
       GUI_TEXTURED = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured").build());
       GUI_TEXTURED_PREMULTIPLIED_ALPHA = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_premultiplied_alpha").withBlend(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA).build());
       BLOCK_SCREEN_EFFECT = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/block_screen_effect").withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).build());
@@ -229,7 +230,7 @@ public class RenderPipelines {
       GUI_OPAQUE_TEXTURED_BACKGROUND = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_opaque_textured_background").withoutBlend().build());
       GUI_NAUSEA_OVERLAY = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_nausea_overlay").withBlend(BlendFunction.ADDITIVE).build());
       VIGNETTE = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/vignette").withBlend(new BlendFunction(SourceFactor.ZERO, DestFactor.ONE_MINUS_SRC_COLOR)).build());
-      CROSSHAIR = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/crosshair").withBlend(new BlendFunction(SourceFactor.ONE_MINUS_DST_COLOR, DestFactor.ONE_MINUS_SRC_COLOR, SourceFactor.ONE, DestFactor.ZERO)).build());
+      CROSSHAIR = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/crosshair").withBlend(BlendFunction.INVERT).build());
       MOJANG_LOGO = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/mojang_logo").withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE)).build());
       ENTITY_OUTLINE_BLIT = register(RenderPipeline.builder().withLocation("pipeline/entity_outline_blit").withVertexShader("core/blit_screen").withFragmentShader("core/blit_screen").withSampler("InSampler").withBlend(BlendFunction.ENTITY_OUTLINE_BLIT).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withColorWrite(true, false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
       TRACY_BLIT = register(RenderPipeline.builder().withLocation("pipeline/tracy_blit").withVertexShader("core/blit_screen").withFragmentShader("core/blit_screen").withSampler("InSampler").withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());

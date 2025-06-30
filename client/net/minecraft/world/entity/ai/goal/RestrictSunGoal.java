@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.goal;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 
 public class RestrictSunGoal extends Goal {
@@ -18,12 +19,20 @@ public class RestrictSunGoal extends Goal {
    }
 
    public void start() {
-      ((GroundPathNavigation)this.mob.getNavigation()).setAvoidSun(true);
+      PathNavigation var2 = this.mob.getNavigation();
+      if (var2 instanceof GroundPathNavigation var1) {
+         var1.setAvoidSun(true);
+      }
+
    }
 
    public void stop() {
       if (GoalUtils.hasGroundPathNavigation(this.mob)) {
-         ((GroundPathNavigation)this.mob.getNavigation()).setAvoidSun(false);
+         PathNavigation var2 = this.mob.getNavigation();
+         if (var2 instanceof GroundPathNavigation) {
+            GroundPathNavigation var1 = (GroundPathNavigation)var2;
+            var1.setAvoidSun(false);
+         }
       }
 
    }

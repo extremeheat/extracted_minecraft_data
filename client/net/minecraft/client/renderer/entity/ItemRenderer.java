@@ -111,6 +111,5 @@ public class ItemRenderer {
    public void renderStatic(@Nullable LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
       this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
       this.scratchItemStackRenderState.render(var4, var5, var7, var8);
-      this.scratchItemStackRenderState.clearModelIdentity();
    }
 }

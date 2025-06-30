@@ -425,20 +425,21 @@ public class EditBox extends AbstractWidget {
 
          if (var11 != var6) {
             int var14 = this.textX + this.font.width(var7.substring(0, var11));
-            int var10003 = this.textY - 1;
-            int var10004 = var14 - 1;
-            int var10005 = this.textY + 1;
+            int var10001 = Math.min(var17, this.getX() + this.width);
+            int var10002 = this.textY - 1;
+            int var10003 = Math.min(var14 - 1, this.getX() + this.width);
+            int var10004 = this.textY + 1;
             Objects.requireNonNull(this.font);
-            this.renderHighlight(var1, var17, var10003, var10004, var10005 + 9);
+            var1.textHighlight(var10001, var10002, var10003, var10004 + 9);
          }
 
          if (var9) {
             if (var16) {
-               int var10002 = this.textY - 1;
-               int var18 = var17 + 1;
-               int var19 = this.textY + 1;
+               int var18 = this.textY - 1;
+               int var19 = var17 + 1;
+               int var20 = this.textY + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var17, var10002, var18, var19 + 9, -3092272);
+               var1.fill(var17, var18, var19, var20 + 9, -3092272);
             } else {
                var1.drawString(this.font, "_", var17, this.textY, var15, this.textShadow);
             }
@@ -453,30 +454,6 @@ public class EditBox extends AbstractWidget {
          this.textX = this.getX() + (this.isCentered() ? (this.getWidth() - this.font.width(var1)) / 2 : (this.bordered ? 4 : 0));
          this.textY = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
       }
-   }
-
-   private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      if (var2 < var4) {
-         int var6 = var2;
-         var2 = var4;
-         var4 = var6;
-      }
-
-      if (var3 < var5) {
-         int var7 = var3;
-         var3 = var5;
-         var5 = var7;
-      }
-
-      if (var4 > this.getX() + this.width) {
-         var4 = this.getX() + this.width;
-      }
-
-      if (var2 > this.getX() + this.width) {
-         var2 = this.getX() + this.width;
-      }
-
-      var1.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var2, var3, var4, var5, -16776961);
    }
 
    public void setMaxLength(int var1) {

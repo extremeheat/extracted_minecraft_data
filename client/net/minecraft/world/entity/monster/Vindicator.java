@@ -29,7 +29,6 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.creaking.Creaking;
@@ -77,7 +76,7 @@ public class Vindicator extends AbstractIllager {
    protected void customServerAiStep(ServerLevel var1) {
       if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
          boolean var2 = var1.isRaided(this.blockPosition());
-         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var2);
+         this.getNavigation().setCanOpenDoors(var2);
       }
 
       super.customServerAiStep(var1);
@@ -115,7 +114,7 @@ public class Vindicator extends AbstractIllager {
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
-      ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
+      this.getNavigation().setCanOpenDoors(true);
       RandomSource var6 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var6, var2);
       this.populateDefaultEquipmentEnchantments(var1, var6, var2);

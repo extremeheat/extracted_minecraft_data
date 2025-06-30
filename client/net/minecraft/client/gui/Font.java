@@ -30,10 +30,10 @@ import net.minecraft.util.StringDecomposer;
 import org.joml.Matrix4f;
 
 public class Font {
-   private static final float EFFECT_DEPTH = 0.001F;
-   private static final float OVER_EFFECT_DEPTH = 0.001F;
-   private static final float UNDER_EFFECT_DEPTH = -0.001F;
-   public static final float SHADOW_DEPTH = 0.003F;
+   private static final float EFFECT_DEPTH = 0.01F;
+   private static final float OVER_EFFECT_DEPTH = 0.01F;
+   private static final float UNDER_EFFECT_DEPTH = -0.01F;
+   public static final float SHADOW_DEPTH = 0.03F;
    public static final int NO_SHADOW = 0;
    public final int lineHeight = 9;
    public final RandomSource random = RandomSource.create();
@@ -276,11 +276,11 @@ public class Font {
 
          this.markBackground(this.x, this.y, var11);
          if (var2.isStrikethrough()) {
-            this.addEffect(new BakedGlyph.Effect(var12, this.y + 4.5F - 1.0F, this.x + var11, this.y + 4.5F, 0.001F, var9, var10, var13));
+            this.addEffect(new BakedGlyph.Effect(var12, this.y + 4.5F - 1.0F, this.x + var11, this.y + 4.5F, 0.01F, var9, var10, var13));
          }
 
          if (var2.isUnderlined()) {
-            this.addEffect(new BakedGlyph.Effect(var12, this.y + 9.0F - 1.0F, this.x + var11, this.y + 9.0F, 0.001F, var9, var10, var13));
+            this.addEffect(new BakedGlyph.Effect(var12, this.y + 9.0F - 1.0F, this.x + var11, this.y + 9.0F, 0.01F, var9, var10, var13));
          }
 
          this.x += var11;
@@ -290,7 +290,7 @@ public class Font {
       public void visit(GlyphVisitor var1) {
          BakedGlyph var2 = null;
          if (ARGB.alpha(this.backgroundColor) != 0) {
-            BakedGlyph.Effect var3 = new BakedGlyph.Effect(this.backgroundLeft, this.backgroundTop, this.backgroundRight, this.backgroundBottom, -0.001F, this.backgroundColor);
+            BakedGlyph.Effect var3 = new BakedGlyph.Effect(this.backgroundLeft, this.backgroundTop, this.backgroundRight, this.backgroundBottom, -0.01F, this.backgroundColor);
             var2 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
             var1.acceptEffect(var2, var3);
          }

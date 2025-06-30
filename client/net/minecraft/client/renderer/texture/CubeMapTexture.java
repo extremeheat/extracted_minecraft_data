@@ -79,6 +79,7 @@ public class CubeMapTexture extends ReloadableTexture {
       GpuDevice var4 = RenderSystem.getDevice();
       int var5 = var1.getWidth();
       int var6 = var1.getHeight() / 6;
+      this.close();
       ResourceLocation var10002 = this.resourceId();
       Objects.requireNonNull(var10002);
       this.texture = var4.createTexture(var10002::toString, 21, TextureFormat.RGBA8, var5, var6, 6, 1);

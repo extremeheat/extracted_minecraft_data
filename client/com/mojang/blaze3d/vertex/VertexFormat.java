@@ -12,11 +12,16 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 
 @DontObfuscate
 public class VertexFormat {
    public static final int UNKNOWN_ELEMENT = -1;
+   private static final boolean USE_STAGING_BUFFER_WORKAROUND;
+   @Nullable
+   private static GpuBuffer UPLOAD_STAGING_BUFFER;
    private final List<VertexFormatElement> elements;
    private final List<String> names;
    private final int vertexSize;
@@ -109,38 +114,57 @@ public class VertexFormat {
       return this.elementsMask * 31 + Arrays.hashCode(this.offsetsByElement);
    }
 
-   public GpuBuffer uploadImmediateVertexBuffer(ByteBuffer var1) {
-      GpuDevice var2 = RenderSystem.getDevice();
-      if (this.immediateDrawVertexBuffer == null) {
-         this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), 40, var1);
+   private static GpuBuffer uploadToBuffer(@Nullable GpuBuffer var0, ByteBuffer var1, int var2, Supplier<String> var3) {
+      GpuDevice var4 = RenderSystem.getDevice();
+      if (var0 == null) {
+         var0 = var4.createBuffer(var3, var2, var1);
       } else {
-         CommandEncoder var3 = var2.createCommandEncoder();
-         if (this.immediateDrawVertexBuffer.size() < var1.remaining()) {
-            this.immediateDrawVertexBuffer.close();
-            this.immediateDrawVertexBuffer = var2.createBuffer(() -> "Immediate vertex buffer for " + String.valueOf(this), 40, var1);
+         CommandEncoder var5 = var4.createCommandEncoder();
+         if (var0.size() < var1.remaining()) {
+            var0.close();
+            var0 = var4.createBuffer(var3, var2, var1);
          } else {
-            var3.writeToBuffer(this.immediateDrawVertexBuffer.slice(), var1);
+            var5.writeToBuffer(var0.slice(), var1);
          }
       }
 
+      return var0;
+   }
+
+   private GpuBuffer uploadToBufferWithWorkaround(@Nullable GpuBuffer var1, ByteBuffer var2, int var3, Supplier<String> var4) {
+      if (USE_STAGING_BUFFER_WORKAROUND) {
+         GpuDevice var5 = RenderSystem.getDevice();
+         if (var1 == null) {
+            var1 = var5.createBuffer(var4, var3, var2);
+         } else {
+            CommandEncoder var6 = var5.createCommandEncoder();
+            if (var1.size() < var2.remaining()) {
+               var1.close();
+               var1 = var5.createBuffer(var4, var3, var2);
+            } else {
+               UPLOAD_STAGING_BUFFER = uploadToBuffer(UPLOAD_STAGING_BUFFER, var2, var3, var4);
+               var6.copyToBuffer(UPLOAD_STAGING_BUFFER.slice(0, var2.remaining()), var1.slice(0, var2.remaining()));
+            }
+         }
+
+         return var1;
+      } else {
+         return uploadToBuffer(var1, var2, var3, var4);
+      }
+   }
+
+   public GpuBuffer uploadImmediateVertexBuffer(ByteBuffer var1) {
+      this.immediateDrawVertexBuffer = this.uploadToBufferWithWorkaround(this.immediateDrawVertexBuffer, var1, 40, () -> "Immediate vertex buffer for " + String.valueOf(this));
       return this.immediateDrawVertexBuffer;
    }
 
    public GpuBuffer uploadImmediateIndexBuffer(ByteBuffer var1) {
-      GpuDevice var2 = RenderSystem.getDevice();
-      if (this.immediateDrawIndexBuffer == null) {
-         this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), 72, var1);
-      } else {
-         CommandEncoder var3 = var2.createCommandEncoder();
-         if (this.immediateDrawIndexBuffer.size() < var1.remaining()) {
-            this.immediateDrawIndexBuffer.close();
-            this.immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "Immediate index buffer for " + String.valueOf(this), 72, var1);
-         } else {
-            var3.writeToBuffer(this.immediateDrawIndexBuffer.slice(), var1);
-         }
-      }
-
+      this.immediateDrawIndexBuffer = this.uploadToBufferWithWorkaround(this.immediateDrawIndexBuffer, var1, 72, () -> "Immediate index buffer for " + String.valueOf(this));
       return this.immediateDrawIndexBuffer;
+   }
+
+   static {
+      USE_STAGING_BUFFER_WORKAROUND = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
    }
 
    @DontObfuscate

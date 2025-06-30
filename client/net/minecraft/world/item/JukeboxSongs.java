@@ -31,6 +31,7 @@ public interface JukeboxSongs {
    ResourceKey<JukeboxSong> CREATOR = create("creator");
    ResourceKey<JukeboxSong> CREATOR_MUSIC_BOX = create("creator_music_box");
    ResourceKey<JukeboxSong> TEARS = create("tears");
+   ResourceKey<JukeboxSong> LAVA_CHICKEN = create("lava_chicken");
 
    private static ResourceKey<JukeboxSong> create(String var0) {
       return ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.withDefaultNamespace(var0));
@@ -61,5 +62,6 @@ public interface JukeboxSongs {
       register(var0, CREATOR, SoundEvents.MUSIC_DISC_CREATOR, 176, 12);
       register(var0, CREATOR_MUSIC_BOX, SoundEvents.MUSIC_DISC_CREATOR_MUSIC_BOX, 73, 11);
       register(var0, TEARS, SoundEvents.MUSIC_DISC_TEARS, 175, 10);
+      register(var0, LAVA_CHICKEN, SoundEvents.MUSIC_DISC_LAVA_CHICKEN, 134, 9);
    }
 }

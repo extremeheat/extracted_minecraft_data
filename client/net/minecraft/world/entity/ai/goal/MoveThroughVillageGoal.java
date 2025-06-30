@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -74,9 +74,9 @@ public class MoveThroughVillageGoal extends Goal {
                      return false;
                   } else {
                      this.poiPos = ((BlockPos)var4.get()).immutable();
-                     GroundPathNavigation var5 = (GroundPathNavigation)this.mob.getNavigation();
+                     PathNavigation var5 = this.mob.getNavigation();
                      var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                     this.path = var5.createPath((BlockPos)this.poiPos, 0);
+                     this.path = var5.createPath(this.poiPos, 0);
                      var5.setCanOpenDoors(true);
                      if (this.path == null) {
                         Vec3 var6 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);

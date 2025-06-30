@@ -70,7 +70,7 @@ public class BakedGlyph {
             this.render(var7, var8 + var1.boldOffset() + var1.shadowOffset(), var9 + var1.shadowOffset(), var13, var2, var3, var14, true, var4);
          }
 
-         var12 = var5 ? 0.0F : 0.003F;
+         var12 = var5 ? 0.0F : 0.03F;
       } else {
          var12 = 0.0F;
       }
@@ -112,7 +112,7 @@ public class BakedGlyph {
       float var6 = var5 ? 0.0F : var1.depth;
       if (var1.hasShadow()) {
          this.buildEffect(var1, var1.shadowOffset(), var6, var1.shadowColor(), var3, var4, var2);
-         var6 += var5 ? 0.0F : 0.003F;
+         var6 += var5 ? 0.0F : 0.03F;
       }
 
       this.buildEffect(var1, 0.0F, var6, var1.color, var3, var4, var2);
