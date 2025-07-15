@@ -47,12 +47,16 @@ public class GlProgram implements AutoCloseable {
          GlStateManager.glAttachShader(var4, var1.getShaderId());
          GlStateManager.glLinkProgram(var4);
          int var8 = GlStateManager.glGetProgrami(var4, 35714);
-         if (var8 == 0) {
-            String var9 = GlStateManager.glGetProgramInfoLog(var4, 32768);
+         String var9 = GlStateManager.glGetProgramInfoLog(var4, 32768);
+         if (var8 != 0 && !var9.contains("Failed for unknown reason")) {
+            if (!var9.isEmpty()) {
+               LOGGER.info("Info log when linking program containing VS {} and FS {}. Log output: {}", new Object[]{var0.getId(), var1.getId(), var9});
+            }
+
+            return new GlProgram(var4, var3);
+         } else {
             String var10002 = String.valueOf(var0.getId());
             throw new ShaderManager.CompilationException("Error encountered when linking program containing VS " + var10002 + " and FS " + String.valueOf(var1.getId()) + ". Log output: " + var9);
-         } else {
-            return new GlProgram(var4, var3);
          }
       }
    }

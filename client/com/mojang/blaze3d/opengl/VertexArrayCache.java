@@ -107,7 +107,6 @@ public abstract class VertexArrayCache {
          if (var3 == null) {
             int var4 = GlStateManager._glGenVertexArrays();
             GlStateManager._glBindVertexArray(var4);
-            ARBVertexAttribBinding.glBindVertexBuffer(0, var2.handle, 0L, var1.getVertexSize());
             List var5 = var1.getElements();
 
             for(int var6 = 0; var6 < var5.size(); ++var6) {
@@ -131,6 +130,7 @@ public abstract class VertexArrayCache {
                ARBVertexAttribBinding.glVertexAttribBinding(var6, 0);
             }
 
+            ARBVertexAttribBinding.glBindVertexBuffer(0, var2.handle, 0L, var1.getVertexSize());
             VertexArray var8 = new VertexArray(var4, var1, var2);
             this.debugLabels.applyLabel(var8);
             this.cache.put(var1, var8);
