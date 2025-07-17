@@ -3,6 +3,7 @@ package com.mojang.blaze3d.vertex;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -132,8 +133,8 @@ public class VertexFormat {
    }
 
    private GpuBuffer uploadToBufferWithWorkaround(@Nullable GpuBuffer var1, ByteBuffer var2, int var3, Supplier<String> var4) {
+      GpuDevice var5 = RenderSystem.getDevice();
       if (USE_STAGING_BUFFER_WORKAROUND) {
-         GpuDevice var5 = RenderSystem.getDevice();
          if (var1 == null) {
             var1 = var5.createBuffer(var4, var3, var2);
          } else {
@@ -148,6 +149,12 @@ public class VertexFormat {
          }
 
          return var1;
+      } else if (GraphicsWorkarounds.get(var5).alwaysCreateFreshImmediateBuffer()) {
+         if (var1 != null) {
+            var1.close();
+         }
+
+         return var5.createBuffer(var4, var3, var2);
       } else {
          return uploadToBuffer(var1, var2, var3, var4);
       }
