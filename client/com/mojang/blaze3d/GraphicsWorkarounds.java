@@ -3,10 +3,17 @@ package com.mojang.blaze3d;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.systems.GpuDevice;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 public class GraphicsWorkarounds {
+   private static final List<String> INTEL_GEN11_CORE = List.of("i3-1000g1", "i3-1000g4", "i3-1000ng4", "i3-1005g1", "i3-l13g4", "i5-1030g4", "i5-1030g7", "i5-1030ng7", "i5-1034g1", "i5-1035g1", "i5-1035g4", "i5-1035g7", "i5-1038ng7", "i5-l16g7", "i7-1060g7", "i7-1060ng7", "i7-1065g7", "i7-1068g7", "i7-1068ng7");
+   private static final List<String> INTEL_GEN11_ATOM = List.of("x6211e", "x6212re", "x6214re", "x6413e", "x6414re", "x6416re", "x6425e", "x6425re", "x6427fe");
+   private static final List<String> INTEL_GEN11_CELERON = List.of("j6412", "j6413", "n4500", "n4505", "n5095", "n5095a", "n5100", "n5105", "n6210", "n6211");
+   private static final List<String> INTEL_GEN11_PENTIUM = List.of("6805", "j6426", "n6415", "n6000", "n6005");
    @Nullable
    private static GraphicsWorkarounds instance;
    private final WeakReference<GpuDevice> gpuDevice;
@@ -33,18 +40,52 @@ public class GraphicsWorkarounds {
 
    private static boolean isIntelGen11(GpuDevice var0) {
       String var1 = GLX._getCpuInfo().toLowerCase(Locale.ROOT);
-      if (!var1.contains("intel")) {
-         return false;
-      } else {
-         boolean var10000;
-         switch (var0.getRenderer()) {
-            case "Intel(R) HD Graphics Gen11" -> var10000 = true;
-            case "Intel(R) UHD Graphics" -> var10000 = var1.contains("i3-1005g1") || var1.contains("i5-1035g1") || var1.contains("i3-l13g4") || var1.contains("i5-l16g7") || var1.contains("atom") && var1.contains("x6413e") || var1.contains("celeron") && (var1.contains("n6210") || var1.contains("j6412")) || var1.contains("atom") && (var1.contains("x6425re") || var1.contains("x6425e")) || var1.contains("celeron") && (var1.contains("n4500") || var1.contains("n4505") || var1.contains("n5095")) || var1.contains("celeron") && (var1.contains("n5100") || var1.contains("n5105")) || var1.contains("pentium(r) silver") && (var1.contains("n6000") || var1.contains("n6005"));
-            case "Intel(R) Iris(R) Plus Graphics" -> var10000 = var1.contains("i5-1035g4") || var1.contains("i5-1035g7") || var1.contains("i5-1038ng7") || var1.contains("i7-1065g7");
-            default -> var10000 = false;
-         }
+      String var2 = var0.getRenderer().toLowerCase(Locale.ROOT);
+      if (var1.contains("intel") && var2.contains("intel") && !var2.contains("mesa")) {
+         if (var2.endsWith("gen11")) {
+            return true;
+         } else if (!var2.contains("uhd graphics") && !var2.contains("iris")) {
+            return false;
+         } else {
+            boolean var6;
+            label49: {
+               if (var1.contains("atom")) {
+                  Stream var10000 = INTEL_GEN11_ATOM.stream();
+                  Objects.requireNonNull(var1);
+                  if (var10000.anyMatch(var1::contains)) {
+                     break label49;
+                  }
+               }
 
-         return var10000;
+               if (var1.contains("celeron")) {
+                  Stream var3 = INTEL_GEN11_CELERON.stream();
+                  Objects.requireNonNull(var1);
+                  if (var3.anyMatch(var1::contains)) {
+                     break label49;
+                  }
+               }
+
+               if (var1.contains("pentium")) {
+                  Stream var4 = INTEL_GEN11_PENTIUM.stream();
+                  Objects.requireNonNull(var1);
+                  if (var4.anyMatch(var1::contains)) {
+                     break label49;
+                  }
+               }
+
+               Stream var5 = INTEL_GEN11_CORE.stream();
+               Objects.requireNonNull(var1);
+               if (!var5.anyMatch(var1::contains)) {
+                  var6 = false;
+                  return var6;
+               }
+            }
+
+            var6 = true;
+            return var6;
+         }
+      } else {
+         return false;
       }
    }
 }
