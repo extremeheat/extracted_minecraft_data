@@ -2,45 +2,33 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import java.util.Optional;
-import net.minecraft.util.ARGB;
 
 public class OutlineBufferSource implements MultiBufferSource {
-   private final MultiBufferSource.BufferSource bufferSource;
    private final MultiBufferSource.BufferSource outlineBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(1536));
-   private int teamR = 255;
-   private int teamG = 255;
-   private int teamB = 255;
-   private int teamA = 255;
+   private int outlineColor = -1;
 
-   public OutlineBufferSource(MultiBufferSource.BufferSource var1) {
+   public OutlineBufferSource() {
       super();
-      this.bufferSource = var1;
    }
 
    public VertexConsumer getBuffer(RenderType var1) {
       if (var1.isOutline()) {
-         VertexConsumer var6 = this.outlineBufferSource.getBuffer(var1);
-         return new EntityOutlineGenerator(var6, this.teamR, this.teamG, this.teamB, this.teamA);
+         VertexConsumer var4 = this.outlineBufferSource.getBuffer(var1);
+         return new EntityOutlineGenerator(var4, this.outlineColor);
       } else {
-         VertexConsumer var2 = this.bufferSource.getBuffer(var1);
-         Optional var3 = var1.outline();
-         if (var3.isPresent()) {
-            VertexConsumer var4 = this.outlineBufferSource.getBuffer((RenderType)var3.get());
-            EntityOutlineGenerator var5 = new EntityOutlineGenerator(var4, this.teamR, this.teamG, this.teamB, this.teamA);
-            return VertexMultiConsumer.create(var5, var2);
+         Optional var2 = var1.outline();
+         if (var2.isPresent()) {
+            VertexConsumer var3 = this.outlineBufferSource.getBuffer((RenderType)var2.get());
+            return new EntityOutlineGenerator(var3, this.outlineColor);
          } else {
-            return var2;
+            throw new IllegalStateException("Can't render an outline for this rendertype!");
          }
       }
    }
 
-   public void setColor(int var1, int var2, int var3, int var4) {
-      this.teamR = var1;
-      this.teamG = var2;
-      this.teamB = var3;
-      this.teamA = var4;
+   public void setColor(int var1) {
+      this.outlineColor = var1;
    }
 
    public void endOutlineBatch() {
@@ -48,11 +36,7 @@ public class OutlineBufferSource implements MultiBufferSource {
    }
 
    static record EntityOutlineGenerator(VertexConsumer delegate, int color) implements VertexConsumer {
-      public EntityOutlineGenerator(VertexConsumer var1, int var2, int var3, int var4, int var5) {
-         this(var1, ARGB.color(var5, var2, var3, var4));
-      }
-
-      private EntityOutlineGenerator(VertexConsumer var1, int var2) {
+      EntityOutlineGenerator(VertexConsumer var1, int var2) {
          super();
          this.delegate = var1;
          this.color = var2;

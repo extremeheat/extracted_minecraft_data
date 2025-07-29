@@ -237,7 +237,7 @@ public abstract class BaseSpawner {
 
    public boolean onEventTriggered(Level var1, int var2) {
       if (var2 == 1) {
-         if (var1.isClientSide) {
+         if (var1.isClientSide()) {
             this.spawnDelay = this.minSpawnDelay;
          }
 

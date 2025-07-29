@@ -150,7 +150,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private volatile boolean trialsAvailable;
    @Nullable
    private volatile String newsLink;
-   long lastClickTime;
    final List<RealmsNotification> notifications = new ArrayList();
    private Button addRealmButton;
    private NotificationButton pendingInvitesButton;
@@ -935,12 +934,12 @@ public class RealmsMainScreen extends RealmsScreen {
          this.children.forEach((var4x) -> var4x.render(var1, var7, var8, var10));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          if (this.dismissButton != null) {
-            this.dismissButton.mouseClicked(var1, var3, var5);
+            this.dismissButton.mouseClicked(var1, var3, var5, var6);
          }
 
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       public Component getNarration() {
@@ -969,9 +968,9 @@ public class RealmsMainScreen extends RealmsScreen {
          this.button = var2;
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         this.button.mouseClicked(var1, var3, var5);
-         return super.mouseClicked(var1, var3, var5);
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         this.button.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       public boolean keyPressed(int var1, int var2, int var3) {
@@ -1015,7 +1014,7 @@ public class RealmsMainScreen extends RealmsScreen {
          this.tooltip.refreshTooltipForNextRenderPass(var1, var7, var8, var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          this.addSnapshotRealm();
          return true;
       }
@@ -1138,15 +1137,11 @@ public class RealmsMainScreen extends RealmsScreen {
          RealmsMainScreen.this.minecraft.setScreen(var1);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
             this.createUnitializedRealm();
-         } else if (this.serverData.shouldPlayButtonBeActive()) {
-            if (Util.getMillis() - RealmsMainScreen.this.lastClickTime < 250L && this.isFocused()) {
-               this.playRealm();
-            }
-
-            RealmsMainScreen.this.lastClickTime = Util.getMillis();
+         } else if (this.serverData.shouldPlayButtonBeActive() && var6 && this.isFocused()) {
+            this.playRealm();
          }
 
          return true;

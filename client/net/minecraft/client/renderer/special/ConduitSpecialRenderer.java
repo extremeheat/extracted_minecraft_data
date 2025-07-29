@@ -4,25 +4,27 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
 
 public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
+   private final MaterialSet materials;
    private final ModelPart model;
 
-   public ConduitSpecialRenderer(ModelPart var1) {
+   public ConduitSpecialRenderer(MaterialSet var1, ModelPart var2) {
       super();
-      this.model = var1;
+      this.materials = var1;
+      this.model = var2;
    }
 
    public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      VertexConsumer var7 = ConduitRenderer.SHELL_TEXTURE.buffer(var3, RenderType::entitySolid);
+      VertexConsumer var7 = ConduitRenderer.SHELL_TEXTURE.buffer(this.materials, var3, RenderType::entitySolid);
       var2.pushPose();
       var2.translate(0.5F, 0.5F, 0.5F);
       this.model.render(var2, var7, var4, var5);
@@ -46,8 +48,8 @@ public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         return new ConduitSpecialRenderer(var1.bakeLayer(ModelLayers.CONDUIT_SHELL));
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         return new ConduitSpecialRenderer(var1.materials(), var1.entityModelSet().bakeLayer(ModelLayers.CONDUIT_SHELL));
       }
    }
 }

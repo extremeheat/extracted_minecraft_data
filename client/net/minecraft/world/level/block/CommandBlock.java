@@ -55,7 +55,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof CommandBlockEntity) {
             CommandBlockEntity var8 = (CommandBlockEntity)var7;
@@ -136,9 +136,9 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      return var4 instanceof CommandBlockEntity ? ((CommandBlockEntity)var4).getCommandBlock().getSuccessCount() : 0;
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
+      BlockEntity var5 = var2.getBlockEntity(var3);
+      return var5 instanceof CommandBlockEntity ? ((CommandBlockEntity)var5).getCommandBlock().getSuccessCount() : 0;
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {

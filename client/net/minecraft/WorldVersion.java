@@ -2,6 +2,7 @@ package net.minecraft;
 
 import java.util.Date;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.world.level.storage.DataVersion;
 
 public interface WorldVersion {
@@ -13,14 +14,14 @@ public interface WorldVersion {
 
    int protocolVersion();
 
-   int packVersion(PackType var1);
+   PackFormat packVersion(PackType var1);
 
    Date buildTime();
 
    boolean stable();
 
-   public static record Simple(String id, String name, DataVersion dataVersion, int protocolVersion, int resourcePackVersion, int datapackVersion, Date buildTime, boolean stable) implements WorldVersion {
-      public Simple(String var1, String var2, DataVersion var3, int var4, int var5, int var6, Date var7, boolean var8) {
+   public static record Simple(String id, String name, DataVersion dataVersion, int protocolVersion, PackFormat resourcePackVersion, PackFormat datapackVersion, Date buildTime, boolean stable) implements WorldVersion {
+      public Simple(String var1, String var2, DataVersion var3, int var4, PackFormat var5, PackFormat var6, Date var7, boolean var8) {
          super();
          this.id = var1;
          this.name = var2;
@@ -32,8 +33,8 @@ public interface WorldVersion {
          this.stable = var8;
       }
 
-      public int packVersion(PackType var1) {
-         int var10000;
+      public PackFormat packVersion(PackType var1) {
+         PackFormat var10000;
          switch (var1) {
             case CLIENT_RESOURCES -> var10000 = this.resourcePackVersion;
             case SERVER_DATA -> var10000 = this.datapackVersion;

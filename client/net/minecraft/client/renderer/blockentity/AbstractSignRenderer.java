@@ -11,6 +11,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
@@ -29,13 +30,15 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
    private static final int BLACK_TEXT_OUTLINE_COLOR = -988212;
    private static final int OUTLINE_RENDER_DISTANCE = Mth.square(16);
    private final Font font;
+   private final MaterialSet materials;
 
    public AbstractSignRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.font = var1.getFont();
+      this.font = var1.font();
+      this.materials = var1.materials();
    }
 
-   protected abstract Model getSignModel(BlockState var1, WoodType var2);
+   protected abstract Model.Simple getSignModel(BlockState var1, WoodType var2);
 
    protected abstract Material getSignMaterial(WoodType var1);
 
@@ -50,11 +53,11 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
    public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
       BlockState var8 = var1.getBlockState();
       SignBlock var9 = (SignBlock)var8.getBlock();
-      Model var10 = this.getSignModel(var8, var9.type());
+      Model.Simple var10 = this.getSignModel(var8, var9.type());
       this.renderSignWithText(var1, var3, var4, var5, var6, var8, var9, var9.type(), var10);
    }
 
-   private void renderSignWithText(SignBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, BlockState var6, SignBlock var7, WoodType var8, Model var9) {
+   private void renderSignWithText(SignBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, BlockState var6, SignBlock var7, WoodType var8, Model.Simple var9) {
       var2.pushPose();
       this.translateSign(var2, -var7.getYRotationDegrees(var6), var6);
       this.renderSign(var2, var3, var4, var5, var8, var9);
@@ -63,13 +66,14 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
       var2.popPose();
    }
 
-   protected void renderSign(PoseStack var1, MultiBufferSource var2, int var3, int var4, WoodType var5, Model var6) {
+   protected void renderSign(PoseStack var1, MultiBufferSource var2, int var3, int var4, WoodType var5, Model.Simple var6) {
       var1.pushPose();
       float var7 = this.getSignModelRenderScale();
       var1.scale(var7, -var7, -var7);
       Material var8 = this.getSignMaterial(var5);
+      MaterialSet var10001 = this.materials;
       Objects.requireNonNull(var6);
-      VertexConsumer var9 = var8.buffer(var2, var6::renderType);
+      VertexConsumer var9 = var8.buffer(var10001, var2, var6::renderType);
       var6.renderToBuffer(var1, var9, var3, var4);
       var1.popPose();
    }

@@ -1,14 +1,13 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Map;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -33,23 +32,21 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
       this.equipmentRenderer = var3;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, WolfRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, WolfRenderState var4, float var5, float var6) {
       ItemStack var7 = var4.bodyArmorItem;
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
       if (var8 != null && !var8.assetId().isEmpty()) {
          WolfModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
-         var9.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)var8.assetId().get(), var9, var7, var1, var2, var3);
-         this.maybeRenderCracks(var1, var2, var3, var7, var9);
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)var8.assetId().get(), var9, var4, var7, var1, var2, var3, var4.outlineColor);
+         this.maybeRenderCracks(var1, var2, var3, var7, var9, var4);
       }
    }
 
-   private void maybeRenderCracks(PoseStack var1, MultiBufferSource var2, int var3, ItemStack var4, Model var5) {
-      Crackiness.Level var6 = Crackiness.WOLF_ARMOR.byDamage(var4);
-      if (var6 != Crackiness.Level.NONE) {
-         ResourceLocation var7 = (ResourceLocation)ARMOR_CRACK_LOCATIONS.get(var6);
-         VertexConsumer var8 = var2.getBuffer(RenderType.armorTranslucent(var7));
-         var5.renderToBuffer(var1, var8, var3, OverlayTexture.NO_OVERLAY);
+   private void maybeRenderCracks(PoseStack var1, SubmitNodeCollector var2, int var3, ItemStack var4, Model<WolfRenderState> var5, WolfRenderState var6) {
+      Crackiness.Level var7 = Crackiness.WOLF_ARMOR.byDamage(var4);
+      if (var7 != Crackiness.Level.NONE) {
+         ResourceLocation var8 = (ResourceLocation)ARMOR_CRACK_LOCATIONS.get(var7);
+         var2.submitModel(var5, var6, var1, RenderType.armorTranslucent(var8), var3, OverlayTexture.NO_OVERLAY, var6.outlineColor);
       }
    }
 

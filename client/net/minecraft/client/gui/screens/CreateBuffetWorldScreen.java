@@ -114,9 +114,9 @@ public class CreateBuffetWorldScreen extends Screen {
             var1.drawString(CreateBuffetWorldScreen.this.font, (Component)this.name, var4 + 5, var3 + 2, -1);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
             BiomeList.this.setSelected(this);
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var3, var5, var6);
          }
       }
    }

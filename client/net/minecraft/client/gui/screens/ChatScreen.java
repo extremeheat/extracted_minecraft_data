@@ -115,24 +115,24 @@ public class ChatScreen extends Screen {
       }
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (this.commandSuggestions.mouseClicked((double)((int)var1), (double)((int)var3), var5)) {
          return true;
       } else {
          if (var5 == 0) {
-            ChatComponent var6 = this.minecraft.gui.getChat();
-            if (var6.handleChatQueueClicked(var1, var3)) {
+            ChatComponent var7 = this.minecraft.gui.getChat();
+            if (var7.handleChatQueueClicked(var1, var3)) {
                return true;
             }
 
-            Style var7 = this.getComponentStyleAt(var1, var3);
-            if (var7 != null && this.handleComponentClicked(var7)) {
+            Style var8 = this.getComponentStyleAt(var1, var3);
+            if (var8 != null && this.handleComponentClicked(var8)) {
                this.initial = this.input.getValue();
                return true;
             }
          }
 
-         return this.input.mouseClicked(var1, var3, var5) ? true : super.mouseClicked(var1, var3, var5);
+         return this.input.mouseClicked(var1, var3, var5, var6) ? true : super.mouseClicked(var1, var3, var5, var6);
       }
    }
 

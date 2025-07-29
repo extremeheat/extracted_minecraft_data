@@ -128,7 +128,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      if (!var2.isClientSide && this.type.canButtonBeActivatedByArrows() && !(Boolean)var1.getValue(POWERED)) {
+      if (!var2.isClientSide() && this.type.canButtonBeActivatedByArrows() && !(Boolean)var1.getValue(POWERED)) {
          this.checkPressed(var1, var2, var3);
       }
    }

@@ -7,12 +7,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import net.minecraft.client.model.ChestModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
@@ -22,19 +22,25 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    public static final ResourceLocation NORMAL_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("normal");
    public static final ResourceLocation TRAPPED_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("trapped");
    public static final ResourceLocation ENDER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("ender");
+   public static final ResourceLocation COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper");
+   public static final ResourceLocation EXPOSED_COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_exposed");
+   public static final ResourceLocation WEATHERED_COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_weathered");
+   public static final ResourceLocation OXIDIZED_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_oxidized");
+   private final MaterialSet materials;
    private final ChestModel model;
    private final Material material;
    private final float openness;
 
-   public ChestSpecialRenderer(ChestModel var1, Material var2, float var3) {
+   public ChestSpecialRenderer(MaterialSet var1, ChestModel var2, Material var3, float var4) {
       super();
-      this.model = var1;
-      this.material = var2;
-      this.openness = var3;
+      this.materials = var1;
+      this.model = var2;
+      this.material = var3;
+      this.openness = var4;
    }
 
    public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      VertexConsumer var7 = this.material.buffer(var3, RenderType::entitySolid);
+      VertexConsumer var7 = this.material.buffer(this.materials, var3, RenderType::entitySolid);
       this.model.setupAnim(this.openness);
       this.model.renderToBuffer(var2, var7, var4, var5);
    }
@@ -62,10 +68,10 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         ChestModel var2 = new ChestModel(var1.bakeLayer(ModelLayers.CHEST));
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         ChestModel var2 = new ChestModel(var1.entityModelSet().bakeLayer(ModelLayers.CHEST));
          Material var3 = Sheets.CHEST_MAPPER.apply(this.texture);
-         return new ChestSpecialRenderer(var2, var3, this.openness);
+         return new ChestSpecialRenderer(var1.materials(), var2, var3, this.openness);
       }
    }
 }

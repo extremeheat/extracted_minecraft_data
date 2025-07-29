@@ -140,7 +140,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide ? createTickerHelper(var3, BlockEntityType.SCULK_SENSOR, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
+      return !var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.SCULK_SENSOR, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -224,10 +224,10 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof SculkSensorBlockEntity var5) {
-         return getPhase(var1) == SculkSensorPhase.ACTIVE ? var5.getLastVibrationFrequency() : 0;
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
+      BlockEntity var5 = var2.getBlockEntity(var3);
+      if (var5 instanceof SculkSensorBlockEntity var6) {
+         return getPhase(var1) == SculkSensorPhase.ACTIVE ? var6.getLastVibrationFrequency() : 0;
       } else {
          return 0;
       }

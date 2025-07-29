@@ -72,7 +72,7 @@ public class LlamaSpit extends Projectile {
 
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.discard();
       }
 

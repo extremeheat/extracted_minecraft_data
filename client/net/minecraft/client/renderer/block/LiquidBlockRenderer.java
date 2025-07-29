@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,12 +32,12 @@ public class LiquidBlockRenderer {
       super();
    }
 
-   protected void setupSprites() {
-      this.lavaIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
-      this.lavaIcons[1] = ModelBakery.LAVA_FLOW.sprite();
-      this.waterIcons[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
-      this.waterIcons[1] = ModelBakery.WATER_FLOW.sprite();
-      this.waterOverlay = ModelBakery.WATER_OVERLAY.sprite();
+   protected void setupSprites(BlockModelShaper var1, MaterialSet var2) {
+      this.lavaIcons[0] = var1.getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
+      this.lavaIcons[1] = var2.get(ModelBakery.LAVA_FLOW);
+      this.waterIcons[0] = var1.getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
+      this.waterIcons[1] = var2.get(ModelBakery.WATER_FLOW);
+      this.waterOverlay = var2.get(ModelBakery.WATER_OVERLAY);
    }
 
    private static boolean isNeighborSameFluid(FluidState var0, FluidState var1) {

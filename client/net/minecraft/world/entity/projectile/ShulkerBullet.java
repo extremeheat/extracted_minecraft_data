@@ -187,7 +187,7 @@ public class ShulkerBullet extends Projectile {
       super.tick();
       Entity var1 = !this.level().isClientSide() ? (Entity)EntityReference.get(this.finalTarget, this.level(), Entity.class) : null;
       HitResult var2 = null;
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (var1 == null) {
             this.finalTarget = null;
          }
@@ -217,7 +217,7 @@ public class ShulkerBullet extends Projectile {
       }
 
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var7.x, this.getY() - var7.y + 0.15, this.getZ() - var7.z, 0.0, 0.0, 0.0);
       } else if (var1 != null) {
          if (this.flightSteps > 0) {

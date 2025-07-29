@@ -61,13 +61,13 @@ public class RealmsTermsScreen extends RealmsScreen {
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (this.onLink) {
          this.minecraft.keyboardHandler.setClipboard(CommonLinks.REALMS_TERMS.toString());
          Util.getPlatform().openUri(CommonLinks.REALMS_TERMS);
          return true;
       } else {
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
    }
 

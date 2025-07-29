@@ -21,7 +21,7 @@ import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -43,7 +43,7 @@ public class BlockModelWrapper implements ItemModel {
       boolean var4 = false;
 
       for(BakedQuad var6 : var2) {
-         if (var6.sprite().isAnimated()) {
+         if (var6.sprite().contents().isAnimated()) {
             var4 = true;
             break;
          }
@@ -64,7 +64,7 @@ public class BlockModelWrapper implements ItemModel {
       return (Vector3f[])var1.toArray((var0x) -> new Vector3f[var0x]);
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
       var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
@@ -78,7 +78,7 @@ public class BlockModelWrapper implements ItemModel {
       int[] var10 = var8.prepareTintLayers(var13);
 
       for(int var11 = 0; var11 < var13; ++var11) {
-         int var12 = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6);
+         int var12 = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6 == null ? null : var6.asLivingEntity());
          var10[var11] = var12;
          var1.appendModelIdentityElement(var12);
       }

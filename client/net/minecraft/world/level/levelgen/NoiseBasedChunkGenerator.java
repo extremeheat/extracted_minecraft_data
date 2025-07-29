@@ -112,7 +112,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       DensityFunction.SinglePointContext var6 = new DensityFunction.SinglePointContext(var3.getX(), var3.getY(), var3.getZ());
       double var7 = var5.ridges().compute(var6);
       String var10001 = var4.format(var5.temperature().compute(var6));
-      var1.add("NoiseRouter T: " + var10001 + " V: " + var4.format(var5.vegetation().compute(var6)) + " C: " + var4.format(var5.continents().compute(var6)) + " E: " + var4.format(var5.erosion().compute(var6)) + " D: " + var4.format(var5.depth().compute(var6)) + " W: " + var4.format(var7) + " PV: " + var4.format((double)NoiseRouterData.peaksAndValleys((float)var7)) + " AS: " + var4.format(var5.initialDensityWithoutJaggedness().compute(var6)) + " N: " + var4.format(var5.finalDensity().compute(var6)));
+      var1.add("NoiseRouter T: " + var10001 + " V: " + var4.format(var5.vegetation().compute(var6)) + " C: " + var4.format(var5.continents().compute(var6)) + " E: " + var4.format(var5.erosion().compute(var6)) + " D: " + var4.format(var5.depth().compute(var6)) + " W: " + var4.format(var7) + " PV: " + var4.format((double)NoiseRouterData.peaksAndValleys((float)var7)) + " PS: " + var4.format(var5.preliminarySurfaceLevel().compute(var6)) + " N: " + var4.format(var5.finalDensity().compute(var6)));
    }
 
    private OptionalInt iterateNoiseColumn(LevelHeightAccessor var1, RandomState var2, int var3, int var4, @Nullable MutableObject<NoiseColumn> var5, @Nullable Predicate<BlockState> var6) {

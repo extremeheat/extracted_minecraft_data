@@ -11,7 +11,7 @@ import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -161,8 +161,8 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void heal(float var1) {
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
-      if (!super.startRiding(var1, var2)) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+      if (!super.startRiding(var1, var2, var3)) {
          return false;
       } else {
          if (var1 instanceof AbstractMinecart) {
@@ -328,6 +328,11 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void onUpdateAbilities() {
       this.connection.send(new ServerboundPlayerAbilitiesPacket(this.getAbilities()));
+   }
+
+   public void setReducedDebugInfo(boolean var1) {
+      super.setReducedDebugInfo(var1);
+      this.minecraft.debugEntries.rebuildCurrentList();
    }
 
    public boolean isLocalPlayer() {
@@ -662,7 +667,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          --this.sprintTriggerTime;
       }
 
-      if (!(this.minecraft.screen instanceof ReceivingLevelScreen)) {
+      if (!(this.minecraft.screen instanceof LevelLoadingScreen)) {
          this.handlePortalTransitionEffect(this.getActivePortalLocalTransition() == Portal.Transition.CONFUSION);
          this.processPortalCooldown();
       }
@@ -697,7 +702,7 @@ public class LocalPlayer extends AbstractClientPlayer {
             if (this.sprintTriggerTime > 0) {
                this.setSprinting(true);
             } else {
-               this.sprintTriggerTime = 7;
+               this.sprintTriggerTime = (Integer)this.minecraft.options.sprintWindow().get();
             }
          }
 

@@ -67,8 +67,12 @@ public class RealmsWorldSlotButton extends Button {
       this.setMessage(var4);
    }
 
-   static Action getAction(RealmsServer var0, boolean var1, boolean var2) {
-      return var2 || var1 && var0.expired ? RealmsWorldSlotButton.Action.NOTHING : RealmsWorldSlotButton.Action.SWITCH_SLOT;
+   static Action getAction(boolean var0, boolean var1, boolean var2) {
+      return var0 || var1 && var2 ? RealmsWorldSlotButton.Action.NOTHING : RealmsWorldSlotButton.Action.SWITCH_SLOT;
+   }
+
+   public boolean isActive() {
+      return this.state.action != RealmsWorldSlotButton.Action.NOTHING && super.isActive();
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
@@ -174,7 +178,7 @@ public class RealmsWorldSlotButton extends Button {
             this.activeSlot = var1.activeSlot == var2 && !var1.isMinigameActive();
          }
 
-         this.action = RealmsWorldSlotButton.getAction(var1, this.minigame, this.activeSlot);
+         this.action = RealmsWorldSlotButton.getAction(this.activeSlot, this.empty, var1.expired);
       }
    }
 }

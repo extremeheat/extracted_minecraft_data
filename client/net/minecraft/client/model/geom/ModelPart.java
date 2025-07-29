@@ -71,18 +71,6 @@ public final class ModelPart {
       this.zScale = var1.zScale();
    }
 
-   public void copyFrom(ModelPart var1) {
-      this.xScale = var1.xScale;
-      this.yScale = var1.yScale;
-      this.zScale = var1.zScale;
-      this.xRot = var1.xRot;
-      this.yRot = var1.yRot;
-      this.zRot = var1.zRot;
-      this.x = var1.x;
-      this.y = var1.y;
-      this.z = var1.z;
-   }
-
    public boolean hasChild(String var1) {
       return this.children.containsKey(var1);
    }

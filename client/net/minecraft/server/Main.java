@@ -33,7 +33,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.GameTestTicker;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.Component;
@@ -41,7 +40,6 @@ import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
-import net.minecraft.server.level.progress.LoggerChunkProgressListener;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
@@ -223,7 +221,7 @@ public class Main {
 
          var28.saveDataTag(var45, var35);
          final DedicatedServer var37 = (DedicatedServer)MinecraftServer.spin((var11x) -> {
-            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25, LoggerChunkProgressListener::createFromGameruleRadius);
+            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25);
             var12.setPort((Integer)var18.valueOf(var13));
             var12.setDemo(var18.has(var4));
             var12.setId((String)var18.valueOf(var14));
@@ -232,7 +230,6 @@ public class Main {
                var12.showGui();
             }
 
-            GameTestTicker.SINGLETON.startTicking();
             return var12;
          });
          Thread var38 = new Thread("Server Shutdown Thread") {

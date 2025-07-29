@@ -316,15 +316,13 @@ public abstract class GenerationChunkHolder {
    @Nullable
    @VisibleForDebug
    public ChunkStatus getLatestStatus() {
-      for(int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; --var1) {
-         ChunkStatus var2 = (ChunkStatus)CHUNK_STATUSES.get(var1);
-         ChunkAccess var3 = this.getChunkIfPresentUnchecked(var2);
-         if (var3 != null) {
-            return var2;
-         }
+      ChunkStatus var1 = (ChunkStatus)this.startedWork.get();
+      if (var1 == null) {
+         return null;
+      } else {
+         ChunkAccess var2 = this.getChunkIfPresentUnchecked(var1);
+         return var2 != null ? var1 : var1.getParent();
       }
-
-      return null;
    }
 
    static {

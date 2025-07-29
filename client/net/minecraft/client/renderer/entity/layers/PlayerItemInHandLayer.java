@@ -5,7 +5,7 @@ import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -22,19 +22,19 @@ public class PlayerItemInHandLayer<S extends PlayerRenderState, M extends Entity
       super(var1);
    }
 
-   protected void renderArmWithItem(S var1, ItemStackRenderState var2, HumanoidArm var3, PoseStack var4, MultiBufferSource var5, int var6) {
+   protected void submitArmWithItem(S var1, ItemStackRenderState var2, HumanoidArm var3, PoseStack var4, SubmitNodeCollector var5, int var6) {
       if (!var2.isEmpty()) {
          InteractionHand var7 = var3 == var1.mainArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
          if (var1.isUsingItem && var1.useItemHand == var7 && var1.attackTime < 1.0E-5F && !var1.heldOnHead.isEmpty()) {
             this.renderItemHeldToEye(var1.heldOnHead, var3, var4, var5, var6);
          } else {
-            super.renderArmWithItem(var1, var2, var3, var4, var5, var6);
+            super.submitArmWithItem(var1, var2, var3, var4, var5, var6);
          }
 
       }
    }
 
-   private void renderItemHeldToEye(ItemStackRenderState var1, HumanoidArm var2, PoseStack var3, MultiBufferSource var4, int var5) {
+   private void renderItemHeldToEye(ItemStackRenderState var1, HumanoidArm var2, PoseStack var3, SubmitNodeCollector var4, int var5) {
       var3.pushPose();
       this.getParentModel().root().translateAndRotate(var3);
       ModelPart var6 = ((HeadedModel)this.getParentModel()).getHead();
@@ -45,7 +45,7 @@ public class PlayerItemInHandLayer<S extends PlayerRenderState, M extends Entity
       CustomHeadLayer.translateToHead(var3, CustomHeadLayer.Transforms.DEFAULT);
       boolean var8 = var2 == HumanoidArm.LEFT;
       var3.translate((var8 ? -2.5F : 2.5F) / 16.0F, -0.0625F, 0.0F);
-      var1.render(var3, var4, var5, OverlayTexture.NO_OVERLAY);
+      var4.submitItem(var3, var1, var5, OverlayTexture.NO_OVERLAY);
       var3.popPose();
    }
 }

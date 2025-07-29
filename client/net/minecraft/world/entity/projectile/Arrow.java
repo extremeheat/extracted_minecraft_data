@@ -70,7 +70,7 @@ public class Arrow extends AbstractArrow {
 
    public void tick() {
       super.tick();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.isInGround()) {
             if (this.inGroundTime % 5 == 0) {
                this.makeParticle(1);

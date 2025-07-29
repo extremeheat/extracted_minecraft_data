@@ -15,7 +15,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
 
    public TrialSpawnerRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.entityRenderer = var1.getEntityRenderer();
+      this.entityRenderer = var1.entityRenderer();
    }
 
    public void render(TrialSpawnerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
@@ -25,7 +25,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
          TrialSpawnerStateData var10 = var9.getStateData();
          Entity var11 = var10.getOrCreateDisplayEntity(var9, var8, var9.getState());
          if (var11 != null) {
-            SpawnerRenderer.renderEntityInSpawner(var2, var3, var4, var5, var11, this.entityRenderer, var10.getOSpin(), var10.getSpin());
+            SpawnerRenderer.renderEntityInSpawner(var2, var3, var4, var11, this.entityRenderer, var10.getOSpin(), var10.getSpin());
          }
 
       }

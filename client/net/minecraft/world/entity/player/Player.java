@@ -40,6 +40,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -63,6 +64,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
@@ -110,6 +112,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
@@ -128,7 +131,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import org.slf4j.Logger;
 
-public abstract class Player extends LivingEntity {
+public abstract class Player extends LivingEntity implements ContainerUser {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final HumanoidArm DEFAULT_MAIN_HAND;
    public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
@@ -216,7 +219,7 @@ public abstract class Player extends LivingEntity {
       this.setUUID(var2.getId());
       this.gameProfile = var2;
       this.inventory = new Inventory(this, this.equipment);
-      this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
+      this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide(), this);
       this.containerMenu = this.inventoryMenu;
    }
 
@@ -267,7 +270,7 @@ public abstract class Player extends LivingEntity {
             this.sleepCounter = 100;
          }
 
-         if (!this.level().isClientSide && this.level().isBrightOutside()) {
+         if (!this.level().isClientSide() && this.level().isBrightOutside()) {
             this.stopSleepInBed(false, true);
          }
       } else if (this.sleepCounter > 0) {
@@ -279,7 +282,7 @@ public abstract class Player extends LivingEntity {
 
       this.updateIsUnderwater();
       super.tick();
-      if (!this.level().isClientSide && this.containerMenu != null && !this.containerMenu.stillValid(this)) {
+      if (!this.level().isClientSide() && this.containerMenu != null && !this.containerMenu.stillValid(this)) {
          this.closeContainer();
          this.containerMenu = this.inventoryMenu;
       }
@@ -500,9 +503,9 @@ public abstract class Player extends LivingEntity {
       if (var1 == 9) {
          this.completeUsingItem();
       } else if (var1 == 23) {
-         this.reducedDebugInfo = false;
+         this.setReducedDebugInfo(false);
       } else if (var1 == 22) {
-         this.reducedDebugInfo = true;
+         this.setReducedDebugInfo(true);
       } else {
          super.handleEntityEvent(var1);
       }
@@ -517,7 +520,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public void rideTick() {
-      if (!this.level().isClientSide && this.wantsToStopRiding() && this.isPassenger()) {
+      if (!this.level().isClientSide() && this.wantsToStopRiding() && this.isPassenger()) {
          this.stopRiding();
          this.setShiftKeyDown(false);
       } else {
@@ -577,7 +580,7 @@ public abstract class Player extends LivingEntity {
 
       this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
       this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
-      if (!this.level().isClientSide && (this.fallDistance > 0.5 || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
+      if (!this.level().isClientSide() && (this.fallDistance > 0.5 || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
          this.removeEntitiesOnShoulder();
       }
 
@@ -619,7 +622,7 @@ public abstract class Player extends LivingEntity {
       this.autoSpinAttackTicks = var1;
       this.autoSpinAttackDmg = var2;
       this.autoSpinAttackItemStack = var3;
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.removeEntitiesOnShoulder();
          this.setLivingEntityFlag(4, true);
       }
@@ -1177,7 +1180,7 @@ public abstract class Player extends LivingEntity {
                      EnchantmentHelper.doPostAttackEffects(var33, var1, var4);
                   }
 
-                  if (!this.level().isClientSide && !var3.isEmpty() && var31 instanceof LivingEntity) {
+                  if (!this.level().isClientSide() && !var3.isEmpty() && var31 instanceof LivingEntity) {
                      if (var32) {
                         var3.postHurtEnemy((LivingEntity)var31, this);
                      }
@@ -1258,15 +1261,19 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean canSimulateMovement() {
-      return !this.level().isClientSide || this.isLocalPlayer();
+      return !this.level().isClientSide() || this.isLocalPlayer();
    }
 
    public boolean isEffectiveAi() {
-      return !this.level().isClientSide || this.isLocalPlayer();
+      return !this.level().isClientSide() || this.isLocalPlayer();
    }
 
    public GameProfile getGameProfile() {
       return this.gameProfile;
+   }
+
+   public NameAndId nameAndId() {
+      return new NameAndId(this.gameProfile);
    }
 
    public Inventory getInventory() {
@@ -1479,7 +1486,7 @@ public abstract class Player extends LivingEntity {
       return new LivingEntity.Fallsounds(SoundEvents.PLAYER_SMALL_FALL, SoundEvents.PLAYER_BIG_FALL);
    }
 
-   public boolean killedEntity(ServerLevel var1, LivingEntity var2) {
+   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
       this.awardStat(Stats.ENTITY_KILLED.get(var2.getType()));
       return true;
    }
@@ -1557,7 +1564,7 @@ public abstract class Player extends LivingEntity {
 
    public void causeFoodExhaustion(float var1) {
       if (!this.abilities.invulnerable) {
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.foodData.addExhaustion(var1);
          }
 
@@ -1955,6 +1962,14 @@ public abstract class Player extends LivingEntity {
          this.clientLoadedTimeoutTimer = 60;
       }
 
+   }
+
+   public boolean hasContainerOpen(ContainerOpenersCounter var1, BlockPos var2) {
+      return var1.isOwnContainer(this);
+   }
+
+   public double getContainerInteractionRange() {
+      return this.blockInteractionRange();
    }
 
    public double blockInteractionRange() {

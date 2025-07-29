@@ -46,9 +46,9 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
       return ContainerEventHandler.super.nextFocusPath(var1);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      boolean var6 = this.updateScrolling(var1, var3, var5);
-      return ContainerEventHandler.super.mouseClicked(var1, var3, var5) || var6;
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      boolean var7 = this.updateScrolling(var1, var3, var5);
+      return ContainerEventHandler.super.mouseClicked(var1, var3, var5, var6) || var7;
    }
 
    public boolean mouseReleased(double var1, double var3, int var5) {

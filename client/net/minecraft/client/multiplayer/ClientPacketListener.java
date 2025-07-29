@@ -43,8 +43,8 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.DemoIntroScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
@@ -418,7 +418,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final PingDebugMonitor pingDebugMonitor;
    private final DebugSampleSubscriber debugSampleSubscriber;
    @Nullable
-   private LevelLoadStatusManager levelLoadStatusManager;
+   private LevelLoadTracker levelLoadTracker;
    private boolean serverEnforcesSecureChat;
    private boolean seenInsecureChatWarning;
    private volatile boolean closed;
@@ -457,6 +457,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       this.potionBrewing = PotionBrewing.bootstrap(this.enabledFeatures);
       this.fuelValues = FuelValues.vanillaBurnTimes(var3.receivedRegistries(), this.enabledFeatures);
+      this.levelLoadTracker = var3.levelLoadTracker();
    }
 
    public ClientSuggestionProvider getSuggestionsProvider() {
@@ -472,7 +473,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void clearLevel() {
       this.clearCacheSlots();
       this.level = null;
-      this.levelLoadStatusManager = null;
+      this.levelLoadTracker = null;
    }
 
    private void clearCacheSlots() {
@@ -507,7 +508,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(Difficulty.NORMAL, var1.hardcore(), var7);
       this.levelData = var9;
       this.level = new ClientLevel(this, var9, var4, var5, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var6, var2.seed(), var8);
-      this.minecraft.setLevel(this.level, ReceivingLevelScreen.Reason.OTHER);
+      this.minecraft.setLevel(this.level);
       if (this.minecraft.player == null) {
          this.minecraft.player = this.minecraft.gameMode.createPlayer(this.level, new StatsCounter(), new ClientRecipeBook());
          this.minecraft.player.setYRot(-180.0F);
@@ -523,7 +524,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.player.input = new KeyboardInput(this.minecraft.options);
       this.minecraft.gameMode.adjustPlayer(this.minecraft.player);
       this.minecraft.cameraEntity = this.minecraft.player;
-      this.startWaitingForNewLevel(this.minecraft.player, this.level, ReceivingLevelScreen.Reason.OTHER);
+      this.startWaitingForNewLevel(this.minecraft.player, this.level, LevelLoadingScreen.Reason.OTHER);
       this.minecraft.player.setReducedDebugInfo(var1.reducedDebugInfo());
       this.minecraft.player.setShowDeathScreen(var1.showDeathScreen());
       this.minecraft.player.setDoLimitedCrafting(var1.doLimitedCrafting());
@@ -892,11 +893,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleConfigurationStart(ClientboundStartConfigurationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      this.minecraft.getChatListener().clearQueue();
+      this.minecraft.getChatListener().flushQueue();
       this.sendChatAcknowledgement();
       ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.customReportDetails, this.serverLinks())));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(new LevelLoadTracker(), this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.customReportDetails, this.serverLinks())));
       this.send(ServerboundConfigurationAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
    }
@@ -1051,7 +1052,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          for(int var7 : var1.getPassengers()) {
             Entity var8 = this.level.getEntity(var7);
             if (var8 != null) {
-               var8.startRiding(var2, true);
+               var8.startRiding(var2, true, false);
                if (var8 == this.minecraft.player) {
                   this.removedPlayerVehicleId = OptionalInt.empty();
                   if (!var3) {
@@ -1146,7 +1147,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       LocalPlayer var5 = this.minecraft.player;
       ResourceKey var6 = var5.level().dimension();
       boolean var7 = var3 != var6;
-      ReceivingLevelScreen.Reason var8 = this.determineLevelLoadingReason(var5.isDeadOrDying(), var3, var6);
+      LevelLoadingScreen.Reason var8 = this.determineLevelLoadingReason(var5.isDeadOrDying(), var3, var6);
       if (var7) {
          Map var9 = this.level.getAllMapData();
          boolean var10 = var2.isDebug();
@@ -1156,7 +1157,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.levelData = var13;
          this.level = new ClientLevel(this, var13, var3, var4, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var10, var2.seed(), var12);
          this.level.addMapData(var9);
-         this.minecraft.setLevel(this.level, var8);
+         this.minecraft.setLevel(this.level);
       }
 
       this.minecraft.cameraEntity = null;
@@ -1215,15 +1216,15 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
    }
 
-   private ReceivingLevelScreen.Reason determineLevelLoadingReason(boolean var1, ResourceKey<Level> var2, ResourceKey<Level> var3) {
-      ReceivingLevelScreen.Reason var4 = ReceivingLevelScreen.Reason.OTHER;
+   private LevelLoadingScreen.Reason determineLevelLoadingReason(boolean var1, ResourceKey<Level> var2, ResourceKey<Level> var3) {
+      LevelLoadingScreen.Reason var4 = LevelLoadingScreen.Reason.OTHER;
       if (!var1) {
          if (var2 != Level.NETHER && var3 != Level.NETHER) {
             if (var2 == Level.END || var3 == Level.END) {
-               var4 = ReceivingLevelScreen.Reason.END_PORTAL;
+               var4 = LevelLoadingScreen.Reason.END_PORTAL;
             }
          } else {
-            var4 = ReceivingLevelScreen.Reason.NETHER_PORTAL;
+            var4 = LevelLoadingScreen.Reason.NETHER_PORTAL;
          }
       }
 
@@ -1448,18 +1449,25 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.player.setShowDeathScreen(var4 == 0.0F);
       } else if (var3 == ClientboundGameEventPacket.LIMITED_CRAFTING) {
          this.minecraft.player.setDoLimitedCrafting(var4 == 1.0F);
-      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START && this.levelLoadStatusManager != null) {
-         this.levelLoadStatusManager.loadingPacketsReceived();
+      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START && this.levelLoadTracker != null) {
+         this.levelLoadTracker.loadingPacketsReceived();
       }
 
    }
 
-   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2, ReceivingLevelScreen.Reason var3) {
-      this.levelLoadStatusManager = new LevelLoadStatusManager(var1, var2, this.minecraft.levelRenderer);
-      Minecraft var10000 = this.minecraft;
-      LevelLoadStatusManager var10003 = this.levelLoadStatusManager;
-      Objects.requireNonNull(var10003);
-      var10000.setScreen(new ReceivingLevelScreen(var10003::levelReady, var3));
+   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2, LevelLoadingScreen.Reason var3) {
+      if (this.levelLoadTracker == null) {
+         this.levelLoadTracker = new LevelLoadTracker();
+      }
+
+      this.levelLoadTracker.startClientLoad(var1, var2, this.minecraft.levelRenderer);
+      Screen var5 = this.minecraft.screen;
+      if (var5 instanceof LevelLoadingScreen var4) {
+         var4.update(this.levelLoadTracker, var3);
+      } else {
+         this.minecraft.setScreen(new LevelLoadingScreen(this.levelLoadTracker, var3));
+      }
+
    }
 
    public void handleMapItemData(ClientboundMapItemDataPacket var1) {
@@ -2484,12 +2492,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       this.debugSampleSubscriber.tick();
       this.telemetryManager.tick();
-      if (this.levelLoadStatusManager != null) {
-         this.levelLoadStatusManager.tick();
-         if (this.levelLoadStatusManager.levelReady() && !this.minecraft.player.hasClientLoaded()) {
-            this.connection.send(new ServerboundPlayerLoadedPacket());
-            this.minecraft.player.setClientLoaded(true);
+      if (this.levelLoadTracker != null) {
+         this.levelLoadTracker.tickClientLoad();
+         if (this.levelLoadTracker.isLevelReady()) {
+            this.notifyPlayerLoaded();
+            this.levelLoadTracker = null;
          }
+      }
+
+   }
+
+   private void notifyPlayerLoaded() {
+      if (!this.minecraft.player.hasClientLoaded()) {
+         this.connection.send(new ServerboundPlayerLoadedPacket());
+         this.minecraft.player.setClientLoaded(true);
       }
 
    }

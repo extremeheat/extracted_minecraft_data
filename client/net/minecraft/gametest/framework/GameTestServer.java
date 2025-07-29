@@ -1,7 +1,6 @@
 package net.minecraft.gametest.framework;
 
 import com.google.common.base.Stopwatch;
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.ServicesKeySet;
@@ -10,8 +9,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import java.net.Proxy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
@@ -33,10 +36,11 @@ import net.minecraft.server.Services;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.progress.LoggerChunkProgressListener;
+import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
@@ -101,7 +105,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    private GameTestServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Optional<String> var5, boolean var6) {
-      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggerChunkProgressListener::createFromGameruleRadius);
+      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer());
       this.testSelection = var5;
       this.verify = var6;
    }
@@ -280,13 +284,43 @@ public class GameTestServer extends MinecraftServer {
       return false;
    }
 
-   public boolean isSingleplayerOwner(GameProfile var1) {
+   public boolean isSingleplayerOwner(NameAndId var1) {
       return false;
    }
 
    static {
-      NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, (GameProfileCache)null);
+      NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, new MockUserNameToIdResolver());
       ENABLED_FEATURES = FeatureFlags.REGISTRY.allFlags().subtract(FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS, FeatureFlags.MINECART_IMPROVEMENTS));
       WORLD_OPTIONS = new WorldOptions(0L, false, false);
+   }
+
+   static class MockUserNameToIdResolver implements UserNameToIdResolver {
+      private final Set<NameAndId> savedIds = new HashSet();
+
+      MockUserNameToIdResolver() {
+         super();
+      }
+
+      public void add(NameAndId var1) {
+         this.savedIds.add(var1);
+      }
+
+      public Optional<NameAndId> get(String var1) {
+         return this.savedIds.stream().filter((var1x) -> var1x.name().equals(var1)).findFirst().or(() -> Optional.of(NameAndId.createOffline(var1)));
+      }
+
+      public CompletableFuture<Optional<NameAndId>> getAsync(String var1) {
+         return CompletableFuture.completedFuture(this.get(var1));
+      }
+
+      public Optional<NameAndId> get(UUID var1) {
+         return this.savedIds.stream().filter((var1x) -> var1x.id().equals(var1)).findFirst();
+      }
+
+      public void resolveOfflineUsers(boolean var1) {
+      }
+
+      public void save() {
+      }
    }
 }

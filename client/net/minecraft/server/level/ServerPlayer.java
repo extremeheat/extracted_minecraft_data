@@ -10,6 +10,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -28,7 +30,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -39,6 +40,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
@@ -109,7 +111,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -130,7 +131,6 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -190,6 +190,7 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreAccess;
@@ -374,10 +375,11 @@ public class ServerPlayer extends Player {
             ServerPlayer.this.sendSystemMessage(var1);
          }
       };
+      this.server = var1;
       this.textFilter = var1.createTextFilterForPlayer(this);
       this.gameMode = var1.createGameModeForPlayer(this);
+      this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer((GameType)null), (GameType)null);
       this.recipeBook = new ServerRecipeBook((var1x, var2x) -> var1.getRecipeManager().listDisplaysForRecipe(var1x, var2x));
-      this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
       this.updateOptions(var4);
@@ -385,69 +387,11 @@ public class ServerPlayer extends Player {
    }
 
    public BlockPos adjustSpawnLocation(ServerLevel var1, BlockPos var2) {
-      AABB var3 = this.getDimensions(Pose.STANDING).makeBoundingBox(Vec3.ZERO);
-      BlockPos var4 = var2;
-      if (var1.dimensionType().hasSkyLight() && var1.getServer().getWorldData().getGameType() != GameType.ADVENTURE) {
-         int var5 = Math.max(0, this.server.getSpawnRadius(var1));
-         int var6 = Mth.floor(var1.getWorldBorder().getDistanceToBorder((double)var2.getX(), (double)var2.getZ()));
-         if (var6 < var5) {
-            var5 = var6;
-         }
-
-         if (var6 <= 1) {
-            var5 = 1;
-         }
-
-         long var7 = (long)(var5 * 2 + 1);
-         long var9 = var7 * var7;
-         int var11 = var9 > 2147483647L ? 2147483647 : (int)var9;
-         int var12 = this.getCoprime(var11);
-         int var13 = RandomSource.create().nextInt(var11);
-
-         for(int var14 = 0; var14 < var11; ++var14) {
-            int var15 = (var13 + var12 * var14) % var11;
-            int var16 = var15 % (var5 * 2 + 1);
-            int var17 = var15 / (var5 * 2 + 1);
-            int var18 = var2.getX() + var16 - var5;
-            int var19 = var2.getZ() + var17 - var5;
-
-            try {
-               var4 = PlayerRespawnLogic.getOverworldRespawnPos(var1, var18, var19);
-               if (var4 != null && this.noCollisionNoLiquid(var1, var3.move(var4.getBottomCenter()))) {
-                  return var4;
-               }
-            } catch (Exception var25) {
-               CrashReport var23 = CrashReport.forThrowable(var25, "Searching for spawn");
-               CrashReportCategory var24 = var23.addCategory("Spawn Lookup");
-               Objects.requireNonNull(var2);
-               var24.setDetail("Origin", var2::toString);
-               var24.setDetail("Radius", (CrashReportDetail)(() -> Integer.toString(var5)));
-               var24.setDetail("Candidate", (CrashReportDetail)(() -> "[" + var18 + "," + var19 + "]"));
-               var24.setDetail("Progress", (CrashReportDetail)(() -> var14 + " out of " + var11));
-               throw new ReportedException(var23);
-            }
-         }
-
-         var4 = var2;
-      }
-
-      while(!this.noCollisionNoLiquid(var1, var3.move(var4.getBottomCenter())) && var4.getY() < var1.getMaxY()) {
-         var4 = var4.above();
-      }
-
-      while(this.noCollisionNoLiquid(var1, var3.move(var4.below().getBottomCenter())) && var4.getY() > var1.getMinY() + 1) {
-         var4 = var4.below();
-      }
-
-      return var4;
-   }
-
-   private boolean noCollisionNoLiquid(ServerLevel var1, AABB var2) {
-      return var1.noCollision(this, var2, true);
-   }
-
-   private int getCoprime(int var1) {
-      return var1 <= 16 ? var1 - 1 : 17;
+      CompletableFuture var3 = PlayerSpawnFinder.findSpawn(var1, var2);
+      MinecraftServer var10000 = this.server;
+      Objects.requireNonNull(var3);
+      var10000.managedBlock(var3::isDone);
+      return BlockPos.containing((Position)var3.join());
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
@@ -463,6 +407,7 @@ public class ServerPlayer extends Player {
       this.respawnConfig = (RespawnConfig)var1.read("respawn", ServerPlayer.RespawnConfig.CODEC).orElse((Object)null);
       this.spawnExtraParticlesOnFall = var1.getBooleanOr("spawn_extra_particles_on_fall", false);
       this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
+      this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
@@ -499,11 +444,11 @@ public class ServerPlayer extends Player {
          if (var4 != null) {
             UUID var5 = (UUID)((ValueInput)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
             if (var4.getUUID().equals(var5)) {
-               this.startRiding(var4, true);
+               this.startRiding(var4, true, false);
             } else {
                for(Entity var7 : var4.getIndirectPassengers()) {
                   if (var7.getUUID().equals(var5)) {
-                     this.startRiding(var7, true);
+                     this.startRiding(var7, true, false);
                      break;
                   }
                }
@@ -1693,7 +1638,7 @@ public class ServerPlayer extends Player {
    }
 
    public int getPermissionLevel() {
-      return this.server.getProfilePermissions(this.getGameProfile());
+      return this.server.getProfilePermissions(this.nameAndId());
    }
 
    public void resetLastActionTime() {
@@ -1848,8 +1793,8 @@ public class ServerPlayer extends Player {
    }
 
    @Nullable
-   private static GameType readPlayerMode(@Nullable ValueInput var0, String var1) {
-      return var0 != null ? (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null) : null;
+   private static GameType readPlayerMode(ValueInput var0, String var1) {
+      return (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null);
    }
 
    private GameType calculateGameModeForNewPlayer(@Nullable GameType var1) {
@@ -1859,10 +1804,6 @@ public class ServerPlayer extends Player {
       } else {
          return var1 != null ? var1 : this.server.getDefaultGameType();
       }
-   }
-
-   public void loadGameTypes(@Nullable ValueInput var1) {
-      this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
    }
 
    private void storeGameTypes(ValueOutput var1) {
@@ -1941,13 +1882,13 @@ public class ServerPlayer extends Player {
       this.connection.send(new ClientboundHurtAnimationPacket(this));
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
-      if (super.startRiding(var1, var2)) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+      if (super.startRiding(var1, var2, var3)) {
          var1.positionRider(this);
          this.connection.teleport(new PositionMoveRotation(this.position(), Vec3.ZERO, 0.0F, 0.0F), Relative.ROTATION);
          if (var1 instanceof LivingEntity) {
-            LivingEntity var3 = (LivingEntity)var1;
-            this.server.getPlayerList().sendActiveEffects(var3, this.connection);
+            LivingEntity var4 = (LivingEntity)var1;
+            this.server.getPlayerList().sendActiveEffects(var4, this.connection);
          }
 
          this.connection.send(new ClientboundSetPassengersPacket(var1));
@@ -2105,6 +2046,18 @@ public class ServerPlayer extends Player {
 
       public boolean isSamePosition(@Nullable RespawnConfig var1) {
          return var1 != null && this.dimension == var1.dimension && this.pos.equals(var1.pos);
+      }
+   }
+
+   public static record SavedPosition(Optional<ResourceKey<Level>> dimension, Optional<Vec3> position, Optional<Vec2> rotation) {
+      public static final MapCodec<SavedPosition> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Level.RESOURCE_KEY_CODEC.optionalFieldOf("Dimension").forGetter(SavedPosition::dimension), Vec3.CODEC.optionalFieldOf("Pos").forGetter(SavedPosition::position), Vec2.CODEC.optionalFieldOf("Rotation").forGetter(SavedPosition::rotation)).apply(var0, SavedPosition::new));
+      public static final SavedPosition EMPTY = new SavedPosition(Optional.empty(), Optional.empty(), Optional.empty());
+
+      public SavedPosition(Optional<ResourceKey<Level>> var1, Optional<Vec3> var2, Optional<Vec2> var3) {
+         super();
+         this.dimension = var1;
+         this.position = var2;
+         this.rotation = var3;
       }
    }
 }

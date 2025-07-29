@@ -69,12 +69,12 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.Consumable;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.Weapon;
@@ -845,8 +845,9 @@ public final class ItemStack implements DataComponentHolder {
       this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.ENTITY_DATA, var1, var2, var5, var4);
       if ((this.is(Items.SPAWNER) || this.is(Items.TRIAL_SPAWNER)) && var2.shows(DataComponents.BLOCK_ENTITY_DATA)) {
-         CustomData var6 = (CustomData)this.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         TypedEntityData var6 = (TypedEntityData)this.get(DataComponents.BLOCK_ENTITY_DATA);
          Spawner.appendHoverText(var6, var5, "SpawnData");
       }
 

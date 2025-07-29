@@ -8,7 +8,7 @@ import net.minecraft.client.model.ColdPigModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.PigModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -33,10 +33,10 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
       return Maps.newEnumMap(Map.of(PigVariant.ModelType.NORMAL, new AdultAndBabyModelPair(new PigModel(var0.bakeLayer(ModelLayers.PIG)), new PigModel(var0.bakeLayer(ModelLayers.PIG_BABY))), PigVariant.ModelType.COLD, new AdultAndBabyModelPair(new ColdPigModel(var0.bakeLayer(ModelLayers.COLD_PIG)), new ColdPigModel(var0.bakeLayer(ModelLayers.COLD_PIG_BABY)))));
    }
 
-   public void render(PigRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(PigRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       if (var1.variant != null) {
          this.model = (EntityModel)((AdultAndBabyModelPair)this.models.get(var1.variant.modelAndTexture().model())).getModel(var1.isBaby);
-         super.render(var1, var2, var3, var4);
+         super.submit(var1, var2, var3);
       }
    }
 

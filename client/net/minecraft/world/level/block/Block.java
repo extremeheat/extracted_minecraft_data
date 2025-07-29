@@ -7,10 +7,12 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -26,6 +28,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
@@ -60,6 +63,8 @@ import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -237,6 +242,22 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static boolean isExceptionForConnection(BlockState var0) {
       return var0.getBlock() instanceof LeavesBlock || var0.is(Blocks.BARRIER) || var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN) || var0.is(Blocks.MELON) || var0.is(Blocks.PUMPKIN) || var0.is(BlockTags.SHULKER_BOXES);
+   }
+
+   protected static boolean dropFromBlockInteractLootTable(ServerLevel var0, ResourceKey<LootTable> var1, BlockState var2, @Nullable BlockEntity var3, @Nullable ItemStack var4, @Nullable Entity var5, BiConsumer<ServerLevel, ItemStack> var6) {
+      return dropFromLootTable(var0, var1, (var4x) -> var4x.withParameter(LootContextParams.BLOCK_STATE, var2).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var3).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, var5).withOptionalParameter(LootContextParams.TOOL, var4).create(LootContextParamSets.BLOCK_INTERACT), var6);
+   }
+
+   protected static boolean dropFromLootTable(ServerLevel var0, ResourceKey<LootTable> var1, Function<LootParams.Builder, LootParams> var2, BiConsumer<ServerLevel, ItemStack> var3) {
+      LootTable var4 = var0.getServer().reloadableRegistries().getLootTable(var1);
+      LootParams var5 = (LootParams)var2.apply(new LootParams.Builder(var0));
+      ObjectArrayList var6 = var4.getRandomItems(var5);
+      if (!var6.isEmpty()) {
+         var6.forEach((var2x) -> var3.accept(var0, var2x));
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public static boolean shouldRenderFace(BlockState var0, BlockState var1, Direction var2) {

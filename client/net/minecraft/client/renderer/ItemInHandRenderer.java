@@ -222,7 +222,7 @@ public class ItemInHandRenderer {
       if (var6 != null) {
          MapRenderer var9 = this.minecraft.getMapRenderer();
          var9.extractRenderState(var5, var6, this.mapRenderState);
-         var9.render(this.mapRenderState, var1, var2, false, var3);
+         var9.render(this.mapRenderState, var1, this.minecraft.gameRenderer.getSubmitNodeStorage(), false, var3);
       }
 
    }
@@ -335,6 +335,7 @@ public class ItemInHandRenderer {
          this.renderArmWithItem(var4, var1, var8, InteractionHand.OFF_HAND, var14, this.offHandItem, var15, var2, var3, var5);
       }
 
+      this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
       var3.endBatch();
    }
 

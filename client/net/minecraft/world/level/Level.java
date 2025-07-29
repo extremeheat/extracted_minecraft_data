@@ -119,7 +119,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
-   public final boolean isClientSide;
+   private final boolean isClientSide;
    private final WorldBorder worldBorder;
    private final BiomeManager biomeManager;
    private final ResourceKey<Level> dimension;
@@ -206,7 +206,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
       if (this.isOutsideBuildHeight(var1)) {
          return false;
-      } else if (!this.isClientSide && this.isDebug()) {
+      } else if (!this.isClientSide() && this.isDebug()) {
          return false;
       } else {
          LevelChunk var5 = this.getChunkAt(var1);
@@ -221,13 +221,13 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
                   this.setBlocksDirty(var1, var7, var8);
                }
 
-               if ((var3 & 2) != 0 && (!this.isClientSide || (var3 & 4) == 0) && (this.isClientSide || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
+               if ((var3 & 2) != 0 && (!this.isClientSide() || (var3 & 4) == 0) && (this.isClientSide() || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
                   this.sendBlockUpdated(var1, var7, var2, var3);
                }
 
                if ((var3 & 1) != 0) {
                   this.updateNeighborsAt(var1, var7.getBlock());
-                  if (!this.isClientSide && var2.hasAnalogOutputSignal()) {
+                  if (!this.isClientSide() && var2.hasAnalogOutputSignal()) {
                      this.updateNeighbourForOutputSignal(var1, var6);
                   }
                }
@@ -496,7 +496,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       if (this.isOutsideBuildHeight(var1)) {
          return null;
       } else {
-         return !this.isClientSide && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
+         return !this.isClientSide() && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
       }
    }
 

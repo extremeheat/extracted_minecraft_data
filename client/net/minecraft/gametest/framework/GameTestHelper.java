@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -51,12 +52,14 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LeverBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -141,6 +144,20 @@ public class GameTestHelper {
       return (E)this.spawn(var1, Vec3.atBottomCenterOf(var2));
    }
 
+   public <E extends Entity> List<E> spawn(EntityType<E> var1, BlockPos var2, int var3) {
+      return this.spawn(var1, Vec3.atBottomCenterOf(var2), var3);
+   }
+
+   public <E extends Entity> List<E> spawn(EntityType<E> var1, Vec3 var2, int var3) {
+      ArrayList var4 = new ArrayList();
+
+      for(int var5 = 0; var5 < var3; ++var5) {
+         var4.add(this.spawn(var1, var2));
+      }
+
+      return var4;
+   }
+
    public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
       ServerLevel var3 = this.getLevel();
       Entity var4 = var1.create(var3, EntitySpawnReason.STRUCTURE);
@@ -152,8 +169,11 @@ public class GameTestHelper {
             var5.setPersistenceRequired();
          }
 
-         Vec3 var6 = this.absoluteVec(var2);
-         var4.snapTo(var6.x, var6.y, var6.z, var4.getYRot(), var4.getXRot());
+         Vec3 var7 = this.absoluteVec(var2);
+         float var6 = var4.rotate(this.getTestRotation());
+         var4.snapTo(var7.x, var7.y, var7.z, var6, var4.getXRot());
+         var4.setYBodyRot(var6);
+         var4.setYHeadRot(var6);
          var3.addFreshEntity(var4);
          return (E)var4;
       }
@@ -350,6 +370,23 @@ public class GameTestHelper {
 
    public void setBlock(BlockPos var1, BlockState var2) {
       this.getLevel().setBlock(this.absolutePos(var1), var2, 3);
+   }
+
+   public void setBlock(BlockPos var1, Block var2, Direction var3) {
+      this.setBlock(var1, var2.defaultBlockState(), var3);
+   }
+
+   public void setBlock(BlockPos var1, BlockState var2, Direction var3) {
+      BlockState var4 = var2;
+      if (var2.hasProperty(HorizontalDirectionalBlock.FACING)) {
+         var4 = (BlockState)var2.setValue(HorizontalDirectionalBlock.FACING, var3);
+      }
+
+      if (var2.hasProperty(BlockStateProperties.FACING)) {
+         var4 = (BlockState)var2.setValue(BlockStateProperties.FACING, var3);
+      }
+
+      this.getLevel().setBlock(this.absolutePos(var1), var4, 3);
    }
 
    public void setNight() {
@@ -861,6 +898,10 @@ public class GameTestHelper {
       throw this.assertionException(var1);
    }
 
+   public void fail(String var1) {
+      throw this.assertionException(Component.literal(var1));
+   }
+
    public void failIf(Runnable var1) {
       this.testInfo.createSequence().thenWaitUntil(var1).thenFail(() -> this.assertionException("test.error.fail"));
    }
@@ -914,6 +955,10 @@ public class GameTestHelper {
 
    public Rotation getTestRotation() {
       return this.testInfo.getRotation();
+   }
+
+   public Direction getTestDirection() {
+      return this.testInfo.getRotation().rotate(Direction.SOUTH);
    }
 
    public void assertTrue(boolean var1, Component var2) {

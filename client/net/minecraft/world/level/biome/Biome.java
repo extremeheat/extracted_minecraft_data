@@ -157,7 +157,7 @@ public final class Biome {
    }
 
    public boolean shouldSnow(LevelReader var1, BlockPos var2) {
-      if (this.warmEnoughToRain(var2, var1.getSeaLevel())) {
+      if (this.getPrecipitationAt(var2, var1.getSeaLevel()) != Biome.Precipitation.SNOW) {
          return false;
       } else {
          if (var1.isInsideBuildHeight(var2.getY()) && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {

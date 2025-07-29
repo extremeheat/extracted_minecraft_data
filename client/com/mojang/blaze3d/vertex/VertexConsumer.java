@@ -137,9 +137,9 @@ public interface VertexConsumer {
       return this.addVertex(var5.x(), var5.y(), var5.z());
    }
 
-   default VertexConsumer addVertexWith2DPose(Matrix3x2f var1, float var2, float var3, float var4) {
-      Vector2f var5 = var1.transformPosition(var2, var3, new Vector2f());
-      return this.addVertex(var5.x(), var5.y(), var4);
+   default VertexConsumer addVertexWith2DPose(Matrix3x2f var1, float var2, float var3) {
+      Vector2f var4 = var1.transformPosition(var2, var3, new Vector2f());
+      return this.addVertex(var4.x(), var4.y(), 0.0F);
    }
 
    default VertexConsumer setNormal(PoseStack.Pose var1, float var2, float var3, float var4) {

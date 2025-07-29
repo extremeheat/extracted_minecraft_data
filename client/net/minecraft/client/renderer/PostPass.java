@@ -15,7 +15,6 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.util.Pair;
 import java.util.HashMap;
 import java.util.List;
@@ -113,34 +112,27 @@ public class PostPass implements AutoCloseable {
                }
             }
 
-            GpuBuffer var17 = RenderSystem.getQuadVertexBuffer();
-            RenderSystem.AutoStorageIndexBuffer var18 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-            GpuBuffer var19 = var18.getBuffer(6);
+            try (RenderPass var15 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTextureView(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTextureView() : null, OptionalDouble.empty())) {
+               var15.setPipeline(this.pipeline);
+               RenderSystem.bindDefaultUniforms(var15);
+               var15.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
 
-            try (RenderPass var20 = var5.createRenderPass(() -> "Post pass " + this.name, var4.getColorTextureView(), OptionalInt.empty(), var4.useDepth ? var4.getDepthTextureView() : null, OptionalDouble.empty())) {
-               var20.setPipeline(this.pipeline);
-               RenderSystem.bindDefaultUniforms(var20);
-               var20.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
-
-               for(Map.Entry var12 : this.customUniforms.entrySet()) {
-                  var20.setUniform((String)var12.getKey(), (GpuBuffer)var12.getValue());
+               for(Map.Entry var20 : this.customUniforms.entrySet()) {
+                  var15.setUniform((String)var20.getKey(), (GpuBuffer)var20.getValue());
                }
 
-               var20.setVertexBuffer(0, var17);
-               var20.setIndexBuffer(var19, var18.type());
-
-               for(Pair var24 : var6) {
-                  var20.bindSampler((String)var24.getFirst() + "Sampler", (GpuTextureView)var24.getSecond());
+               for(Pair var21 : var6) {
+                  var15.bindSampler((String)var21.getFirst() + "Sampler", (GpuTextureView)var21.getSecond());
                }
 
-               var20.drawIndexed(0, 0, 6, 1);
+               var15.draw(0, 3);
             }
 
             this.infoUbo.rotate();
             RenderSystem.restoreProjectionMatrix();
 
-            for(Input var23 : this.inputs) {
-               var23.cleanup(var2);
+            for(Input var19 : this.inputs) {
+               var19.cleanup(var2);
             }
 
          });

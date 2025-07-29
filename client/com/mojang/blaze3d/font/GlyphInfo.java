@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.font;
 
-import java.util.function.Function;
+import javax.annotation.Nullable;
+import net.minecraft.client.gui.font.GlyphStitcher;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
 
@@ -19,10 +20,11 @@ public interface GlyphInfo {
       return 1.0F;
    }
 
-   BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1);
+   @Nullable
+   BakedGlyph bake(GlyphStitcher var1);
 
    public interface SpaceGlyphInfo extends GlyphInfo {
-      default BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
+      default BakedGlyph bake(GlyphStitcher var1) {
          return EmptyGlyph.INSTANCE;
       }
    }

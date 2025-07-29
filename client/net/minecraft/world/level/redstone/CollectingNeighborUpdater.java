@@ -54,7 +54,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
             this.stack.push(var2);
          }
       } else if (this.count - 1 == this.maxChainedNeighborUpdates) {
-         LOGGER.error("Too many chained neighbor updates. Skipping the rest. First skipped position: " + var1.toShortString());
+         LOGGER.error("Too many chained neighbor updates. Skipping the rest. First skipped position: {}", var1.toShortString());
       }
 
       if (!var3) {

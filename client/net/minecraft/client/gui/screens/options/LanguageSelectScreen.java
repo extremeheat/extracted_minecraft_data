@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
@@ -11,6 +10,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
@@ -61,6 +61,10 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
+   protected boolean panoramaShouldSpin() {
+      return !(this.lastScreen instanceof AccessibilityOnboardingScreen);
+   }
+
    class LanguageSelectionList extends ObjectSelectionList<Entry> {
       public LanguageSelectionList(final Minecraft var2) {
          super(var2, LanguageSelectScreen.this.width, LanguageSelectScreen.this.height - 33 - 53, 33, 18);
@@ -86,7 +90,6 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       public class Entry extends ObjectSelectionList.Entry<Entry> {
          final String code;
          private final Component language;
-         private long lastClickTime;
 
          public Entry(final String var2, final LanguageInfo var3) {
             super();
@@ -113,14 +116,13 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             }
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
             this.select();
-            if (Util.getMillis() - this.lastClickTime < 250L) {
+            if (var6) {
                LanguageSelectScreen.this.onDone();
             }
 
-            this.lastClickTime = Util.getMillis();
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var3, var5, var6);
          }
 
          private void select() {

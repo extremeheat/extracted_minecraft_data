@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -65,9 +64,5 @@ public class Husk extends Zombie {
          this.level().levelEvent((Entity)null, 1041, this.blockPosition(), 0);
       }
 
-   }
-
-   protected ItemStack getSkull() {
-      return ItemStack.EMPTY;
    }
 }

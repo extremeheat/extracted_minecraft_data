@@ -445,13 +445,13 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (var5 == 0) {
-         double var6 = var1 - (double)this.leftPos;
-         double var8 = var3 - (double)this.topPos;
+         double var7 = var1 - (double)this.leftPos;
+         double var9 = var3 - (double)this.topPos;
 
-         for(CreativeModeTab var11 : CreativeModeTabs.tabs()) {
-            if (this.checkTabClicked(var11, var6, var8)) {
+         for(CreativeModeTab var12 : CreativeModeTabs.tabs()) {
+            if (this.checkTabClicked(var12, var7, var9)) {
                return true;
             }
          }
@@ -462,7 +462,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    public boolean mouseReleased(double var1, double var3, int var5) {

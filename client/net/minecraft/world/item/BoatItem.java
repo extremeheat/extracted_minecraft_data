@@ -57,7 +57,7 @@ public class BoatItem extends Item {
                if (!var1.noCollision(var14, var14.getBoundingBox())) {
                   return InteractionResult.FAIL;
                } else {
-                  if (!var1.isClientSide) {
+                  if (!var1.isClientSide()) {
                      var1.addFreshEntity(var14);
                      var1.gameEvent(var2, GameEvent.ENTITY_PLACE, ((HitResult)var5).getLocation());
                      var4.consume(1, var2);

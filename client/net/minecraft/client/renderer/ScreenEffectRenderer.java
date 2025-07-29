@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,7 @@ import org.joml.Quaternionfc;
 public class ScreenEffectRenderer {
    private static final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/underwater.png");
    private final Minecraft minecraft;
+   private final MaterialSet materials;
    private final MultiBufferSource bufferSource;
    public static final int ITEM_ACTIVATION_ANIMATION_LENGTH = 40;
    @Nullable
@@ -35,10 +37,11 @@ public class ScreenEffectRenderer {
    private float itemActivationOffX;
    private float itemActivationOffY;
 
-   public ScreenEffectRenderer(Minecraft var1, MultiBufferSource var2) {
+   public ScreenEffectRenderer(Minecraft var1, MaterialSet var2, MultiBufferSource var3) {
       super();
       this.minecraft = var1;
-      this.bufferSource = var2;
+      this.materials = var2;
+      this.bufferSource = var3;
    }
 
    public void tick() {
@@ -68,7 +71,8 @@ public class ScreenEffectRenderer {
             }
 
             if (this.minecraft.player.isOnFire()) {
-               renderFire(var3, this.bufferSource);
+               TextureAtlasSprite var6 = this.materials.get(ModelBakery.FIRE_1);
+               renderFire(var3, this.bufferSource, var6);
             }
          }
       }
@@ -172,8 +176,7 @@ public class ScreenEffectRenderer {
       var15.addVertex(var14, -1.0F, 1.0F, -0.5F).setUv(4.0F + var12, 0.0F + var13).setColor(var5);
    }
 
-   private static void renderFire(PoseStack var0, MultiBufferSource var1) {
-      TextureAtlasSprite var2 = ModelBakery.FIRE_1.sprite();
+   private static void renderFire(PoseStack var0, MultiBufferSource var1, TextureAtlasSprite var2) {
       VertexConsumer var3 = var1.getBuffer(RenderType.fireScreenEffect(var2.atlasLocation()));
       float var4 = var2.getU0();
       float var5 = var2.getU1();

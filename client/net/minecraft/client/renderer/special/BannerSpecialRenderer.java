@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.core.component.DataComponents;
@@ -57,7 +56,7 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
          return new BannerSpecialRenderer(this.baseColor, new BannerRenderer(var1));
       }
    }

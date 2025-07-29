@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BedRenderer;
@@ -48,7 +47,7 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
          return new BedSpecialRenderer(new BedRenderer(var1), Sheets.BED_MAPPER.apply(this.texture));
       }
    }

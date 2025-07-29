@@ -2,13 +2,16 @@ package net.minecraft.server.packs.repository;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.util.InclusiveRange;
 
 public enum PackCompatibility {
    TOO_OLD("old"),
    TOO_NEW("new"),
+   UNKNOWN("unknown"),
    COMPATIBLE("compatible");
 
+   public static final int UNKNOWN_VERSION = 2147483647;
    private final Component description;
    private final Component confirmation;
 
@@ -21,11 +24,13 @@ public enum PackCompatibility {
       return this == COMPATIBLE;
    }
 
-   public static PackCompatibility forVersion(InclusiveRange<Integer> var0, int var1) {
-      if ((Integer)var0.maxInclusive() < var1) {
+   public static PackCompatibility forVersion(InclusiveRange<PackFormat> var0, PackFormat var1) {
+      if (((PackFormat)var0.minInclusive()).major() == 2147483647) {
+         return UNKNOWN;
+      } else if (((PackFormat)var0.maxInclusive()).compareTo(var1) < 0) {
          return TOO_OLD;
       } else {
-         return var1 < (Integer)var0.minInclusive() ? TOO_NEW : COMPATIBLE;
+         return var1.compareTo((PackFormat)var0.minInclusive()) < 0 ? TOO_NEW : COMPATIBLE;
       }
    }
 
@@ -39,6 +44,6 @@ public enum PackCompatibility {
 
    // $FF: synthetic method
    private static PackCompatibility[] $values() {
-      return new PackCompatibility[]{TOO_OLD, TOO_NEW, COMPATIBLE};
+      return new PackCompatibility[]{TOO_OLD, TOO_NEW, UNKNOWN, COMPATIBLE};
    }
 }

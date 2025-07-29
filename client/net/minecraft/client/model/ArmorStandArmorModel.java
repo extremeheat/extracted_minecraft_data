@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 
 public class ArmorStandArmorModel extends HumanoidModel<ArmorStandRenderState> {
@@ -14,14 +15,18 @@ public class ArmorStandArmorModel extends HumanoidModel<ArmorStandRenderState> {
       super(var1);
    }
 
-   public static LayerDefinition createBodyLayer(CubeDeformation var0) {
+   public static ArmorModelSet<LayerDefinition> createArmorLayerSet(CubeDeformation var0, CubeDeformation var1) {
+      return createArmorMeshSet(ArmorStandArmorModel::createBaseMesh, var0, var1).<LayerDefinition>map((var0x) -> LayerDefinition.create(var0x, 64, 32));
+   }
+
+   private static MeshDefinition createBaseMesh(CubeDeformation var0) {
       MeshDefinition var1 = HumanoidModel.createMesh(var0, 0.0F);
       PartDefinition var2 = var1.getRoot();
       PartDefinition var3 = var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.offset(0.0F, 1.0F, 0.0F));
       var3.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0.extend(0.5F)), PartPose.ZERO);
       var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(-0.1F)), PartPose.offset(-1.9F, 11.0F, 0.0F));
       var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(-0.1F)), PartPose.offset(1.9F, 11.0F, 0.0F));
-      return LayerDefinition.create(var1, 64, 32);
+      return var1;
    }
 
    public void setupAnim(ArmorStandRenderState var1) {

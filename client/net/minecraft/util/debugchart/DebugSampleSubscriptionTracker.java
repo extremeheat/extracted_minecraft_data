@@ -34,7 +34,7 @@ public class DebugSampleSubscriptionTracker {
    }
 
    public void subscribe(ServerPlayer var1, RemoteDebugSampleType var2) {
-      if (this.playerList.isOp(var1.getGameProfile())) {
+      if (this.playerList.isOp(var1.nameAndId())) {
          this.subscriptionRequestQueue.add(new SubscriptionRequest(var1, var2));
       }
 
@@ -56,7 +56,7 @@ public class DebugSampleSubscriptionTracker {
    private void handleUnsubscriptions(long var1, int var3) {
       for(Map var5 : this.subscriptions.values()) {
          var5.entrySet().removeIf((var4) -> {
-            boolean var5 = !this.playerList.isOp(((ServerPlayer)var4.getKey()).getGameProfile());
+            boolean var5 = !this.playerList.isOp(((ServerPlayer)var4.getKey()).nameAndId());
             SubscriptionStartedAt var6 = (SubscriptionStartedAt)var4.getValue();
             return var5 || var3 > var6.tick() + 200 && var1 > var6.millis() + 10000L;
          });

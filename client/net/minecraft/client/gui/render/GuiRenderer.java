@@ -69,7 +69,7 @@ import org.slf4j.Logger;
 public class GuiRenderer implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final float MAX_GUI_Z = 10000.0F;
-   private static final float MIN_GUI_Z = 0.0F;
+   public static final float MIN_GUI_Z = 0.0F;
    private static final float GUI_Z_NEAR = 1000.0F;
    public static final int GUI_3D_Z_FAR = 1000;
    public static final int GUI_3D_Z_NEAR = -1000;
@@ -244,7 +244,7 @@ public class GuiRenderer implements AutoCloseable {
          this.previousScissorArea = var5;
       }
 
-      var1.buildVertices(this.bufferBuilder, 0.0F + (float)var2);
+      var1.buildVertices(this.bufferBuilder);
    }
 
    private void prepareText() {
@@ -565,7 +565,7 @@ public class GuiRenderer implements AutoCloseable {
       return new BufferBuilder(this.byteBufferBuilder, var1.getVertexFormatMode(), var1.getVertexFormat());
    }
 
-   private boolean scissorChanged(@Nullable ScreenRectangle var1, @Nullable ScreenRectangle var2) {
+   private boolean scissorChanged(ScreenRectangle var1, @Nullable ScreenRectangle var2) {
       if (var1 == var2) {
          return false;
       } else if (var1 != null) {

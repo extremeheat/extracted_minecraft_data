@@ -195,6 +195,10 @@ public class HappyGhast extends Animal {
       return this.isBaby() ? SoundEvents.GHASTLING_DEATH : SoundEvents.HAPPY_GHAST_DEATH;
    }
 
+   protected float getSoundVolume() {
+      return this.isBaby() ? 1.0F : 4.0F;
+   }
+
    public int getMaxSpawnClusterSize() {
       return 1;
    }
@@ -249,7 +253,7 @@ public class HappyGhast extends Animal {
    }
 
    private void doPlayerRide(Player var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          var1.startRiding(this);
       }
 
@@ -261,7 +265,7 @@ public class HappyGhast extends Animal {
       }
 
       super.addPassenger(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (!this.scanPlayerAboveGhast()) {
             this.setServerStillTimeout(0);
          } else if (this.serverStillTimeout > 10) {
@@ -273,7 +277,7 @@ public class HappyGhast extends Animal {
 
    protected void removePassenger(Entity var1) {
       super.removePassenger(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setServerStillTimeout(10);
       }
 
@@ -382,7 +386,7 @@ public class HappyGhast extends Animal {
    }
 
    public void aiStep() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setRequiresPrecisePosition(this.isOnStillTimeout());
       }
 

@@ -32,7 +32,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    public static final int RANGE = 128;
    private static final int SPARK_CYCLE = 200;
 
-   public MapCodec<LightningRodBlock> codec() {
+   public MapCodec<? extends LightningRodBlock> codec() {
       return CODEC;
    }
 

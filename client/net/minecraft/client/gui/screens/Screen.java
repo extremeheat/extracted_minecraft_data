@@ -102,11 +102,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return this.getTitle();
    }
 
-   public final void renderWithTooltip(GuiGraphics var1, int var2, int var3, float var4) {
+   public final void renderWithTooltipAndSubtitles(GuiGraphics var1, int var2, int var3, float var4) {
       var1.nextStratum();
       this.renderBackground(var1, var2, var3, var4);
       var1.nextStratum();
       this.render(var1, var2, var3, var4);
+      this.minecraft.gui.renderDeferredSubtitles();
       var1.renderDeferredTooltip();
    }
 
@@ -423,7 +424,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
       this.initialized = true;
       this.triggerImmediateNarration(false);
-      this.suppressNarration(NARRATE_SUPPRESS_AFTER_INIT_TIME);
+      if (var1.getLastInputType().isKeyboard()) {
+         this.setNarrationSuppressTime(9223372036854775807L);
+      } else {
+         this.suppressNarration(NARRATE_SUPPRESS_AFTER_INIT_TIME);
+      }
+
    }
 
    protected void rebuildWidgets() {
@@ -476,7 +482,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      this.minecraft.gameRenderer.getPanorama().render(var1, this.width, this.height, true);
+      this.minecraft.gameRenderer.getPanorama().render(var1, this.width, this.height, this.panoramaShouldSpin());
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -497,6 +503,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public boolean isPauseScreen() {
+      return true;
+   }
+
+   protected boolean panoramaShouldSpin() {
       return true;
    }
 
@@ -575,7 +585,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    private void suppressNarration(long var1) {
-      this.narrationSuppressTime = Util.getMillis() + var1;
+      this.setNarrationSuppressTime(Util.getMillis() + var1);
+   }
+
+   private void setNarrationSuppressTime(long var1) {
+      this.narrationSuppressTime = var1;
    }
 
    public void afterMouseMove() {
@@ -714,10 +728,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       NARRATE_DELAY_NARRATOR_ENABLED = NARRATE_SUPPRESS_AFTER_INIT_TIME;
    }
 
-   public static class NarratableSearchResult {
-      public final NarratableEntry entry;
-      public final int index;
-      public final NarratableEntry.NarrationPriority priority;
+   public static record NarratableSearchResult(NarratableEntry entry, int index, NarratableEntry.NarrationPriority priority) {
+      final NarratableEntry entry;
+      final int index;
+      final NarratableEntry.NarrationPriority priority;
 
       public NarratableSearchResult(NarratableEntry var1, int var2, NarratableEntry.NarrationPriority var3) {
          super();

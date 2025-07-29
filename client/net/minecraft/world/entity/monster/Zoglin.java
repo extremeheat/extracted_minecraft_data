@@ -209,7 +209,7 @@ public class Zoglin extends Monster implements HoglinBase {
 
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (!this.level().isClientSide && var1) {
+      if (!this.level().isClientSide() && var1) {
          this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(0.5);
       }
 
@@ -242,7 +242,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    protected SoundEvent getAmbientSound() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          return null;
       } else {
          return this.brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET) ? SoundEvents.ZOGLIN_ANGRY : SoundEvents.ZOGLIN_AMBIENT;

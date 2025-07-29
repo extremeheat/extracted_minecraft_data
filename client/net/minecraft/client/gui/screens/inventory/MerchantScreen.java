@@ -158,8 +158,8 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+      super.renderContents(var1, var2, var3, var4);
       MerchantOffers var5 = ((MerchantMenu)this.menu).getOffers();
       if (!var5.isEmpty()) {
          int var6 = (this.width - this.imageWidth) / 2;
@@ -268,15 +268,15 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       }
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       this.isDragging = false;
-      int var6 = (this.width - this.imageWidth) / 2;
-      int var7 = (this.height - this.imageHeight) / 2;
-      if (this.canScroll(((MerchantMenu)this.menu).getOffers().size()) && var1 > (double)(var6 + 94) && var1 < (double)(var6 + 94 + 6) && var3 > (double)(var7 + 18) && var3 <= (double)(var7 + 18 + 139 + 1)) {
+      int var7 = (this.width - this.imageWidth) / 2;
+      int var8 = (this.height - this.imageHeight) / 2;
+      if (this.canScroll(((MerchantMenu)this.menu).getOffers().size()) && var1 > (double)(var7 + 94) && var1 < (double)(var7 + 94 + 6) && var3 > (double)(var8 + 18) && var3 <= (double)(var8 + 18 + 139 + 1)) {
          this.isDragging = true;
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    class TradeOfferButton extends Button {

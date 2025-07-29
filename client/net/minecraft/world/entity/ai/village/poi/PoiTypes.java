@@ -43,6 +43,7 @@ public class PoiTypes {
    public static final ResourceKey<PoiType> TEST_INSTANCE = createKey("test_instance");
    private static final Set<BlockState> BEDS;
    private static final Set<BlockState> CAULDRONS;
+   private static final Set<BlockState> LIGHTNING_RODS;
    private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE;
 
    public PoiTypes() {
@@ -102,12 +103,13 @@ public class PoiTypes {
       register(var0, NETHER_PORTAL, getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
       register(var0, LODESTONE, getBlockStates(Blocks.LODESTONE), 0, 1);
       register(var0, TEST_INSTANCE, getBlockStates(Blocks.TEST_INSTANCE_BLOCK), 0, 1);
-      return register(var0, LIGHTNING_ROD, getBlockStates(Blocks.LIGHTNING_ROD), 0, 1);
+      return register(var0, LIGHTNING_ROD, LIGHTNING_RODS, 0, 1);
    }
 
    static {
       BEDS = (Set)ImmutableList.of(Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, new Block[]{Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED}).stream().flatMap((var0) -> var0.getStateDefinition().getPossibleStates().stream()).filter((var0) -> var0.getValue(BedBlock.PART) == BedPart.HEAD).collect(ImmutableSet.toImmutableSet());
       CAULDRONS = (Set)ImmutableList.of(Blocks.CAULDRON, Blocks.LAVA_CAULDRON, Blocks.WATER_CAULDRON, Blocks.POWDER_SNOW_CAULDRON).stream().flatMap((var0) -> var0.getStateDefinition().getPossibleStates().stream()).collect(ImmutableSet.toImmutableSet());
+      LIGHTNING_RODS = (Set)ImmutableList.of(Blocks.LIGHTNING_ROD, Blocks.EXPOSED_LIGHTNING_ROD, Blocks.WEATHERED_LIGHTNING_ROD, Blocks.OXIDIZED_LIGHTNING_ROD, Blocks.WAXED_LIGHTNING_ROD, Blocks.WAXED_EXPOSED_LIGHTNING_ROD, Blocks.WAXED_WEATHERED_LIGHTNING_ROD, Blocks.WAXED_OXIDIZED_LIGHTNING_ROD).stream().flatMap((var0) -> var0.getStateDefinition().getPossibleStates().stream()).collect(ImmutableSet.toImmutableSet());
       TYPE_BY_STATE = Maps.newHashMap();
    }
 }

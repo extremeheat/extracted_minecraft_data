@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.SalmonModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SalmonRenderState;
@@ -57,16 +57,17 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
 
    }
 
-   public void render(SalmonRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
-      if (var1.variant == Salmon.Variant.SMALL) {
-         this.model = this.smallSalmonModel;
-      } else if (var1.variant == Salmon.Variant.LARGE) {
-         this.model = this.largeSalmonModel;
-      } else {
-         this.model = this.mediumSalmonModel;
+   public void submit(SalmonRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      SalmonModel var10001;
+      switch (var1.variant) {
+         case SMALL -> var10001 = this.smallSalmonModel;
+         case MEDIUM -> var10001 = this.mediumSalmonModel;
+         case LARGE -> var10001 = this.largeSalmonModel;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      super.render(var1, var2, var3, var4);
+      this.model = var10001;
+      super.submit(var1, var2, var3);
    }
 
    // $FF: synthetic method

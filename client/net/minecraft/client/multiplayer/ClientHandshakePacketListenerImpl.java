@@ -70,11 +70,12 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    private final Duration worldLoadDuration;
    @Nullable
    private String minigameName;
+   private final LevelLoadTracker levelLoadTracker;
    private final Map<ResourceLocation, byte[]> cookies;
    private final boolean wasTransferredTo;
    private final AtomicReference<State> state;
 
-   public ClientHandshakePacketListenerImpl(Connection var1, Minecraft var2, @Nullable ServerData var3, @Nullable Screen var4, boolean var5, @Nullable Duration var6, Consumer<Component> var7, @Nullable TransferState var8) {
+   public ClientHandshakePacketListenerImpl(Connection var1, Minecraft var2, @Nullable ServerData var3, @Nullable Screen var4, boolean var5, @Nullable Duration var6, Consumer<Component> var7, LevelLoadTracker var8, @Nullable TransferState var9) {
       super();
       this.state = new AtomicReference(ClientHandshakePacketListenerImpl.State.CONNECTING);
       this.connection = var1;
@@ -84,8 +85,9 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       this.updateStatus = var7;
       this.newWorld = var5;
       this.worldLoadDuration = var6;
-      this.cookies = var8 != null ? new HashMap(var8.cookies()) : new HashMap();
-      this.wasTransferredTo = var8 != null;
+      this.levelLoadTracker = var8;
+      this.cookies = var9 != null ? new HashMap(var9.cookies()) : new HashMap();
+      this.wasTransferredTo = var9 != null;
    }
 
    private void switchState(State var1) {
@@ -169,7 +171,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void handleLoginFinished(ClientboundLoginFinishedPacket var1) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
       GameProfile var2 = var1.gameProfile();
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY)));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY)));
       this.connection.send(ServerboundLoginAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
       this.connection.send(new ServerboundCustomPayloadPacket(new BrandPayload(ClientBrandRetriever.getClientModName())));

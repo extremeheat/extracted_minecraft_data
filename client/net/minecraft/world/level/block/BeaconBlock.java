@@ -41,7 +41,7 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof BeaconBlockEntity) {
             BeaconBlockEntity var6 = (BeaconBlockEntity)var7;

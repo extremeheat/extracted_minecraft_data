@@ -43,7 +43,7 @@ public class PotionItem extends Item {
          var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
          var4.setItemInHand(var1.getHand(), ItemUtils.createFilledResult(var5, var4, new ItemStack(Items.GLASS_BOTTLE)));
          var4.awardStat(Stats.ITEM_USED.get(var5.getItem()));
-         if (!var2.isClientSide) {
+         if (!var2.isClientSide()) {
             ServerLevel var8 = (ServerLevel)var2;
 
             for(int var9 = 0; var9 < 5; ++var9) {

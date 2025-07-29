@@ -7,6 +7,7 @@ import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
@@ -15,11 +16,18 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity> {
+   private final MaterialSet materials;
    private final BookModel bookModel;
+   private final BookModel.State bookState = new BookModel.State();
 
    public LecternRenderer(BlockEntityRendererProvider.Context var1) {
       super();
+      this.materials = var1.materials();
       this.bookModel = new BookModel(var1.bakeLayer(ModelLayers.BOOK));
+      this.bookState.animationPos = 0.0F;
+      this.bookState.pageFlip1 = 0.1F;
+      this.bookState.pageFlip2 = 0.9F;
+      this.bookState.open = 1.2F;
    }
 
    public void render(LecternBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
@@ -31,8 +39,8 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity> 
          var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var9));
          var3.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
          var3.translate(0.0F, -0.125F, 0.0F);
-         this.bookModel.setupAnim(0.0F, 0.1F, 0.9F, 1.2F);
-         VertexConsumer var10 = EnchantTableRenderer.BOOK_LOCATION.buffer(var4, RenderType::entitySolid);
+         this.bookModel.setupAnim(this.bookState);
+         VertexConsumer var10 = EnchantTableRenderer.BOOK_LOCATION.buffer(this.materials, var4, RenderType::entitySolid);
          this.bookModel.renderToBuffer(var3, var10, var5, var6);
          var3.popPose();
       }

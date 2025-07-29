@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.level.Level;
@@ -37,8 +38,9 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    private final ItemModelResolver itemModelResolver;
    private final ItemRenderer itemRenderer;
    private final EntityRenderDispatcher entityRenderer;
+   private final MaterialSet materials;
 
-   public BlockEntityRenderDispatcher(Font var1, Supplier<EntityModelSet> var2, BlockRenderDispatcher var3, ItemModelResolver var4, ItemRenderer var5, EntityRenderDispatcher var6) {
+   public BlockEntityRenderDispatcher(Font var1, Supplier<EntityModelSet> var2, BlockRenderDispatcher var3, ItemModelResolver var4, ItemRenderer var5, EntityRenderDispatcher var6, MaterialSet var7) {
       super();
       this.itemRenderer = var5;
       this.itemModelResolver = var4;
@@ -46,6 +48,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       this.font = var1;
       this.entityModelSet = var2;
       this.blockRenderDispatcher = var3;
+      this.materials = var7;
    }
 
    @Nullable
@@ -101,7 +104,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font);
+      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font, this.materials);
       this.renderers = BlockEntityRenderers.createEntityRenderers(var2);
    }
 }

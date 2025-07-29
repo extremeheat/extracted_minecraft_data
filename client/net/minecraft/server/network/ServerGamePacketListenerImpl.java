@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -327,7 +328,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.keepConnectionAlive();
       this.chatSpamThrottler.tick();
       this.dropSpamThrottler.tick();
-      if (this.player.getLastActionTime() > 0L && this.server.getPlayerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > (long)this.server.getPlayerIdleTimeout() * 1000L * 60L) {
+      if (this.player.getLastActionTime() > 0L && this.server.getPlayerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.getPlayerIdleTimeout()) && !this.player.wonGame) {
          this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
       }
 
@@ -1524,7 +1525,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    private void detectRateSpam() {
       this.chatSpamThrottler.increment();
-      if (!this.chatSpamThrottler.isUnderThreshold() && !this.server.getPlayerList().isOp(this.player.getGameProfile()) && !this.server.isSingleplayerOwner(this.player.getGameProfile())) {
+      if (!this.chatSpamThrottler.isUnderThreshold() && !this.server.getPlayerList().isOp(this.player.nameAndId()) && !this.server.isSingleplayerOwner(this.player.nameAndId())) {
          this.disconnect(Component.translatable("disconnect.spam"));
       }
 

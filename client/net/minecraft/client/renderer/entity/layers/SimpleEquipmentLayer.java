@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Function;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
@@ -32,13 +32,12 @@ public class SimpleEquipmentLayer<S extends LivingEntityRenderState, RM extends 
       this(var1, var2, var4, var5, var3, var3);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
       ItemStack var7 = (ItemStack)this.itemGetter.apply(var4);
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
       if (var8 != null && !var8.assetId().isEmpty()) {
          EntityModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
-         var9.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(this.layer, (ResourceKey)var8.assetId().get(), var9, var7, var1, var2, var3);
+         this.equipmentRenderer.renderLayers(this.layer, (ResourceKey)var8.assetId().get(), var9, var4, var7, var1, var2, var3, var4.outlineColor);
       }
    }
 }

@@ -2,8 +2,10 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseSpawner;
@@ -17,7 +19,7 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
 
    public SpawnerRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.entityRenderer = var1.getEntityRenderer();
+      this.entityRenderer = var1.entityRenderer();
    }
 
    public void render(SpawnerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
@@ -26,27 +28,28 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
          BaseSpawner var9 = var1.getSpawner();
          Entity var10 = var9.getOrCreateDisplayEntity(var8, var1.getBlockPos());
          if (var10 != null) {
-            renderEntityInSpawner(var2, var3, var4, var5, var10, this.entityRenderer, var9.getoSpin(), var9.getSpin());
+            renderEntityInSpawner(var2, var3, var4, var10, this.entityRenderer, var9.getoSpin(), var9.getSpin());
          }
 
       }
    }
 
-   public static void renderEntityInSpawner(float var0, PoseStack var1, MultiBufferSource var2, int var3, Entity var4, EntityRenderDispatcher var5, double var6, double var8) {
+   public static void renderEntityInSpawner(float var0, PoseStack var1, MultiBufferSource var2, Entity var3, EntityRenderDispatcher var4, double var5, double var7) {
       var1.pushPose();
       var1.translate(0.5F, 0.0F, 0.5F);
-      float var10 = 0.53125F;
-      float var11 = Math.max(var4.getBbWidth(), var4.getBbHeight());
-      if ((double)var11 > 1.0) {
-         var10 /= var11;
+      float var9 = 0.53125F;
+      float var10 = Math.max(var3.getBbWidth(), var3.getBbHeight());
+      if ((double)var10 > 1.0) {
+         var9 /= var10;
       }
 
       var1.translate(0.0F, 0.4F, 0.0F);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)Mth.lerp((double)var0, var6, var8) * 10.0F));
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)Mth.lerp((double)var0, var5, var7) * 10.0F));
       var1.translate(0.0F, -0.2F, 0.0F);
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-30.0F));
-      var1.scale(var10, var10, var10);
-      var5.render(var4, 0.0, 0.0, 0.0, var0, var1, var2, var3);
+      var1.scale(var9, var9, var9);
+      EntityRenderState var11 = var4.extractEntity(var3, var0);
+      var4.submit(var11, 0.0, 0.0, 0.0, var1, Minecraft.getInstance().gameRenderer.getSubmitNodeStorage());
       var1.popPose();
    }
 }

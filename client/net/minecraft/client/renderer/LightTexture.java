@@ -11,7 +11,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -111,21 +110,17 @@ public class LightTexture implements AutoCloseable {
             float var13 = var3.dimensionType().ambientLight();
             boolean var14 = var3.effects().forceBrightLightmap();
             float var15 = ((Double)this.minecraft.options.gamma().get()).floatValue();
-            RenderSystem.AutoStorageIndexBuffer var16 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-            GpuBuffer var17 = var16.getBuffer(6);
-            CommandEncoder var18 = RenderSystem.getDevice().createCommandEncoder();
+            CommandEncoder var16 = RenderSystem.getDevice().createCommandEncoder();
 
-            try (GpuBuffer.MappedView var19 = var18.mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var19.data()).putFloat(var13).putFloat(var5).putFloat(var12).putInt(var14 ? 1 : 0).putFloat(var9).putFloat(var8).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var7)).putVec3(var11);
+            try (GpuBuffer.MappedView var17 = var16.mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var17.data()).putFloat(var13).putFloat(var5).putFloat(var12).putInt(var14 ? 1 : 0).putFloat(var9).putFloat(var8).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var7)).putVec3(var11);
             }
 
-            try (RenderPass var26 = var18.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
-               var26.setPipeline(RenderPipelines.LIGHTMAP);
-               RenderSystem.bindDefaultUniforms(var26);
-               var26.setUniform("LightmapInfo", this.ubo.currentBuffer());
-               var26.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-               var26.setIndexBuffer(var17, var16.type());
-               var26.drawIndexed(0, 0, 6, 1);
+            try (RenderPass var24 = var16.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
+               var24.setPipeline(RenderPipelines.LIGHTMAP);
+               RenderSystem.bindDefaultUniforms(var24);
+               var24.setUniform("LightmapInfo", this.ubo.currentBuffer());
+               var24.draw(0, 3);
             }
 
             this.ubo.rotate();

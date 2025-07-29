@@ -296,7 +296,6 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       private final FaviconTexture icon;
       @Nullable
       private Path iconFile;
-      private long lastClickTime;
 
       public WorldListEntry(final WorldSelectionList var2, final LevelSummary var3) {
          super();
@@ -424,14 +423,13 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          if (!this.summary.primaryActionActive()) {
             return true;
          } else {
             WorldSelectionList.this.setSelected((Entry)this);
-            if (!(var1 - (double)WorldSelectionList.this.getRowLeft() <= 32.0) && Util.getMillis() - this.lastClickTime >= 250L) {
-               this.lastClickTime = Util.getMillis();
-               return super.mouseClicked(var1, var3, var5);
+            if (!(var1 - (double)WorldSelectionList.this.getRowLeft() <= 32.0) && !var6) {
+               return super.mouseClicked(var1, var3, var5, var6);
             } else {
                if (this.canJoin()) {
                   this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));

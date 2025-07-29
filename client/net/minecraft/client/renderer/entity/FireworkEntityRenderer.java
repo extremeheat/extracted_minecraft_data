@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FireworkRocketRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -19,7 +19,7 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity,
       this.itemModelResolver = var1.getItemModelResolver();
    }
 
-   public void render(FireworkRocketRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(FireworkRocketRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
       if (var1.isShotAtAngle) {
@@ -28,9 +28,9 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity,
          var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
       }
 
-      var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitItem(var2, var1.item, var1.lightCoords, OverlayTexture.NO_OVERLAY);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    public FireworkRocketRenderState createRenderState() {

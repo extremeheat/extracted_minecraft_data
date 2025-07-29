@@ -12,7 +12,7 @@ public class ControlsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("controls.title");
 
    private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.toggleCrouch(), var0.toggleSprint(), var0.autoJump(), var0.operatorItemsTab()};
+      return new OptionInstance[]{var0.toggleCrouch(), var0.toggleSprint(), var0.toggleAttack(), var0.toggleUse(), var0.autoJump(), var0.sprintWindow(), var0.operatorItemsTab()};
    }
 
    public ControlsScreen(Screen var1, Options var2) {

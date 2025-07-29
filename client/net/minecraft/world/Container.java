@@ -1,10 +1,12 @@
 package net.minecraft.world;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,10 +40,14 @@ public interface Container extends Clearable, Iterable<ItemStack> {
 
    boolean stillValid(Player var1);
 
-   default void startOpen(Player var1) {
+   default void startOpen(ContainerUser var1) {
    }
 
-   default void stopOpen(Player var1) {
+   default void stopOpen(ContainerUser var1) {
+   }
+
+   default List<ContainerUser> getEntitiesWithContainerOpen() {
+      return List.of();
    }
 
    default boolean canPlaceItem(int var1, ItemStack var2) {

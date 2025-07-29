@@ -19,7 +19,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -45,7 +44,6 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -77,7 +75,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_CONVERTING_ID, false);
-      var1.define(DATA_VILLAGER_DATA, Villager.createDefaultVillagerData());
+      var1.define(DATA_VILLAGER_DATA, this.initializeVillagerData());
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
@@ -92,7 +90,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
+      this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(this::initializeVillagerData));
       this.tradeOffers = (MerchantOffers)var1.read("Offers", MerchantOffers.CODEC).orElse((Object)null);
       this.gossips = (GossipContainer)var1.read("Gossips", GossipContainer.CODEC).orElse((Object)null);
       int var2 = var1.getIntOr("ConversionTime", -1);
@@ -107,8 +105,19 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.villagerXp = var1.getIntOr("Xp", 0);
    }
 
+   private VillagerData initializeVillagerData() {
+      Level var1 = this.level();
+      Optional var2 = BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random);
+      VillagerData var3 = Villager.createDefaultVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition())));
+      if (var2.isPresent()) {
+         var3 = var3.withProfession((Holder)var2.get());
+      }
+
+      return var3;
+   }
+
    public void tick() {
-      if (!this.level().isClientSide && this.isAlive() && this.isConverting()) {
+      if (!this.level().isClientSide() && this.isAlive() && this.isConverting()) {
          int var1 = this.getConversionProgress();
          this.villagerConversionTime -= var1;
          if (this.villagerConversionTime <= 0) {
@@ -124,7 +133,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       if (var3.is(Items.GOLDEN_APPLE)) {
          if (this.hasEffect(MobEffects.WEAKNESS)) {
             var3.consume(1, var1);
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                this.startConverting(var1.getUUID(), this.random.nextInt(2401) + 3600);
             }
 
@@ -254,28 +263,12 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       return SoundEvents.ZOMBIE_VILLAGER_STEP;
    }
 
-   protected ItemStack getSkull() {
-      return ItemStack.EMPTY;
-   }
-
    public void setTradeOffers(MerchantOffers var1) {
       this.tradeOffers = var1;
    }
 
    public void setGossips(GossipContainer var1) {
       this.gossips = var1;
-   }
-
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      VillagerData var5 = this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition())));
-      Optional var6 = BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random);
-      if (var6.isPresent()) {
-         var5 = var5.withProfession((Holder)var6.get());
-      }
-
-      this.setVillagerData(var5);
-      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public void setVillagerData(VillagerData var1) {

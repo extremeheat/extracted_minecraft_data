@@ -25,9 +25,9 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
       this.showDecorations = var7;
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      boolean var6 = this.updateScrolling(var1, var3, var5);
-      return super.mouseClicked(var1, var3, var5) || var6;
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      boolean var7 = this.updateScrolling(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6) || var7;
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {

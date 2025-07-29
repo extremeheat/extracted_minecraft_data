@@ -41,7 +41,7 @@ public class HoeItem extends Item {
          if (var5.test(var1)) {
             Player var7 = var1.getPlayer();
             var2.playSound(var7, (BlockPos)var3, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-            if (!var2.isClientSide) {
+            if (!var2.isClientSide()) {
                var6.accept(var1);
                if (var7 != null) {
                   var1.getItemInHand().hurtAndBreak(1, var7, (EquipmentSlot)LivingEntity.getSlotForHand(var1.getHand()));

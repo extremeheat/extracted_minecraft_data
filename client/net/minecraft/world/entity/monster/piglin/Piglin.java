@@ -40,7 +40,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
@@ -108,15 +107,6 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var2.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var1, var6);
-         }
-      }
-
       this.inventory.removeAllItems().forEach((var2x) -> this.spawnAtLocation(var1, var2x));
    }
 
@@ -166,10 +156,6 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       this.populateDefaultEquipmentSlots(var5, var2);
       this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       return super.finalizeSpawn(var1, var2, var3, var4);
-   }
-
-   protected boolean shouldDespawnInPeaceful() {
-      return false;
    }
 
    public boolean removeWhenFarAway(double var1) {
@@ -227,7 +213,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
          var2.removeModifier(SPEED_MODIFIER_BABY.id());
          if (var1) {
@@ -376,12 +362,12 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       PiglinAi.pickUpItem(var1, this, var2);
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
       if (this.isBaby() && var1.getType() == EntityType.HOGLIN) {
          var1 = this.getTopPassenger(var1, 3);
       }
 
-      return super.startRiding(var1, var2);
+      return super.startRiding(var1, var2, var3);
    }
 
    private Entity getTopPassenger(Entity var1, int var2) {
@@ -391,7 +377,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Nullable
    protected SoundEvent getAmbientSound() {
-      return this.level().isClientSide ? null : (SoundEvent)PiglinAi.getSoundForCurrentActivity(this).orElse((Object)null);
+      return this.level().isClientSide() ? null : (SoundEvent)PiglinAi.getSoundForCurrentActivity(this).orElse((Object)null);
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {

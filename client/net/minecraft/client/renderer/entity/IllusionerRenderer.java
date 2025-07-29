@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
 import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllusionerRenderState;
@@ -21,9 +21,9 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
    public IllusionerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.ILLUSIONER)), 0.5F);
       this.addLayer(new ItemInHandLayer<IllusionerRenderState, IllagerModel<IllusionerRenderState>>(this) {
-         public void render(PoseStack var1, MultiBufferSource var2, int var3, IllusionerRenderState var4, float var5, float var6) {
+         public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IllusionerRenderState var4, float var5, float var6) {
             if (var4.isCastingSpell || var4.isAggressive) {
-               super.render(var1, var2, var3, var4, var5, var6);
+               super.submit(var1, var2, var3, var4, var5, var6);
             }
 
          }
@@ -46,18 +46,18 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
       var2.isCastingSpell = var1.isCastingSpell();
    }
 
-   public void render(IllusionerRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(IllusionerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       if (var1.isInvisible) {
-         Vec3[] var5 = var1.illusionOffsets;
+         Vec3[] var4 = var1.illusionOffsets;
 
-         for(int var6 = 0; var6 < var5.length; ++var6) {
+         for(int var5 = 0; var5 < var4.length; ++var5) {
             var2.pushPose();
-            var2.translate(var5[var6].x + (double)Mth.cos((float)var6 + var1.ageInTicks * 0.5F) * 0.025, var5[var6].y + (double)Mth.cos((float)var6 + var1.ageInTicks * 0.75F) * 0.0125, var5[var6].z + (double)Mth.cos((float)var6 + var1.ageInTicks * 0.7F) * 0.025);
-            super.render(var1, var2, var3, var4);
+            var2.translate(var4[var5].x + (double)Mth.cos((float)var5 + var1.ageInTicks * 0.5F) * 0.025, var4[var5].y + (double)Mth.cos((float)var5 + var1.ageInTicks * 0.75F) * 0.0125, var4[var5].z + (double)Mth.cos((float)var5 + var1.ageInTicks * 0.7F) * 0.025);
+            super.submit(var1, var2, var3);
             var2.popPose();
          }
       } else {
-         super.render(var1, var2, var3, var4);
+         super.submit(var1, var2, var3);
       }
 
    }

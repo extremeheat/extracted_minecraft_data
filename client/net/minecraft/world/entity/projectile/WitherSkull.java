@@ -88,7 +88,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
 
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.level().explode(this, this.getX(), this.getY(), this.getZ(), 1.0F, false, Level.ExplosionInteraction.MOB);
          this.discard();
       }

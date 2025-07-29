@@ -192,7 +192,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide && this.isAlive() && this.tickCount % 10 == 0) {
+      if (!this.level().isClientSide() && this.isAlive() && this.tickCount % 10 == 0) {
          this.heal(1.0F);
       }
 
@@ -206,7 +206,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
    public void tick() {
       super.tick();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.holdingItemAnimationTicks0 = this.holdingItemAnimationTicks;
          if (this.hasItemInHand()) {
             this.holdingItemAnimationTicks = Mth.clamp(this.holdingItemAnimationTicks + 1.0F, 0.0F, 5.0F);
@@ -350,7 +350,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    public void setDancing(boolean var1) {
-      if (!this.level().isClientSide && this.isEffectiveAi() && (!var1 || !this.isPanicking())) {
+      if (!this.level().isClientSide() && this.isEffectiveAi() && (!var1 || !this.isPanicking())) {
          this.entityData.set(DATA_DANCING, var1);
       }
    }

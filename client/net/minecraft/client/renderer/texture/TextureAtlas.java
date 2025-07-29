@@ -158,6 +158,10 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       }
    }
 
+   public TextureAtlasSprite missingSprite() {
+      return (TextureAtlasSprite)Objects.requireNonNull(this.missingSprite, "Atlas not initialized");
+   }
+
    public void clearTextureData() {
       this.sprites.forEach(SpriteContents::close);
       this.animatedTextures.forEach(TextureAtlasSprite.Ticker::close);

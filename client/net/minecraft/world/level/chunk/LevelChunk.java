@@ -274,8 +274,8 @@ public class LevelChunk extends ChunkAccess {
             boolean var18 = !var10.is(var11);
             boolean var14 = (var3 & 64) != 0;
             boolean var15 = (var3 & 256) == 0;
-            if (var18 && var10.hasBlockEntity()) {
-               if (!this.level.isClientSide && var15) {
+            if (var18 && var10.hasBlockEntity() && !var2.shouldChangedStateKeepBlockEntity(var10)) {
+               if (!this.level.isClientSide() && var15) {
                   BlockEntity var16 = this.level.getBlockEntity(var1);
                   if (var16 != null) {
                      var16.preRemoveSideEffects(var1, var10);
@@ -298,7 +298,7 @@ public class LevelChunk extends ChunkAccess {
             if (!var5.getBlockState(var7, var8, var9).is(var11)) {
                return null;
             } else {
-               if (!this.level.isClientSide && (var3 & 512) == 0) {
+               if (!this.level.isClientSide() && (var3 & 512) == 0) {
                   var2.onPlace(this.level, var1, var10, var14);
                }
 

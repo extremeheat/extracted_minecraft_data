@@ -6,7 +6,7 @@ import net.minecraft.client.model.PufferfishBigModel;
 import net.minecraft.client.model.PufferfishMidModel;
 import net.minecraft.client.model.PufferfishSmallModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PufferfishRenderState;
@@ -38,7 +38,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       return 0.1F + 0.1F * (float)var1.puffState;
    }
 
-   public void render(PufferfishRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(PufferfishRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       EntityModel var10001;
       switch (var1.puffState) {
          case 0 -> var10001 = this.small;
@@ -47,7 +47,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       }
 
       this.model = var10001;
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    public void extractRenderState(Pufferfish var1, PufferfishRenderState var2, float var3) {

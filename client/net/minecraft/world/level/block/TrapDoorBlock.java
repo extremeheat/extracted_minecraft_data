@@ -111,7 +111,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          boolean var7 = var2.hasNeighborSignal(var3);
          if (var7 != (Boolean)var1.getValue(POWERED)) {
             if ((Boolean)var1.getValue(OPEN) != var7) {

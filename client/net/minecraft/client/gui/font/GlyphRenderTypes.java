@@ -16,11 +16,11 @@ public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderT
    }
 
    public static GlyphRenderTypes createForIntensityTexture(ResourceLocation var0) {
-      return new GlyphRenderTypes(RenderType.textIntensity(var0), RenderType.textIntensitySeeThrough(var0), RenderType.textIntensityPolygonOffset(var0), RenderPipelines.TEXT_INTENSITY);
+      return new GlyphRenderTypes(RenderType.textIntensity(var0), RenderType.textIntensitySeeThrough(var0), RenderType.textIntensityPolygonOffset(var0), RenderPipelines.GUI_TEXT_INTENSITY);
    }
 
    public static GlyphRenderTypes createForColorTexture(ResourceLocation var0) {
-      return new GlyphRenderTypes(RenderType.text(var0), RenderType.textSeeThrough(var0), RenderType.textPolygonOffset(var0), RenderPipelines.TEXT);
+      return new GlyphRenderTypes(RenderType.text(var0), RenderType.textSeeThrough(var0), RenderType.textPolygonOffset(var0), RenderPipelines.GUI_TEXT);
    }
 
    public RenderType select(Font.DisplayMode var1) {

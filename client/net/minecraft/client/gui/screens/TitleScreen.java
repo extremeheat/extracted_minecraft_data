@@ -249,11 +249,11 @@ public class TitleScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      if (super.mouseClicked(var1, var3, var5, var6)) {
          return true;
       } else {
-         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5);
+         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5, var6);
       }
    }
 

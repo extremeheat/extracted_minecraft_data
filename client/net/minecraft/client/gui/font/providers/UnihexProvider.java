@@ -21,11 +21,11 @@ import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
+import net.minecraft.client.gui.font.GlyphStitcher;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -532,8 +532,8 @@ public class UnihexProvider implements GlyphProvider {
          return 0.5F;
       }
 
-      public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
+      public BakedGlyph bake(GlyphStitcher var1) {
+         return var1.stitch(new SheetGlyphInfo() {
             public float getOversample() {
                return 2.0F;
             }

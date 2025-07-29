@@ -47,7 +47,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          if (var4 != null) {
             BlockEntity var6 = var1.getBlockEntity(var2);
             if (var6 instanceof StructureBlockEntity) {

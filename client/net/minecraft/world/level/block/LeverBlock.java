@@ -59,7 +59,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
+      if (var2.isClientSide()) {
          BlockState var6 = (BlockState)var1.cycle(POWERED);
          if ((Boolean)var6.getValue(POWERED)) {
             makeParticle(var6, var2, var3, 1.0F);

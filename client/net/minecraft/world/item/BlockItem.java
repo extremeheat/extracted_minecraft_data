@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -14,8 +13,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.component.BlockItemStateProperties;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -141,25 +140,20 @@ public class BlockItem extends Item {
    }
 
    public static boolean updateCustomBlockEntityTag(Level var0, @Nullable Player var1, BlockPos var2, ItemStack var3) {
-      if (var0.isClientSide) {
+      if (var0.isClientSide()) {
          return false;
       } else {
-         CustomData var4 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-         if (!var4.isEmpty()) {
-            BlockEntityType var5 = (BlockEntityType)var4.parseEntityType(var0.registryAccess(), Registries.BLOCK_ENTITY_TYPE);
-            if (var5 == null) {
-               return false;
-            }
-
-            BlockEntity var6 = var0.getBlockEntity(var2);
-            if (var6 != null) {
-               BlockEntityType var7 = var6.getType();
-               if (var7 != var5) {
+         TypedEntityData var4 = (TypedEntityData)var3.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (var4 != null) {
+            BlockEntity var5 = var0.getBlockEntity(var2);
+            if (var5 != null) {
+               BlockEntityType var6 = var5.getType();
+               if (var6 != var4.type()) {
                   return false;
                }
 
-               if (!var7.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
-                  return var4.loadInto(var6, var0.registryAccess());
+               if (!var6.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
+                  return var4.loadInto(var5, var0.registryAccess());
                }
 
                return false;
@@ -172,10 +166,9 @@ public class BlockItem extends Item {
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
       if (var2 != null && var2.getPermissionLevel() >= 2) {
-         CustomData var3 = (CustomData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
+         TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
          if (var3 != null) {
-            BlockEntityType var4 = (BlockEntityType)var3.parseEntityType(var2.level().registryAccess(), Registries.BLOCK_ENTITY_TYPE);
-            return var4 != null && var4.onlyOpCanSetNbt();
+            return ((BlockEntityType)var3.type()).onlyOpCanSetNbt();
          }
       }
 
@@ -208,7 +201,7 @@ public class BlockItem extends Item {
          var0.remove(DataComponents.BLOCK_ENTITY_DATA);
       } else {
          BlockEntity.addEntityType(var2, var1);
-         var0.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(var2.buildResult()));
+         var0.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(var1, var2.buildResult()));
       }
 
    }

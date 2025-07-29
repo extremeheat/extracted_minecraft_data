@@ -66,7 +66,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
 
    public void tick() {
       super.tick();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.clientSideAttackStarted) {
             --this.lifeTicks;
             if (this.lifeTicks == 14) {

@@ -284,9 +284,9 @@ public class StatsScreen extends Screen {
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         boolean var6 = super.mouseClicked(var1, var3, var5);
-         return !var6 && this.clickedHeader((int)(var1 - ((double)this.getX() + (double)this.width / 2.0 - (double)this.getRowWidth() / 2.0)), (int)(var3 - (double)this.getY()) + (int)this.scrollAmount() - 4) ? true : var6;
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         boolean var7 = super.mouseClicked(var1, var3, var5, var6);
+         return !var7 && this.clickedHeader((int)(var1 - ((double)this.getX() + (double)this.width / 2.0 - (double)this.getRowWidth() / 2.0)), (int)(var3 - (double)this.getY()) + (int)this.scrollAmount() - 4) ? true : var7;
       }
 
       protected boolean clickedHeader(int var1, int var2) {

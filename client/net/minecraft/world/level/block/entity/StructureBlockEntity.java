@@ -160,7 +160,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       if (!var1.canUseGameMasterBlocks()) {
          return false;
       } else {
-         if (var1.level().isClientSide) {
+         if (var1.level().isClientSide()) {
             var1.openStructureBlock(this);
          }
 
@@ -435,7 +435,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    }
 
    public boolean isStructureLoadable() {
-      if (this.mode == StructureMode.LOAD && !this.level.isClientSide && this.structureName != null) {
+      if (this.mode == StructureMode.LOAD && !this.level.isClientSide() && this.structureName != null) {
          ServerLevel var1 = (ServerLevel)this.level;
          StructureTemplateManager var2 = var1.getStructureManager();
 

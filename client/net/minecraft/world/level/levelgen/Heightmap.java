@@ -129,9 +129,7 @@ public class Heightmap {
       if (var4.length == var3.length) {
          System.arraycopy(var3, 0, var4, 0, var3.length);
       } else {
-         Logger var10000 = LOGGER;
-         String var10001 = String.valueOf(var1.getPos());
-         var10000.warn("Ignoring heightmap data for chunk " + var10001 + ", size does not match; expected: " + var4.length + ", got: " + var3.length);
+         LOGGER.warn("Ignoring heightmap data for chunk {}, size does not match; expected: {}, got: {}", new Object[]{var1.getPos(), var4.length, var3.length});
          primeHeightmaps(var1, EnumSet.of(var2));
       }
    }

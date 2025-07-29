@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -43,7 +44,7 @@ public class LavaCauldronBlock extends AbstractCauldronBlock {
       var5.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return 3;
    }
 

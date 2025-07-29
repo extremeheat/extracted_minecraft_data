@@ -72,10 +72,6 @@ public class Ghast extends Mob implements Enemy {
       return this.explosionPower;
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return true;
-   }
-
    private static boolean isReflectedFireball(DamageSource var0) {
       return var0.getDirectEntity() instanceof LargeFireball && var0.getEntity() instanceof Player;
    }

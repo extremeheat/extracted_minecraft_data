@@ -121,9 +121,7 @@ public final class OptionInstance<T> {
 
    public void set(T var1) {
       Object var2 = this.values.validateValue(var1).orElseGet(() -> {
-         Logger var10000 = LOGGER;
-         String var10001 = String.valueOf(var1);
-         var10000.error("Illegal option value " + var10001 + " for " + String.valueOf(this.caption));
+         LOGGER.error("Illegal option value {} for {}", var1, this.caption.getString());
          return this.initialValue;
       });
       if (!Minecraft.getInstance().isRunning()) {

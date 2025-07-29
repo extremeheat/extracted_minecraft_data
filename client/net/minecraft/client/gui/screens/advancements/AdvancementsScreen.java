@@ -98,20 +98,20 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (var5 == 0) {
-         int var6 = (this.width - 252) / 2;
-         int var7 = (this.height - 140) / 2;
+         int var7 = (this.width - 252) / 2;
+         int var8 = (this.height - 140) / 2;
 
-         for(AdvancementTab var9 : this.tabs.values()) {
-            if (var9.isMouseOver(var6, var7, var1, var3)) {
-               this.advancements.setSelectedTab(var9.getRootNode().holder(), true);
+         for(AdvancementTab var10 : this.tabs.values()) {
+            if (var10.isMouseOver(var7, var8, var1, var3)) {
+               this.advancements.setSelectedTab(var10.getRootNode().holder(), true);
                break;
             }
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {

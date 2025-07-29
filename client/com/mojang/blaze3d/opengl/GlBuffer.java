@@ -34,7 +34,7 @@ public class GlBuffer extends GpuBuffer {
       if (!this.closed) {
          this.closed = true;
          if (this.persistentBuffer != null) {
-            this.dsa.unmapBuffer(this.handle);
+            this.dsa.unmapBuffer(this.handle, this.usage());
             this.persistentBuffer = null;
          }
 

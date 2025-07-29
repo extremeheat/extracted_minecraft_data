@@ -59,7 +59,7 @@ public interface CauldronInteraction {
       var0.put(Items.POTION, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
          PotionContents var6 = (PotionContents)var5.get(DataComponents.POTION_CONTENTS);
          if (var6 != null && var6.is(Potions.WATER)) {
-            if (!var1x.isClientSide) {
+            if (!var1x.isClientSide()) {
                Item var7 = var5.getItem();
                var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, new ItemStack(Items.GLASS_BOTTLE)));
                var3x.awardStat(Stats.USE_CAULDRON);
@@ -78,7 +78,7 @@ public interface CauldronInteraction {
       addDefaultInteractions(var1);
       var1.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.WATER_BUCKET), (var0) -> (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL));
       var1.put(Items.GLASS_BOTTLE, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
-         if (!var1x.isClientSide) {
+         if (!var1x.isClientSide()) {
             Item var6 = var5.getItem();
             var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
             var3x.awardStat(Stats.USE_CAULDRON);
@@ -96,7 +96,7 @@ public interface CauldronInteraction {
          } else {
             PotionContents var6 = (PotionContents)var5.get(DataComponents.POTION_CONTENTS);
             if (var6 != null && var6.is(Potions.WATER)) {
-               if (!var1x.isClientSide) {
+               if (!var1x.isClientSide()) {
                   var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, new ItemStack(Items.GLASS_BOTTLE)));
                   var3x.awardStat(Stats.USE_CAULDRON);
                   var3x.awardStat(Stats.ITEM_USED.get(var5.getItem()));
@@ -167,7 +167,7 @@ public interface CauldronInteraction {
       if (!var7.test(var0)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             Item var9 = var5.getItem();
             var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var6));
             var3.awardStat(Stats.USE_CAULDRON);
@@ -182,7 +182,7 @@ public interface CauldronInteraction {
    }
 
    static InteractionResult emptyBucket(Level var0, BlockPos var1, Player var2, InteractionHand var3, ItemStack var4, BlockState var5, SoundEvent var6) {
-      if (!var0.isClientSide) {
+      if (!var0.isClientSide()) {
          Item var7 = var4.getItem();
          var2.setItemInHand(var3, ItemUtils.createFilledResult(var4, var2, new ItemStack(Items.BUCKET)));
          var2.awardStat(Stats.FILL_CAULDRON);
@@ -212,7 +212,7 @@ public interface CauldronInteraction {
       if (!(var6 instanceof ShulkerBoxBlock)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             ItemStack var7 = var5.transmuteCopy(Blocks.SHULKER_BOX, 1);
             var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
             var3.awardStat(Stats.CLEAN_SHULKER_BOX);
@@ -228,7 +228,7 @@ public interface CauldronInteraction {
       if (var6.layers().isEmpty()) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             ItemStack var7 = var5.copyWithCount(1);
             var7.set(DataComponents.BANNER_PATTERNS, var6.removeLast());
             var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
@@ -246,7 +246,7 @@ public interface CauldronInteraction {
       } else if (!var5.has(DataComponents.DYED_COLOR)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             var5.remove(DataComponents.DYED_COLOR);
             var3.awardStat(Stats.CLEAN_ARMOR);
             LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);

@@ -521,7 +521,7 @@ public class Raid {
                if (var15 != null) {
                   this.joinRaid(var1, var4, var15, var2, false);
                   var15.snapTo(var2, 0.0F, 0.0F);
-                  var15.startRiding(var14);
+                  var15.startRiding(var14, false, false);
                }
             }
          }

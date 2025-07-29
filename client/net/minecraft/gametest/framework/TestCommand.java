@@ -61,10 +61,10 @@ import org.apache.commons.lang3.mutable.MutableInt;
 
 public class TestCommand {
    public static final int TEST_NEARBY_SEARCH_RADIUS = 15;
-   public static final int TEST_FULL_SEARCH_RADIUS = 200;
+   public static final int TEST_FULL_SEARCH_RADIUS = 250;
    public static final int VERIFY_TEST_GRID_AXIS_SIZE = 10;
    public static final int VERIFY_TEST_BATCH_SIZE = 100;
-   private static final int DEFAULT_CLEAR_RADIUS = 200;
+   private static final int DEFAULT_CLEAR_RADIUS = 250;
    private static final int MAX_CLEAR_RADIUS = 1024;
    private static final int TEST_POS_Z_OFFSET_FROM_PLAYER = 3;
    private static final int SHOW_POS_DURATION_MS = 10000;
@@ -99,8 +99,14 @@ public class TestCommand {
       CommandSourceStack var1 = var0.source();
       ServerLevel var2 = var1.getLevel();
       GameTestRunner.clearMarkers(var2);
-      List var3 = var0.findTestPos().flatMap((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK).stream()).map(TestInstanceBlockEntity::getStructureBoundingBox).toList();
-      var3.forEach((var1x) -> StructureUtils.clearSpaceForStructure(var1x, var2));
+      List var3 = var0.findTestPos().flatMap((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK).stream()).toList();
+
+      for(TestInstanceBlockEntity var5 : var3) {
+         StructureUtils.clearSpaceForStructure(var5.getStructureBoundingBox(), var2);
+         var5.removeBarriers();
+         var2.destroyBlock(var5.getBlockPos(), false);
+      }
+
       if (var3.isEmpty()) {
          throw CLEAR_NO_TESTS.create();
       } else {
@@ -164,7 +170,7 @@ public class TestCommand {
       }
 
       StructureGridSpawner var15 = new StructureGridSpawner(var3, 10, true);
-      GameTestRunner var16 = GameTestRunner.Builder.fromBatches(var5, var2).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(var15).existingStructureSpawner(var15).haltOnError(true).build();
+      GameTestRunner var16 = GameTestRunner.Builder.fromBatches(var5, var2).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(var15).existingStructureSpawner(var15).haltOnError().clearBetweenBatches().build();
       return trackAndStartRunner(var1, var16);
    }
 
@@ -244,7 +250,7 @@ public class TestCommand {
       ArgumentBuilder var9 = Commands.literal("runfailed").then(var2);
       var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
-      LiteralArgumentBuilder var3 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> verify(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> locate(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests"))))))).then(Commands.literal("resetclosest").executes((var0x) -> reset(TestFinder.builder().nearest(var0x))))).then(Commands.literal("resetthese").executes((var0x) -> reset(TestFinder.builder().allNearby(var0x))))).then(Commands.literal("resetthat").executes((var0x) -> reset(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthat").executes((var0x) -> clear(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthese").executes((var0x) -> clear(TestFinder.builder().allNearby(var0x))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((var0x) -> clear(TestFinder.builder().radius(var0x, 200)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((var0x) -> clear(TestFinder.builder().radius(var0x, Mth.clamp(IntegerArgumentType.getInteger(var0x, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((var0x) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(TestCommand::suggestTestFunction).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "height"), IntegerArgumentType.getInteger(var0x, "depth"))))))));
+      LiteralArgumentBuilder var3 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> verify(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> locate(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests"))))))).then(Commands.literal("resetclosest").executes((var0x) -> reset(TestFinder.builder().nearest(var0x))))).then(Commands.literal("resetthese").executes((var0x) -> reset(TestFinder.builder().allNearby(var0x))))).then(Commands.literal("resetthat").executes((var0x) -> reset(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthat").executes((var0x) -> clear(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthese").executes((var0x) -> clear(TestFinder.builder().allNearby(var0x))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((var0x) -> clear(TestFinder.builder().radius(var0x, 250)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((var0x) -> clear(TestFinder.builder().radius(var0x, Mth.clamp(IntegerArgumentType.getInteger(var0x, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((var0x) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(TestCommand::suggestTestFunction).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "height"), IntegerArgumentType.getInteger(var0x, "depth"))))))));
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          var3 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var3.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(var1, Registries.TEST_INSTANCE)).executes((var0x) -> exportTestStructure((CommandSourceStack)var0x.getSource(), ResourceArgument.getResource(var0x, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((var0x) -> export(TestFinder.builder().nearest(var0x))))).then(Commands.literal("exportthese").executes((var0x) -> export(TestFinder.builder().allNearby(var0x))))).then(Commands.literal("exportthat").executes((var0x) -> export(TestFinder.builder().lookedAt(var0x))));
       }
@@ -316,7 +322,7 @@ public class TestCommand {
       ServerLevel var4 = var0.getLevel();
       Optional var5 = StructureUtils.findTestContainingPos(var3, 15, var4);
       if (var5.isEmpty()) {
-         var5 = StructureUtils.findTestContainingPos(var3, 200, var4);
+         var5 = StructureUtils.findTestContainingPos(var3, 250, var4);
       }
 
       if (var5.isEmpty()) {

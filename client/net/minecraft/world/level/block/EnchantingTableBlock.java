@@ -70,11 +70,11 @@ public class EnchantingTableBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, BlockEntityType.ENCHANTING_TABLE, EnchantingTableBlockEntity::bookAnimationTick) : null;
+      return var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.ENCHANTING_TABLE, EnchantingTableBlockEntity::bookAnimationTick) : null;
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          var4.openMenu(var1.getMenuProvider(var2, var3));
       }
 

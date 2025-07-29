@@ -101,6 +101,10 @@ public class Blender {
       this.densityBlendingData = var2;
    }
 
+   public boolean isEmpty() {
+      return this.heightAndBiomeBlendingData.isEmpty() && this.densityBlendingData.isEmpty();
+   }
+
    public BlendingOutput blendOffsetAndFactor(int var1, int var2) {
       int var3 = QuartPos.fromBlock(var1);
       int var4 = QuartPos.fromBlock(var2);

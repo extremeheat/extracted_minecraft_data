@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
@@ -23,7 +24,7 @@ public class TrappedChestBlock extends ChestBlock {
    }
 
    public TrappedChestBlock(BlockBehaviour.Properties var1) {
-      super(() -> BlockEntityType.TRAPPED_CHEST, var1);
+      super(() -> BlockEntityType.TRAPPED_CHEST, SoundEvents.CHEST_OPEN, SoundEvents.CHEST_CLOSE, var1);
    }
 
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {

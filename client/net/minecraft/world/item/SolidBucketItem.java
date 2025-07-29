@@ -38,7 +38,7 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
 
    public boolean emptyContents(@Nullable LivingEntity var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
       if (var2.isInWorldBounds(var3) && var2.isEmptyBlock(var3)) {
-         if (!var2.isClientSide) {
+         if (!var2.isClientSide()) {
             var2.setBlock(var3, this.getBlock().defaultBlockState(), 3);
          }
 

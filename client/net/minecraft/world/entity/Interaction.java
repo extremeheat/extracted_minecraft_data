@@ -109,7 +109,7 @@ public class Interaction extends Entity implements Attackable, Targeting {
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          return this.getResponse() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
       } else {
          this.interaction = new PlayerAction(var1.getUUID(), this.level().getGameTime());

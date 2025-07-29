@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.EndermanModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
@@ -19,7 +19,7 @@ public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, Enderman
       this.blockRenderer = var2;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, EndermanRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, EndermanRenderState var4, float var5, float var6) {
       BlockState var7 = var4.carriedBlock;
       if (var7 != null) {
          var1.pushPose();
@@ -30,7 +30,7 @@ public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, Enderman
          float var8 = 0.5F;
          var1.scale(-0.5F, -0.5F, 0.5F);
          var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         this.blockRenderer.renderSingleBlock(var7, var1, var2, var3, OverlayTexture.NO_OVERLAY);
+         var2.submitBlock(var1, var7, var3, OverlayTexture.NO_OVERLAY);
          var1.popPose();
       }
    }

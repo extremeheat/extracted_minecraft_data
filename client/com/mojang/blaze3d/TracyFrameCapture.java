@@ -9,7 +9,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.jtracy.TracyClient;
 import java.util.OptionalInt;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -79,15 +78,11 @@ public class TracyFrameCapture implements AutoCloseable {
 
          this.status = TracyFrameCapture.Status.WAITING_FOR_COPY;
          CommandEncoder var2 = RenderSystem.getDevice().createCommandEncoder();
-         RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-         GpuBuffer var4 = var3.getBuffer(6);
 
-         try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
-            var5.setPipeline(RenderPipelines.TRACY_BLIT);
-            var5.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-            var5.setIndexBuffer(var4, var3.type());
-            var5.bindSampler("InSampler", var1.getColorTextureView());
-            var5.drawIndexed(0, 0, 6, 1);
+         try (RenderPass var3 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
+            var3.setPipeline(RenderPipelines.TRACY_BLIT);
+            var3.bindSampler("InSampler", var1.getColorTextureView());
+            var3.draw(0, 3);
          }
 
          var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);

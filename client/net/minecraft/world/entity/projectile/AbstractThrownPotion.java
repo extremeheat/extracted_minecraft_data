@@ -49,7 +49,7 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
 
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          ItemStack var2 = this.getItem();
          Direction var3 = var1.getDirection();
          BlockPos var4 = var1.getBlockPos();

@@ -98,7 +98,7 @@ public abstract class BaseCommandBlock implements CommandSource {
    }
 
    public boolean performCommand(Level var1) {
-      if (!var1.isClientSide && var1.getGameTime() != this.lastExecution) {
+      if (!var1.isClientSide() && var1.getGameTime() != this.lastExecution) {
          if ("Searge".equalsIgnoreCase(this.command)) {
             this.lastOutput = Component.literal("#itzlipofutzli");
             this.successCount = 1;
@@ -181,7 +181,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       if (!var1.canUseGameMasterBlocks()) {
          return InteractionResult.PASS;
       } else {
-         if (var1.level().isClientSide) {
+         if (var1.level().isClientSide()) {
             var1.openMinecartCommandBlock(this);
          }
 

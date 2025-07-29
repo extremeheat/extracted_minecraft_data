@@ -72,7 +72,7 @@ public class RespawnAnchorBlock extends Block {
       if ((Integer)var1.getValue(CHARGE) == 0) {
          return InteractionResult.PASS;
       } else if (!canSetSpawn(var2)) {
-         if (!var2.isClientSide) {
+         if (!var2.isClientSide()) {
             this.explode(var1, var2, var3);
          }
 
@@ -170,7 +170,7 @@ public class RespawnAnchorBlock extends Block {
       return Mth.floor((float)((Integer)var0.getValue(CHARGE) - 0) / 4.0F * (float)var1);
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return getScaledChargeLevel(var1, 15);
    }
 

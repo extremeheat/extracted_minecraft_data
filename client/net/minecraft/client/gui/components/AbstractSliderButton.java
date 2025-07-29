@@ -47,7 +47,11 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused"));
+            if (this.canChangeValue) {
+               var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused"));
+            } else {
+               var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused.keyboard_cannot_change_value"));
+            }
          } else {
             var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.hovered"));
          }
@@ -63,7 +67,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.renderScrollingString(var1, var5.font, 2, var6);
    }
 
-   public void onClick(double var1, double var3) {
+   public void onClick(double var1, double var3, boolean var5) {
       this.setValueFromMouse(var1);
    }
 

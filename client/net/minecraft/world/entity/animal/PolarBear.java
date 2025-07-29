@@ -165,7 +165,7 @@ public class PolarBear extends Animal implements NeutralMob {
 
    public void tick() {
       super.tick();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.clientSideStandAnimation != this.clientSideStandAnimationO) {
             this.refreshDimensions();
          }
@@ -182,7 +182,7 @@ public class PolarBear extends Animal implements NeutralMob {
          --this.warningSoundTicks;
       }
 
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
 

@@ -237,33 +237,33 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
          }
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         double var6 = var1 - (double)this.parent.getRowLeft();
-         double var8 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));
-         if (this.showHoverOverlay() && var6 <= 32.0) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         double var7 = var1 - (double)this.parent.getRowLeft();
+         double var9 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));
+         if (this.showHoverOverlay() && var7 <= 32.0) {
             this.parent.screen.clearSelected();
             if (this.pack.canSelect()) {
                this.handlePackSelection();
                return true;
             }
 
-            if (var6 < 16.0 && this.pack.canUnselect()) {
+            if (var7 < 16.0 && this.pack.canUnselect()) {
                this.pack.unselect();
                return true;
             }
 
-            if (var6 > 16.0 && var8 < 16.0 && this.pack.canMoveUp()) {
+            if (var7 > 16.0 && var9 < 16.0 && this.pack.canMoveUp()) {
                this.pack.moveUp();
                return true;
             }
 
-            if (var6 > 16.0 && var8 > 16.0 && this.pack.canMoveDown()) {
+            if (var7 > 16.0 && var9 > 16.0 && this.pack.canMoveDown()) {
                this.pack.moveDown();
                return true;
             }
          }
 
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
    }
 }

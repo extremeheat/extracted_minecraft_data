@@ -72,7 +72,7 @@ public class BarrelBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 

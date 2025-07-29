@@ -8,12 +8,10 @@ import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 
 public interface GuiEventListener extends TabOrderedElement {
-   long DOUBLE_CLICK_THRESHOLD_MS = 250L;
-
    default void mouseMoved(double var1, double var3) {
    }
 
-   default boolean mouseClicked(double var1, double var3, int var5) {
+   default boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       return false;
    }
 
@@ -53,6 +51,10 @@ public interface GuiEventListener extends TabOrderedElement {
    void setFocused(boolean var1);
 
    boolean isFocused();
+
+   default boolean shouldTakeFocusAfterInteraction() {
+      return true;
+   }
 
    @Nullable
    default ComponentPath getCurrentFocusPath() {

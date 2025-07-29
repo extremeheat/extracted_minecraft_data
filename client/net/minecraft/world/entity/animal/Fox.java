@@ -173,7 +173,7 @@ public class Fox extends Animal {
    }
 
    public void aiStep() {
-      if (!this.level().isClientSide && this.isAlive() && this.isEffectiveAi()) {
+      if (!this.level().isClientSide() && this.isAlive() && this.isEffectiveAi()) {
          ++this.ticksSinceEaten;
          ItemStack var1 = this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (this.canEat(var1)) {
@@ -449,7 +449,7 @@ public class Fox extends Animal {
    }
 
    private void spitOutItem(ItemStack var1) {
-      if (!var1.isEmpty() && !this.level().isClientSide) {
+      if (!var1.isEmpty() && !this.level().isClientSide()) {
          ItemEntity var2 = new ItemEntity(this.level(), this.getX() + this.getLookAngle().x, this.getY() + 1.0, this.getZ() + this.getLookAngle().z, var1);
          var2.setPickUpDelay(40);
          var2.setThrower(this);

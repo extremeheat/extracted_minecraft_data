@@ -10,9 +10,9 @@ import net.minecraft.world.entity.monster.Zombie;
 public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieRenderState, M extends ZombieModel<S>> extends HumanoidMobRenderer<T, S, M> {
    private static final ResourceLocation ZOMBIE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/zombie.png");
 
-   protected AbstractZombieRenderer(EntityRendererProvider.Context var1, M var2, M var3, M var4, M var5, M var6, M var7) {
+   protected AbstractZombieRenderer(EntityRendererProvider.Context var1, M var2, M var3, ArmorModelSet<M> var4, ArmorModelSet<M> var5) {
       super(var1, var2, var3, 0.5F);
-      this.addLayer(new HumanoidArmorLayer(this, var4, var5, var6, var7, var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, var4, var5, var1.getEquipmentRenderer()));
    }
 
    public ResourceLocation getTextureLocation(S var1) {

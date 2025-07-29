@@ -153,7 +153,7 @@ public class MinecartTNT extends AbstractMinecart {
       }
 
       this.fuse = 80;
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (var1 != null && this.ignitionSource == null) {
             this.ignitionSource = this.damageSources().explosion(this, var1.getEntity());
          }

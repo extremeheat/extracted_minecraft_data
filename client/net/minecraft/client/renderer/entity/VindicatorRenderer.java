@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllagerRenderState;
@@ -17,9 +17,9 @@ public class VindicatorRenderer extends IllagerRenderer<Vindicator, IllagerRende
    public VindicatorRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.VINDICATOR)), 0.5F);
       this.addLayer(new ItemInHandLayer<IllagerRenderState, IllagerModel<IllagerRenderState>>(this) {
-         public void render(PoseStack var1, MultiBufferSource var2, int var3, IllagerRenderState var4, float var5, float var6) {
+         public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IllagerRenderState var4, float var5, float var6) {
             if (var4.isAggressive) {
-               super.render(var1, var2, var3, var4, var5, var6);
+               super.submit(var1, var2, var3, var4, var5, var6);
             }
 
          }

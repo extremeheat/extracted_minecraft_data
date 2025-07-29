@@ -9,10 +9,10 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
+import net.minecraft.client.gui.font.GlyphStitcher;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import org.lwjgl.system.MemoryStack;
@@ -183,8 +183,8 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          return this.advance;
       }
 
-      public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
+      public BakedGlyph bake(GlyphStitcher var1) {
+         return var1.stitch(new SheetGlyphInfo() {
             public int getPixelWidth() {
                return Glyph.this.width;
             }

@@ -361,6 +361,9 @@ import net.minecraft.util.datafix.schemas.V4307;
 import net.minecraft.util.datafix.schemas.V4312;
 import net.minecraft.util.datafix.schemas.V4420;
 import net.minecraft.util.datafix.schemas.V4421;
+import net.minecraft.util.datafix.schemas.V4531;
+import net.minecraft.util.datafix.schemas.V4532;
+import net.minecraft.util.datafix.schemas.V4533;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -858,9 +861,9 @@ public class DataFixers {
       Map var175 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var174, "Rename british shorthair", References.ENTITY, "minecraft:cat", var175));
       var0.addFixer(new CriteriaRenameFix(var174, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var175.getOrDefault(var1x, var1x)));
-      Set var279 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var279);
-      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var279::contains));
+      Set var282 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var282);
+      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var282::contains));
       Schema var176 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var176));
       Schema var177 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1090,6 +1093,12 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var276, "Added Happy Ghast", References.ENTITY));
       Schema var277 = var0.addSchema(4424, SAME_NAMESPACED);
       var0.addFixer(new FeatureFlagRemoveFix(var277, "Remove Locator Bar experimental feature flag", Set.of("minecraft:locator_bar")));
+      Schema var278 = var0.addSchema(4531, V4531::new);
+      var0.addFixer(new AddNewChoices(var278, "Added Copper Golem", References.ENTITY));
+      Schema var279 = var0.addSchema(4532, V4532::new);
+      var0.addFixer(new AddNewChoices(var279, "Added Copper Golem Statue Block Entity", References.BLOCK_ENTITY));
+      Schema var280 = var0.addSchema(4533, V4533::new);
+      var0.addFixer(new AddNewChoices(var280, "Added Shelf", References.BLOCK_ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

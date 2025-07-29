@@ -1,11 +1,11 @@
 package net.minecraft.server.dedicated;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import org.slf4j.Logger;
@@ -37,12 +37,12 @@ public class DedicatedPlayerList extends PlayerList {
       this.getServer().storeUsingWhiteList(var1);
    }
 
-   public void op(GameProfile var1) {
+   public void op(NameAndId var1) {
       super.op(var1);
       this.saveOps();
    }
 
-   public void deop(GameProfile var1) {
+   public void deop(NameAndId var1) {
       super.deop(var1);
       this.saveOps();
    }
@@ -123,7 +123,7 @@ public class DedicatedPlayerList extends PlayerList {
 
    }
 
-   public boolean isWhiteListed(GameProfile var1) {
+   public boolean isWhiteListed(NameAndId var1) {
       return !this.isUsingWhitelist() || this.isOp(var1) || this.getWhiteList().isWhiteListed(var1);
    }
 
@@ -131,7 +131,7 @@ public class DedicatedPlayerList extends PlayerList {
       return (DedicatedServer)super.getServer();
    }
 
-   public boolean canBypassPlayerLimit(GameProfile var1) {
+   public boolean canBypassPlayerLimit(NameAndId var1) {
       return this.getOps().canBypassPlayerLimit(var1);
    }
 

@@ -12,7 +12,7 @@ public class StrayRenderer extends AbstractSkeletonRenderer<Stray, SkeletonRende
    private static final ResourceLocation STRAY_CLOTHES_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/skeleton/stray_overlay.png");
 
    public StrayRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.STRAY, ModelLayers.STRAY_INNER_ARMOR, ModelLayers.STRAY_OUTER_ARMOR);
+      super(var1, ModelLayers.STRAY, ModelLayers.STRAY_ARMOR);
       this.addLayer(new SkeletonClothingLayer(this, var1.getModelSet(), ModelLayers.STRAY_OUTER_LAYER, STRAY_CLOTHES_LOCATION));
    }
 

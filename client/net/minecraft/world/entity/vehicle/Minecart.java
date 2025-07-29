@@ -21,9 +21,9 @@ public class Minecart extends AbstractMinecart {
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (!var1.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide || var1.startRiding(this))) {
+      if (!var1.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide() || var1.startRiding(this))) {
          this.playerRotationOffset = this.rotationOffset;
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             return (InteractionResult)(var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS);
          } else {
             return InteractionResult.SUCCESS;
@@ -66,7 +66,7 @@ public class Minecart extends AbstractMinecart {
       Vec3 var3 = this.position();
       super.tick();
       double var4 = ((double)this.getYRot() - var1) % 360.0;
-      if (this.level().isClientSide && var3.distanceTo(this.position()) > 0.01) {
+      if (this.level().isClientSide() && var3.distanceTo(this.position()) > 0.01) {
          this.rotationOffset += (float)var4;
          this.rotationOffset %= 360.0F;
       }
@@ -75,7 +75,7 @@ public class Minecart extends AbstractMinecart {
 
    protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       super.positionRider(var1, var2);
-      if (this.level().isClientSide && var1 instanceof Player var3) {
+      if (this.level().isClientSide() && var1 instanceof Player var3) {
          if (var3.shouldRotateWithMinecart() && useExperimentalMovement(this.level())) {
             float var4 = (float)Mth.rotLerp(0.5, (double)this.playerRotationOffset, (double)this.rotationOffset);
             var3.setYRot(var3.getYRot() - (var4 - this.playerRotationOffset));

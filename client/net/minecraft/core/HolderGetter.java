@@ -3,6 +3,7 @@ package net.minecraft.core;
 import java.util.Optional;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 
 public interface HolderGetter<T> {
    Optional<Holder.Reference<T>> get(ResourceKey<T> var1);
@@ -15,6 +16,10 @@ public interface HolderGetter<T> {
 
    default HolderSet.Named<T> getOrThrow(TagKey<T> var1) {
       return (HolderSet.Named)this.get(var1).orElseThrow(() -> new IllegalStateException("Missing tag " + String.valueOf(var1)));
+   }
+
+   default Optional<Holder<T>> getRandomElementOf(TagKey<T> var1, RandomSource var2) {
+      return this.get(var1).flatMap((var1x) -> var1x.getRandomElement(var2));
    }
 
    public interface Provider {

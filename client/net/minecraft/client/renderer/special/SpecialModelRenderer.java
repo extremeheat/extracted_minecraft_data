@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
@@ -18,9 +19,23 @@ public interface SpecialModelRenderer<T> {
    @Nullable
    T extractArgument(ItemStack var1);
 
+   public interface BakingContext {
+      EntityModelSet entityModelSet();
+
+      MaterialSet materials();
+
+      public static record Simple(EntityModelSet entityModelSet, MaterialSet materials) implements BakingContext {
+         public Simple(EntityModelSet var1, MaterialSet var2) {
+            super();
+            this.entityModelSet = var1;
+            this.materials = var2;
+         }
+      }
+   }
+
    public interface Unbaked {
       @Nullable
-      SpecialModelRenderer<?> bake(EntityModelSet var1);
+      SpecialModelRenderer<?> bake(BakingContext var1);
 
       MapCodec<? extends Unbaked> type();
    }

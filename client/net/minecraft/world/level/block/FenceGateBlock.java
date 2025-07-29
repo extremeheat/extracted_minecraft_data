@@ -154,7 +154,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          boolean var7 = var2.hasNeighborSignal(var3);
          if ((Boolean)var1.getValue(POWERED) != var7) {
             var2.setBlock(var3, (BlockState)((BlockState)var1.setValue(POWERED, var7)).setValue(OPEN, var7), 2);

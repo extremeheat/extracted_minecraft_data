@@ -56,7 +56,7 @@ public class Snowball extends ThrowableItemProjectile {
 
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.level().broadcastEntityEvent(this, (byte)3);
          this.discard();
       }

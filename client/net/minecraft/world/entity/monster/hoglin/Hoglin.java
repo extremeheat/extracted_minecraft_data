@@ -293,7 +293,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    protected SoundEvent getAmbientSound() {
-      return this.level().isClientSide ? null : (SoundEvent)HoglinAi.getSoundForCurrentActivity(this).orElse((Object)null);
+      return this.level().isClientSide() ? null : (SoundEvent)HoglinAi.getSoundForCurrentActivity(this).orElse((Object)null);
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {

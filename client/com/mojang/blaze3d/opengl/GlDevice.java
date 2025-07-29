@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
@@ -284,26 +283,17 @@ public class GlDevice implements GpuDevice {
       this.shaderCache.clear();
       String var4 = GlStateManager._getString(7937);
       if (var4.contains("AMD")) {
-         amdDummyShaderWorkaround();
+         sacrificeShaderToOpenGlAndAmd();
       }
 
    }
 
-   private static void amdDummyShaderWorkaround() {
+   private static void sacrificeShaderToOpenGlAndAmd() {
       int var0 = GlStateManager.glCreateShader(35633);
-      GlStateManager.glShaderSource(var0, "#version 150\nvoid main() {\n    gl_Position = vec4(0.0);\n}\n");
-      GlStateManager.glCompileShader(var0);
-      int var1 = GlStateManager.glCreateShader(35632);
-      GlStateManager.glShaderSource(var1, "#version 150\nlayout(std140) uniform Dummy {\n    float Value;\n};\nout vec4 fragColor;\nvoid main() {\n    fragColor = vec4(0.0);\n}\n");
-      GlStateManager.glCompileShader(var1);
-      int var2 = GlStateManager.glCreateProgram();
-      GlStateManager.glAttachShader(var2, var0);
-      GlStateManager.glAttachShader(var2, var1);
-      GlStateManager.glLinkProgram(var2);
-      GL31.glGetUniformBlockIndex(var2, "Dummy");
+      int var1 = GlStateManager.glCreateProgram();
+      GlStateManager.glAttachShader(var1, var0);
       GlStateManager.glDeleteShader(var0);
-      GlStateManager.glDeleteShader(var1);
-      GlStateManager.glDeleteProgram(var2);
+      GlStateManager.glDeleteProgram(var1);
    }
 
    public List<String> getEnabledExtensions() {

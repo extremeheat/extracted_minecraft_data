@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.SpecialBlockModelRenderer;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.material.FluidState;
 
 public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final BlockModelShaper blockModelShaper;
+   private final MaterialSet materials;
    private final ModelBlockRenderer modelRenderer;
    private final Supplier<SpecialBlockModelRenderer> specialBlockModelRenderer;
    private final LiquidBlockRenderer liquidBlockRenderer;
@@ -34,11 +36,12 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final List<BlockModelPart> singleThreadPartList = new ArrayList();
    private final BlockColors blockColors;
 
-   public BlockRenderDispatcher(BlockModelShaper var1, Supplier<SpecialBlockModelRenderer> var2, BlockColors var3) {
+   public BlockRenderDispatcher(BlockModelShaper var1, MaterialSet var2, Supplier<SpecialBlockModelRenderer> var3, BlockColors var4) {
       super();
       this.blockModelShaper = var1;
-      this.specialBlockModelRenderer = var2;
-      this.blockColors = var3;
+      this.materials = var2;
+      this.specialBlockModelRenderer = var3;
+      this.blockColors = var4;
       this.modelRenderer = new ModelBlockRenderer(this.blockColors);
       this.liquidBlockRenderer = new LiquidBlockRenderer();
    }
@@ -101,6 +104,6 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      this.liquidBlockRenderer.setupSprites();
+      this.liquidBlockRenderer.setupSprites(this.blockModelShaper, this.materials);
    }
 }

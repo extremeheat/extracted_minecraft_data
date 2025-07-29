@@ -37,6 +37,7 @@ import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
@@ -139,7 +140,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
    private void verifyLoginAndFinishConnectionSetup(GameProfile var1) {
       PlayerList var2 = this.server.getPlayerList();
-      Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), var1);
+      Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(var1));
       if (var3 != null) {
          this.disconnect(var3);
       } else {
@@ -147,7 +148,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
             this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
          }
 
-         boolean var4 = var2.disconnectAllPlayersWithProfile(var1);
+         boolean var4 = var2.disconnectAllPlayersWithProfile(var1.getId());
          if (var4) {
             this.state = ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT;
          } else {

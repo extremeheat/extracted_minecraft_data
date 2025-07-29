@@ -35,6 +35,7 @@ public class RenderPipelines {
    private static final RenderPipeline.Snippet WEATHER_SNIPPET;
    private static final RenderPipeline.Snippet GUI_SNIPPET;
    private static final RenderPipeline.Snippet GUI_TEXTURED_SNIPPET;
+   private static final RenderPipeline.Snippet GUI_TEXT_SNIPPET;
    private static final RenderPipeline.Snippet OUTLINE_SNIPPET;
    public static final RenderPipeline.Snippet POST_PROCESSING_SNIPPET;
    public static final RenderPipeline SOLID;
@@ -70,8 +71,10 @@ public class RenderPipelines {
    public static final RenderPipeline GLINT;
    public static final RenderPipeline CRUMBLING;
    public static final RenderPipeline TEXT;
+   public static final RenderPipeline GUI_TEXT;
    public static final RenderPipeline TEXT_BACKGROUND;
    public static final RenderPipeline TEXT_INTENSITY;
+   public static final RenderPipeline GUI_TEXT_INTENSITY;
    public static final RenderPipeline TEXT_POLYGON_OFFSET;
    public static final RenderPipeline TEXT_SEE_THROUGH;
    public static final RenderPipeline TEXT_BACKGROUND_SEE_THROUGH;
@@ -151,10 +154,11 @@ public class RenderPipelines {
       DEBUG_FILLED_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/position_color").withFragmentShader("core/position_color").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS).buildSnippet();
       PARTICLE_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/particle").withFragmentShader("core/particle").withSampler("Sampler0").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS).buildSnippet();
       WEATHER_SNIPPET = RenderPipeline.builder(PARTICLE_SNIPPET).withBlend(BlendFunction.TRANSLUCENT).withCull(false).buildSnippet();
-      GUI_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/gui").withFragmentShader("core/gui").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS).buildSnippet();
-      GUI_TEXTURED_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/position_tex_color").withFragmentShader("core/position_tex_color").withSampler("Sampler0").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).buildSnippet();
+      GUI_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/gui").withFragmentShader("core/gui").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).buildSnippet();
+      GUI_TEXTURED_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/position_tex_color").withFragmentShader("core/position_tex_color").withSampler("Sampler0").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).buildSnippet();
+      GUI_TEXT_SNIPPET = RenderPipeline.builder(TEXT_SNIPPET).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).buildSnippet();
       OUTLINE_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/rendertype_outline").withFragmentShader("core/rendertype_outline").withSampler("Sampler0").withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).buildSnippet();
-      POST_PROCESSING_SNIPPET = RenderPipeline.builder().withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).withUniform("Projection", UniformType.UNIFORM_BUFFER).buildSnippet();
+      POST_PROCESSING_SNIPPET = RenderPipeline.builder().withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).buildSnippet();
       SOLID = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/solid").build());
       WIREFRAME = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/wireframe").withPolygonMode(PolygonMode.WIREFRAME).build());
       CUTOUT_MIPPED = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/cutout_mipped").withShaderDefine("ALPHA_CUTOUT", 0.5F).build());
@@ -188,8 +192,10 @@ public class RenderPipelines {
       GLINT = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET, FOG_SNIPPET, GLOBALS_SNIPPET).withLocation("pipeline/glint").withVertexShader("core/glint").withFragmentShader("core/glint").withSampler("Sampler0").withDepthWrite(false).withCull(false).withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).withBlend(BlendFunction.GLINT).withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS).build());
       CRUMBLING = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/crumbling").withVertexShader("core/rendertype_crumbling").withFragmentShader("core/rendertype_crumbling").withSampler("Sampler0").withBlend(new BlendFunction(SourceFactor.DST_COLOR, DestFactor.SRC_COLOR, SourceFactor.ONE, DestFactor.ZERO)).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).withDepthBias(-1.0F, -10.0F).build());
       TEXT = register(RenderPipeline.builder(TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/text").withVertexShader("core/rendertype_text").withFragmentShader("core/rendertype_text").withSampler("Sampler0").withSampler("Sampler2").build());
+      GUI_TEXT = register(RenderPipeline.builder(GUI_TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/gui_text").withVertexShader("core/rendertype_text").withFragmentShader("core/rendertype_text").withSampler("Sampler0").withSampler("Sampler2").withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build());
       TEXT_BACKGROUND = register(RenderPipeline.builder(TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/text_background").withVertexShader("core/rendertype_text_background").withFragmentShader("core/rendertype_text_background").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS).build());
       TEXT_INTENSITY = register(RenderPipeline.builder(TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/text_intensity").withVertexShader("core/rendertype_text_intensity").withFragmentShader("core/rendertype_text_intensity").withSampler("Sampler0").withSampler("Sampler2").withDepthBias(-1.0F, -10.0F).build());
+      GUI_TEXT_INTENSITY = register(RenderPipeline.builder(GUI_TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/gui_text_intensity").withVertexShader("core/rendertype_text_intensity").withFragmentShader("core/rendertype_text_intensity").withSampler("Sampler0").withSampler("Sampler2").build());
       TEXT_POLYGON_OFFSET = register(RenderPipeline.builder(TEXT_SNIPPET, FOG_SNIPPET).withLocation("pipeline/text_polygon_offset").withVertexShader("core/rendertype_text").withFragmentShader("core/rendertype_text").withSampler("Sampler0").withSampler("Sampler2").withDepthBias(-1.0F, -10.0F).build());
       TEXT_SEE_THROUGH = register(RenderPipeline.builder(TEXT_SNIPPET).withLocation("pipeline/text_see_through").withVertexShader("core/rendertype_text_see_through").withFragmentShader("core/rendertype_text_see_through").withSampler("Sampler0").withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build());
       TEXT_BACKGROUND_SEE_THROUGH = register(RenderPipeline.builder(TEXT_SNIPPET).withLocation("pipeline/text_background_see_through").withVertexShader("core/rendertype_text_background_see_through").withFragmentShader("core/rendertype_text_background_see_through").withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS).build());
@@ -232,11 +238,11 @@ public class RenderPipelines {
       VIGNETTE = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/vignette").withBlend(new BlendFunction(SourceFactor.ZERO, DestFactor.ONE_MINUS_SRC_COLOR)).build());
       CROSSHAIR = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/crosshair").withBlend(BlendFunction.INVERT).build());
       MOJANG_LOGO = register(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/mojang_logo").withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE)).build());
-      ENTITY_OUTLINE_BLIT = register(RenderPipeline.builder().withLocation("pipeline/entity_outline_blit").withVertexShader("core/blit_screen").withFragmentShader("core/blit_screen").withSampler("InSampler").withBlend(BlendFunction.ENTITY_OUTLINE_BLIT).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withColorWrite(true, false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
-      TRACY_BLIT = register(RenderPipeline.builder().withLocation("pipeline/tracy_blit").withVertexShader("core/blit_screen").withFragmentShader("core/blit_screen").withSampler("InSampler").withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
+      ENTITY_OUTLINE_BLIT = register(RenderPipeline.builder().withLocation("pipeline/entity_outline_blit").withVertexShader("core/screenquad").withFragmentShader("core/blit_screen").withSampler("InSampler").withBlend(BlendFunction.ENTITY_OUTLINE_BLIT).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withColorWrite(true, false).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).build());
+      TRACY_BLIT = register(RenderPipeline.builder().withLocation("pipeline/tracy_blit").withVertexShader("core/screenquad").withFragmentShader("core/blit_screen").withSampler("InSampler").withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).build());
       PANORAMA = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/panorama").withVertexShader("core/panorama").withFragmentShader("core/panorama").withSampler("Sampler0").withDepthWrite(false).withColorWrite(true, false).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).build());
       OUTLINE_CULL = register(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_cull").build());
       OUTLINE_NO_CULL = register(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_no_cull").withCull(false).build());
-      LIGHTMAP = register(RenderPipeline.builder().withLocation("pipeline/lightmap").withVertexShader("core/blit_screen").withFragmentShader("core/lightmap").withUniform("LightmapInfo", UniformType.UNIFORM_BUFFER).withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build());
+      LIGHTMAP = register(RenderPipeline.builder().withLocation("pipeline/lightmap").withVertexShader("core/screenquad").withFragmentShader("core/lightmap").withUniform("LightmapInfo", UniformType.UNIFORM_BUFFER).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build());
    }
 }

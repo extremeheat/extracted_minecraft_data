@@ -127,7 +127,7 @@ public class LocateCommand {
       String var9 = var4 ? String.valueOf(var7.getY()) : "~";
       MutableComponent var10 = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", var7.getX(), var9, var7.getZ())).withStyle((UnaryOperator)((var2x) -> var2x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand("/tp @s " + var7.getX() + " " + var9 + " " + var7.getZ())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
       var0.sendSuccess(() -> Component.translatable(var3, var5, var10, var8), false);
-      LOGGER.info("Locating element " + var5 + " took " + var6.toMillis() + " ms");
+      LOGGER.info("Locating element {} took {} ms", var5, var6.toMillis());
       return var8;
    }
 

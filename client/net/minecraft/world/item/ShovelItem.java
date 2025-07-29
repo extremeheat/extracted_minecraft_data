@@ -50,7 +50,7 @@ public class ShovelItem extends Item {
          }
 
          if (var7 != null) {
-            if (!var2.isClientSide) {
+            if (!var2.isClientSide()) {
                var2.setBlock(var3, var7, 11);
                var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5, var7));
                if (var5 != null) {

@@ -148,9 +148,9 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          this.renderItem(var1, var2, var4, var3);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          RealmsSelectFileToUploadScreen.this.worldSelectionList.setSelectedIndex(RealmsSelectFileToUploadScreen.this.levelList.indexOf(this.levelSummary));
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       protected void renderItem(GuiGraphics var1, int var2, int var3, int var4) {

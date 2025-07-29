@@ -1,18 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.yggdrasil.ProfileResult;
-import java.time.Duration;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
@@ -24,8 +12,6 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Services;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SkullBlock;
@@ -38,19 +24,6 @@ public class SkullBlockEntity extends BlockEntity {
    private static final String TAG_NOTE_BLOCK_SOUND = "note_block_sound";
    private static final String TAG_CUSTOM_NAME = "custom_name";
    @Nullable
-   private static Executor mainThreadExecutor;
-   @Nullable
-   private static LoadingCache<String, CompletableFuture<Optional<GameProfile>>> profileCacheByName;
-   @Nullable
-   private static LoadingCache<UUID, CompletableFuture<Optional<GameProfile>>> profileCacheById;
-   public static final Executor CHECKED_MAIN_THREAD_EXECUTOR = (var0) -> {
-      Executor var1 = mainThreadExecutor;
-      if (var1 != null) {
-         var1.execute(var0);
-      }
-
-   };
-   @Nullable
    private ResolvableProfile owner;
    @Nullable
    private ResourceLocation noteBlockSound;
@@ -61,55 +34,6 @@ public class SkullBlockEntity extends BlockEntity {
 
    public SkullBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SKULL, var1, var2);
-   }
-
-   public static void setup(final Services var0, Executor var1) {
-      mainThreadExecutor = var1;
-      final BooleanSupplier var2 = () -> profileCacheById == null;
-      profileCacheByName = CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(10L)).maximumSize(256L).build(new CacheLoader<String, CompletableFuture<Optional<GameProfile>>>() {
-         public CompletableFuture<Optional<GameProfile>> load(String var1) {
-            return SkullBlockEntity.fetchProfileByName(var1, var0);
-         }
-
-         // $FF: synthetic method
-         public Object load(final Object var1) throws Exception {
-            return this.load((String)var1);
-         }
-      });
-      profileCacheById = CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(10L)).maximumSize(256L).build(new CacheLoader<UUID, CompletableFuture<Optional<GameProfile>>>() {
-         public CompletableFuture<Optional<GameProfile>> load(UUID var1) {
-            return SkullBlockEntity.fetchProfileById(var1, var0, var2);
-         }
-
-         // $FF: synthetic method
-         public Object load(final Object var1) throws Exception {
-            return this.load((UUID)var1);
-         }
-      });
-   }
-
-   static CompletableFuture<Optional<GameProfile>> fetchProfileByName(String var0, Services var1) {
-      return var1.profileCache().getAsync(var0).thenCompose((var0x) -> {
-         LoadingCache var1 = profileCacheById;
-         return var1 != null && !var0x.isEmpty() ? ((CompletableFuture)var1.getUnchecked(((GameProfile)var0x.get()).getId())).thenApply((var1x) -> var1x.or(() -> var0x)) : CompletableFuture.completedFuture(Optional.empty());
-      });
-   }
-
-   static CompletableFuture<Optional<GameProfile>> fetchProfileById(UUID var0, Services var1, BooleanSupplier var2) {
-      return CompletableFuture.supplyAsync(() -> {
-         if (var2.getAsBoolean()) {
-            return Optional.empty();
-         } else {
-            ProfileResult var3 = var1.sessionService().fetchProfile(var0, true);
-            return Optional.ofNullable(var3).map(ProfileResult::profile);
-         }
-      }, Util.backgroundExecutor().forName("fetchProfile"));
-   }
-
-   public static void clear() {
-      mainThreadExecutor = null;
-      profileCacheByName = null;
-      profileCacheById = null;
    }
 
    protected void saveAdditional(ValueOutput var1) {
@@ -171,20 +95,10 @@ public class SkullBlockEntity extends BlockEntity {
          this.owner.resolve().thenAcceptAsync((var1) -> {
             this.owner = var1;
             this.setChanged();
-         }, CHECKED_MAIN_THREAD_EXECUTOR);
+         }, ResolvableProfile.CHECKED_MAIN_THREAD_EXECUTOR);
       } else {
          this.setChanged();
       }
-   }
-
-   public static CompletableFuture<Optional<GameProfile>> fetchGameProfile(String var0) {
-      LoadingCache var1 = profileCacheByName;
-      return var1 != null && StringUtil.isValidPlayerName(var0) ? (CompletableFuture)var1.getUnchecked(var0) : CompletableFuture.completedFuture(Optional.empty());
-   }
-
-   public static CompletableFuture<Optional<GameProfile>> fetchGameProfile(UUID var0) {
-      LoadingCache var1 = profileCacheById;
-      return var1 != null ? (CompletableFuture)var1.getUnchecked(var0) : CompletableFuture.completedFuture(Optional.empty());
    }
 
    protected void applyImplicitComponents(DataComponentGetter var1) {

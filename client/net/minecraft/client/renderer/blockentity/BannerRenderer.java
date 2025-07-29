@@ -11,7 +11,9 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,17 +31,23 @@ import org.joml.Vector3f;
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static final int MAX_PATTERNS = 16;
    private static final float SIZE = 0.6666667F;
+   private final MaterialSet materials;
    private final BannerModel standingModel;
    private final BannerModel wallModel;
    private final BannerFlagModel standingFlagModel;
    private final BannerFlagModel wallFlagModel;
 
    public BannerRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.getModelSet());
+      this(var1.entityModelSet(), var1.materials());
    }
 
-   public BannerRenderer(EntityModelSet var1) {
+   public BannerRenderer(SpecialModelRenderer.BakingContext var1) {
+      this(var1.entityModelSet(), var1.materials());
+   }
+
+   public BannerRenderer(EntityModelSet var1, MaterialSet var2) {
       super();
+      this.materials = var2;
       this.standingModel = new BannerModel(var1.bakeLayer(ModelLayers.STANDING_BANNER));
       this.wallModel = new BannerModel(var1.bakeLayer(ModelLayers.WALL_BANNER));
       this.standingFlagModel = new BannerFlagModel(var1.bakeLayer(ModelLayers.STANDING_BANNER_FLAG));
@@ -64,43 +72,43 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       long var12 = var1.getLevel().getGameTime();
       BlockPos var14 = var1.getBlockPos();
       float var15 = ((float)Math.floorMod((long)(var14.getX() * 7 + var14.getY() * 9 + var14.getZ() * 13) + var12, 100L) + var2) / 100.0F;
-      renderBanner(var3, var4, var5, var6, var10, var8, var9, var15, var1.getBaseColor(), var1.getPatterns());
+      renderBanner(this.materials, var3, var4, var5, var6, var10, var8, var9, var15, var1.getBaseColor(), var1.getPatterns());
    }
 
    public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {
-      renderBanner(var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6);
+      renderBanner(this.materials, var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6);
    }
 
-   private static void renderBanner(PoseStack var0, MultiBufferSource var1, int var2, int var3, float var4, BannerModel var5, BannerFlagModel var6, float var7, DyeColor var8, BannerPatternLayers var9) {
-      var0.pushPose();
-      var0.translate(0.5F, 0.0F, 0.5F);
-      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var4));
-      var0.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      var5.renderToBuffer(var0, ModelBakery.BANNER_BASE.buffer(var1, RenderType::entitySolid), var2, var3);
-      var6.setupAnim(var7);
-      renderPatterns(var0, var1, var2, var3, var6.root(), ModelBakery.BANNER_BASE, true, var8, var9);
-      var0.popPose();
+   private static void renderBanner(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10) {
+      var1.pushPose();
+      var1.translate(0.5F, 0.0F, 0.5F);
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
+      var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
+      var6.renderToBuffer(var1, ModelBakery.BANNER_BASE.buffer(var0, var2, RenderType::entitySolid), var3, var4);
+      var7.setupAnim(var8);
+      renderPatterns(var0, var1, var2, var3, var4, var7.root(), ModelBakery.BANNER_BASE, true, var9, var10);
+      var1.popPose();
    }
 
-   public static void renderPatterns(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, boolean var6, DyeColor var7, BannerPatternLayers var8) {
-      renderPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, false, true);
+   public static void renderPatterns(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9) {
+      renderPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, false, true);
    }
 
-   public static void renderPatterns(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, boolean var6, DyeColor var7, BannerPatternLayers var8, boolean var9, boolean var10) {
-      var4.render(var0, var5.buffer(var1, RenderType::entitySolid, var10, var9), var2, var3);
-      renderPatternLayer(var0, var1, var2, var3, var4, var6 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var7);
+   public static void renderPatterns(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, boolean var10, boolean var11) {
+      var5.render(var1, var6.buffer(var0, var2, RenderType::entitySolid, var11, var10), var3, var4);
+      renderPatternLayer(var0, var1, var2, var3, var4, var5, var7 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var8);
 
-      for(int var11 = 0; var11 < 16 && var11 < var8.layers().size(); ++var11) {
-         BannerPatternLayers.Layer var12 = (BannerPatternLayers.Layer)var8.layers().get(var11);
-         Material var13 = var6 ? Sheets.getBannerMaterial(var12.pattern()) : Sheets.getShieldMaterial(var12.pattern());
-         renderPatternLayer(var0, var1, var2, var3, var4, var13, var12.color());
+      for(int var12 = 0; var12 < 16 && var12 < var9.layers().size(); ++var12) {
+         BannerPatternLayers.Layer var13 = (BannerPatternLayers.Layer)var9.layers().get(var12);
+         Material var14 = var7 ? Sheets.getBannerMaterial(var13.pattern()) : Sheets.getShieldMaterial(var13.pattern());
+         renderPatternLayer(var0, var1, var2, var3, var4, var5, var14, var13.color());
       }
 
    }
 
-   private static void renderPatternLayer(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, DyeColor var6) {
-      int var7 = var6.getTextureDiffuseColor();
-      var4.render(var0, var5.buffer(var1, RenderType::entityNoOutline), var2, var3, var7);
+   private static void renderPatternLayer(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, ModelPart var5, Material var6, DyeColor var7) {
+      int var8 = var7.getTextureDiffuseColor();
+      var5.render(var1, var6.buffer(var0, var2, RenderType::entityNoOutline), var3, var4, var8);
    }
 
    public void getExtents(Set<Vector3f> var1) {

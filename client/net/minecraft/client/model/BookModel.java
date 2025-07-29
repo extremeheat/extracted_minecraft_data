@@ -9,7 +9,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 
-public class BookModel extends Model {
+public class BookModel extends Model<State> {
    private static final String LEFT_PAGES = "left_pages";
    private static final String RIGHT_PAGES = "right_pages";
    private static final String FLIP_PAGE_1 = "flip_page1";
@@ -45,17 +45,29 @@ public class BookModel extends Model {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public void setupAnim(float var1, float var2, float var3, float var4) {
-      float var5 = (Mth.sin(var1 * 0.02F) * 0.1F + 1.25F) * var4;
-      this.leftLid.yRot = 3.1415927F + var5;
-      this.rightLid.yRot = -var5;
-      this.leftPages.yRot = var5;
-      this.rightPages.yRot = -var5;
-      this.flipPage1.yRot = var5 - var5 * 2.0F * var2;
-      this.flipPage2.yRot = var5 - var5 * 2.0F * var3;
-      this.leftPages.x = Mth.sin(var5);
-      this.rightPages.x = Mth.sin(var5);
-      this.flipPage1.x = Mth.sin(var5);
-      this.flipPage2.x = Mth.sin(var5);
+   public void setupAnim(State var1) {
+      super.setupAnim(var1);
+      float var2 = (Mth.sin(var1.animationPos * 0.02F) * 0.1F + 1.25F) * var1.open;
+      this.leftLid.yRot = 3.1415927F + var2;
+      this.rightLid.yRot = -var2;
+      this.leftPages.yRot = var2;
+      this.rightPages.yRot = -var2;
+      this.flipPage1.yRot = var2 - var2 * 2.0F * var1.pageFlip1;
+      this.flipPage2.yRot = var2 - var2 * 2.0F * var1.pageFlip2;
+      this.leftPages.x = Mth.sin(var2);
+      this.rightPages.x = Mth.sin(var2);
+      this.flipPage1.x = Mth.sin(var2);
+      this.flipPage2.x = Mth.sin(var2);
+   }
+
+   public static class State {
+      public float animationPos;
+      public float pageFlip1;
+      public float pageFlip2;
+      public float open;
+
+      public State() {
+         super();
+      }
    }
 }

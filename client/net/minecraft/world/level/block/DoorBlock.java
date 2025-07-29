@@ -88,7 +88,7 @@ public class DoorBlock extends Block {
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && (var4.preventsBlockDrops() || !var4.hasCorrectToolForDrops(var3))) {
+      if (!var1.isClientSide() && (var4.preventsBlockDrops() || !var4.hasCorrectToolForDrops(var3))) {
          DoublePlantBlock.preventDropFromBottomPart(var1, var2, var3, var4);
       }
 

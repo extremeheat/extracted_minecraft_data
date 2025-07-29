@@ -60,6 +60,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<SculkCatalystBlockEntity> SCULK_CATALYST;
    public static final BlockEntityType<SculkShriekerBlockEntity> SCULK_SHRIEKER;
    public static final BlockEntityType<ChiseledBookShelfBlockEntity> CHISELED_BOOKSHELF;
+   public static final BlockEntityType<ShelfBlockEntity> SHELF;
    public static final BlockEntityType<BrushableBlockEntity> BRUSHABLE_BLOCK;
    public static final BlockEntityType<DecoratedPotBlockEntity> DECORATED_POT;
    public static final BlockEntityType<CrafterBlockEntity> CRAFTER;
@@ -67,6 +68,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<VaultBlockEntity> VAULT;
    public static final BlockEntityType<TestBlockEntity> TEST_BLOCK;
    public static final BlockEntityType<TestInstanceBlockEntity> TEST_INSTANCE_BLOCK;
+   public static final BlockEntityType<CopperGolemStatueBlockEntity> COPPER_GOLEM_STATUE;
    private static final Set<BlockEntityType<?>> OP_ONLY_CUSTOM_DATA;
    private final BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
@@ -119,7 +121,7 @@ public class BlockEntityType<T extends BlockEntity> {
 
    static {
       FURNACE = register("furnace", FurnaceBlockEntity::new, Blocks.FURNACE);
-      CHEST = register("chest", ChestBlockEntity::new, Blocks.CHEST);
+      CHEST = register("chest", ChestBlockEntity::new, Blocks.CHEST, Blocks.COPPER_CHEST, Blocks.EXPOSED_COPPER_CHEST, Blocks.WEATHERED_COPPER_CHEST, Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST);
       TRAPPED_CHEST = register("trapped_chest", TrappedChestBlockEntity::new, Blocks.TRAPPED_CHEST);
       ENDER_CHEST = register("ender_chest", EnderChestBlockEntity::new, Blocks.ENDER_CHEST);
       JUKEBOX = register("jukebox", JukeboxBlockEntity::new, Blocks.JUKEBOX);
@@ -158,6 +160,7 @@ public class BlockEntityType<T extends BlockEntity> {
       SCULK_CATALYST = register("sculk_catalyst", SculkCatalystBlockEntity::new, Blocks.SCULK_CATALYST);
       SCULK_SHRIEKER = register("sculk_shrieker", SculkShriekerBlockEntity::new, Blocks.SCULK_SHRIEKER);
       CHISELED_BOOKSHELF = register("chiseled_bookshelf", ChiseledBookShelfBlockEntity::new, Blocks.CHISELED_BOOKSHELF);
+      SHELF = register("shelf", ShelfBlockEntity::new, Blocks.ACACIA_SHELF, Blocks.BAMBOO_SHELF, Blocks.BIRCH_SHELF, Blocks.CHERRY_SHELF, Blocks.CRIMSON_SHELF, Blocks.DARK_OAK_SHELF, Blocks.JUNGLE_SHELF, Blocks.MANGROVE_SHELF, Blocks.OAK_SHELF, Blocks.PALE_OAK_SHELF, Blocks.SPRUCE_SHELF, Blocks.WARPED_SHELF);
       BRUSHABLE_BLOCK = register("brushable_block", BrushableBlockEntity::new, Blocks.SUSPICIOUS_SAND, Blocks.SUSPICIOUS_GRAVEL);
       DECORATED_POT = register("decorated_pot", DecoratedPotBlockEntity::new, Blocks.DECORATED_POT);
       CRAFTER = register("crafter", CrafterBlockEntity::new, Blocks.CRAFTER);
@@ -165,6 +168,7 @@ public class BlockEntityType<T extends BlockEntity> {
       VAULT = register("vault", VaultBlockEntity::new, Blocks.VAULT);
       TEST_BLOCK = register("test_block", TestBlockEntity::new, Blocks.TEST_BLOCK);
       TEST_INSTANCE_BLOCK = register("test_instance_block", TestInstanceBlockEntity::new, Blocks.TEST_INSTANCE_BLOCK);
+      COPPER_GOLEM_STATUE = register("copper_golem_statue", CopperGolemStatueBlockEntity::new, Blocks.COPPER_GOLEM_STATUE, Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.WAXED_COPPER_GOLEM_STATUE, Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE, Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE, Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
       OP_ONLY_CUSTOM_DATA = Set.of(COMMAND_BLOCK, LECTERN, SIGN, HANGING_SIGN, MOB_SPAWNER, TRIAL_SPAWNER);
    }
 

@@ -69,7 +69,7 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof DispenserBlockEntity) {
             DispenserBlockEntity var6 = (DispenserBlockEntity)var7;
@@ -156,7 +156,7 @@ public class DispenserBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 

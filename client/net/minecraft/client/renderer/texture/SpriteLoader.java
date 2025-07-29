@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.logging.LogUtils;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -13,13 +12,13 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceList;
-import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -29,8 +28,7 @@ import net.minecraft.util.profiling.Zone;
 import org.slf4j.Logger;
 
 public class SpriteLoader {
-   public static final Set<MetadataSectionType<?>> DEFAULT_METADATA_SECTIONS;
-   private static final Logger LOGGER;
+   private static final Logger LOGGER = LogUtils.getLogger();
    private final ResourceLocation location;
    private final int maxSupportedTextureSize;
    private final int minWidth;
@@ -48,7 +46,7 @@ public class SpriteLoader {
       return new SpriteLoader(var0.location(), var0.maxSupportedTextureSize(), var0.getWidth(), var0.getHeight());
    }
 
-   public Preparations stitch(List<SpriteContents> var1, int var2, Executor var3) {
+   private Preparations stitch(List<SpriteContents> var1, int var2, Executor var3) {
       try (Zone var4 = Profiler.get().zone((Supplier)(() -> "stitch " + String.valueOf(this.location)))) {
          int var5 = this.maxSupportedTextureSize;
          Stitcher var6 = new Stitcher(var5, var5, var2);
@@ -101,16 +99,12 @@ public class SpriteLoader {
       }
    }
 
-   public static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(SpriteResourceLoader var0, List<Function<SpriteResourceLoader, SpriteContents>> var1, Executor var2) {
+   private static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(SpriteResourceLoader var0, List<Function<SpriteResourceLoader, SpriteContents>> var1, Executor var2) {
       List var3 = var1.stream().map((var2x) -> CompletableFuture.supplyAsync(() -> (SpriteContents)var2x.apply(var0), var2)).toList();
       return Util.sequence(var3).thenApply((var0x) -> var0x.stream().filter(Objects::nonNull).toList());
    }
 
-   public CompletableFuture<Preparations> loadAndStitch(ResourceManager var1, ResourceLocation var2, int var3, Executor var4) {
-      return this.loadAndStitch(var1, var2, var3, var4, DEFAULT_METADATA_SECTIONS);
-   }
-
-   public CompletableFuture<Preparations> loadAndStitch(ResourceManager var1, ResourceLocation var2, int var3, Executor var4, Collection<MetadataSectionType<?>> var5) {
+   public CompletableFuture<Preparations> loadAndStitch(ResourceManager var1, ResourceLocation var2, int var3, Executor var4, Set<MetadataSectionType<?>> var5) {
       SpriteResourceLoader var6 = SpriteResourceLoader.create(var5);
       return CompletableFuture.supplyAsync(() -> SpriteSourceList.load(var1, var2).list(var1), var4).thenCompose((var2x) -> runSpriteSuppliers(var6, var2x, var4)).thenApply((var3x) -> this.stitch(var3x, var3, var4));
    }
@@ -119,11 +113,6 @@ public class SpriteLoader {
       HashMap var4 = new HashMap();
       var1.gatherSprites((var4x, var5, var6) -> var4.put(var4x.name(), new TextureAtlasSprite(this.location, var4x, var2, var3, var5, var6)));
       return var4;
-   }
-
-   static {
-      DEFAULT_METADATA_SECTIONS = Set.of(AnimationMetadataSection.TYPE);
-      LOGGER = LogUtils.getLogger();
    }
 
    public static record Preparations(int width, int height, int mipLevel, TextureAtlasSprite missing, Map<ResourceLocation, TextureAtlasSprite> regions, CompletableFuture<Void> readyForUpload) {
@@ -137,8 +126,9 @@ public class SpriteLoader {
          this.readyForUpload = var6;
       }
 
-      public CompletableFuture<Preparations> waitForUpload() {
-         return this.readyForUpload.thenApply((var1) -> this);
+      @Nullable
+      public TextureAtlasSprite getSprite(ResourceLocation var1) {
+         return (TextureAtlasSprite)this.regions.get(var1);
       }
    }
 }

@@ -179,6 +179,13 @@ public class MultilineTextField {
       this.seekCursor(Whence.ABSOLUTE, var7.beginIndex + var8);
    }
 
+   public void selectWordAtCursor() {
+      StringView var1 = this.getPreviousWord();
+      this.seekCursor(Whence.ABSOLUTE, var1.beginIndex);
+      this.setSelecting(true);
+      this.seekCursor(Whence.ABSOLUTE, var1.endIndex);
+   }
+
    public boolean keyPressed(int var1) {
       this.selecting = Screen.hasShiftDown();
       if (Screen.isSelectAll(var1)) {

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -11,8 +10,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -20,6 +19,7 @@ import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
@@ -75,42 +75,40 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
    }
 
-   public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var5 = var1.bedOrientation;
-         if (var5 != null) {
-            float var6 = var1.eyeHeight - 0.1F;
-            var2.translate((float)(-var5.getStepX()) * var6, 0.0F, (float)(-var5.getStepZ()) * var6);
+         Direction var4 = var1.bedOrientation;
+         if (var4 != null) {
+            float var5 = var1.eyeHeight - 0.1F;
+            var2.translate((float)(-var4.getStepX()) * var5, 0.0F, (float)(-var4.getStepZ()) * var5);
          }
       }
 
-      float var13 = var1.scale;
-      var2.scale(var13, var13, var13);
-      this.setupRotations(var1, var2, var1.bodyRot, var13);
+      float var11 = var1.scale;
+      var2.scale(var11, var11, var11);
+      this.setupRotations(var1, var2, var1.bodyRot, var11);
       var2.scale(-1.0F, -1.0F, 1.0F);
       this.scale(var1, var2);
       var2.translate(0.0F, -1.501F, 0.0F);
-      this.model.setupAnim(var1);
-      boolean var14 = this.isBodyVisible(var1);
-      boolean var7 = !var14 && !var1.isInvisibleToPlayer;
-      RenderType var8 = this.getRenderType(var1, var14, var7, var1.appearsGlowing);
-      if (var8 != null) {
-         VertexConsumer var9 = var3.getBuffer(var8);
-         int var10 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1));
-         int var11 = var7 ? 654311423 : -1;
-         int var12 = ARGB.multiply(var11, this.getModelTint(var1));
-         this.model.renderToBuffer(var2, var9, var4, var10, var12);
+      boolean var12 = this.isBodyVisible(var1);
+      boolean var6 = !var12 && !var1.isInvisibleToPlayer;
+      RenderType var7 = this.getRenderType(var1, var12, var6, var1.appearsGlowing());
+      if (var7 != null) {
+         int var8 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1));
+         int var9 = var6 ? 654311423 : -1;
+         int var10 = ARGB.multiply(var9, this.getModelTint(var1));
+         var3.submitModel(this.model, var1, var2, var7, var1.lightCoords, var8, var10, (TextureAtlasSprite)null, var1.outlineColor, 0);
       }
 
       if (this.shouldRenderLayers(var1)) {
-         for(RenderLayer var16 : this.layers) {
-            var16.render(var2, var3, var4, var1, var1.yRot, var1.xRot);
+         for(RenderLayer var14 : this.layers) {
+            var14.submit(var2, var3, var1.lightCoords, var1, var1.yRot, var1.xRot);
          }
       }
 
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    protected boolean shouldRenderLayers(S var1) {
@@ -341,7 +339,6 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
       Minecraft var11 = Minecraft.getInstance();
       var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var11.player);
-      var2.appearsGlowing = var11.shouldEntityAppearGlowing(var1);
    }
 
    protected void extractAdditionalHitboxes(T var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {

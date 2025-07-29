@@ -24,7 +24,7 @@ public class FishingRodItem extends Item {
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var2.fishing != null) {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             int var5 = var2.fishing.retrieve(var4);
             var4.hurtAndBreak(var5, var2, (EquipmentSlot)LivingEntity.getSlotForHand(var3));
          }

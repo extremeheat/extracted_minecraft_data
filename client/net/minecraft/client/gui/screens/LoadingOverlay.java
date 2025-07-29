@@ -72,7 +72,9 @@ public class LoadingOverlay extends Overlay {
       float var11;
       if (var9 >= 1.0F) {
          if (this.minecraft.screen != null) {
-            this.minecraft.screen.renderWithTooltip(var1, 0, 0, var4);
+            this.minecraft.screen.renderWithTooltipAndSubtitles(var1, 0, 0, var4);
+         } else {
+            this.minecraft.gui.renderDeferredSubtitles();
          }
 
          int var12 = Mth.ceil((1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F)) * 255.0F);
@@ -81,7 +83,9 @@ public class LoadingOverlay extends Overlay {
          var11 = 1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
          if (this.minecraft.screen != null && var10 < 1.0F) {
-            this.minecraft.screen.renderWithTooltip(var1, var2, var3, var4);
+            this.minecraft.screen.renderWithTooltipAndSubtitles(var1, var2, var3, var4);
+         } else {
+            this.minecraft.gui.renderDeferredSubtitles();
          }
 
          int var25 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);

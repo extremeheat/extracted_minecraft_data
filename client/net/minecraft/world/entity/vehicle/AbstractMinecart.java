@@ -422,7 +422,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    public void push(Entity var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (!var1.noPhysics && !this.noPhysics) {
             if (!this.hasPassenger(var1)) {
                double var2 = var1.getX() - this.getX();

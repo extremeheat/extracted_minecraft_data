@@ -104,7 +104,7 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
       public TestFinder allNearby(CommandContext<CommandSourceStack> var1) {
          CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
          BlockPos var3 = BlockPos.containing(var2.getPosition());
-         return this.build(var2, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(var3, 200, var2.getLevel()));
+         return this.build(var2, TestFinder.NO_FUNCTIONS, () -> StructureUtils.findTestBlocks(var3, 250, var2.getLevel()));
       }
 
       public TestFinder lookedAt(CommandContext<CommandSourceStack> var1) {

@@ -58,6 +58,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -321,7 +322,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public void spawnAnim() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.makePoofParticles();
       } else {
          this.level().broadcastEntityEvent(this, (byte)20);
@@ -340,7 +341,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void tick() {
       super.tick();
-      if (!this.level().isClientSide && this.tickCount % 5 == 0) {
+      if (!this.level().isClientSide() && this.tickCount % 5 == 0) {
          this.updateControlFlags();
       }
 
@@ -617,12 +618,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return this.isPassenger();
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return false;
-   }
-
    public void checkDespawn() {
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
          this.discard();
       } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
          Player var1 = this.level().getNearestPlayer(this, -1.0);
@@ -915,6 +912,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
             ++var3;
          }
 
+         if (var1.nextFloat() < 0.095F) {
+            ++var3;
+         }
+
          boolean var5 = true;
 
          for(EquipmentSlot var7 : EQUIPMENT_POPULATION_ORDER) {
@@ -942,48 +943,56 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
             if (var1 == 0) {
                return Items.LEATHER_HELMET;
             } else if (var1 == 1) {
-               return Items.GOLDEN_HELMET;
+               return Items.COPPER_HELMET;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_HELMET;
+               return Items.GOLDEN_HELMET;
             } else if (var1 == 3) {
-               return Items.IRON_HELMET;
+               return Items.CHAINMAIL_HELMET;
             } else if (var1 == 4) {
+               return Items.IRON_HELMET;
+            } else if (var1 == 5) {
                return Items.DIAMOND_HELMET;
             }
          case CHEST:
             if (var1 == 0) {
                return Items.LEATHER_CHESTPLATE;
             } else if (var1 == 1) {
-               return Items.GOLDEN_CHESTPLATE;
+               return Items.COPPER_CHESTPLATE;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_CHESTPLATE;
+               return Items.GOLDEN_CHESTPLATE;
             } else if (var1 == 3) {
-               return Items.IRON_CHESTPLATE;
+               return Items.CHAINMAIL_CHESTPLATE;
             } else if (var1 == 4) {
+               return Items.IRON_CHESTPLATE;
+            } else if (var1 == 5) {
                return Items.DIAMOND_CHESTPLATE;
             }
          case LEGS:
             if (var1 == 0) {
                return Items.LEATHER_LEGGINGS;
             } else if (var1 == 1) {
-               return Items.GOLDEN_LEGGINGS;
+               return Items.COPPER_LEGGINGS;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_LEGGINGS;
+               return Items.GOLDEN_LEGGINGS;
             } else if (var1 == 3) {
-               return Items.IRON_LEGGINGS;
+               return Items.CHAINMAIL_LEGGINGS;
             } else if (var1 == 4) {
+               return Items.IRON_LEGGINGS;
+            } else if (var1 == 5) {
                return Items.DIAMOND_LEGGINGS;
             }
          case FEET:
             if (var1 == 0) {
                return Items.LEATHER_BOOTS;
             } else if (var1 == 1) {
-               return Items.GOLDEN_BOOTS;
+               return Items.COPPER_BOOTS;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_BOOTS;
+               return Items.GOLDEN_BOOTS;
             } else if (var1 == 3) {
-               return Items.IRON_BOOTS;
+               return Items.CHAINMAIL_BOOTS;
             } else if (var1 == 4) {
+               return Items.IRON_BOOTS;
+            } else if (var1 == 5) {
                return Items.DIAMOND_BOOTS;
             }
          default:
@@ -1112,6 +1121,19 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return InteractionResult.PASS;
    }
 
+   protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
+      int var4 = var3.getCount();
+      UseRemainder var5 = (UseRemainder)var3.get(DataComponents.USE_REMAINDER);
+      var3.consume(1, var1);
+      if (var5 != null) {
+         boolean var10003 = var1.hasInfiniteMaterials();
+         Objects.requireNonNull(var1);
+         ItemStack var6 = var5.convertIntoRemainder(var3, var4, var10003, var1::handleExtraItemsCreatedOnUse);
+         var1.setItemInHand(var2, var6);
+      }
+
+   }
+
    public boolean isWithinHome() {
       return this.isWithinHome(this.blockPosition());
    }
@@ -1216,13 +1238,13 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return !(this instanceof Enemy);
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
-      boolean var3 = super.startRiding(var1, var2);
-      if (var3 && this.isLeashed()) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+      boolean var4 = super.startRiding(var1, var2, var3);
+      if (var4 && this.isLeashed()) {
          this.dropLeash();
       }
 
-      return var3;
+      return var4;
    }
 
    public boolean isEffectiveAi() {
@@ -1313,7 +1335,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    protected boolean isSunBurnTick() {
-      if (this.level().isBrightOutside() && !this.level().isClientSide) {
+      if (this.level().isBrightOutside() && !this.level().isClientSide()) {
          float var1 = this.getLightLevelDependentMagicValue();
          BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
          boolean var3 = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;

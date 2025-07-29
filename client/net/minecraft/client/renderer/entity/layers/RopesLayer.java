@@ -4,8 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HappyGhastModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HappyGhastRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -24,11 +24,10 @@ public class RopesLayer<M extends HappyGhastModel> extends RenderLayer<HappyGhas
       this.babyModel = new HappyGhastModel(var2.bakeLayer(ModelLayers.HAPPY_GHAST_BABY_ROPES));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, HappyGhastRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, HappyGhastRenderState var4, float var5, float var6) {
       if (var4.isLeashHolder && var4.bodyItem.is(ItemTags.HARNESSES)) {
          HappyGhastModel var7 = var4.isBaby ? this.babyModel : this.adultModel;
-         var7.setupAnim(var4);
-         var7.renderToBuffer(var1, var2.getBuffer(this.ropes), var3, OverlayTexture.NO_OVERLAY);
+         var2.submitModel(var7, var4, var1, this.ropes, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
       }
    }
 }

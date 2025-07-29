@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -257,12 +256,12 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          this.addEntry(RealmsSelectWorldTemplateScreen.this.new Entry(var1));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          if (RealmsSelectWorldTemplateScreen.this.currentLink != null) {
             ConfirmLinkScreen.confirmLinkNow(RealmsSelectWorldTemplateScreen.this, (String)RealmsSelectWorldTemplateScreen.this.currentLink);
             return true;
          } else {
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var3, var5, var6);
          }
       }
 
@@ -291,7 +290,6 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       private static final Component PUBLISHER_LINK_TOOLTIP = Component.translatable("mco.template.info.tooltip");
       private static final Component TRAILER_LINK_TOOLTIP = Component.translatable("mco.template.trailer.tooltip");
       public final WorldTemplate template;
-      private long lastClickTime;
       @Nullable
       private ImageButton websiteButton;
       @Nullable
@@ -312,23 +310,22 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          RealmsSelectWorldTemplateScreen.this.selectedTemplate = this.template;
          RealmsSelectWorldTemplateScreen.this.updateButtonStates();
-         if (Util.getMillis() - this.lastClickTime < 250L && this.isFocused()) {
+         if (var6 && this.isFocused()) {
             RealmsSelectWorldTemplateScreen.this.callback.accept(this.template);
          }
 
-         this.lastClickTime = Util.getMillis();
          if (this.websiteButton != null) {
-            this.websiteButton.mouseClicked(var1, var3, var5);
+            this.websiteButton.mouseClicked(var1, var3, var5, var6);
          }
 
          if (this.trailerButton != null) {
-            this.trailerButton.mouseClicked(var1, var3, var5);
+            this.trailerButton.mouseClicked(var1, var3, var5, var6);
          }
 
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {

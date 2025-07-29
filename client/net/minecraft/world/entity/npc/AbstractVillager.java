@@ -89,7 +89,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    public MerchantOffers getOffers() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          throw new IllegalStateException("Cannot load Villager offers on the client");
       } else {
          if (this.offers == null) {
@@ -124,7 +124,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    public void notifyTradeUpdated(ItemStack var1) {
-      if (!this.level().isClientSide && this.ambientSoundTime > -this.getAmbientSoundInterval() + 20) {
+      if (!this.level().isClientSide() && this.ambientSoundTime > -this.getAmbientSoundInterval() + 20) {
          this.ambientSoundTime = -this.getAmbientSoundInterval();
          this.makeSound(this.getTradeUpdatedSound(!var1.isEmpty()));
       }
@@ -145,7 +145,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    protected void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          MerchantOffers var2 = this.getOffers();
          if (!var2.isEmpty()) {
             var1.store("Offers", MerchantOffers.CODEC, var2);
@@ -222,7 +222,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    public boolean isClientSide() {
-      return this.level().isClientSide;
+      return this.level().isClientSide();
    }
 
    public boolean stillValid(Player var1) {

@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.PiglinModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
@@ -18,9 +17,9 @@ public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRe
    private static final ResourceLocation PIGLIN_BRUTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin_brute.png");
    public static final CustomHeadLayer.Transforms PIGLIN_CUSTOM_HEAD_TRANSFORMS = new CustomHeadLayer.Transforms(0.0F, 0.0F, 1.0019531F);
 
-   public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4, ModelLayerLocation var5, ModelLayerLocation var6, ModelLayerLocation var7) {
+   public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ArmorModelSet<ModelLayerLocation> var4, ArmorModelSet<ModelLayerLocation> var5) {
       super(var1, new PiglinModel(var1.bakeLayer(var2)), new PiglinModel(var1.bakeLayer(var3)), 0.5F, PIGLIN_CUSTOM_HEAD_TRANSFORMS);
-      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var4)), new HumanoidArmorModel(var1.bakeLayer(var5)), new HumanoidArmorModel(var1.bakeLayer(var6)), new HumanoidArmorModel(var1.bakeLayer(var7)), var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(var4, var1.getModelSet(), PiglinModel::new), ArmorModelSet.bake(var5, var1.getModelSet(), PiglinModel::new), var1.getEquipmentRenderer()));
    }
 
    public ResourceLocation getTextureLocation(PiglinRenderState var1) {

@@ -57,20 +57,20 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       this.tickBook();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      int var6 = (this.width - this.imageWidth) / 2;
-      int var7 = (this.height - this.imageHeight) / 2;
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      int var7 = (this.width - this.imageWidth) / 2;
+      int var8 = (this.height - this.imageHeight) / 2;
 
-      for(int var8 = 0; var8 < 3; ++var8) {
-         double var9 = var1 - (double)(var6 + 60);
-         double var11 = var3 - (double)(var7 + 14 + 19 * var8);
-         if (var9 >= 0.0 && var11 >= 0.0 && var9 < 108.0 && var11 < 19.0 && ((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, var8)) {
-            this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var8);
+      for(int var9 = 0; var9 < 3; ++var9) {
+         double var10 = var1 - (double)(var7 + 60);
+         double var12 = var3 - (double)(var8 + 14 + 19 * var9);
+         if (var10 >= 0.0 && var12 >= 0.0 && var10 < 108.0 && var12 < 19.0 && ((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, var9)) {
+            this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var9);
             return true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {

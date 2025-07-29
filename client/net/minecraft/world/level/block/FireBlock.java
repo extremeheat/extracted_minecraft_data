@@ -470,6 +470,16 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.GLOW_LICHEN, 15, 100);
       var0.setFlammable(Blocks.FIREFLY_BUSH, 60, 100);
       var0.setFlammable(Blocks.BUSH, 60, 100);
+      var0.setFlammable(Blocks.ACACIA_SHELF, 30, 20);
+      var0.setFlammable(Blocks.BAMBOO_SHELF, 30, 20);
+      var0.setFlammable(Blocks.BIRCH_SHELF, 30, 20);
+      var0.setFlammable(Blocks.CHERRY_SHELF, 30, 20);
+      var0.setFlammable(Blocks.DARK_OAK_SHELF, 30, 20);
+      var0.setFlammable(Blocks.JUNGLE_SHELF, 30, 20);
+      var0.setFlammable(Blocks.MANGROVE_SHELF, 30, 20);
+      var0.setFlammable(Blocks.OAK_SHELF, 30, 20);
+      var0.setFlammable(Blocks.PALE_OAK_SHELF, 30, 20);
+      var0.setFlammable(Blocks.SPRUCE_SHELF, 30, 20);
    }
 
    static {

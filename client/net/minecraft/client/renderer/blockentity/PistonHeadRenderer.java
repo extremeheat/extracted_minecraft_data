@@ -25,7 +25,7 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
 
    public PistonHeadRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.blockRenderer = var1.getBlockRenderDispatcher();
+      this.blockRenderer = var1.blockRenderDispatcher();
    }
 
    public void render(PistonMovingBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {

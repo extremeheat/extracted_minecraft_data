@@ -62,7 +62,7 @@ public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale,
 
    public void hurtBlockingItem(Level var1, ItemStack var2, LivingEntity var3, InteractionHand var4, float var5) {
       if (var3 instanceof Player var6) {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             var6.awardStat(Stats.ITEM_USED.get(var2.getItem()));
          }
 

@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.state.properties;
 import java.util.function.Predicate;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.entity.vault.VaultState;
 
@@ -68,6 +69,7 @@ public class BlockStateProperties {
    public static final EnumProperty<RedstoneSide> WEST_REDSTONE;
    public static final EnumProperty<DoubleBlockHalf> DOUBLE_BLOCK_HALF;
    public static final EnumProperty<Half> HALF;
+   public static final EnumProperty<SideChainPart> SIDE_CHAIN_PART;
    public static final EnumProperty<RailShape> RAIL_SHAPE;
    public static final EnumProperty<RailShape> RAIL_SHAPE_STRAIGHT;
    public static final int MAX_AGE_1 = 1;
@@ -145,6 +147,7 @@ public class BlockStateProperties {
    public static final BooleanProperty OMINOUS;
    public static final EnumProperty<TestBlockMode> TEST_BLOCK_MODE;
    public static final BooleanProperty MAP;
+   public static final EnumProperty<CopperGolemStatueBlock.Pose> COPPER_GOLEM_POSE;
 
    public BlockStateProperties() {
       super();
@@ -177,6 +180,7 @@ public class BlockStateProperties {
       WEST_REDSTONE = EnumProperty.<RedstoneSide>create("west", RedstoneSide.class);
       DOUBLE_BLOCK_HALF = EnumProperty.<DoubleBlockHalf>create("half", DoubleBlockHalf.class);
       HALF = EnumProperty.<Half>create("half", Half.class);
+      SIDE_CHAIN_PART = EnumProperty.<SideChainPart>create("side_chain", SideChainPart.class);
       RAIL_SHAPE = EnumProperty.<RailShape>create("shape", RailShape.class);
       RAIL_SHAPE_STRAIGHT = EnumProperty.create("shape", RailShape.class, (Predicate)((var0) -> var0 != RailShape.NORTH_EAST && var0 != RailShape.NORTH_WEST && var0 != RailShape.SOUTH_EAST && var0 != RailShape.SOUTH_WEST));
       AGE_1 = IntegerProperty.create("age", 0, 1);
@@ -237,5 +241,6 @@ public class BlockStateProperties {
       OMINOUS = BooleanProperty.create("ominous");
       TEST_BLOCK_MODE = EnumProperty.<TestBlockMode>create("mode", TestBlockMode.class);
       MAP = BooleanProperty.create("map");
+      COPPER_GOLEM_POSE = EnumProperty.<CopperGolemStatueBlock.Pose>create("copper_golem_pose", CopperGolemStatueBlock.Pose.class);
    }
 }

@@ -118,32 +118,32 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       this.scrolling = false;
       if (this.displayRecipes) {
-         int var6 = this.leftPos + 52;
-         int var7 = this.topPos + 14;
-         int var8 = this.startIndex + 12;
+         int var7 = this.leftPos + 52;
+         int var8 = this.topPos + 14;
+         int var9 = this.startIndex + 12;
 
-         for(int var9 = this.startIndex; var9 < var8; ++var9) {
-            int var10 = var9 - this.startIndex;
-            double var11 = var1 - (double)(var6 + var10 % 4 * 16);
-            double var13 = var3 - (double)(var7 + var10 / 4 * 18);
-            if (var11 >= 0.0 && var13 >= 0.0 && var11 < 16.0 && var13 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var9)) {
+         for(int var10 = this.startIndex; var10 < var9; ++var10) {
+            int var11 = var10 - this.startIndex;
+            double var12 = var1 - (double)(var7 + var11 % 4 * 16);
+            double var14 = var3 - (double)(var8 + var11 / 4 * 18);
+            if (var12 >= 0.0 && var14 >= 0.0 && var12 < 16.0 && var14 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var10)) {
                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0F));
-               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var9);
+               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var10);
                return true;
             }
          }
 
-         var6 = this.leftPos + 119;
-         var7 = this.topPos + 9;
-         if (var1 >= (double)var6 && var1 < (double)(var6 + 12) && var3 >= (double)var7 && var3 < (double)(var7 + 54)) {
+         var7 = this.leftPos + 119;
+         var8 = this.topPos + 9;
+         if (var1 >= (double)var7 && var1 < (double)(var7 + 12) && var3 >= (double)var8 && var3 < (double)(var8 + 54)) {
             this.scrolling = true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {

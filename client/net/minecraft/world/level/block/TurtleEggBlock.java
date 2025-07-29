@@ -124,7 +124,7 @@ public class TurtleEggBlock extends Block {
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (onSand(var2, var3) && !var2.isClientSide) {
+      if (onSand(var2, var3) && !var2.isClientSide()) {
          var2.levelEvent(2012, var3, 15);
       }
 

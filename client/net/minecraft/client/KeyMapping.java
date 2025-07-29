@@ -57,7 +57,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
 
    public static void setAll() {
       for(KeyMapping var1 : ALL.values()) {
-         if (var1.key.getType() == InputConstants.Type.KEYSYM && var1.key.getValue() != InputConstants.UNKNOWN.getValue()) {
+         if (var1.shouldSetOnIngameFocus()) {
             var1.setDown(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), var1.key.getValue()));
          }
       }
@@ -124,6 +124,10 @@ public class KeyMapping implements Comparable<KeyMapping> {
    private void release() {
       this.clickCount = 0;
       this.setDown(false);
+   }
+
+   protected boolean shouldSetOnIngameFocus() {
+      return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() != InputConstants.UNKNOWN.getValue();
    }
 
    public String getName() {

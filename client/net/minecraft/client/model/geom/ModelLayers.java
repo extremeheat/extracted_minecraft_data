@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
@@ -16,11 +17,9 @@ public class ModelLayers {
    public static final ModelLayerLocation ARMADILLO = register("armadillo");
    public static final ModelLayerLocation ARMADILLO_BABY = register("armadillo_baby");
    public static final ModelLayerLocation ARMOR_STAND = register("armor_stand");
-   public static final ModelLayerLocation ARMOR_STAND_INNER_ARMOR = registerInnerArmor("armor_stand");
-   public static final ModelLayerLocation ARMOR_STAND_OUTER_ARMOR = registerOuterArmor("armor_stand");
+   public static final ArmorModelSet<ModelLayerLocation> ARMOR_STAND_ARMOR = registerArmorSet("armor_stand");
    public static final ModelLayerLocation ARMOR_STAND_SMALL = register("armor_stand_small");
-   public static final ModelLayerLocation ARMOR_STAND_SMALL_INNER_ARMOR = registerInnerArmor("armor_stand_small");
-   public static final ModelLayerLocation ARMOR_STAND_SMALL_OUTER_ARMOR = registerOuterArmor("armor_stand_small");
+   public static final ArmorModelSet<ModelLayerLocation> ARMOR_STAND_SMALL_ARMOR = registerArmorSet("armor_stand_small");
    public static final ModelLayerLocation ARROW = register("arrow");
    public static final ModelLayerLocation AXOLOTL = register("axolotl");
    public static final ModelLayerLocation AXOLOTL_BABY = register("axolotl_baby");
@@ -42,12 +41,12 @@ public class ModelLayers {
    public static final ModelLayerLocation BLAZE = register("blaze");
    public static final ModelLayerLocation BOAT_WATER_PATCH = register("boat", "water_patch");
    public static final ModelLayerLocation BOGGED = register("bogged");
-   public static final ModelLayerLocation BOGGED_INNER_ARMOR = registerInnerArmor("bogged");
-   public static final ModelLayerLocation BOGGED_OUTER_ARMOR = registerOuterArmor("bogged");
+   public static final ArmorModelSet<ModelLayerLocation> BOGGED_ARMOR = registerArmorSet("bogged");
    public static final ModelLayerLocation BOGGED_OUTER_LAYER = register("bogged", "outer");
    public static final ModelLayerLocation BOOK = register("book");
    public static final ModelLayerLocation BREEZE = register("breeze");
-   public static final ModelLayerLocation BREEZE_WIND = register("breeze_wind");
+   public static final ModelLayerLocation BREEZE_WIND = register("breeze", "wind");
+   public static final ModelLayerLocation BREEZE_EYES = register("breeze", "eyes");
    public static final ModelLayerLocation CAMEL = register("camel");
    public static final ModelLayerLocation CAMEL_BABY = register("camel_baby");
    public static final ModelLayerLocation CAMEL_SADDLE = register("camel", "saddle");
@@ -75,9 +74,15 @@ public class ModelLayers {
    public static final ModelLayerLocation CONDUIT_EYE = register("conduit", "eye");
    public static final ModelLayerLocation CONDUIT_SHELL = register("conduit", "shell");
    public static final ModelLayerLocation CONDUIT_WIND = register("conduit", "wind");
+   public static final ModelLayerLocation COPPER_GOLEM = register("copper_golem");
+   public static final ModelLayerLocation COPPER_GOLEM_EYES = register("copper_golem", "eyes");
+   public static final ModelLayerLocation COPPER_GOLEM_RUNNING = register("copper_golem_running");
+   public static final ModelLayerLocation COPPER_GOLEM_SITTING = register("copper_golem_sitting");
+   public static final ModelLayerLocation COPPER_GOLEM_STAR = register("copper_golem_star");
    public static final ModelLayerLocation COW = register("cow");
    public static final ModelLayerLocation COW_BABY = register("cow_baby");
    public static final ModelLayerLocation CREAKING = register("creaking");
+   public static final ModelLayerLocation CREAKING_EYES = register("creaking", "eyes");
    public static final ModelLayerLocation CREEPER = register("creeper");
    public static final ModelLayerLocation CREEPER_ARMOR = register("creeper", "armor");
    public static final ModelLayerLocation CREEPER_HEAD = register("creeper_head");
@@ -96,11 +101,9 @@ public class ModelLayers {
    public static final ModelLayerLocation DRAGON_SKULL = register("dragon_skull");
    public static final ModelLayerLocation DROWNED = register("drowned");
    public static final ModelLayerLocation DROWNED_BABY = register("drowned_baby");
-   public static final ModelLayerLocation DROWNED_BABY_INNER_ARMOR = registerInnerArmor("drowned_baby");
-   public static final ModelLayerLocation DROWNED_BABY_OUTER_ARMOR = registerOuterArmor("drowned_baby");
+   public static final ArmorModelSet<ModelLayerLocation> DROWNED_BABY_ARMOR = registerArmorSet("drowned_baby");
    public static final ModelLayerLocation DROWNED_BABY_OUTER_LAYER = register("drowned_baby", "outer");
-   public static final ModelLayerLocation DROWNED_INNER_ARMOR = registerInnerArmor("drowned");
-   public static final ModelLayerLocation DROWNED_OUTER_ARMOR = registerOuterArmor("drowned");
+   public static final ArmorModelSet<ModelLayerLocation> DROWNED_ARMOR = registerArmorSet("drowned");
    public static final ModelLayerLocation DROWNED_OUTER_LAYER = register("drowned", "outer");
    public static final ModelLayerLocation ELDER_GUARDIAN = register("elder_guardian");
    public static final ModelLayerLocation ELYTRA = register("elytra");
@@ -117,8 +120,7 @@ public class ModelLayers {
    public static final ModelLayerLocation FURNACE_MINECART = register("furnace_minecart");
    public static final ModelLayerLocation GHAST = register("ghast");
    public static final ModelLayerLocation GIANT = register("giant");
-   public static final ModelLayerLocation GIANT_INNER_ARMOR = registerInnerArmor("giant");
-   public static final ModelLayerLocation GIANT_OUTER_ARMOR = registerOuterArmor("giant");
+   public static final ArmorModelSet<ModelLayerLocation> GIANT_ARMOR = registerArmorSet("giant");
    public static final ModelLayerLocation GLOW_SQUID = register("glow_squid");
    public static final ModelLayerLocation GLOW_SQUID_BABY = register("glow_squid_baby");
    public static final ModelLayerLocation GOAT = register("goat");
@@ -141,10 +143,8 @@ public class ModelLayers {
    public static final ModelLayerLocation HORSE_BABY_SADDLE = register("horse_baby", "saddle");
    public static final ModelLayerLocation HUSK = register("husk");
    public static final ModelLayerLocation HUSK_BABY = register("husk_baby");
-   public static final ModelLayerLocation HUSK_BABY_INNER_ARMOR = registerInnerArmor("husk_baby");
-   public static final ModelLayerLocation HUSK_BABY_OUTER_ARMOR = registerOuterArmor("husk_baby");
-   public static final ModelLayerLocation HUSK_INNER_ARMOR = registerInnerArmor("husk");
-   public static final ModelLayerLocation HUSK_OUTER_ARMOR = registerOuterArmor("husk");
+   public static final ArmorModelSet<ModelLayerLocation> HUSK_BABY_ARMOR = registerArmorSet("husk_baby");
+   public static final ArmorModelSet<ModelLayerLocation> HUSK_ARMOR = registerArmorSet("husk");
    public static final ModelLayerLocation ILLUSIONER = register("illusioner");
    public static final ModelLayerLocation IRON_GOLEM = register("iron_golem");
    public static final ModelLayerLocation JUNGLE_BOAT = register("boat/jungle");
@@ -178,14 +178,11 @@ public class ModelLayers {
    public static final ModelLayerLocation PIG = register("pig");
    public static final ModelLayerLocation PIGLIN = register("piglin");
    public static final ModelLayerLocation PIGLIN_BABY = register("piglin_baby");
-   public static final ModelLayerLocation PIGLIN_BABY_INNER_ARMOR = registerInnerArmor("piglin_baby");
-   public static final ModelLayerLocation PIGLIN_BABY_OUTER_ARMOR = registerOuterArmor("piglin_baby");
+   public static final ArmorModelSet<ModelLayerLocation> PIGLIN_BABY_ARMOR = registerArmorSet("piglin_baby");
    public static final ModelLayerLocation PIGLIN_BRUTE = register("piglin_brute");
-   public static final ModelLayerLocation PIGLIN_BRUTE_INNER_ARMOR = registerInnerArmor("piglin_brute");
-   public static final ModelLayerLocation PIGLIN_BRUTE_OUTER_ARMOR = registerOuterArmor("piglin_brute");
+   public static final ArmorModelSet<ModelLayerLocation> PIGLIN_BRUTE_ARMOR = registerArmorSet("piglin_brute");
    public static final ModelLayerLocation PIGLIN_HEAD = register("piglin_head");
-   public static final ModelLayerLocation PIGLIN_INNER_ARMOR = registerInnerArmor("piglin");
-   public static final ModelLayerLocation PIGLIN_OUTER_ARMOR = registerOuterArmor("piglin");
+   public static final ArmorModelSet<ModelLayerLocation> PIGLIN_ARMOR = registerArmorSet("piglin");
    public static final ModelLayerLocation PIG_BABY = register("pig_baby");
    public static final ModelLayerLocation PIG_BABY_SADDLE = register("pig_baby", "saddle");
    public static final ModelLayerLocation PIG_SADDLE = register("pig", "saddle");
@@ -194,11 +191,9 @@ public class ModelLayers {
    public static final ModelLayerLocation PLAYER_CAPE = register("player", "cape");
    public static final ModelLayerLocation PLAYER_EARS = register("player", "ears");
    public static final ModelLayerLocation PLAYER_HEAD = register("player_head");
-   public static final ModelLayerLocation PLAYER_INNER_ARMOR = registerInnerArmor("player");
-   public static final ModelLayerLocation PLAYER_OUTER_ARMOR = registerOuterArmor("player");
+   public static final ArmorModelSet<ModelLayerLocation> PLAYER_ARMOR = registerArmorSet("player");
    public static final ModelLayerLocation PLAYER_SLIM = register("player_slim");
-   public static final ModelLayerLocation PLAYER_SLIM_INNER_ARMOR = registerInnerArmor("player_slim");
-   public static final ModelLayerLocation PLAYER_SLIM_OUTER_ARMOR = registerOuterArmor("player_slim");
+   public static final ArmorModelSet<ModelLayerLocation> PLAYER_SLIM_ARMOR = registerArmorSet("player_slim");
    public static final ModelLayerLocation PLAYER_SPIN_ATTACK = register("spin_attack");
    public static final ModelLayerLocation POLAR_BEAR = register("polar_bear");
    public static final ModelLayerLocation POLAR_BEAR_BABY = register("polar_bear_baby");
@@ -227,8 +222,7 @@ public class ModelLayers {
    public static final ModelLayerLocation SKELETON_HORSE_BABY = register("skeleton_horse_baby");
    public static final ModelLayerLocation SKELETON_HORSE_SADDLE = register("skeleton_horse", "saddle");
    public static final ModelLayerLocation SKELETON_HORSE_BABY_SADDLE = register("skeleton_horse_baby", "saddle");
-   public static final ModelLayerLocation SKELETON_INNER_ARMOR = registerInnerArmor("skeleton");
-   public static final ModelLayerLocation SKELETON_OUTER_ARMOR = registerOuterArmor("skeleton");
+   public static final ArmorModelSet<ModelLayerLocation> SKELETON_ARMOR = registerArmorSet("skeleton");
    public static final ModelLayerLocation SKELETON_SKULL = register("skeleton_skull");
    public static final ModelLayerLocation SLIME = register("slime");
    public static final ModelLayerLocation SLIME_OUTER = register("slime", "outer");
@@ -242,8 +236,7 @@ public class ModelLayers {
    public static final ModelLayerLocation SQUID = register("squid");
    public static final ModelLayerLocation SQUID_BABY = register("squid_baby");
    public static final ModelLayerLocation STRAY = register("stray");
-   public static final ModelLayerLocation STRAY_INNER_ARMOR = registerInnerArmor("stray");
-   public static final ModelLayerLocation STRAY_OUTER_ARMOR = registerOuterArmor("stray");
+   public static final ArmorModelSet<ModelLayerLocation> STRAY_ARMOR = registerArmorSet("stray");
    public static final ModelLayerLocation STRAY_OUTER_LAYER = register("stray", "outer");
    public static final ModelLayerLocation STRIDER = register("strider");
    public static final ModelLayerLocation STRIDER_SADDLE = register("strider", "saddle");
@@ -262,10 +255,16 @@ public class ModelLayers {
    public static final ModelLayerLocation TURTLE_BABY = register("turtle_baby");
    public static final ModelLayerLocation VEX = register("vex");
    public static final ModelLayerLocation VILLAGER = register("villager");
+   public static final ModelLayerLocation VILLAGER_NO_HAT = register("villager_no_hat");
    public static final ModelLayerLocation VILLAGER_BABY = register("villager_baby");
+   public static final ModelLayerLocation VILLAGER_BABY_NO_HAT = register("villager_baby_no_hat");
    public static final ModelLayerLocation VINDICATOR = register("vindicator");
    public static final ModelLayerLocation WANDERING_TRADER = register("wandering_trader");
    public static final ModelLayerLocation WARDEN = register("warden");
+   public static final ModelLayerLocation WARDEN_BIOLUMINESCENT = register("warden", "bioluminescent");
+   public static final ModelLayerLocation WARDEN_PULSATING_SPOTS = register("warden", "pulsating_spots");
+   public static final ModelLayerLocation WARDEN_TENDRILS = register("warden", "tendrils");
+   public static final ModelLayerLocation WARDEN_HEART = register("warden", "heart");
    public static final ModelLayerLocation WARM_COW = register("warm_cow");
    public static final ModelLayerLocation WARM_COW_BABY = register("warm_cow_baby");
    public static final ModelLayerLocation WIND_CHARGE = register("wind_charge");
@@ -273,8 +272,7 @@ public class ModelLayers {
    public static final ModelLayerLocation WITHER = register("wither");
    public static final ModelLayerLocation WITHER_ARMOR = register("wither", "armor");
    public static final ModelLayerLocation WITHER_SKELETON = register("wither_skeleton");
-   public static final ModelLayerLocation WITHER_SKELETON_INNER_ARMOR = registerInnerArmor("wither_skeleton");
-   public static final ModelLayerLocation WITHER_SKELETON_OUTER_ARMOR = registerOuterArmor("wither_skeleton");
+   public static final ArmorModelSet<ModelLayerLocation> WITHER_SKELETON_ARMOR = registerArmorSet("wither_skeleton");
    public static final ModelLayerLocation WITHER_SKELETON_SKULL = register("wither_skeleton_skull");
    public static final ModelLayerLocation WITHER_SKULL = register("wither_skull");
    public static final ModelLayerLocation WOLF = register("wolf");
@@ -285,27 +283,23 @@ public class ModelLayers {
    public static final ModelLayerLocation ZOGLIN_BABY = register("zoglin_baby");
    public static final ModelLayerLocation ZOMBIE = register("zombie");
    public static final ModelLayerLocation ZOMBIE_BABY = register("zombie_baby");
-   public static final ModelLayerLocation ZOMBIE_BABY_INNER_ARMOR = registerInnerArmor("zombie_baby");
-   public static final ModelLayerLocation ZOMBIE_BABY_OUTER_ARMOR = registerOuterArmor("zombie_baby");
+   public static final ArmorModelSet<ModelLayerLocation> ZOMBIE_BABY_ARMOR = registerArmorSet("zombie_baby");
    public static final ModelLayerLocation ZOMBIE_HEAD = register("zombie_head");
    public static final ModelLayerLocation ZOMBIE_HORSE = register("zombie_horse");
    public static final ModelLayerLocation ZOMBIE_HORSE_BABY = register("zombie_horse_baby");
    public static final ModelLayerLocation ZOMBIE_HORSE_SADDLE = register("zombie_horse", "saddle");
    public static final ModelLayerLocation ZOMBIE_HORSE_BABY_SADDLE = register("zombie_horse_baby", "saddle");
-   public static final ModelLayerLocation ZOMBIE_INNER_ARMOR = registerInnerArmor("zombie");
-   public static final ModelLayerLocation ZOMBIE_OUTER_ARMOR = registerOuterArmor("zombie");
+   public static final ArmorModelSet<ModelLayerLocation> ZOMBIE_ARMOR = registerArmorSet("zombie");
    public static final ModelLayerLocation ZOMBIE_VILLAGER = register("zombie_villager");
+   public static final ModelLayerLocation ZOMBIE_VILLAGER_NO_HAT = register("zombie_villager_no_hat");
    public static final ModelLayerLocation ZOMBIE_VILLAGER_BABY = register("zombie_villager_baby");
-   public static final ModelLayerLocation ZOMBIE_VILLAGER_BABY_INNER_ARMOR = registerInnerArmor("zombie_villager_baby");
-   public static final ModelLayerLocation ZOMBIE_VILLAGER_BABY_OUTER_ARMOR = registerOuterArmor("zombie_villager_baby");
-   public static final ModelLayerLocation ZOMBIE_VILLAGER_INNER_ARMOR = registerInnerArmor("zombie_villager");
-   public static final ModelLayerLocation ZOMBIE_VILLAGER_OUTER_ARMOR = registerOuterArmor("zombie_villager");
+   public static final ModelLayerLocation ZOMBIE_VILLAGER_BABY_NO_HAT = register("zombie_villager_baby_no_hat");
+   public static final ArmorModelSet<ModelLayerLocation> ZOMBIE_VILLAGER_BABY_ARMOR = registerArmorSet("zombie_villager_baby");
+   public static final ArmorModelSet<ModelLayerLocation> ZOMBIE_VILLAGER_ARMOR = registerArmorSet("zombie_villager");
    public static final ModelLayerLocation ZOMBIFIED_PIGLIN = register("zombified_piglin");
    public static final ModelLayerLocation ZOMBIFIED_PIGLIN_BABY = register("zombified_piglin_baby");
-   public static final ModelLayerLocation ZOMBIFIED_PIGLIN_BABY_INNER_ARMOR = registerInnerArmor("zombified_piglin_baby");
-   public static final ModelLayerLocation ZOMBIFIED_PIGLIN_BABY_OUTER_ARMOR = registerOuterArmor("zombified_piglin_baby");
-   public static final ModelLayerLocation ZOMBIFIED_PIGLIN_INNER_ARMOR = registerInnerArmor("zombified_piglin");
-   public static final ModelLayerLocation ZOMBIFIED_PIGLIN_OUTER_ARMOR = registerOuterArmor("zombified_piglin");
+   public static final ArmorModelSet<ModelLayerLocation> ZOMBIFIED_PIGLIN_BABY_ARMOR = registerArmorSet("zombified_piglin_baby");
+   public static final ArmorModelSet<ModelLayerLocation> ZOMBIFIED_PIGLIN_ARMOR = registerArmorSet("zombified_piglin");
 
    public ModelLayers() {
       super();
@@ -328,12 +322,8 @@ public class ModelLayers {
       return new ModelLayerLocation(ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
-   private static ModelLayerLocation registerInnerArmor(String var0) {
-      return register(var0, "inner_armor");
-   }
-
-   private static ModelLayerLocation registerOuterArmor(String var0) {
-      return register(var0, "outer_armor");
+   private static ArmorModelSet<ModelLayerLocation> registerArmorSet(String var0) {
+      return new ArmorModelSet<ModelLayerLocation>(register(var0, "helmet"), register(var0, "chestplate"), register(var0, "leggings"), register(var0, "boots"));
    }
 
    public static ModelLayerLocation createStandingSignModelName(WoodType var0) {

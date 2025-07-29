@@ -188,7 +188,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       Heightmap var4 = (Heightmap)this.heightmaps.get(var1);
       if (var4 == null) {
          if (SharedConstants.IS_RUNNING_IN_IDE && this instanceof LevelChunk) {
-            LOGGER.error("Unprimed heightmap: " + String.valueOf(var1) + " " + var2 + " " + var3);
+            LOGGER.error("Unprimed heightmap: {} {} {}", new Object[]{var1, var2, var3});
          }
 
          Heightmap.primeHeightmaps(this, EnumSet.of(var1));

@@ -8,13 +8,12 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.SkullBlock;
 import org.joml.Quaternionfc;
 
@@ -34,7 +33,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
       this.skullModels = Util.memoize((Function)((var1x) -> SkullBlockRenderer.createModel(var2, var1x)));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
       if (!var4.headItem.isEmpty() || var4.wornHeadType != null) {
          var1.pushPose();
          var1.scale(this.transforms.horizontalScale(), 1.0F, this.transforms.horizontalScale());
@@ -48,10 +47,10 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
             SkullBlock.Type var8 = var4.wornHeadType;
             SkullModelBase var9 = (SkullModelBase)this.skullModels.apply(var8);
             RenderType var10 = SkullBlockRenderer.getRenderType(var8, var4.wornHeadProfile);
-            SkullBlockRenderer.renderSkull((Direction)null, 180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var9, var10);
+            SkullBlockRenderer.submitSkull(180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var9, var10, var4.outlineColor);
          } else {
             translateToHead(var1, this.transforms);
-            var4.headItem.render(var1, var2, var3, OverlayTexture.NO_OVERLAY);
+            var2.submitItem(var1, var4.headItem, var3, OverlayTexture.NO_OVERLAY);
          }
 
          var1.popPose();

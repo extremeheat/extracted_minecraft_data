@@ -14,12 +14,14 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class ItemRenderer {
    public static final ResourceLocation ENCHANTED_GLINT_ARMOR = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
@@ -54,10 +56,6 @@ public class ItemRenderer {
       renderQuadList(var1, var9, var6, var5, var3, var4);
    }
 
-   public static VertexConsumer getArmorFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2) {
-      return var2 ? VertexMultiConsumer.create(var0.getBuffer(RenderType.armorEntityGlint()), var0.getBuffer(var1)) : var0.getBuffer(var1);
-   }
-
    private static VertexConsumer getSpecialFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
       return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(useTransparentGlint(var1) ? RenderType.glintTranslucent() : RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
    }
@@ -67,6 +65,14 @@ public class ItemRenderer {
          return useTransparentGlint(var1) ? VertexMultiConsumer.create(var0.getBuffer(RenderType.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlint()), var0.getBuffer(var1));
       } else {
          return var0.getBuffer(var1);
+      }
+   }
+
+   public static List<RenderType> getFoilRenderTypes(RenderType var0, boolean var1, boolean var2) {
+      if (var2) {
+         return useTransparentGlint(var0) ? List.of(var0, RenderType.glintTranslucent()) : List.of(var0, var1 ? RenderType.glint() : RenderType.entityGlint());
+      } else {
+         return List.of(var0);
       }
    }
 
@@ -105,10 +111,14 @@ public class ItemRenderer {
    }
 
    public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
-      this.renderStatic((LivingEntity)null, var1, var2, var5, var6, var7, var3, var4, var8);
+      this.renderStatic((ItemOwner)null, var1, var2, var5, var6, var7, var3, var4, var8);
    }
 
-   public void renderStatic(@Nullable LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
+   public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, Level var7, Vec3 var8, Direction var9, int var10) {
+      this.renderStatic(ItemOwner.custom(var8, var9, var7), var1, var2, var5, var6, var7, var3, var4, var10);
+   }
+
+   public void renderStatic(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
       this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
       this.scratchItemStackRenderState.render(var4, var5, var7, var8);
    }

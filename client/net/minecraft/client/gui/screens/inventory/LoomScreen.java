@@ -141,7 +141,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                }
 
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var23, var20, var21, 14, 14);
-               TextureAtlasSprite var24 = Sheets.getBannerMaterial((Holder)var27.get(var19)).sprite();
+               TextureAtlasSprite var24 = var1.getSprite(Sheets.getBannerMaterial((Holder)var27.get(var19)));
                this.renderBannerOnButton(var1, var20, var21, var24);
             }
          }
@@ -165,34 +165,34 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       var1.pose().popMatrix();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       this.scrolling = false;
       if (this.displayPatterns) {
-         int var6 = this.leftPos + 60;
-         int var7 = this.topPos + 13;
+         int var7 = this.leftPos + 60;
+         int var8 = this.topPos + 13;
 
-         for(int var8 = 0; var8 < 4; ++var8) {
-            for(int var9 = 0; var9 < 4; ++var9) {
-               double var10 = var1 - (double)(var6 + var9 * 14);
-               double var12 = var3 - (double)(var7 + var8 * 14);
-               int var14 = var8 + this.startRow;
-               int var15 = var14 * 4 + var9;
-               if (var10 >= 0.0 && var12 >= 0.0 && var10 < 14.0 && var12 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var15)) {
+         for(int var9 = 0; var9 < 4; ++var9) {
+            for(int var10 = 0; var10 < 4; ++var10) {
+               double var11 = var1 - (double)(var7 + var10 * 14);
+               double var13 = var3 - (double)(var8 + var9 * 14);
+               int var15 = var9 + this.startRow;
+               int var16 = var15 * 4 + var10;
+               if (var11 >= 0.0 && var13 >= 0.0 && var11 < 14.0 && var13 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var16)) {
                   Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var15);
+                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var16);
                   return true;
                }
             }
          }
 
-         var6 = this.leftPos + 119;
-         var7 = this.topPos + 9;
-         if (var1 >= (double)var6 && var1 < (double)(var6 + 12) && var3 >= (double)var7 && var3 < (double)(var7 + 56)) {
+         var7 = this.leftPos + 119;
+         var8 = this.topPos + 9;
+         if (var1 >= (double)var7 && var1 < (double)(var7 + 12) && var3 >= (double)var8 && var3 < (double)(var8 + 56)) {
             this.scrolling = true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {

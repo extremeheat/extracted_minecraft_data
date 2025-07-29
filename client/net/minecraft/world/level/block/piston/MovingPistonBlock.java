@@ -73,7 +73,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide && var2.getBlockEntity(var3) == null) {
+      if (!var2.isClientSide() && var2.getBlockEntity(var3) == null) {
          var2.removeBlock(var3, false);
          return InteractionResult.CONSUME;
       } else {

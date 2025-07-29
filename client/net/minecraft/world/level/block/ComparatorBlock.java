@@ -88,12 +88,12 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       BlockPos var6 = var2.relative(var5);
       BlockState var7 = var1.getBlockState(var6);
       if (var7.hasAnalogOutputSignal()) {
-         var4 = var7.getAnalogOutputSignal(var1, var6);
+         var4 = var7.getAnalogOutputSignal(var1, var6, var5.getOpposite());
       } else if (var4 < 15 && var7.isRedstoneConductor(var1, var6)) {
          var6 = var6.relative(var5);
          var7 = var1.getBlockState(var6);
          ItemFrame var8 = this.getItemFrame(var1, var5, var6);
-         int var9 = Math.max(var8 == null ? -2147483648 : var8.getAnalogOutput(), var7.hasAnalogOutputSignal() ? var7.getAnalogOutputSignal(var1, var6) : -2147483648);
+         int var9 = Math.max(var8 == null ? -2147483648 : var8.getAnalogOutput(), var7.hasAnalogOutputSignal() ? var7.getAnalogOutputSignal(var1, var6, var5.getOpposite()) : -2147483648);
          if (var9 != -2147483648) {
             var4 = var9;
          }

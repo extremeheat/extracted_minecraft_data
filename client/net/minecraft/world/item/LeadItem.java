@@ -25,7 +25,7 @@ public class LeadItem extends Item {
       BlockState var4 = var2.getBlockState(var3);
       if (var4.is(BlockTags.FENCES)) {
          Player var5 = var1.getPlayer();
-         if (!var2.isClientSide && var5 != null) {
+         if (!var2.isClientSide() && var5 != null) {
             return bindPlayerMobs(var5, var2, var3);
          }
       }

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -12,6 +11,8 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -57,7 +58,7 @@ import org.joml.Quaternionfc;
 public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerRenderState, PlayerModel> {
    public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
       super(var1, new PlayerModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), var2), 0.5F);
-      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR)), var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(var2 ? ModelLayers.PLAYER_SLIM_ARMOR : ModelLayers.PLAYER_ARMOR, var1.getModelSet(), (var1x) -> new PlayerModel(var1x, var2)), var1.getEquipmentRenderer()));
       this.addLayer(new PlayerItemInHandLayer(this));
       this.addLayer(new ArrowLayer(this, var1));
       this.addLayer(new Deadmau5EarsLayer(this, var1.getModelSet()));
@@ -140,16 +141,19 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.scale(0.9375F, 0.9375F, 0.9375F);
    }
 
-   protected void renderNameTag(PlayerRenderState var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5) {
-      var3.pushPose();
+   protected void submitNameTag(PlayerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      var2.pushPose();
       if (var1.scoreText != null) {
-         super.renderNameTag(var1, var1.scoreText, var3, var4, var5);
+         var3.submitNameTag(var2, var1.nameTagAttachment, var1.scoreText, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq);
          Objects.requireNonNull(this.getFont());
-         var3.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
+         var2.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
       }
 
-      super.renderNameTag(var1, var2, var3, var4, var5);
-      var3.popPose();
+      if (var1.nameTag != null) {
+         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq);
+      }
+
+      var2.popPose();
    }
 
    public PlayerRenderState createRenderState() {
@@ -309,6 +313,11 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    // $FF: synthetic method
    public EntityRenderState createRenderState() {
       return this.createRenderState();
+   }
+
+   // $FF: synthetic method
+   protected void submitNameTag(final EntityRenderState var1, final PoseStack var2, final SubmitNodeCollector var3) {
+      this.submitNameTag((PlayerRenderState)var1, var2, var3);
    }
 
    // $FF: synthetic method

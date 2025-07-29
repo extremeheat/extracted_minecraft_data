@@ -3,20 +3,21 @@ package net.minecraft.client.particle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemPickupParticle extends Particle {
    private static final int LIFE_TIME = 3;
-   private final Entity itemEntity;
    private final Entity target;
    private int life;
    private final EntityRenderDispatcher entityRenderDispatcher;
+   private final EntityRenderState itemRenderState;
    private double targetX;
    private double targetY;
    private double targetZ;
@@ -30,15 +31,11 @@ public class ItemPickupParticle extends Particle {
 
    private ItemPickupParticle(EntityRenderDispatcher var1, ClientLevel var2, Entity var3, Entity var4, Vec3 var5) {
       super(var2, var3.getX(), var3.getY(), var3.getZ(), var5.x, var5.y, var5.z);
-      this.itemEntity = this.getSafeCopy(var3);
       this.target = var4;
       this.entityRenderDispatcher = var1;
+      this.itemRenderState = var1.extractEntity(var3, 1.0F);
       this.updatePosition();
       this.saveOldPosition();
-   }
-
-   private Entity getSafeCopy(Entity var1) {
-      return (Entity)(!(var1 instanceof ItemEntity) ? var1 : ((ItemEntity)var1).copy());
    }
 
    public ParticleRenderType getRenderType() {
@@ -51,11 +48,11 @@ public class ItemPickupParticle extends Particle {
       double var6 = Mth.lerp((double)var4, this.targetXOld, this.targetX);
       double var8 = Mth.lerp((double)var4, this.targetYOld, this.targetY);
       double var10 = Mth.lerp((double)var4, this.targetZOld, this.targetZ);
-      double var12 = Mth.lerp((double)var5, this.itemEntity.getX(), var6);
-      double var14 = Mth.lerp((double)var5, this.itemEntity.getY(), var8);
-      double var16 = Mth.lerp((double)var5, this.itemEntity.getZ(), var10);
+      double var12 = Mth.lerp((double)var5, this.itemRenderState.x, var6);
+      double var14 = Mth.lerp((double)var5, this.itemRenderState.y, var8);
+      double var16 = Mth.lerp((double)var5, this.itemRenderState.z, var10);
       Vec3 var18 = var3.getPosition();
-      this.entityRenderDispatcher.render(this.itemEntity, var12 - var18.x(), var14 - var18.y(), var16 - var18.z(), var4, new PoseStack(), var2, this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var4));
+      this.entityRenderDispatcher.submit(this.itemRenderState, var12 - var18.x(), var14 - var18.y(), var16 - var18.z(), new PoseStack(), Minecraft.getInstance().gameRenderer.getSubmitNodeStorage());
    }
 
    public void render(VertexConsumer var1, Camera var2, float var3) {

@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FishingHookRenderState;
@@ -32,31 +32,31 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       return super.shouldRender(var1, var2, var3, var5, var7) && var1.getPlayerOwner() != null;
    }
 
-   public void render(FishingHookRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(FishingHookRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.pushPose();
       var2.scale(0.5F, 0.5F, 0.5F);
       var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
-      PoseStack.Pose var5 = var2.last();
-      VertexConsumer var6 = var3.getBuffer(RENDER_TYPE);
-      vertex(var6, var5, var4, 0.0F, 0, 0, 1);
-      vertex(var6, var5, var4, 1.0F, 0, 1, 1);
-      vertex(var6, var5, var4, 1.0F, 1, 1, 0);
-      vertex(var6, var5, var4, 0.0F, 1, 0, 0);
+      var3.submitCustomGeometry(var2, RENDER_TYPE, (var1x, var2x) -> {
+         vertex(var2x, var1x, var1.lightCoords, 0.0F, 0, 0, 1);
+         vertex(var2x, var1x, var1.lightCoords, 1.0F, 0, 1, 1);
+         vertex(var2x, var1x, var1.lightCoords, 1.0F, 1, 1, 0);
+         vertex(var2x, var1x, var1.lightCoords, 0.0F, 1, 0, 0);
+      });
       var2.popPose();
-      float var7 = (float)var1.lineOriginOffset.x;
-      float var8 = (float)var1.lineOriginOffset.y;
-      float var9 = (float)var1.lineOriginOffset.z;
-      VertexConsumer var10 = var3.getBuffer(RenderType.lineStrip());
-      PoseStack.Pose var11 = var2.last();
-      boolean var12 = true;
+      float var4 = (float)var1.lineOriginOffset.x;
+      float var5 = (float)var1.lineOriginOffset.y;
+      float var6 = (float)var1.lineOriginOffset.z;
+      var3.submitCustomGeometry(var2, RenderType.lineStrip(), (var3x, var4x) -> {
+         boolean var5x = true;
 
-      for(int var13 = 0; var13 <= 16; ++var13) {
-         stringVertex(var7, var8, var9, var10, var11, fraction(var13, 16), fraction(var13 + 1, 16));
-      }
+         for(int var6x = 0; var6x <= 16; ++var6x) {
+            stringVertex(var4, var5, var6, var4x, var3x, fraction(var6x, 16), fraction(var6x + 1, 16));
+         }
 
+      });
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    public static HumanoidArm getHoldingArm(Player var0) {

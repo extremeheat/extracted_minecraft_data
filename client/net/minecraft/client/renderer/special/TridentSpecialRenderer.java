@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import net.minecraft.client.model.TridentModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -45,8 +44,8 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         return new TridentSpecialRenderer(new TridentModel(var1.bakeLayer(ModelLayers.TRIDENT)));
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         return new TridentSpecialRenderer(new TridentModel(var1.entityModelSet().bakeLayer(ModelLayers.TRIDENT)));
       }
    }
 }

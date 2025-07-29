@@ -10,6 +10,7 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.valueproviders.ConstantFloat;
@@ -69,7 +70,7 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
       Sound.Type var3 = var2;
       if (var1.has("type")) {
          var3 = Sound.Type.getByName(GsonHelper.getAsString(var1, "type"));
-         Validate.notNull(var3, "Invalid type", new Object[0]);
+         Objects.requireNonNull(var3, "Invalid type");
       }
 
       return var3;

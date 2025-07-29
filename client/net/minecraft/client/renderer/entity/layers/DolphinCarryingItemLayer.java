@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.DolphinModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.DolphinRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -14,7 +14,7 @@ public class DolphinCarryingItemLayer extends RenderLayer<DolphinRenderState, Do
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, DolphinRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, DolphinRenderState var4, float var5, float var6) {
       ItemStackRenderState var7 = var4.heldItem;
       if (!var7.isEmpty()) {
          var1.pushPose();
@@ -27,7 +27,7 @@ public class DolphinCarryingItemLayer extends RenderLayer<DolphinRenderState, Do
             var1.translate(0.0F, 1.0F + var10 * 0.8F, -1.0F + var10 * 0.2F);
          }
 
-         var7.render(var1, var2, var3, OverlayTexture.NO_OVERLAY);
+         var2.submitItem(var1, var7, var3, OverlayTexture.NO_OVERLAY);
          var1.popPose();
       }
    }

@@ -11,7 +11,9 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
@@ -21,14 +23,20 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity> {
+   private final MaterialSet materials;
    private final ShulkerBoxModel model;
 
    public ShulkerBoxRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.getModelSet());
+      this(var1.entityModelSet(), var1.materials());
    }
 
-   public ShulkerBoxRenderer(EntityModelSet var1) {
+   public ShulkerBoxRenderer(SpecialModelRenderer.BakingContext var1) {
+      this(var1.entityModelSet(), var1.materials());
+   }
+
+   public ShulkerBoxRenderer(EntityModelSet var1, MaterialSet var2) {
       super();
+      this.materials = var2;
       this.model = new ShulkerBoxModel(var1.bakeLayer(ModelLayers.SHULKER_BOX));
    }
 
@@ -49,9 +57,10 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
    public void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, Direction var5, float var6, Material var7) {
       var1.pushPose();
       this.prepareModel(var1, var5, var6);
-      ShulkerBoxModel var10002 = this.model;
-      Objects.requireNonNull(var10002);
-      VertexConsumer var8 = var7.buffer(var2, var10002::renderType);
+      MaterialSet var10001 = this.materials;
+      ShulkerBoxModel var10003 = this.model;
+      Objects.requireNonNull(var10003);
+      VertexConsumer var8 = var7.buffer(var10001, var2, var10003::renderType);
       this.model.renderToBuffer(var1, var8, var3, var4);
       var1.popPose();
    }
@@ -63,7 +72,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       var1.mulPose((Quaternionfc)var2.getRotation());
       var1.scale(1.0F, -1.0F, -1.0F);
       var1.translate(0.0F, -1.0F, 0.0F);
-      this.model.animate(var3);
+      this.model.setupAnim(var3);
    }
 
    public void getExtents(Direction var1, float var2, Set<Vector3f> var3) {
@@ -72,7 +81,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.model.root().getExtentsForGui(var4, var3);
    }
 
-   static class ShulkerBoxModel extends Model {
+   static class ShulkerBoxModel extends Model<Float> {
       private final ModelPart lid;
 
       public ShulkerBoxModel(ModelPart var1) {
@@ -80,7 +89,8 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
          this.lid = var1.getChild("lid");
       }
 
-      public void animate(float var1) {
+      public void setupAnim(Float var1) {
+         super.setupAnim(var1);
          this.lid.setPos(0.0F, 24.0F - var1 * 0.5F * 16.0F, 0.0F);
          this.lid.yRot = 270.0F * var1 * 0.017453292F;
       }

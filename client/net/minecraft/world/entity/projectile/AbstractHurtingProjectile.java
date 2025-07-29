@@ -64,7 +64,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    public void tick() {
       Entity var1 = this.getOwner();
       this.applyInertia();
-      if (this.level().isClientSide || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
+      if (this.level().isClientSide() || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
          Vec3 var3;
          if (var2.getType() != HitResult.Type.MISS) {

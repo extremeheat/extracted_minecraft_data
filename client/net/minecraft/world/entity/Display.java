@@ -137,7 +137,7 @@ public abstract class Display extends Entity {
          this.stopRiding();
       }
 
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.updateStartTick) {
             this.updateStartTick = false;
             int var2 = this.getTransformationInterpolationDelay();

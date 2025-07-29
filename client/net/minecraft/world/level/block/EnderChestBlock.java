@@ -97,7 +97,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, BlockEntityType.ENDER_CHEST, EnderChestBlockEntity::lidAnimateTick) : null;
+      return var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.ENDER_CHEST, EnderChestBlockEntity::lidAnimateTick) : null;
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {

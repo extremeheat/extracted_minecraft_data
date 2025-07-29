@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.decoration;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,7 +40,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.Validate;
 
 public class ItemFrame extends HangingEntity {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM;
@@ -81,7 +81,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    protected void setDirection(Direction var1) {
-      Validate.notNull(var1);
+      Objects.requireNonNull(var1);
       super.setDirectionRaw(var1);
       if (var1.getAxis().isHorizontal()) {
          this.setXRot(0.0F);
@@ -358,7 +358,7 @@ public class ItemFrame extends HangingEntity {
       boolean var5 = !var3.isEmpty();
       if (this.fixed) {
          return InteractionResult.PASS;
-      } else if (!var1.level().isClientSide) {
+      } else if (!var1.level().isClientSide()) {
          if (!var4) {
             if (var5 && !this.isRemoved()) {
                MapItemSavedData var6 = MapItem.getSavedData(var3, this.level());

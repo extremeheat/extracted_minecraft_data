@@ -120,8 +120,8 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return this.commandSuggestions.mouseScrolled(var7) ? true : super.mouseScrolled(var1, var3, var5, var7);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      return this.commandSuggestions.mouseClicked(var1, var3, var5) ? true : super.mouseClicked(var1, var3, var5);
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      return this.commandSuggestions.mouseClicked(var1, var3, var5) ? true : super.mouseClicked(var1, var3, var5, var6);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

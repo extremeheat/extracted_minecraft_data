@@ -52,7 +52,6 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
 import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
@@ -151,22 +150,21 @@ public class RealmsClient {
    }
 
    private Set<String> fetchFeatureFlags() {
-      User var1 = Minecraft.getInstance().getUser();
-      if (var1.getType() != User.Type.MSA) {
+      if (Minecraft.getInstance().isOfflineDeveloperMode()) {
          return Set.of();
       } else {
-         String var2 = url("feature/v1", (String)null, false);
+         String var1 = url("feature/v1", (String)null, false);
 
          try {
-            String var3 = this.execute(Request.get(var2, 5000, 10000));
-            JsonArray var4 = LenientJsonParser.parse(var3).getAsJsonArray();
-            Set var5 = (Set)var4.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet());
-            LOGGER.debug("Fetched Realms feature flags: {}", var5);
-            return var5;
-         } catch (RealmsServiceException var6) {
-            LOGGER.error("Failed to fetch Realms feature flags", var6);
-         } catch (Exception var7) {
-            LOGGER.error("Could not parse Realms feature flags", var7);
+            String var2 = this.execute(Request.get(var1, 5000, 10000));
+            JsonArray var3 = LenientJsonParser.parse(var2).getAsJsonArray();
+            Set var4 = (Set)var3.asList().stream().map(JsonElement::getAsString).collect(Collectors.toSet());
+            LOGGER.debug("Fetched Realms feature flags: {}", var4);
+            return var4;
+         } catch (RealmsServiceException var5) {
+            LOGGER.error("Failed to fetch Realms feature flags", var5);
+         } catch (Exception var6) {
+            LOGGER.error("Could not parse Realms feature flags", var6);
          }
 
          return Set.of();

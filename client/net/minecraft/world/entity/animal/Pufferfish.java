@@ -84,7 +84,7 @@ public class Pufferfish extends AbstractFish {
    }
 
    public void tick() {
-      if (!this.level().isClientSide && this.isAlive() && this.isEffectiveAi()) {
+      if (!this.level().isClientSide() && this.isAlive() && this.isEffectiveAi()) {
          if (this.inflateCounter > 0) {
             if (this.getPuffState() == 0) {
                this.makeSound(SoundEvents.PUFFER_FISH_BLOW_UP);

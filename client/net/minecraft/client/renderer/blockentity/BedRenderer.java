@@ -16,7 +16,9 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
@@ -31,17 +33,23 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
-   private final Model headModel;
-   private final Model footModel;
+   private final MaterialSet materials;
+   private final Model.Simple headModel;
+   private final Model.Simple footModel;
 
    public BedRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.getModelSet());
+      this(var1.materials(), var1.entityModelSet());
    }
 
-   public BedRenderer(EntityModelSet var1) {
+   public BedRenderer(SpecialModelRenderer.BakingContext var1) {
+      this(var1.materials(), var1.entityModelSet());
+   }
+
+   public BedRenderer(MaterialSet var1, EntityModelSet var2) {
       super();
-      this.headModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
-      this.footModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
+      this.materials = var1;
+      this.headModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
+      this.footModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
    }
 
    public static LayerDefinition createHeadLayer() {
@@ -79,10 +87,10 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
       this.renderPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true);
    }
 
-   private void renderPiece(PoseStack var1, MultiBufferSource var2, Model var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
+   private void renderPiece(PoseStack var1, MultiBufferSource var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
       var1.pushPose();
       preparePose(var1, var8, var4);
-      VertexConsumer var9 = var5.buffer(var2, RenderType::entitySolid);
+      VertexConsumer var9 = var5.buffer(this.materials, var2, RenderType::entitySolid);
       var3.renderToBuffer(var1, var9, var6, var7);
       var1.popPose();
    }

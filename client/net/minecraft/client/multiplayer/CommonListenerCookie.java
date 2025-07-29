@@ -11,19 +11,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.world.flag.FeatureFlagSet;
 
-public record CommonListenerCookie(GameProfile localGameProfile, WorldSessionTelemetryManager telemetryManager, RegistryAccess.Frozen receivedRegistries, FeatureFlagSet enabledFeatures, @Nullable String serverBrand, @Nullable ServerData serverData, @Nullable Screen postDisconnectScreen, Map<ResourceLocation, byte[]> serverCookies, @Nullable ChatComponent.State chatState, Map<String, String> customReportDetails, ServerLinks serverLinks) {
-   public CommonListenerCookie(GameProfile var1, WorldSessionTelemetryManager var2, RegistryAccess.Frozen var3, FeatureFlagSet var4, @Nullable String var5, @Nullable ServerData var6, @Nullable Screen var7, Map<ResourceLocation, byte[]> var8, @Nullable ChatComponent.State var9, Map<String, String> var10, ServerLinks var11) {
+public record CommonListenerCookie(LevelLoadTracker levelLoadTracker, GameProfile localGameProfile, WorldSessionTelemetryManager telemetryManager, RegistryAccess.Frozen receivedRegistries, FeatureFlagSet enabledFeatures, @Nullable String serverBrand, @Nullable ServerData serverData, @Nullable Screen postDisconnectScreen, Map<ResourceLocation, byte[]> serverCookies, @Nullable ChatComponent.State chatState, Map<String, String> customReportDetails, ServerLinks serverLinks) {
+   public CommonListenerCookie(LevelLoadTracker var1, GameProfile var2, WorldSessionTelemetryManager var3, RegistryAccess.Frozen var4, FeatureFlagSet var5, @Nullable String var6, @Nullable ServerData var7, @Nullable Screen var8, Map<ResourceLocation, byte[]> var9, @Nullable ChatComponent.State var10, Map<String, String> var11, ServerLinks var12) {
       super();
-      this.localGameProfile = var1;
-      this.telemetryManager = var2;
-      this.receivedRegistries = var3;
-      this.enabledFeatures = var4;
-      this.serverBrand = var5;
-      this.serverData = var6;
-      this.postDisconnectScreen = var7;
-      this.serverCookies = var8;
-      this.chatState = var9;
-      this.customReportDetails = var10;
-      this.serverLinks = var11;
+      this.levelLoadTracker = var1;
+      this.localGameProfile = var2;
+      this.telemetryManager = var3;
+      this.receivedRegistries = var4;
+      this.enabledFeatures = var5;
+      this.serverBrand = var6;
+      this.serverData = var7;
+      this.postDisconnectScreen = var8;
+      this.serverCookies = var9;
+      this.chatState = var10;
+      this.customReportDetails = var11;
+      this.serverLinks = var12;
    }
 }

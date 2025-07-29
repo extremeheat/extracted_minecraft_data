@@ -393,7 +393,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    public void openCustomInventoryScreen(Player var1) {
-      if (!this.level().isClientSide && (!this.isVehicle() || this.hasPassenger(var1)) && this.isTamed()) {
+      if (!this.level().isClientSide() && (!this.isVehicle() || this.hasPassenger(var1)) && this.isTamed()) {
          var1.openHorseInventory(this, this.inventory);
       }
 
@@ -405,7 +405,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          var2.consume(1, var1);
       }
 
-      return (InteractionResult)(!var3 && !this.level().isClientSide ? InteractionResult.PASS : InteractionResult.SUCCESS_SERVER);
+      return (InteractionResult)(!var3 && !this.level().isClientSide() ? InteractionResult.PASS : InteractionResult.SUCCESS_SERVER);
    }
 
    protected boolean handleEating(Player var1, ItemStack var2) {
@@ -436,7 +436,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          var4 = 4.0F;
          var5 = 60;
          var6 = 5;
-         if (!this.level().isClientSide && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
+         if (!this.level().isClientSide() && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
             var3 = true;
             this.setInLove(var1);
          }
@@ -444,7 +444,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          var4 = 10.0F;
          var5 = 240;
          var6 = 10;
-         if (!this.level().isClientSide && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
+         if (!this.level().isClientSide() && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
             var3 = true;
             this.setInLove(var1);
          }
@@ -457,13 +457,13 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
       if (this.isBaby() && var5 > 0) {
          this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.ageUp(var5);
             var3 = true;
          }
       }
 
-      if (var6 > 0 && (var3 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide) {
+      if (var6 > 0 && (var3 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide()) {
          this.modifyTemper(var6);
          var3 = true;
       }
@@ -479,7 +479,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    protected void doPlayerRide(Player var1) {
       this.setEating(false);
       this.clearStanding();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          var1.setYRot(this.getYRot());
          var1.setXRot(this.getXRot());
          var1.startRiding(this);
@@ -651,7 +651,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    private void openMouth() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.mouthCounter = 1;
          this.setFlag(64, true);
       }
@@ -679,14 +679,14 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    public void standIfPossible() {
-      if (this.canPerformRearing() && (this.isEffectiveAi() || !this.level().isClientSide)) {
+      if (this.canPerformRearing() && (this.isEffectiveAi() || !this.level().isClientSide())) {
          this.setStanding(20);
       }
 
    }
 
    public void makeMad() {
-      if (!this.isStanding() && !this.level().isClientSide) {
+      if (!this.isStanding() && !this.level().isClientSide()) {
          this.standIfPossible();
          this.makeSound(this.getAngrySound());
       }
@@ -727,6 +727,11 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
 
    protected Vec2 getRiddenRotation(LivingEntity var1) {
       return new Vec2(var1.getXRot() * 0.5F, var1.getYRot());
+   }
+
+   protected void addPassenger(Entity var1) {
+      super.addPassenger(var1);
+      var1.absSnapRotationTo(this.getViewYRot(0.0F), this.getViewXRot(0.0F));
    }
 
    protected Vec3 getRiddenInput(Player var1, Vec3 var2) {

@@ -42,7 +42,7 @@ public class ClientSideMerchant implements Merchant {
    }
 
    public boolean isClientSide() {
-      return this.source.level().isClientSide;
+      return this.source.level().isClientSide();
    }
 
    public boolean stillValid(Player var1) {

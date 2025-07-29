@@ -79,12 +79,12 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       return this.recipeBookComponent.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.recipeBookComponent.mouseClicked(var1, var3, var5)) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      if (this.recipeBookComponent.mouseClicked(var1, var3, var5, var6)) {
          this.setFocused(this.recipeBookComponent);
          return true;
       } else {
-         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(var1, var3, var5);
+         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(var1, var3, var5, var6);
       }
    }
 

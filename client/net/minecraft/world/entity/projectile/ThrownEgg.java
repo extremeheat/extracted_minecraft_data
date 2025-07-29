@@ -51,7 +51,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
 
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (this.random.nextInt(8) == 0) {
             byte var2 = 1;
             if (this.random.nextInt(32) == 0) {

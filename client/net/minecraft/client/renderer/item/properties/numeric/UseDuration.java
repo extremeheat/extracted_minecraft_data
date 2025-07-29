@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,9 +17,10 @@ public record UseDuration(boolean remaining) implements RangeSelectItemModelProp
       this.remaining = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4) {
-      if (var3 != null && var3.getUseItem() == var1) {
-         return this.remaining ? (float)var3.getUseItemRemainingTicks() : (float)useDuration(var1, var3);
+   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
+      LivingEntity var5 = var3 == null ? null : var3.asLivingEntity();
+      if (var5 != null && var5.getUseItem() == var1) {
+         return this.remaining ? (float)var5.getUseItemRemainingTicks() : (float)useDuration(var1, var5);
       } else {
          return 0.0F;
       }

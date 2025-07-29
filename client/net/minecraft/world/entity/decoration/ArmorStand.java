@@ -179,7 +179,7 @@ public class ArmorStand extends LivingEntity {
       if (!this.isMarker() && !var4.is(Items.NAME_TAG)) {
          if (var1.isSpectator()) {
             return InteractionResult.SUCCESS;
-         } else if (var1.level().isClientSide) {
+         } else if (var1.level().isClientSide()) {
             return InteractionResult.SUCCESS_SERVER;
          } else {
             EquipmentSlot var5 = this.getEquipmentSlotForItem(var4);
@@ -323,7 +323,7 @@ public class ArmorStand extends LivingEntity {
 
    public void handleEntityEvent(byte var1) {
       if (var1 == 32) {
-         if (this.level().isClientSide) {
+         if (this.level().isClientSide()) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_HIT, this.getSoundSource(), 0.3F, 1.0F, false);
             this.lastHit = this.level().getGameTime();
          }

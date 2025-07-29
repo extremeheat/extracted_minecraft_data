@@ -168,6 +168,10 @@ public abstract class RecipeProvider {
       this.slabBuilder(var1, var2, Ingredient.of(var3)).unlockedBy(getHasName(var3), this.has(var3)).save(this.output);
    }
 
+   protected void shelf(ItemLike var1, ItemLike var2) {
+      this.shaped(RecipeCategory.DECORATIONS, var1, 6).define('#', var2).pattern("###").pattern("   ").pattern("###").group("shelf").unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
+   }
+
    protected RecipeBuilder slabBuilder(RecipeCategory var1, ItemLike var2, Ingredient var3) {
       return this.shaped(var1, var2, 6).define('#', var3).pattern("###");
    }

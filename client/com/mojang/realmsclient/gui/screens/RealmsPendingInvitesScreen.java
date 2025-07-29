@@ -170,9 +170,9 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          this.renderPendingInvitationItem(var1, this.pendingInvite, var4, var3, var7, var8);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          RowButton.rowButtonMouseClicked(RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, this, this.rowButtons, var5, var1, var3);
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       private void renderPendingInvitationItem(GuiGraphics var1, PendingInvite var2, int var3, int var4, int var5, int var6) {

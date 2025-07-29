@@ -104,13 +104,13 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       return this.lastRecipeClicked;
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (var5 != 0) {
          return false;
       } else {
-         for(OverlayRecipeButton var7 : this.recipeButtons) {
-            if (var7.mouseClicked(var1, var3, var5)) {
-               this.lastRecipeClicked = var7.recipe;
+         for(OverlayRecipeButton var8 : this.recipeButtons) {
+            if (var8.mouseClicked(var1, var3, var5, var6)) {
+               this.lastRecipeClicked = var8.recipe;
                return true;
             }
          }

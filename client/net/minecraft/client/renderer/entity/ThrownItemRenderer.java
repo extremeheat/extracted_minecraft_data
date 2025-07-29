@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownItemRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -32,13 +32,13 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       return this.fullBright ? 15 : super.getBlockLightLevel(var1, var2);
    }
 
-   public void render(ThrownItemRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ThrownItemRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.scale(this.scale, this.scale, this.scale);
       var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
-      var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitItem(var2, var1.item, var1.lightCoords, OverlayTexture.NO_OVERLAY);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    public ThrownItemRenderState createRenderState() {

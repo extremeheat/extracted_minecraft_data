@@ -124,22 +124,22 @@ public class DeathScreen extends Screen {
       }
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (this.causeOfDeath != null && var3 > 85.0) {
          Objects.requireNonNull(this.font);
          if (var3 < (double)(85 + 9)) {
-            Style var6 = this.getClickedComponentStyleAt((int)var1);
-            if (var6 != null) {
-               ClickEvent var8 = var6.getClickEvent();
-               if (var8 instanceof ClickEvent.OpenUrl) {
-                  ClickEvent.OpenUrl var7 = (ClickEvent.OpenUrl)var8;
-                  return clickUrlAction(this.minecraft, this, var7.uri());
+            Style var7 = this.getClickedComponentStyleAt((int)var1);
+            if (var7 != null) {
+               ClickEvent var9 = var7.getClickEvent();
+               if (var9 instanceof ClickEvent.OpenUrl) {
+                  ClickEvent.OpenUrl var8 = (ClickEvent.OpenUrl)var9;
+                  return clickUrlAction(this.minecraft, this, var8.uri());
                }
             }
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    public boolean isPauseScreen() {

@@ -161,7 +161,7 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_CREEPY.equals(var1) && this.hasBeenStaredAt() && this.level().isClientSide) {
+      if (DATA_CREEPY.equals(var1) && this.hasBeenStaredAt() && this.level().isClientSide()) {
          this.playStareSound();
       }
 
@@ -189,14 +189,14 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    public void aiStep() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          for(int var1 = 0; var1 < 2; ++var1) {
             this.level().addParticle(ParticleTypes.PORTAL, this.getRandomX(0.5), this.getRandomY() - 0.25, this.getRandomZ(0.5), (this.random.nextDouble() - 0.5) * 2.0, -this.random.nextDouble(), (this.random.nextDouble() - 0.5) * 2.0);
          }
       }
 
       this.jumping = false;
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
 

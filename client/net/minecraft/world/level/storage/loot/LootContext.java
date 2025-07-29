@@ -133,7 +133,9 @@ public class LootContext {
       THIS("this", LootContextParams.THIS_ENTITY),
       ATTACKER("attacker", LootContextParams.ATTACKING_ENTITY),
       DIRECT_ATTACKER("direct_attacker", LootContextParams.DIRECT_ATTACKING_ENTITY),
-      ATTACKING_PLAYER("attacking_player", LootContextParams.LAST_DAMAGE_PLAYER);
+      ATTACKING_PLAYER("attacking_player", LootContextParams.LAST_DAMAGE_PLAYER),
+      TARGET_ENTITY("target_entity", LootContextParams.TARGET_ENTITY),
+      INTERACTING_ENTITY("interacting_entity", LootContextParams.INTERACTING_ENTITY);
 
       public static final StringRepresentable.EnumCodec<EntityTarget> CODEC = StringRepresentable.<EntityTarget>fromEnum(EntityTarget::values);
       private final String name;
@@ -163,7 +165,7 @@ public class LootContext {
 
       // $FF: synthetic method
       private static EntityTarget[] $values() {
-         return new EntityTarget[]{THIS, ATTACKER, DIRECT_ATTACKER, ATTACKING_PLAYER};
+         return new EntityTarget[]{THIS, ATTACKER, DIRECT_ATTACKER, ATTACKING_PLAYER, TARGET_ENTITY, INTERACTING_ENTITY};
       }
    }
 

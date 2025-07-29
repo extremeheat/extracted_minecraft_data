@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -10,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -43,7 +45,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
          protected void openerCountChanged(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
          }
 
-         protected boolean isOwnContainer(Player var1) {
+         public boolean isOwnContainer(Player var1) {
             if (var1.containerMenu instanceof ChestMenu) {
                Container var2 = ((ChestMenu)var1.containerMenu).getContainer();
                return var2 == BarrelBlockEntity.this;
@@ -91,18 +93,22 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
       return ChestMenu.threeRows(var1, var2, this);
    }
 
-   public void startOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
-         this.openersCounter.incrementOpeners(var1, this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void startOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
+         this.openersCounter.incrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), var1.getContainerInteractionRange());
       }
 
    }
 
-   public void stopOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
-         this.openersCounter.decrementOpeners(var1, this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void stopOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
+         this.openersCounter.decrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
 
+   }
+
+   public List<ContainerUser> getEntitiesWithContainerOpen() {
+      return this.openersCounter.getEntitiesWithContainerOpen(this.getLevel(), this.getBlockPos());
    }
 
    public void recheckOpen() {

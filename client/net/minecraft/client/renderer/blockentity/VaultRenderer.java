@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -24,7 +24,7 @@ public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity> {
 
    public VaultRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.itemModelResolver = var1.getItemModelResolver();
+      this.itemModelResolver = var1.itemModelResolver();
    }
 
    public void render(VaultBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
@@ -33,7 +33,7 @@ public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity> {
          if (var8 != null) {
             ItemStack var9 = var1.getSharedData().getDisplayItem();
             if (!var9.isEmpty()) {
-               this.itemModelResolver.updateForTopItem(this.renderState.item, var9, ItemDisplayContext.GROUND, var8, (LivingEntity)null, 0);
+               this.itemModelResolver.updateForTopItem(this.renderState.item, var9, ItemDisplayContext.GROUND, var8, (ItemOwner)null, 0);
                this.renderState.count = ItemClusterRenderState.getRenderedAmount(var9.getCount());
                this.renderState.seed = ItemClusterRenderState.getSeedForItemStack(var9);
                VaultClientData var10 = var1.getClientData();

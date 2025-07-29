@@ -15,6 +15,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
@@ -63,7 +64,8 @@ public final class DensityFunctions {
 
       register(var0, "spline", DensityFunctions.Spline.CODEC);
       register(var0, "constant", DensityFunctions.Constant.CODEC);
-      return register(var0, "y_clamped_gradient", DensityFunctions.YClampedGradient.CODEC);
+      register(var0, "y_clamped_gradient", DensityFunctions.YClampedGradient.CODEC);
+      return register(var0, "find_top_surface", DensityFunctions.FindTopSurface.CODEC);
    }
 
    private static MapCodec<? extends DensityFunction> register(Registry<MapCodec<? extends DensityFunction>> var0, String var1, KeyDispatchDataCodec<? extends DensityFunction> var2) {
@@ -228,6 +230,10 @@ public final class DensityFunctions {
 
    public static DensityFunction lerp(DensityFunction var0, double var1, DensityFunction var3) {
       return add(mul(var0, add(var3, constant(-var1))), constant(var1));
+   }
+
+   public static DensityFunction findTopSurface(DensityFunction var0, DensityFunction var1, int var2, int var3) {
+      return new FindTopSurface(var0, var1, var2, var3);
    }
 
    static {
@@ -903,9 +909,14 @@ public final class DensityFunctions {
 
       public static Mapped create(Type var0, DensityFunction var1) {
          double var2 = var1.minValue();
-         double var4 = transform(var0, var2);
-         double var6 = transform(var0, var1.maxValue());
-         return var0 != DensityFunctions.Mapped.Type.ABS && var0 != DensityFunctions.Mapped.Type.SQUARE ? new Mapped(var0, var1, var4, var6) : new Mapped(var0, var1, Math.max(0.0, var2), Math.max(var4, var6));
+         double var4 = var1.maxValue();
+         double var6 = transform(var0, var2);
+         double var8 = transform(var0, var4);
+         if (var0 == DensityFunctions.Mapped.Type.INVERT) {
+            return var2 < 0.0 && var4 > 0.0 ? new Mapped(var0, var1, -1.0 / 0.0, 1.0 / 0.0) : new Mapped(var0, var1, var8, var6);
+         } else {
+            return var0 != DensityFunctions.Mapped.Type.ABS && var0 != DensityFunctions.Mapped.Type.SQUARE ? new Mapped(var0, var1, var6, var8) : new Mapped(var0, var1, Math.max(0.0, var2), Math.max(var6, var8));
+         }
       }
 
       private static double transform(Type var0, double var1) {
@@ -927,6 +938,9 @@ public final class DensityFunctions {
                var10000 = var1 > 0.0 ? var1 : var1 * 0.25;
                break;
             case 5:
+               var10000 = 1.0 / var1;
+               break;
+            case 6:
                double var3 = Mth.clamp(var1, -1.0, 1.0);
                var10000 = var3 / 2.0 - var3 * var3 * var3 / 24.0;
                break;
@@ -960,6 +974,7 @@ public final class DensityFunctions {
          CUBE("cube"),
          HALF_NEGATIVE("half_negative"),
          QUARTER_NEGATIVE("quarter_negative"),
+         INVERT("invert"),
          SQUEEZE("squeeze");
 
          private final String name;
@@ -975,7 +990,7 @@ public final class DensityFunctions {
 
          // $FF: synthetic method
          private static Type[] $values() {
-            return new Type[]{ABS, SQUARE, CUBE, HALF_NEGATIVE, QUARTER_NEGATIVE, SQUEEZE};
+            return new Type[]{ABS, SQUARE, CUBE, HALF_NEGATIVE, QUARTER_NEGATIVE, INVERT, SQUEEZE};
          }
       }
    }
@@ -992,31 +1007,29 @@ public final class DensityFunctions {
             boolean var11 = var3 >= var9;
             boolean var12 = var5 >= var7;
             if (var11 || var12) {
-               Logger var10000 = LOGGER;
-               String var10001 = String.valueOf(var0);
-               var10000.warn("Creating a " + var10001 + " function between two non-overlapping inputs: " + String.valueOf(var1) + " and " + String.valueOf(var2));
+               LOGGER.warn("Creating a {} function between two non-overlapping inputs: {} and {}", new Object[]{var0, var1, var2});
             }
          }
 
-         double var18;
+         double var10000;
          switch (var0.ordinal()) {
-            case 0 -> var18 = var3 + var5;
-            case 1 -> var18 = var3 > 0.0 && var5 > 0.0 ? var3 * var5 : (var7 < 0.0 && var9 < 0.0 ? var7 * var9 : Math.min(var3 * var9, var7 * var5));
-            case 2 -> var18 = Math.min(var3, var5);
-            case 3 -> var18 = Math.max(var3, var5);
+            case 0 -> var10000 = var3 + var5;
+            case 1 -> var10000 = var3 > 0.0 && var5 > 0.0 ? var3 * var5 : (var7 < 0.0 && var9 < 0.0 ? var7 * var9 : Math.min(var3 * var9, var7 * var5));
+            case 2 -> var10000 = Math.min(var3, var5);
+            case 3 -> var10000 = Math.max(var3, var5);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
-         double var16 = var18;
+         double var16 = var10000;
          switch (var0.ordinal()) {
-            case 0 -> var18 = var7 + var9;
-            case 1 -> var18 = var3 > 0.0 && var5 > 0.0 ? var7 * var9 : (var7 < 0.0 && var9 < 0.0 ? var3 * var5 : Math.max(var3 * var5, var7 * var9));
-            case 2 -> var18 = Math.min(var7, var9);
-            case 3 -> var18 = Math.max(var7, var9);
+            case 0 -> var10000 = var7 + var9;
+            case 1 -> var10000 = var3 > 0.0 && var5 > 0.0 ? var7 * var9 : (var7 < 0.0 && var9 < 0.0 ? var3 * var5 : Math.max(var3 * var5, var7 * var9));
+            case 2 -> var10000 = Math.min(var7, var9);
+            case 3 -> var10000 = Math.max(var7, var9);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
-         double var13 = var18;
+         double var13 = var10000;
          if (var0 == DensityFunctions.TwoArgumentSimpleFunction.Type.MUL || var0 == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD) {
             if (var1 instanceof Constant) {
                Constant var17 = (Constant)var1;
@@ -1365,6 +1378,58 @@ public final class DensityFunctions {
 
       static {
          CODEC = DensityFunctions.<YClampedGradient>makeCodec(DATA_CODEC);
+      }
+   }
+
+   static record FindTopSurface(DensityFunction density, DensityFunction upperBound, int lowerBound, int cellHeight) implements DensityFunction {
+      private static final MapCodec<FindTopSurface> DATA_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DensityFunction.HOLDER_HELPER_CODEC.fieldOf("density").forGetter(FindTopSurface::density), DensityFunction.HOLDER_HELPER_CODEC.fieldOf("upper_bound").forGetter(FindTopSurface::upperBound), Codec.intRange(DimensionType.MIN_Y * 2, DimensionType.MAX_Y * 2).fieldOf("lower_bound").forGetter(FindTopSurface::lowerBound), ExtraCodecs.POSITIVE_INT.fieldOf("cell_height").forGetter(FindTopSurface::cellHeight)).apply(var0, FindTopSurface::new));
+      public static final KeyDispatchDataCodec<FindTopSurface> CODEC;
+
+      FindTopSurface(DensityFunction var1, DensityFunction var2, int var3, int var4) {
+         super();
+         this.density = var1;
+         this.upperBound = var2;
+         this.lowerBound = var3;
+         this.cellHeight = var4;
+      }
+
+      public double compute(DensityFunction.FunctionContext var1) {
+         int var2 = Mth.floor(this.upperBound.compute(var1) / (double)this.cellHeight) * this.cellHeight;
+         if (var2 <= this.lowerBound) {
+            return (double)this.lowerBound;
+         } else {
+            for(int var3 = var2; var3 >= this.lowerBound; var3 -= this.cellHeight) {
+               if (this.density.compute(new DensityFunction.SinglePointContext(var1.blockX(), var3, var1.blockZ())) > 0.0) {
+                  return (double)var3;
+               }
+            }
+
+            return (double)this.lowerBound;
+         }
+      }
+
+      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+         var2.fillAllDirectly(var1, this);
+      }
+
+      public DensityFunction mapAll(DensityFunction.Visitor var1) {
+         return var1.apply(new FindTopSurface(this.density.mapAll(var1), this.upperBound.mapAll(var1), this.lowerBound, this.cellHeight));
+      }
+
+      public double minValue() {
+         return (double)this.lowerBound;
+      }
+
+      public double maxValue() {
+         return Math.max((double)this.lowerBound, this.upperBound.maxValue());
+      }
+
+      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
+         return CODEC;
+      }
+
+      static {
+         CODEC = DensityFunctions.<FindTopSurface>makeCodec(DATA_CODEC);
       }
    }
 }

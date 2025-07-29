@@ -96,7 +96,7 @@ public class NoteBlock extends Block {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          var1 = (BlockState)var1.cycle(NOTE);
          var2.setBlock(var3, var1, 3);
          this.playNote(var4, var1, var2, var3);
@@ -107,7 +107,7 @@ public class NoteBlock extends Block {
    }
 
    protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          this.playNote(var4, var1, var2, var3);
          var4.awardStat(Stats.PLAY_NOTEBLOCK);
       }

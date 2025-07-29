@@ -81,7 +81,7 @@ public class OldUsersConverter {
             readOldListFormat(OLD_USERBANLIST, var2);
             ProfileLookupCallback var3 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1x) {
-                  var0.getProfileCache().add(var1x);
+                  var0.nameToIdCache().add(var1x);
                   String[] var2x = (String[])var2.get(var1x.getName().toLowerCase(Locale.ROOT));
                   if (var2x == null) {
                      OldUsersConverter.LOGGER.warn("Could not convert user banlist entry for {}", var1x.getName());
@@ -91,7 +91,7 @@ public class OldUsersConverter {
                      String var4 = var2x.length > 2 ? var2x[2] : null;
                      Date var5 = var2x.length > 3 ? OldUsersConverter.parseDate(var2x[3], (Date)null) : null;
                      String var6 = var2x.length > 4 ? var2x[4] : null;
-                     var1.add(new UserBanListEntry(var1x, var3, var4, var5, var6));
+                     var1.add(new UserBanListEntry(new NameAndId(var1x), var3, var4, var5, var6));
                   }
                }
 
@@ -169,8 +169,8 @@ public class OldUsersConverter {
             List var2 = Files.readLines(OLD_OPLIST, StandardCharsets.UTF_8);
             ProfileLookupCallback var3 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1x) {
-                  var0.getProfileCache().add(var1x);
-                  var1.add(new ServerOpListEntry(var1x, var0.getOperatorUserPermissionLevel(), false));
+                  var0.nameToIdCache().add(var1x);
+                  var1.add(new ServerOpListEntry(new NameAndId(var1x), var0.getOperatorUserPermissionLevel(), false));
                }
 
                public void onProfileLookupFailed(String var1x, Exception var2) {
@@ -211,8 +211,8 @@ public class OldUsersConverter {
             List var2 = Files.readLines(OLD_WHITELIST, StandardCharsets.UTF_8);
             ProfileLookupCallback var3 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1x) {
-                  var0.getProfileCache().add(var1x);
-                  var1.add(new UserWhiteListEntry(var1x));
+                  var0.nameToIdCache().add(var1x);
+                  var1.add(new UserWhiteListEntry(new NameAndId(var1x)));
                }
 
                public void onProfileLookupFailed(String var1x, Exception var2) {
@@ -241,14 +241,14 @@ public class OldUsersConverter {
    @Nullable
    public static UUID convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
       if (!StringUtil.isNullOrEmpty(var1) && var1.length() <= 16) {
-         Optional var2 = var0.getProfileCache().get(var1).map(GameProfile::getId);
+         Optional var2 = var0.nameToIdCache().get(var1).map(NameAndId::id);
          if (var2.isPresent()) {
             return (UUID)var2.get();
          } else if (!var0.isSingleplayer() && var0.usesAuthentication()) {
             final ArrayList var3 = Lists.newArrayList();
             ProfileLookupCallback var4 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1) {
-                  var0.getProfileCache().add(var1);
+                  var0.nameToIdCache().add(var1);
                   var3.add(var1);
                }
 
@@ -292,7 +292,7 @@ public class OldUsersConverter {
             final String[] var13 = (String[])var5.toArray(new String[var5.size()]);
             ProfileLookupCallback var14 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1x) {
-                  var0.getProfileCache().add(var1x);
+                  var0.nameToIdCache().add(var1x);
                   UUID var2x = var1x.getId();
                   this.movePlayerFile(var2, this.getFileNameForProfile(var1x.getName()), var2x.toString());
                }

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,9 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    final List<NoiseInterpolator> interpolators;
    final List<CacheAllInCell> cellCaches;
    private final Map<DensityFunction, DensityFunction> wrapped = new HashMap();
-   private final Long2IntMap preliminarySurfaceLevel = new Long2IntOpenHashMap();
+   private final Long2IntMap preliminarySurfaceLevelCache = new Long2IntOpenHashMap();
    private final Aquifer aquifer;
-   private final DensityFunction initialDensityNoJaggedness;
+   private final DensityFunction preliminarySurfaceLevel;
    private final BlockStateFiller blockStateRule;
    private final Blender blender;
    private final FlatCache blendAlpha;
@@ -106,22 +107,27 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       this.beardifier = var6;
       this.blendAlpha = new FlatCache(new BlendAlpha(), false);
       this.blendOffset = new FlatCache(new BlendOffset(), false);
+      if (!var9.isEmpty()) {
+         for(int var10 = 0; var10 <= this.noiseSizeXZ; ++var10) {
+            int var11 = this.firstNoiseX + var10;
+            int var12 = QuartPos.toBlock(var11);
 
-      for(int var10 = 0; var10 <= this.noiseSizeXZ; ++var10) {
-         int var11 = this.firstNoiseX + var10;
-         int var12 = QuartPos.toBlock(var11);
-
-         for(int var13 = 0; var13 <= this.noiseSizeXZ; ++var13) {
-            int var14 = this.firstNoiseZ + var13;
-            int var15 = QuartPos.toBlock(var14);
-            Blender.BlendingOutput var16 = var9.blendOffsetAndFactor(var12, var15);
-            this.blendAlpha.values[var10][var13] = var16.alpha();
-            this.blendOffset.values[var10][var13] = var16.blendingOffset();
+            for(int var13 = 0; var13 <= this.noiseSizeXZ; ++var13) {
+               int var14 = this.firstNoiseZ + var13;
+               int var15 = QuartPos.toBlock(var14);
+               Blender.BlendingOutput var16 = var9.blendOffsetAndFactor(var12, var15);
+               this.blendAlpha.values[var10 + var13 * this.blendAlpha.sizeXZ] = var16.alpha();
+               this.blendOffset.values[var10 + var13 * this.blendOffset.sizeXZ] = var16.blendingOffset();
+            }
          }
+      } else {
+         Arrays.fill(this.blendAlpha.values, 1.0);
+         Arrays.fill(this.blendOffset.values, 0.0);
       }
 
       NoiseRouter var17 = var2.router();
       NoiseRouter var18 = var17.mapAll(this::wrap);
+      this.preliminarySurfaceLevel = var18.preliminarySurfaceLevel();
       if (!var7.isAquifersEnabled()) {
          this.aquifer = Aquifer.createDisabled(var8);
       } else {
@@ -138,7 +144,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       }
 
       this.blockStateRule = new MaterialRuleList((BlockStateFiller[])var20.toArray(new BlockStateFiller[0]));
-      this.initialDensityNoJaggedness = var18.initialDensityWithoutJaggedness();
    }
 
    protected Climate.Sampler cachedClimateSampler(NoiseRouter var1, List<Climate.ParameterPoint> var2) {
@@ -162,24 +167,31 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       return this.cellStartBlockZ + this.inCellZ;
    }
 
+   public int maxPreliminarySurfaceLevel(int var1, int var2, int var3, int var4) {
+      int var5 = -2147483648;
+
+      for(int var6 = var2; var6 <= var4; var6 += 4) {
+         for(int var7 = var1; var7 <= var3; var7 += 4) {
+            int var8 = this.preliminarySurfaceLevel(var7, var6);
+            if (var8 > var5) {
+               var5 = var8;
+            }
+         }
+      }
+
+      return var5;
+   }
+
    public int preliminarySurfaceLevel(int var1, int var2) {
       int var3 = QuartPos.toBlock(QuartPos.fromBlock(var1));
       int var4 = QuartPos.toBlock(QuartPos.fromBlock(var2));
-      return this.preliminarySurfaceLevel.computeIfAbsent(ColumnPos.asLong(var3, var4), this::computePreliminarySurfaceLevel);
+      return this.preliminarySurfaceLevelCache.computeIfAbsent(ColumnPos.asLong(var3, var4), this::computePreliminarySurfaceLevel);
    }
 
    private int computePreliminarySurfaceLevel(long var1) {
       int var3 = ColumnPos.getX(var1);
       int var4 = ColumnPos.getZ(var1);
-      int var5 = this.noiseSettings.minY();
-
-      for(int var6 = var5 + this.noiseSettings.height(); var6 >= var5; var6 -= this.cellHeight) {
-         if (this.initialDensityNoJaggedness.compute(new DensityFunction.SinglePointContext(var3, var6, var4)) > 0.390625) {
-            return var6;
-         }
-      }
-
-      return 2147483647;
+      return Mth.floor(this.preliminarySurfaceLevel.compute(new DensityFunction.SinglePointContext(var3, 0, var4)));
    }
 
    public Blender getBlender() {
@@ -391,12 +403,14 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
    class FlatCache implements DensityFunctions.MarkerOrMarked, NoiseChunkDensityFunction {
       private final DensityFunction noiseFiller;
-      final double[][] values;
+      final double[] values;
+      final int sizeXZ;
 
       FlatCache(final DensityFunction var2, final boolean var3) {
          super();
          this.noiseFiller = var2;
-         this.values = new double[NoiseChunk.this.noiseSizeXZ + 1][NoiseChunk.this.noiseSizeXZ + 1];
+         this.sizeXZ = NoiseChunk.this.noiseSizeXZ + 1;
+         this.values = new double[this.sizeXZ * this.sizeXZ];
          if (var3) {
             for(int var4 = 0; var4 <= NoiseChunk.this.noiseSizeXZ; ++var4) {
                int var5 = NoiseChunk.this.firstNoiseX + var4;
@@ -405,7 +419,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
                for(int var7 = 0; var7 <= NoiseChunk.this.noiseSizeXZ; ++var7) {
                   int var8 = NoiseChunk.this.firstNoiseZ + var7;
                   int var9 = QuartPos.toBlock(var8);
-                  this.values[var4][var7] = var2.compute(new DensityFunction.SinglePointContext(var6, 0, var9));
+                  this.values[var4 + var7 * this.sizeXZ] = var2.compute(new DensityFunction.SinglePointContext(var6, 0, var9));
                }
             }
          }
@@ -417,8 +431,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          int var3 = QuartPos.fromBlock(var1.blockZ());
          int var4 = var2 - NoiseChunk.this.firstNoiseX;
          int var5 = var3 - NoiseChunk.this.firstNoiseZ;
-         int var6 = this.values.length;
-         return var4 >= 0 && var5 >= 0 && var4 < var6 && var5 < var6 ? this.values[var4][var5] : this.noiseFiller.compute(var1);
+         return var4 >= 0 && var5 >= 0 && var4 < this.sizeXZ && var5 < this.sizeXZ ? this.values[var4 + var5 * this.sizeXZ] : this.noiseFiller.compute(var1);
       }
 
       public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {

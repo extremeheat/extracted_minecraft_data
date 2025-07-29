@@ -12,6 +12,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ElderGuardianRenderer;
+import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -20,7 +21,7 @@ import net.minecraft.util.Mth;
 import org.joml.Quaternionfc;
 
 public class MobAppearanceParticle extends Particle {
-   private final Model model;
+   private final Model<GuardianRenderState> model;
    private final RenderType renderType;
 
    MobAppearanceParticle(ClientLevel var1, double var2, double var4, double var6) {

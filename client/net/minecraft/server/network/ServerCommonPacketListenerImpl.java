@@ -27,6 +27,7 @@ import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.thread.BlockableEventLoop;
@@ -187,7 +188,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    protected boolean isSingleplayerOwner() {
-      return this.server.isSingleplayerOwner(this.playerProfile());
+      return this.server.isSingleplayerOwner(new NameAndId(this.playerProfile()));
    }
 
    protected abstract GameProfile playerProfile();

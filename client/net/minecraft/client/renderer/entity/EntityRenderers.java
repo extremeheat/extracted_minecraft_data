@@ -95,6 +95,7 @@ public class EntityRenderers {
       register(EntityType.CHICKEN, ChickenRenderer::new);
       register(EntityType.COD, CodRenderer::new);
       register(EntityType.COMMAND_BLOCK_MINECART, (var0) -> new MinecartRenderer(var0, ModelLayers.COMMAND_BLOCK_MINECART));
+      register(EntityType.COPPER_GOLEM, CopperGolemRenderer::new);
       register(EntityType.COW, CowRenderer::new);
       register(EntityType.CREAKING, CreakingRenderer::new);
       register(EntityType.CREEPER, CreeperRenderer::new);
@@ -165,8 +166,8 @@ public class EntityRenderers {
       register(EntityType.PARROT, ParrotRenderer::new);
       register(EntityType.PHANTOM, PhantomRenderer::new);
       register(EntityType.PIG, PigRenderer::new);
-      register(EntityType.PIGLIN, (var0) -> new PiglinRenderer(var0, ModelLayers.PIGLIN, ModelLayers.PIGLIN_BABY, ModelLayers.PIGLIN_INNER_ARMOR, ModelLayers.PIGLIN_OUTER_ARMOR, ModelLayers.PIGLIN_BABY_INNER_ARMOR, ModelLayers.PIGLIN_BABY_OUTER_ARMOR));
-      register(EntityType.PIGLIN_BRUTE, (var0) -> new PiglinRenderer(var0, ModelLayers.PIGLIN_BRUTE, ModelLayers.PIGLIN_BRUTE, ModelLayers.PIGLIN_BRUTE_INNER_ARMOR, ModelLayers.PIGLIN_BRUTE_OUTER_ARMOR, ModelLayers.PIGLIN_BRUTE_INNER_ARMOR, ModelLayers.PIGLIN_BRUTE_OUTER_ARMOR));
+      register(EntityType.PIGLIN, (var0) -> new PiglinRenderer(var0, ModelLayers.PIGLIN, ModelLayers.PIGLIN_BABY, ModelLayers.PIGLIN_ARMOR, ModelLayers.PIGLIN_BABY_ARMOR));
+      register(EntityType.PIGLIN_BRUTE, (var0) -> new PiglinRenderer(var0, ModelLayers.PIGLIN_BRUTE, ModelLayers.PIGLIN_BRUTE, ModelLayers.PIGLIN_BRUTE_ARMOR, ModelLayers.PIGLIN_BRUTE_ARMOR));
       register(EntityType.PILLAGER, PillagerRenderer::new);
       register(EntityType.POLAR_BEAR, PolarBearRenderer::new);
       register(EntityType.PUFFERFISH, PufferfishRenderer::new);
@@ -216,6 +217,6 @@ public class EntityRenderers {
       register(EntityType.ZOMBIE, ZombieRenderer::new);
       register(EntityType.ZOMBIE_HORSE, (var0) -> new UndeadHorseRenderer(var0, UndeadHorseRenderer.Type.ZOMBIE));
       register(EntityType.ZOMBIE_VILLAGER, ZombieVillagerRenderer::new);
-      register(EntityType.ZOMBIFIED_PIGLIN, (var0) -> new ZombifiedPiglinRenderer(var0, ModelLayers.ZOMBIFIED_PIGLIN, ModelLayers.ZOMBIFIED_PIGLIN_BABY, ModelLayers.ZOMBIFIED_PIGLIN_INNER_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_OUTER_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_INNER_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_OUTER_ARMOR));
+      register(EntityType.ZOMBIFIED_PIGLIN, (var0) -> new ZombifiedPiglinRenderer(var0, ModelLayers.ZOMBIFIED_PIGLIN, ModelLayers.ZOMBIFIED_PIGLIN_BABY, ModelLayers.ZOMBIFIED_PIGLIN_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_ARMOR));
    }
 }

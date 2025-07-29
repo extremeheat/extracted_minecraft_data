@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.BoggedModel;
-import net.minecraft.client.model.SkeletonModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SkeletonClothingLayer;
 import net.minecraft.client.renderer.entity.state.BoggedRenderState;
@@ -15,7 +14,7 @@ public class BoggedRenderer extends AbstractSkeletonRenderer<Bogged, BoggedRende
    private static final ResourceLocation BOGGED_OUTER_LAYER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png");
 
    public BoggedRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.BOGGED_INNER_ARMOR, ModelLayers.BOGGED_OUTER_ARMOR, (SkeletonModel)(new BoggedModel(var1.bakeLayer(ModelLayers.BOGGED))));
+      super(var1, (ArmorModelSet)ModelLayers.BOGGED_ARMOR, new BoggedModel(var1.bakeLayer(ModelLayers.BOGGED)));
       this.addLayer(new SkeletonClothingLayer(this, var1.getModelSet(), ModelLayers.BOGGED_OUTER_LAYER, BOGGED_OUTER_LAYER_LOCATION));
    }
 

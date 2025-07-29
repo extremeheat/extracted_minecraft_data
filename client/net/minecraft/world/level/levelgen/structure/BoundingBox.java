@@ -126,6 +126,10 @@ public class BoundingBox {
       return this;
    }
 
+   public static BoundingBox encapsulating(BoundingBox var0, BoundingBox var1) {
+      return new BoundingBox(Math.min(var0.minX, var1.minX), Math.min(var0.minY, var1.minY), Math.min(var0.minZ, var1.minZ), Math.max(var0.maxX, var1.maxX), Math.max(var0.maxY, var1.maxY), Math.max(var0.maxZ, var1.maxZ));
+   }
+
    /** @deprecated */
    @Deprecated
    public BoundingBox encapsulate(BlockPos var1) {

@@ -441,8 +441,10 @@ public class StructureTemplate {
                float var6 = var5x.rotate(var4);
                var6 += var5x.mirror(var3) - var5x.getYRot();
                var5x.snapTo(var14.x, var14.y, var14.z, var6, var5x.getXRot());
-               if (var7 && var5x instanceof Mob) {
-                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var14)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
+               var5x.setYBodyRot(var6);
+               var5x.setYHeadRot(var6);
+               if (var7 && var5x instanceof Mob var7x) {
+                  var7x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var14)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                }
 
                var1.addFreshEntityWithPassengers(var5x);

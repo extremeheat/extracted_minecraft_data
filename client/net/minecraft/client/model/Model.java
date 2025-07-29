@@ -7,8 +7,9 @@ import java.util.function.Function;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Unit;
 
-public abstract class Model {
+public abstract class Model<S> {
    protected final ModelPart root;
    protected final Function<ResourceLocation, RenderType> renderType;
    private final List<ModelPart> allParts;
@@ -40,6 +41,10 @@ public abstract class Model {
       return this.allParts;
    }
 
+   public void setupAnim(S var1) {
+      this.resetPose();
+   }
+
    public final void resetPose() {
       for(ModelPart var2 : this.allParts) {
          var2.resetPose();
@@ -47,9 +52,12 @@ public abstract class Model {
 
    }
 
-   public static class Simple extends Model {
+   public static class Simple extends Model<Unit> {
       public Simple(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
          super(var1, var2);
+      }
+
+      public void setupAnim(Unit var1) {
       }
    }
 }

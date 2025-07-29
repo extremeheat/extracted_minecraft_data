@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.multiplayer.TransferState;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
@@ -55,7 +56,7 @@ public class RealmsConnect {
                }
 
                ClientHandshakePacketListenerImpl var2 = new ClientHandshakePacketListenerImpl(RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, (Duration)null, (var0) -> {
-               }, (TransferState)null);
+               }, new LevelLoadTracker(), (TransferState)null);
                if (var1.isMinigameActive()) {
                   var2.setMinigameName(var1.minigameName);
                }

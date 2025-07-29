@@ -11,11 +11,9 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.WitchRenderState;
 import net.minecraft.util.Mth;
 
-public class WitchModel extends EntityModel<WitchRenderState> implements HeadedModel, VillagerLikeModel {
+public class WitchModel extends EntityModel<WitchRenderState> implements HeadedModel, VillagerLikeModel<WitchRenderState> {
    protected final ModelPart nose;
    private final ModelPart head;
-   private final ModelPart hat;
-   private final ModelPart hatRim;
    private final ModelPart rightLeg;
    private final ModelPart leftLeg;
    private final ModelPart arms;
@@ -23,8 +21,6 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
    public WitchModel(ModelPart var1) {
       super(var1);
       this.head = var1.getChild("head");
-      this.hat = this.head.getChild("hat");
-      this.hatRim = this.hat.getChild("hat_rim");
       this.nose = this.head.getChild("nose");
       this.rightLeg = var1.getChild("right_leg");
       this.leftLeg = var1.getChild("left_leg");
@@ -68,14 +64,8 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
       return this.head;
    }
 
-   public void hatVisible(boolean var1) {
-      this.head.visible = var1;
-      this.hat.visible = var1;
-      this.hatRim.visible = var1;
-   }
-
-   public void translateToArms(PoseStack var1) {
-      this.root.translateAndRotate(var1);
-      this.arms.translateAndRotate(var1);
+   public void translateToArms(WitchRenderState var1, PoseStack var2) {
+      this.root.translateAndRotate(var2);
+      this.arms.translateAndRotate(var2);
    }
 }

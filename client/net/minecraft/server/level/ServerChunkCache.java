@@ -24,7 +24,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -80,22 +79,22 @@ public class ServerChunkCache extends ChunkSource {
    @VisibleForDebug
    private NaturalSpawner.SpawnState lastSpawnState;
 
-   public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureTemplateManager var4, Executor var5, ChunkGenerator var6, int var7, int var8, boolean var9, ChunkProgressListener var10, ChunkStatusUpdateListener var11, Supplier<DimensionDataStorage> var12) {
+   public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureTemplateManager var4, Executor var5, ChunkGenerator var6, int var7, int var8, boolean var9, ChunkStatusUpdateListener var10, Supplier<DimensionDataStorage> var11) {
       super();
       this.level = var1;
       this.mainThreadProcessor = new MainThreadExecutor(var1);
       this.mainThread = Thread.currentThread();
-      Path var13 = var2.getDimensionPath(var1.dimension()).resolve("data");
+      Path var12 = var2.getDimensionPath(var1.dimension()).resolve("data");
 
       try {
-         FileUtil.createDirectoriesSafe(var13);
-      } catch (IOException var15) {
-         LOGGER.error("Failed to create dimension data storage directory", var15);
+         FileUtil.createDirectoriesSafe(var12);
+      } catch (IOException var14) {
+         LOGGER.error("Failed to create dimension data storage directory", var14);
       }
 
-      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var13, var3, var1.registryAccess());
+      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var12, var3, var1.registryAccess());
       this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.TYPE);
-      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, this.ticketStorage, var7, var9);
+      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, this.ticketStorage, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.distanceManager.updateSimulationDistance(var8);
@@ -109,10 +108,6 @@ public class ServerChunkCache extends ChunkSource {
    @Nullable
    private ChunkHolder getVisibleChunkIfPresent(long var1) {
       return this.chunkMap.getVisibleChunkIfPresent(var1);
-   }
-
-   public int getTickingGenerated() {
-      return this.chunkMap.getTickingGenerated();
    }
 
    private void storeInCache(long var1, @Nullable ChunkAccess var3, ChunkStatus var4) {
@@ -456,8 +451,26 @@ public class ServerChunkCache extends ChunkSource {
       });
    }
 
+   public boolean hasActiveTickets() {
+      return this.ticketStorage.shouldKeepDimensionActive();
+   }
+
    public void addTicket(Ticket var1, ChunkPos var2) {
       this.ticketStorage.addTicket(var1, var2);
+   }
+
+   public CompletableFuture<?> addTicketAndLoadWithRadius(TicketType var1, ChunkPos var2, int var3) {
+      if (!var1.doesLoad()) {
+         throw new IllegalStateException("Ticket type " + String.valueOf(var1) + " does not trigger chunk loading");
+      } else if (var1.canExpireIfUnloaded()) {
+         throw new IllegalStateException("Ticket type " + String.valueOf(var1) + " can expire before it loads, cannot fetch asynchronously");
+      } else {
+         this.addTicketWithRadius(var1, var2, var3);
+         this.runDistanceManagerUpdates();
+         ChunkHolder var4 = this.getVisibleChunkIfPresent(var2.toLong());
+         Objects.requireNonNull(var4, "No chunk was scheduled for loading");
+         return this.chunkMap.getChunkRangeFuture(var4, var3, (var0) -> ChunkStatus.FULL);
+      }
    }
 
    public void addTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {

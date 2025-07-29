@@ -32,7 +32,7 @@ public class KickCommand {
          int var3 = 0;
 
          for(ServerPlayer var5 : var1) {
-            if (!var0.getServer().isSingleplayerOwner(var5.getGameProfile())) {
+            if (!var0.getServer().isSingleplayerOwner(var5.nameAndId())) {
                var5.connection.disconnect(var2);
                var0.sendSuccess(() -> Component.translatable("commands.kick.success", var5.getDisplayName(), var2), true);
                ++var3;

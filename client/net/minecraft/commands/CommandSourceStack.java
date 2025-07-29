@@ -291,7 +291,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       MutableComponent var2 = Component.translatable("chat.type.admin", this.getDisplayName(), var1).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
       if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
          for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-            if (var4.commandSource() != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
+            if (var4.commandSource() != this.source && this.server.getPlayerList().isOp(var4.nameAndId())) {
                var4.sendSystemMessage(var2);
             }
          }

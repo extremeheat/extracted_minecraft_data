@@ -28,7 +28,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (var1.getType() != HitResult.Type.ENTITY || !this.ownedBy(((EntityHitResult)var1).getEntity())) {
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             List var2 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0, 2.0, 4.0));
             AreaEffectCloud var3 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
             Entity var4 = this.getOwner();

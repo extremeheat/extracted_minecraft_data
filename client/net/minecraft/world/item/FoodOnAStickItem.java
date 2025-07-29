@@ -23,7 +23,7 @@ public class FoodOnAStickItem<T extends Entity & ItemSteerable> extends Item {
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      if (var1.isClientSide) {
+      if (var1.isClientSide()) {
          return InteractionResult.PASS;
       } else {
          Entity var5 = var2.getControlledVehicle();

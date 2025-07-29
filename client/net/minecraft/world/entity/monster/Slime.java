@@ -123,10 +123,6 @@ public class Slime extends Mob implements Enemy {
       return ParticleTypes.ITEM_SLIME;
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return this.getSize() > 0;
-   }
-
    public void tick() {
       this.oSquish = this.squish;
       this.squish += (this.targetSquish - this.squish) * 0.5F;
@@ -188,7 +184,7 @@ public class Slime extends Mob implements Enemy {
 
    public void remove(Entity.RemovalReason var1) {
       int var2 = this.getSize();
-      if (!this.level().isClientSide && var2 > 1 && this.isDeadOrDying()) {
+      if (!this.level().isClientSide() && var2 > 1 && this.isDeadOrDying()) {
          float var3 = this.getDimensions(this.getPose()).width();
          float var4 = var3 / 2.0F;
          int var5 = var2 / 2;

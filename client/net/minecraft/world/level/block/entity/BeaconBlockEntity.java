@@ -104,7 +104,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
                   BeaconBlockEntity.this.levels = var2;
                   break;
                case 1:
-                  if (!BeaconBlockEntity.this.level.isClientSide && !BeaconBlockEntity.this.beamSections.isEmpty()) {
+                  if (!BeaconBlockEntity.this.level.isClientSide() && !BeaconBlockEntity.this.beamSections.isEmpty()) {
                      BeaconBlockEntity.playSound(BeaconBlockEntity.this.level, BeaconBlockEntity.this.worldPosition, SoundEvents.BEACON_POWER_SELECT);
                   }
 
@@ -184,7 +184,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          var3.lastCheckY = var0.getMinY() - 1;
          boolean var16 = var15 > 0;
          var3.beamSections = var3.checkingBeamSections;
-         if (!var0.isClientSide) {
+         if (!var0.isClientSide()) {
             boolean var17 = var3.levels > 0;
             if (!var16 && var17) {
                playSound(var0, var1, SoundEvents.BEACON_ACTIVATE);
@@ -234,7 +234,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    private static void applyEffects(Level var0, BlockPos var1, int var2, @Nullable Holder<MobEffect> var3, @Nullable Holder<MobEffect> var4) {
-      if (!var0.isClientSide && var3 != null) {
+      if (!var0.isClientSide() && var3 != null) {
          double var5 = (double)(var2 * 10 + 10);
          byte var7 = 0;
          if (var2 >= 4 && Objects.equals(var3, var4)) {

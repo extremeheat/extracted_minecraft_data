@@ -7,9 +7,9 @@ import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -17,10 +17,13 @@ import org.joml.Quaternionfc;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity> {
    public static final Material BOOK_LOCATION;
+   private final MaterialSet materials;
    private final BookModel bookModel;
+   private final BookModel.State bookState = new BookModel.State();
 
    public EnchantTableRenderer(BlockEntityRendererProvider.Context var1) {
       super();
+      this.materials = var1.materials();
       this.bookModel = new BookModel(var1.bakeLayer(ModelLayers.BOOK));
    }
 
@@ -45,13 +48,17 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       float var12 = Mth.frac(var11 + 0.25F) * 1.6F - 0.3F;
       float var13 = Mth.frac(var11 + 0.75F) * 1.6F - 0.3F;
       float var14 = Mth.lerp(var2, var1.oOpen, var1.open);
-      this.bookModel.setupAnim(var8, Mth.clamp(var12, 0.0F, 1.0F), Mth.clamp(var13, 0.0F, 1.0F), var14);
-      VertexConsumer var15 = BOOK_LOCATION.buffer(var4, RenderType::entitySolid);
+      this.bookState.animationPos = var8;
+      this.bookState.pageFlip1 = Mth.clamp(var12, 0.0F, 1.0F);
+      this.bookState.pageFlip2 = Mth.clamp(var13, 0.0F, 1.0F);
+      this.bookState.open = var14;
+      this.bookModel.setupAnim(this.bookState);
+      VertexConsumer var15 = BOOK_LOCATION.buffer(this.materials, var4, RenderType::entitySolid);
       this.bookModel.renderToBuffer(var3, var15, var5, var6);
       var3.popPose();
    }
 
    static {
-      BOOK_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/enchanting_table_book"));
+      BOOK_LOCATION = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("enchanting_table_book");
    }
 }

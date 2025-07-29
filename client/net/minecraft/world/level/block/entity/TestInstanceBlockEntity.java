@@ -130,7 +130,6 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
 
    public void setSuccess() {
       this.set(this.data.withStatus(TestInstanceBlockEntity.Status.FINISHED));
-      this.removeBarriers();
    }
 
    public void setRunning() {
@@ -305,6 +304,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       StructurePlaceSettings var3 = (new StructurePlaceSettings()).setRotation(this.getRotation()).setIgnoreEntities(this.data.ignoreEntities()).setKnownShape(true);
       BlockPos var4 = this.getStartCorner();
       this.forceLoadChunks();
+      StructureUtils.clearSpaceForStructure(this.getStructureBoundingBox(), var1);
       this.removeEntities();
       var2.placeInWorld(var1, var4, var4, var3, var1.getRandom(), 818);
    }

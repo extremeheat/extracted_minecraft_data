@@ -1,44 +1,20 @@
 package net.minecraft.world.item.component;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.MapDecoder;
-import com.mojang.serialization.MapEncoder;
-import com.mojang.serialization.MapLike;
 import io.netty.buffer.ByteBuf;
-import java.util.UUID;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.level.storage.TagValueOutput;
-import net.minecraft.world.level.storage.ValueOutput;
-import org.slf4j.Logger;
 
 public final class CustomData {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
-   private static final String TYPE_TAG = "id";
+   public static final Codec<CompoundTag> COMPOUND_TAG_CODEC;
    public static final Codec<CustomData> CODEC;
-   public static final Codec<CustomData> CODEC_WITH_ID;
    /** @deprecated */
    @Deprecated
    public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC;
@@ -82,84 +58,12 @@ public final class CustomData {
       return new CustomData(var2);
    }
 
-   @Nullable
-   public ResourceLocation parseEntityId() {
-      return (ResourceLocation)this.tag.read("id", ResourceLocation.CODEC).orElse((Object)null);
-   }
-
-   @Nullable
-   public <T> T parseEntityType(HolderLookup.Provider var1, ResourceKey<? extends Registry<T>> var2) {
-      ResourceLocation var3 = this.parseEntityId();
-      return (T)(var3 == null ? null : var1.lookup(var2).flatMap((var2x) -> var2x.get(ResourceKey.create(var2, var3))).map(Holder::value).orElse((Object)null));
-   }
-
-   public void loadInto(Entity var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
-         var1.saveWithoutId(var3);
-         CompoundTag var4 = var3.buildResult();
-         UUID var5 = var1.getUUID();
-         var4.merge(this.tag);
-         var1.load(TagValueInput.create(var2, var1.registryAccess(), var4));
-         var1.setUUID(var5);
-      }
-
-   }
-
-   public boolean loadInto(BlockEntity var1, HolderLookup.Provider var2) {
-      try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
-         TagValueOutput var4 = TagValueOutput.createWithContext(var3, var2);
-         var1.saveCustomOnly((ValueOutput)var4);
-         CompoundTag var5 = var4.buildResult();
-         CompoundTag var6 = var5.copy();
-         var5.merge(this.tag);
-         if (!var5.equals(var6)) {
-            try {
-               var1.loadCustomOnly(TagValueInput.create(var3, var2, var5));
-               var1.setChanged();
-               return true;
-            } catch (Exception var11) {
-               LOGGER.warn("Failed to apply custom data to block entity at {}", var1.getBlockPos(), var11);
-
-               try {
-                  var1.loadCustomOnly(TagValueInput.create(var3.forChild(() -> "(rollback)"), var2, var6));
-               } catch (Exception var10) {
-                  LOGGER.warn("Failed to rollback block entity at {} after failure", var1.getBlockPos(), var10);
-               }
-            }
-         }
-
-         return false;
-      }
-   }
-
-   public <T> DataResult<CustomData> update(DynamicOps<Tag> var1, MapEncoder<T> var2, T var3) {
-      return var2.encode(var3, var1, var1.mapBuilder()).build(this.tag).map((var0) -> new CustomData((CompoundTag)var0));
-   }
-
-   public <T> DataResult<T> read(MapDecoder<T> var1) {
-      return this.<T>read(NbtOps.INSTANCE, var1);
-   }
-
-   public <T> DataResult<T> read(DynamicOps<Tag> var1, MapDecoder<T> var2) {
-      MapLike var3 = (MapLike)var1.getMap(this.tag).getOrThrow();
-      return var2.decode(var1, var3);
-   }
-
-   public int size() {
-      return this.tag.size();
-   }
-
    public boolean isEmpty() {
       return this.tag.isEmpty();
    }
 
    public CompoundTag copyTag() {
       return this.tag.copy();
-   }
-
-   public boolean contains(String var1) {
-      return this.tag.contains(var1);
    }
 
    public boolean equals(Object var1) {
@@ -181,15 +85,9 @@ public final class CustomData {
       return this.tag.toString();
    }
 
-   /** @deprecated */
-   @Deprecated
-   public CompoundTag getUnsafe() {
-      return this.tag;
-   }
-
    static {
-      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.FLATTENED_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
-      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().getString("id").isPresent() ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
+      COMPOUND_TAG_CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.FLATTENED_CODEC);
+      CODEC = COMPOUND_TAG_CODEC.xmap(CustomData::new, (var0) -> var0.tag);
       STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
    }
 }

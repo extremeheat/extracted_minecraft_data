@@ -30,6 +30,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -203,7 +204,7 @@ public class Armadillo extends Animal {
    }
 
    public void handleEntityEvent(byte var1) {
-      if (var1 == 64 && this.level().isClientSide) {
+      if (var1 == 64 && this.level().isClientSide()) {
          this.peekReceivedClient = true;
          this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ARMADILLO_PEEK, this.getSoundSource(), 1.0F, 1.0F, false);
       } else {
@@ -294,7 +295,7 @@ public class Armadillo extends Animal {
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.BRUSH) && this.brushOffScute()) {
+      if (var3.is(Items.BRUSH) && this.brushOffScute(var1, var3)) {
          var3.hurtAndBreak(16, var1, (EquipmentSlot)getSlotForHand(var2));
          return InteractionResult.SUCCESS;
       } else {
@@ -302,16 +303,16 @@ public class Armadillo extends Animal {
       }
    }
 
-   public boolean brushOffScute() {
+   public boolean brushOffScute(@Nullable Entity var1, ItemStack var2) {
       if (this.isBaby()) {
          return false;
       } else {
-         Level var2 = this.level();
-         if (var2 instanceof ServerLevel) {
-            ServerLevel var1 = (ServerLevel)var2;
-            this.spawnAtLocation(var1, new ItemStack(Items.ARMADILLO_SCUTE));
-            this.gameEvent(GameEvent.ENTITY_INTERACT);
+         Level var4 = this.level();
+         if (var4 instanceof ServerLevel) {
+            ServerLevel var3 = (ServerLevel)var4;
+            this.dropFromEntityInteractLootTable(var3, BuiltInLootTables.ARMADILLO_BRUSH, var1, var2, this::spawnAtLocation);
             this.playSound(SoundEvents.ARMADILLO_BRUSH);
+            this.gameEvent(GameEvent.ENTITY_INTERACT);
          }
 
          return true;

@@ -41,6 +41,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class Creeper extends Monster {
    private static final EntityDataAccessor<Integer> DATA_SWELL_DIR;
@@ -54,7 +55,7 @@ public class Creeper extends Monster {
    private int swell;
    private int maxSwell = 30;
    private int explosionRadius = 3;
-   private int droppedSkulls;
+   private boolean droppedSkulls;
 
    public Creeper(EntityType<? extends Creeper> var1, Level var2) {
       super(var1, var2);
@@ -158,16 +159,15 @@ public class Creeper extends Monster {
       return SoundEvents.CREEPER_DEATH;
    }
 
-   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var2.getEntity();
-      if (var4 != this && var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var1, Items.CREEPER_HEAD);
-         }
+   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
+      if (this.shouldDropLoot(var1) && this.isPowered() && !this.droppedSkulls) {
+         var2.dropFromLootTable(var1, var3, false, BuiltInLootTables.CHARGED_CREEPER, (var3x) -> {
+            var2.spawnAtLocation(var1, var3x);
+            this.droppedSkulls = true;
+         });
       }
 
+      return super.killedEntity(var1, var2, var3);
    }
 
    public boolean doHurtTarget(ServerLevel var1, Entity var2) {
@@ -200,7 +200,7 @@ public class Creeper extends Monster {
       if (var3.is(ItemTags.CREEPER_IGNITERS)) {
          SoundEvent var4 = var3.is(Items.FIRE_CHARGE) ? SoundEvents.FIRECHARGE_USE : SoundEvents.FLINTANDSTEEL_USE;
          this.level().playSound(var1, this.getX(), this.getY(), this.getZ(), var4, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.ignite();
             if (!var3.isDamageableItem()) {
                var3.shrink(1);
@@ -254,14 +254,6 @@ public class Creeper extends Monster {
 
    public void ignite() {
       this.entityData.set(DATA_IS_IGNITED, true);
-   }
-
-   public boolean canDropMobsSkull() {
-      return this.isPowered() && this.droppedSkulls < 1;
-   }
-
-   public void increaseDroppedSkulls() {
-      ++this.droppedSkulls;
    }
 
    static {

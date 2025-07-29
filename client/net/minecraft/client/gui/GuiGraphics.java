@@ -39,12 +39,18 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
+import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -75,7 +81,8 @@ public class GuiGraphics {
    private final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
-   private final GuiSpriteManager sprites;
+   private final MaterialSet materials;
+   private final TextureAtlas guiSprites;
    private final GuiRenderState guiRenderState;
    @Nullable
    private Runnable deferredTooltip;
@@ -85,7 +92,9 @@ public class GuiGraphics {
       this.scissorStack = new ScissorStack();
       this.minecraft = var1;
       this.pose = var2;
-      this.sprites = var1.getGuiSprites();
+      AtlasManager var4 = var1.getAtlasManager();
+      this.materials = var4;
+      this.guiSprites = var4.getAtlas(Sheets.GUI_SHEET);
       this.guiRenderState = var3;
    }
 
@@ -266,17 +275,31 @@ public class GuiGraphics {
       this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.color(var7, -1));
    }
 
+   private static GuiSpriteScaling getSpriteScaling(TextureAtlasSprite var0) {
+      return ((GuiMetadataSection)var0.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT)).scaling();
+   }
+
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7) {
-      TextureAtlasSprite var8 = this.sprites.getSprite(var2);
-      GuiSpriteScaling var9 = this.sprites.getSpriteScaling(var8);
-      if (var9 instanceof GuiSpriteScaling.Stretch) {
-         this.blitSprite(var1, var8, var3, var4, var5, var6, var7);
-      } else if (var9 instanceof GuiSpriteScaling.Tile) {
-         GuiSpriteScaling.Tile var10 = (GuiSpriteScaling.Tile)var9;
-         this.blitTiledSprite(var1, var8, var3, var4, var5, var6, 0, 0, var10.width(), var10.height(), var10.width(), var10.height(), var7);
-      } else if (var9 instanceof GuiSpriteScaling.NineSlice) {
-         GuiSpriteScaling.NineSlice var11 = (GuiSpriteScaling.NineSlice)var9;
-         this.blitNineSlicedSprite(var1, var8, var11, var3, var4, var5, var6, var7);
+      TextureAtlasSprite var8 = this.guiSprites.getSprite(var2);
+      GuiSpriteScaling var9 = getSpriteScaling(var8);
+      Objects.requireNonNull(var9);
+      byte var11 = 0;
+      //$FF: var11->value
+      //0->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$Stretch
+      //1->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$Tile
+      //2->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$NineSlice
+      switch (var9.typeSwitch<invokedynamic>(var9, var11)) {
+         case 0:
+            GuiSpriteScaling.Stretch var12 = (GuiSpriteScaling.Stretch)var9;
+            this.blitSprite(var1, var8, var3, var4, var5, var6, var7);
+            break;
+         case 1:
+            GuiSpriteScaling.Tile var13 = (GuiSpriteScaling.Tile)var9;
+            this.blitTiledSprite(var1, var8, var3, var4, var5, var6, 0, 0, var13.width(), var13.height(), var13.width(), var13.height(), var7);
+            break;
+         case 2:
+            GuiSpriteScaling.NineSlice var14 = (GuiSpriteScaling.NineSlice)var9;
+            this.blitNineSlicedSprite(var1, var8, var14, var3, var4, var5, var6, var7);
       }
 
    }
@@ -286,8 +309,8 @@ public class GuiGraphics {
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      TextureAtlasSprite var12 = this.sprites.getSprite(var2);
-      GuiSpriteScaling var13 = this.sprites.getSpriteScaling(var12);
+      TextureAtlasSprite var12 = this.guiSprites.getSprite(var2);
+      GuiSpriteScaling var13 = getSpriteScaling(var12);
       if (var13 instanceof GuiSpriteScaling.Stretch) {
          this.blitSprite(var1, var12, var3, var4, var5, var6, var7, var8, var9, var10, var11);
       } else {
@@ -698,12 +721,16 @@ public class GuiGraphics {
       this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(var1, var2, var3, var4, var5, var6, var7, this.scissorStack.peek()));
    }
 
-   public void submitSignRenderState(Model var1, float var2, WoodType var3, int var4, int var5, int var6, int var7) {
+   public void submitSignRenderState(Model.Simple var1, float var2, WoodType var3, int var4, int var5, int var6, int var7) {
       this.guiRenderState.submitPicturesInPictureState(new GuiSignRenderState(var1, var3, var4, var5, var6, var7, var2, this.scissorStack.peek()));
    }
 
    public void submitProfilerChartRenderState(List<ResultField> var1, int var2, int var3, int var4, int var5) {
       this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(var1, var2, var3, var4, var5, this.scissorStack.peek()));
+   }
+
+   public TextureAtlasSprite getSprite(Material var1) {
+      return this.materials.get(var1);
    }
 
    static class ScissorStack {

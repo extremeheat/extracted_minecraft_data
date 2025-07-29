@@ -24,7 +24,6 @@ public class LivingEntityRenderState extends EntityRenderState {
    public boolean isAutoSpinAttack;
    public boolean hasRedOverlay;
    public boolean isInvisibleToPlayer;
-   public boolean appearsGlowing;
    @Nullable
    public Direction bedOrientation;
    @Nullable

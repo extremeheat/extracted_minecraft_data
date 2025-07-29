@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +12,11 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -57,13 +60,15 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
-   public static final MapCodec<ChestBlock> CODEC = simpleCodec((var0) -> new ChestBlock(() -> BlockEntityType.CHEST, var0));
+   public static final MapCodec<ChestBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(var0, (var0x, var1, var2) -> new ChestBlock(() -> BlockEntityType.CHEST, var0x, var1, var2)));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
    public static final int EVENT_SET_OPEN_COUNT = 1;
    private static final VoxelShape SHAPE;
    private static final Map<Direction, VoxelShape> HALF_SHAPES;
+   private final SoundEvent openSound;
+   private final SoundEvent closeSound;
    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER;
    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER;
 
@@ -71,8 +76,10 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return CODEC;
    }
 
-   protected ChestBlock(Supplier<BlockEntityType<? extends ChestBlockEntity>> var1, BlockBehaviour.Properties var2) {
-      super(var2, var1);
+   protected ChestBlock(Supplier<BlockEntityType<? extends ChestBlockEntity>> var1, SoundEvent var2, SoundEvent var3, BlockBehaviour.Properties var4) {
+      super(var4, var1);
+      this.openSound = var2;
+      this.closeSound = var3;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, ChestType.SINGLE)).setValue(WATERLOGGED, false));
    }
 
@@ -90,7 +97,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      if (var7.is(this) && var5.getAxis().isHorizontal()) {
+      if (this.chestCanConnectTo(var7) && var5.getAxis().isHorizontal()) {
          ChestType var9 = (ChestType)var7.getValue(TYPE);
          if (var1.getValue(TYPE) == ChestType.SINGLE && var9 != ChestType.SINGLE && var1.getValue(FACING) == var7.getValue(FACING) && getConnectedDirection(var7) == var5.getOpposite()) {
             return (BlockState)var1.setValue(TYPE, var9.getOpposite());
@@ -100,6 +107,10 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   }
+
+   public boolean chestCanConnectTo(BlockState var1) {
+      return var1.is(this);
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -122,6 +133,11 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    public static Direction getConnectedDirection(BlockState var0) {
       Direction var1 = (Direction)var0.getValue(FACING);
       return var0.getValue(TYPE) == ChestType.LEFT ? var1.getClockWise() : var1.getCounterClockWise();
+   }
+
+   public static BlockPos getConnectedBlockPos(BlockPos var0, BlockState var1) {
+      Direction var2 = getConnectedDirection(var1);
+      return var0.relative(var2);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -156,7 +172,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    @Nullable
    private Direction candidatePartnerFacing(BlockPlaceContext var1, Direction var2) {
       BlockState var3 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var2));
-      return var3.is(this) && var3.getValue(TYPE) == ChestType.SINGLE ? (Direction)var3.getValue(FACING) : null;
+      return this.chestCanConnectTo(var3) && var3.getValue(TYPE) == ChestType.SINGLE ? (Direction)var3.getValue(FACING) : null;
    }
 
    protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
@@ -235,7 +251,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, this.blockEntityType(), ChestBlockEntity::lidAnimateTick) : null;
+      return var1.isClientSide() ? createTickerHelper(var3, this.blockEntityType(), ChestBlockEntity::lidAnimateTick) : null;
    }
 
    public static boolean isChestBlockedAt(LevelAccessor var0, BlockPos var1) {
@@ -264,7 +280,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return AbstractContainerMenu.getRedstoneSignalFromContainer(getContainer(this, var1, var2, var3, false));
    }
 
@@ -290,6 +306,14 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          ((ChestBlockEntity)var5).recheckOpen();
       }
 
+   }
+
+   public SoundEvent getOpenChestSound() {
+      return this.openSound;
+   }
+
+   public SoundEvent getCloseChestSound() {
+      return this.closeSound;
    }
 
    static {

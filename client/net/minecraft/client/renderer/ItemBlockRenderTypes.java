@@ -280,7 +280,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.MEDIUM_AMETHYST_BUD, var3);
       var0.put(Blocks.LARGE_AMETHYST_BUD, var3);
       var0.put(Blocks.AMETHYST_CLUSTER, var3);
-      var0.put(Blocks.LIGHTNING_ROD, var3);
       var0.put(Blocks.CAVE_VINES, var3);
       var0.put(Blocks.CAVE_VINES_PLANT, var3);
       var0.put(Blocks.SPORE_BLOSSOM, var3);

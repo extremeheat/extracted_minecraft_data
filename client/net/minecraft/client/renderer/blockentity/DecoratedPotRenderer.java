@@ -18,7 +18,9 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
@@ -30,6 +32,7 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
+   private final MaterialSet materials;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
    private static final String BACK = "back";
@@ -47,20 +50,25 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.getModelSet());
+      this(var1.entityModelSet(), var1.materials());
    }
 
-   public DecoratedPotRenderer(EntityModelSet var1) {
+   public DecoratedPotRenderer(SpecialModelRenderer.BakingContext var1) {
+      this(var1.entityModelSet(), var1.materials());
+   }
+
+   public DecoratedPotRenderer(EntityModelSet var1, MaterialSet var2) {
       super();
-      ModelPart var2 = var1.bakeLayer(ModelLayers.DECORATED_POT_BASE);
-      this.neck = var2.getChild("neck");
-      this.top = var2.getChild("top");
-      this.bottom = var2.getChild("bottom");
-      ModelPart var3 = var1.bakeLayer(ModelLayers.DECORATED_POT_SIDES);
-      this.frontSide = var3.getChild("front");
-      this.backSide = var3.getChild("back");
-      this.leftSide = var3.getChild("left");
-      this.rightSide = var3.getChild("right");
+      this.materials = var2;
+      ModelPart var3 = var1.bakeLayer(ModelLayers.DECORATED_POT_BASE);
+      this.neck = var3.getChild("neck");
+      this.top = var3.getChild("top");
+      this.bottom = var3.getChild("bottom");
+      ModelPart var4 = var1.bakeLayer(ModelLayers.DECORATED_POT_SIDES);
+      this.frontSide = var4.getChild("front");
+      this.backSide = var4.getChild("back");
+      this.leftSide = var4.getChild("left");
+      this.rightSide = var4.getChild("right");
    }
 
    public static LayerDefinition createBaseLayer() {
@@ -131,18 +139,18 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    }
 
    private void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
-      VertexConsumer var6 = Sheets.DECORATED_POT_BASE.buffer(var2, RenderType::entitySolid);
+      VertexConsumer var6 = Sheets.DECORATED_POT_BASE.buffer(this.materials, var2, RenderType::entitySolid);
       this.neck.render(var1, var6, var3, var4);
       this.top.render(var1, var6, var3, var4);
       this.bottom.render(var1, var6, var3, var4);
-      this.renderSide(this.frontSide, var1, var2, var3, var4, getSideMaterial(var5.front()));
-      this.renderSide(this.backSide, var1, var2, var3, var4, getSideMaterial(var5.back()));
-      this.renderSide(this.leftSide, var1, var2, var3, var4, getSideMaterial(var5.left()));
-      this.renderSide(this.rightSide, var1, var2, var3, var4, getSideMaterial(var5.right()));
+      this.renderSide(this.frontSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.front()));
+      this.renderSide(this.backSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.back()));
+      this.renderSide(this.leftSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.left()));
+      this.renderSide(this.rightSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.right()));
    }
 
-   private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, Material var6) {
-      var1.render(var2, var6.buffer(var3, RenderType::entitySolid), var4, var5);
+   private void renderSide(ModelPart var1, MaterialSet var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Material var7) {
+      var1.render(var3, var7.buffer(var2, var4, RenderType::entitySolid), var5, var6);
    }
 
    public void getExtents(Set<Vector3f> var1) {

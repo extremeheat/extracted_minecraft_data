@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EndCrystalModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -26,24 +26,23 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
       this.model = new EndCrystalModel(var1.bakeLayer(ModelLayers.END_CRYSTAL));
    }
 
-   public void render(EndCrystalRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(EndCrystalRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.scale(2.0F, 2.0F, 2.0F);
       var2.translate(0.0F, -0.5F, 0.0F);
-      this.model.setupAnim(var1);
-      this.model.renderToBuffer(var2, var3.getBuffer(RENDER_TYPE), var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       var2.popPose();
-      Vec3 var5 = var1.beamOffset;
-      if (var5 != null) {
-         float var6 = getY(var1.ageInTicks);
-         float var7 = (float)var5.x;
-         float var8 = (float)var5.y;
-         float var9 = (float)var5.z;
-         var2.translate(var5);
-         EnderDragonRenderer.renderCrystalBeams(-var7, -var8 + var6, -var9, var1.ageInTicks, var2, var3, var4);
+      Vec3 var4 = var1.beamOffset;
+      if (var4 != null) {
+         float var5 = getY(var1.ageInTicks);
+         float var6 = (float)var4.x;
+         float var7 = (float)var4.y;
+         float var8 = (float)var4.z;
+         var2.translate(var4);
+         EnderDragonRenderer.submitCrystalBeams(-var6, -var7 + var5, -var8, var1.ageInTicks, var2, var3, var1.lightCoords);
       }
 
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    public static float getY(float var0) {

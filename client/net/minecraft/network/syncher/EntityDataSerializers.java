@@ -28,6 +28,7 @@ import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
+import net.minecraft.world.entity.animal.coppergolem.CopperGolemState;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
@@ -36,6 +37,7 @@ import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -77,6 +79,8 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Holder<PaintingVariant>> PAINTING_VARIANT;
    public static final EntityDataSerializer<Armadillo.ArmadilloState> ARMADILLO_STATE;
    public static final EntityDataSerializer<Sniffer.State> SNIFFER_STATE;
+   public static final EntityDataSerializer<WeatheringCopper.WeatherState> WEATHERING_COPPER_STATE;
+   public static final EntityDataSerializer<CopperGolemState> COPPER_GOLEM_STATE;
    public static final EntityDataSerializer<Vector3f> VECTOR3;
    public static final EntityDataSerializer<Quaternionf> QUATERNION;
 
@@ -202,6 +206,8 @@ public class EntityDataSerializers {
       PAINTING_VARIANT = EntityDataSerializer.<Holder<PaintingVariant>>forValueType(PaintingVariant.STREAM_CODEC);
       ARMADILLO_STATE = EntityDataSerializer.<Armadillo.ArmadilloState>forValueType(Armadillo.ArmadilloState.STREAM_CODEC);
       SNIFFER_STATE = EntityDataSerializer.<Sniffer.State>forValueType(Sniffer.State.STREAM_CODEC);
+      WEATHERING_COPPER_STATE = EntityDataSerializer.<WeatheringCopper.WeatherState>forValueType(WeatheringCopper.WeatherState.STREAM_CODEC);
+      COPPER_GOLEM_STATE = EntityDataSerializer.<CopperGolemState>forValueType(CopperGolemState.STREAM_CODEC);
       VECTOR3 = EntityDataSerializer.<Vector3f>forValueType(ByteBufCodecs.VECTOR3F);
       QUATERNION = EntityDataSerializer.<Quaternionf>forValueType(ByteBufCodecs.QUATERNIONF);
       registerSerializer(BYTE);
@@ -237,6 +243,8 @@ public class EntityDataSerializers {
       registerSerializer(PAINTING_VARIANT);
       registerSerializer(SNIFFER_STATE);
       registerSerializer(ARMADILLO_STATE);
+      registerSerializer(COPPER_GOLEM_STATE);
+      registerSerializer(WEATHERING_COPPER_STATE);
       registerSerializer(VECTOR3);
       registerSerializer(QUATERNION);
    }

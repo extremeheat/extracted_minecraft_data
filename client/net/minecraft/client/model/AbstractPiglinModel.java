@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.util.Mth;
 
@@ -41,6 +42,16 @@ public class AbstractPiglinModel<S extends HumanoidRenderState> extends Humanoid
       PartDefinition var3 = addHead(var0, var1);
       var3.clearChild("hat");
       return var1;
+   }
+
+   public static ArmorModelSet<MeshDefinition> createArmorMeshSet(CubeDeformation var0, CubeDeformation var1) {
+      return PlayerModel.createArmorMeshSet(var0, var1).<MeshDefinition>map((var0x) -> {
+         PartDefinition var1 = var0x.getRoot();
+         PartDefinition var2 = var1.getChild("head");
+         var2.addOrReplaceChild("left_ear", CubeListBuilder.create(), PartPose.ZERO);
+         var2.addOrReplaceChild("right_ear", CubeListBuilder.create(), PartPose.ZERO);
+         return var0x;
+      });
    }
 
    public static PartDefinition addHead(CubeDeformation var0, MeshDefinition var1) {

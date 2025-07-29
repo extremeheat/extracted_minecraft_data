@@ -1,0 +1,25 @@
+package net.minecraft.client.gui.components.debug;
+
+import net.minecraft.util.StringRepresentable;
+
+public enum DebugScreenEntryStatus implements StringRepresentable {
+   ALWAYS_ON("alwaysOn"),
+   IN_F3("inF3"),
+   NEVER("never");
+
+   public static final StringRepresentable.EnumCodec<DebugScreenEntryStatus> CODEC = StringRepresentable.<DebugScreenEntryStatus>fromEnum(DebugScreenEntryStatus::values);
+   private final String name;
+
+   private DebugScreenEntryStatus(final String var3) {
+      this.name = var3;
+   }
+
+   public String getSerializedName() {
+      return this.name;
+   }
+
+   // $FF: synthetic method
+   private static DebugScreenEntryStatus[] $values() {
+      return new DebugScreenEntryStatus[]{ALWAYS_ON, IN_F3, NEVER};
+   }
+}

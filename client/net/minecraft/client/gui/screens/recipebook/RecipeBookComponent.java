@@ -334,18 +334,18 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       this.ghostSlots.render(var1, this.minecraft, var2);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
-         if (this.recipeBookPage.mouseClicked(var1, var3, var5, this.getXOrigin(), this.getYOrigin(), 147, 166)) {
-            RecipeDisplayId var10 = this.recipeBookPage.getLastClickedRecipe();
-            RecipeCollection var11 = this.recipeBookPage.getLastClickedRecipeCollection();
-            if (var10 != null && var11 != null) {
-               if (!this.tryPlaceRecipe(var11, var10)) {
+         if (this.recipeBookPage.mouseClicked(var1, var3, var5, this.getXOrigin(), this.getYOrigin(), 147, 166, var6)) {
+            RecipeDisplayId var11 = this.recipeBookPage.getLastClickedRecipe();
+            RecipeCollection var12 = this.recipeBookPage.getLastClickedRecipeCollection();
+            if (var11 != null && var12 != null) {
+               if (!this.tryPlaceRecipe(var12, var11)) {
                   return false;
                }
 
-               this.lastRecipeCollection = var11;
-               this.lastRecipe = var10;
+               this.lastRecipeCollection = var12;
+               this.lastRecipe = var11;
                if (!this.isOffsetNextToMainGUI()) {
                   this.setVisible(false);
                }
@@ -354,8 +354,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
             return true;
          } else {
             if (this.searchBox != null) {
-               boolean var6 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1), Mth.floor(var3));
-               if (var6 || this.searchBox.mouseClicked(var1, var3, var5)) {
+               boolean var7 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1), Mth.floor(var3));
+               if (var7 || this.searchBox.mouseClicked(var1, var3, var5, var6)) {
                   this.searchBox.setFocused(true);
                   return true;
                }
@@ -363,22 +363,22 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
                this.searchBox.setFocused(false);
             }
 
-            if (this.filterButton.mouseClicked(var1, var3, var5)) {
-               boolean var9 = this.toggleFiltering();
-               this.filterButton.setStateTriggered(var9);
+            if (this.filterButton.mouseClicked(var1, var3, var5, var6)) {
+               boolean var10 = this.toggleFiltering();
+               this.filterButton.setStateTriggered(var10);
                this.updateFilterButtonTooltip();
                this.sendUpdateSettings();
-               this.updateCollections(false, var9);
+               this.updateCollections(false, var10);
                return true;
             } else {
-               for(RecipeBookTabButton var7 : this.tabButtons) {
-                  if (var7.mouseClicked(var1, var3, var5)) {
-                     if (this.selectedTab != var7) {
+               for(RecipeBookTabButton var8 : this.tabButtons) {
+                  if (var8.mouseClicked(var1, var3, var5, var6)) {
+                     if (this.selectedTab != var8) {
                         if (this.selectedTab != null) {
                            this.selectedTab.setStateTriggered(false);
                         }
 
-                        this.selectedTab = var7;
+                        this.selectedTab = var8;
                         this.selectedTab.setStateTriggered(true);
                         this.updateCollections(true, this.isFiltering());
                      }
@@ -559,7 +559,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       var2.addAll(this.tabButtons);
       Screen.NarratableSearchResult var3 = Screen.findNarratableWidget(var2, (NarratableEntry)null);
       if (var3 != null) {
-         var3.entry.updateNarration(var1.nest());
+         var3.entry().updateNarration(var1.nest());
       }
 
    }

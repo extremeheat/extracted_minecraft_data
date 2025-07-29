@@ -1,22 +1,23 @@
 package net.minecraft.gametest.framework;
 
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import org.slf4j.Logger;
 
 public class GameTestTicker {
    public static final GameTestTicker SINGLETON = new GameTestTicker();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private final Collection<GameTestInfo> testInfos = Lists.newCopyOnWriteArrayList();
    @Nullable
    private GameTestRunner runner;
    private State state;
-   private volatile boolean ticking;
 
    private GameTestTicker() {
       super();
       this.state = GameTestTicker.State.IDLE;
-      this.ticking = false;
    }
 
    public void add(GameTestInfo var1) {
@@ -44,12 +45,8 @@ public class GameTestTicker {
       this.runner = var1;
    }
 
-   public void startTicking() {
-      this.ticking = true;
-   }
-
    public void tick() {
-      if (this.runner != null && this.ticking) {
+      if (this.runner != null) {
          this.state = GameTestTicker.State.RUNNING;
          this.testInfos.forEach((var1x) -> var1x.tick(this.runner));
          this.testInfos.removeIf(GameTestInfo::isDone);

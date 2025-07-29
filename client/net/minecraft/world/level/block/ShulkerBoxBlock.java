@@ -101,7 +101,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof ShulkerBoxBlockEntity var6) {
-         if (!var1.isClientSide && var4.preventsBlockDrops() && !var6.isEmpty()) {
+         if (!var1.isClientSide() && var4.preventsBlockDrops() && !var6.isEmpty()) {
             ItemStack var7 = getColoredItemStack(this.getColor());
             var7.applyComponents(var5.collectComponents());
             ItemEntity var8 = new ItemEntity(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var7);
@@ -161,7 +161,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 

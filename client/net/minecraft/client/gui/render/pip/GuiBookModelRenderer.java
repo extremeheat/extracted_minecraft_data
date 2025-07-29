@@ -14,6 +14,8 @@ import net.minecraft.util.Mth;
 import org.joml.Quaternionfc;
 
 public class GuiBookModelRenderer extends PictureInPictureRenderer<GuiBookModelRenderState> {
+   private final BookModel.State bookState = new BookModel.State();
+
    public GuiBookModelRenderer(MultiBufferSource.BufferSource var1) {
       super(var1);
    }
@@ -34,7 +36,11 @@ public class GuiBookModelRenderer extends PictureInPictureRenderer<GuiBookModelR
       float var5 = Mth.clamp(Mth.frac(var4 + 0.25F) * 1.6F - 0.3F, 0.0F, 1.0F);
       float var6 = Mth.clamp(Mth.frac(var4 + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       BookModel var7 = var1.bookModel();
-      var7.setupAnim(0.0F, var5, var6, var3);
+      this.bookState.animationPos = 0.0F;
+      this.bookState.pageFlip1 = var5;
+      this.bookState.pageFlip2 = var6;
+      this.bookState.open = var3;
+      var7.setupAnim(this.bookState);
       ResourceLocation var8 = var1.texture();
       VertexConsumer var9 = this.bufferSource.getBuffer(var7.renderType(var8));
       var7.renderToBuffer(var2, var9, 15728880, OverlayTexture.NO_OVERLAY);

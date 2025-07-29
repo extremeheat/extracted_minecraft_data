@@ -250,7 +250,7 @@ public class CommandSuggestions {
             }
 
             if (var2 > 0) {
-               this.commandUsage.add(getExceptionMessage(CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().create()));
+               this.commandUsage.add(getExceptionMessage(CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(this.currentParse.getReader())));
             }
          } else if (this.currentParse.getReader().canRead()) {
             var1 = true;

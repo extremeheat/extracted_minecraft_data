@@ -103,16 +103,16 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return this.centered ? var5.getStyleAtCentered(var6 + this.getWidth() / 2, var7, var8, var1, var3) : var5.getStyleAtLeftAligned(var6, var7, var8, var1, var3);
    }
 
-   public void onClick(double var1, double var3) {
+   public void onClick(double var1, double var3, boolean var5) {
       if (this.componentClickHandler != null) {
-         Style var5 = this.getComponentStyleAt(var1, var3);
-         if (var5 != null) {
-            this.componentClickHandler.accept(var5);
+         Style var6 = this.getComponentStyleAt(var1, var3);
+         if (var6 != null) {
+            this.componentClickHandler.accept(var6);
             return;
          }
       }
 
-      super.onClick(var1, var3);
+      super.onClick(var1, var3, var5);
    }
 
    private CacheKey getFreshCacheKey() {

@@ -88,14 +88,14 @@ public class DataPackCommand {
          if (Files.exists(var4, new LinkOption[0])) {
             throw ERROR_PACK_ALREADY_EXISTS.create(var1);
          } else {
-            PackMetadataSection var5 = new PackMetadataSection(var2, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA), Optional.empty());
-            DataResult var6 = PackMetadataSection.CODEC.encodeStart(JsonOps.INSTANCE, var5);
+            PackMetadataSection var5 = new PackMetadataSection(var2, SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).minorRange());
+            DataResult var6 = PackMetadataSection.SERVER_TYPE.codec().encodeStart(JsonOps.INSTANCE, var5);
             Optional var7 = var6.error();
             if (var7.isPresent()) {
                throw ERROR_PACK_METADATA_ENCODE_FAILURE.create(var1, ((DataResult.Error)var7.get()).message());
             } else {
                JsonObject var8 = new JsonObject();
-               var8.add(PackMetadataSection.TYPE.name(), (JsonElement)var6.getOrThrow());
+               var8.add(PackMetadataSection.SERVER_TYPE.name(), (JsonElement)var6.getOrThrow());
 
                try {
                   Files.createDirectory(var4);

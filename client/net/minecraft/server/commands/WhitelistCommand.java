@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -11,9 +10,11 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.world.entity.player.Player;
 
 public class WhitelistCommand {
    private static final SimpleCommandExceptionType ERROR_ALREADY_ENABLED = new SimpleCommandExceptionType(Component.translatable("commands.whitelist.alreadyOn"));
@@ -28,7 +29,7 @@ public class WhitelistCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("whitelist").requires(Commands.hasPermission(3))).then(Commands.literal("on").executes((var0x) -> enableWhitelist((CommandSourceStack)var0x.getSource())))).then(Commands.literal("off").executes((var0x) -> disableWhitelist((CommandSourceStack)var0x.getSource())))).then(Commands.literal("list").executes((var0x) -> showList((CommandSourceStack)var0x.getSource())))).then(Commands.literal("add").then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
          PlayerList var2 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
-         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().filter((var1x) -> !var2.getWhiteList().isWhiteListed(var1x.getGameProfile())).map((var0) -> var0.getGameProfile().getName()), var1);
+         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().map(Player::nameAndId).filter((var1x) -> !var2.getWhiteList().isWhiteListed(var1x)).map(NameAndId::name), var1);
       }).executes((var0x) -> addPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))))).then(Commands.literal("remove").then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getWhiteListNames(), var1)).executes((var0x) -> removePlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))))).then(Commands.literal("reload").executes((var0x) -> reload((CommandSourceStack)var0x.getSource()))));
    }
 
@@ -39,15 +40,15 @@ public class WhitelistCommand {
       return 1;
    }
 
-   private static int addPlayers(CommandSourceStack var0, Collection<GameProfile> var1) throws CommandSyntaxException {
+   private static int addPlayers(CommandSourceStack var0, Collection<NameAndId> var1) throws CommandSyntaxException {
       UserWhiteList var2 = var0.getServer().getPlayerList().getWhiteList();
       int var3 = 0;
 
-      for(GameProfile var5 : var1) {
+      for(NameAndId var5 : var1) {
          if (!var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.add(var6);
-            var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", Component.literal(var5.getName())), true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", Component.literal(var5.name())), true);
             ++var3;
          }
       }
@@ -59,15 +60,15 @@ public class WhitelistCommand {
       }
    }
 
-   private static int removePlayers(CommandSourceStack var0, Collection<GameProfile> var1) throws CommandSyntaxException {
+   private static int removePlayers(CommandSourceStack var0, Collection<NameAndId> var1) throws CommandSyntaxException {
       UserWhiteList var2 = var0.getServer().getPlayerList().getWhiteList();
       int var3 = 0;
 
-      for(GameProfile var5 : var1) {
+      for(NameAndId var5 : var1) {
          if (var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.remove(var6);
-            var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", Component.literal(var5.getName())), true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", Component.literal(var5.name())), true);
             ++var3;
          }
       }

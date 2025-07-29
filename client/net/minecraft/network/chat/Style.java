@@ -13,7 +13,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
-public class Style {
+public final class Style {
    public static final Style EMPTY = new Style((TextColor)null, (Integer)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (ResourceLocation)null);
    public static final ResourceLocation DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
    @Nullable
@@ -129,7 +129,7 @@ public class Style {
    }
 
    public Style withShadowColor(int var1) {
-      return checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
+      return Objects.equals(this.shadowColor, var1) ? this : checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
    }
 
    public Style withBold(@Nullable Boolean var1) {

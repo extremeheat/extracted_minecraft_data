@@ -173,7 +173,7 @@ public class ChatComponent {
    }
 
    public void clearMessages(boolean var1) {
-      this.minecraft.getChatListener().clearQueue();
+      this.minecraft.getChatListener().flushQueue();
       this.messageDeletionQueue.clear();
       this.trimmedMessages.clear();
       this.allMessages.clear();

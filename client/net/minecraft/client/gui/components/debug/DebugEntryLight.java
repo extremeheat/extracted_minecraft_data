@@ -1,0 +1,31 @@
+package net.minecraft.client.gui.components.debug;
+
+import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.chunk.LevelChunk;
+
+public class DebugEntryLight implements DebugScreenEntry {
+   public static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("light");
+
+   public DebugEntryLight() {
+      super();
+   }
+
+   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
+      Minecraft var5 = Minecraft.getInstance();
+      Entity var6 = var5.getCameraEntity();
+      if (var6 != null && var5.level != null) {
+         BlockPos var7 = var6.blockPosition();
+         int var8 = var5.level.getChunkSource().getLightEngine().getRawBrightness(var7, 0);
+         int var9 = var5.level.getBrightness(LightLayer.SKY, var7);
+         int var10 = var5.level.getBrightness(LightLayer.BLOCK, var7);
+         String var11 = "Client Light: " + var8 + " (" + var9 + " sky, " + var10 + " block)";
+         var1.addToGroup(GROUP, var11);
+      }
+   }
+}

@@ -10,7 +10,7 @@ public class SkeletonRenderer extends AbstractSkeletonRenderer<Skeleton, Skeleto
    private static final ResourceLocation SKELETON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/skeleton/skeleton.png");
 
    public SkeletonRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.SKELETON, ModelLayers.SKELETON_INNER_ARMOR, ModelLayers.SKELETON_OUTER_ARMOR);
+      super(var1, ModelLayers.SKELETON, ModelLayers.SKELETON_ARMOR);
    }
 
    public ResourceLocation getTextureLocation(SkeletonRenderState var1) {

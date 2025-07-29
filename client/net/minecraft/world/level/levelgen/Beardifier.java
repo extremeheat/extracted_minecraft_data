@@ -1,16 +1,20 @@
 package net.minecraft.world.level.levelgen;
 
 import com.google.common.annotations.VisibleForTesting;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -28,116 +32,154 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       }
 
    });
-   private final ObjectListIterator<Rigid> pieceIterator;
-   private final ObjectListIterator<JigsawJunction> junctionIterator;
+   public static final Beardifier EMPTY = new Beardifier(List.of(), List.of(), (BoundingBox)null);
+   private final List<Rigid> pieces;
+   private final List<JigsawJunction> junctions;
+   @Nullable
+   private final BoundingBox affectedBox;
 
    public static Beardifier forStructuresInChunk(StructureManager var0, ChunkPos var1) {
-      int var2 = var1.getMinBlockX();
-      int var3 = var1.getMinBlockZ();
-      ObjectArrayList var4 = new ObjectArrayList(10);
-      ObjectArrayList var5 = new ObjectArrayList(32);
-      var0.startsForStructure((ChunkPos)var1, (Predicate)((var0x) -> var0x.terrainAdaptation() != TerrainAdjustment.NONE)).forEach((var5x) -> {
-         TerrainAdjustment var6 = var5x.getStructure().terrainAdaptation();
+      List var2 = var0.startsForStructure((ChunkPos)var1, (Predicate)((var0x) -> var0x.terrainAdaptation() != TerrainAdjustment.NONE));
+      if (var2.isEmpty()) {
+         return EMPTY;
+      } else {
+         int var3 = var1.getMinBlockX();
+         int var4 = var1.getMinBlockZ();
+         ArrayList var5 = new ArrayList();
+         ArrayList var6 = new ArrayList();
+         BoundingBox var7 = null;
 
-         for(StructurePiece var8 : var5x.getPieces()) {
-            if (var8.isCloseToChunk(var1, 12)) {
-               if (var8 instanceof PoolElementStructurePiece) {
-                  PoolElementStructurePiece var9 = (PoolElementStructurePiece)var8;
-                  StructureTemplatePool.Projection var10 = var9.getElement().getProjection();
-                  if (var10 == StructureTemplatePool.Projection.RIGID) {
-                     var4.add(new Rigid(var9.getBoundingBox(), var6, var9.getGroundLevelDelta()));
-                  }
+         for(StructureStart var9 : var2) {
+            TerrainAdjustment var10 = var9.getStructure().terrainAdaptation();
 
-                  for(JigsawJunction var12 : var9.getJunctions()) {
-                     int var13 = var12.getSourceX();
-                     int var14 = var12.getSourceZ();
-                     if (var13 > var2 - 12 && var14 > var3 - 12 && var13 < var2 + 15 + 12 && var14 < var3 + 15 + 12) {
-                        var5.add(var12);
+            for(StructurePiece var12 : var9.getPieces()) {
+               if (var12.isCloseToChunk(var1, 12)) {
+                  if (var12 instanceof PoolElementStructurePiece) {
+                     PoolElementStructurePiece var13 = (PoolElementStructurePiece)var12;
+                     StructureTemplatePool.Projection var14 = var13.getElement().getProjection();
+                     if (var14 == StructureTemplatePool.Projection.RIGID) {
+                        var5.add(new Rigid(var13.getBoundingBox(), var10, var13.getGroundLevelDelta()));
+                        var7 = includeBoundingBox(var7, var12.getBoundingBox());
                      }
+
+                     for(JigsawJunction var16 : var13.getJunctions()) {
+                        int var17 = var16.getSourceX();
+                        int var18 = var16.getSourceZ();
+                        if (var17 > var3 - 12 && var18 > var4 - 12 && var17 < var3 + 15 + 12 && var18 < var4 + 15 + 12) {
+                           var6.add(var16);
+                           BoundingBox var19 = new BoundingBox(new BlockPos(var17, var16.getSourceGroundY(), var18));
+                           var7 = includeBoundingBox(var7, var19);
+                        }
+                     }
+                  } else {
+                     var5.add(new Rigid(var12.getBoundingBox(), var10, 0));
+                     var7 = includeBoundingBox(var7, var12.getBoundingBox());
                   }
-               } else {
-                  var4.add(new Rigid(var8.getBoundingBox(), var6, 0));
                }
             }
          }
 
-      });
-      return new Beardifier(var4.iterator(), var5.iterator());
+         if (var7 == null) {
+            return EMPTY;
+         } else {
+            BoundingBox var20 = var7.inflatedBy(24);
+            return new Beardifier(List.copyOf(var5), List.copyOf(var6), var20);
+         }
+      }
+   }
+
+   private static BoundingBox includeBoundingBox(@Nullable BoundingBox var0, BoundingBox var1) {
+      return var0 == null ? var1 : BoundingBox.encapsulating(var0, var1);
    }
 
    @VisibleForTesting
-   public Beardifier(ObjectListIterator<Rigid> var1, ObjectListIterator<JigsawJunction> var2) {
+   public Beardifier(List<Rigid> var1, List<JigsawJunction> var2, @Nullable BoundingBox var3) {
       super();
-      this.pieceIterator = var1;
-      this.junctionIterator = var2;
+      this.pieces = var1;
+      this.junctions = var2;
+      this.affectedBox = var3;
+   }
+
+   public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+      if (this.affectedBox == null) {
+         Arrays.fill(var1, 0.0);
+      } else {
+         DensityFunctions.BeardifierOrMarker.super.fillArray(var1, var2);
+      }
+
    }
 
    public double compute(DensityFunction.FunctionContext var1) {
-      int var2 = var1.blockX();
-      int var3 = var1.blockY();
-      int var4 = var1.blockZ();
+      if (this.affectedBox == null) {
+         return 0.0;
+      } else {
+         int var2 = var1.blockX();
+         int var3 = var1.blockY();
+         int var4 = var1.blockZ();
+         if (!this.affectedBox.isInside(var2, var3, var4)) {
+            return 0.0;
+         } else {
+            double var5 = 0.0;
 
-      double var5;
-      double var10001;
-      for(var5 = 0.0; this.pieceIterator.hasNext(); var5 += var10001) {
-         Rigid var7 = (Rigid)this.pieceIterator.next();
-         BoundingBox var8 = var7.box();
-         int var9 = var7.groundLevelDelta();
-         int var10 = Math.max(0, Math.max(var8.minX() - var2, var2 - var8.maxX()));
-         int var11 = Math.max(0, Math.max(var8.minZ() - var4, var4 - var8.maxZ()));
-         int var12 = var8.minY() + var9;
-         int var13 = var3 - var12;
-         int var10000;
-         switch (var7.terrainAdjustment()) {
-            case NONE:
-               var10000 = 0;
-               break;
-            case BURY:
-            case BEARD_THIN:
-               var10000 = var13;
-               break;
-            case BEARD_BOX:
-               var10000 = Math.max(0, Math.max(var12 - var3, var3 - var8.maxY()));
-               break;
-            case ENCAPSULATE:
-               var10000 = Math.max(0, Math.max(var8.minY() - var3, var3 - var8.maxY()));
-               break;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
-         }
+            for(Rigid var8 : this.pieces) {
+               BoundingBox var9 = var8.box();
+               int var10 = var8.groundLevelDelta();
+               int var11 = Math.max(0, Math.max(var9.minX() - var2, var2 - var9.maxX()));
+               int var12 = Math.max(0, Math.max(var9.minZ() - var4, var4 - var9.maxZ()));
+               int var13 = var9.minY() + var10;
+               int var14 = var3 - var13;
+               int var10000;
+               switch (var8.terrainAdjustment()) {
+                  case NONE:
+                     var10000 = 0;
+                     break;
+                  case BURY:
+                  case BEARD_THIN:
+                     var10000 = var14;
+                     break;
+                  case BEARD_BOX:
+                     var10000 = Math.max(0, Math.max(var13 - var3, var3 - var9.maxY()));
+                     break;
+                  case ENCAPSULATE:
+                     var10000 = Math.max(0, Math.max(var9.minY() - var3, var3 - var9.maxY()));
+                     break;
+                  default:
+                     throw new MatchException((String)null, (Throwable)null);
+               }
 
-         int var14 = var10000;
-         switch (var7.terrainAdjustment()) {
-            case NONE:
-               var10001 = 0.0;
-               break;
-            case BURY:
-               var10001 = getBuryContribution((double)var10, (double)var14 / 2.0, (double)var11);
-               break;
-            case BEARD_THIN:
-            case BEARD_BOX:
-               var10001 = getBeardContribution(var10, var14, var11, var13) * 0.8;
-               break;
-            case ENCAPSULATE:
-               var10001 = getBuryContribution((double)var10 / 2.0, (double)var14 / 2.0, (double)var11 / 2.0) * 0.8;
-               break;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
+               int var15 = var10000;
+               double var10001;
+               switch (var8.terrainAdjustment()) {
+                  case NONE:
+                     var10001 = 0.0;
+                     break;
+                  case BURY:
+                     var10001 = getBuryContribution((double)var11, (double)var15 / 2.0, (double)var12);
+                     break;
+                  case BEARD_THIN:
+                  case BEARD_BOX:
+                     var10001 = getBeardContribution(var11, var15, var12, var14) * 0.8;
+                     break;
+                  case ENCAPSULATE:
+                     var10001 = getBuryContribution((double)var11 / 2.0, (double)var15 / 2.0, (double)var12 / 2.0) * 0.8;
+                     break;
+                  default:
+                     throw new MatchException((String)null, (Throwable)null);
+               }
+
+               var5 += var10001;
+            }
+
+            for(JigsawJunction var17 : this.junctions) {
+               int var18 = var2 - var17.getSourceX();
+               int var19 = var3 - var17.getSourceGroundY();
+               int var20 = var4 - var17.getSourceZ();
+               var5 += getBeardContribution(var18, var19, var20, var19) * 0.4;
+            }
+
+            return var5;
          }
       }
-
-      this.pieceIterator.back(2147483647);
-
-      while(this.junctionIterator.hasNext()) {
-         JigsawJunction var15 = (JigsawJunction)this.junctionIterator.next();
-         int var16 = var2 - var15.getSourceX();
-         int var17 = var3 - var15.getSourceGroundY();
-         int var18 = var4 - var15.getSourceZ();
-         var5 += getBeardContribution(var16, var17, var18, var17) * 0.4;
-      }
-
-      this.junctionIterator.back(2147483647);
-      return var5;
    }
 
    public double minValue() {

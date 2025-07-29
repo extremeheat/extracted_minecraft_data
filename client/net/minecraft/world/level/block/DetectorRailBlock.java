@@ -47,7 +47,7 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          if (!(Boolean)var1.getValue(POWERED)) {
             this.checkPressed(var2, var3, var1);
          }
@@ -132,16 +132,16 @@ public class DetectorRailBlock extends BaseRailBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       if ((Boolean)var1.getValue(POWERED)) {
-         List var4 = this.getInteractingMinecartOfType(var2, var3, MinecartCommandBlock.class, (var0) -> true);
-         if (!var4.isEmpty()) {
-            return ((MinecartCommandBlock)var4.get(0)).getCommandBlock().getSuccessCount();
+         List var5 = this.getInteractingMinecartOfType(var2, var3, MinecartCommandBlock.class, (var0) -> true);
+         if (!var5.isEmpty()) {
+            return ((MinecartCommandBlock)var5.get(0)).getCommandBlock().getSuccessCount();
          }
 
-         List var5 = this.getInteractingMinecartOfType(var2, var3, AbstractMinecart.class, EntitySelector.CONTAINER_ENTITY_SELECTOR);
-         if (!var5.isEmpty()) {
-            return AbstractContainerMenu.getRedstoneSignalFromContainer((Container)var5.get(0));
+         List var6 = this.getInteractingMinecartOfType(var2, var3, AbstractMinecart.class, EntitySelector.CONTAINER_ENTITY_SELECTOR);
+         if (!var6.isEmpty()) {
+            return AbstractContainerMenu.getRedstoneSignalFromContainer((Container)var6.get(0));
          }
       }
 

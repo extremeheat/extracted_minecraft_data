@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.Mob;
 
@@ -18,8 +18,8 @@ public abstract class AgeableMobRenderer<T extends Mob, S extends LivingEntityRe
       this.babyModel = var3;
    }
 
-   public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
       this.model = var1.isBaby ? this.babyModel : this.adultModel;
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 }

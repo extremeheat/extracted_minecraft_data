@@ -245,7 +245,7 @@ public class GlCommandEncoder implements CommandEncoder {
             } else if (var1.length() + var1.offset() > var3.size) {
                throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + var4 + " bytes at offset " + var1.offset() + " to " + var3.size + " size buffer)");
             } else {
-               this.device.directStateAccess().bufferSubData(var3.handle, var1.offset(), var2);
+               this.device.directStateAccess().bufferSubData(var3.handle, var1.offset(), var2, var3.usage());
             }
          }
       }
@@ -293,8 +293,8 @@ public class GlCommandEncoder implements CommandEncoder {
          GlBuffer var3 = (GlBuffer)var1.buffer();
          if (var3.closed) {
             throw new IllegalStateException("Source buffer already closed");
-         } else if ((var3.usage() & 8) == 0) {
-            throw new IllegalStateException("Source buffer needs USAGE_COPY_DST to be a destination for a copy");
+         } else if ((var3.usage() & 16) == 0) {
+            throw new IllegalStateException("Source buffer needs USAGE_COPY_SRC to be a source for a copy");
          } else {
             GlBuffer var4 = (GlBuffer)var2.buffer();
             if (var4.closed) {
@@ -602,15 +602,16 @@ public class GlCommandEncoder implements CommandEncoder {
                }
             }
 
-            if (var1.vertexBuffers[0] == null) {
-               throw new IllegalStateException("Missing vertex buffer at slot 0");
+            GlRenderPipeline var7 = var1.pipeline;
+            if (var1.vertexBuffers[0] == null && var7 != null && !var7.info().getVertexFormat().getElements().isEmpty()) {
+               throw new IllegalStateException("Vertex format contains elements but vertex buffer at slot 0 is null");
             }
 
-            if (var1.vertexBuffers[0].isClosed()) {
+            if (var1.vertexBuffers[0] != null && var1.vertexBuffers[0].isClosed()) {
                throw new IllegalStateException("Vertex buffer at slot 0 has been closed!");
             }
 
-            if ((var1.vertexBuffers[0].usage() & 32) == 0) {
+            if (var1.vertexBuffers[0] != null && (var1.vertexBuffers[0].usage() & 32) == 0) {
                throw new IllegalStateException("Vertex buffer must have GpuBuffer.USAGE_VERTEX!");
             }
          }

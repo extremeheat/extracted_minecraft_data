@@ -372,10 +372,10 @@ public class EditBox extends AbstractWidget {
       }
    }
 
-   public void onClick(double var1, double var3) {
-      int var5 = Mth.floor(var1) - this.textX;
-      String var6 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-      this.moveCursorTo(this.font.plainSubstrByWidth(var6, var5).length() + this.displayPos, Screen.hasShiftDown());
+   public void onClick(double var1, double var3, boolean var5) {
+      int var6 = Mth.floor(var1) - this.textX;
+      String var7 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+      this.moveCursorTo(this.font.plainSubstrByWidth(var7, var6).length() + this.displayPos, Screen.hasShiftDown());
    }
 
    public void playDownSound(SoundManager var1) {

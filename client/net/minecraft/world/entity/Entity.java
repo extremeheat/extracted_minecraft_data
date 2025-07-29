@@ -152,7 +152,7 @@ import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
-public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess, ScoreHolder, DataComponentGetter {
+public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, EntityAccess, ScoreHolder, DataComponentGetter {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String TAG_ID = "id";
    public static final String TAG_UUID = "UUID";
@@ -170,6 +170,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public static final String TAG_SILENT = "Silent";
    public static final String TAG_GLOWING = "Glowing";
    public static final String TAG_INVULNERABLE = "Invulnerable";
+   public static final String TAG_CUSTOM_NAME = "CustomName";
    private static final AtomicInteger ENTITY_COUNTER = new AtomicInteger();
    public static final int CONTENTS_SLOT_INDEX = 0;
    public static final int BOARDING_COOLDOWN = 60;
@@ -546,7 +547,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       }
 
       this.checkBelowWorld();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setSharedFlagOnFire(this.remainingFireTicks > 0);
       }
 
@@ -885,7 +886,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
 
          boolean var5 = this.getRemainingFireTicks() > var4;
-         if (!this.level.isClientSide && !this.isOnFire() && !var5) {
+         if (!this.level.isClientSide() && !this.isOnFire() && !var5) {
             this.setRemainingFireTicks(-this.getFireImmuneTicks());
          }
 
@@ -2052,7 +2053,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    protected final String getEncodeId() {
       EntityType var1 = this.getType();
       ResourceLocation var2 = EntityType.getKey(var1);
-      return var1.canSerialize() && var2 != null ? var2.toString() : null;
+      return !var1.canSerialize() ? null : var2.toString();
    }
 
    protected abstract void readAdditionalSaveData(ValueInput var1);
@@ -2061,12 +2062,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    @Nullable
    public ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2) {
-      return this.spawnAtLocation(var1, var2, 0);
-   }
-
-   @Nullable
-   public ItemEntity spawnAtLocation(ServerLevel var1, ItemLike var2, int var3) {
-      return this.spawnAtLocation(var1, new ItemStack(var2), (float)var3);
+      return this.spawnAtLocation(var1, new ItemStack(var2), 0.0F);
    }
 
    @Nullable
@@ -2109,7 +2105,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (!this.level().isClientSide && var1.isSecondaryUseActive() && this instanceof Leashable var3) {
+      if (!this.level().isClientSide() && var1.isSecondaryUseActive() && this instanceof Leashable var3) {
          if (var3.canBeLeashed() && this.isAlive()) {
             label83: {
                if (this instanceof LivingEntity) {
@@ -2296,15 +2292,15 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return var2.getClamped(EntityAttachment.PASSENGER, var3, var0.yRot);
    }
 
-   public boolean startRiding(Entity var1) {
-      return this.startRiding(var1, false);
+   public final boolean startRiding(Entity var1) {
+      return this.startRiding(var1, false, true);
    }
 
    public boolean showVehicleHealth() {
       return this instanceof LivingEntity;
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
       if (var1 == this.vehicle) {
          return false;
       } else if (!var1.couldAcceptPassenger()) {
@@ -2312,8 +2308,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       } else if (!this.level().isClientSide() && !var1.type.canSerialize()) {
          return false;
       } else {
-         for(Entity var3 = var1; var3.vehicle != null; var3 = var3.vehicle) {
-            if (var3.vehicle == this) {
+         for(Entity var4 = var1; var4.vehicle != null; var4 = var4.vehicle) {
+            if (var4.vehicle == this) {
                return false;
             }
          }
@@ -2326,7 +2322,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             this.setPose(Pose.STANDING);
             this.vehicle = var1;
             this.vehicle.addPassenger(this);
-            var1.getIndirectPassengersStream().filter((var0) -> var0 instanceof ServerPlayer).forEach((var0) -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)var0));
+            if (var3) {
+               this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
+               var1.getIndirectPassengersStream().filter((var0) -> var0 instanceof ServerPlayer).forEach((var0) -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)var0));
+            }
+
             return true;
          } else {
             return false;
@@ -2366,7 +2366,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             this.passengers = ImmutableList.of(var1);
          } else {
             ArrayList var2 = Lists.newArrayList(this.passengers);
-            if (!this.level().isClientSide && var1 instanceof Player && !(this.getFirstPassenger() instanceof Player)) {
+            if (!this.level().isClientSide() && var1 instanceof Player && !(this.getFirstPassenger() instanceof Player)) {
                var2.add(0, var1);
             } else {
                var2.add(var1);
@@ -2375,7 +2375,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             this.passengers = ImmutableList.copyOf(var2);
          }
 
-         this.gameEvent(GameEvent.ENTITY_MOUNT, var1);
       }
    }
 
@@ -2518,7 +2517,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public boolean isOnFire() {
-      boolean var1 = this.level() != null && this.level().isClientSide;
+      boolean var1 = this.level() != null && this.level().isClientSide();
       return !this.fireImmune() && (this.remainingFireTicks > 0 || var1 && this.getSharedFlag(0));
    }
 
@@ -2752,7 +2751,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       var0.resetFallDistance();
    }
 
-   public boolean killedEntity(ServerLevel var1, LivingEntity var2) {
+   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
       return true;
    }
 
@@ -2916,6 +2915,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this;
    }
 
+   @Nullable
    private Entity teleportCrossDimension(ServerLevel var1, ServerLevel var2, TeleportTransition var3) {
       List var4 = this.getPassengers();
       ArrayList var5 = new ArrayList(var4.size());
@@ -2941,7 +2941,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          var2.addDuringTeleport(var11);
 
          for(Entity var9 : var5) {
-            var9.startRiding(var11, true);
+            var9.startRiding(var11, true, false);
          }
 
          var2.resetEmptyTime();
@@ -3203,7 +3203,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.eyeHeight = var3.eyeHeight();
       this.reapplyPosition();
       boolean var4 = var3.width() <= 4.0F && var3.height() <= 4.0F;
-      if (!this.level.isClientSide && !this.firstTick && !this.noPhysics && var4 && (var3.width() > var1.width() || var3.height() > var1.height()) && !(this instanceof Player)) {
+      if (!this.level.isClientSide() && !this.firstTick && !this.noPhysics && var4 && (var3.width() > var1.width() || var3.height() > var1.height()) && !(this instanceof Player)) {
          this.fudgePositionAfterSizeChange(var1);
       }
 
@@ -3290,35 +3290,27 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public float rotate(Rotation var1) {
       float var2 = Mth.wrapDegrees(this.getYRot());
+      float var10000;
       switch (var1) {
-         case CLOCKWISE_180 -> {
-            return var2 + 180.0F;
-         }
-         case COUNTERCLOCKWISE_90 -> {
-            return var2 + 270.0F;
-         }
-         case CLOCKWISE_90 -> {
-            return var2 + 90.0F;
-         }
-         default -> {
-            return var2;
-         }
+         case CLOCKWISE_180 -> var10000 = var2 + 180.0F;
+         case COUNTERCLOCKWISE_90 -> var10000 = var2 + 270.0F;
+         case CLOCKWISE_90 -> var10000 = var2 + 90.0F;
+         default -> var10000 = var2;
       }
+
+      return var10000;
    }
 
    public float mirror(Mirror var1) {
       float var2 = Mth.wrapDegrees(this.getYRot());
+      float var10000;
       switch (var1) {
-         case FRONT_BACK -> {
-            return -var2;
-         }
-         case LEFT_RIGHT -> {
-            return 180.0F - var2;
-         }
-         default -> {
-            return var2;
-         }
+         case FRONT_BACK -> var10000 = -var2;
+         case LEFT_RIGHT -> var10000 = 180.0F - var2;
+         default -> var10000 = var2;
       }
+
+      return var10000;
    }
 
    public ProjectileDeflection deflection(Projectile var1) {

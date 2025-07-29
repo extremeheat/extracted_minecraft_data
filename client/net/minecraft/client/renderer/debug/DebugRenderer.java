@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
@@ -51,8 +52,6 @@ public class DebugRenderer {
    public final BreezeDebugRenderer breezeDebugRenderer;
    public final ChunkCullingDebugRenderer chunkCullingDebugRenderer;
    public final OctreeDebugRenderer octreeDebugRenderer;
-   private boolean renderChunkborder;
-   private boolean renderOctree;
 
    public DebugRenderer(Minecraft var1) {
       super();
@@ -106,21 +105,12 @@ public class DebugRenderer {
       this.chunkCullingDebugRenderer.clear();
    }
 
-   public boolean switchRenderChunkborder() {
-      this.renderChunkborder = !this.renderChunkborder;
-      return this.renderChunkborder;
-   }
-
-   public boolean toggleRenderOctree() {
-      return this.renderOctree = !this.renderOctree;
-   }
-
    public void render(PoseStack var1, Frustum var2, MultiBufferSource.BufferSource var3, double var4, double var6, double var8) {
-      if (this.renderChunkborder && !Minecraft.getInstance().showOnlyReducedInfo()) {
+      if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_BORDERS) && !Minecraft.getInstance().showOnlyReducedInfo()) {
          this.chunkBorderRenderer.render(var1, var3, var4, var6, var8);
       }
 
-      if (this.renderOctree) {
+      if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_OCTREE)) {
          this.octreeDebugRenderer.render(var1, var2, var3, var4, var6, var8);
       }
 

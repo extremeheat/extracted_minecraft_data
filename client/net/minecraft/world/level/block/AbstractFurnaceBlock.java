@@ -35,7 +35,7 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
    protected abstract MapCodec<? extends AbstractFurnaceBlock> codec();
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          this.openContainer(var2, var3, var4);
       }
 
@@ -56,7 +56,7 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 

@@ -455,7 +455,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (this.stayOutOfHiveCountdown > 0) {
             --this.stayOutOfHiveCountdown;
          }
@@ -569,7 +569,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                MobEffectInstance var8 = var5.getBeeInteractionEffect();
                if (var8 != null) {
                   this.usePlayerItem(var1, var2, var3);
-                  if (!this.level().isClientSide) {
+                  if (!this.level().isClientSide()) {
                      this.addEffect(var8);
                   }
 

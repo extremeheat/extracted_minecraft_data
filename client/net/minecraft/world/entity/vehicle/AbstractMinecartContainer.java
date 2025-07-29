@@ -65,7 +65,7 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    }
 
    public void remove(Entity.RemovalReason var1) {
-      if (!this.level().isClientSide && var1.shouldDestroy()) {
+      if (!this.level().isClientSide() && var1.shouldDestroy()) {
          Containers.dropContents(this.level(), (Entity)this, this);
       }
 

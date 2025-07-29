@@ -346,7 +346,7 @@ public interface Leashable {
       if (var1 == null) {
          return null;
       } else {
-         if (var1.delayedLeashHolderId != 0 && var0.level().isClientSide) {
+         if (var1.delayedLeashHolderId != 0 && var0.level().isClientSide()) {
             Entity var3 = var0.level().getEntity(var1.delayedLeashHolderId);
             if (var3 instanceof Entity) {
                var1.setLeashHolder(var3);

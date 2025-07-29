@@ -123,20 +123,21 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       this.tickableTextures.clear();
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      ArrayList var5 = new ArrayList();
+   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
+      ResourceManager var5 = var1.resourceManager();
+      ArrayList var6 = new ArrayList();
       this.byPath.forEach((var3x, var4x) -> {
          if (var4x instanceof ReloadableTexture var5x) {
-            var5.add(scheduleLoad(var2, var3x, var5x, var3));
+            var6.add(scheduleLoad(var5, var3x, var5x, var2));
          }
 
       });
-      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])var5.stream().map(PendingReload::newContents).toArray((var0) -> new CompletableFuture[var0]));
-      Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var2x) -> {
+      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])var6.stream().map(PendingReload::newContents).toArray((var0) -> new CompletableFuture[var0]));
+      Objects.requireNonNull(var3);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var2x) -> {
          AddRealmPopupScreen.updateCarouselImages(this.resourceManager);
 
-         for(PendingReload var4 : var5) {
+         for(PendingReload var4 : var6) {
             var4.texture.apply((TextureContents)var4.newContents.join());
          }
 

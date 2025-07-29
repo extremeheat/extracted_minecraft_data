@@ -1,0 +1,26 @@
+package net.minecraft.data.loot.packs;
+
+import java.util.function.BiConsumer;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.loot.LootTableSubProvider;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+
+public record VanillaBlockInteractLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
+   public VanillaBlockInteractLoot(HolderLookup.Provider var1) {
+      super();
+      this.registries = var1;
+   }
+
+   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      var1.accept(BuiltInLootTables.HARVEST_BEEHIVE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.HONEYCOMB).apply(SetItemCountFunction.setCount(ConstantValue.exactly(3.0F))))));
+      var1.accept(BuiltInLootTables.HARVEST_CAVE_VINE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.GLOW_BERRIES))));
+      var1.accept(BuiltInLootTables.CARVE_PUMPKIN, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.PUMPKIN_SEEDS).apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F))))));
+   }
+}

@@ -15,7 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import org.joml.Quaternionfc;
 
-public class AllayModel extends EntityModel<AllayRenderState> implements ArmedModel {
+public class AllayModel extends EntityModel<AllayRenderState> implements ArmedModel<AllayRenderState> {
    private final ModelPart head;
    private final ModelPart body;
    private final ModelPart right_arm;
@@ -92,14 +92,14 @@ public class AllayModel extends EntityModel<AllayRenderState> implements ArmedMo
       this.left_arm.yRot = -0.27925268F * var9;
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      float var3 = 1.0F;
-      float var4 = 3.0F;
-      this.root.translateAndRotate(var2);
-      this.body.translateAndRotate(var2);
-      var2.translate(0.0F, 0.0625F, 0.1875F);
-      var2.mulPose((Quaternionfc)Axis.XP.rotation(this.right_arm.xRot));
-      var2.scale(0.7F, 0.7F, 0.7F);
-      var2.translate(0.0625F, 0.0F, 0.0F);
+   public void translateToHand(AllayRenderState var1, HumanoidArm var2, PoseStack var3) {
+      float var4 = 1.0F;
+      float var5 = 3.0F;
+      this.root.translateAndRotate(var3);
+      this.body.translateAndRotate(var3);
+      var3.translate(0.0F, 0.0625F, 0.1875F);
+      var3.mulPose((Quaternionfc)Axis.XP.rotation(this.right_arm.xRot));
+      var3.scale(0.7F, 0.7F, 0.7F);
+      var3.translate(0.0625F, 0.0F, 0.0F);
    }
 }

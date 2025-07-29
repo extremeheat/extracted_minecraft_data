@@ -63,11 +63,11 @@ public class ArmorStandModel extends ArmorStandArmorModel {
       this.shoulderStick.zRot = 0.017453292F * var1.bodyPose.z();
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      ModelPart var3 = this.getArm(var1);
-      boolean var4 = var3.visible;
-      var3.visible = true;
-      super.translateToHand(var1, var2);
-      var3.visible = var4;
+   public void translateToHand(ArmorStandRenderState var1, HumanoidArm var2, PoseStack var3) {
+      ModelPart var4 = this.getArm(var2);
+      boolean var5 = var4.visible;
+      var4.visible = true;
+      super.translateToHand(var1, var2, var3);
+      var4.visible = var5;
    }
 }

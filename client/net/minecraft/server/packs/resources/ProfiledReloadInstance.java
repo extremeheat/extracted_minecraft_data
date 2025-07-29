@@ -24,7 +24,7 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
          AtomicLong var7 = new AtomicLong();
          AtomicLong var8 = new AtomicLong();
          AtomicLong var9 = new AtomicLong();
-         CompletableFuture var10 = var3x.reload(var1x, var2x, profiledExecutor(var4x, var6, var7, var3x.getName()), profiledExecutor(var5x, var8, var9, var3x.getName()));
+         CompletableFuture var10 = var3x.reload(var1x, profiledExecutor(var4x, var6, var7, var3x.getName()), var2x, profiledExecutor(var5x, var8, var9, var3x.getName()));
          return var10.thenApplyAsync((var5) -> {
             LOGGER.debug("Finished reloading {}", var3x.getName());
             return new State(var3x.getName(), var6, var7, var8, var9);

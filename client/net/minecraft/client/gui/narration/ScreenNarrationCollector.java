@@ -64,7 +64,7 @@ public class ScreenNarrationCollector {
       }
    }
 
-   static class EntryKey {
+   static record EntryKey(NarratedElementType type, int depth) {
       final NarratedElementType type;
       final int depth;
 

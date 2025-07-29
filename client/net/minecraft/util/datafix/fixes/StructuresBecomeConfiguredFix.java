@@ -46,7 +46,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
          if (!var4x.get("id").asString("INVALID").equals("INVALID")) {
             Dynamic var5 = this.findUpdatedStructureType(var3x, var2);
             if (var5 == null) {
-               LOGGER.warn("Encountered unknown structure in datafixer: " + var3x.asString("<missing key>"));
+               LOGGER.warn("Encountered unknown structure in datafixer: {}", var3x.asString("<missing key>"));
             } else {
                var4.computeIfAbsent(var5, (var2x) -> var4x.set("id", var5));
             }
@@ -62,7 +62,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
          if (var4x.asLongStream().count() != 0L) {
             Dynamic var5 = this.findUpdatedStructureType(var3x, var2);
             if (var5 == null) {
-               LOGGER.warn("Encountered unknown structure in datafixer: " + var3x.asString("<missing key>"));
+               LOGGER.warn("Encountered unknown structure in datafixer: {}", var3x.asString("<missing key>"));
             } else {
                var4.compute(var5, (var1, var2x) -> var2x == null ? var4x : var4x.createLongList(LongStream.concat(var2x.asLongStream(), var4x.asLongStream())));
             }

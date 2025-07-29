@@ -193,21 +193,20 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          var1.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, -1);
          var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
-            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, -13619152);
+            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, -8355712);
          } else {
-            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, -13619152);
+            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, -8355712);
          }
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          this.screen.setSelected(this);
-         if (Util.getMillis() - this.lastClickTime < 250L) {
+         if (var6) {
             this.screen.joinSelectedServer();
          }
 
-         this.lastClickTime = Util.getMillis();
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       public LanServer getServerData() {
@@ -235,7 +234,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final FaviconTexture icon;
       @Nullable
       private byte[] lastIconBytes;
-      private long lastClickTime;
       @Nullable
       private List<Component> onlinePlayersTooltip;
       @Nullable
@@ -455,35 +453,34 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          ServerSelectionList.this.ensureVisible(var3);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         double var6 = var1 - (double)ServerSelectionList.this.getRowLeft();
-         double var8 = var3 - (double)ServerSelectionList.this.getRowTop(ServerSelectionList.this.children().indexOf(this));
-         if (var6 <= 32.0) {
-            if (var6 < 32.0 && var6 > 16.0 && this.canJoin()) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         double var7 = var1 - (double)ServerSelectionList.this.getRowLeft();
+         double var9 = var3 - (double)ServerSelectionList.this.getRowTop(ServerSelectionList.this.children().indexOf(this));
+         if (var7 <= 32.0) {
+            if (var7 < 32.0 && var7 > 16.0 && this.canJoin()) {
                this.screen.setSelected(this);
                this.screen.joinSelectedServer();
                return true;
             }
 
-            int var10 = this.screen.serverSelectionList.children().indexOf(this);
-            if (var6 < 16.0 && var8 < 16.0 && var10 > 0) {
-               this.swap(var10, var10 - 1);
+            int var11 = this.screen.serverSelectionList.children().indexOf(this);
+            if (var7 < 16.0 && var9 < 16.0 && var11 > 0) {
+               this.swap(var11, var11 - 1);
                return true;
             }
 
-            if (var6 < 16.0 && var8 > 16.0 && var10 < this.screen.getServers().size() - 1) {
-               this.swap(var10, var10 + 1);
+            if (var7 < 16.0 && var9 > 16.0 && var11 < this.screen.getServers().size() - 1) {
+               this.swap(var11, var11 + 1);
                return true;
             }
          }
 
          this.screen.setSelected(this);
-         if (Util.getMillis() - this.lastClickTime < 250L) {
+         if (var6) {
             this.screen.joinSelectedServer();
          }
 
-         this.lastClickTime = Util.getMillis();
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
 
       public ServerData getServerData() {

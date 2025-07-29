@@ -56,5 +56,7 @@ public class BlockEntityRenderers {
       register(BlockEntityType.DECORATED_POT, DecoratedPotRenderer::new);
       register(BlockEntityType.TRIAL_SPAWNER, TrialSpawnerRenderer::new);
       register(BlockEntityType.VAULT, VaultRenderer::new);
+      register(BlockEntityType.COPPER_GOLEM_STATUE, CopperGolemStatueBlockRenderer::new);
+      register(BlockEntityType.SHELF, ShelfRenderer::new);
    }
 }

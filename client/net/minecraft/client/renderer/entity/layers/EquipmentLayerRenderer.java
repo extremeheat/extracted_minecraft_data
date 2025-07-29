@@ -1,17 +1,15 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -40,31 +38,35 @@ public class EquipmentLayerRenderer {
       this.trimSpriteLookup = Util.memoize((Function)((var1x) -> var2.getSprite(var1x.spriteId())));
    }
 
-   public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7) {
-      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, (ResourceLocation)null);
+   public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, int var9) {
+      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, var8, (ResourceLocation)null, var9);
    }
 
-   public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7, @Nullable ResourceLocation var8) {
-      List var9 = this.equipmentAssets.get(var2).getLayers(var1);
-      if (!var9.isEmpty()) {
-         int var10 = DyedItemColor.getOrDefault(var4, 0);
-         boolean var11 = var4.hasFoil();
+   public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, @Nullable ResourceLocation var9, int var10) {
+      List var11 = this.equipmentAssets.get(var2).getLayers(var1);
+      if (!var11.isEmpty()) {
+         int var12 = DyedItemColor.getOrDefault(var5, 0);
+         boolean var13 = var5.hasFoil();
+         int var14 = 1;
 
-         for(EquipmentClientInfo.Layer var13 : var9) {
-            int var14 = getColorForLayer(var13, var10);
-            if (var14 != 0) {
-               ResourceLocation var15 = var13.usePlayerTexture() && var8 != null ? var8 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var13));
-               VertexConsumer var16 = ItemRenderer.getArmorFoilBuffer(var6, RenderType.armorCutoutNoCull(var15), var11);
-               var3.renderToBuffer(var5, var16, var7, OverlayTexture.NO_OVERLAY, var14);
-               var11 = false;
+         for(EquipmentClientInfo.Layer var16 : var11) {
+            int var17 = getColorForLayer(var16, var12);
+            if (var17 != 0) {
+               ResourceLocation var18 = var16.usePlayerTexture() && var9 != null ? var9 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var16));
+               var7.submitModel(var3, var4, var6, RenderType.armorCutoutNoCull(var18), var8, OverlayTexture.NO_OVERLAY, var17, (TextureAtlasSprite)null, var10, var14++);
+               if (var13) {
+                  var7.submitModel(var3, var4, var6, RenderType.armorEntityGlint(), var8, OverlayTexture.NO_OVERLAY, var17, (TextureAtlasSprite)null, var10, var14++);
+               }
+
+               var13 = false;
             }
          }
 
-         ArmorTrim var17 = (ArmorTrim)var4.get(DataComponents.TRIM);
-         if (var17 != null) {
-            TextureAtlasSprite var18 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var17, var1, var2));
-            VertexConsumer var19 = var18.wrap(var6.getBuffer(Sheets.armorTrimsSheet(((TrimPattern)var17.pattern().value()).decal())));
-            var3.renderToBuffer(var5, var19, var7, OverlayTexture.NO_OVERLAY);
+         ArmorTrim var20 = (ArmorTrim)var5.get(DataComponents.TRIM);
+         if (var20 != null) {
+            TextureAtlasSprite var21 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var20, var1, var2));
+            RenderType var22 = Sheets.armorTrimsSheet(((TrimPattern)var20.pattern().value()).decal());
+            var7.submitModel(var3, var4, var6, var22, var8, OverlayTexture.NO_OVERLAY, -1, var21, var10, var14++);
          }
 
       }

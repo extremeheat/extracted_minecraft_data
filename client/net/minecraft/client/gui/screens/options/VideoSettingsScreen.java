@@ -91,29 +91,29 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       super.removed();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      if (super.mouseClicked(var1, var3, var5, var6)) {
          if (this.gpuWarnlistManager.isShowingWarning()) {
-            ArrayList var6 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
-            String var7 = this.gpuWarnlistManager.getRendererWarnings();
-            if (var7 != null) {
-               var6.add(CommonComponents.NEW_LINE);
-               var6.add(Component.translatable("options.graphics.warning.renderer", var7).withStyle(ChatFormatting.GRAY));
-            }
-
-            String var8 = this.gpuWarnlistManager.getVendorWarnings();
+            ArrayList var7 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
+            String var8 = this.gpuWarnlistManager.getRendererWarnings();
             if (var8 != null) {
-               var6.add(CommonComponents.NEW_LINE);
-               var6.add(Component.translatable("options.graphics.warning.vendor", var8).withStyle(ChatFormatting.GRAY));
+               var7.add(CommonComponents.NEW_LINE);
+               var7.add(Component.translatable("options.graphics.warning.renderer", var8).withStyle(ChatFormatting.GRAY));
             }
 
-            String var9 = this.gpuWarnlistManager.getVersionWarnings();
+            String var9 = this.gpuWarnlistManager.getVendorWarnings();
             if (var9 != null) {
-               var6.add(CommonComponents.NEW_LINE);
-               var6.add(Component.translatable("options.graphics.warning.version", var9).withStyle(ChatFormatting.GRAY));
+               var7.add(CommonComponents.NEW_LINE);
+               var7.add(Component.translatable("options.graphics.warning.vendor", var9).withStyle(ChatFormatting.GRAY));
             }
 
-            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, var6, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (var1x) -> {
+            String var10 = this.gpuWarnlistManager.getVersionWarnings();
+            if (var10 != null) {
+               var7.add(CommonComponents.NEW_LINE);
+               var7.add(Component.translatable("options.graphics.warning.version", var10).withStyle(ChatFormatting.GRAY));
+            }
+
+            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, var7, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (var1x) -> {
                this.options.graphicsMode().set(GraphicsStatus.FABULOUS);
                Minecraft.getInstance().levelRenderer.allChanged();
                this.gpuWarnlistManager.dismissWarning();

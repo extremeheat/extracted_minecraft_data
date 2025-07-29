@@ -10,25 +10,30 @@ import java.io.Reader;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.DataVersion;
 import org.slf4j.Logger;
 
 public class DetectedVersion {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final WorldVersion BUILT_IN = createFromConstants();
+   public static final WorldVersion BUILT_IN = createBuiltIn(UUID.randomUUID().toString().replaceAll("-", ""), "Development Version");
 
    public DetectedVersion() {
       super();
    }
 
-   private static WorldVersion createFromConstants() {
-      return new WorldVersion.Simple(UUID.randomUUID().toString().replaceAll("-", ""), "1.21.8", new DataVersion(4440, "main"), SharedConstants.getProtocolVersion(), 64, 81, new Date(), true);
+   public static WorldVersion createBuiltIn(String var0, String var1) {
+      return createBuiltIn(var0, var1, false);
+   }
+
+   public static WorldVersion createBuiltIn(String var0, String var1, boolean var2) {
+      return new WorldVersion.Simple(var0, var1, new DataVersion(4534, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(65, 0), PackFormat.of(82, 0), new Date(), var2);
    }
 
    private static WorldVersion createFromJson(JsonObject var0) {
       JsonObject var1 = GsonHelper.getAsJsonObject(var0, "pack_version");
-      return new WorldVersion.Simple(GsonHelper.getAsString(var0, "id"), GsonHelper.getAsString(var0, "name"), new DataVersion(GsonHelper.getAsInt(var0, "world_version"), GsonHelper.getAsString(var0, "series_id", "main")), GsonHelper.getAsInt(var0, "protocol_version"), GsonHelper.getAsInt(var1, "resource"), GsonHelper.getAsInt(var1, "data"), Date.from(ZonedDateTime.parse(GsonHelper.getAsString(var0, "build_time")).toInstant()), GsonHelper.getAsBoolean(var0, "stable"));
+      return new WorldVersion.Simple(GsonHelper.getAsString(var0, "id"), GsonHelper.getAsString(var0, "name"), new DataVersion(GsonHelper.getAsInt(var0, "world_version"), GsonHelper.getAsString(var0, "series_id", "main")), GsonHelper.getAsInt(var0, "protocol_version"), PackFormat.of(GsonHelper.getAsInt(var1, "resource_major"), GsonHelper.getAsInt(var1, "resource_minor")), PackFormat.of(GsonHelper.getAsInt(var1, "data_major"), GsonHelper.getAsInt(var1, "data_minor")), Date.from(ZonedDateTime.parse(GsonHelper.getAsString(var0, "build_time")).toInstant()), GsonHelper.getAsBoolean(var0, "stable"));
    }
 
    public static WorldVersion tryDetectVersion() {

@@ -120,7 +120,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    }
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          BlockPos var5 = var3.getBlockPos();
          if (var1 instanceof ServerLevel) {
             ServerLevel var6 = (ServerLevel)var1;

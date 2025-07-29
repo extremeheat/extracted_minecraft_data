@@ -114,7 +114,9 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       EntityRenderDispatcher var10 = Minecraft.getInstance().getEntityRenderDispatcher();
       EntityRenderer var11 = var10.getRenderer(var9);
       EntityRenderState var12 = var11.createRenderState(var9, 1.0F);
+      var12.lightCoords = 15728880;
       var12.hitboxesRenderState = null;
+      var12.shadowPieces.clear();
       var0.submitEntityRenderState(var12, var5, var6, var7, var8, var1, var2, var3, var4);
    }
 

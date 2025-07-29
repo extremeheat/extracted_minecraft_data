@@ -125,9 +125,9 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
 
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
             RegionSelectionList.this.setSelected(this);
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var3, var5, var6);
          }
       }
    }

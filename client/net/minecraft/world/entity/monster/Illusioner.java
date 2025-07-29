@@ -86,7 +86,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
 
    public void aiStep() {
       super.aiStep();
-      if (this.level().isClientSide && this.isInvisible()) {
+      if (this.level().isClientSide() && this.isInvisible()) {
          --this.clientSideIllusionTicks;
          if (this.clientSideIllusionTicks < 0) {
             this.clientSideIllusionTicks = 0;

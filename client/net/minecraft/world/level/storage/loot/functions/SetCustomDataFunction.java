@@ -3,7 +3,6 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.function.Consumer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -26,7 +25,7 @@ public class SetCustomDataFunction extends LootItemConditionalFunction {
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      CustomData.update(DataComponents.CUSTOM_DATA, var1, (Consumer)((var1x) -> var1x.merge(this.tag)));
+      CustomData.update(DataComponents.CUSTOM_DATA, var1, (var1x) -> var1x.merge(this.tag));
       return var1;
    }
 

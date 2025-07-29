@@ -8,8 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.GuardianModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
@@ -61,20 +61,20 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       return new Vec3(var5, var7, var9);
    }
 
-   public void render(GuardianRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
-      super.render(var1, var2, var3, var4);
-      Vec3 var5 = var1.attackTargetPosition;
-      if (var5 != null) {
-         float var6 = var1.attackTime * 0.5F % 1.0F;
+   public void submit(GuardianRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      super.submit(var1, var2, var3);
+      Vec3 var4 = var1.attackTargetPosition;
+      if (var4 != null) {
+         float var5 = var1.attackTime * 0.5F % 1.0F;
          var2.pushPose();
          var2.translate(0.0F, var1.eyeHeight, 0.0F);
-         renderBeam(var2, var3.getBuffer(BEAM_RENDER_TYPE), var5.subtract(var1.eyePosition), var1.attackTime, var1.attackScale, var6);
+         renderBeam(var2, var3, var4.subtract(var1.eyePosition), var1.attackTime, var1.attackScale, var5);
          var2.popPose();
       }
 
    }
 
-   private static void renderBeam(PoseStack var0, VertexConsumer var1, Vec3 var2, float var3, float var4, float var5) {
+   private static void renderBeam(PoseStack var0, SubmitNodeCollector var1, Vec3 var2, float var3, float var4, float var5) {
       float var6 = (float)(var2.length() + 1.0);
       var2 = var2.normalize();
       float var7 = (float)Math.acos(var2.y);
@@ -108,20 +108,21 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       float var34 = 0.4999F;
       float var35 = -1.0F + var5;
       float var36 = var35 + var6 * 2.5F;
-      PoseStack.Pose var37 = var0.last();
-      vertex(var1, var37, var24, var6, var25, var11, var12, var13, 0.4999F, var36);
-      vertex(var1, var37, var24, 0.0F, var25, var11, var12, var13, 0.4999F, var35);
-      vertex(var1, var37, var26, 0.0F, var27, var11, var12, var13, 0.0F, var35);
-      vertex(var1, var37, var26, var6, var27, var11, var12, var13, 0.0F, var36);
-      vertex(var1, var37, var28, var6, var29, var11, var12, var13, 0.4999F, var36);
-      vertex(var1, var37, var28, 0.0F, var29, var11, var12, var13, 0.4999F, var35);
-      vertex(var1, var37, var30, 0.0F, var31, var11, var12, var13, 0.0F, var35);
-      vertex(var1, var37, var30, var6, var31, var11, var12, var13, 0.0F, var36);
-      float var38 = Mth.floor(var3) % 2 == 0 ? 0.5F : 0.0F;
-      vertex(var1, var37, var16, var6, var17, var11, var12, var13, 0.5F, var38 + 0.5F);
-      vertex(var1, var37, var18, var6, var19, var11, var12, var13, 1.0F, var38 + 0.5F);
-      vertex(var1, var37, var22, var6, var23, var11, var12, var13, 1.0F, var38);
-      vertex(var1, var37, var20, var6, var21, var11, var12, var13, 0.5F, var38);
+      var1.submitCustomGeometry(var0, BEAM_RENDER_TYPE, (var23x, var24x) -> {
+         vertex(var24x, var23x, var24, var6, var25, var11, var12, var13, 0.4999F, var36);
+         vertex(var24x, var23x, var24, 0.0F, var25, var11, var12, var13, 0.4999F, var35);
+         vertex(var24x, var23x, var26, 0.0F, var27, var11, var12, var13, 0.0F, var35);
+         vertex(var24x, var23x, var26, var6, var27, var11, var12, var13, 0.0F, var36);
+         vertex(var24x, var23x, var28, var6, var29, var11, var12, var13, 0.4999F, var36);
+         vertex(var24x, var23x, var28, 0.0F, var29, var11, var12, var13, 0.4999F, var35);
+         vertex(var24x, var23x, var30, 0.0F, var31, var11, var12, var13, 0.0F, var35);
+         vertex(var24x, var23x, var30, var6, var31, var11, var12, var13, 0.0F, var36);
+         float var25x = Mth.floor(var3) % 2 == 0 ? 0.5F : 0.0F;
+         vertex(var24x, var23x, var16, var6, var17, var11, var12, var13, 0.5F, var25x + 0.5F);
+         vertex(var24x, var23x, var18, var6, var19, var11, var12, var13, 1.0F, var25x + 0.5F);
+         vertex(var24x, var23x, var22, var6, var23, var11, var12, var13, 1.0F, var25x);
+         vertex(var24x, var23x, var20, var6, var21, var11, var12, var13, 0.5F, var25x);
+      });
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9) {

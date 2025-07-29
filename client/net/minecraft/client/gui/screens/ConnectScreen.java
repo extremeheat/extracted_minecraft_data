@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.TransferState;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
@@ -128,7 +129,7 @@ public class ConnectScreen extends Screen {
                String var10001 = var10.getHostName();
                int var10002 = var10.getPort();
                ConnectScreen var10013 = ConnectScreen.this;
-               var10000.initiateServerboundPlayConnection(var10001, var10002, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, new ClientHandshakePacketListenerImpl(ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, (Duration)null, var10013::updateStatus, var4), var4 != null);
+               var10000.initiateServerboundPlayConnection(var10001, var10002, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, new ClientHandshakePacketListenerImpl(ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, (Duration)null, var10013::updateStatus, new LevelLoadTracker(), var4), var4 != null);
                ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getUser().getProfileId()));
             } catch (Exception var9) {
                if (ConnectScreen.this.aborted) {

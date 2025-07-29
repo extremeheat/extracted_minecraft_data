@@ -43,6 +43,7 @@ import net.minecraft.client.renderer.special.BannerSpecialRenderer;
 import net.minecraft.client.renderer.special.BedSpecialRenderer;
 import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.special.ConduitSpecialRenderer;
+import net.minecraft.client.renderer.special.CopperGolemStatueSpecialRenderer;
 import net.minecraft.client.renderer.special.DecoratedPotSpecialRenderer;
 import net.minecraft.client.renderer.special.PlayerHeadSpecialRenderer;
 import net.minecraft.client.renderer.special.ShulkerBoxSpecialRenderer;
@@ -53,6 +54,7 @@ import net.minecraft.core.FrontAndTop;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.item.DyeColor;
@@ -75,6 +77,7 @@ import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.VaultBlock;
+import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
@@ -86,12 +89,14 @@ import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.DripstoneThickness;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
+import net.minecraft.world.level.block.state.properties.SideChainPart;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
@@ -150,8 +155,21 @@ public class BlockModelGenerators {
       return new ConditionBuilder();
    }
 
+   @SafeVarargs
+   private static <T extends Enum<T> & StringRepresentable> ConditionBuilder condition(EnumProperty<T> var0, T var1, T... var2) {
+      return condition().term(var0, var1, var2);
+   }
+
+   private static ConditionBuilder condition(BooleanProperty var0, boolean var1) {
+      return condition().term(var0, var1);
+   }
+
    private static Condition or(ConditionBuilder... var0) {
       return new CombinedCondition(CombinedCondition.Operation.OR, Stream.of(var0).map(ConditionBuilder::build).toList());
+   }
+
+   private static Condition and(ConditionBuilder... var0) {
+      return new CombinedCondition(CombinedCondition.Operation.AND, Stream.of(var0).map(ConditionBuilder::build).toList());
    }
 
    private static BlockModelDefinitionGenerator createMirroredCubeGenerator(Block var0, Variant var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
@@ -1041,11 +1059,12 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1, plainVariant(ModelLocationUtils.getModelLocation(var1))).with(ROTATIONS_COLUMN_WITH_FACING));
    }
 
-   private void createLightningRod() {
-      Block var1 = Blocks.LIGHTNING_ROD;
-      MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(var1, "_on"));
-      MultiVariant var3 = plainVariant(ModelLocationUtils.getModelLocation(var1));
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.POWERED, var2, var3)).with(ROTATIONS_COLUMN_WITH_FACING));
+   private void createLightningRod(Block var1, Block var2) {
+      MultiVariant var3 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.LIGHTNING_ROD, "_on"));
+      MultiVariant var4 = plainVariant(ModelTemplates.LIGHTNING_ROD.create(var1, TextureMapping.defaultTexture(var1), this.modelOutput));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.POWERED, var3, var4)).with(ROTATIONS_COLUMN_WITH_FACING));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var2).with(createBooleanModelDispatch(BlockStateProperties.POWERED, var3, var4)).with(ROTATIONS_COLUMN_WITH_FACING));
+      this.itemModelOutput.copy(var1.asItem(), var2.asItem());
    }
 
    private void createFarmland() {
@@ -1587,16 +1606,50 @@ public class BlockModelGenerators {
       this.registerSimpleItemModel(Blocks.SCULK_CATALYST, var4);
    }
 
+   private void createShelf(Block var1) {
+      TextureMapping var2 = (new TextureMapping()).put(TextureSlot.ALL, TextureMapping.getBlockTexture(var1));
+      MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
+      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_BODY, (Boolean)null, (SideChainPart)null);
+      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_UNPOWERED, false, (SideChainPart)null);
+      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_UNCONNECTED, true, SideChainPart.UNCONNECTED);
+      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_LEFT, true, SideChainPart.LEFT);
+      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_CENTER, true, SideChainPart.CENTER);
+      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_RIGHT, true, SideChainPart.RIGHT);
+      this.blockStateOutput.accept(var3);
+      this.registerSimpleItemModel(var1, ModelTemplates.SHELF_INVENTORY.create(var1, var2, this.modelOutput));
+   }
+
+   private void addShelfPart(Block var1, TextureMapping var2, MultiPartGenerator var3, ModelTemplate var4, @Nullable Boolean var5, @Nullable SideChainPart var6) {
+      MultiVariant var7 = plainVariant(var4.create(var1, var2, this.modelOutput));
+      forEachHorizontalDirection((var4x, var5x) -> var3.with(shelfCondition(var4x, var5, var6), var7.with(var5x)));
+   }
+
+   private static void forEachHorizontalDirection(BiConsumer<Direction, VariantMutator> var0) {
+      List.of(Pair.of(Direction.NORTH, NOP), Pair.of(Direction.EAST, Y_ROT_90), Pair.of(Direction.SOUTH, Y_ROT_180), Pair.of(Direction.WEST, Y_ROT_270)).forEach((var1) -> {
+         Direction var2 = (Direction)var1.getFirst();
+         VariantMutator var3 = (VariantMutator)var1.getSecond();
+         var0.accept(var2, var3);
+      });
+   }
+
+   private static Condition shelfCondition(Direction var0, @Nullable Boolean var1, @Nullable SideChainPart var2) {
+      ConditionBuilder var3 = condition(BlockStateProperties.HORIZONTAL_FACING, var0);
+      if (var1 == null) {
+         return var3.build();
+      } else {
+         ConditionBuilder var4 = condition(BlockStateProperties.POWERED, var1);
+         return var2 != null ? and(var3, var4, condition(BlockStateProperties.SIDE_CHAIN_PART, var2)) : and(var3, var4);
+      }
+   }
+
    private void createChiseledBookshelf() {
       Block var1 = Blocks.CHISELED_BOOKSHELF;
       MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(var1));
       MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
-      List.of(Pair.of(Direction.NORTH, NOP), Pair.of(Direction.EAST, Y_ROT_90), Pair.of(Direction.SOUTH, Y_ROT_180), Pair.of(Direction.WEST, Y_ROT_270)).forEach((var3x) -> {
-         Direction var4 = (Direction)var3x.getFirst();
-         VariantMutator var5 = (VariantMutator)var3x.getSecond();
-         Condition var6 = condition().term(BlockStateProperties.HORIZONTAL_FACING, var4).build();
-         var3.with(var6, var2.with(var5).with(UV_LOCK));
-         this.addSlotStateAndRotationVariants(var3, var6, var5);
+      forEachHorizontalDirection((var3x, var4) -> {
+         Condition var5 = condition().term(BlockStateProperties.HORIZONTAL_FACING, var3x).build();
+         var3.with(var5, var2.with(var4).with(UV_LOCK));
+         this.addSlotStateAndRotationVariants(var3, var5, var4);
       });
       this.blockStateOutput.accept(var3);
       this.registerSimpleItemModel(var1, ModelLocationUtils.getModelLocation(var1, "_inventory"));
@@ -1739,6 +1792,24 @@ public class BlockModelGenerators {
       this.createHead(Blocks.DRAGON_HEAD, Blocks.DRAGON_WALL_HEAD, SkullBlock.Types.DRAGON, ModelLocationUtils.getModelLocation(Items.DRAGON_HEAD));
    }
 
+   private void createCopperGolemStatues() {
+      this.createCopperGolemStatue(Blocks.COPPER_GOLEM_STATUE, Blocks.COPPER_BLOCK, WeatheringCopper.WeatherState.UNAFFECTED);
+      this.createCopperGolemStatue(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.EXPOSED_COPPER, WeatheringCopper.WeatherState.EXPOSED);
+      this.createCopperGolemStatue(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WEATHERED_COPPER, WeatheringCopper.WeatherState.WEATHERED);
+      this.createCopperGolemStatue(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.OXIDIZED_COPPER, WeatheringCopper.WeatherState.OXIDIZED);
+      this.copyModel(Blocks.COPPER_GOLEM_STATUE, Blocks.WAXED_COPPER_GOLEM_STATUE);
+      this.copyModel(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE);
+      this.copyModel(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE);
+      this.copyModel(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
+   }
+
+   private void createCopperGolemStatue(Block var1, Block var2, WeatheringCopper.WeatherState var3) {
+      MultiVariant var4 = plainVariant(ModelTemplates.PARTICLE_ONLY.create(var1, TextureMapping.particle(TextureMapping.getBlockTexture(var2)), this.modelOutput));
+      ResourceLocation var5 = ModelLocationUtils.decorateItemModelLocation("template_copper_golem_statue");
+      this.blockStateOutput.accept(createSimpleBlock(var1, var4));
+      this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3)));
+   }
+
    private void createBanner(Block var1, Block var2, DyeColor var3) {
       MultiVariant var4 = plainVariant(ModelLocationUtils.decorateBlockModelLocation("banner"));
       ResourceLocation var5 = ModelLocationUtils.decorateItemModelLocation("template_banner");
@@ -1785,6 +1856,17 @@ public class BlockModelGenerators {
       this.createChest(Blocks.CHEST, Blocks.OAK_PLANKS, ChestSpecialRenderer.NORMAL_CHEST_TEXTURE, true);
       this.createChest(Blocks.TRAPPED_CHEST, Blocks.OAK_PLANKS, ChestSpecialRenderer.TRAPPED_CHEST_TEXTURE, true);
       this.createChest(Blocks.ENDER_CHEST, Blocks.OBSIDIAN, ChestSpecialRenderer.ENDER_CHEST_TEXTURE, false);
+   }
+
+   private void createCopperChests() {
+      this.createChest(Blocks.COPPER_CHEST, Blocks.COPPER_BLOCK, ChestSpecialRenderer.COPPER_CHEST_TEXTURE, false);
+      this.createChest(Blocks.EXPOSED_COPPER_CHEST, Blocks.EXPOSED_COPPER, ChestSpecialRenderer.EXPOSED_COPPER_CHEST_TEXTURE, false);
+      this.createChest(Blocks.WEATHERED_COPPER_CHEST, Blocks.WEATHERED_COPPER, ChestSpecialRenderer.WEATHERED_COPPER_CHEST_TEXTURE, false);
+      this.createChest(Blocks.OXIDIZED_COPPER_CHEST, Blocks.OXIDIZED_COPPER, ChestSpecialRenderer.OXIDIZED_CHEST_TEXTURE, false);
+      this.copyModel(Blocks.COPPER_CHEST, Blocks.WAXED_COPPER_CHEST);
+      this.copyModel(Blocks.EXPOSED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST);
+      this.copyModel(Blocks.WEATHERED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST);
+      this.copyModel(Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST);
    }
 
    private void createBed(Block var1, Block var2, DyeColor var3) {
@@ -1994,8 +2076,24 @@ public class BlockModelGenerators {
       this.copyModel(Blocks.EXPOSED_COPPER_GRATE, Blocks.WAXED_EXPOSED_COPPER_GRATE);
       this.copyModel(Blocks.WEATHERED_COPPER_GRATE, Blocks.WAXED_WEATHERED_COPPER_GRATE);
       this.copyModel(Blocks.OXIDIZED_COPPER_GRATE, Blocks.WAXED_OXIDIZED_COPPER_GRATE);
+      this.createLightningRod(Blocks.LIGHTNING_ROD, Blocks.WAXED_LIGHTNING_ROD);
+      this.createLightningRod(Blocks.EXPOSED_LIGHTNING_ROD, Blocks.WAXED_EXPOSED_LIGHTNING_ROD);
+      this.createLightningRod(Blocks.WEATHERED_LIGHTNING_ROD, Blocks.WAXED_WEATHERED_LIGHTNING_ROD);
+      this.createLightningRod(Blocks.OXIDIZED_LIGHTNING_ROD, Blocks.WAXED_OXIDIZED_LIGHTNING_ROD);
       this.createWeightedPressurePlate(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.GOLD_BLOCK);
       this.createWeightedPressurePlate(Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE, Blocks.IRON_BLOCK);
+      this.createShelf(Blocks.ACACIA_SHELF);
+      this.createShelf(Blocks.BAMBOO_SHELF);
+      this.createShelf(Blocks.BIRCH_SHELF);
+      this.createShelf(Blocks.CHERRY_SHELF);
+      this.createShelf(Blocks.CRIMSON_SHELF);
+      this.createShelf(Blocks.DARK_OAK_SHELF);
+      this.createShelf(Blocks.JUNGLE_SHELF);
+      this.createShelf(Blocks.MANGROVE_SHELF);
+      this.createShelf(Blocks.OAK_SHELF);
+      this.createShelf(Blocks.PALE_OAK_SHELF);
+      this.createShelf(Blocks.SPRUCE_SHELF);
+      this.createShelf(Blocks.WARPED_SHELF);
       this.createAmethystClusters();
       this.createBookshelf();
       this.createChiseledBookshelf();
@@ -2010,7 +2108,6 @@ public class BlockModelGenerators {
       this.createDaylightDetector();
       this.createEndPortalFrame();
       this.createRotatableColumn(Blocks.END_ROD);
-      this.createLightningRod();
       this.createFarmland();
       this.createFire();
       this.createSoulFire();
@@ -2110,6 +2207,7 @@ public class BlockModelGenerators {
       this.createBeds();
       this.createHeads();
       this.createChests();
+      this.createCopperChests();
       this.createShulkerBox(Blocks.SHULKER_BOX, (DyeColor)null);
       this.createShulkerBox(Blocks.WHITE_SHULKER_BOX, DyeColor.WHITE);
       this.createShulkerBox(Blocks.ORANGE_SHULKER_BOX, DyeColor.ORANGE);
@@ -2127,6 +2225,7 @@ public class BlockModelGenerators {
       this.createShulkerBox(Blocks.GREEN_SHULKER_BOX, DyeColor.GREEN);
       this.createShulkerBox(Blocks.RED_SHULKER_BOX, DyeColor.RED);
       this.createShulkerBox(Blocks.BLACK_SHULKER_BOX, DyeColor.BLACK);
+      this.createCopperGolemStatues();
       this.createParticleOnlyBlock(Blocks.CONDUIT);
       this.generateSimpleSpecialItemModel(Blocks.CONDUIT, new ConduitSpecialRenderer.Unbaked());
       this.createParticleOnlyBlock(Blocks.DECORATED_POT, Blocks.TERRACOTTA);

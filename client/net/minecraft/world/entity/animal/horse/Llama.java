@@ -196,13 +196,13 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
 
       if (this.isBaby() && var3 > 0) {
          this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.ageUp(var3);
             var6 = true;
          }
       }
 
-      if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide) {
+      if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide()) {
          this.modifyTemper(var4);
          var6 = true;
       }

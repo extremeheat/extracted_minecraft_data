@@ -38,8 +38,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.resources.model.AtlasIds;
+import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleGroup;
@@ -76,13 +75,10 @@ public class ParticleEngine implements PreparableReloadListener {
    private final Int2ObjectMap<ParticleProvider<?>> providers = new Int2ObjectOpenHashMap();
    private final Queue<Particle> particlesToAdd = Queues.newArrayDeque();
    private final Map<ResourceLocation, MutableSpriteSet> spriteSets = Maps.newHashMap();
-   private final TextureAtlas textureAtlas;
    private final Object2IntOpenHashMap<ParticleGroup> trackedParticleCounts = new Object2IntOpenHashMap();
 
-   public ParticleEngine(ClientLevel var1, TextureManager var2) {
+   public ParticleEngine(ClientLevel var1) {
       super();
-      this.textureAtlas = new TextureAtlas(TextureAtlas.LOCATION_PARTICLES);
-      var2.register(this.textureAtlas.location(), this.textureAtlas);
       this.level = var1;
       this.registerProviders();
    }
@@ -225,12 +221,13 @@ public class ParticleEngine implements PreparableReloadListener {
       this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(var1), var2.create(var3));
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var3).thenCompose((var2x) -> {
-         ArrayList var3x = new ArrayList(var2x.size());
-         var2x.forEach((var3xx, var4) -> {
-            ResourceLocation var5 = PARTICLE_LISTER.fileToId(var3xx);
-            var3x.add(CompletableFuture.supplyAsync(() -> {
+   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
+      ResourceManager var5 = var1.resourceManager();
+      CompletableFuture var6 = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
+         ArrayList var3 = new ArrayList(var2x.size());
+         var2x.forEach((var3x, var4) -> {
+            ResourceLocation var5 = PARTICLE_LISTER.fileToId(var3x);
+            var3.add(CompletableFuture.supplyAsync(() -> {
                record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
                   _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
                      super();
@@ -240,39 +237,38 @@ public class ParticleEngine implements PreparableReloadListener {
                }
 
                return new 1ParticleDefinition(var5, this.loadParticleDescription(var5, var4));
-            }, var3));
+            }, var2));
          });
-         return Util.sequence(var3x);
+         return Util.sequence(var3);
       });
-      CompletableFuture var6 = SpriteLoader.create(this.textureAtlas).loadAndStitch(var2, AtlasIds.PARTICLES, 0, var3).thenCompose(SpriteLoader.Preparations::waitForUpload);
-      CompletableFuture var10000 = CompletableFuture.allOf(var6, var5);
-      Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {
+      CompletableFuture var7 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(TextureAtlas.LOCATION_PARTICLES);
+      CompletableFuture var10000 = CompletableFuture.allOf(var6, var7);
+      Objects.requireNonNull(var3);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var3x) -> {
          this.clearParticles();
          ProfilerFiller var4 = Profiler.get();
          var4.push("upload");
-         SpriteLoader.Preparations var5x = (SpriteLoader.Preparations)var6.join();
-         this.textureAtlas.upload(var5x);
+         SpriteLoader.Preparations var5 = (SpriteLoader.Preparations)var7.join();
          var4.popPush("bindSpriteSets");
          HashSet var6x = new HashSet();
-         TextureAtlasSprite var7 = var5x.missing();
-         ((List)var5.join()).forEach((var4x) -> {
-            Optional var5 = var4x.sprites();
-            if (!var5.isEmpty()) {
+         TextureAtlasSprite var7x = var5.missing();
+         ((List)var6.join()).forEach((var4x) -> {
+            Optional var5x = var4x.sprites();
+            if (!var5x.isEmpty()) {
                ArrayList var6 = new ArrayList();
 
-               for(ResourceLocation var8 : (List)var5.get()) {
-                  TextureAtlasSprite var9 = (TextureAtlasSprite)var5x.regions().get(var8);
+               for(ResourceLocation var8 : (List)var5x.get()) {
+                  TextureAtlasSprite var9 = var5.getSprite(var8);
                   if (var9 == null) {
                      var6x.add(var8);
-                     var6.add(var7);
+                     var6.add(var7x);
                   } else {
                      var6.add(var9);
                   }
                }
 
                if (var6.isEmpty()) {
-                  var6.add(var7);
+                  var6.add(var7x);
                }
 
                ((MutableSpriteSet)this.spriteSets.get(var4x.id())).rebind(var6);
@@ -284,10 +280,6 @@ public class ParticleEngine implements PreparableReloadListener {
 
          var4.pop();
       }, var4);
-   }
-
-   public void close() {
-      this.textureAtlas.clearTextureData();
    }
 
    private Optional<List<ResourceLocation>> loadParticleDescription(ResourceLocation var1, Resource var2) {

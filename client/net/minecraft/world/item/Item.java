@@ -22,6 +22,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -37,6 +38,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -63,6 +65,7 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.context.UseOnContext;
@@ -254,7 +257,7 @@ public class Item implements FeatureElement, ItemLike {
       if (var6 == null) {
          return false;
       } else {
-         if (!var2.isClientSide && var3.getDestroySpeed(var2, var4) != 0.0F && var6.damagePerBlock() > 0) {
+         if (!var2.isClientSide() && var3.getDestroySpeed(var2, var4) != 0.0F && var6.damagePerBlock() > 0) {
             var1.hurtAndBreak(var6.damagePerBlock(), var5, EquipmentSlot.MAINHAND);
          }
 
@@ -483,6 +486,10 @@ public class Item implements FeatureElement, ItemLike {
          return var1.applySwordProperties(this, var2, var3);
       }
 
+      public Properties spawnEgg(EntityType<?> var1) {
+         return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(var1, new CompoundTag()));
+      }
+
       public Properties humanoidArmor(ArmorMaterial var1, ArmorType var2) {
          return this.durability(var2.getDurability(var1.durability())).attributes(var1.createAttributes(var2)).enchantable(var1.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).build()).repairable(var1.repairIngredient());
       }
@@ -567,6 +574,10 @@ public class Item implements FeatureElement, ItemLike {
          public MapItemSavedData mapData(MapId var1) {
             return null;
          }
+
+         public boolean isPeaceful() {
+            return false;
+         }
       };
 
       @Nullable
@@ -576,6 +587,8 @@ public class Item implements FeatureElement, ItemLike {
 
       @Nullable
       MapItemSavedData mapData(MapId var1);
+
+      boolean isPeaceful();
 
       static TooltipContext of(@Nullable final Level var0) {
          return var0 == null ? EMPTY : new TooltipContext() {
@@ -589,6 +602,10 @@ public class Item implements FeatureElement, ItemLike {
 
             public MapItemSavedData mapData(MapId var1) {
                return var0.getMapData(var1);
+            }
+
+            public boolean isPeaceful() {
+               return var0.getDifficulty() == Difficulty.PEACEFUL;
             }
          };
       }
@@ -606,6 +623,10 @@ public class Item implements FeatureElement, ItemLike {
             @Nullable
             public MapItemSavedData mapData(MapId var1) {
                return null;
+            }
+
+            public boolean isPeaceful() {
+               return false;
             }
          };
       }

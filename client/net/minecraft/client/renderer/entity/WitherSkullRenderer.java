@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,7 +8,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.WitherSkullRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -38,14 +37,12 @@ public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkull
       return 15;
    }
 
-   public void render(WitherSkullRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(WitherSkullRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.scale(-1.0F, -1.0F, 1.0F);
-      VertexConsumer var5 = var3.getBuffer(this.model.renderType(this.getTextureLocation(var1)));
-      this.model.setupAnim(0.0F, var1.yRot, var1.xRot);
-      this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, var1.modelState, var2, this.model.renderType(this.getTextureLocation(var1)), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    private ResourceLocation getTextureLocation(WitherSkullRenderState var1) {
@@ -59,8 +56,9 @@ public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkull
    public void extractRenderState(WitherSkull var1, WitherSkullRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.isDangerous = var1.isDangerous();
-      var2.yRot = var1.getYRot(var3);
-      var2.xRot = var1.getXRot(var3);
+      var2.modelState.animationPos = 0.0F;
+      var2.modelState.yRot = var1.getYRot(var3);
+      var2.modelState.xRot = var1.getXRot(var3);
    }
 
    // $FF: synthetic method

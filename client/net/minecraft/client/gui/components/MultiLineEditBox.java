@@ -68,9 +68,14 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       var1.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.editBox", this.getMessage(), this.getValue()));
    }
 
-   public void onClick(double var1, double var3) {
-      this.textField.setSelecting(Screen.hasShiftDown());
-      this.seekCursorScreen(var1, var3);
+   public void onClick(double var1, double var3, boolean var5) {
+      if (var5) {
+         this.textField.selectWordAtCursor();
+      } else {
+         this.textField.setSelecting(Screen.hasShiftDown());
+         this.seekCursorScreen(var1, var3);
+      }
+
    }
 
    protected void onDrag(double var1, double var3, double var5, double var7) {
@@ -103,28 +108,33 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          int var9 = 0;
          int var10 = 0;
          int var11 = this.getInnerTop();
+         boolean var12 = false;
 
-         for(MultilineTextField.StringView var13 : this.textField.iterateLines()) {
+         for(MultilineTextField.StringView var14 : this.textField.iterateLines()) {
             Objects.requireNonNull(this.font);
-            boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
-            int var15 = this.getInnerLeft();
-            if (var7 && var8 && var6 >= var13.beginIndex() && var6 < var13.endIndex()) {
-               if (var14) {
-                  String var23 = var5.substring(var13.beginIndex(), var6);
-                  var1.drawString(this.font, var23, var15, var11, this.textColor, this.textShadow);
-                  var9 = var15 + this.font.width(var23);
-                  int var10002 = var11 - 1;
-                  int var10003 = var9 + 1;
-                  int var10004 = var11 + 1;
-                  Objects.requireNonNull(this.font);
-                  var1.fill(var9, var10002, var10003, var10004 + 9, this.cursorColor);
-                  var1.drawString(this.font, var5.substring(var6, var13.endIndex()), var9, var11, this.textColor, this.textShadow);
+            boolean var15 = this.withinContentAreaTopBottom(var11, var11 + 9);
+            int var16 = this.getInnerLeft();
+            if (var7 && var8 && var6 >= var14.beginIndex() && var6 <= var14.endIndex()) {
+               if (var15) {
+                  String var24 = var5.substring(var14.beginIndex(), var6);
+                  var1.drawString(this.font, var24, var16, var11, this.textColor, this.textShadow);
+                  var9 = var16 + this.font.width(var24);
+                  if (!var12) {
+                     int var10002 = var11 - 1;
+                     int var10003 = var9 + 1;
+                     int var10004 = var11 + 1;
+                     Objects.requireNonNull(this.font);
+                     var1.fill(var9, var10002, var10003, var10004 + 9, this.cursorColor);
+                     var12 = true;
+                  }
+
+                  var1.drawString(this.font, var5.substring(var6, var14.endIndex()), var9, var11, this.textColor, this.textShadow);
                }
             } else {
-               if (var14) {
-                  String var16 = var5.substring(var13.beginIndex(), var13.endIndex());
-                  var1.drawString(this.font, var16, var15, var11, this.textColor, this.textShadow);
-                  var9 = var15 + this.font.width(var16) - 1;
+               if (var15) {
+                  String var17 = var5.substring(var14.beginIndex(), var14.endIndex());
+                  var1.drawString(this.font, var17, var16, var11, this.textColor, this.textShadow);
+                  var9 = var16 + this.font.width(var17) - 1;
                }
 
                var10 = var11;
@@ -137,38 +147,38 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          if (var7 && !var8) {
             Objects.requireNonNull(this.font);
             if (this.withinContentAreaTopBottom(var10, var10 + 9)) {
-               var1.drawString(this.font, "_", var9, var10, this.cursorColor, this.textShadow);
+               var1.drawString(this.font, "_", var9 + 1, var10, this.cursorColor, this.textShadow);
             }
          }
 
          if (this.textField.hasSelection()) {
-            MultilineTextField.StringView var19 = this.textField.getSelected();
-            int var20 = this.getInnerLeft();
+            MultilineTextField.StringView var20 = this.textField.getSelected();
+            int var21 = this.getInnerLeft();
             var11 = this.getInnerTop();
 
-            for(MultilineTextField.StringView var22 : this.textField.iterateLines()) {
-               if (var19.beginIndex() > var22.endIndex()) {
+            for(MultilineTextField.StringView var23 : this.textField.iterateLines()) {
+               if (var20.beginIndex() > var23.endIndex()) {
                   Objects.requireNonNull(this.font);
                   var11 += 9;
                } else {
-                  if (var22.beginIndex() > var19.endIndex()) {
+                  if (var23.beginIndex() > var20.endIndex()) {
                      break;
                   }
 
                   Objects.requireNonNull(this.font);
                   if (this.withinContentAreaTopBottom(var11, var11 + 9)) {
-                     int var24 = this.font.width(var5.substring(var22.beginIndex(), Math.max(var19.beginIndex(), var22.beginIndex())));
-                     int var17;
-                     if (var19.endIndex() > var22.endIndex()) {
-                        var17 = this.width - this.innerPadding();
+                     int var25 = this.font.width(var5.substring(var23.beginIndex(), Math.max(var20.beginIndex(), var23.beginIndex())));
+                     int var18;
+                     if (var20.endIndex() > var23.endIndex()) {
+                        var18 = this.width - this.innerPadding();
                      } else {
-                        var17 = this.font.width(var5.substring(var22.beginIndex(), var19.endIndex()));
+                        var18 = this.font.width(var5.substring(var23.beginIndex(), var20.endIndex()));
                      }
 
-                     int var10001 = var20 + var24;
-                     int var25 = var20 + var17;
+                     int var10001 = var21 + var25;
+                     int var26 = var21 + var18;
                      Objects.requireNonNull(this.font);
-                     var1.textHighlight(var10001, var11, var25, var11 + 9);
+                     var1.textHighlight(var10001, var11, var26, var11 + 9);
                   }
 
                   Objects.requireNonNull(this.font);

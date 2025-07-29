@@ -46,8 +46,19 @@ public interface Aquifer {
       private static final int X_SPACING = 16;
       private static final int Y_SPACING = 12;
       private static final int Z_SPACING = 16;
+      private static final int X_SPACING_SHIFT = 4;
+      private static final int Z_SPACING_SHIFT = 4;
       private static final int MAX_REASONABLE_DISTANCE_TO_AQUIFER_CENTER = 11;
       private static final double FLOWING_UPDATE_SIMULARITY = similarity(Mth.square(10), Mth.square(12));
+      private static final int SAMPLE_OFFSET_X = -5;
+      private static final int SAMPLE_OFFSET_Y = 1;
+      private static final int SAMPLE_OFFSET_Z = -5;
+      private static final int MIN_CELL_SAMPLE_X = 0;
+      private static final int MIN_CELL_SAMPLE_Y = -1;
+      private static final int MIN_CELL_SAMPLE_Z = 0;
+      private static final int MAX_CELL_SAMPLE_X = 1;
+      private static final int MAX_CELL_SAMPLE_Y = 1;
+      private static final int MAX_CELL_SAMPLE_Z = 1;
       private final NoiseChunk noiseChunk;
       private final DensityFunction barrierNoise;
       private final DensityFunction fluidLevelFloodednessNoise;
@@ -60,6 +71,7 @@ public interface Aquifer {
       private final DensityFunction erosion;
       private final DensityFunction depth;
       private boolean shouldScheduleFluidUpdate;
+      private final int skipSamplingAboveY;
       private final int minGridX;
       private final int minGridY;
       private final int minGridZ;
@@ -77,20 +89,23 @@ public interface Aquifer {
          this.erosion = var3.erosion();
          this.depth = var3.depth();
          this.positionalRandomFactory = var4;
-         this.minGridX = this.gridX(var2.getMinBlockX()) - 1;
+         this.minGridX = gridX(var2.getMinBlockX() + -5) + 0;
          this.globalFluidPicker = var7;
-         int var8 = this.gridX(var2.getMaxBlockX()) + 1;
+         int var8 = gridX(var2.getMaxBlockX() + -5) + 1;
          this.gridSizeX = var8 - this.minGridX + 1;
-         this.minGridY = this.gridY(var5) - 1;
-         int var9 = this.gridY(var5 + var6) + 1;
+         this.minGridY = gridY(var5 + 1) + -1;
+         int var9 = gridY(var5 + var6 + 1) + 1;
          int var10 = var9 - this.minGridY + 1;
-         this.minGridZ = this.gridZ(var2.getMinBlockZ()) - 1;
-         int var11 = this.gridZ(var2.getMaxBlockZ()) + 1;
+         this.minGridZ = gridZ(var2.getMinBlockZ() + -5) + 0;
+         int var11 = gridZ(var2.getMaxBlockZ() + -5) + 1;
          this.gridSizeZ = var11 - this.minGridZ + 1;
          int var12 = this.gridSizeX * var10 * this.gridSizeZ;
          this.aquiferCache = new FluidStatus[var12];
          this.aquiferLocationCache = new long[var12];
          Arrays.fill(this.aquiferLocationCache, 9223372036854775807L);
+         int var13 = this.adjustSurfaceLevel(var1.maxPreliminarySurfaceLevel(fromGridX(this.minGridX, 0), fromGridZ(this.minGridZ, 0), fromGridX(var8, 9), fromGridZ(var11, 9)));
+         int var14 = gridY(var13 + 12) - -1;
+         this.skipSamplingAboveY = fromGridY(var14, 11) - 1;
       }
 
       private int getIndex(int var1, int var2, int var3) {
@@ -102,132 +117,135 @@ public interface Aquifer {
 
       @Nullable
       public BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
-         int var4 = var1.blockX();
-         int var5 = var1.blockY();
-         int var6 = var1.blockZ();
          if (var2 > 0.0) {
             this.shouldScheduleFluidUpdate = false;
             return null;
          } else {
+            int var4 = var1.blockX();
+            int var5 = var1.blockY();
+            int var6 = var1.blockZ();
             FluidStatus var7 = this.globalFluidPicker.computeFluid(var4, var5, var6);
-            if (var7.at(var5).is(Blocks.LAVA)) {
+            if (var5 > this.skipSamplingAboveY) {
+               this.shouldScheduleFluidUpdate = false;
+               return var7.at(var5);
+            } else if (var7.at(var5).is(Blocks.LAVA)) {
                this.shouldScheduleFluidUpdate = false;
                return Blocks.LAVA.defaultBlockState();
             } else {
-               int var8 = Math.floorDiv(var4 - 5, 16);
-               int var9 = Math.floorDiv(var5 + 1, 12);
-               int var10 = Math.floorDiv(var6 - 5, 16);
+               int var8 = gridX(var4 + -5);
+               int var9 = gridY(var5 + 1);
+               int var10 = gridZ(var6 + -5);
                int var11 = 2147483647;
                int var12 = 2147483647;
                int var13 = 2147483647;
                int var14 = 2147483647;
-               long var15 = 0L;
-               long var17 = 0L;
-               long var19 = 0L;
-               long var21 = 0L;
+               int var15 = 0;
+               int var16 = 0;
+               int var17 = 0;
+               int var18 = 0;
 
-               for(int var23 = 0; var23 <= 1; ++var23) {
-                  for(int var24 = -1; var24 <= 1; ++var24) {
-                     for(int var25 = 0; var25 <= 1; ++var25) {
-                        int var26 = var8 + var23;
-                        int var27 = var9 + var24;
-                        int var28 = var10 + var25;
-                        int var29 = this.getIndex(var26, var27, var28);
-                        long var32 = this.aquiferLocationCache[var29];
-                        long var30;
-                        if (var32 != 9223372036854775807L) {
-                           var30 = var32;
+               for(int var19 = 0; var19 <= 1; ++var19) {
+                  for(int var20 = -1; var20 <= 1; ++var20) {
+                     for(int var21 = 0; var21 <= 1; ++var21) {
+                        int var22 = var8 + var19;
+                        int var23 = var9 + var20;
+                        int var24 = var10 + var21;
+                        int var25 = this.getIndex(var22, var23, var24);
+                        long var28 = this.aquiferLocationCache[var25];
+                        long var26;
+                        if (var28 != 9223372036854775807L) {
+                           var26 = var28;
                         } else {
-                           RandomSource var34 = this.positionalRandomFactory.at(var26, var27, var28);
-                           var30 = BlockPos.asLong(var26 * 16 + var34.nextInt(10), var27 * 12 + var34.nextInt(9), var28 * 16 + var34.nextInt(10));
-                           this.aquiferLocationCache[var29] = var30;
+                           RandomSource var30 = this.positionalRandomFactory.at(var22, var23, var24);
+                           var26 = BlockPos.asLong(fromGridX(var22, var30.nextInt(10)), fromGridY(var23, var30.nextInt(9)), fromGridZ(var24, var30.nextInt(10)));
+                           this.aquiferLocationCache[var25] = var26;
                         }
 
-                        int var48 = BlockPos.getX(var30) - var4;
-                        int var35 = BlockPos.getY(var30) - var5;
-                        int var36 = BlockPos.getZ(var30) - var6;
-                        int var37 = var48 * var48 + var35 * var35 + var36 * var36;
-                        if (var11 >= var37) {
-                           var21 = var19;
-                           var19 = var17;
-                           var17 = var15;
-                           var15 = var30;
+                        int var44 = BlockPos.getX(var26) - var4;
+                        int var31 = BlockPos.getY(var26) - var5;
+                        int var32 = BlockPos.getZ(var26) - var6;
+                        int var33 = var44 * var44 + var31 * var31 + var32 * var32;
+                        if (var11 >= var33) {
+                           var18 = var17;
+                           var17 = var16;
+                           var16 = var15;
+                           var15 = var25;
                            var14 = var13;
                            var13 = var12;
                            var12 = var11;
-                           var11 = var37;
-                        } else if (var12 >= var37) {
-                           var21 = var19;
-                           var19 = var17;
-                           var17 = var30;
+                           var11 = var33;
+                        } else if (var12 >= var33) {
+                           var18 = var17;
+                           var17 = var16;
+                           var16 = var25;
                            var14 = var13;
                            var13 = var12;
-                           var12 = var37;
-                        } else if (var13 >= var37) {
-                           var21 = var19;
-                           var19 = var30;
+                           var12 = var33;
+                        } else if (var13 >= var33) {
+                           var18 = var17;
+                           var17 = var25;
                            var14 = var13;
-                           var13 = var37;
-                        } else if (var14 >= var37) {
-                           var21 = var30;
-                           var14 = var37;
+                           var13 = var33;
+                        } else if (var14 >= var33) {
+                           var18 = var25;
+                           var14 = var33;
                         }
                      }
                   }
                }
 
-               FluidStatus var40 = this.getAquiferStatus(var15);
-               double var41 = similarity(var11, var12);
-               BlockState var42 = var40.at(var5);
-               if (var41 <= 0.0) {
-                  if (var41 >= FLOWING_UPDATE_SIMULARITY) {
-                     FluidStatus var44 = this.getAquiferStatus(var17);
-                     this.shouldScheduleFluidUpdate = !var40.equals(var44);
+               FluidStatus var36 = this.getAquiferStatus(var15);
+               double var37 = similarity(var11, var12);
+               BlockState var38 = var36.at(var5);
+               if (var37 <= 0.0) {
+                  if (var37 >= FLOWING_UPDATE_SIMULARITY) {
+                     FluidStatus var40 = this.getAquiferStatus(var16);
+                     this.shouldScheduleFluidUpdate = !var36.equals(var40);
                   } else {
                      this.shouldScheduleFluidUpdate = false;
                   }
 
-                  return var42;
-               } else if (var42.is(Blocks.WATER) && this.globalFluidPicker.computeFluid(var4, var5 - 1, var6).at(var5 - 1).is(Blocks.LAVA)) {
+                  return var38;
+               } else if (var38.is(Blocks.WATER) && this.globalFluidPicker.computeFluid(var4, var5 - 1, var6).at(var5 - 1).is(Blocks.LAVA)) {
                   this.shouldScheduleFluidUpdate = true;
-                  return var42;
+                  return var38;
                } else {
-                  MutableDouble var43 = new MutableDouble(0.0 / 0.0);
-                  FluidStatus var45 = this.getAquiferStatus(var17);
-                  double var46 = var41 * this.calculatePressure(var1, var43, var40, var45);
-                  if (var2 + var46 > 0.0) {
+                  MutableDouble var39 = new MutableDouble(0.0 / 0.0);
+                  FluidStatus var41 = this.getAquiferStatus(var16);
+                  double var42 = var37 * this.calculatePressure(var1, var39, var36, var41);
+                  if (var2 + var42 > 0.0) {
                      this.shouldScheduleFluidUpdate = false;
                      return null;
                   } else {
-                     FluidStatus var47 = this.getAquiferStatus(var19);
-                     double var33 = similarity(var11, var13);
-                     if (var33 > 0.0) {
-                        double var49 = var41 * var33 * this.calculatePressure(var1, var43, var40, var47);
-                        if (var2 + var49 > 0.0) {
+                     FluidStatus var43 = this.getAquiferStatus(var17);
+                     double var29 = similarity(var11, var13);
+                     if (var29 > 0.0) {
+                        double var45 = var37 * var29 * this.calculatePressure(var1, var39, var36, var43);
+                        if (var2 + var45 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     double var50 = similarity(var12, var13);
-                     if (var50 > 0.0) {
-                        double var51 = var41 * var50 * this.calculatePressure(var1, var43, var45, var47);
-                        if (var2 + var51 > 0.0) {
+                     double var46 = similarity(var12, var13);
+                     if (var46 > 0.0) {
+                        double var47 = var37 * var46 * this.calculatePressure(var1, var39, var41, var43);
+                        if (var2 + var47 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     boolean var52 = !var40.equals(var45);
-                     boolean var38 = var50 >= FLOWING_UPDATE_SIMULARITY && !var45.equals(var47);
-                     boolean var39 = var33 >= FLOWING_UPDATE_SIMULARITY && !var40.equals(var47);
-                     if (!var52 && !var38 && !var39) {
-                        this.shouldScheduleFluidUpdate = var33 >= FLOWING_UPDATE_SIMULARITY && similarity(var11, var14) >= FLOWING_UPDATE_SIMULARITY && !var40.equals(this.getAquiferStatus(var21));
+                     boolean var48 = !var36.equals(var41);
+                     boolean var34 = var46 >= FLOWING_UPDATE_SIMULARITY && !var41.equals(var43);
+                     boolean var35 = var29 >= FLOWING_UPDATE_SIMULARITY && !var36.equals(var43);
+                     if (!var48 && !var34 && !var35) {
+                        this.shouldScheduleFluidUpdate = var29 >= FLOWING_UPDATE_SIMULARITY && similarity(var11, var14) >= FLOWING_UPDATE_SIMULARITY && !var36.equals(this.getAquiferStatus(var18));
                      } else {
                         this.shouldScheduleFluidUpdate = true;
                      }
 
-                     return var42;
+                     return var38;
                   }
                }
             }
@@ -240,7 +258,7 @@ public interface Aquifer {
 
       private static double similarity(int var0, int var1) {
          double var2 = 25.0;
-         return 1.0 - (double)Math.abs(var1 - var0) / 25.0;
+         return 1.0 - (double)(var1 - var0) / 25.0;
       }
 
       private double calculatePressure(DensityFunction.FunctionContext var1, MutableDouble var2, FluidStatus var3, FluidStatus var4) {
@@ -301,33 +319,39 @@ public interface Aquifer {
          }
       }
 
-      private int gridX(int var1) {
-         return Math.floorDiv(var1, 16);
+      private static int gridX(int var0) {
+         return var0 >> 4;
       }
 
-      private int gridY(int var1) {
-         return Math.floorDiv(var1, 12);
+      private static int fromGridX(int var0, int var1) {
+         return (var0 << 4) + var1;
       }
 
-      private int gridZ(int var1) {
-         return Math.floorDiv(var1, 16);
+      private static int gridY(int var0) {
+         return Math.floorDiv(var0, 12);
       }
 
-      private FluidStatus getAquiferStatus(long var1) {
-         int var3 = BlockPos.getX(var1);
-         int var4 = BlockPos.getY(var1);
-         int var5 = BlockPos.getZ(var1);
-         int var6 = this.gridX(var3);
-         int var7 = this.gridY(var4);
-         int var8 = this.gridZ(var5);
-         int var9 = this.getIndex(var6, var7, var8);
-         FluidStatus var10 = this.aquiferCache[var9];
-         if (var10 != null) {
-            return var10;
+      private static int fromGridY(int var0, int var1) {
+         return var0 * 12 + var1;
+      }
+
+      private static int gridZ(int var0) {
+         return var0 >> 4;
+      }
+
+      private static int fromGridZ(int var0, int var1) {
+         return (var0 << 4) + var1;
+      }
+
+      private FluidStatus getAquiferStatus(int var1) {
+         FluidStatus var2 = this.aquiferCache[var1];
+         if (var2 != null) {
+            return var2;
          } else {
-            FluidStatus var11 = this.computeFluid(var3, var4, var5);
-            this.aquiferCache[var9] = var11;
-            return var11;
+            long var3 = this.aquiferLocationCache[var1];
+            FluidStatus var5 = this.computeFluid(BlockPos.getX(var3), BlockPos.getY(var3), BlockPos.getZ(var3));
+            this.aquiferCache[var1] = var5;
+            return var5;
          }
       }
 
@@ -342,7 +366,7 @@ public interface Aquifer {
             int var13 = var1 + SectionPos.sectionToBlockCoord(var12[0]);
             int var14 = var3 + SectionPos.sectionToBlockCoord(var12[1]);
             int var15 = this.noiseChunk.preliminarySurfaceLevel(var13, var14);
-            int var16 = var15 + 8;
+            int var16 = this.adjustSurfaceLevel(var15);
             boolean var17 = var12[0] == 0 && var12[1] == 0;
             if (var17 && var7 > var16) {
                return var4;
@@ -367,6 +391,10 @@ public interface Aquifer {
 
          int var20 = this.computeSurfaceLevel(var1, var2, var3, var4, var5, var8);
          return new FluidStatus(var20, this.computeFluidType(var1, var2, var3, var4, var20));
+      }
+
+      private int adjustSurfaceLevel(int var1) {
+         return var1 + 8;
       }
 
       private int computeSurfaceLevel(int var1, int var2, int var3, FluidStatus var4, int var5, boolean var6) {

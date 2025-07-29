@@ -86,7 +86,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public void aiStep() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.eatAnimationTick = Math.max(0, this.eatAnimationTick - 1);
       }
 

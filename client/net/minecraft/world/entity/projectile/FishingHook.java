@@ -149,7 +149,7 @@ public class FishingHook extends Projectile {
       Player var1 = this.getPlayerOwner();
       if (var1 == null) {
          this.discard();
-      } else if (this.level().isClientSide || !this.shouldStopFishing(var1)) {
+      } else if (this.level().isClientSide() || !this.shouldStopFishing(var1)) {
          if (this.onGround()) {
             ++this.life;
             if (this.life >= 1200) {
@@ -216,7 +216,7 @@ public class FishingHook extends Projectile {
                      this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.1 * (double)this.syncronizedRandom.nextFloat() * (double)this.syncronizedRandom.nextFloat(), 0.0));
                   }
 
-                  if (!this.level().isClientSide) {
+                  if (!this.level().isClientSide()) {
                      this.catchingFish(var3);
                   }
                } else {
@@ -266,7 +266,7 @@ public class FishingHook extends Projectile {
 
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setHookedEntity(var1.getEntity());
       }
 
@@ -416,7 +416,7 @@ public class FishingHook extends Projectile {
 
    public int retrieve(ItemStack var1) {
       Player var2 = this.getPlayerOwner();
-      if (!this.level().isClientSide && var2 != null && !this.shouldStopFishing(var2)) {
+      if (!this.level().isClientSide() && var2 != null && !this.shouldStopFishing(var2)) {
          int var3 = 0;
          if (this.hookedIn != null) {
             this.pullEntity(this.hookedIn);
@@ -458,7 +458,7 @@ public class FishingHook extends Projectile {
    }
 
    public void handleEntityEvent(byte var1) {
-      if (var1 == 31 && this.level().isClientSide) {
+      if (var1 == 31 && this.level().isClientSide()) {
          Entity var3 = this.hookedIn;
          if (var3 instanceof Player) {
             Player var2 = (Player)var3;

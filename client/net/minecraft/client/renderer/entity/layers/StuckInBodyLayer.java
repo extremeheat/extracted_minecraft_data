@@ -5,7 +5,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -14,30 +14,32 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionfc;
 
-public abstract class StuckInBodyLayer<M extends PlayerModel> extends RenderLayer<PlayerRenderState, M> {
-   private final Model model;
+public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderLayer<PlayerRenderState, M> {
+   private final Model<S> model;
+   private final S modelState;
    private final ResourceLocation texture;
    private final PlacementStyle placementStyle;
 
-   public StuckInBodyLayer(LivingEntityRenderer<?, PlayerRenderState, M> var1, Model var2, ResourceLocation var3, PlacementStyle var4) {
+   public StuckInBodyLayer(LivingEntityRenderer<?, PlayerRenderState, M> var1, Model<S> var2, S var3, ResourceLocation var4, PlacementStyle var5) {
       super(var1);
       this.model = var2;
-      this.texture = var3;
-      this.placementStyle = var4;
+      this.modelState = var3;
+      this.texture = var4;
+      this.placementStyle = var5;
    }
 
    protected abstract int numStuck(PlayerRenderState var1);
 
-   private void renderStuckItem(PoseStack var1, MultiBufferSource var2, int var3, float var4, float var5, float var6) {
-      float var7 = Mth.sqrt(var4 * var4 + var6 * var6);
-      float var8 = (float)(Math.atan2((double)var4, (double)var6) * 57.2957763671875);
-      float var9 = (float)(Math.atan2((double)var5, (double)var7) * 57.2957763671875);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 - 90.0F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var9));
-      this.model.renderToBuffer(var1, var2.getBuffer(this.model.renderType(this.texture)), var3, OverlayTexture.NO_OVERLAY);
+   private void submitStuckItem(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, float var6, int var7) {
+      float var8 = Mth.sqrt(var4 * var4 + var6 * var6);
+      float var9 = (float)(Math.atan2((double)var4, (double)var6) * 57.2957763671875);
+      float var10 = (float)(Math.atan2((double)var5, (double)var8) * 57.2957763671875);
+      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var9 - 90.0F));
+      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var10));
+      var2.submitModel(this.model, this.modelState, var1, this.model.renderType(this.texture), var3, OverlayTexture.NO_OVERLAY, var7);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, PlayerRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, PlayerRenderState var4, float var5, float var6) {
       int var7 = this.numStuck(var4);
       if (var7 > 0) {
          RandomSource var8 = RandomSource.create((long)var4.id);
@@ -60,7 +62,7 @@ public abstract class StuckInBodyLayer<M extends PlayerModel> extends RenderLaye
             }
 
             var1.translate(Mth.lerp(var12, var11.minX, var11.maxX) / 16.0F, Mth.lerp(var13, var11.minY, var11.maxY) / 16.0F, Mth.lerp(var14, var11.minZ, var11.maxZ) / 16.0F);
-            this.renderStuckItem(var1, var2, var3, -(var12 * 2.0F - 1.0F), -(var13 * 2.0F - 1.0F), -(var14 * 2.0F - 1.0F));
+            this.submitStuckItem(var1, var2, var3, -(var12 * 2.0F - 1.0F), -(var13 * 2.0F - 1.0F), -(var14 * 2.0F - 1.0F), var4.outlineColor);
             var1.popPose();
          }
 

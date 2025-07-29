@@ -39,6 +39,7 @@ import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.repository.RepositorySource;
@@ -207,8 +208,8 @@ public class DownloadedPackSource implements AutoCloseable {
          Path var6 = var4.path();
          PackLocationInfo var7 = new PackLocationInfo(var5, SERVER_NAME, this.packType, Optional.empty());
          FilePackResources.FileResourcesSupplier var8 = new FilePackResources.FileResourcesSupplier(var6);
-         int var9 = SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES);
-         Pack.Metadata var10 = Pack.readPackMetadata(var7, var8, var9);
+         PackFormat var9 = SharedConstants.getCurrentVersion().packVersion(PackType.CLIENT_RESOURCES);
+         Pack.Metadata var10 = Pack.readPackMetadata(var7, var8, var9, PackType.CLIENT_RESOURCES);
          if (var10 == null) {
             LOGGER.warn("Invalid pack metadata in {}, ignoring all", var6);
             return null;

@@ -112,7 +112,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       renderScrollingString(var1, var2, this.getMessage(), var5, this.getY(), var6, this.getY() + this.getHeight(), var4);
    }
 
-   public void onClick(double var1, double var3) {
+   public void onClick(double var1, double var3, boolean var5) {
    }
 
    public void onRelease(double var1, double var3) {
@@ -121,19 +121,19 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    protected void onDrag(double var1, double var3, double var5, double var7) {
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.active && this.visible) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      if (!this.isActive()) {
+         return false;
+      } else {
          if (this.isValidClickButton(var5)) {
-            boolean var6 = this.isMouseOver(var1, var3);
-            if (var6) {
+            boolean var7 = this.isMouseOver(var1, var3);
+            if (var7) {
                this.playDownSound(Minecraft.getInstance().getSoundManager());
-               this.onClick(var1, var3);
+               this.onClick(var1, var3, var6);
                return true;
             }
          }
 
-         return false;
-      } else {
          return false;
       }
    }
@@ -162,15 +162,15 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-      if (this.active && this.visible) {
-         return !this.isFocused() ? ComponentPath.leaf(this) : null;
-      } else {
+      if (!this.isActive()) {
          return null;
+      } else {
+         return !this.isFocused() ? ComponentPath.leaf(this) : null;
       }
    }
 
    public boolean isMouseOver(double var1, double var3) {
-      return this.active && this.visible && this.areCoordinatesInRectangle(var1, var3);
+      return this.isActive() && this.areCoordinatesInRectangle(var1, var3);
    }
 
    public void playDownSound(SoundManager var1) {

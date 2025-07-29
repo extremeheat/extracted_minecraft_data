@@ -100,7 +100,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    private static boolean tryMoveItems(Level var0, BlockPos var1, BlockState var2, HopperBlockEntity var3, BooleanSupplier var4) {
-      if (var0.isClientSide) {
+      if (var0.isClientSide()) {
          return false;
       } else {
          if (!var3.isOnCooldown() && (Boolean)var2.getValue(HopperBlock.ENABLED)) {

@@ -69,6 +69,7 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
@@ -88,14 +89,16 @@ import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.bossevents.CustomBossEvents;
+import net.minecraft.server.level.ChunkLoadCounter;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.DemoMode;
-import net.minecraft.server.level.PlayerRespawnLogic;
+import net.minecraft.server.level.PlayerSpawnFinder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
-import net.minecraft.server.level.progress.ChunkProgressListener;
-import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.level.progress.ChunkLoadStatusView;
+import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.network.ServerConnectionListener;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.packs.PackType;
@@ -105,9 +108,10 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.Crypt;
@@ -159,6 +163,7 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -193,7 +198,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final long STATUS_EXPIRE_TIME_NANOS;
    private static final long PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
-   private static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
+   public static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
    private static final int AUTOSAVE_INTERVAL = 6000;
    private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
@@ -211,7 +216,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private TimeProfiler debugCommandProfiler;
    private boolean debugCommandProfilerDelayStart;
    private final ServerConnectionListener connection;
-   private final ChunkProgressListenerFactory progressListenerFactory;
+   private final LevelLoadListener levelLoadListener;
    @Nullable
    private ServerStatus status;
    @Nullable
@@ -291,7 +296,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return (S)var3;
    }
 
-   public MinecraftServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Proxy var5, DataFixer var6, Services var7, ChunkProgressListenerFactory var8) {
+   public MinecraftServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Proxy var5, DataFixer var6, Services var7, LevelLoadListener var8) {
       super("Server");
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.onMetricsRecordingStopped = (var1x) -> this.stopRecordingMetrics();
@@ -320,13 +325,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.packRepository = var3;
          this.resources = new ReloadableResources(var4.resourceManager(), var4.dataPackResources());
          this.services = var7;
-         if (var7.profileCache() != null) {
-            var7.profileCache().setExecutor(this);
-         }
-
          this.connection = new ServerConnectionListener(this);
          this.tickRateManager = new ServerTickRateManager(this);
-         this.progressListenerFactory = var8;
+         this.levelLoadListener = var8;
          this.storageSource = var2;
          this.playerDataStorage = var2.createPlayerStorage();
          this.fixerUpper = var6;
@@ -348,6 +349,31 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    protected abstract boolean initServer() throws IOException;
 
+   public ChunkLoadStatusView createChunkLoadStatusView(final int var1) {
+      return new ChunkLoadStatusView() {
+         @Nullable
+         private ChunkMap chunkMap;
+         private int centerChunkX;
+         private int centerChunkZ;
+
+         public void moveTo(ResourceKey<Level> var1x, ChunkPos var2) {
+            ServerLevel var3 = MinecraftServer.this.getLevel(var1x);
+            this.chunkMap = var3 != null ? var3.getChunkSource().chunkMap : null;
+            this.centerChunkX = var2.x;
+            this.centerChunkZ = var2.z;
+         }
+
+         @Nullable
+         public ChunkStatus get(int var1x, int var2) {
+            return this.chunkMap == null ? null : this.chunkMap.getLatestStatus(ChunkPos.asLong(var1x + this.centerChunkX - var1, var2 + this.centerChunkZ - var1));
+         }
+
+         public int radius() {
+            return var1;
+         }
+      };
+   }
+
    protected void loadLevel() {
       if (!JvmProfiler.INSTANCE.isRunning()) {
       }
@@ -355,10 +381,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       boolean var1 = false;
       ProfiledDuration var2 = JvmProfiler.INSTANCE.onWorldLoadedStarted();
       this.worldData.setModdedInfo(this.getServerModName(), this.getModdedStatus().shouldReportAsModified());
-      ChunkProgressListener var3 = this.progressListenerFactory.create(this.worldData.getGameRules().getInt(GameRules.RULE_SPAWN_CHUNK_RADIUS));
-      this.createLevels(var3);
+      this.createLevels();
       this.forceDifficulty();
-      this.prepareLevels(var3);
+      this.prepareLevels();
       if (var2 != null) {
          var2.finish(true);
       }
@@ -366,8 +391,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       if (var1) {
          try {
             JvmProfiler.INSTANCE.stop();
-         } catch (Throwable var5) {
-            LOGGER.warn("Failed to stop JFR profiling", var5);
+         } catch (Throwable var4) {
+            LOGGER.warn("Failed to stop JFR profiling", var4);
          }
       }
 
@@ -376,104 +401,109 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected void forceDifficulty() {
    }
 
-   protected void createLevels(ChunkProgressListener var1) {
-      ServerLevelData var2 = this.worldData.overworldData();
-      boolean var3 = this.worldData.isDebugWorld();
-      Registry var4 = this.registries.compositeAccess().lookupOrThrow(Registries.LEVEL_STEM);
-      WorldOptions var5 = this.worldData.worldGenOptions();
-      long var6 = var5.seed();
-      long var8 = BiomeManager.obfuscateSeed(var6);
-      ImmutableList var10 = ImmutableList.of(new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(var2));
-      LevelStem var11 = (LevelStem)var4.getValue(LevelStem.OVERWORLD);
-      ServerLevel var12 = new ServerLevel(this, this.executor, this.storageSource, var2, Level.OVERWORLD, var11, var1, var3, var8, var10, true, (RandomSequences)null);
-      this.levels.put(Level.OVERWORLD, var12);
-      DimensionDataStorage var13 = var12.getDataStorage();
-      this.readScoreboard(var13);
-      this.commandStorage = new CommandStorage(var13);
-      WorldBorder var14 = var12.getWorldBorder();
-      if (!var2.isInitialized()) {
+   protected void createLevels() {
+      ServerLevelData var1 = this.worldData.overworldData();
+      boolean var2 = this.worldData.isDebugWorld();
+      Registry var3 = this.registries.compositeAccess().lookupOrThrow(Registries.LEVEL_STEM);
+      WorldOptions var4 = this.worldData.worldGenOptions();
+      long var5 = var4.seed();
+      long var7 = BiomeManager.obfuscateSeed(var5);
+      ImmutableList var9 = ImmutableList.of(new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(var1));
+      LevelStem var10 = (LevelStem)var3.getValue(LevelStem.OVERWORLD);
+      ServerLevel var11 = new ServerLevel(this, this.executor, this.storageSource, var1, Level.OVERWORLD, var10, var2, var7, var9, true, (RandomSequences)null);
+      this.levels.put(Level.OVERWORLD, var11);
+      DimensionDataStorage var12 = var11.getDataStorage();
+      this.readScoreboard(var12);
+      this.commandStorage = new CommandStorage(var12);
+      WorldBorder var13 = var11.getWorldBorder();
+      if (!var1.isInitialized()) {
          try {
-            setInitialSpawn(var12, var2, var5.generateBonusChest(), var3);
-            var2.setInitialized(true);
-            if (var3) {
+            setInitialSpawn(var11, var1, var4.generateBonusChest(), var2, this.levelLoadListener);
+            var1.setInitialized(true);
+            if (var2) {
                this.setupDebugLevel(this.worldData);
             }
          } catch (Throwable var23) {
-            CrashReport var16 = CrashReport.forThrowable(var23, "Exception initializing level");
+            CrashReport var15 = CrashReport.forThrowable(var23, "Exception initializing level");
 
             try {
-               var12.fillReportDetails(var16);
+               var11.fillReportDetails(var15);
             } catch (Throwable var22) {
             }
 
-            throw new ReportedException(var16);
+            throw new ReportedException(var15);
          }
 
-         var2.setInitialized(true);
+         var1.setInitialized(true);
       }
 
-      this.getPlayerList().addWorldborderListener(var12);
+      GlobalPos var14 = this.selectLevelLoadFocusPos();
+      this.levelLoadListener.updateFocus(var14.dimension(), new ChunkPos(var14.pos()));
+      this.getPlayerList().addWorldborderListener(var11);
       if (this.worldData.getCustomBossEvents() != null) {
          this.getCustomBossEvents().load(this.worldData.getCustomBossEvents(), this.registryAccess());
       }
 
-      RandomSequences var15 = var12.getRandomSequences();
+      RandomSequences var24 = var11.getRandomSequences();
 
-      for(Map.Entry var17 : var4.entrySet()) {
+      for(Map.Entry var17 : var3.entrySet()) {
          ResourceKey var18 = (ResourceKey)var17.getKey();
          if (var18 != LevelStem.OVERWORLD) {
             ResourceKey var19 = ResourceKey.create(Registries.DIMENSION, var18.location());
-            DerivedLevelData var20 = new DerivedLevelData(this.worldData, var2);
-            ServerLevel var21 = new ServerLevel(this, this.executor, this.storageSource, var20, var19, (LevelStem)var17.getValue(), var1, var3, var8, ImmutableList.of(), false, var15);
-            var14.addListener(new BorderChangeListener.DelegateBorderChangeListener(var21.getWorldBorder()));
+            DerivedLevelData var20 = new DerivedLevelData(this.worldData, var1);
+            ServerLevel var21 = new ServerLevel(this, this.executor, this.storageSource, var20, var19, (LevelStem)var17.getValue(), var2, var7, ImmutableList.of(), false, var24);
+            var13.addListener(new BorderChangeListener.DelegateBorderChangeListener(var21.getWorldBorder()));
             this.levels.put(var19, var21);
          }
       }
 
-      var14.applySettings(var2.getWorldBorder());
+      var13.applySettings(var1.getWorldBorder());
    }
 
-   private static void setInitialSpawn(ServerLevel var0, ServerLevelData var1, boolean var2, boolean var3) {
+   private static void setInitialSpawn(ServerLevel var0, ServerLevelData var1, boolean var2, boolean var3, LevelLoadListener var4) {
       if (var3) {
          var1.setSpawn(BlockPos.ZERO.above(80), 0.0F);
       } else {
-         ServerChunkCache var4 = var0.getChunkSource();
-         ChunkPos var5 = new ChunkPos(var4.randomState().sampler().findSpawnPosition());
-         int var6 = var4.getGenerator().getSpawnHeight(var0);
-         if (var6 < var0.getMinY()) {
-            BlockPos var7 = var5.getWorldPosition();
-            var6 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var7.getX() + 8, var7.getZ() + 8);
+         ServerChunkCache var5 = var0.getChunkSource();
+         ChunkPos var6 = new ChunkPos(var5.randomState().sampler().findSpawnPosition());
+         var4.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
+         var4.updateFocus(var0.dimension(), var6);
+         int var7 = var5.getGenerator().getSpawnHeight(var0);
+         if (var7 < var0.getMinY()) {
+            BlockPos var8 = var6.getWorldPosition();
+            var7 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var8.getX() + 8, var8.getZ() + 8);
          }
 
-         var1.setSpawn(var5.getWorldPosition().offset(8, var6, 8), 0.0F);
-         int var13 = 0;
-         int var8 = 0;
+         var1.setSpawn(var6.getWorldPosition().offset(8, var7, 8), 0.0F);
+         int var14 = 0;
          int var9 = 0;
-         int var10 = -1;
+         int var10 = 0;
+         int var11 = -1;
 
-         for(int var11 = 0; var11 < Mth.square(11); ++var11) {
-            if (var13 >= -5 && var13 <= 5 && var8 >= -5 && var8 <= 5) {
-               BlockPos var12 = PlayerRespawnLogic.getSpawnPosInChunk(var0, new ChunkPos(var5.x + var13, var5.z + var8));
-               if (var12 != null) {
-                  var1.setSpawn(var12, 0.0F);
+         for(int var12 = 0; var12 < Mth.square(11); ++var12) {
+            if (var14 >= -5 && var14 <= 5 && var9 >= -5 && var9 <= 5) {
+               BlockPos var13 = PlayerSpawnFinder.getSpawnPosInChunk(var0, new ChunkPos(var6.x + var14, var6.z + var9));
+               if (var13 != null) {
+                  var1.setSpawn(var13, 0.0F);
                   break;
                }
             }
 
-            if (var13 == var8 || var13 < 0 && var13 == -var8 || var13 > 0 && var13 == 1 - var8) {
-               int var14 = var9;
-               var9 = -var10;
-               var10 = var14;
+            if (var14 == var9 || var14 < 0 && var14 == -var9 || var14 > 0 && var14 == 1 - var9) {
+               int var15 = var10;
+               var10 = -var11;
+               var11 = var15;
             }
 
-            var13 += var9;
-            var8 += var10;
+            var14 += var10;
+            var9 += var11;
          }
 
          if (var2) {
-            var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> var0x.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var0, var4.getGenerator(), var0.random, var1.getSpawnPos()));
+            var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> var0x.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var0, var5.getGenerator(), var0.random, var1.getSpawnPos()));
          }
 
+         var4.finish(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN);
       }
    }
 
@@ -488,36 +518,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var2.setGameType(GameType.SPECTATOR);
    }
 
-   private void prepareLevels(ChunkProgressListener var1) {
-      ServerLevel var2 = this.overworld();
-      LOGGER.info("Preparing start region for dimension {}", var2.dimension().location());
-      BlockPos var3 = var2.getSharedSpawnPos();
-      var1.updateSpawnPos(new ChunkPos(var3));
-      ServerChunkCache var4 = var2.getChunkSource();
-      this.nextTickTimeNanos = Util.getNanos();
-      var2.setDefaultSpawnPos(var3, var2.getSharedSpawnAngle());
-      int var5 = this.getGameRules().getInt(GameRules.RULE_SPAWN_CHUNK_RADIUS);
-      int var6 = var5 > 0 ? Mth.square(ChunkProgressListener.calculateDiameter(var5)) : 0;
+   private void prepareLevels() {
+      ChunkLoadCounter var1 = new ChunkLoadCounter();
 
-      while(var4.getTickingGenerated() < var6) {
+      for(ServerLevel var3 : this.levels.values()) {
+         var1.track(var3, () -> {
+            TicketStorage var1 = (TicketStorage)var3.getDataStorage().get(TicketStorage.TYPE);
+            if (var1 != null) {
+               var1.activateAllDeactivatedTickets();
+            }
+
+         });
+      }
+
+      this.levelLoadListener.start(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, var1.totalChunks());
+
+      do {
+         this.levelLoadListener.update(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, var1.readyChunks(), var1.totalChunks());
          this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
          this.waitUntilNextTick();
-      }
+      } while(var1.pendingChunks() > 0);
 
-      this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
-      this.waitUntilNextTick();
-
-      for(ServerLevel var8 : this.levels.values()) {
-         TicketStorage var9 = (TicketStorage)var8.getDataStorage().get(TicketStorage.TYPE);
-         if (var9 != null) {
-            var9.activateAllDeactivatedTickets();
-         }
-      }
-
-      this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
-      this.waitUntilNextTick();
-      var1.stop();
+      this.levelLoadListener.finish(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS);
       this.updateMobSpawningFlags();
+   }
+
+   public GlobalPos selectLevelLoadFocusPos() {
+      return new GlobalPos(Level.OVERWORLD, this.overworld().getSharedSpawnPos());
    }
 
    public GameType getDefaultGameType() {
@@ -719,8 +746,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                   if (var4 != null) {
                      try {
                         var4.close();
-                     } catch (Throwable var65) {
-                        var67.addSuppressed(var65);
+                     } catch (Throwable var66) {
+                        var67.addSuppressed(var66);
                      }
                   }
 
@@ -756,10 +783,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          } catch (Throwable var64) {
             LOGGER.error("Exception stopping the server", var64);
          } finally {
-            if (this.services.profileCache() != null) {
-               this.services.profileCache().clearExecutor();
-            }
-
             this.onServerExit();
          }
 
@@ -877,7 +900,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       if (super.pollTask()) {
          return true;
       } else {
-         if (this.tickRateManager.isSprinting() || this.haveTime()) {
+         if (this.tickRateManager.isSprinting() || this.shouldRunAllTasks() || this.haveTime()) {
             for(ServerLevel var2 : this.getAllLevels()) {
                if (var2.getChunkSource().pollTask()) {
                   return true;
@@ -1420,9 +1443,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.services.profileRepository();
    }
 
-   @Nullable
-   public GameProfileCache getProfileCache() {
-      return this.services.profileCache();
+   public UserNameToIdResolver nameToIdCache() {
+      return this.services.nameToIdCache();
    }
 
    @Nullable
@@ -1468,10 +1490,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public DataFixer getFixerUpper() {
       return this.fixerUpper;
-   }
-
-   public int getSpawnRadius(@Nullable ServerLevel var1) {
-      return var1 != null ? var1.getGameRules().getInt(GameRules.RULE_SPAWN_RADIUS) : 10;
    }
 
    public ServerAdvancementManager getAdvancements() {
@@ -1617,7 +1635,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          UserWhiteList var3 = var2.getWhiteList();
 
          for(ServerPlayer var6 : Lists.newArrayList(var2.getPlayers())) {
-            if (!var3.isWhiteListed(var6.getGameProfile())) {
+            if (!var3.isWhiteListed(var6.nameAndId())) {
                var6.connection.disconnect(Component.translatable("multiplayer.disconnect.not_whitelisted"));
             }
          }
@@ -1696,7 +1714,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.tickTimesNanos;
    }
 
-   public int getProfilePermissions(GameProfile var1) {
+   public int getProfilePermissions(NameAndId var1) {
       if (this.getPlayerList().isOp(var1)) {
          ServerOpListEntry var2 = (ServerOpListEntry)this.getPlayerList().getOps().get(var1);
          if (var2 != null) {
@@ -1713,7 +1731,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
-   public abstract boolean isSingleplayerOwner(GameProfile var1);
+   public abstract boolean isSingleplayerOwner(NameAndId var1);
 
    public void dumpServerProperties(Path var1) throws IOException {
    }
@@ -2046,6 +2064,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public void handleCustomClickAction(ResourceLocation var1, Optional<Tag> var2) {
       LOGGER.debug("Received custom click action {} with payload {}", var1, var2.orElse((Object)null));
+   }
+
+   public LevelLoadListener getLevelLoadListener() {
+      return this.levelLoadListener;
    }
 
    public boolean acceptsTransfers() {

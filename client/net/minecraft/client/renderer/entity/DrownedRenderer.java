@@ -20,7 +20,7 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRende
    private static final ResourceLocation DROWNED_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/drowned.png");
 
    public DrownedRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_BABY)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_INNER_ARMOR)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_OUTER_ARMOR)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_BABY_INNER_ARMOR)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_BABY_OUTER_ARMOR)));
+      super(var1, new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_BABY)), ArmorModelSet.bake(ModelLayers.DROWNED_ARMOR, var1.getModelSet(), DrownedModel::new), ArmorModelSet.bake(ModelLayers.DROWNED_BABY_ARMOR, var1.getModelSet(), DrownedModel::new));
       this.addLayer(new DrownedOuterLayer(this, var1.getModelSet()));
    }
 

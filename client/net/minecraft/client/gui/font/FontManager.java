@@ -35,8 +35,11 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GlyphSource;
+import net.minecraft.client.gui.font.glyphs.BakeableGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -57,23 +60,30 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    private final List<GlyphProvider> providersToClose = new ArrayList();
    private final Map<ResourceLocation, FontSet> fontSets = new HashMap();
    private final TextureManager textureManager;
-   @Nullable
-   private volatile FontSet lastFontSetCache;
+   private final CachedFontProvider anyGlyphs = new CachedFontProvider(false);
+   private final CachedFontProvider nonFishyGlyphs = new CachedFontProvider(true);
 
    public FontManager(TextureManager var1) {
       super();
       this.textureManager = var1;
-      this.missingFontSet = (FontSet)Util.make(new FontSet(var1, MISSING_FONT), (var0) -> var0.reload(List.of(createFallbackProvider()), Set.of()));
+      this.missingFontSet = this.createFontSet(MISSING_FONT, List.of(createFallbackProvider()), Set.of());
+   }
+
+   private FontSet createFontSet(ResourceLocation var1, List<GlyphProvider.Conditional> var2, Set<FontOption> var3) {
+      GlyphStitcher var4 = new GlyphStitcher(this.textureManager, var1);
+      FontSet var5 = new FontSet(var4, var1);
+      var5.reload(var2, var3);
+      return var5;
    }
 
    private static GlyphProvider.Conditional createFallbackProvider() {
       return new GlyphProvider.Conditional(new AllMissingGlyphProvider(), FontOption.Filter.ALWAYS_PASS);
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      CompletableFuture var10000 = this.prepare(var2, var3);
-      Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> this.apply(var1x, Profiler.get()), var4);
+   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
+      CompletableFuture var10000 = this.prepare(var1.resourceManager(), var2);
+      Objects.requireNonNull(var3);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var1x) -> this.apply(var1x, Profiler.get()), var4);
    }
 
    private CompletableFuture<Preparation> prepare(ResourceManager var1, Executor var2) {
@@ -170,18 +180,15 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
 
    private void apply(Preparation var1, ProfilerFiller var2) {
       var2.push("closing");
-      this.lastFontSetCache = null;
+      this.anyGlyphs.invalidate();
+      this.nonFishyGlyphs.invalidate();
       this.fontSets.values().forEach(FontSet::close);
       this.fontSets.clear();
       this.providersToClose.forEach(GlyphProvider::close);
       this.providersToClose.clear();
       Set var3 = getFontOptions(Minecraft.getInstance().options);
       var2.popPush("reloading");
-      var1.fontSets().forEach((var2x, var3x) -> {
-         FontSet var4 = new FontSet(this.textureManager, var2x);
-         var4.reload(Lists.reverse(var3x), var3);
-         this.fontSets.put(var2x, var4);
-      });
+      var1.fontSets().forEach((var2x, var3x) -> this.fontSets.put(var2x, this.createFontSet(var2x, Lists.reverse(var3x), var3)));
       this.providersToClose.addAll(var1.allProviders);
       var2.pop();
       if (!this.fontSets.containsKey(Minecraft.DEFAULT_FONT)) {
@@ -238,29 +245,20 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    }
 
    public Font createFont() {
-      return new Font(this::getFontSetCached, false);
+      return new Font(this.anyGlyphs);
    }
 
    public Font createFontFilterFishy() {
-      return new Font(this::getFontSetCached, true);
+      return new Font(this.nonFishyGlyphs);
    }
 
-   private FontSet getFontSetRaw(ResourceLocation var1) {
+   FontSet getFontSetRaw(ResourceLocation var1) {
       return (FontSet)this.fontSets.getOrDefault(var1, this.missingFontSet);
    }
 
-   private FontSet getFontSetCached(ResourceLocation var1) {
-      FontSet var2 = this.lastFontSetCache;
-      if (var2 != null && var1.equals(var2.name())) {
-         return var2;
-      } else {
-         FontSet var3 = this.getFontSetRaw(var1);
-         this.lastFontSetCache = var3;
-         return var3;
-      }
-   }
-
    public void close() {
+      this.anyGlyphs.close();
+      this.nonFishyGlyphs.close();
       this.fontSets.values().forEach(FontSet::close);
       this.providersToClose.forEach(GlyphProvider::close);
       this.missingFontSet.close();
@@ -374,6 +372,51 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       private FontDefinitionFile(List<GlyphProviderDefinition.Conditional> var1) {
          super();
          this.providers = var1;
+      }
+   }
+
+   class CachedFontProvider implements Font.Provider, AutoCloseable {
+      private final boolean nonFishyOnly;
+      @Nullable
+      private volatile FontSet lastFontSetCache;
+      @Nullable
+      private volatile BakeableGlyph whiteGlyph;
+
+      CachedFontProvider(final boolean var2) {
+         super();
+         this.nonFishyOnly = var2;
+      }
+
+      public void invalidate() {
+         this.lastFontSetCache = null;
+         this.whiteGlyph = null;
+      }
+
+      public void close() {
+         this.invalidate();
+      }
+
+      private FontSet fontSet(ResourceLocation var1) {
+         FontSet var2 = this.lastFontSetCache;
+         if (var2 != null && var1.equals(var2.name())) {
+            return var2;
+         } else {
+            FontSet var3 = FontManager.this.getFontSetRaw(var1);
+            this.lastFontSetCache = var3;
+            return var3;
+         }
+      }
+
+      public GlyphSource glyphs(ResourceLocation var1) {
+         return this.fontSet(var1).source(this.nonFishyOnly);
+      }
+
+      public BakeableGlyph whiteGlyph() {
+         if (this.whiteGlyph == null) {
+            this.whiteGlyph = FontManager.this.getFontSetRaw(Style.DEFAULT_FONT).whiteGlyph();
+         }
+
+         return (BakeableGlyph)Objects.requireNonNull(this.whiteGlyph);
       }
    }
 }

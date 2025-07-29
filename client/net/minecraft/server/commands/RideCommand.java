@@ -40,7 +40,7 @@ public class RideCommand {
          throw ERROR_MOUNTING_LOOP.create();
       } else if (var1.level() != var2.level()) {
          throw ERROR_WRONG_DIMENSION.create();
-      } else if (!var1.startRiding(var2, true)) {
+      } else if (!var1.startRiding(var2, true, true)) {
          throw ERROR_MOUNT_FAILED.create(var1.getDisplayName(), var2.getDisplayName());
       } else {
          var0.sendSuccess(() -> Component.translatable("commands.ride.mount.success", var1.getDisplayName(), var2.getDisplayName()), true);

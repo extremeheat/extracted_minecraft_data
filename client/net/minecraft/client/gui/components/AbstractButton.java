@@ -30,19 +30,17 @@ public abstract class AbstractButton extends AbstractWidget {
       this.renderScrollingString(var1, var2, 2, var3);
    }
 
-   public void onClick(double var1, double var3) {
+   public void onClick(double var1, double var3, boolean var5) {
       this.onPress();
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (this.active && this.visible) {
-         if (CommonInputs.selected(var1)) {
-            this.playDownSound(Minecraft.getInstance().getSoundManager());
-            this.onPress();
-            return true;
-         } else {
-            return false;
-         }
+      if (!this.isActive()) {
+         return false;
+      } else if (CommonInputs.selected(var1)) {
+         this.playDownSound(Minecraft.getInstance().getSoundManager());
+         this.onPress();
+         return true;
       } else {
          return false;
       }

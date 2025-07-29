@@ -19,7 +19,7 @@ public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity
 
    public CampfireRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.itemRenderer = var1.getItemRenderer();
+      this.itemRenderer = var1.itemRenderer();
    }
 
    public void render(CampfireBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {

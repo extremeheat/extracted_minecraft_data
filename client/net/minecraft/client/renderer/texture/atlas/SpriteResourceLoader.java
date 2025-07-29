@@ -4,8 +4,9 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
@@ -21,56 +22,58 @@ import org.slf4j.Logger;
 public interface SpriteResourceLoader {
    Logger LOGGER = LogUtils.getLogger();
 
-   static SpriteResourceLoader create(Collection<MetadataSectionType<?>> var0) {
+   static SpriteResourceLoader create(Set<MetadataSectionType<?>> var0) {
       return (var1, var2) -> {
-         ResourceMetadata var3;
+         Optional var3;
+         List var4;
          try {
-            var3 = var2.metadata().copySections(var0);
-         } catch (Exception var9) {
-            LOGGER.error("Unable to parse metadata from {}", var1, var9);
+            ResourceMetadata var5 = var2.metadata();
+            var3 = var5.getSection(AnimationMetadataSection.TYPE);
+            var4 = var5.getTypedSections(var0);
+         } catch (Exception var10) {
+            LOGGER.error("Unable to parse metadata from {}", var1, var10);
             return null;
          }
 
-         NativeImage var4;
+         NativeImage var13;
          try {
-            InputStream var5 = var2.open();
+            InputStream var6 = var2.open();
 
             try {
-               var4 = NativeImage.read(var5);
-            } catch (Throwable var10) {
-               if (var5 != null) {
+               var13 = NativeImage.read(var6);
+            } catch (Throwable var11) {
+               if (var6 != null) {
                   try {
-                     var5.close();
-                  } catch (Throwable var8) {
-                     var10.addSuppressed(var8);
+                     var6.close();
+                  } catch (Throwable var9) {
+                     var11.addSuppressed(var9);
                   }
                }
 
-               throw var10;
+               throw var11;
             }
 
-            if (var5 != null) {
-               var5.close();
+            if (var6 != null) {
+               var6.close();
             }
-         } catch (IOException var11) {
-            LOGGER.error("Using missing texture, unable to load {}", var1, var11);
+         } catch (IOException var12) {
+            LOGGER.error("Using missing texture, unable to load {}", var1, var12);
             return null;
          }
 
-         Optional var12 = var3.getSection(AnimationMetadataSection.TYPE);
-         FrameSize var6;
-         if (var12.isPresent()) {
-            var6 = ((AnimationMetadataSection)var12.get()).calculateFrameSize(var4.getWidth(), var4.getHeight());
-            if (!Mth.isMultipleOf(var4.getWidth(), var6.width()) || !Mth.isMultipleOf(var4.getHeight(), var6.height())) {
-               LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var4.getWidth(), var4.getHeight(), var6.width(), var6.height()});
-               var4.close();
+         FrameSize var14;
+         if (var3.isPresent()) {
+            var14 = ((AnimationMetadataSection)var3.get()).calculateFrameSize(var13.getWidth(), var13.getHeight());
+            if (!Mth.isMultipleOf(var13.getWidth(), var14.width()) || !Mth.isMultipleOf(var13.getHeight(), var14.height())) {
+               LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var13.getWidth(), var13.getHeight(), var14.width(), var14.height()});
+               var13.close();
                return null;
             }
          } else {
-            var6 = new FrameSize(var4.getWidth(), var4.getHeight());
+            var14 = new FrameSize(var13.getWidth(), var13.getHeight());
          }
 
-         return new SpriteContents(var1, var6, var4, var3);
+         return new SpriteContents(var1, var14, var13, var3, var4);
       };
    }
 

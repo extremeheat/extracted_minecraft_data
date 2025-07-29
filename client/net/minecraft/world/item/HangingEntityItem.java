@@ -61,7 +61,7 @@ public class HangingEntityItem extends Item {
 
          EntityType.createDefaultStackConfig(var7, var6, var5).accept(var8);
          if (((HangingEntity)var8).survives()) {
-            if (!var7.isClientSide) {
+            if (!var7.isClientSide()) {
                ((HangingEntity)var8).playPlacementSound();
                var7.gameEvent(var5, GameEvent.ENTITY_PLACE, ((HangingEntity)var8).position());
                var7.addFreshEntity((Entity)var8);

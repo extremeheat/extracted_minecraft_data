@@ -50,14 +50,14 @@ public class KeyBindsScreen extends OptionsSubScreen {
       this.keyBindsList.updateSize(this.width, this.layout);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (this.selectedKey != null) {
          this.selectedKey.setKey(InputConstants.Type.MOUSE.getOrCreate(var5));
          this.selectedKey = null;
          this.keyBindsList.resetMappingAndUpdateButtons();
          return true;
       } else {
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var3, var5, var6);
       }
    }
 

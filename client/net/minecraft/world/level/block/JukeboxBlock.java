@@ -13,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.JukeboxPlayable;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -42,8 +42,8 @@ public class JukeboxBlock extends BaseEntityBlock {
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       super.setPlacedBy(var1, var2, var3, var4, var5);
-      CustomData var6 = (CustomData)var5.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-      if (var6.contains("RecordItem")) {
+      TypedEntityData var6 = (TypedEntityData)var5.get(DataComponents.BLOCK_ENTITY_DATA);
+      if (var6 != null && var6.contains("RecordItem")) {
          var1.setBlock(var2, (BlockState)var3.setValue(HAS_RECORD, true), 2);
       }
 
@@ -99,10 +99,10 @@ public class JukeboxBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof JukeboxBlockEntity var4) {
-         return var4.getComparatorOutput();
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
+      BlockEntity var6 = var2.getBlockEntity(var3);
+      if (var6 instanceof JukeboxBlockEntity var5) {
+         return var5.getComparatorOutput();
       } else {
          return 0;
       }

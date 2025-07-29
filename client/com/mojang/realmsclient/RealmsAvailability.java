@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
@@ -39,8 +38,7 @@ public class RealmsAvailability {
    }
 
    private static CompletableFuture<Result> check() {
-      User var0 = Minecraft.getInstance().getUser();
-      return var0.getType() != User.Type.MSA ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)) : CompletableFuture.supplyAsync(() -> {
+      return Minecraft.getInstance().isOfflineDeveloperMode() ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)) : CompletableFuture.supplyAsync(() -> {
          RealmsClient var0 = RealmsClient.getOrCreate();
 
          try {

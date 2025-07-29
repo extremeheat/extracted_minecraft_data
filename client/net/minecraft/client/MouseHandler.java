@@ -14,6 +14,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -27,12 +28,15 @@ import org.slf4j.Logger;
 
 public class MouseHandler {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final long DOUBLE_CLICK_THRESHOLD_MS = 250L;
    private final Minecraft minecraft;
    private boolean isLeftPressed;
    private boolean isMiddlePressed;
    private boolean isRightPressed;
    private double xpos;
    private double ypos;
+   protected long lastClickTime;
+   protected int lastClickButton;
    private int fakeRightMouse;
    private int activeButton = -1;
    private boolean ignoreFirstMove = true;
@@ -102,7 +106,11 @@ public class MouseHandler {
                   var13.afterMouseAction();
 
                   try {
-                     if (var13.mouseClicked(var9, var11, var8)) {
+                     long var14 = Util.getMillis();
+                     boolean var20 = var14 - this.lastClickTime < 250L && this.lastClickButton == var8;
+                     if (var13.mouseClicked(var9, var11, var8, var20)) {
+                        this.lastClickTime = var14;
+                        this.lastClickButton = var8;
                         return;
                      }
                   } catch (Throwable var18) {
@@ -121,9 +129,9 @@ public class MouseHandler {
                   } catch (Throwable var17) {
                      CrashReport var19 = CrashReport.forThrowable(var17, "mouseReleased event handler");
                      var13.fillCrashDetails(var19);
-                     CrashReportCategory var20 = var19.addCategory("Mouse");
-                     this.fillMousePositionDetails(var20, var6);
-                     var20.setDetail("Button", var3);
+                     CrashReportCategory var21 = var19.addCategory("Mouse");
+                     this.fillMousePositionDetails(var21, var6);
+                     var21.setDetail("Button", var3);
                      throw new ReportedException(var19);
                   }
                }
@@ -339,14 +347,9 @@ public class MouseHandler {
          var5 = this.accumulatedDY * var11;
       }
 
-      byte var17 = 1;
-      if ((Boolean)this.minecraft.options.invertYMouse().get()) {
-         var17 = -1;
-      }
-
       this.minecraft.getTutorial().onMouse(var3, var5);
       if (this.minecraft.player != null) {
-         this.minecraft.player.turn(var3, var5 * (double)var17);
+         this.minecraft.player.turn((Boolean)this.minecraft.options.invertMouseX().get() ? -var3 : var3, (Boolean)this.minecraft.options.invertMouseY().get() ? -var5 : var5);
       }
 
    }

@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.item.properties.numeric;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -14,14 +15,18 @@ public record Cooldown() implements RangeSelectItemModelProperty {
       super();
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4) {
+   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
       float var10000;
-      if (var3 instanceof Player var5) {
-         var10000 = var5.getCooldowns().getCooldownPercent(var1, 0.0F);
-      } else {
-         var10000 = 0.0F;
+      if (var3 != null) {
+         LivingEntity var6 = var3.asLivingEntity();
+         if (var6 instanceof Player) {
+            Player var5 = (Player)var6;
+            var10000 = var5.getCooldowns().getCooldownPercent(var1, 0.0F);
+            return var10000;
+         }
       }
 
+      var10000 = 0.0F;
       return var10000;
    }
 

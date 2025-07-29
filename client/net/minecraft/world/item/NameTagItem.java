@@ -16,7 +16,7 @@ public class NameTagItem extends Item {
    public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
       Component var5 = (Component)var1.get(DataComponents.CUSTOM_NAME);
       if (var5 != null && var3.getType().canSerialize()) {
-         if (!var2.level().isClientSide && var3.isAlive()) {
+         if (!var2.level().isClientSide() && var3.isAlive()) {
             var3.setCustomName(var5);
             if (var3 instanceof Mob) {
                Mob var6 = (Mob)var3;

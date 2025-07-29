@@ -272,7 +272,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
             this.setUnhappy();
             return InteractionResult.SUCCESS;
          } else {
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                boolean var4 = this.getOffers().isEmpty();
                if (var2 == InteractionHand.MAIN_HAND) {
                   if (var4) {

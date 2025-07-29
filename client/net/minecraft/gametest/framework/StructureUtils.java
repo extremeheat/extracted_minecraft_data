@@ -89,13 +89,12 @@ public class StructureUtils {
 
    public static void clearSpaceForStructure(BoundingBox var0, ServerLevel var1) {
       int var2 = var0.minY() - 1;
-      BoundingBox var3 = new BoundingBox(var0.minX() - 2, var0.minY() - 3, var0.minZ() - 3, var0.maxX() + 3, var0.maxY() + 20, var0.maxZ() + 3);
-      BlockPos.betweenClosedStream(var3).forEach((var2x) -> clearBlock(var2, var2x, var1));
-      var1.getBlockTicks().clearArea(var3);
-      var1.clearBlockEvents(var3);
-      AABB var4 = AABB.of(var3);
-      List var5 = var1.getEntitiesOfClass(Entity.class, var4, (var0x) -> !(var0x instanceof Player));
-      var5.forEach(Entity::discard);
+      BlockPos.betweenClosedStream(var0).forEach((var2x) -> clearBlock(var2, var2x, var1));
+      var1.getBlockTicks().clearArea(var0);
+      var1.clearBlockEvents(var0);
+      AABB var3 = AABB.of(var0);
+      List var4 = var1.getEntitiesOfClass(Entity.class, var3, (var0x) -> !(var0x instanceof Player));
+      var4.forEach(Entity::discard);
    }
 
    public static BlockPos getTransformedFarCorner(BlockPos var0, Vec3i var1, Rotation var2) {
@@ -127,8 +126,8 @@ public class StructureUtils {
    public static Stream<BlockPos> lookedAtTestPos(BlockPos var0, Entity var1, ServerLevel var2) {
       boolean var3 = true;
       Vec3 var4 = var1.getEyePosition();
-      Vec3 var5 = var4.add(var1.getLookAngle().scale(200.0));
-      Stream var10000 = findTestBlocks(var0, 200, var2).map((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK)).flatMap(Optional::stream).filter((var2x) -> var2x.getStructureBounds().clip(var4, var5).isPresent()).map(BlockEntity::getBlockPos);
+      Vec3 var5 = var4.add(var1.getLookAngle().scale(250.0));
+      Stream var10000 = findTestBlocks(var0, 250, var2).map((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK)).flatMap(Optional::stream).filter((var2x) -> var2x.getStructureBounds().clip(var4, var5).isPresent()).map(BlockEntity::getBlockPos);
       Objects.requireNonNull(var0);
       return var10000.sorted(Comparator.comparing(var0::distSqr)).limit(1L);
    }

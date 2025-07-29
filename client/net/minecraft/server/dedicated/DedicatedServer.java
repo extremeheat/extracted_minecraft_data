@@ -1,7 +1,6 @@
 package net.minecraft.server.dedicated;
 
 import com.google.common.collect.Lists;
-import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
@@ -37,11 +36,11 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.gui.MinecraftServerGui;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.network.ServerTextFilter;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.rcon.RconConsoleSource;
@@ -55,10 +54,10 @@ import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
 
@@ -83,8 +82,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
    private final ServerLinks serverLinks;
 
-   public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7, ChunkProgressListenerFactory var8) {
-      super(var1, var2, var3, var4, Proxy.NO_PROXY, var6, var7, var8);
+   public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7) {
+      super(var1, var2, var3, var4, Proxy.NO_PROXY, var6, var7, LoggingLevelLoadListener.forDedicatedServer());
       this.settings = var5;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.serverTextFilter = ServerTextFilter.createFromConfig(var5.getProperties());
@@ -161,7 +160,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       }
 
       if (this.convertOldUsers()) {
-         this.getProfileCache().save();
+         this.nameToIdCache().save();
       }
 
       if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
@@ -171,8 +170,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.debugSampleSubscriptionTracker = new DebugSampleSubscriptionTracker(this.getPlayerList());
          this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSampleSubscriptionTracker, RemoteDebugSampleType.TICK_TIME);
          long var4 = Util.getNanos();
-         SkullBlockEntity.setup(this.services, this);
-         GameProfileCache.setUsesAuthentication(this.usesAuthentication());
+         ResolvableProfile.setupResolver(this.services, this);
+         this.services.nameToIdCache().resolveOfflineUsers(!this.usesAuthentication());
          LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
          this.loadLevel();
          long var6 = Util.getNanos() - var4;
@@ -356,7 +355,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          return false;
       } else if (this.getPlayerList().getOps().isEmpty()) {
          return false;
-      } else if (this.getPlayerList().isOp(var3.getGameProfile())) {
+      } else if (this.getPlayerList().isOp(var3.nameAndId())) {
          return false;
       } else if (this.getSpawnProtectionRadius() <= 0) {
          return false;
@@ -506,10 +505,10 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    public void stopServer() {
       super.stopServer();
       Util.shutdownExecutors();
-      SkullBlockEntity.clear();
+      ResolvableProfile.clearResolver();
    }
 
-   public boolean isSingleplayerOwner(GameProfile var1) {
+   public boolean isSingleplayerOwner(NameAndId var1) {
       return false;
    }
 

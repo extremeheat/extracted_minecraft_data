@@ -16,6 +16,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.core.Direction;
@@ -65,7 +66,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
 
    public SkullBlockRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      EntityModelSet var2 = var1.getModelSet();
+      EntityModelSet var2 = var1.entityModelSet();
       this.modelByType = Util.memoize((Function)((var1x) -> createModel(var2, var1x)));
    }
 
@@ -92,10 +93,24 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       }
 
       var3.scale(-1.0F, -1.0F, 1.0F);
-      VertexConsumer var9 = var4.getBuffer(var7);
-      var6.setupAnim(var2, var1, 0.0F);
-      var6.renderToBuffer(var3, var9, var5, OverlayTexture.NO_OVERLAY);
+      VertexConsumer var10 = var4.getBuffer(var7);
+      SkullModelBase.State var9 = new SkullModelBase.State();
+      var9.animationPos = var2;
+      var9.yRot = var1;
+      var6.setupAnim(var9);
+      var6.renderToBuffer(var3, var10, var5, OverlayTexture.NO_OVERLAY);
       var3.popPose();
+   }
+
+   public static void submitSkull(float var0, float var1, PoseStack var2, SubmitNodeCollector var3, int var4, SkullModelBase var5, RenderType var6, int var7) {
+      var2.pushPose();
+      var2.translate(0.5F, 0.0F, 0.5F);
+      var2.scale(-1.0F, -1.0F, 1.0F);
+      SkullModelBase.State var8 = new SkullModelBase.State();
+      var8.animationPos = var1;
+      var8.yRot = var0;
+      var3.submitModel(var5, var8, var2, var6, var4, OverlayTexture.NO_OVERLAY, var7);
+      var2.popPose();
    }
 
    public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1) {

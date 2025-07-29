@@ -32,14 +32,14 @@ public interface ContainerEventHandler extends GuiEventListener {
       return Optional.empty();
    }
 
-   default boolean mouseClicked(double var1, double var3, int var5) {
-      Optional var6 = this.getChildAt(var1, var3);
-      if (var6.isEmpty()) {
+   default boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      Optional var7 = this.getChildAt(var1, var3);
+      if (var7.isEmpty()) {
          return false;
       } else {
-         GuiEventListener var7 = (GuiEventListener)var6.get();
-         if (var7.mouseClicked(var1, var3, var5)) {
-            this.setFocused(var7);
+         GuiEventListener var8 = (GuiEventListener)var7.get();
+         if (var8.mouseClicked(var1, var3, var5, var6) && var8.shouldTakeFocusAfterInteraction()) {
+            this.setFocused(var8);
             if (var5 == 0) {
                this.setDragging(true);
             }

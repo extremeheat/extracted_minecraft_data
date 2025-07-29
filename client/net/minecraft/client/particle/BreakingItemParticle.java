@@ -3,13 +3,12 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -38,7 +37,7 @@ public class BreakingItemParticle extends TextureSheetParticle {
       if (var9 != null) {
          this.setSprite(var9);
       } else {
-         this.setSprite((TextureAtlasSprite)Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(MissingTextureAtlasSprite.getLocation()));
+         this.setSprite(Minecraft.getInstance().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).missingSprite());
       }
 
       this.gravity = 1.0F;
@@ -71,7 +70,7 @@ public class BreakingItemParticle extends TextureSheetParticle {
       }
 
       protected ItemStackRenderState calculateState(ItemStack var1, ClientLevel var2) {
-         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, var2, (LivingEntity)null, 0);
+         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, var2, (ItemOwner)null, 0);
          return this.scratchRenderState;
       }
    }

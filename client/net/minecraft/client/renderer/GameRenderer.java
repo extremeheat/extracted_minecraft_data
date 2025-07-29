@@ -32,6 +32,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.pip.GuiBannerResultRenderer;
 import net.minecraft.client.gui.render.pip.GuiBookModelRenderer;
@@ -43,8 +44,11 @@ import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -121,6 +125,9 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private final FogRenderer fogRenderer;
    private final GuiRenderer guiRenderer;
    private final GuiRenderState guiRenderState;
+   private final LevelRenderState levelRenderState;
+   private final SubmitNodeStorage submitNodeStorage;
+   private final FeatureRenderDispatcher featureRenderDispatcher;
    @Nullable
    private ResourceLocation postEffectId;
    private boolean effectActive;
@@ -130,11 +137,12 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private final PerspectiveProjectionMatrixBuffer levelProjectionMatrixBuffer;
    private final CachedPerspectiveProjectionMatrixBuffer hud3dProjectionMatrixBuffer;
 
-   public GameRenderer(Minecraft var1, ItemInHandRenderer var2, RenderBuffers var3) {
+   public GameRenderer(Minecraft var1, ItemInHandRenderer var2, RenderBuffers var3, BlockRenderDispatcher var4) {
       super();
       this.panorama = new PanoramaRenderer(this.cubeMap);
       this.resourcePool = new CrossFrameResourcePool(3);
       this.fogRenderer = new FogRenderer();
+      this.levelRenderState = new LevelRenderState();
       this.mainCamera = new Camera();
       this.lighting = new Lighting();
       this.globalSettingsUniform = new GlobalSettingsUniform();
@@ -145,9 +153,12 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       this.lightTexture = new LightTexture(this, var1);
       this.renderBuffers = var3;
       this.guiRenderState = new GuiRenderState();
-      MultiBufferSource.BufferSource var4 = var3.bufferSource();
-      this.guiRenderer = new GuiRenderer(this.guiRenderState, var4, List.of(new GuiEntityRenderer(var4, var1.getEntityRenderDispatcher()), new GuiSkinRenderer(var4), new GuiBookModelRenderer(var4), new GuiBannerResultRenderer(var4), new GuiSignRenderer(var4), new GuiProfilerChartRenderer(var4)));
-      this.screenEffectRenderer = new ScreenEffectRenderer(var1, var4);
+      MultiBufferSource.BufferSource var5 = var3.bufferSource();
+      AtlasManager var6 = var1.getAtlasManager();
+      this.submitNodeStorage = new SubmitNodeStorage();
+      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.submitNodeStorage, var4, var5, var6, var3.outlineBufferSource(), var1.font);
+      this.guiRenderer = new GuiRenderer(this.guiRenderState, var5, List.of(new GuiEntityRenderer(var5, var1.getEntityRenderDispatcher(), this.featureRenderDispatcher), new GuiSkinRenderer(var5), new GuiBookModelRenderer(var5), new GuiBannerResultRenderer(var5, var6), new GuiSignRenderer(var5, var6), new GuiProfilerChartRenderer(var5)));
+      this.screenEffectRenderer = new ScreenEffectRenderer(var1, var6, var5);
    }
 
    public void close() {
@@ -161,6 +172,18 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       this.lighting.close();
       this.cubeMap.close();
       this.fogRenderer.close();
+   }
+
+   public SubmitNodeStorage getSubmitNodeStorage() {
+      return this.submitNodeStorage;
+   }
+
+   public FeatureRenderDispatcher getFeatureRenderDispatcher() {
+      return this.featureRenderDispatcher;
+   }
+
+   public LevelRenderState getLevelRenderState() {
+      return this.levelRenderState;
    }
 
    public void setRenderBlockOutline(boolean var1) {
@@ -519,7 +542,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             }
          } else if (var4 && this.minecraft.screen != null) {
             try {
-               this.minecraft.screen.renderWithTooltip(var8, var5, var6, var1.getGameTimeDeltaTicks());
+               this.minecraft.screen.renderWithTooltipAndSubtitles(var8, var5, var6, var1.getGameTimeDeltaTicks());
             } catch (Throwable var14) {
                CrashReport var18 = CrashReport.forThrowable(var14, "Rendering screen");
                CrashReportCategory var20 = var18.addCategory("Screen render details");
@@ -550,8 +573,11 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             }
          }
 
+         this.minecraft.gui.renderDebugOverlay(var8);
+         this.minecraft.gui.renderDeferredSubtitles();
          this.guiRenderer.render(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
          this.guiRenderer.incrementFrameNumber();
+         this.submitNodeStorage.endFrame();
          this.resourcePool.endFrame();
       }
    }
@@ -709,7 +735,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       var24.endBatch();
       var4.pop();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
-      if (this.minecraft.gui.shouldRenderDebugCrosshair()) {
+      if (this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
          this.minecraft.getDebugOverlay().render3dCrosshair(var6);
       }
 

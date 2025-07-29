@@ -7,8 +7,16 @@ public class ToggleKeyMapping extends KeyMapping {
    private final BooleanSupplier needsToggle;
 
    public ToggleKeyMapping(String var1, int var2, String var3, BooleanSupplier var4) {
-      super(var1, InputConstants.Type.KEYSYM, var2, var3);
-      this.needsToggle = var4;
+      this(var1, InputConstants.Type.KEYSYM, var2, var3, var4);
+   }
+
+   public ToggleKeyMapping(String var1, InputConstants.Type var2, int var3, String var4, BooleanSupplier var5) {
+      super(var1, var2, var3, var4);
+      this.needsToggle = var5;
+   }
+
+   protected boolean shouldSetOnIngameFocus() {
+      return super.shouldSetOnIngameFocus() && !this.needsToggle.getAsBoolean();
    }
 
    public void setDown(boolean var1) {

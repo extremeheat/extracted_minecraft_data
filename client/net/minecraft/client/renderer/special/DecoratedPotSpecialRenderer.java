@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.core.component.DataComponents;
@@ -52,7 +51,7 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
          return new DecoratedPotSpecialRenderer(new DecoratedPotRenderer(var1));
       }
    }

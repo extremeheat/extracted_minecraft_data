@@ -29,14 +29,14 @@ public class BlockBasedTestInstance extends GameTestInstance {
       var1.onEachTick(() -> {
          List var2 = this.findTestBlocks(var1, TestBlockMode.ACCEPT);
          if (var2.isEmpty()) {
-            var1.fail(Component.translatable("test_block.error.missing", TestBlockMode.ACCEPT.getDisplayName()));
+            var1.fail((Component)Component.translatable("test_block.error.missing", TestBlockMode.ACCEPT.getDisplayName()));
          }
 
          boolean var3 = var2.stream().map((var1x) -> (TestBlockEntity)var1.getBlockEntity(var1x, TestBlockEntity.class)).anyMatch(TestBlockEntity::hasTriggered);
          if (var3) {
             var1.succeed();
          } else {
-            this.forAllTriggeredTestBlocks(var1, TestBlockMode.FAIL, (var1x) -> var1.fail(Component.literal(var1x.getMessage())));
+            this.forAllTriggeredTestBlocks(var1, TestBlockMode.FAIL, (var1x) -> var1.fail((Component)Component.literal(var1x.getMessage())));
             this.forAllTriggeredTestBlocks(var1, TestBlockMode.LOG, TestBlockEntity::trigger);
          }
 
@@ -57,11 +57,11 @@ public class BlockBasedTestInstance extends GameTestInstance {
    private BlockPos findStartBlock(GameTestHelper var1) {
       List var2 = this.findTestBlocks(var1, TestBlockMode.START);
       if (var2.isEmpty()) {
-         var1.fail(Component.translatable("test_block.error.missing", TestBlockMode.START.getDisplayName()));
+         var1.fail((Component)Component.translatable("test_block.error.missing", TestBlockMode.START.getDisplayName()));
       }
 
       if (var2.size() != 1) {
-         var1.fail(Component.translatable("test_block.error.too_many", TestBlockMode.START.getDisplayName()));
+         var1.fail((Component)Component.translatable("test_block.error.too_many", TestBlockMode.START.getDisplayName()));
       }
 
       return (BlockPos)var2.getFirst();

@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -31,6 +32,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
    public static final Material VERTICAL_WIND_TEXTURE;
    public static final Material OPEN_EYE_TEXTURE;
    public static final Material CLOSED_EYE_TEXTURE;
+   private final MaterialSet materials;
    private final ModelPart eye;
    private final ModelPart wind;
    private final ModelPart shell;
@@ -39,7 +41,8 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
 
    public ConduitRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.renderer = var1.getBlockEntityRenderDispatcher();
+      this.materials = var1.materials();
+      this.renderer = var1.blockEntityRenderDispatcher();
       this.eye = var1.bakeLayer(ModelLayers.CONDUIT_EYE);
       this.wind = var1.bakeLayer(ModelLayers.CONDUIT_WIND);
       this.shell = var1.bakeLayer(ModelLayers.CONDUIT_SHELL);
@@ -78,7 +81,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
       float var8 = (float)var1.tickCount + var2;
       if (!var1.isActive()) {
          float var17 = var1.getActiveRotation(0.0F);
-         VertexConsumer var19 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
+         VertexConsumer var19 = SHELL_TEXTURE.buffer(this.materials, var4, RenderType::entitySolid);
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
          var3.mulPose((Quaternionfc)(new Quaternionf()).rotationY(var17 * 0.017453292F));
@@ -92,7 +95,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
          var3.translate(0.5F, 0.3F + var10 * 0.2F, 0.5F);
          Vector3f var11 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
          var3.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(var9 * 0.017453292F, var11));
-         this.cage.render(var3, ACTIVE_SHELL_TEXTURE.buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
+         this.cage.render(var3, ACTIVE_SHELL_TEXTURE.buffer(this.materials, var4, RenderType::entityCutoutNoCull), var5, var6);
          var3.popPose();
          int var12 = var1.tickCount / 66 % 3;
          var3.pushPose();
@@ -103,7 +106,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
             var3.mulPose((Quaternionfc)(new Quaternionf()).rotationZ(1.5707964F));
          }
 
-         VertexConsumer var13 = (var12 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull);
+         VertexConsumer var13 = (var12 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE).buffer(this.materials, var4, RenderType::entityCutoutNoCull);
          this.wind.render(var3, var13, var5, var6);
          var3.popPose();
          var3.pushPose();
@@ -120,7 +123,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
          var3.mulPose((Quaternionfc)(new Quaternionf()).rotationYXZ(var15 * 0.017453292F, var14.getXRot() * 0.017453292F, 3.1415927F));
          float var16 = 1.3333334F;
          var3.scale(1.3333334F, 1.3333334F, 1.3333334F);
-         this.eye.render(var3, (var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
+         this.eye.render(var3, (var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE).buffer(this.materials, var4, RenderType::entityCutoutNoCull), var5, var6);
          var3.popPose();
       }
    }

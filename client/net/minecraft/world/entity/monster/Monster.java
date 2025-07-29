@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -49,10 +50,6 @@ public abstract class Monster extends PathfinderMob implements Enemy {
          this.noActionTime += 2;
       }
 
-   }
-
-   protected boolean shouldDespawnInPeaceful() {
-      return true;
    }
 
    protected SoundEvent getSwimSound() {
@@ -110,8 +107,8 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return true;
    }
 
-   protected boolean shouldDropLoot() {
-      return true;
+   protected boolean shouldDropLoot(ServerLevel var1) {
+      return var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT);
    }
 
    public boolean isPreventingPlayerRest(ServerLevel var1, Player var2) {

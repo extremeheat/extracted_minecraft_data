@@ -227,7 +227,7 @@ public class Dolphin extends AgeableWaterCreature {
             }
          }
 
-         if (this.level().isClientSide && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03) {
+         if (this.level().isClientSide() && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03) {
             Vec3 var1 = this.getViewVector(0.0F);
             float var2 = Mth.cos(this.getYRot() * 0.017453292F) * 0.3F;
             float var3 = Mth.sin(this.getYRot() * 0.017453292F) * 0.3F;
@@ -264,7 +264,7 @@ public class Dolphin extends AgeableWaterCreature {
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (!var3.isEmpty() && var3.is(ItemTags.FISHES)) {
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.playSound(SoundEvents.DOLPHIN_EAT, 1.0F, 1.0F);
          }
 

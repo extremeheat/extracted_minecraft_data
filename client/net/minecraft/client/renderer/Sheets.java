@@ -17,6 +17,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CopperChestBlock;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
@@ -34,6 +36,9 @@ public class Sheets {
    public static final ResourceLocation CHEST_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/chest.png");
    public static final ResourceLocation ARMOR_TRIMS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/armor_trims.png");
    public static final ResourceLocation DECORATED_POT_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/decorated_pot.png");
+   public static final ResourceLocation GUI_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/gui.png");
+   public static final ResourceLocation MAP_DECORATIONS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/map_decorations.png");
+   public static final ResourceLocation PAINTINGS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/paintings.png");
    private static final RenderType SHULKER_BOX_SHEET_TYPE;
    private static final RenderType BED_SHEET_TYPE;
    private static final RenderType BANNER_SHEET_TYPE;
@@ -47,6 +52,7 @@ public class Sheets {
    private static final RenderType TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
    public static final MaterialMapper ITEMS_MAPPER;
    public static final MaterialMapper BLOCKS_MAPPER;
+   public static final MaterialMapper BLOCK_ENTITIES_MAPPER;
    public static final MaterialMapper BANNER_MAPPER;
    public static final MaterialMapper SHIELD_MAPPER;
    public static final MaterialMapper CHEST_MAPPER;
@@ -77,6 +83,18 @@ public class Sheets {
    public static final Material CHEST_LOCATION_LEFT;
    public static final Material CHEST_LOCATION_RIGHT;
    public static final Material ENDER_CHEST_LOCATION;
+   public static final Material COPPER_CHEST_LOCATION;
+   public static final Material COPPER_CHEST_LOCATION_LEFT;
+   public static final Material COPPER_CHEST_LOCATION_RIGHT;
+   public static final Material EXPOSED_COPPER_CHEST_LOCATION;
+   public static final Material EXPOSED_COPPER_CHEST_LOCATION_LEFT;
+   public static final Material EXPOSED_COPPER_CHEST_LOCATION_RIGHT;
+   public static final Material WEATHERED_COPPER_CHEST_LOCATION;
+   public static final Material WEATHERED_COPPER_CHEST_LOCATION_LEFT;
+   public static final Material WEATHERED_COPPER_CHEST_LOCATION_RIGHT;
+   public static final Material OXIDIZED_COPPER_CHEST_LOCATION;
+   public static final Material OXIDIZED_COPPER_CHEST_LOCATION_LEFT;
+   public static final Material OXIDIZED_COPPER_CHEST_LOCATION_RIGHT;
 
    public Sheets() {
       super();
@@ -192,9 +210,30 @@ public class Sheets {
          return ENDER_CHEST_LOCATION;
       } else if (var2) {
          return chooseMaterial(var1, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
+      } else if (var0 instanceof TrappedChestBlockEntity) {
+         return chooseMaterial(var1, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
       } else {
-         return var0 instanceof TrappedChestBlockEntity ? chooseMaterial(var1, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT) : chooseMaterial(var1, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
+         Block var4 = var0.getBlockState().getBlock();
+         if (var4 instanceof CopperChestBlock) {
+            CopperChestBlock var3 = (CopperChestBlock)var4;
+            return chooseCopperMaterial(var1, var3);
+         } else {
+            return chooseMaterial(var1, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
+         }
       }
+   }
+
+   private static Material chooseCopperMaterial(ChestType var0, CopperChestBlock var1) {
+      Material var10000;
+      switch (var1.getState()) {
+         case UNAFFECTED -> var10000 = chooseMaterial(var0, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
+         case EXPOSED -> var10000 = chooseMaterial(var0, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
+         case WEATHERED -> var10000 = chooseMaterial(var0, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
+         case OXIDIZED -> var10000 = chooseMaterial(var0, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    private static Material chooseMaterial(ChestType var0, Material var1, Material var2, Material var3) {
@@ -223,6 +262,7 @@ public class Sheets {
       TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
       ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "item");
       BLOCKS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "block");
+      BLOCK_ENTITIES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "entity");
       BANNER_MAPPER = new MaterialMapper(BANNER_SHEET, "entity/banner");
       SHIELD_MAPPER = new MaterialMapper(SHIELD_SHEET, "entity/shield");
       CHEST_MAPPER = new MaterialMapper(CHEST_SHEET, "entity/chest");
@@ -253,5 +293,17 @@ public class Sheets {
       CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("normal_left");
       CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("normal_right");
       ENDER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("ender");
+      COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper");
+      COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_left");
+      COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_right");
+      EXPOSED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_exposed");
+      EXPOSED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_exposed_left");
+      EXPOSED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_exposed_right");
+      WEATHERED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_weathered");
+      WEATHERED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_weathered_left");
+      WEATHERED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_weathered_right");
+      OXIDIZED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized");
+      OXIDIZED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized_left");
+      OXIDIZED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized_right");
    }
 }

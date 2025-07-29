@@ -5,8 +5,8 @@ import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import net.minecraft.client.gui.font.GlyphStitcher;
 
 public enum SpecialGlyphs implements GlyphInfo {
    WHITE(() -> generate(5, 8, (var0, var1) -> -1)),
@@ -42,8 +42,8 @@ public enum SpecialGlyphs implements GlyphInfo {
       return (float)(this.image.getWidth() + 1);
    }
 
-   public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-      return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
+   public BakedGlyph bake(GlyphStitcher var1) {
+      return var1.stitch(new SheetGlyphInfo() {
          public int getPixelWidth() {
             return SpecialGlyphs.this.image.getWidth();
          }

@@ -48,7 +48,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    }
 
    public void popOutTheItem() {
-      if (this.level != null && !this.level.isClientSide) {
+      if (this.level != null && !this.level.isClientSide()) {
          BlockPos var1 = this.getBlockPos();
          ItemStack var2 = this.getTheItem();
          if (!var2.isEmpty()) {

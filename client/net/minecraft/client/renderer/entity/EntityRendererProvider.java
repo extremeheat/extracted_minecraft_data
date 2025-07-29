@@ -9,8 +9,11 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
-import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 
@@ -28,8 +31,9 @@ public interface EntityRendererProvider<T extends Entity> {
       private final EquipmentAssetManager equipmentAssets;
       private final Font font;
       private final EquipmentLayerRenderer equipmentRenderer;
+      private final AtlasManager atlasManager;
 
-      public Context(EntityRenderDispatcher var1, ItemModelResolver var2, MapRenderer var3, BlockRenderDispatcher var4, ResourceManager var5, EntityModelSet var6, EquipmentAssetManager var7, Font var8) {
+      public Context(EntityRenderDispatcher var1, ItemModelResolver var2, MapRenderer var3, BlockRenderDispatcher var4, ResourceManager var5, EntityModelSet var6, EquipmentAssetManager var7, AtlasManager var8, Font var9) {
          super();
          this.entityRenderDispatcher = var1;
          this.itemModelResolver = var2;
@@ -38,8 +42,9 @@ public interface EntityRendererProvider<T extends Entity> {
          this.resourceManager = var5;
          this.modelSet = var6;
          this.equipmentAssets = var7;
-         this.font = var8;
-         this.equipmentRenderer = new EquipmentLayerRenderer(var7, this.getModelManager().getAtlas(Sheets.ARMOR_TRIMS_SHEET));
+         this.font = var9;
+         this.atlasManager = var8;
+         this.equipmentRenderer = new EquipmentLayerRenderer(var7, var8.getAtlas(Sheets.ARMOR_TRIMS_SHEET));
       }
 
       public EntityRenderDispatcher getEntityRenderDispatcher() {
@@ -74,8 +79,12 @@ public interface EntityRendererProvider<T extends Entity> {
          return this.equipmentRenderer;
       }
 
-      public ModelManager getModelManager() {
-         return this.blockRenderDispatcher.getBlockModelShaper().getModelManager();
+      public MaterialSet getMaterials() {
+         return this.atlasManager;
+      }
+
+      public TextureAtlas getAtlas(ResourceLocation var1) {
+         return this.atlasManager.getAtlas(var1);
       }
 
       public ModelPart bakeLayer(ModelLayerLocation var1) {

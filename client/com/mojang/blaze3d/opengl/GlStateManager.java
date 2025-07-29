@@ -332,6 +332,14 @@ public class GlStateManager {
    public static void _glDeleteFramebuffers(int var0) {
       RenderSystem.assertOnRenderThread();
       GL30.glDeleteFramebuffers(var0);
+      if (readFbo == var0) {
+         readFbo = 0;
+      }
+
+      if (writeFbo == var0) {
+         writeFbo = 0;
+      }
+
    }
 
    public static int glGenFramebuffers() {

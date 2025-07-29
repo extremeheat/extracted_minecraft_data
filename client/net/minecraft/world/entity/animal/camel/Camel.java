@@ -373,7 +373,7 @@ public class Camel extends AbstractHorse {
          boolean var5 = this.isBaby();
          if (var5) {
             this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                this.ageUp(10);
             }
          }
@@ -571,7 +571,7 @@ public class Camel extends AbstractHorse {
    }
 
    public void openCustomInventoryScreen(Player var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          var1.openHorseInventory(this, this.inventory);
       }
 

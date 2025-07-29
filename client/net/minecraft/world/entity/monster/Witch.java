@@ -99,7 +99,7 @@ public class Witch extends Raider implements RangedAttackMob {
    }
 
    public void aiStep() {
-      if (!this.level().isClientSide && this.isAlive()) {
+      if (!this.level().isClientSide() && this.isAlive()) {
          this.healRaidersGoal.decrementCooldown();
          if (this.healRaidersGoal.getCooldown() <= 0) {
             this.attackPlayersGoal.setCanAttack(true);

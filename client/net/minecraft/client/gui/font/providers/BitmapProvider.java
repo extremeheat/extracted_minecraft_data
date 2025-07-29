@@ -17,9 +17,9 @@ import it.unimi.dsi.fastutil.ints.IntSets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
+import net.minecraft.client.gui.font.GlyphStitcher;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -208,8 +208,8 @@ public class BitmapProvider implements GlyphProvider {
          return (float)this.advance;
       }
 
-      public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
+      public BakedGlyph bake(GlyphStitcher var1) {
+         return var1.stitch(new SheetGlyphInfo() {
             public float getOversample() {
                return 1.0F / Glyph.this.scale;
             }

@@ -145,10 +145,6 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return true;
    }
 
-   protected ItemStack getSkull() {
-      return ItemStack.EMPTY;
-   }
-
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       if ((double)var1.nextFloat() > 0.9) {
          int var3 = var1.nextInt(16);
@@ -206,7 +202,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public void updateSwimming() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setSwimming(this.isEffectiveAi() && this.isUnderWater() && this.wantsToSwim());
       }
 

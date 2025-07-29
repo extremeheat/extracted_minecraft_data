@@ -19,7 +19,7 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
 
    public BrushableBlockRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.itemRenderer = var1.getItemRenderer();
+      this.itemRenderer = var1.itemRenderer();
    }
 
    public void render(BrushableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {

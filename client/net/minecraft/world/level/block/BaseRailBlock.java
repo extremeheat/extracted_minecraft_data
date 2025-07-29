@@ -74,7 +74,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide && var2.getBlockState(var3).is(this)) {
+      if (!var2.isClientSide() && var2.getBlockState(var3).is(this)) {
          RailShape var7 = (RailShape)var1.getValue(this.getShapeProperty());
          if (shouldBeRemoved(var3, var2, var7)) {
             dropResources(var1, var2, var3);
@@ -114,7 +114,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    }
 
    protected BlockState updateDir(Level var1, BlockPos var2, BlockState var3, boolean var4) {
-      if (var1.isClientSide) {
+      if (var1.isClientSide()) {
          return var3;
       } else {
          RailShape var5 = (RailShape)var3.getValue(this.getShapeProperty());

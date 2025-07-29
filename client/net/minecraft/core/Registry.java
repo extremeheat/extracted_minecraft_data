@@ -144,10 +144,6 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       return (Iterable)DataFixUtils.orElse(this.get(var1), List.of());
    }
 
-   default Optional<Holder<T>> getRandomElementOf(TagKey<T> var1, RandomSource var2) {
-      return this.get(var1).flatMap((var1x) -> var1x.getRandomElement(var2));
-   }
-
    Stream<HolderSet.Named<T>> getTags();
 
    default IdMap<Holder<T>> asHolderIdMap() {

@@ -33,9 +33,22 @@ public class ChatListener {
    }
 
    public void tick() {
-      if (this.messageDelay != 0L) {
-         if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
-            for(Message var1 = (Message)this.delayedMessageQueue.poll(); var1 != null && !var1.accept(); var1 = (Message)this.delayedMessageQueue.poll()) {
+      if (this.minecraft.isPaused()) {
+         if (this.messageDelay > 0L) {
+            this.previousMessageTime += 50L;
+         }
+
+      } else {
+         if (this.messageDelay == 0L) {
+            if (!this.delayedMessageQueue.isEmpty()) {
+               this.flushQueue();
+            }
+         } else {
+            Message var1;
+            if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
+               do {
+                  var1 = (Message)this.delayedMessageQueue.poll();
+               } while(var1 != null && !var1.accept());
             }
          }
 
@@ -44,9 +57,8 @@ public class ChatListener {
 
    public void setMessageDelay(double var1) {
       long var3 = (long)(var1 * 1000.0);
-      if (var3 == 0L && this.messageDelay > 0L) {
-         this.delayedMessageQueue.forEach(Message::accept);
-         this.delayedMessageQueue.clear();
+      if (var3 == 0L && this.messageDelay > 0L && !this.minecraft.isPaused()) {
+         this.flushQueue();
       }
 
       this.messageDelay = var3;
@@ -60,9 +72,10 @@ public class ChatListener {
       return (long)this.delayedMessageQueue.size();
    }
 
-   public void clearQueue() {
+   public void flushQueue() {
       this.delayedMessageQueue.forEach(Message::accept);
       this.delayedMessageQueue.clear();
+      this.previousMessageTime = 0L;
    }
 
    public boolean removeFromDelayedMessageQueue(MessageSignature var1) {

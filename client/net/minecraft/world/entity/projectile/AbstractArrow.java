@@ -202,7 +202,7 @@ public abstract class AbstractArrow extends Projectile {
             this.applyEffectsFromBlocks();
          }
 
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.setSharedFlagOnFire(this.getRemainingFireTicks() > 0);
          }
 
@@ -430,7 +430,7 @@ public abstract class AbstractArrow extends Projectile {
 
          if (var2 instanceof LivingEntity) {
             LivingEntity var11 = (LivingEntity)var2;
-            if (!this.level().isClientSide && this.getPierceLevel() <= 0) {
+            if (!this.level().isClientSide() && this.getPierceLevel() <= 0) {
                var11.setArrowCount(var11.getArrowCount() + 1);
             }
 
@@ -453,7 +453,7 @@ public abstract class AbstractArrow extends Projectile {
                this.piercedAndKilledEntities.add(var11);
             }
 
-            if (!this.level().isClientSide && var6 instanceof ServerPlayer) {
+            if (!this.level().isClientSide() && var6 instanceof ServerPlayer) {
                ServerPlayer var20 = (ServerPlayer)var6;
                if (this.piercedAndKilledEntities != null) {
                   CriteriaTriggers.KILLED_BY_ARROW.trigger(var20, this.piercedAndKilledEntities, this.firedFromWeapon);
@@ -650,7 +650,7 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    public void playerTouch(Player var1) {
-      if (!this.level().isClientSide && (this.isInGround() || this.isNoPhysics()) && this.shakeTime <= 0) {
+      if (!this.level().isClientSide() && (this.isInGround() || this.isNoPhysics()) && this.shakeTime <= 0) {
          if (this.tryPickup(var1)) {
             var1.take(this, 1);
             this.discard();
@@ -743,7 +743,7 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    public boolean isNoPhysics() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          return this.noPhysics;
       } else {
          return ((Byte)this.entityData.get(ID_FLAGS) & 2) != 0;

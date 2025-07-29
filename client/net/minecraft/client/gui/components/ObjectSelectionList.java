@@ -72,7 +72,7 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
 
       public abstract Component getNarration();
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
+      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          return true;
       }
 

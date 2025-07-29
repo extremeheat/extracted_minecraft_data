@@ -1,15 +1,18 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import java.util.List;
 import net.minecraft.client.model.TridentModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import org.joml.Quaternionfc;
 
@@ -22,14 +25,18 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
       this.model = new TridentModel(var1.bakeLayer(ModelLayers.TRIDENT));
    }
 
-   public void render(ThrownTridentRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ThrownTridentRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot + 90.0F));
-      VertexConsumer var5 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
-      this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
+      List var4 = ItemRenderer.getFoilRenderTypes(this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
+
+      for(int var5 = 0; var5 < var4.size(); ++var5) {
+         var3.submitModel(this.model, Unit.INSTANCE, var2, (RenderType)var4.get(var5), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var1.outlineColor, var5);
+      }
+
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3);
    }
 
    public ThrownTridentRenderState createRenderState() {

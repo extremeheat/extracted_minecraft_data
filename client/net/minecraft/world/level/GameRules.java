@@ -28,7 +28,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -92,7 +91,6 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_DO_VINES_SPREAD;
    public static final Key<BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH;
    public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
-   public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
    public static final Key<BooleanValue> RULE_TNT_EXPLODES;
    public static final Key<BooleanValue> RULE_LOCATOR_BAR;
    private final Map<Key<?>, Value<?>> rules;
@@ -262,10 +260,6 @@ public class GameRules {
       RULE_DO_VINES_SPREAD = register("doVinesSpread", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
       RULE_ENDER_PEARLS_VANISH_ON_DEATH = register("enderPearlsVanishOnDeath", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
       RULE_MINECART_MAX_SPEED = register("minecartMaxSpeed", GameRules.Category.MISC, GameRules.IntegerValue.create(8, 1, 1000, FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS), (var0, var1) -> {
-      }));
-      RULE_SPAWN_CHUNK_RADIUS = register("spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, FeatureFlagSet.of(), (var0, var1) -> {
-         ServerLevel var2 = var0.overworld();
-         var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
       RULE_TNT_EXPLODES = register("tntExplodes", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
       RULE_LOCATOR_BAR = register("locatorBar", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true, (var0, var1) -> var0.getAllLevels().forEach((var1x) -> {

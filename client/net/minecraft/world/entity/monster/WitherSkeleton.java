@@ -63,18 +63,6 @@ public class WitherSkeleton extends AbstractSkeleton {
       return !var1.is(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS) && super.canHoldItem(var1);
    }
 
-   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var2.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var1, Items.WITHER_SKELETON_SKULL);
-         }
-      }
-
-   }
-
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
    }

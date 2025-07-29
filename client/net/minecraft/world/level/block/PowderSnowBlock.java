@@ -59,7 +59,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (!(var4 instanceof LivingEntity) || var4.getInBlockState().is(this)) {
          var4.makeStuckInBlock(var1, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
-         if (var2.isClientSide) {
+         if (var2.isClientSide()) {
             RandomSource var6 = var2.getRandom();
             boolean var7 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
             if (var7 && var6.nextBoolean()) {

@@ -80,7 +80,7 @@ public class ThreadingDetector {
       CrashReport var4 = new CrashReport(var3, new IllegalStateException(var3));
       CrashReportCategory var5 = var4.addCategory("Thread dumps");
       var5.setDetail("Thread dumps", var2);
-      LOGGER.error("Thread dumps: \n" + var2);
+      LOGGER.error("Thread dumps: \n{}", var2);
       return new ReportedException(var4);
    }
 

@@ -68,27 +68,28 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       this.dispatcher = var2;
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var2), var3);
-      CompletableFuture var6 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var2), var3).thenCompose((var2x) -> {
-         HashMap var3x = Maps.newHashMap();
+   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
+      ResourceManager var5 = var1.resourceManager();
+      CompletableFuture var6 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var5), var2);
+      CompletableFuture var7 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
+         HashMap var3 = Maps.newHashMap();
          CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationLevel, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
 
          for(Map.Entry var6 : var2x.entrySet()) {
             ResourceLocation var7 = (ResourceLocation)var6.getKey();
             ResourceLocation var8 = LISTER.fileToId(var7);
-            var3x.put(var8, CompletableFuture.supplyAsync(() -> {
+            var3.put(var8, CompletableFuture.supplyAsync(() -> {
                List var4x = readLines((Resource)var6.getValue());
                return CommandFunction.fromLines(var8, this.dispatcher, var4, var4x);
-            }, var3));
+            }, var2));
          }
 
-         CompletableFuture[] var9 = (CompletableFuture[])var3x.values().toArray(new CompletableFuture[0]);
-         return CompletableFuture.allOf(var9).handle((var1, var2) -> var3x);
+         CompletableFuture[] var9 = (CompletableFuture[])var3.values().toArray(new CompletableFuture[0]);
+         return CompletableFuture.allOf(var9).handle((var1, var2xx) -> var3);
       });
-      CompletableFuture var10000 = var5.thenCombine(var6, Pair::of);
-      Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> {
+      CompletableFuture var10000 = var6.thenCombine(var7, Pair::of);
+      Objects.requireNonNull(var3);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var1x) -> {
          Map var2 = (Map)var1x.getSecond();
          ImmutableMap.Builder var3 = ImmutableMap.builder();
          var2.forEach((var1, var2x) -> var2x.handle((var2, var3x) -> {

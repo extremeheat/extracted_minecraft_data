@@ -189,15 +189,15 @@ public class BookViewScreen extends Screen {
       var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
       if (var5 == 0) {
-         Style var6 = this.getClickedComponentStyleAt(var1, var3);
-         if (var6 != null && this.handleComponentClicked(var6)) {
+         Style var7 = this.getClickedComponentStyleAt(var1, var3);
+         if (var7 != null && this.handleComponentClicked(var7)) {
             return true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var3, var5, var6);
    }
 
    protected void handleClickEvent(Minecraft var1, ClickEvent var2) {

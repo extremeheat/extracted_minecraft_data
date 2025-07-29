@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractChestBlock;
@@ -27,13 +28,16 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T> {
+   private final MaterialSet materials;
    private final ChestModel singleModel;
    private final ChestModel doubleLeftModel;
    private final ChestModel doubleRightModel;
-   private final boolean xmasTextures = xmasTextures();
+   private final boolean xmasTextures;
 
    public ChestRenderer(BlockEntityRendererProvider.Context var1) {
       super();
+      this.materials = var1.materials();
+      this.xmasTextures = xmasTextures();
       this.singleModel = new ChestModel(var1.bakeLayer(ModelLayers.CHEST));
       this.doubleLeftModel = new ChestModel(var1.bakeLayer(ModelLayers.DOUBLE_CHEST_LEFT));
       this.doubleRightModel = new ChestModel(var1.bakeLayer(ModelLayers.DOUBLE_CHEST_RIGHT));
@@ -69,7 +73,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
          var17 = 1.0F - var17 * var17 * var17;
          int var18 = ((Int2IntFunction)var16.apply(new BrightnessCombiner())).applyAsInt(var5);
          Material var19 = Sheets.chooseMaterial(var1, var11, this.xmasTextures);
-         VertexConsumer var20 = var19.buffer(var4, RenderType::entityCutout);
+         VertexConsumer var20 = var19.buffer(this.materials, var4, RenderType::entityCutout);
          if (var14) {
             if (var11 == ChestType.LEFT) {
                this.render(var3, var20, this.doubleLeftModel, var17, var18, var6);

@@ -65,8 +65,6 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    protected void init() {
       super.init();
       this.beaconButtons.clear();
-      this.addBeaconButton(new BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
-      this.addBeaconButton(new BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
 
       for(int var1 = 0; var1 <= 2; ++var1) {
          int var2 = ((List)BeaconBlockEntity.BEACON_EFFECTS.get(var1)).size();
@@ -95,6 +93,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       BeaconUpgradePowerButton var13 = new BeaconUpgradePowerButton(this.leftPos + 167 + (var8 - 1) * 24 - var9 / 2, this.topPos + 47, var11);
       var13.visible = false;
       this.addBeaconButton(var13);
+      this.addBeaconButton(new BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
+      this.addBeaconButton(new BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
    }
 
    public void containerTick() {
@@ -245,6 +245,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       protected BeaconSpriteScreenButton(int var1, int var2, ResourceLocation var3, Component var4) {
          super(var1, var2, var4);
+         this.setTooltip(Tooltip.create(var4));
          this.sprite = var3;
       }
 

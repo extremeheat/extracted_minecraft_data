@@ -17,14 +17,21 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Position;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.util.profiling.Profiler;
@@ -33,6 +40,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 import org.slf4j.Logger;
 
 public class IntegratedServer extends MinecraftServer {
@@ -49,7 +58,7 @@ public class IntegratedServer extends MinecraftServer {
    private UUID uuid;
    private int previousSimulationDistance = 0;
 
-   public IntegratedServer(Thread var1, Minecraft var2, LevelStorageSource.LevelStorageAccess var3, PackRepository var4, WorldStem var5, Services var6, ChunkProgressListenerFactory var7) {
+   public IntegratedServer(Thread var1, Minecraft var2, LevelStorageSource.LevelStorageAccess var3, PackRepository var4, WorldStem var5, Services var6, LevelLoadListener var7) {
       super(var1, var3, var4, var5, var2.getProxy(), var2.getFixerUpper(), var6, var7);
       this.setSingleplayerProfile(var2.getGameProfile());
       this.setDemo(var2.isDemo());
@@ -76,7 +85,7 @@ public class IntegratedServer extends MinecraftServer {
 
    public void tickServer(BooleanSupplier var1) {
       boolean var2 = this.paused;
-      this.paused = Minecraft.getInstance().isPaused();
+      this.paused = Minecraft.getInstance().isPaused() || this.getPlayerList().getPlayers().isEmpty();
       ProfilerFiller var3 = Profiler.get();
       if (!var2 && this.paused) {
          var3.push("autoSave");
@@ -85,26 +94,25 @@ public class IntegratedServer extends MinecraftServer {
          var3.pop();
       }
 
-      boolean var4 = Minecraft.getInstance().getConnection() != null;
-      if (var4 && this.paused) {
+      if (this.paused) {
          this.tickPaused();
       } else {
-         if (var2 && !this.paused) {
+         if (var2) {
             this.forceTimeSynchronization();
          }
 
          super.tickServer(var1);
-         int var5 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
-         if (var5 != this.getPlayerList().getViewDistance()) {
-            LOGGER.info("Changing view distance to {}, from {}", var5, this.getPlayerList().getViewDistance());
-            this.getPlayerList().setViewDistance(var5);
+         int var4 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
+         if (var4 != this.getPlayerList().getViewDistance()) {
+            LOGGER.info("Changing view distance to {}, from {}", var4, this.getPlayerList().getViewDistance());
+            this.getPlayerList().setViewDistance(var4);
          }
 
-         int var6 = Math.max(2, (Integer)this.minecraft.options.simulationDistance().get());
-         if (var6 != this.previousSimulationDistance) {
-            LOGGER.info("Changing simulation distance to {}, from {}", var6, this.previousSimulationDistance);
-            this.getPlayerList().setSimulationDistance(var6);
-            this.previousSimulationDistance = var6;
+         int var5 = Math.max(2, (Integer)this.minecraft.options.simulationDistance().get());
+         if (var5 != this.previousSimulationDistance) {
+            LOGGER.info("Changing simulation distance to {}, from {}", var5, this.previousSimulationDistance);
+            this.getPlayerList().setSimulationDistance(var5);
+            this.previousSimulationDistance = var5;
          }
 
       }
@@ -119,6 +127,8 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    private void tickPaused() {
+      this.tickConnection();
+
       for(ServerPlayer var2 : this.getPlayerList().getPlayers()) {
          var2.awardStat(Stats.TOTAL_WORLD_TIME);
       }
@@ -177,7 +187,7 @@ public class IntegratedServer extends MinecraftServer {
          this.lanPinger.start();
          this.publishedGameType = var1;
          this.getPlayerList().setAllowCommandsForAllPlayers(var2);
-         int var4 = this.getProfilePermissions(this.minecraft.player.getGameProfile());
+         int var4 = this.getProfilePermissions(this.minecraft.player.nameAndId());
          this.minecraft.player.setPermissionLevel(var4);
 
          for(ServerPlayer var6 : this.getPlayerList().getPlayers()) {
@@ -245,8 +255,8 @@ public class IntegratedServer extends MinecraftServer {
       this.uuid = var1;
    }
 
-   public boolean isSingleplayerOwner(GameProfile var1) {
-      return this.getSingleplayerProfile() != null && var1.getName().equalsIgnoreCase(this.getSingleplayerProfile().getName());
+   public boolean isSingleplayerOwner(NameAndId var1) {
+      return this.getSingleplayerProfile() != null && var1.name().equalsIgnoreCase(this.getSingleplayerProfile().getName());
    }
 
    public int getScaledTrackingDistance(int var1) {
@@ -260,6 +270,23 @@ public class IntegratedServer extends MinecraftServer {
    @Nullable
    public GameType getForcedGameType() {
       return this.isPublished() && !this.isHardcore() ? (GameType)MoreObjects.firstNonNull(this.publishedGameType, this.worldData.getGameType()) : null;
+   }
+
+   public GlobalPos selectLevelLoadFocusPos() {
+      CompoundTag var1 = this.worldData.getLoadedPlayerTag();
+      if (var1 == null) {
+         return super.selectLevelLoadFocusPos();
+      } else {
+         try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(LOGGER)) {
+            ValueInput var3 = TagValueInput.create(var2, this.registryAccess(), var1);
+            ServerPlayer.SavedPosition var4 = (ServerPlayer.SavedPosition)var3.read(ServerPlayer.SavedPosition.MAP_CODEC).orElse(ServerPlayer.SavedPosition.EMPTY);
+            if (var4.dimension().isPresent() && var4.position().isPresent()) {
+               return new GlobalPos((ResourceKey)var4.dimension().get(), BlockPos.containing((Position)var4.position().get()));
+            }
+         }
+
+         return super.selectLevelLoadFocusPos();
+      }
    }
 
    public boolean saveEverything(boolean var1, boolean var2, boolean var3) {

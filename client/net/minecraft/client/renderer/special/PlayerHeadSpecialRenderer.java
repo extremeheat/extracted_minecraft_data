@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.SkullModelBase;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
@@ -96,8 +95,8 @@ public class PlayerHeadSpecialRenderer implements SpecialModelRenderer<PlayerHea
       }
 
       @Nullable
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         SkullModelBase var2 = SkullBlockRenderer.createModel(var1, SkullBlock.Types.PLAYER);
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         SkullModelBase var2 = SkullBlockRenderer.createModel(var1.entityModelSet(), SkullBlock.Types.PLAYER);
          return var2 == null ? null : new PlayerHeadSpecialRenderer(Minecraft.getInstance().getSkinManager(), var2, PlayerHeadSpecialRenderer.PlayerHeadRenderInfo.create(DefaultPlayerSkin.getDefaultSkin()));
       }
    }

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -16,8 +15,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -33,7 +32,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.Bees;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -323,14 +322,14 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
    }
 
-   public static record Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
-      final CustomData entityData;
+   public static record Occupant(TypedEntityData<EntityType<?>> entityData, int ticksInHive, int minTicksInHive) {
+      final TypedEntityData<EntityType<?>> entityData;
       final int minTicksInHive;
-      public static final Codec<Occupant> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CustomData.CODEC.optionalFieldOf("entity_data", CustomData.EMPTY).forGetter(Occupant::entityData), Codec.INT.fieldOf("ticks_in_hive").forGetter(Occupant::ticksInHive), Codec.INT.fieldOf("min_ticks_in_hive").forGetter(Occupant::minTicksInHive)).apply(var0, Occupant::new));
+      public static final Codec<Occupant> CODEC = RecordCodecBuilder.create((var0) -> var0.group(TypedEntityData.codec(EntityType.CODEC).fieldOf("entity_data").forGetter(Occupant::entityData), Codec.INT.fieldOf("ticks_in_hive").forGetter(Occupant::ticksInHive), Codec.INT.fieldOf("min_ticks_in_hive").forGetter(Occupant::minTicksInHive)).apply(var0, Occupant::new));
       public static final Codec<List<Occupant>> LIST_CODEC;
-      public static final StreamCodec<ByteBuf, Occupant> STREAM_CODEC;
+      public static final StreamCodec<RegistryFriendlyByteBuf, Occupant> STREAM_CODEC;
 
-      public Occupant(CustomData var1, int var2, int var3) {
+      public Occupant(TypedEntityData<EntityType<?>> var1, int var2, int var3) {
          super();
          this.entityData = var1;
          this.ticksInHive = var2;
@@ -347,25 +346,23 @@ public class BeehiveBlockEntity extends BlockEntity {
             var10000.forEach(var2::discard);
             CompoundTag var3 = var2.buildResult();
             boolean var4 = var3.getBooleanOr("HasNectar", false);
-            var5 = new Occupant(CustomData.of(var3), 0, var4 ? 2400 : 600);
+            var5 = new Occupant(TypedEntityData.of(var0.getType(), var3), 0, var4 ? 2400 : 600);
          }
 
          return var5;
       }
 
       public static Occupant create(int var0) {
-         CompoundTag var1 = new CompoundTag();
-         var1.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.BEE).toString());
-         return new Occupant(CustomData.of(var1), var0, 600);
+         return new Occupant(TypedEntityData.of(EntityType.BEE, new CompoundTag()), var0, 600);
       }
 
       @Nullable
       public Entity createEntity(Level var1, BlockPos var2) {
-         CompoundTag var3 = this.entityData.copyTag();
+         CompoundTag var3 = this.entityData.copyTagWithoutId();
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var3);
          var10000.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive((CompoundTag)var3, var1, EntitySpawnReason.LOAD, (var0) -> var0);
+         Entity var4 = EntityType.loadEntityRecursive(this.entityData.type(), (CompoundTag)var3, var1, EntitySpawnReason.LOAD, (var0) -> var0);
          if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {
             var4.setNoGravity(true);
             if (var4 instanceof Bee) {
@@ -393,7 +390,7 @@ public class BeehiveBlockEntity extends BlockEntity {
 
       static {
          LIST_CODEC = CODEC.listOf();
-         STREAM_CODEC = StreamCodec.composite(CustomData.STREAM_CODEC, Occupant::entityData, ByteBufCodecs.VAR_INT, Occupant::ticksInHive, ByteBufCodecs.VAR_INT, Occupant::minTicksInHive, Occupant::new);
+         STREAM_CODEC = StreamCodec.composite(TypedEntityData.streamCodec(EntityType.STREAM_CODEC), Occupant::entityData, ByteBufCodecs.VAR_INT, Occupant::ticksInHive, ByteBufCodecs.VAR_INT, Occupant::minTicksInHive, Occupant::new);
       }
    }
 }

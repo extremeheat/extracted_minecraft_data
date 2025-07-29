@@ -47,7 +47,7 @@ public class HoneyBlock extends HalfTransparentBlock {
 
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       var4.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          var1.broadcastEntityEvent(var4, (byte)54);
       }
 
@@ -115,7 +115,7 @@ public class HoneyBlock extends HalfTransparentBlock {
             var2.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
          }
 
-         if (!var1.isClientSide && var1.random.nextInt(5) == 0) {
+         if (!var1.isClientSide() && var1.random.nextInt(5) == 0) {
             var1.broadcastEntityEvent(var2, (byte)53);
          }
       }
@@ -131,7 +131,7 @@ public class HoneyBlock extends HalfTransparentBlock {
    }
 
    private static void showParticles(Entity var0, int var1) {
-      if (var0.level().isClientSide) {
+      if (var0.level().isClientSide()) {
          BlockState var2 = Blocks.HONEY_BLOCK.defaultBlockState();
 
          for(int var3 = 0; var3 < var1; ++var3) {

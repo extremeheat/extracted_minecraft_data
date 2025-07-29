@@ -61,7 +61,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                      var14.getPickupSound().ifPresent((var1x) -> var2.playSound(var1x, 1.0F, 1.0F));
                      var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var6);
                      ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var16);
-                     if (!var1.isClientSide) {
+                     if (!var1.isClientSide()) {
                         CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var16);
                      }
 
@@ -152,7 +152,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                }
             }
 
-            if (!var2.isClientSide && var8 && !var14.liquid()) {
+            if (!var2.isClientSide() && var8 && !var14.liquid()) {
                var2.destroyBlock(var3, true);
             }
 

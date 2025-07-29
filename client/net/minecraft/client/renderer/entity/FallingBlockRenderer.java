@@ -1,27 +1,19 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.List;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FallingBlockRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, FallingBlockRenderState> {
-   private final BlockRenderDispatcher dispatcher;
-
    public FallingBlockRenderer(EntityRendererProvider.Context var1) {
       super(var1);
       this.shadowRadius = 0.5F;
-      this.dispatcher = var1.getBlockRenderDispatcher();
    }
 
    public boolean shouldRender(FallingBlockEntity var1, Frustum var2, double var3, double var5, double var7) {
@@ -32,15 +24,14 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
       }
    }
 
-   public void render(FallingBlockRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
-      BlockState var5 = var1.blockState;
-      if (var5.getRenderShape() == RenderShape.MODEL) {
+   public void submit(FallingBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      BlockState var4 = var1.blockState;
+      if (var4.getRenderShape() == RenderShape.MODEL) {
          var2.pushPose();
          var2.translate(-0.5, 0.0, -0.5);
-         List var6 = this.dispatcher.getBlockModel(var5).collectParts(RandomSource.create(var5.getSeed(var1.startBlockPos)));
-         this.dispatcher.getModelRenderer().tesselateBlock(var1, var6, var5, var1.blockPos, var2, var3.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var5)), false, OverlayTexture.NO_OVERLAY);
+         var3.submitFallingBlock(var2, var1);
          var2.popPose();
-         super.render(var1, var2, var3, var4);
+         super.submit(var1, var2, var3);
       }
    }
 

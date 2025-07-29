@@ -58,14 +58,16 @@ public class FeatureCountTracker {
          Registry var4 = var0.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
          String var5 = (var3 ? "running" : "dead") + " " + var2;
          Integer var6 = var1.chunksWithFeatures().getValue();
-         LOGGER.debug(var5 + " total_chunks: " + var6);
+         LOGGER.debug("{} total_chunks: {}", var5, var6);
          var1.featureData().forEach((var3x, var4x) -> {
             Logger var10000 = LOGGER;
-            String var10002 = String.format(Locale.ROOT, "%10d ", var4x);
-            String var10003 = String.format(Locale.ROOT, "%10f ", (double)var4x / (double)var6);
-            Optional var10004 = var3x.topFeature();
+            Object[] var10002 = new Object[]{var5, String.format(Locale.ROOT, "%10d", var4x), String.format(Locale.ROOT, "%10f", (double)var4x / (double)var6), null, null, null};
+            Optional var10005 = var3x.topFeature();
             Objects.requireNonNull(var4);
-            var10000.debug(var5 + " " + var10002 + var10003 + String.valueOf(var10004.flatMap(var4::getResourceKey).map(ResourceKey::location)) + " " + String.valueOf(var3x.feature().feature()) + " " + String.valueOf(var3x.feature()));
+            var10002[3] = var10005.flatMap(var4::getResourceKey).map(ResourceKey::location);
+            var10002[4] = var3x.feature().feature();
+            var10002[5] = var3x.feature();
+            var10000.debug("{} {} {} {} {} {}", var10002);
          });
       });
    }

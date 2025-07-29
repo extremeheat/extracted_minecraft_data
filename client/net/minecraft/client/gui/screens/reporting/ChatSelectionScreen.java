@@ -249,7 +249,7 @@ public class ChatSelectionScreen extends Screen {
             return this.canSelect();
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
             return this.canSelect();
          }
       }
@@ -337,7 +337,7 @@ public class ChatSelectionScreen extends Screen {
             return (Component)(this.isSelected() ? Component.translatable("narrator.select", this.narration) : this.narration);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
             ChatSelectionList.this.setSelected((Entry)null);
             return this.toggleReport();
          }

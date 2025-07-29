@@ -112,11 +112,15 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
 
    }
 
+   protected boolean shouldRunAllTasks() {
+      return this.blockingCount > 0;
+   }
+
    public boolean pollTask() {
       Runnable var1 = (Runnable)this.pendingRunnables.peek();
       if (var1 == null) {
          return false;
-      } else if (this.blockingCount == 0 && !this.shouldRun(var1)) {
+      } else if (!this.shouldRunAllTasks() && !this.shouldRun(var1)) {
          return false;
       } else {
          this.doRunTask((Runnable)this.pendingRunnables.remove());
@@ -165,13 +169,11 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
          if (var2 != null) {
             var2.close();
          }
+
       } catch (Exception var7) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var7);
-         if (isNonRecoverable(var7)) {
-            throw var7;
-         }
+         throw var7;
       }
-
    }
 
    public List<MetricSampler> profiledMetrics() {

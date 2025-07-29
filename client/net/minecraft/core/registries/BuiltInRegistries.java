@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.Util;
@@ -142,7 +143,6 @@ import net.minecraft.world.level.storage.loot.providers.number.LootNumberProvide
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import net.minecraft.world.level.storage.loot.providers.score.LootScoreProviderType;
 import net.minecraft.world.level.storage.loot.providers.score.ScoreboardNameProviders;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
 public class BuiltInRegistries {
@@ -300,7 +300,7 @@ public class BuiltInRegistries {
 
          if (var1 instanceof DefaultedRegistry) {
             ResourceLocation var2 = ((DefaultedRegistry)var1).getDefaultKey();
-            Validate.notNull(var1.getValue(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2), new Object[0]);
+            Objects.requireNonNull(var1.getValue(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2));
          }
 
       });

@@ -274,9 +274,9 @@ public class PresetFlatWorldScreen extends Screen {
             var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, var4 + 18 + 5, var3 + 6, -1);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
             this.select();
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var3, var5, var6);
          }
 
          void select() {

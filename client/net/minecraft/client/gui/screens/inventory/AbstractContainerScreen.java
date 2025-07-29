@@ -64,8 +64,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    private int quickCraftingButton;
    private boolean skipNextRelease;
    private int quickCraftingRemainder;
-   private long lastClickTime;
-   private int lastClickButton;
    private boolean doubleclick;
    private ItemStack lastQuickMoved;
 
@@ -316,39 +314,38 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return null;
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
+   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      if (super.mouseClicked(var1, var3, var5, var6)) {
          return true;
       } else {
-         boolean var6 = this.minecraft.options.keyPickItem.matchesMouse(var5) && this.minecraft.player.hasInfiniteMaterials();
-         Slot var7 = this.getHoveredSlot(var1, var3);
-         long var8 = Util.getMillis();
-         this.doubleclick = this.lastClickSlot == var7 && var8 - this.lastClickTime < 250L && this.lastClickButton == var5;
+         boolean var7 = this.minecraft.options.keyPickItem.matchesMouse(var5) && this.minecraft.player.hasInfiniteMaterials();
+         Slot var8 = this.getHoveredSlot(var1, var3);
+         this.doubleclick = this.lastClickSlot == var8 && var6;
          this.skipNextRelease = false;
-         if (var5 != 0 && var5 != 1 && !var6) {
+         if (var5 != 0 && var5 != 1 && !var7) {
             this.checkHotbarMouseClicked(var5);
          } else {
-            int var10 = this.leftPos;
-            int var11 = this.topPos;
-            boolean var12 = this.hasClickedOutside(var1, var3, var10, var11, var5);
-            int var13 = -1;
-            if (var7 != null) {
-               var13 = var7.index;
+            int var9 = this.leftPos;
+            int var10 = this.topPos;
+            boolean var11 = this.hasClickedOutside(var1, var3, var9, var10, var5);
+            int var12 = -1;
+            if (var8 != null) {
+               var12 = var8.index;
             }
 
-            if (var12) {
-               var13 = -999;
+            if (var11) {
+               var12 = -999;
             }
 
-            if ((Boolean)this.minecraft.options.touchscreen().get() && var12 && this.menu.getCarried().isEmpty()) {
+            if ((Boolean)this.minecraft.options.touchscreen().get() && var11 && this.menu.getCarried().isEmpty()) {
                this.onClose();
                return true;
             }
 
-            if (var13 != -1) {
+            if (var12 != -1) {
                if ((Boolean)this.minecraft.options.touchscreen().get()) {
-                  if (var7 != null && var7.hasItem()) {
-                     this.clickedSlot = var7;
+                  if (var8 != null && var8.hasItem()) {
+                     this.clickedSlot = var8;
                      this.draggingItem = ItemStack.EMPTY;
                      this.isSplittingStack = var5 == 1;
                   } else {
@@ -356,19 +353,19 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                   }
                } else if (!this.isQuickCrafting) {
                   if (this.menu.getCarried().isEmpty()) {
-                     if (var6) {
-                        this.slotClicked(var7, var13, var5, ClickType.CLONE);
+                     if (var7) {
+                        this.slotClicked(var8, var12, var5, ClickType.CLONE);
                      } else {
-                        boolean var14 = var13 != -999 && (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 340) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 344));
-                        ClickType var15 = ClickType.PICKUP;
-                        if (var14) {
-                           this.lastQuickMoved = var7 != null && var7.hasItem() ? var7.getItem().copy() : ItemStack.EMPTY;
-                           var15 = ClickType.QUICK_MOVE;
-                        } else if (var13 == -999) {
-                           var15 = ClickType.THROW;
+                        boolean var13 = var12 != -999 && (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 340) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 344));
+                        ClickType var14 = ClickType.PICKUP;
+                        if (var13) {
+                           this.lastQuickMoved = var8 != null && var8.hasItem() ? var8.getItem().copy() : ItemStack.EMPTY;
+                           var14 = ClickType.QUICK_MOVE;
+                        } else if (var12 == -999) {
+                           var14 = ClickType.THROW;
                         }
 
-                        this.slotClicked(var7, var13, var5, var15);
+                        this.slotClicked(var8, var12, var5, var14);
                      }
 
                      this.skipNextRelease = true;
@@ -380,7 +377,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                         this.quickCraftingType = 0;
                      } else if (var5 == 1) {
                         this.quickCraftingType = 1;
-                     } else if (var6) {
+                     } else if (var7) {
                         this.quickCraftingType = 2;
                      }
                   }
@@ -388,9 +385,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             }
          }
 
-         this.lastClickSlot = var7;
-         this.lastClickTime = var8;
-         this.lastClickButton = var5;
+         this.lastClickSlot = var8;
          return true;
       }
    }
@@ -476,7 +471,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          }
 
          this.doubleclick = false;
-         this.lastClickTime = 0L;
       } else {
          if (this.isQuickCrafting && this.quickCraftingButton != var5) {
             this.isQuickCrafting = false;
@@ -532,10 +526,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                this.slotClicked(var6, var10, var5, var11 ? ClickType.QUICK_MOVE : ClickType.PICKUP);
             }
          }
-      }
-
-      if (this.menu.getCarried().isEmpty()) {
-         this.lastClickTime = 0L;
       }
 
       this.isQuickCrafting = false;
