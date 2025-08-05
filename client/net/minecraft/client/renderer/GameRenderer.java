@@ -735,7 +735,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       var24.endBatch();
       var4.pop();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
-      if (this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
+      if (this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR) && this.minecraft.options.getCameraType().isFirstPerson() && !this.minecraft.options.hideGui) {
          this.minecraft.getDebugOverlay().render3dCrosshair(var6);
       }
 

@@ -21,8 +21,8 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    public HorseRenderer(EntityRendererProvider.Context var1) {
       super(var1, new HorseModel(var1.bakeLayer(ModelLayers.HORSE)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY)));
       this.addLayer(new HorseMarkingLayer(this));
-      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_BODY, (var0) -> var0.bodyArmorItem, new HorseModel(var1.bakeLayer(ModelLayers.HORSE_ARMOR)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY_ARMOR))));
-      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_SADDLE, (var0) -> var0.saddle, new EquineSaddleModel(var1.bakeLayer(ModelLayers.HORSE_SADDLE)), new EquineSaddleModel(var1.bakeLayer(ModelLayers.HORSE_BABY_SADDLE))));
+      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_BODY, (var0) -> var0.bodyArmorItem, new HorseModel(var1.bakeLayer(ModelLayers.HORSE_ARMOR)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY_ARMOR)), 2));
+      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_SADDLE, (var0) -> var0.saddle, new EquineSaddleModel(var1.bakeLayer(ModelLayers.HORSE_SADDLE)), new EquineSaddleModel(var1.bakeLayer(ModelLayers.HORSE_BABY_SADDLE)), 2));
    }
 
    public ResourceLocation getTextureLocation(HorseRenderState var1) {

@@ -103,6 +103,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> ARMADILLO_SHED;
    public static final ResourceKey<LootTable> TURTLE_GROW;
    public static final ResourceKey<LootTable> HARVEST_CAVE_VINE;
+   public static final ResourceKey<LootTable> HARVEST_SWEET_BERRY_BUSH;
    public static final ResourceKey<LootTable> HARVEST_BEEHIVE;
    public static final ResourceKey<LootTable> CARVE_PUMPKIN;
    public static final ResourceKey<LootTable> PIGLIN_BARTERING;
@@ -248,6 +249,7 @@ public class BuiltInLootTables {
       ARMADILLO_SHED = register("gameplay/armadillo_shed");
       TURTLE_GROW = register("gameplay/turtle_grow");
       HARVEST_CAVE_VINE = register("harvest/cave_vine");
+      HARVEST_SWEET_BERRY_BUSH = register("harvest/sweet_berry_bush");
       HARVEST_BEEHIVE = register("harvest/beehive");
       CARVE_PUMPKIN = register("carve/pumpkin");
       PIGLIN_BARTERING = register("gameplay/piglin_bartering");

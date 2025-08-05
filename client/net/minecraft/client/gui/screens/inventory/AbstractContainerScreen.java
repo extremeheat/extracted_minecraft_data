@@ -165,7 +165,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
+      super.renderBackground(var1, var2, var3, var4);
       this.renderBg(var1, var4, var2, var3);
    }
 
@@ -630,6 +630,10 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    public boolean isPauseScreen() {
       return false;
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    public final void tick() {

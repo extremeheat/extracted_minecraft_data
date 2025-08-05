@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -21,8 +22,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface BlockGetter extends LevelHeightAccessor {
-   int MAX_BLOCK_ITERATIONS_ALONG_TRAVEL = 16;
-
    @Nullable
    BlockEntity getBlockEntity(BlockPos var1);
 
@@ -163,9 +162,9 @@ public interface BlockGetter extends LevelHeightAccessor {
 
    static boolean forEachBlockIntersectedBetween(Vec3 var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
       Vec3 var4 = var1.subtract(var0);
-      if (var4.lengthSqr() < (double)Mth.square(0.99999F)) {
-         for(BlockPos var12 : BlockPos.betweenClosed(var2)) {
-            if (!var3.visit(var12, 0)) {
+      if (var4.lengthSqr() < (double)Mth.square(1.0E-5F)) {
+         for(BlockPos var11 : BlockPos.betweenClosed(var2)) {
+            if (!var3.visit(var11, 0)) {
                return false;
             }
          }
@@ -173,14 +172,21 @@ public interface BlockGetter extends LevelHeightAccessor {
          return true;
       } else {
          LongOpenHashSet var5 = new LongOpenHashSet();
-         Vec3 var6 = var2.getMinPosition();
-         Vec3 var7 = var6.subtract(var4);
-         int var8 = addCollisionsAlongTravel(var5, var7, var6, var2, var3);
-         if (var8 < 0) {
+
+         for(BlockPos var7 : BlockPos.betweenCornersInDirection(var2.move(var4.scale(-1.0)), var4)) {
+            if (!var3.visit(var7, 0)) {
+               return false;
+            }
+
+            var5.add(var7.asLong());
+         }
+
+         int var10 = addCollisionsAlongTravel(var5, var4, var2, var3);
+         if (var10 < 0) {
             return false;
          } else {
-            for(BlockPos var10 : BlockPos.betweenClosed(var2)) {
-               if (!var5.contains(var10.asLong()) && !var3.visit(var10, var8 + 1)) {
+            for(BlockPos var8 : BlockPos.betweenCornersInDirection(var2, var4)) {
+               if (var5.add(var8.asLong()) && !var3.visit(var8, var10 + 1)) {
                   return false;
                }
             }
@@ -190,67 +196,80 @@ public interface BlockGetter extends LevelHeightAccessor {
       }
    }
 
-   private static int addCollisionsAlongTravel(LongSet var0, Vec3 var1, Vec3 var2, AABB var3, BlockStepVisitor var4) {
-      Vec3 var5 = var2.subtract(var1);
-      int var6 = Mth.floor(var1.x);
-      int var7 = Mth.floor(var1.y);
-      int var8 = Mth.floor(var1.z);
-      int var9 = Mth.sign(var5.x);
-      int var10 = Mth.sign(var5.y);
-      int var11 = Mth.sign(var5.z);
-      double var12 = var9 == 0 ? 1.7976931348623157E308 : (double)var9 / var5.x;
-      double var14 = var10 == 0 ? 1.7976931348623157E308 : (double)var10 / var5.y;
-      double var16 = var11 == 0 ? 1.7976931348623157E308 : (double)var11 / var5.z;
-      double var18 = var12 * (var9 > 0 ? 1.0 - Mth.frac(var1.x) : Mth.frac(var1.x));
-      double var20 = var14 * (var10 > 0 ? 1.0 - Mth.frac(var1.y) : Mth.frac(var1.y));
-      double var22 = var16 * (var11 > 0 ? 1.0 - Mth.frac(var1.z) : Mth.frac(var1.z));
-      int var24 = 0;
-      BlockPos.MutableBlockPos var25 = new BlockPos.MutableBlockPos();
+   private static int addCollisionsAlongTravel(LongSet var0, Vec3 var1, AABB var2, BlockStepVisitor var3) {
+      double var4 = var2.getXsize();
+      double var6 = var2.getYsize();
+      double var8 = var2.getZsize();
+      Vec3i var10 = getFurthestCorner(var1);
+      Vec3 var11 = var2.getCenter();
+      Vec3 var12 = new Vec3(var11.x() + var4 * 0.5 * (double)var10.getX(), var11.y() + var6 * 0.5 * (double)var10.getY(), var11.z() + var8 * 0.5 * (double)var10.getZ());
+      Vec3 var13 = var12.subtract(var1);
+      int var14 = Mth.floor(var13.x);
+      int var15 = Mth.floor(var13.y);
+      int var16 = Mth.floor(var13.z);
+      int var17 = Mth.sign(var1.x);
+      int var18 = Mth.sign(var1.y);
+      int var19 = Mth.sign(var1.z);
+      double var20 = var17 == 0 ? 1.7976931348623157E308 : (double)var17 / var1.x;
+      double var22 = var18 == 0 ? 1.7976931348623157E308 : (double)var18 / var1.y;
+      double var24 = var19 == 0 ? 1.7976931348623157E308 : (double)var19 / var1.z;
+      double var26 = var20 * (var17 > 0 ? 1.0 - Mth.frac(var13.x) : Mth.frac(var13.x));
+      double var28 = var22 * (var18 > 0 ? 1.0 - Mth.frac(var13.y) : Mth.frac(var13.y));
+      double var30 = var24 * (var19 > 0 ? 1.0 - Mth.frac(var13.z) : Mth.frac(var13.z));
+      int var32 = 0;
 
-      while(var18 <= 1.0 || var20 <= 1.0 || var22 <= 1.0) {
-         if (var18 < var20) {
-            if (var18 < var22) {
-               var6 += var9;
-               var18 += var12;
+      while(var26 <= 1.0 || var28 <= 1.0 || var30 <= 1.0) {
+         if (var26 < var28) {
+            if (var26 < var30) {
+               var14 += var17;
+               var26 += var20;
             } else {
-               var8 += var11;
-               var22 += var16;
+               var16 += var19;
+               var30 += var24;
             }
-         } else if (var20 < var22) {
-            var7 += var10;
-            var20 += var14;
+         } else if (var28 < var30) {
+            var15 += var18;
+            var28 += var22;
          } else {
-            var8 += var11;
-            var22 += var16;
+            var16 += var19;
+            var30 += var24;
          }
 
-         if (var24++ > 16) {
-            break;
-         }
+         Optional var33 = AABB.clip((double)var14, (double)var15, (double)var16, (double)(var14 + 1), (double)(var15 + 1), (double)(var16 + 1), var13, var12);
+         if (!var33.isEmpty()) {
+            ++var32;
+            Vec3 var34 = (Vec3)var33.get();
+            double var35 = Mth.clamp(var34.x, (double)var14 + 9.999999747378752E-6, (double)var14 + 1.0 - 9.999999747378752E-6);
+            double var37 = Mth.clamp(var34.y, (double)var15 + 9.999999747378752E-6, (double)var15 + 1.0 - 9.999999747378752E-6);
+            double var39 = Mth.clamp(var34.z, (double)var16 + 9.999999747378752E-6, (double)var16 + 1.0 - 9.999999747378752E-6);
+            int var41 = Mth.floor(var35 - var4 * (double)var10.getX());
+            int var42 = Mth.floor(var37 - var6 * (double)var10.getY());
+            int var43 = Mth.floor(var39 - var8 * (double)var10.getZ());
+            int var44 = var32;
 
-         Optional var26 = AABB.clip((double)var6, (double)var7, (double)var8, (double)(var6 + 1), (double)(var7 + 1), (double)(var8 + 1), var1, var2);
-         if (!var26.isEmpty()) {
-            Vec3 var27 = (Vec3)var26.get();
-            double var28 = Mth.clamp(var27.x, (double)var6 + 9.999999747378752E-6, (double)var6 + 1.0 - 9.999999747378752E-6);
-            double var30 = Mth.clamp(var27.y, (double)var7 + 9.999999747378752E-6, (double)var7 + 1.0 - 9.999999747378752E-6);
-            double var32 = Mth.clamp(var27.z, (double)var8 + 9.999999747378752E-6, (double)var8 + 1.0 - 9.999999747378752E-6);
-            int var34 = Mth.floor(var28 + var3.getXsize());
-            int var35 = Mth.floor(var30 + var3.getYsize());
-            int var36 = Mth.floor(var32 + var3.getZsize());
-
-            for(int var37 = var6; var37 <= var34; ++var37) {
-               for(int var38 = var7; var38 <= var35; ++var38) {
-                  for(int var39 = var8; var39 <= var36; ++var39) {
-                     if (var0.add(BlockPos.asLong(var37, var38, var39)) && !var4.visit(var25.set(var37, var38, var39), var24)) {
-                        return -1;
-                     }
-                  }
+            for(BlockPos var46 : BlockPos.betweenCornersInDirection(var14, var15, var16, var41, var42, var43, var1)) {
+               if (var0.add(var46.asLong()) && !var3.visit(var46, var44)) {
+                  return -1;
                }
             }
          }
       }
 
-      return var24;
+      return var32;
+   }
+
+   private static Vec3i getFurthestCorner(Vec3 var0) {
+      double var1 = Math.abs(Vec3.X_AXIS.dot(var0));
+      double var3 = Math.abs(Vec3.Y_AXIS.dot(var0));
+      double var5 = Math.abs(Vec3.Z_AXIS.dot(var0));
+      int var7 = var0.x >= 0.0 ? 1 : -1;
+      int var8 = var0.y >= 0.0 ? 1 : -1;
+      int var9 = var0.z >= 0.0 ? 1 : -1;
+      if (var1 <= var3 && var1 <= var5) {
+         return new Vec3i(-var7, -var9, var8);
+      } else {
+         return var3 <= var5 ? new Vec3i(var9, -var8, -var7) : new Vec3i(-var8, var7, -var9);
+      }
    }
 
    @FunctionalInterface

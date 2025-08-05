@@ -39,7 +39,6 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
@@ -52,6 +51,7 @@ import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -94,7 +94,7 @@ public class GuiGraphics {
       this.pose = var2;
       AtlasManager var4 = var1.getAtlasManager();
       this.materials = var4;
-      this.guiSprites = var4.getAtlas(Sheets.GUI_SHEET);
+      this.guiSprites = var4.getAtlasOrThrow(AtlasIds.GUI);
       this.guiRenderState = var3;
    }
 

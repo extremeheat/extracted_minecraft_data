@@ -512,7 +512,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.soundManager);
       this.splashManager = new SplashManager(this.user);
       this.resourceManager.registerReloadListener(this.splashManager);
-      this.fontManager = new FontManager(this.textureManager);
+      this.atlasManager = new AtlasManager(this.textureManager, (Integer)this.options.mipmapLevels().get());
+      this.resourceManager.registerReloadListener(this.atlasManager);
+      this.fontManager = new FontManager(this.textureManager, this.atlasManager);
       this.font = this.fontManager.createFont();
       this.fontFilterFishy = this.fontManager.createFontFilterFishy();
       this.resourceManager.registerReloadListener(this.fontManager);
@@ -524,8 +526,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.setupDefaultState();
       this.window.setErrorSection("Post startup");
       this.blockColors = BlockColors.createDefault();
-      this.atlasManager = new AtlasManager(this.textureManager, (Integer)this.options.mipmapLevels().get());
-      this.resourceManager.registerReloadListener(this.atlasManager);
       this.modelManager = new ModelManager(this.blockColors, this.atlasManager);
       this.resourceManager.registerReloadListener(this.modelManager);
       EquipmentAssetManager var8 = new EquipmentAssetManager();
@@ -1939,7 +1939,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public void doWorldLoad(LevelStorageSource.LevelStorageAccess var1, PackRepository var2, WorldStem var3, boolean var4) {
       this.disconnectWithProgressScreen();
       Instant var5 = Instant.now();
-      LevelLoadTracker var6 = new LevelLoadTracker();
+      LevelLoadTracker var6 = new LevelLoadTracker(var4 ? 500L : 0L);
       LevelLoadingScreen var7 = new LevelLoadingScreen(var6, LevelLoadingScreen.Reason.OTHER);
       this.setScreen(var7);
       int var8 = Math.max(5, 3) + ChunkLevel.RADIUS_AROUND_FULL_CHUNK + 1;

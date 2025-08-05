@@ -16,17 +16,13 @@ import net.minecraft.world.phys.Vec3;
 
 public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAddEntityPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundAddEntityPacket>codec(ClientboundAddEntityPacket::write, ClientboundAddEntityPacket::new);
-   private static final double MAGICAL_QUANTIZATION = 8000.0;
-   private static final double LIMIT = 3.9;
    private final int id;
    private final UUID uuid;
    private final EntityType<?> type;
    private final double x;
    private final double y;
    private final double z;
-   private final int xa;
-   private final int ya;
-   private final int za;
+   private final Vec3 movement;
    private final byte xRot;
    private final byte yRot;
    private final byte yHeadRot;
@@ -51,14 +47,12 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       this.x = var3;
       this.y = var5;
       this.z = var7;
+      this.movement = var13;
       this.xRot = Mth.packDegrees(var9);
       this.yRot = Mth.packDegrees(var10);
       this.yHeadRot = Mth.packDegrees((float)var14);
       this.type = var11;
       this.data = var12;
-      this.xa = (int)(Mth.clamp(var13.x, -3.9, 3.9) * 8000.0);
-      this.ya = (int)(Mth.clamp(var13.y, -3.9, 3.9) * 8000.0);
-      this.za = (int)(Mth.clamp(var13.z, -3.9, 3.9) * 8000.0);
    }
 
    private ClientboundAddEntityPacket(RegistryFriendlyByteBuf var1) {
@@ -69,13 +63,11 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       this.x = var1.readDouble();
       this.y = var1.readDouble();
       this.z = var1.readDouble();
+      this.movement = var1.readLpVec3();
       this.xRot = var1.readByte();
       this.yRot = var1.readByte();
       this.yHeadRot = var1.readByte();
       this.data = var1.readVarInt();
-      this.xa = var1.readShort();
-      this.ya = var1.readShort();
-      this.za = var1.readShort();
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -85,13 +77,11 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);
+      var1.writeLpVec3(this.movement);
       var1.writeByte(this.xRot);
       var1.writeByte(this.yRot);
       var1.writeByte(this.yHeadRot);
       var1.writeVarInt(this.data);
-      var1.writeShort(this.xa);
-      var1.writeShort(this.ya);
-      var1.writeShort(this.za);
    }
 
    public PacketType<ClientboundAddEntityPacket> type() {
@@ -126,16 +116,8 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       return this.z;
    }
 
-   public double getXa() {
-      return (double)this.xa / 8000.0;
-   }
-
-   public double getYa() {
-      return (double)this.ya / 8000.0;
-   }
-
-   public double getZa() {
-      return (double)this.za / 8000.0;
+   public Vec3 getMovement() {
+      return this.movement;
    }
 
    public float getXRot() {

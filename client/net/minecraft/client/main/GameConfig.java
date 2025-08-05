@@ -1,6 +1,5 @@
 package net.minecraft.client.main;
 
-import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.blaze3d.platform.DisplayData;
 import java.io.File;
 import java.net.Proxy;
@@ -51,16 +50,12 @@ public class GameConfig {
 
    public static class UserData {
       public final User user;
-      public final PropertyMap userProperties;
-      public final PropertyMap profileProperties;
       public final Proxy proxy;
 
-      public UserData(User var1, PropertyMap var2, PropertyMap var3, Proxy var4) {
+      public UserData(User var1, Proxy var2) {
          super();
          this.user = var1;
-         this.userProperties = var2;
-         this.profileProperties = var3;
-         this.proxy = var4;
+         this.proxy = var2;
       }
    }
 

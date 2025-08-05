@@ -116,6 +116,12 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
 
    }
 
+   public void setRemoved() {
+      super.setRemoved();
+      this.level.gameEvent(GameEvent.JUKEBOX_STOP_PLAY, this.getBlockPos(), GameEvent.Context.of(this.getBlockState()));
+      this.level.levelEvent(1011, this.getBlockPos(), 0);
+   }
+
    public int getMaxStackSize() {
       return 1;
    }

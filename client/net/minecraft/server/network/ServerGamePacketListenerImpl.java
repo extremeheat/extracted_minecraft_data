@@ -282,6 +282,18 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.ackBlockChangesUpTo = -1;
       }
 
+      if (this.server.isPaused() || !this.tickPlayer()) {
+         this.keepConnectionAlive();
+         this.chatSpamThrottler.tick();
+         this.dropSpamThrottler.tick();
+         if (this.player.getLastActionTime() > 0L && this.server.getPlayerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.getPlayerIdleTimeout()) && !this.player.wonGame) {
+            this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
+         }
+
+      }
+   }
+
+   private boolean tickPlayer() {
       this.resetPosition();
       this.player.xo = this.player.getX();
       this.player.yo = this.player.getY();
@@ -294,7 +306,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          if (++this.aboveGroundTickCount > this.getMaximumFlyingTicks(this.player)) {
             LOGGER.warn("{} was kicked for floating too long!", this.player.getName().getString());
             this.disconnect(Component.translatable("multiplayer.disconnect.flying"));
-            return;
+            return true;
          }
       } else {
          this.clientIsFloating = false;
@@ -313,7 +325,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             if (++this.aboveGroundVehicleTickCount > this.getMaximumFlyingTicks(this.lastVehicle)) {
                LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getName().getString());
                this.disconnect(Component.translatable("multiplayer.disconnect.flying"));
-               return;
+               return true;
             }
          } else {
             this.clientVehicleIsFloating = false;
@@ -325,13 +337,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.aboveGroundVehicleTickCount = 0;
       }
 
-      this.keepConnectionAlive();
-      this.chatSpamThrottler.tick();
-      this.dropSpamThrottler.tick();
-      if (this.player.getLastActionTime() > 0L && this.server.getPlayerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.getPlayerIdleTimeout()) && !this.player.wonGame) {
-         this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
-      }
-
+      return false;
    }
 
    private int getMaximumFlyingTicks(Entity var1) {

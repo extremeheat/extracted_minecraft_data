@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 public class GuiRenderState {
    private static final int DEBUG_RECTANGLE_COLOR = 2000962815;
@@ -44,14 +43,6 @@ public class GuiRenderState {
       }
 
       this.current = this.current.up;
-   }
-
-   public void down() {
-      if (this.current.down == null) {
-         this.current.down = new Node(this.current);
-      }
-
-      this.current = this.current.down;
    }
 
    public void submitItem(GuiItemRenderState var1) {
@@ -152,20 +143,18 @@ public class GuiRenderState {
       return this.itemModelIdentities;
    }
 
-   public void forEachElement(LayeredElementConsumer var1, TraverseRange var2) {
-      MutableInt var3 = new MutableInt(0);
-      this.traverse((Consumer)((var2x) -> {
-         if (var2x.elementStates != null || var2x.glyphStates != null) {
-            int var3x = var3.incrementAndGet();
-            if (var2x.elementStates != null) {
-               for(GuiElementRenderState var5 : var2x.elementStates) {
-                  var1.accept(var5, var3x);
+   public void forEachElement(Consumer<GuiElementRenderState> var1, TraverseRange var2) {
+      this.traverse((Consumer)((var1x) -> {
+         if (var1x.elementStates != null || var1x.glyphStates != null) {
+            if (var1x.elementStates != null) {
+               for(GuiElementRenderState var3 : var1x.elementStates) {
+                  var1.accept(var3);
                }
             }
 
-            if (var2x.glyphStates != null) {
-               for(GuiElementRenderState var7 : var2x.glyphStates) {
-                  var1.accept(var7, var3x);
+            if (var1x.glyphStates != null) {
+               for(GuiElementRenderState var5 : var1x.glyphStates) {
+                  var1.accept(var5);
                }
             }
 
@@ -243,10 +232,6 @@ public class GuiRenderState {
    }
 
    private void traverse(Node var1, Consumer<Node> var2) {
-      if (var1.down != null) {
-         this.traverse(var1.down, var2);
-      }
-
       var2.accept(var1);
       if (var1.up != null) {
          this.traverse(var1.up, var2);
@@ -266,8 +251,6 @@ public class GuiRenderState {
       public final Node parent;
       @Nullable
       public Node up;
-      @Nullable
-      public Node down;
       @Nullable
       public List<GuiElementRenderState> elementStates;
       @Nullable
@@ -337,9 +320,5 @@ public class GuiRenderState {
       private static TraverseRange[] $values() {
          return new TraverseRange[]{ALL, BEFORE_BLUR, AFTER_BLUR};
       }
-   }
-
-   public interface LayeredElementConsumer {
-      void accept(GuiElementRenderState var1, int var2);
    }
 }

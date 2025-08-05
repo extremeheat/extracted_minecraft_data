@@ -24,26 +24,24 @@ public class CompressionDecoder extends ByteToMessageDecoder {
    }
 
    protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
-      if (var2.readableBytes() != 0) {
-         int var4 = VarInt.read(var2);
-         if (var4 == 0) {
-            var3.add(var2.readBytes(var2.readableBytes()));
-         } else {
-            if (this.validateDecompressed) {
-               if (var4 < this.threshold) {
-                  throw new DecoderException("Badly compressed packet - size of " + var4 + " is below server threshold of " + this.threshold);
-               }
-
-               if (var4 > 8388608) {
-                  throw new DecoderException("Badly compressed packet - size of " + var4 + " is larger than protocol maximum of 8388608");
-               }
+      int var4 = VarInt.read(var2);
+      if (var4 == 0) {
+         var3.add(var2.readBytes(var2.readableBytes()));
+      } else {
+         if (this.validateDecompressed) {
+            if (var4 < this.threshold) {
+               throw new DecoderException("Badly compressed packet - size of " + var4 + " is below server threshold of " + this.threshold);
             }
 
-            this.setupInflaterInput(var2);
-            ByteBuf var5 = this.inflate(var1, var4);
-            this.inflater.reset();
-            var3.add(var5);
+            if (var4 > 8388608) {
+               throw new DecoderException("Badly compressed packet - size of " + var4 + " is larger than protocol maximum of 8388608");
+            }
          }
+
+         this.setupInflaterInput(var2);
+         ByteBuf var5 = this.inflate(var1, var4);
+         this.inflater.reset();
+         var3.add(var5);
       }
    }
 

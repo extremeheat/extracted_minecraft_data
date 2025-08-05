@@ -39,34 +39,34 @@ public class EquipmentLayerRenderer {
    }
 
    public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, int var9) {
-      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, var8, (ResourceLocation)null, var9);
+      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, var8, (ResourceLocation)null, var9, 1);
    }
 
-   public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, @Nullable ResourceLocation var9, int var10) {
-      List var11 = this.equipmentAssets.get(var2).getLayers(var1);
-      if (!var11.isEmpty()) {
-         int var12 = DyedItemColor.getOrDefault(var5, 0);
-         boolean var13 = var5.hasFoil();
-         int var14 = 1;
+   public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, @Nullable ResourceLocation var9, int var10, int var11) {
+      List var12 = this.equipmentAssets.get(var2).getLayers(var1);
+      if (!var12.isEmpty()) {
+         int var13 = DyedItemColor.getOrDefault(var5, 0);
+         boolean var14 = var5.hasFoil();
+         int var15 = var11;
 
-         for(EquipmentClientInfo.Layer var16 : var11) {
-            int var17 = getColorForLayer(var16, var12);
-            if (var17 != 0) {
-               ResourceLocation var18 = var16.usePlayerTexture() && var9 != null ? var9 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var16));
-               var7.submitModel(var3, var4, var6, RenderType.armorCutoutNoCull(var18), var8, OverlayTexture.NO_OVERLAY, var17, (TextureAtlasSprite)null, var10, var14++);
-               if (var13) {
-                  var7.submitModel(var3, var4, var6, RenderType.armorEntityGlint(), var8, OverlayTexture.NO_OVERLAY, var17, (TextureAtlasSprite)null, var10, var14++);
+         for(EquipmentClientInfo.Layer var17 : var12) {
+            int var18 = getColorForLayer(var17, var13);
+            if (var18 != 0) {
+               ResourceLocation var19 = var17.usePlayerTexture() && var9 != null ? var9 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var17));
+               var7.submitModel(var3, var4, var6, RenderType.armorCutoutNoCull(var19), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, var15++);
+               if (var14) {
+                  var7.submitModel(var3, var4, var6, RenderType.armorEntityGlint(), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, var15++);
                }
 
-               var13 = false;
+               var14 = false;
             }
          }
 
-         ArmorTrim var20 = (ArmorTrim)var5.get(DataComponents.TRIM);
-         if (var20 != null) {
-            TextureAtlasSprite var21 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var20, var1, var2));
-            RenderType var22 = Sheets.armorTrimsSheet(((TrimPattern)var20.pattern().value()).decal());
-            var7.submitModel(var3, var4, var6, var22, var8, OverlayTexture.NO_OVERLAY, -1, var21, var10, var14++);
+         ArmorTrim var21 = (ArmorTrim)var5.get(DataComponents.TRIM);
+         if (var21 != null) {
+            TextureAtlasSprite var22 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var21, var1, var2));
+            RenderType var23 = Sheets.armorTrimsSheet(((TrimPattern)var21.pattern().value()).decal());
+            var7.submitModel(var3, var4, var6, var23, var8, OverlayTexture.NO_OVERLAY, -1, var22, var10, var15++);
          }
 
       }

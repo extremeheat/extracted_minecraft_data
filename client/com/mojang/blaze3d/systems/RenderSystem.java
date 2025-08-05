@@ -11,10 +11,6 @@ import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
@@ -36,7 +32,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.TimeSource;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.lwjgl.system.MemoryUtil;
@@ -83,13 +78,10 @@ public class RenderSystem {
    private static GpuBufferSlice projectionMatrixBuffer;
    @Nullable
    private static GpuBufferSlice savedProjectionMatrixBuffer;
-   private static final Vector3f modelOffset;
    private static float shaderLineWidth;
    private static String apiDescription;
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
-   @Nullable
-   private static GpuBuffer QUAD_VERTEX_BUFFER;
    private static final ArrayListDeque<GpuAsyncTask> PENDING_FENCES;
    @Nullable
    public static GpuTextureView outputColorTextureOverride;
@@ -220,19 +212,6 @@ public class RenderSystem {
       DEVICE = new GlDevice(var0, var2, var3, var4, var5);
       apiDescription = getDevice().getImplementationInformation();
       dynamicUniforms = new DynamicUniforms();
-
-      try (ByteBufferBuilder var6 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
-         BufferBuilder var7 = new BufferBuilder(var6, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-         var7.addVertex(0.0F, 0.0F, 0.0F);
-         var7.addVertex(1.0F, 0.0F, 0.0F);
-         var7.addVertex(1.0F, 1.0F, 0.0F);
-         var7.addVertex(0.0F, 1.0F, 0.0F);
-
-         try (MeshData var8 = var7.buildOrThrow()) {
-            QUAD_VERTEX_BUFFER = getDevice().createBuffer(() -> "Quad", 32, var8.vertexBuffer());
-         }
-      }
-
    }
 
    public static void setErrorCallback(GLFWErrorCallbackI var0) {
@@ -343,29 +322,6 @@ public class RenderSystem {
       return projectionType;
    }
 
-   public static GpuBuffer getQuadVertexBuffer() {
-      if (QUAD_VERTEX_BUFFER == null) {
-         throw new IllegalStateException("Can't getQuadVertexBuffer() before renderer was initialized");
-      } else {
-         return QUAD_VERTEX_BUFFER;
-      }
-   }
-
-   public static void setModelOffset(float var0, float var1, float var2) {
-      assertOnRenderThread();
-      modelOffset.set(var0, var1, var2);
-   }
-
-   public static void resetModelOffset() {
-      assertOnRenderThread();
-      modelOffset.set(0.0F, 0.0F, 0.0F);
-   }
-
-   public static Vector3f getModelOffset() {
-      assertOnRenderThread();
-      return modelOffset;
-   }
-
    public static void queueFencedTask(Runnable var0) {
       PENDING_FENCES.addLast(new GpuAsyncTask(var0, getDevice().createCommandEncoder().createFence()));
    }
@@ -438,7 +394,6 @@ public class RenderSystem {
       textureMatrix = new Matrix4f();
       shaderTextures = new GpuTextureView[12];
       shaderFog = null;
-      modelOffset = new Vector3f();
       shaderLineWidth = 1.0F;
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();

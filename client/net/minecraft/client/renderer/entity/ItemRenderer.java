@@ -14,14 +14,13 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 
 public class ItemRenderer {
    public static final ResourceLocation ENCHANTED_GLINT_ARMOR = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
@@ -114,12 +113,16 @@ public class ItemRenderer {
       this.renderStatic((ItemOwner)null, var1, var2, var5, var6, var7, var3, var4, var8);
    }
 
-   public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, Level var7, Vec3 var8, Direction var9, int var10) {
-      this.renderStatic(ItemOwner.custom(var8, var9, var7), var1, var2, var5, var6, var7, var3, var4, var10);
-   }
-
    public void renderStatic(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
       this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
+      this.scratchItemStackRenderState.render(var4, var5, var7, var8);
+   }
+
+   public void renderUpwardsFrom(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
+      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
+      AABB var10 = this.scratchItemStackRenderState.getModelBoundingBox();
+      double var11 = -var10.minY;
+      var4.translate(0.0, var11, 0.0);
       this.scratchItemStackRenderState.render(var4, var5, var7, var8);
    }
 }

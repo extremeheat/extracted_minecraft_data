@@ -50,7 +50,7 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
+   public GlyphInfo.Stitched getGlyph(int var1) {
       return this.glyphs.get(var1);
    }
 
@@ -504,7 +504,7 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record Glyph(LineData contents, int left, int right) implements GlyphInfo {
+   static record Glyph(LineData contents, int left, int right) implements GlyphInfo.Stitched {
       final LineData contents;
       final int left;
       final int right;
@@ -550,7 +550,7 @@ public class UnihexProvider implements GlyphProvider {
                IntBuffer var4 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
                UnihexProvider.unpackBitsToBytes(var4, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
                var4.rewind();
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var4, NativeImage.Format.RGBA, 0, 0, var1, var2, Glyph.this.width(), 16);
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, MemoryUtil.memByteBuffer(var4), NativeImage.Format.RGBA, 0, 0, var1, var2, Glyph.this.width(), 16);
                MemoryUtil.memFree(var4);
             }
 

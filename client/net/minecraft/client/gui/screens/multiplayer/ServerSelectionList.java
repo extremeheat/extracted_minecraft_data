@@ -180,7 +180,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final JoinMultiplayerScreen screen;
       protected final Minecraft minecraft;
       protected final LanServer serverData;
-      private long lastClickTime;
 
       protected NetworkServerEntry(JoinMultiplayerScreen var1, LanServer var2) {
          super();

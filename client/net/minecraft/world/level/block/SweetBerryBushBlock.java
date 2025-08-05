@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -105,15 +106,16 @@ public class SweetBerryBushBlock extends VegetationBlock implements Bonemealable
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      int var6 = (Integer)var1.getValue(AGE);
-      boolean var7 = var6 == 3;
-      if (var6 > 1) {
-         int var8 = 1 + var2.random.nextInt(2);
-         popResource(var2, var3, new ItemStack(Items.SWEET_BERRIES, var8 + (var7 ? 1 : 0)));
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + var2.random.nextFloat() * 0.4F);
-         BlockState var9 = (BlockState)var1.setValue(AGE, 1);
-         var2.setBlock(var3, var9, 2);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var9));
+      if ((Integer)var1.getValue(AGE) > 1) {
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var6 = (ServerLevel)var2;
+            Block.dropFromBlockInteractLootTable(var6, BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, var1, var2.getBlockEntity(var3), (ItemStack)null, var4, (var1x, var2x) -> Block.popResource(var1x, var3, var2x));
+            var6.playSound((Entity)null, var3, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + var6.random.nextFloat() * 0.4F);
+            BlockState var7 = (BlockState)var1.setValue(AGE, 1);
+            var6.setBlock(var3, var7, 2);
+            var6.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var7));
+         }
+
          return InteractionResult.SUCCESS;
       } else {
          return super.useWithoutItem(var1, var2, var3, var4, var5);

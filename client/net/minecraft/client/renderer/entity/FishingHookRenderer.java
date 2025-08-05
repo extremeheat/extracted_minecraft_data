@@ -47,11 +47,14 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       float var4 = (float)var1.lineOriginOffset.x;
       float var5 = (float)var1.lineOriginOffset.y;
       float var6 = (float)var1.lineOriginOffset.z;
-      var3.submitCustomGeometry(var2, RenderType.lineStrip(), (var3x, var4x) -> {
+      var3.submitCustomGeometry(var2, RenderType.lines(), (var3x, var4x) -> {
          boolean var5x = true;
 
-         for(int var6x = 0; var6x <= 16; ++var6x) {
-            stringVertex(var4, var5, var6, var4x, var3x, fraction(var6x, 16), fraction(var6x + 1, 16));
+         for(int var6x = 0; var6x < 16; ++var6x) {
+            float var7 = fraction(var6x, 16);
+            float var8 = fraction(var6x + 1, 16);
+            stringVertex(var4, var5, var6, var4x, var3x, var7, var8);
+            stringVertex(var4, var5, var6, var4x, var3x, var8, var7);
          }
 
       });

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
@@ -54,7 +55,7 @@ public class InterpolationHandler {
       if (this.interpolationSteps == 0) {
          this.entity.snapTo(var1, var2, var3);
          this.cancel();
-      } else {
+      } else if (!this.hasActiveInterpolation() || !Objects.equals(this.yRot(), var2) || !Objects.equals(this.xRot(), var3) || !Objects.equals(this.position(), var1)) {
          this.interpolationData.steps = this.interpolationSteps;
          this.interpolationData.position = var1;
          this.interpolationData.yRot = var2;

@@ -30,6 +30,10 @@ public class ToggleKeyMapping extends KeyMapping {
 
    }
 
+   protected void release() {
+      this.reset();
+   }
+
    protected void reset() {
       super.setDown(false);
    }

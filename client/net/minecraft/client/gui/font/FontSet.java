@@ -20,32 +20,29 @@ import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.font.glyphs.BakeableGlyph;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.SpecialGlyphs;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class FontSet implements AutoCloseable {
    private static final float LARGE_FORWARD_ADVANCE = 32.0F;
    final GlyphStitcher stitcher;
-   private final ResourceLocation name;
    private List<GlyphProvider.Conditional> allProviders = List.of();
    private List<GlyphProvider> activeProviders = List.of();
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final CodepointMap<SelectedGlyphs> glyphCache = new CodepointMap<SelectedGlyphs>((var0) -> new SelectedGlyphs[var0], (var0) -> new SelectedGlyphs[var0][]);
    private final IntFunction<SelectedGlyphs> glyphGetter = this::computeGlyphInfo;
-   final BakeableGlyphImpl missingGlyph;
+   final StitchedBakeableGlyph missingGlyph;
    private final SelectedGlyphs missingSelectedGlyphs;
-   private final BakeableGlyphImpl whiteGlyph;
+   private final StitchedBakeableGlyph whiteGlyph;
    private final GlyphSource anyGlyphs = new Source(false);
    private final GlyphSource nonFishyGlyphs = new Source(true);
 
-   public FontSet(GlyphStitcher var1, ResourceLocation var2) {
+   public FontSet(GlyphStitcher var1) {
       super();
       this.stitcher = var1;
-      this.name = var2;
-      this.missingGlyph = new BakeableGlyphImpl(SpecialGlyphs.MISSING);
+      this.missingGlyph = new StitchedBakeableGlyph(SpecialGlyphs.MISSING);
       this.missingSelectedGlyphs = new SelectedGlyphs(this.missingGlyph, this.missingGlyph);
-      this.whiteGlyph = new BakeableGlyphImpl(SpecialGlyphs.WHITE);
+      this.whiteGlyph = new StitchedBakeableGlyph(SpecialGlyphs.WHITE);
    }
 
    public void reload(List<GlyphProvider.Conditional> var1, Set<FontOption> var2) {
@@ -81,7 +78,7 @@ public class FontSet implements AutoCloseable {
       HashSet var7 = Sets.newHashSet();
       var3.forEach((var3x) -> {
          for(GlyphProvider var5 : var4) {
-            GlyphInfo var6 = var5.getGlyph(var3x);
+            GlyphInfo.Stitched var6 = var5.getGlyph(var3x);
             if (var6 != null) {
                var7.add(var5);
                if (var6 != SpecialGlyphs.MISSING) {
@@ -112,13 +109,13 @@ public class FontSet implements AutoCloseable {
    }
 
    private SelectedGlyphs computeGlyphInfo(int var1) {
-      BakeableGlyphImpl var2 = null;
+      StitchedBakeableGlyph var2 = null;
 
       for(GlyphProvider var4 : this.activeProviders) {
-         GlyphInfo var5 = var4.getGlyph(var1);
+         GlyphInfo.Stitched var5 = var4.getGlyph(var1);
          if (var5 != null) {
             if (var2 == null) {
-               var2 = new BakeableGlyphImpl(var5);
+               var2 = new StitchedBakeableGlyph(var5);
             }
 
             if (!hasFishyAdvance(var5)) {
@@ -126,7 +123,7 @@ public class FontSet implements AutoCloseable {
                   return new SelectedGlyphs(var2, var2);
                }
 
-               return new SelectedGlyphs(var2, new BakeableGlyphImpl(var5));
+               return new SelectedGlyphs(var2, new StitchedBakeableGlyph(var5));
             }
          }
       }
@@ -147,10 +144,6 @@ public class FontSet implements AutoCloseable {
       return var3 != null && !var3.isEmpty() ? this.getGlyph(var3.getInt(var1.nextInt(var3.size()))).nonFishy() : this.missingGlyph;
    }
 
-   public ResourceLocation name() {
-      return this.name;
-   }
-
    public BakeableGlyph whiteGlyph() {
       return this.whiteGlyph;
    }
@@ -159,12 +152,12 @@ public class FontSet implements AutoCloseable {
       return var1 ? this.nonFishyGlyphs : this.anyGlyphs;
    }
 
-   class BakeableGlyphImpl implements BakeableGlyph {
-      final GlyphInfo info;
+   class StitchedBakeableGlyph implements BakeableGlyph {
+      final GlyphInfo.Stitched info;
       @Nullable
       private BakedGlyph baked;
 
-      BakeableGlyphImpl(final GlyphInfo var2) {
+      StitchedBakeableGlyph(final GlyphInfo.Stitched var2) {
          super();
          this.info = var2;
       }
@@ -191,14 +184,14 @@ public class FontSet implements AutoCloseable {
       }
    }
 
-   static record SelectedGlyphs(BakeableGlyphImpl any, BakeableGlyphImpl nonFishy) {
-      SelectedGlyphs(BakeableGlyphImpl var1, BakeableGlyphImpl var2) {
+   static record SelectedGlyphs(StitchedBakeableGlyph any, StitchedBakeableGlyph nonFishy) {
+      SelectedGlyphs(StitchedBakeableGlyph var1, StitchedBakeableGlyph var2) {
          super();
          this.any = var1;
          this.nonFishy = var2;
       }
 
-      BakeableGlyphImpl select(boolean var1) {
+      StitchedBakeableGlyph select(boolean var1) {
          return var1 ? this.nonFishy : this.any;
       }
    }

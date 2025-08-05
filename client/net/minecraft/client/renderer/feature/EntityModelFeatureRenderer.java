@@ -24,11 +24,11 @@ public class EntityModelFeatureRenderer {
       while(var4.hasNext()) {
          Map var5 = (Map)var4.next();
 
-         for(Map.Entry var7 : var5.entrySet()) {
-            VertexConsumer var8 = var2.getBuffer((RenderType)var7.getKey());
+         for(Map.Entry var8 : var5.entrySet()) {
+            VertexConsumer var9 = var2.getBuffer((RenderType)var8.getKey());
 
-            for(SubmitNodeStorage.ModelSubmit var10 : (List)var7.getValue()) {
-               this.renderModel(var10, (RenderType)var7.getKey(), var8, var3);
+            for(SubmitNodeStorage.ModelSubmit var11 : (List)var8.getValue()) {
+               this.renderModel(var11, (RenderType)var8.getKey(), var9, var3);
             }
          }
       }

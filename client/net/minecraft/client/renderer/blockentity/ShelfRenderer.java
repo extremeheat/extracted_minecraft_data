@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ShelfBlock;
@@ -41,14 +42,15 @@ public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity> {
 
    private void renderItem(ShelfBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, int var6, BlockPos var7, Direction var8, float var9, ItemStack var10, int var11) {
       float var12 = (float)(1 - var6) * 0.3125F;
-      Vec3 var13 = new Vec3((double)var12, 0.0, 0.3125);
+      Vec3 var13 = new Vec3((double)var12, -0.25, 0.25);
       var2.pushPose();
       var2.translate(0.5F, 0.5F, 0.5F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var9));
       var2.translate(var13);
       var2.scale(0.25F, 0.25F, 0.25F);
       Vec3 var14 = var7.getCenter().add(var13.yRot(var9 * 0.017453292F));
-      this.itemRenderer.renderStatic(var10, ItemDisplayContext.FIXED, var4, var5, var2, var3, var1.getLevel(), var14, var8.getOpposite(), var11 + var6);
+      ItemOwner var15 = ItemOwner.custom(var14, var8.getOpposite(), var1.getLevel());
+      this.itemRenderer.renderUpwardsFrom(var15, var10, ItemDisplayContext.FIXED, var2, var3, var1.getLevel(), var4, var5, var11 + var6);
       var2.popPose();
    }
 }

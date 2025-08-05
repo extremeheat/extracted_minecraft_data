@@ -36,7 +36,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.SpriteLoader;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.core.BlockPos;
@@ -46,6 +45,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -94,6 +94,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, CampfireSmokeParticle.SignalProvider::new);
       this.register(ParticleTypes.CLOUD, PlayerCloudParticle.Provider::new);
       this.register(ParticleTypes.COMPOSTER, SuspendedTownParticle.ComposterFillProvider::new);
+      this.register(ParticleTypes.COPPER_FIRE_FLAME, FlameParticle.Provider::new);
       this.register(ParticleTypes.CRIT, CritParticle.Provider::new);
       this.register(ParticleTypes.CURRENT_DOWN, WaterCurrentDownParticle.Provider::new);
       this.register(ParticleTypes.DAMAGE_INDICATOR, CritParticle.DamageIndicatorProvider::new);
@@ -241,7 +242,7 @@ public class ParticleEngine implements PreparableReloadListener {
          });
          return Util.sequence(var3);
       });
-      CompletableFuture var7 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(TextureAtlas.LOCATION_PARTICLES);
+      CompletableFuture var7 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(AtlasIds.PARTICLES);
       CompletableFuture var10000 = CompletableFuture.allOf(var6, var7);
       Objects.requireNonNull(var3);
       return var10000.thenCompose(var3::wait).thenAcceptAsync((var3x) -> {
@@ -357,7 +358,7 @@ public class ParticleEngine implements PreparableReloadListener {
 
    public void tick() {
       this.particles.forEach((var1x, var2) -> {
-         Profiler.get().push(var1x.toString());
+         Profiler.get().push(var1x.name());
          this.tickParticleList(var2);
          Profiler.get().pop();
       });

@@ -3,13 +3,14 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
 public class EnchantmentNames {
-   private static final ResourceLocation ALT_FONT = ResourceLocation.withDefaultNamespace("alt");
+   private static final FontDescription ALT_FONT = new FontDescription.Resource(ResourceLocation.withDefaultNamespace("alt"));
    private static final Style ROOT_STYLE;
    private static final EnchantmentNames INSTANCE;
    private final RandomSource random = RandomSource.create();

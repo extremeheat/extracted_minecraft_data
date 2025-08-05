@@ -495,6 +495,14 @@ public class FriendlyByteBuf extends ByteBuf {
       writeVec3(this, var1);
    }
 
+   public Vec3 readLpVec3() {
+      return LpVec3.read(this);
+   }
+
+   public void writeLpVec3(Vec3 var1) {
+      LpVec3.write(this, var1);
+   }
+
    public <T extends Enum<T>> T readEnum(Class<T> var1) {
       return (T)((Enum[])var1.getEnumConstants())[this.readVarInt()];
    }

@@ -143,10 +143,10 @@ public abstract class AbstractArrow extends Projectile {
       this.life = 0;
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      super.lerpMotion(var1, var3, var5);
+   public void lerpMotion(Vec3 var1) {
+      super.lerpMotion(var1);
       this.life = 0;
-      if (this.isInGround() && Mth.lengthSquared(var1, var3, var5) > 0.0) {
+      if (this.isInGround() && var1.lengthSqr() > 0.0) {
          this.setInGround(false);
       }
 

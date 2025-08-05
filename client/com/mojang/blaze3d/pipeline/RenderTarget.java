@@ -17,8 +17,6 @@ public abstract class RenderTarget {
    private static int UNNAMED_RENDER_TARGETS = 0;
    public int width;
    public int height;
-   public int viewWidth;
-   public int viewHeight;
    protected final String label;
    public final boolean useDepth;
    @Nullable
@@ -83,8 +81,6 @@ public abstract class RenderTarget {
       GpuDevice var3 = RenderSystem.getDevice();
       int var4 = var3.getMaxTextureSize();
       if (var1 > 0 && var1 <= var4 && var2 > 0 && var2 <= var4) {
-         this.viewWidth = var1;
-         this.viewHeight = var2;
          this.width = var1;
          this.height = var2;
          if (this.useDepth) {

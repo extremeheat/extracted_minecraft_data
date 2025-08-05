@@ -106,6 +106,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
+      var4.apply(InsideBlockEffectType.CLEAR_FREEZE);
       var4.apply(InsideBlockEffectType.LAVA_IGNITE);
       var4.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
    }

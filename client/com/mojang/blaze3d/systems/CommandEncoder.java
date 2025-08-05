@@ -8,7 +8,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
@@ -40,7 +39,7 @@ public interface CommandEncoder {
 
    void writeToTexture(GpuTexture var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10);
 
-   void writeToTexture(GpuTexture var1, IntBuffer var2, NativeImage.Format var3, int var4, int var5, int var6, int var7, int var8, int var9);
+   void writeToTexture(GpuTexture var1, ByteBuffer var2, NativeImage.Format var3, int var4, int var5, int var6, int var7, int var8, int var9);
 
    void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, int var3, Runnable var4, int var5);
 

@@ -168,8 +168,6 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.skin = var1.getSkin();
       var2.arrowCount = var1.getArrowCount();
       var2.stingerCount = var1.getStingerCount();
-      var2.useItemRemainingTicks = var1.getUseItemRemainingTicks();
-      var2.swinging = var1.swinging;
       var2.isSpectator = var1.isSpectator();
       var2.showHat = var1.isModelPartShown(PlayerModelPart.HAT);
       var2.showJacket = var1.isModelPartShown(PlayerModelPart.JACKET);

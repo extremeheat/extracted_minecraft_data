@@ -18,17 +18,24 @@ import org.slf4j.Logger;
 public class LevelLoadTracker implements LevelLoadListener {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final long CLIENT_WAIT_TIMEOUT_MS;
-   private static final long CLOSE_DELAY_MS = 500L;
-   private final LevelLoadProgressTracker serverProgressTracker = new LevelLoadProgressTracker(true);
+   public static final long LEVEL_LOAD_CLOSE_DELAY_MS = 500L;
+   private final LevelLoadProgressTracker serverProgressTracker;
    @Nullable
    private ChunkLoadStatusView serverChunkStatusView;
    @Nullable
    private volatile LevelLoadListener.Stage serverStage;
    @Nullable
    private ClientState clientState;
+   private final long closeDelayMs;
 
    public LevelLoadTracker() {
+      this(0L);
+   }
+
+   public LevelLoadTracker(long var1) {
       super();
+      this.serverProgressTracker = new LevelLoadProgressTracker(true);
+      this.closeDelayMs = var1;
    }
 
    public void setServerChunkStatusView(ChunkLoadStatusView var1) {
@@ -59,7 +66,7 @@ public class LevelLoadTracker implements LevelLoadListener {
          }
 
          long var5 = var8;
-         if (Util.getMillis() >= var5 + 500L) {
+         if (Util.getMillis() >= var5 + this.closeDelayMs) {
             var9 = true;
             return var9;
          }

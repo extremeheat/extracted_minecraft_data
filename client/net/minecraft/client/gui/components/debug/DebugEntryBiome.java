@@ -24,7 +24,7 @@ public class DebugEntryBiome implements DebugScreenEntry {
          BlockPos var7 = var6.blockPosition();
          if (var5.level.isInsideBuildHeight(var7.getY())) {
             Holder var10001 = var5.level.getBiome(var7);
-            var1.addLine("Biome:" + printBiome(var10001));
+            var1.addLine("Biome: " + printBiome(var10001));
          }
 
       }

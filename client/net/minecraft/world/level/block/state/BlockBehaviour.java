@@ -542,7 +542,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties noCollission() {
+      public Properties noCollision() {
          this.hasCollision = false;
          this.canOcclude = false;
          return this;

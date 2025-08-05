@@ -61,13 +61,13 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
             ResourceLocation var13 = this.getResourceLocation("type", var8);
             boolean var14 = var11 == VillagerMetadataSection.Hat.NONE || var11 == VillagerMetadataSection.Hat.PARTIAL && var10 != VillagerMetadataSection.Hat.FULL;
             EntityModel var15 = var4.isBaby ? this.noHatBabyModel : this.noHatModel;
-            renderColoredCutoutModel(var14 ? var12 : var15, var13, var1, var2, var3, var4, -1, 0);
+            renderColoredCutoutModel(var14 ? var12 : var15, var13, var1, var2, var3, var4, -1, 1);
             if (!var9.is(VillagerProfession.NONE) && !var4.isBaby) {
                ResourceLocation var16 = this.getResourceLocation("profession", var9);
-               renderColoredCutoutModel(var12, var16, var1, var2, var3, var4, -1, 1);
+               renderColoredCutoutModel(var12, var16, var1, var2, var3, var4, -1, 2);
                if (!var9.is(VillagerProfession.NITWIT)) {
                   ResourceLocation var17 = this.getResourceLocation("profession_level", (ResourceLocation)LEVEL_LOCATIONS.get(Mth.clamp(var7.level(), 1, LEVEL_LOCATIONS.size())));
-                  renderColoredCutoutModel(var12, var17, var1, var2, var3, var4, -1, 2);
+                  renderColoredCutoutModel(var12, var17, var1, var2, var3, var4, -1, 3);
                }
             }
 

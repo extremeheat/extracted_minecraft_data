@@ -205,10 +205,6 @@ public class StructureBlockEditScreen extends Screen {
       this.setInitialFocus(this.nameEdit);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
-   }
-
    public void resize(Minecraft var1, int var2, int var3) {
       String var4 = this.nameEdit.getValue();
       String var5 = this.posXEdit.getValue();
@@ -404,6 +400,10 @@ public class StructureBlockEditScreen extends Screen {
 
    public boolean isPauseScreen() {
       return false;
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    static {

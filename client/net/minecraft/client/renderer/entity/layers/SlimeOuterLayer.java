@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
    private final SlimeModel model;
@@ -24,9 +25,9 @@ public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
       if (!var4.isInvisible || var7) {
          int var8 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
          if (var7) {
-            var2.submitModel(this.model, var4, var1, RenderType.outline(SlimeRenderer.SLIME_LOCATION), var3, var8, var4.outlineColor);
+            var2.submitModel(this.model, var4, var1, RenderType.outline(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, 1);
          } else {
-            var2.submitModel(this.model, var4, var1, RenderType.entityTranslucent(SlimeRenderer.SLIME_LOCATION), var3, var8, var4.outlineColor);
+            var2.submitModel(this.model, var4, var1, RenderType.entityTranslucent(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, 1);
          }
 
       }

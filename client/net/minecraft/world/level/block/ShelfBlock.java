@@ -176,8 +176,10 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
             if (var6 != null) {
                for(int var7 = 0; var7 < var6.getContainerSize(); ++var7) {
                   int var8 = 9 - (var4.size() - var5) * var6.getContainerSize() + var7;
-                  ItemStack var9 = var6.swapItemNoUpdate(var7, var3.removeItemNoUpdate(var8));
-                  var3.setItem(var8, var9);
+                  if (var8 >= 0 && var8 <= var3.getContainerSize()) {
+                     ItemStack var9 = var6.swapItemNoUpdate(var7, var3.removeItemNoUpdate(var8));
+                     var3.setItem(var8, var9);
+                  }
                }
 
                var3.setChanged();

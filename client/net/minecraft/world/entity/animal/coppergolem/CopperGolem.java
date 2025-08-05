@@ -1,9 +1,6 @@
 package net.minecraft.world.entity.animal.coppergolem;
 
 import com.mojang.serialization.Dynamic;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,8 +66,6 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
    private BlockPos openedChestPos;
    private long nextWeatheringTick = -1L;
    private int idleAnimationStartTick = 0;
-   private final AnimationState walkAnimationState = new AnimationState();
-   private final AnimationState walkWithItemAnimationState = new AnimationState();
    private final AnimationState idleAnimationState = new AnimationState();
    private final AnimationState interactionGetItemAnimationState = new AnimationState();
    private final AnimationState interactionGetNoItemAnimationState = new AnimationState();
@@ -116,14 +111,6 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
       return this.idleAnimationState;
    }
 
-   public AnimationState getWalkAnimationState() {
-      return this.walkAnimationState;
-   }
-
-   public AnimationState getWalkWithItemAnimationState() {
-      return this.walkWithItemAnimationState;
-   }
-
    public AnimationState getInteractionGetItemAnimationState() {
       return this.interactionGetItemAnimationState;
    }
@@ -166,18 +153,13 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
    public void addAdditionalSaveData(ValueOutput var1) {
       super.addAdditionalSaveData(var1);
       var1.putLong("next_weather_age", this.nextWeatheringTick);
-      var1.putInt("weather_state", this.getWeatherState().ordinal());
+      var1.store("weather_state", WeatheringCopper.WeatherState.CODEC, this.getWeatherState());
    }
 
    public void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
       this.nextWeatheringTick = var1.getLongOr("next_weather_age", -1L);
-      SynchedEntityData var10000 = this.entityData;
-      EntityDataAccessor var10001 = DATA_WEATHER_STATE;
-      Optional var10002 = var1.getInt("weather_state");
-      IntFunction var10003 = WeatheringCopper.WeatherState.BY_ID;
-      Objects.requireNonNull(var10003);
-      var10000.set(var10001, (WeatheringCopper.WeatherState)var10002.map(var10003::apply).orElse(WeatheringCopper.WeatherState.UNAFFECTED));
+      this.setWeatherState((WeatheringCopper.WeatherState)var1.read("weather_state", WeatheringCopper.WeatherState.CODEC).orElse(WeatheringCopper.WeatherState.UNAFFECTED));
    }
 
    protected void customServerAiStep(ServerLevel var1) {

@@ -29,7 +29,7 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
    private static final VoxelShape SHAPE_STANDING;
    private static final VoxelShape SHAPE_HANGING;
 
-   public MapCodec<LanternBlock> codec() {
+   public MapCodec<? extends LanternBlock> codec() {
       return CODEC;
    }
 

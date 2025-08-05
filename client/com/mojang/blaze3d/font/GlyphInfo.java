@@ -20,12 +20,14 @@ public interface GlyphInfo {
       return 1.0F;
    }
 
-   @Nullable
-   BakedGlyph bake(GlyphStitcher var1);
-
-   public interface SpaceGlyphInfo extends GlyphInfo {
+   public interface EmptyStitched extends Stitched {
       default BakedGlyph bake(GlyphStitcher var1) {
          return EmptyGlyph.INSTANCE;
       }
+   }
+
+   public interface Stitched extends GlyphInfo {
+      @Nullable
+      BakedGlyph bake(GlyphStitcher var1);
    }
 }

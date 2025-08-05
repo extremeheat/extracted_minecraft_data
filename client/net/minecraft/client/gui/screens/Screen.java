@@ -107,7 +107,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.renderBackground(var1, var2, var3, var4);
       var1.nextStratum();
       this.render(var1, var2, var3, var4);
-      this.minecraft.gui.renderDeferredSubtitles();
       var1.renderDeferredTooltip();
    }
 
@@ -465,12 +464,18 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      if (this.minecraft.level == null) {
-         this.renderPanorama(var1, var4);
+      if (this.isInGameUi()) {
+         this.renderTransparentBackground(var1);
+      } else {
+         if (this.minecraft.level == null) {
+            this.renderPanorama(var1, var4);
+         }
+
+         this.renderBlurredBackground(var1);
+         this.renderMenuBackground(var1);
       }
 
-      this.renderBlurredBackground(var1);
-      this.renderMenuBackground(var1);
+      this.minecraft.gui.renderDeferredSubtitles();
    }
 
    protected void renderBlurredBackground(GuiGraphics var1) {
@@ -504,6 +509,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public boolean isPauseScreen() {
       return true;
+   }
+
+   public boolean isInGameUi() {
+      return false;
    }
 
    protected boolean panoramaShouldSpin() {

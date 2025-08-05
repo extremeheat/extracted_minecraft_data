@@ -35,6 +35,53 @@ public enum Relative {
       return var1;
    }
 
+   public static Set<Relative> rotation(boolean var0, boolean var1) {
+      EnumSet var2 = EnumSet.noneOf(Relative.class);
+      if (var0) {
+         var2.add(Y_ROT);
+      }
+
+      if (var1) {
+         var2.add(X_ROT);
+      }
+
+      return var2;
+   }
+
+   public static Set<Relative> position(boolean var0, boolean var1, boolean var2) {
+      EnumSet var3 = EnumSet.noneOf(Relative.class);
+      if (var0) {
+         var3.add(X);
+      }
+
+      if (var1) {
+         var3.add(Y);
+      }
+
+      if (var2) {
+         var3.add(Z);
+      }
+
+      return var3;
+   }
+
+   public static Set<Relative> direction(boolean var0, boolean var1, boolean var2) {
+      EnumSet var3 = EnumSet.noneOf(Relative.class);
+      if (var0) {
+         var3.add(DELTA_X);
+      }
+
+      if (var1) {
+         var3.add(DELTA_Y);
+      }
+
+      if (var2) {
+         var3.add(DELTA_Z);
+      }
+
+      return var3;
+   }
+
    private Relative(final int var3) {
       this.bit = var3;
    }

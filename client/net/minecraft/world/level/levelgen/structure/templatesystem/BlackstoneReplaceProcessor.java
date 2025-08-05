@@ -41,7 +41,7 @@ public class BlackstoneReplaceProcessor extends StructureProcessor {
       var0.put(Blocks.MOSSY_COBBLESTONE_WALL, Blocks.BLACKSTONE_WALL);
       var0.put(Blocks.CHISELED_STONE_BRICKS, Blocks.CHISELED_POLISHED_BLACKSTONE);
       var0.put(Blocks.CRACKED_STONE_BRICKS, Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS);
-      var0.put(Blocks.IRON_BARS, Blocks.CHAIN);
+      var0.put(Blocks.IRON_BARS, Blocks.IRON_CHAIN);
    });
 
    private BlackstoneReplaceProcessor() {

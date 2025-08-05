@@ -47,8 +47,8 @@ public class OldMinecartBehavior extends MinecartBehavior {
       this.setDeltaMovement(this.targetDeltaMovement);
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      this.targetDeltaMovement = new Vec3(var1, var3, var5);
+   public void lerpMotion(Vec3 var1) {
+      this.targetDeltaMovement = var1;
       this.setDeltaMovement(this.targetDeltaMovement);
    }
 

@@ -34,6 +34,7 @@ import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -94,7 +95,7 @@ public class ModelManager implements PreparableReloadListener {
       CompletableFuture var10 = ClientItemInfoLoader.scheduleLoad(var5, var2);
       CompletableFuture var11 = CompletableFuture.allOf(var8, var9, var10).thenApplyAsync((var3x) -> discoverModelDependencies((Map)var8.join(), (BlockStateModelLoader.LoadedModels)var9.join(), (ClientItemInfoLoader.LoadedClientInfos)var10.join()), var2);
       CompletableFuture var12 = var9.thenApplyAsync((var1x) -> buildModelGroups(this.blockColors, var1x), var2);
-      CompletableFuture var13 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(TextureAtlas.LOCATION_BLOCKS);
+      CompletableFuture var13 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(AtlasIds.BLOCKS);
       CompletableFuture var10000 = CompletableFuture.allOf(var13, var11, var12, var9, var10, var6, var7, var8).thenComposeAsync((var10x) -> {
          SpriteLoader.Preparations var11x = (SpriteLoader.Preparations)var13.join();
          ResolvedModels var12x = (ResolvedModels)var11.join();

@@ -78,7 +78,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       MeshDefinition var4 = (MeshDefinition)var0.apply(var2);
       var4.getRoot().retainExactParts(Set.of("body", "left_arm", "right_arm"));
       MeshDefinition var5 = (MeshDefinition)var0.apply(var1);
-      var5.getRoot().retainExactParts(Set.of("left_leg", "right_leg"));
+      var5.getRoot().retainExactParts(Set.of("left_leg", "right_leg", "body"));
       MeshDefinition var6 = (MeshDefinition)var0.apply(var2);
       var6.getRoot().retainExactParts(Set.of("left_leg", "right_leg"));
       return new ArmorModelSet<MeshDefinition>(var3, var4, var5, var6);

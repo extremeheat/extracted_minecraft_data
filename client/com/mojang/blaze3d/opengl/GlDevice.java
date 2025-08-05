@@ -13,7 +13,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -135,12 +134,12 @@ public class GlDevice implements GpuDevice {
          if (var8) {
             for(int var14 : GlConst.CUBEMAP_TARGETS) {
                for(int var15 = 0; var15 < var7; ++var15) {
-                  GlStateManager._texImage2D(var14, var15, GlConst.toGlInternalId(var3), var4 >> var15, var5 >> var15, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+                  GlStateManager._texImage2D(var14, var15, GlConst.toGlInternalId(var3), var4 >> var15, var5 >> var15, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (ByteBuffer)null);
                }
             }
          } else {
             for(int var16 = 0; var16 < var7; ++var16) {
-               GlStateManager._texImage2D(var10, var16, GlConst.toGlInternalId(var3), var4 >> var16, var5 >> var16, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+               GlStateManager._texImage2D(var10, var16, GlConst.toGlInternalId(var3), var4 >> var16, var5 >> var16, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (ByteBuffer)null);
             }
          }
 
@@ -245,7 +244,7 @@ public class GlDevice implements GpuDevice {
       int var0 = GlStateManager._getInteger(3379);
 
       for(int var1 = Math.max(32768, var0); var1 >= 1024; var1 >>= 1) {
-         GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, (IntBuffer)null);
+         GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, (ByteBuffer)null);
          int var2 = GlStateManager._getTexLevelParameter(32868, 0, 4096);
          if (var2 != 0) {
             return var1;

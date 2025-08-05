@@ -16,6 +16,7 @@ public class ParticleTypes {
    public static final ParticleType<BlockParticleOption> BLOCK_MARKER = register("block_marker", true, BlockParticleOption::codec, BlockParticleOption::streamCodec);
    public static final SimpleParticleType BUBBLE = register("bubble", false);
    public static final SimpleParticleType CLOUD = register("cloud", false);
+   public static final SimpleParticleType COPPER_FIRE_FLAME = register("copper_fire_flame", false);
    public static final SimpleParticleType CRIT = register("crit", false);
    public static final SimpleParticleType DAMAGE_INDICATOR = register("damage_indicator", true);
    public static final SimpleParticleType DRAGON_BREATH = register("dragon_breath", false);

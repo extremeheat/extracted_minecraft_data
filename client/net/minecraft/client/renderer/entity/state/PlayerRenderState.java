@@ -15,7 +15,6 @@ public class PlayerRenderState extends HumanoidRenderState {
    public float capeLean2;
    public int arrowCount;
    public int stingerCount;
-   public int useItemRemainingTicks;
    public boolean isSpectator;
    public boolean showHat = true;
    public boolean showJacket = true;
@@ -27,7 +26,6 @@ public class PlayerRenderState extends HumanoidRenderState {
    public float fallFlyingTimeInTicks;
    public boolean shouldApplyFlyingYRot;
    public float flyingYRot;
-   public boolean swinging;
    @Nullable
    public Component scoreText;
    @Nullable

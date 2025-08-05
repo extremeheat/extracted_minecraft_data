@@ -105,7 +105,7 @@ public class MineshaftPieces {
 
       protected boolean canBeReplaced(LevelReader var1, int var2, int var3, int var4, BoundingBox var5) {
          BlockState var6 = this.getBlock(var1, var2, var3, var4, var5);
-         return !var6.is(this.type.getPlanksState().getBlock()) && !var6.is(this.type.getWoodState().getBlock()) && !var6.is(this.type.getFenceState().getBlock()) && !var6.is(Blocks.CHAIN);
+         return !var6.is(this.type.getPlanksState().getBlock()) && !var6.is(this.type.getWoodState().getBlock()) && !var6.is(this.type.getFenceState().getBlock()) && !var6.is(Blocks.IRON_CHAIN);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -573,7 +573,7 @@ public class MineshaftPieces {
                   boolean var15 = this.isReplaceableByStructures(var14);
                   if (!var15 && this.canHangChainBelow(var1, var7, var14)) {
                      var1.setBlock(var7.setY(var8 + 1), this.type.getFenceState(), 2);
-                     fillColumnBetween(var1, Blocks.CHAIN.defaultBlockState(), var7, var8 + 2, var8 + var9);
+                     fillColumnBetween(var1, Blocks.IRON_CHAIN.defaultBlockState(), var7, var8 + 2, var8 + var9);
                      return;
                   }
 

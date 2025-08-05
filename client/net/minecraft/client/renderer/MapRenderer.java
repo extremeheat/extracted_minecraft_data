@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MapTextureManager;
 import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.Mth;
@@ -28,7 +29,7 @@ public class MapRenderer {
 
    public MapRenderer(AtlasManager var1, MapTextureManager var2) {
       super();
-      this.decorationSprites = var1.getAtlas(Sheets.MAP_DECORATIONS_SHEET);
+      this.decorationSprites = var1.getAtlasOrThrow(AtlasIds.MAP_DECORATIONS);
       this.mapTextureManager = var2;
    }
 

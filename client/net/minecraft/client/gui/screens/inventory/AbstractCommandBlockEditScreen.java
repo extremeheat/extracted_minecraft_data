@@ -103,6 +103,10 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.commandSuggestions.updateCommandInfo();
    }
 
+   public boolean isInGameUi() {
+      return true;
+   }
+
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.commandSuggestions.keyPressed(var1, var2, var3)) {
          return true;
@@ -138,9 +142,5 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       }
 
       this.commandSuggestions.render(var1, var2, var3);
-   }
-
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
    }
 }

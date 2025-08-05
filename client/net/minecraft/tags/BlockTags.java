@@ -68,7 +68,10 @@ public final class BlockTags {
    public static final TagKey<Block> COPPER_CHESTS = create("copper_chests");
    public static final TagKey<Block> LIGHTNING_RODS = create("lightning_rods");
    public static final TagKey<Block> COPPER = create("copper");
+   public static final TagKey<Block> CHAINS = create("chains");
    public static final TagKey<Block> COPPER_GOLEM_STATUES = create("copper_golem_statues");
+   public static final TagKey<Block> LANTERNS = create("lanterns");
+   public static final TagKey<Block> BARS = create("bars");
    public static final TagKey<Block> CEILING_HANGING_SIGNS = create("ceiling_hanging_signs");
    public static final TagKey<Block> STANDING_SIGNS = create("standing_signs");
    public static final TagKey<Block> BEE_ATTRACTIVE = create("bee_attractive");

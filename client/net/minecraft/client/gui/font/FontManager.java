@@ -39,7 +39,8 @@ import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.font.glyphs.BakeableGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.network.chat.Style;
+import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -56,22 +57,25 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    public static final ResourceLocation MISSING_FONT = ResourceLocation.withDefaultNamespace("missing");
    private static final FileToIdConverter FONT_DEFINITIONS = FileToIdConverter.json("font");
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
-   private final FontSet missingFontSet;
+   final FontSet missingFontSet;
    private final List<GlyphProvider> providersToClose = new ArrayList();
    private final Map<ResourceLocation, FontSet> fontSets = new HashMap();
    private final TextureManager textureManager;
    private final CachedFontProvider anyGlyphs = new CachedFontProvider(false);
    private final CachedFontProvider nonFishyGlyphs = new CachedFontProvider(true);
+   private final AtlasManager atlasManager;
+   private final Map<ResourceLocation, AtlasGlyphProvider> atlasProviders = new HashMap();
 
-   public FontManager(TextureManager var1) {
+   public FontManager(TextureManager var1, AtlasManager var2) {
       super();
       this.textureManager = var1;
+      this.atlasManager = var2;
       this.missingFontSet = this.createFontSet(MISSING_FONT, List.of(createFallbackProvider()), Set.of());
    }
 
    private FontSet createFontSet(ResourceLocation var1, List<GlyphProvider.Conditional> var2, Set<FontOption> var3) {
       GlyphStitcher var4 = new GlyphStitcher(this.textureManager, var1);
-      FontSet var5 = new FontSet(var4, var1);
+      FontSet var5 = new FontSet(var4);
       var5.reload(var2, var3);
       return var5;
    }
@@ -193,6 +197,9 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       var2.pop();
       if (!this.fontSets.containsKey(Minecraft.DEFAULT_FONT)) {
          throw new IllegalStateException("Default font failed to load");
+      } else {
+         this.atlasProviders.clear();
+         this.atlasManager.forEach((var1x, var2x) -> this.atlasProviders.put(var1x, new AtlasGlyphProvider(var2x)));
       }
    }
 
@@ -254,6 +261,11 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
 
    FontSet getFontSetRaw(ResourceLocation var1) {
       return (FontSet)this.fontSets.getOrDefault(var1, this.missingFontSet);
+   }
+
+   GlyphSource getSpriteFont(FontDescription.AtlasSprite var1) {
+      AtlasGlyphProvider var2 = (AtlasGlyphProvider)this.atlasProviders.get(var1.atlasId());
+      return var2 == null ? this.missingFontSet.source(false) : var2.sourceForSprite(var1.spriteId());
    }
 
    public void close() {
@@ -378,7 +390,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    class CachedFontProvider implements Font.Provider, AutoCloseable {
       private final boolean nonFishyOnly;
       @Nullable
-      private volatile FontSet lastFontSetCache;
+      private volatile CachedEntry lastEntry;
       @Nullable
       private volatile BakeableGlyph whiteGlyph;
 
@@ -388,7 +400,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       }
 
       public void invalidate() {
-         this.lastFontSetCache = null;
+         this.lastEntry = null;
          this.whiteGlyph = null;
       }
 
@@ -396,27 +408,57 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          this.invalidate();
       }
 
-      private FontSet fontSet(ResourceLocation var1) {
-         FontSet var2 = this.lastFontSetCache;
-         if (var2 != null && var1.equals(var2.name())) {
-            return var2;
+      private GlyphSource getGlyphSource(FontDescription var1) {
+         Objects.requireNonNull(var1);
+         byte var3 = 0;
+         GlyphSource var10000;
+         //$FF: var3->value
+         //0->net/minecraft/network/chat/FontDescription$Resource
+         //1->net/minecraft/network/chat/FontDescription$AtlasSprite
+         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            case 0:
+               FontDescription.Resource var4 = (FontDescription.Resource)var1;
+               var10000 = FontManager.this.getFontSetRaw(var4.id()).source(this.nonFishyOnly);
+               break;
+            case 1:
+               FontDescription.AtlasSprite var5 = (FontDescription.AtlasSprite)var1;
+               var10000 = FontManager.this.getSpriteFont(var5);
+               break;
+            default:
+               var10000 = FontManager.this.missingFontSet.source(this.nonFishyOnly);
+         }
+
+         return var10000;
+      }
+
+      public GlyphSource glyphs(FontDescription var1) {
+         CachedEntry var2 = this.lastEntry;
+         if (var2 != null && var1.equals(var2.description)) {
+            return var2.source;
          } else {
-            FontSet var3 = FontManager.this.getFontSetRaw(var1);
-            this.lastFontSetCache = var3;
+            GlyphSource var3 = this.getGlyphSource(var1);
+            this.lastEntry = new CachedEntry(var1, var3);
             return var3;
          }
       }
 
-      public GlyphSource glyphs(ResourceLocation var1) {
-         return this.fontSet(var1).source(this.nonFishyOnly);
-      }
-
       public BakeableGlyph whiteGlyph() {
          if (this.whiteGlyph == null) {
-            this.whiteGlyph = FontManager.this.getFontSetRaw(Style.DEFAULT_FONT).whiteGlyph();
+            this.whiteGlyph = FontManager.this.getFontSetRaw(FontDescription.DEFAULT.id()).whiteGlyph();
          }
 
          return (BakeableGlyph)Objects.requireNonNull(this.whiteGlyph);
+      }
+
+      static record CachedEntry(FontDescription description, GlyphSource source) {
+         final FontDescription description;
+         final GlyphSource source;
+
+         CachedEntry(FontDescription var1, GlyphSource var2) {
+            super();
+            this.description = var1;
+            this.source = var2;
+         }
       }
    }
 }

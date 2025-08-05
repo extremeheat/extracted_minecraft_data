@@ -1,9 +1,10 @@
 package net.minecraft.world.item.component;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -11,9 +12,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -28,18 +32,45 @@ import org.slf4j.Logger;
 public final class TypedEntityData<IdType> implements TooltipProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TYPE_TAG = "id";
-   private final IdType type;
-   private final CompoundTag tag;
+   final IdType type;
+   final CompoundTag tag;
 
-   public static <T> Codec<TypedEntityData<T>> codec(Codec<T> var0) {
-      return RecordCodecBuilder.create((var1) -> var1.group(var0.fieldOf("id").forGetter(TypedEntityData::type), MapCodec.assumeMapUnsafe(CustomData.COMPOUND_TAG_CODEC).forGetter(TypedEntityData::tag)).apply(var1, TypedEntityData::new));
+   public static <T> Codec<TypedEntityData<T>> codec(final Codec<T> var0) {
+      return new Codec<TypedEntityData<T>>() {
+         public <V> DataResult<Pair<TypedEntityData<T>, V>> decode(DynamicOps<V> var1, V var2) {
+            DataResult var3 = var1.get(var2, "id").flatMap((var2x) -> var0.parse(var1, var2x).mapError((var0x) -> "Failed to parse 'id': " + var0x));
+            DataResult var4 = CustomData.COMPOUND_TAG_CODEC.decode(var1, var1.remove(var2, "id"));
+            return var3.apply2stable((var0x, var1x) -> new Pair(new TypedEntityData(var0x, (CompoundTag)var1x.getFirst()), var1x.getSecond()), var4);
+         }
+
+         public <V> DataResult<V> encode(TypedEntityData<T> var1, DynamicOps<V> var2, V var3) {
+            return var0.encodeStart(asNbtOps(var2), var1.type).flatMap((var3x) -> {
+               CompoundTag var4 = var1.tag.copy();
+               var4.put("id", var3x);
+               return CustomData.COMPOUND_TAG_CODEC.encode(var4, var2, var3);
+            });
+         }
+
+         private static <T> DynamicOps<Tag> asNbtOps(DynamicOps<T> var0x) {
+            if (var0x instanceof RegistryOps var1) {
+               return var1.<Tag>withParent(NbtOps.INSTANCE);
+            } else {
+               return NbtOps.INSTANCE;
+            }
+         }
+
+         // $FF: synthetic method
+         public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
+            return this.encode((TypedEntityData)var1, var2, var3);
+         }
+      };
    }
 
    public static <B extends ByteBuf, T> StreamCodec<B, TypedEntityData<T>> streamCodec(StreamCodec<B, T> var0) {
       return StreamCodec.composite(var0, TypedEntityData::type, ByteBufCodecs.COMPOUND_TAG, TypedEntityData::tag, TypedEntityData::new);
    }
 
-   private TypedEntityData(IdType var1, CompoundTag var2) {
+   TypedEntityData(IdType var1, CompoundTag var2) {
       super();
       this.type = var1;
       this.tag = stripId(var2);

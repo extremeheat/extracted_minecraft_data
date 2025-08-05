@@ -229,19 +229,19 @@ public class GuiRenderer implements AutoCloseable {
 
    }
 
-   private void addElementToMesh(GuiElementRenderState var1, int var2) {
-      RenderPipeline var3 = var1.pipeline();
-      TextureSetup var4 = var1.textureSetup();
-      ScreenRectangle var5 = var1.scissorArea();
-      if (var3 != this.previousPipeline || this.scissorChanged(var5, this.previousScissorArea) || !var4.equals(this.previousTextureSetup)) {
+   private void addElementToMesh(GuiElementRenderState var1) {
+      RenderPipeline var2 = var1.pipeline();
+      TextureSetup var3 = var1.textureSetup();
+      ScreenRectangle var4 = var1.scissorArea();
+      if (var2 != this.previousPipeline || this.scissorChanged(var4, this.previousScissorArea) || !var3.equals(this.previousTextureSetup)) {
          if (this.bufferBuilder != null) {
             this.recordMesh(this.bufferBuilder, this.previousPipeline, this.previousTextureSetup, this.previousScissorArea);
          }
 
-         this.bufferBuilder = this.getBufferBuilder(var3);
-         this.previousPipeline = var3;
-         this.previousTextureSetup = var4;
-         this.previousScissorArea = var5;
+         this.bufferBuilder = this.getBufferBuilder(var2);
+         this.previousPipeline = var2;
+         this.previousTextureSetup = var3;
+         this.previousScissorArea = var4;
       }
 
       var1.buildVertices(this.bufferBuilder);

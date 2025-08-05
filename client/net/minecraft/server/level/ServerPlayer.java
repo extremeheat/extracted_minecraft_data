@@ -1011,8 +1011,9 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void forceSetRotation(float var1, float var2) {
-      this.connection.send(new ClientboundPlayerRotationPacket(var1, var2));
+   public void forceSetRotation(float var1, boolean var2, float var3, boolean var4) {
+      super.forceSetRotation(var1, var2, var3, var4);
+      this.connection.send(new ClientboundPlayerRotationPacket(var1, var2, var3, var4));
    }
 
    private void triggerDimensionChangeTriggers(ServerLevel var1) {

@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.horse.Markings;
 
@@ -23,7 +24,7 @@ public class HorseMarkingLayer extends RenderLayer<HorseRenderState, HorseModel>
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, HorseRenderState var4, float var5, float var6) {
       ResourceLocation var7 = (ResourceLocation)LOCATION_BY_MARKINGS.get(var4.markings);
       if (var7 != INVISIBLE_TEXTURE && !var4.isInvisible) {
-         var2.submitModel(this.getParentModel(), var4, var1, RenderType.entityTranslucent(var7), var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), var4.outlineColor);
+         var2.submitModel(this.getParentModel(), var4, var1, RenderType.entityTranslucent(var7), var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), -1, (TextureAtlasSprite)null, var4.outlineColor, 1);
       }
    }
 

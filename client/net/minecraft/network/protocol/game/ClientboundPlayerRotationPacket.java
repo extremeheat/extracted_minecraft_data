@@ -6,13 +6,15 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundPlayerRotationPacket(float yRot, float xRot) implements Packet<ClientGamePacketListener> {
+public record ClientboundPlayerRotationPacket(float yRot, boolean relativeY, float xRot, boolean relativeX) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerRotationPacket> STREAM_CODEC;
 
-   public ClientboundPlayerRotationPacket(float var1, float var2) {
+   public ClientboundPlayerRotationPacket(float var1, boolean var2, float var3, boolean var4) {
       super();
       this.yRot = var1;
-      this.xRot = var2;
+      this.relativeY = var2;
+      this.xRot = var3;
+      this.relativeX = var4;
    }
 
    public PacketType<ClientboundPlayerRotationPacket> type() {
@@ -24,6 +26,6 @@ public record ClientboundPlayerRotationPacket(float yRot, float xRot) implements
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, ClientboundPlayerRotationPacket::yRot, ByteBufCodecs.FLOAT, ClientboundPlayerRotationPacket::xRot, ClientboundPlayerRotationPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, ClientboundPlayerRotationPacket::yRot, ByteBufCodecs.BOOL, ClientboundPlayerRotationPacket::relativeY, ByteBufCodecs.FLOAT, ClientboundPlayerRotationPacket::xRot, ByteBufCodecs.BOOL, ClientboundPlayerRotationPacket::relativeX, ClientboundPlayerRotationPacket::new);
    }
 }

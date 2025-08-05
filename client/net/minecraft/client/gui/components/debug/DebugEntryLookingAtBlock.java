@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -28,26 +29,27 @@ public class DebugEntryLookingAtBlock implements DebugScreenEntry {
 
    public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
       Entity var5 = Minecraft.getInstance().getCameraEntity();
-      if (var5 != null && var2 != null) {
-         HitResult var6 = var5.pick(20.0, 0.0F, false);
-         ArrayList var7 = new ArrayList();
-         if (var6.getType() == HitResult.Type.BLOCK) {
-            BlockPos var8 = ((BlockHitResult)var6).getBlockPos();
-            BlockState var9 = var2.getBlockState(var8);
+      ClientLevel var6 = Minecraft.getInstance().level;
+      if (var5 != null && var6 != null) {
+         HitResult var7 = var5.pick(20.0, 0.0F, false);
+         ArrayList var8 = new ArrayList();
+         if (var7.getType() == HitResult.Type.BLOCK) {
+            BlockPos var9 = ((BlockHitResult)var7).getBlockPos();
+            BlockState var10 = ((Level)var6).getBlockState(var9);
             String var10001 = String.valueOf(ChatFormatting.UNDERLINE);
-            var7.add(var10001 + "Targeted Block: " + var8.getX() + ", " + var8.getY() + ", " + var8.getZ());
-            var7.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var9.getBlock())));
+            var8.add(var10001 + "Targeted Block: " + var9.getX() + ", " + var9.getY() + ", " + var9.getZ());
+            var8.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var10.getBlock())));
 
-            for(Map.Entry var11 : var9.getValues().entrySet()) {
-               var7.add(this.getPropertyValueString(var11));
+            for(Map.Entry var12 : var10.getValues().entrySet()) {
+               var8.add(this.getPropertyValueString(var12));
             }
 
-            Stream var10000 = var9.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
-            Objects.requireNonNull(var7);
-            var10000.forEach(var7::add);
+            Stream var10000 = var10.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
+            Objects.requireNonNull(var8);
+            var10000.forEach(var8::add);
          }
 
-         var1.addToGroup(GROUP, var7);
+         var1.addToGroup(GROUP, var8);
       }
    }
 

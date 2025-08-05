@@ -29,7 +29,6 @@ import net.minecraft.client.gui.contextualbar.ExperienceBarRenderer;
 import net.minecraft.client.gui.contextualbar.JumpableVehicleBarRenderer;
 import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
@@ -211,7 +210,6 @@ public class Gui {
          }
 
          this.renderSleepOverlay(var1, var2);
-         boolean var3 = this.minecraft.screen instanceof AbstractContainerScreen;
          if (!this.minecraft.options.hideGui) {
             this.renderDemoOverlay(var1, var2);
             this.renderScoreboardSidebar(var1, var2);
@@ -219,8 +217,8 @@ public class Gui {
             this.renderTitle(var1, var2);
             this.renderChat(var1, var2);
             this.renderTabList(var1, var2);
-            this.renderSubtitleOverlay(var1, var3 || this.minecraft.screen == null);
-         } else if (var3) {
+            this.renderSubtitleOverlay(var1, this.minecraft.screen == null || this.minecraft.screen.isInGameUi());
+         } else if (this.minecraft.screen != null && this.minecraft.screen.isInGameUi()) {
             this.renderSubtitleOverlay(var1, true);
          }
 

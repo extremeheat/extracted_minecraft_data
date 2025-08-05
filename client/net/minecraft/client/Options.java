@@ -1022,6 +1022,7 @@ public class Options {
       var1.process("toggleSprint", this.toggleSprint);
       var1.process("toggleAttack", this.toggleAttack);
       var1.process("toggleUse", this.toggleUse);
+      var1.process("sprintWindow", this.sprintWindow);
       var1.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
       var1.process("hideLightningFlashes", this.hideLightningFlash);
       var1.process("hideSplashTexts", this.hideSplashTexts);

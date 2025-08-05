@@ -41,7 +41,7 @@ public class BitmapProvider implements GlyphProvider {
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
+   public GlyphInfo.Stitched getGlyph(int var1) {
       return this.glyphs.get(var1);
    }
 
@@ -183,7 +183,7 @@ public class BitmapProvider implements GlyphProvider {
       }
    }
 
-   static record Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements GlyphInfo {
+   static record Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements GlyphInfo.Stitched {
       final float scale;
       final NativeImage image;
       final int offsetX;

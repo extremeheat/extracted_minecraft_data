@@ -606,7 +606,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
       if (var2 != null) {
-         var2.lerpMotion(var1.getXa(), var1.getYa(), var1.getZa());
+         var2.lerpMotion(var1.getMovement());
       }
    }
 
@@ -712,10 +712,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                if (var1.hasRotation()) {
                   var2.moveOrInterpolateTo(var4, var1.getYRot(), var1.getXRot());
                } else {
-                  var2.moveOrInterpolateTo(var4, var2.getYRot(), var2.getXRot());
+                  var2.moveOrInterpolateTo(var4);
                }
             } else if (var1.hasRotation()) {
-               var2.moveOrInterpolateTo(var2.position(), var1.getYRot(), var1.getXRot());
+               var2.moveOrInterpolateTo(var1.getYRot(), var1.getXRot());
             }
 
             var2.setOnGround(var1.isOnGround());
@@ -792,8 +792,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleRotatePlayer(ClientboundPlayerRotationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       LocalPlayer var2 = this.minecraft.player;
-      ((Player)var2).setYRot(var1.yRot());
-      ((Player)var2).setXRot(var1.xRot());
+      Set var3 = Relative.union(Relative.DELTA, Relative.rotation(var1.relativeY(), var1.relativeX()));
+      PositionMoveRotation var4 = PositionMoveRotation.of((Entity)var2);
+      PositionMoveRotation var5 = PositionMoveRotation.calculateAbsolute(var4, var4.withRotation(var1.yRot(), var1.xRot()), var3);
+      ((Player)var2).setDeltaMovement(var5.deltaMovement());
+      ((Player)var2).setYRot(var5.yRot());
+      ((Player)var2).setXRot(var5.xRot());
       ((Player)var2).setOldRot();
       this.connection.send(new ServerboundMovePlayerPacket.Rot(((Player)var2).getYRot(), ((Player)var2).getXRot(), false, false));
    }

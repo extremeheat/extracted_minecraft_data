@@ -84,10 +84,6 @@ public abstract class AbstractSignEditScreen extends Screen {
       this.renderSign(var1);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
-   }
-
    public void onClose() {
       this.onDone();
    }
@@ -102,6 +98,10 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    public boolean isPauseScreen() {
       return false;
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    protected abstract void renderSignBackground(GuiGraphics var1);

@@ -46,7 +46,9 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
          var2.resetReaderIndex();
       } else {
          int var4 = VarInt.read(this.helperBuf);
-         if (var2.readableBytes() < var4) {
+         if (var4 == 0) {
+            throw new CorruptedFrameException("Frame length cannot be zero");
+         } else if (var2.readableBytes() < var4) {
             var2.resetReaderIndex();
          } else {
             if (this.monitor != null) {

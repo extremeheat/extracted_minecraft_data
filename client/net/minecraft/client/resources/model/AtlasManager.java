@@ -8,13 +8,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
+import java.util.function.BiConsumer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -23,31 +24,36 @@ import net.minecraft.server.packs.resources.ResourceManager;
 public class AtlasManager implements PreparableReloadListener, MaterialSet, AutoCloseable {
    private static final List<AtlasConfig> KNOWN_ATLASES;
    public static final PreparableReloadListener.StateKey<PendingStitchResults> PENDING_STITCH;
-   private final Map<ResourceLocation, AtlasEntry> atlases;
+   private final Map<ResourceLocation, AtlasEntry> atlasByTexture = new HashMap();
+   private final Map<ResourceLocation, AtlasEntry> atlasById = new HashMap();
    private Map<Material, TextureAtlasSprite> materialLookup = Map.of();
    private int maxMipmapLevels;
 
    public AtlasManager(TextureManager var1, int var2) {
       super();
-      this.atlases = (Map)KNOWN_ATLASES.stream().collect(Collectors.toMap(AtlasConfig::textureId, (var1x) -> {
-         TextureAtlas var2 = new TextureAtlas(var1x.textureId);
-         var1.register(var1x.textureId, var2);
-         return new AtlasEntry(var2, var1x);
-      }));
+
+      for(AtlasConfig var4 : KNOWN_ATLASES) {
+         TextureAtlas var5 = new TextureAtlas(var4.textureId);
+         var1.register(var4.textureId, var5);
+         AtlasEntry var6 = new AtlasEntry(var5, var4);
+         this.atlasByTexture.put(var4.textureId, var6);
+         this.atlasById.put(var4.definitionLocation, var6);
+      }
+
       this.maxMipmapLevels = var2;
    }
 
-   private AtlasEntry getAtlasEntry(ResourceLocation var1) {
-      AtlasEntry var2 = (AtlasEntry)this.atlases.get(var1);
+   public TextureAtlas getAtlasOrThrow(ResourceLocation var1) {
+      AtlasEntry var2 = (AtlasEntry)this.atlasById.get(var1);
       if (var2 == null) {
          throw new IllegalArgumentException("Invalid atlas id: " + String.valueOf(var1));
       } else {
-         return var2;
+         return var2.atlas();
       }
    }
 
-   public TextureAtlas getAtlas(ResourceLocation var1) {
-      return this.getAtlasEntry(var1).atlas();
+   public void forEach(BiConsumer<ResourceLocation, TextureAtlas> var1) {
+      this.atlasById.forEach((var1x, var2) -> var1.accept(var1x, var2.atlas));
    }
 
    public void updateMaxMipLevel(int var1) {
@@ -56,21 +62,32 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
 
    public void close() {
       this.materialLookup = Map.of();
-      this.atlases.values().forEach(AtlasEntry::close);
-      this.atlases.clear();
+      this.atlasById.values().forEach(AtlasEntry::close);
+      this.atlasById.clear();
+      this.atlasByTexture.clear();
    }
 
    public TextureAtlasSprite get(Material var1) {
       TextureAtlasSprite var2 = (TextureAtlasSprite)this.materialLookup.get(var1);
-      return var2 != null ? var2 : this.getAtlasEntry(var1.atlasLocation()).atlas().missingSprite();
+      if (var2 != null) {
+         return var2;
+      } else {
+         ResourceLocation var3 = var1.atlasLocation();
+         AtlasEntry var4 = (AtlasEntry)this.atlasByTexture.get(var3);
+         if (var4 == null) {
+            throw new IllegalArgumentException("Invalid atlas texture id: " + String.valueOf(var3));
+         } else {
+            return var4.atlas().missingSprite();
+         }
+      }
    }
 
    public void prepareSharedState(PreparableReloadListener.SharedState var1) {
-      int var2 = this.atlases.size();
+      int var2 = this.atlasById.size();
       ArrayList var3 = new ArrayList(var2);
       HashMap var4 = new HashMap(var2);
       ArrayList var5 = new ArrayList(var2);
-      this.atlases.forEach((var3x, var4x) -> {
+      this.atlasById.forEach((var3x, var4x) -> {
          CompletableFuture var5x = new CompletableFuture();
          var4.put(var3x, var5x);
          var3.add(new PendingStitch(var4x, var5x));

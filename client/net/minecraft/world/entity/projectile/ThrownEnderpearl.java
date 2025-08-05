@@ -93,7 +93,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             }
          }
 
-         return null;
+         return var0.getServer().getPlayerList().getPlayer(var1);
       }
    }
 
@@ -173,30 +173,34 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    public void tick() {
-      int var1;
-      int var2;
-      Entity var3;
-      label30: {
-         var1 = SectionPos.blockToSectionCoord(this.position().x());
-         var2 = SectionPos.blockToSectionCoord(this.position().z());
-         var3 = this.getOwner();
-         if (var3 instanceof ServerPlayer var4) {
-            if (!var3.isAlive() && var4.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
-               this.discard();
-               break label30;
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         int var3;
+         Entity var4;
+         label37: {
+            var7 = SectionPos.blockToSectionCoord(this.position().x());
+            var3 = SectionPos.blockToSectionCoord(this.position().z());
+            var4 = this.owner != null ? findOwnerInAnyDimension(var1, this.owner.getUUID()) : null;
+            if (var4 instanceof ServerPlayer var5) {
+               if (!var4.isAlive() && var5.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+                  this.discard();
+                  break label37;
+               }
             }
+
+            super.tick();
          }
 
+         if (this.isAlive()) {
+            BlockPos var8 = BlockPos.containing(this.position());
+            if ((--this.ticketTimer <= 0L || var7 != SectionPos.blockToSectionCoord(var8.getX()) || var3 != SectionPos.blockToSectionCoord(var8.getZ())) && var4 instanceof ServerPlayer) {
+               ServerPlayer var6 = (ServerPlayer)var4;
+               this.ticketTimer = var6.registerAndUpdateEnderPearlTicket(this);
+            }
+
+         }
+      } else {
          super.tick();
-      }
-
-      if (this.isAlive()) {
-         BlockPos var6 = BlockPos.containing(this.position());
-         if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var6.getX()) || var2 != SectionPos.blockToSectionCoord(var6.getZ())) && var3 instanceof ServerPlayer) {
-            ServerPlayer var5 = (ServerPlayer)var3;
-            this.ticketTimer = var5.registerAndUpdateEnderPearlTicket(this);
-         }
-
       }
    }
 

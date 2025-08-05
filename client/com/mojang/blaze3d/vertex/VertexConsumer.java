@@ -42,10 +42,6 @@ public interface VertexConsumer {
       return this.setColor(ARGB.red(var1), ARGB.green(var1), ARGB.blue(var1), ARGB.alpha(var1));
    }
 
-   default VertexConsumer setWhiteAlpha(int var1) {
-      return this.setColor(ARGB.color(var1, -1));
-   }
-
    default VertexConsumer setLight(int var1) {
       return this.setUv2(var1 & '\uffff', var1 >> 16 & '\uffff');
    }

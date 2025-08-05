@@ -8,7 +8,7 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.font.GlyphStitcher;
 
-public enum SpecialGlyphs implements GlyphInfo {
+public enum SpecialGlyphs implements GlyphInfo.Stitched {
    WHITE(() -> generate(5, 8, (var0, var1) -> -1)),
    MISSING(() -> {
       boolean var0 = true;

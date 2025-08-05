@@ -84,13 +84,13 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
+   public GlyphInfo.Stitched getGlyph(int var1) {
       GlyphEntry var2 = this.glyphs.get(var1);
       return var2 != null ? this.getOrLoadGlyphInfo(var1, var2) : null;
    }
 
-   private GlyphInfo getOrLoadGlyphInfo(int var1, GlyphEntry var2) {
-      GlyphInfo var3 = var2.glyph;
+   private GlyphInfo.Stitched getOrLoadGlyphInfo(int var1, GlyphEntry var2) {
+      GlyphInfo.Stitched var3 = var2.glyph;
       if (var3 == null) {
          FT_Face var4 = this.validateFontOpen();
          synchronized(var4) {
@@ -105,7 +105,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       return var3;
    }
 
-   private GlyphInfo loadGlyph(int var1, FT_Face var2, int var3) {
+   private GlyphInfo.Stitched loadGlyph(int var1, FT_Face var2, int var3) {
       int var4 = FreeType.FT_Load_Glyph(var2, var3, 4194312);
       if (var4 != 0) {
          FreeTypeUtil.assertError(var4, String.format(Locale.ROOT, "Loading glyph U+%06X", var1));
@@ -121,7 +121,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          int var9 = var5.bitmap_top();
          int var10 = var7.width();
          int var11 = var7.rows();
-         return (GlyphInfo)(var10 > 0 && var11 > 0 ? new Glyph((float)var8, (float)var9, var10, var11, var6, var3) : () -> var6 / this.oversample);
+         return (GlyphInfo.Stitched)(var10 > 0 && var11 > 0 ? new Glyph((float)var8, (float)var9, var10, var11, var6, var3) : () -> var6 / this.oversample);
       }
    }
 
@@ -153,7 +153,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    static class GlyphEntry {
       final int index;
       @Nullable
-      volatile GlyphInfo glyph;
+      volatile GlyphInfo.Stitched glyph;
 
       GlyphEntry(int var1) {
          super();
@@ -161,7 +161,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       }
    }
 
-   class Glyph implements GlyphInfo {
+   class Glyph implements GlyphInfo.Stitched {
       final int width;
       final int height;
       final float bearingX;

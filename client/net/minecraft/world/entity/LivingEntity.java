@@ -378,10 +378,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       super.baseTick();
       ProfilerFiller var8 = Profiler.get();
       var8.push("livingEntityBaseTick");
-      if (this.fireImmune() || this.level().isClientSide()) {
-         this.clearFire();
-      }
-
       if (this.isAlive()) {
          Level var3 = this.level();
          if (var3 instanceof ServerLevel) {
@@ -1145,9 +1141,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
 
          float var4 = var3;
-         float var5 = this.applyItemBlocking(var1, var2, var3);
-         var3 -= var5;
-         boolean var6 = var5 > 0.0F;
+         ItemStack var5 = this.getUseItem();
+         float var6 = this.applyItemBlocking(var1, var2, var3);
+         var3 -= var6;
+         boolean var7 = var6 > 0.0F;
          if (var2.is(DamageTypeTags.IS_FREEZING) && this.getType().is(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES)) {
             var3 *= 5.0F;
          }
@@ -1161,7 +1158,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             var3 = 3.4028235E38F;
          }
 
-         boolean var7 = true;
+         boolean var8 = true;
          if ((float)this.invulnerableTime > 10.0F && !var2.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
             if (var3 <= this.lastHurt) {
                return false;
@@ -1169,7 +1166,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
             this.actuallyHurt(var1, var2, var3 - this.lastHurt);
             this.lastHurt = var3;
-            var7 = false;
+            var8 = false;
          } else {
             this.lastHurt = var3;
             this.invulnerableTime = 20;
@@ -1180,78 +1177,78 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
          this.resolveMobResponsibleForDamage(var2);
          this.resolvePlayerResponsibleForDamage(var2);
-         if (var7) {
-            BlocksAttacks var8 = (BlocksAttacks)this.getUseItem().get(DataComponents.BLOCKS_ATTACKS);
-            if (var6 && var8 != null) {
-               var8.onBlocked(var1, this);
+         if (var8) {
+            BlocksAttacks var9 = (BlocksAttacks)var5.get(DataComponents.BLOCKS_ATTACKS);
+            if (var7 && var9 != null) {
+               var9.onBlocked(var1, this);
             } else {
                var1.broadcastDamageEvent(this, var2);
             }
 
-            if (!var2.is(DamageTypeTags.NO_IMPACT) && (!var6 || var3 > 0.0F)) {
+            if (!var2.is(DamageTypeTags.NO_IMPACT) && (!var7 || var3 > 0.0F)) {
                this.markHurt();
             }
 
             if (!var2.is(DamageTypeTags.NO_KNOCKBACK)) {
-               double var9 = 0.0;
-               double var11 = 0.0;
-               Entity var14 = var2.getDirectEntity();
-               if (var14 instanceof Projectile) {
-                  Projectile var13 = (Projectile)var14;
-                  DoubleDoubleImmutablePair var21 = var13.calculateHorizontalHurtKnockbackDirection(this, var2);
-                  var9 = -var21.leftDouble();
-                  var11 = -var21.rightDouble();
+               double var10 = 0.0;
+               double var12 = 0.0;
+               Entity var15 = var2.getDirectEntity();
+               if (var15 instanceof Projectile) {
+                  Projectile var14 = (Projectile)var15;
+                  DoubleDoubleImmutablePair var22 = var14.calculateHorizontalHurtKnockbackDirection(this, var2);
+                  var10 = -var22.leftDouble();
+                  var12 = -var22.rightDouble();
                } else if (var2.getSourcePosition() != null) {
-                  var9 = var2.getSourcePosition().x() - this.getX();
-                  var11 = var2.getSourcePosition().z() - this.getZ();
+                  var10 = var2.getSourcePosition().x() - this.getX();
+                  var12 = var2.getSourcePosition().z() - this.getZ();
                }
 
-               this.knockback(0.4000000059604645, var9, var11);
-               if (!var6) {
-                  this.indicateDamage(var9, var11);
+               this.knockback(0.4000000059604645, var10, var12);
+               if (!var7) {
+                  this.indicateDamage(var10, var12);
                }
             }
          }
 
          if (this.isDeadOrDying()) {
             if (!this.checkTotemDeathProtection(var2)) {
-               if (var7) {
+               if (var8) {
                   this.makeSound(this.getDeathSound());
                   this.playSecondaryHurtSound(var2);
                }
 
                this.die(var2);
             }
-         } else if (var7) {
+         } else if (var8) {
             this.playHurtSound(var2);
             this.playSecondaryHurtSound(var2);
          }
 
-         boolean var16 = !var6 || var3 > 0.0F;
-         if (var16) {
+         boolean var17 = !var7 || var3 > 0.0F;
+         if (var17) {
             this.lastDamageSource = var2;
             this.lastDamageStamp = this.level().getGameTime();
 
-            for(MobEffectInstance var10 : this.getActiveEffects()) {
-               var10.onMobHurt(var1, this, var2, var3);
+            for(MobEffectInstance var11 : this.getActiveEffects()) {
+               var11.onMobHurt(var1, this, var2, var3);
             }
          }
 
          if (this instanceof ServerPlayer) {
-            ServerPlayer var18 = (ServerPlayer)this;
-            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var18, var2, var4, var3, var6);
-            if (var5 > 0.0F && var5 < 3.4028235E37F) {
-               var18.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var5 * 10.0F));
+            ServerPlayer var19 = (ServerPlayer)this;
+            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var19, var2, var4, var3, var7);
+            if (var6 > 0.0F && var6 < 3.4028235E37F) {
+               var19.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var6 * 10.0F));
             }
          }
 
-         Entity var20 = var2.getEntity();
-         if (var20 instanceof ServerPlayer) {
-            ServerPlayer var19 = (ServerPlayer)var20;
-            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var19, this, var2, var4, var3, var6);
+         Entity var21 = var2.getEntity();
+         if (var21 instanceof ServerPlayer) {
+            ServerPlayer var20 = (ServerPlayer)var21;
+            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var20, this, var2, var4, var3, var7);
          }
 
-         return var16;
+         return var17;
       }
    }
 
@@ -3657,7 +3654,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.setId(var1.getId());
       this.setUUID(var1.getUUID());
       this.absSnapTo(var2, var4, var6, var8, var9);
-      this.setDeltaMovement(var1.getXa(), var1.getYa(), var1.getZa());
+      this.setDeltaMovement(var1.getMovement());
    }
 
    public float getSecondsToDisableBlocking() {

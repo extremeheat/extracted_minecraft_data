@@ -1108,6 +1108,21 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.HANGING, var3, var2)));
    }
 
+   private void createCopperLantern(Block var1, Block var2) {
+      ResourceLocation var3 = TexturedModel.LANTERN.create(var1, this.modelOutput);
+      ResourceLocation var4 = TexturedModel.HANGING_LANTERN.create(var1, this.modelOutput);
+      this.registerSimpleFlatItemModel(var1.asItem());
+      this.itemModelOutput.copy(var1.asItem(), var2.asItem());
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.HANGING, plainVariant(var4), plainVariant(var3))));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var2).with(createBooleanModelDispatch(BlockStateProperties.HANGING, plainVariant(var4), plainVariant(var3))));
+   }
+
+   private void createCopperChain(Block var1, Block var2) {
+      MultiVariant var3 = plainVariant(TexturedModel.CHAIN.create(var1, this.modelOutput));
+      this.createAxisAlignedPillarBlockCustomModel(var1, var3);
+      this.createAxisAlignedPillarBlockCustomModel(var2, var3);
+   }
+
    private void createMuddyMangroveRoots() {
       TextureMapping var1 = TextureMapping.column(TextureMapping.getBlockTexture(Blocks.MUDDY_MANGROVE_ROOTS, "_side"), TextureMapping.getBlockTexture(Blocks.MUDDY_MANGROVE_ROOTS, "_top"));
       MultiVariant var2 = plainVariant(ModelTemplates.CUBE_COLUMN.create(Blocks.MUDDY_MANGROVE_ROOTS, var1, this.modelOutput));
@@ -1172,15 +1187,34 @@ public class BlockModelGenerators {
       this.itemModelOutput.copy(var1.asItem(), var2.asItem());
    }
 
-   private void createIronBars() {
-      MultiVariant var1 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_post_ends"));
-      MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_post"));
-      MultiVariant var3 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_cap"));
-      MultiVariant var4 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_cap_alt"));
-      MultiVariant var5 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_side"));
-      MultiVariant var6 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_side_alt"));
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.IRON_BARS).with(var1).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var2).with(condition().term(BlockStateProperties.NORTH, true).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var3).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, true).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var3.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, true).term(BlockStateProperties.WEST, false), var4).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, true), var4.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, true), var5).with(condition().term(BlockStateProperties.EAST, true), var5.with(Y_ROT_90)).with(condition().term(BlockStateProperties.SOUTH, true), var6).with(condition().term(BlockStateProperties.WEST, true), var6.with(Y_ROT_90)));
-      this.registerSimpleFlatItemModel(Blocks.IRON_BARS);
+   private void createBarsAndItem(Block var1) {
+      TextureMapping var2 = TextureMapping.bars(var1);
+      this.createBars(var1, ModelTemplates.BARS_POST_ENDS.create(var1, var2, this.modelOutput), ModelTemplates.BARS_POST.create(var1, var2, this.modelOutput), ModelTemplates.BARS_CAP.create(var1, var2, this.modelOutput), ModelTemplates.BARS_CAP_ALT.create(var1, var2, this.modelOutput), ModelTemplates.BARS_POST_SIDE.create(var1, var2, this.modelOutput), ModelTemplates.BARS_POST_SIDE_ALT.create(var1, var2, this.modelOutput));
+      this.registerSimpleFlatItemModel(var1);
+   }
+
+   private void createBarsAndItem(Block var1, Block var2) {
+      TextureMapping var3 = TextureMapping.bars(var1);
+      ResourceLocation var4 = ModelTemplates.BARS_POST_ENDS.create(var1, var3, this.modelOutput);
+      ResourceLocation var5 = ModelTemplates.BARS_POST.create(var1, var3, this.modelOutput);
+      ResourceLocation var6 = ModelTemplates.BARS_CAP.create(var1, var3, this.modelOutput);
+      ResourceLocation var7 = ModelTemplates.BARS_CAP_ALT.create(var1, var3, this.modelOutput);
+      ResourceLocation var8 = ModelTemplates.BARS_POST_SIDE.create(var1, var3, this.modelOutput);
+      ResourceLocation var9 = ModelTemplates.BARS_POST_SIDE_ALT.create(var1, var3, this.modelOutput);
+      this.createBars(var1, var4, var5, var6, var7, var8, var9);
+      this.createBars(var2, var4, var5, var6, var7, var8, var9);
+      this.registerSimpleFlatItemModel(var1);
+      this.itemModelOutput.copy(var1.asItem(), var2.asItem());
+   }
+
+   private void createBars(Block var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7) {
+      MultiVariant var8 = plainVariant(var2);
+      MultiVariant var9 = plainVariant(var3);
+      MultiVariant var10 = plainVariant(var4);
+      MultiVariant var11 = plainVariant(var5);
+      MultiVariant var12 = plainVariant(var6);
+      MultiVariant var13 = plainVariant(var7);
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(var1).with(var8).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var9).with(condition().term(BlockStateProperties.NORTH, true).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var10).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, true).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var10.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, true).term(BlockStateProperties.WEST, false), var11).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, true), var11.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, true), var12).with(condition().term(BlockStateProperties.EAST, true), var12.with(Y_ROT_90)).with(condition().term(BlockStateProperties.SOUTH, true), var13).with(condition().term(BlockStateProperties.WEST, true), var13.with(Y_ROT_90)));
    }
 
    private void createNonTemplateHorizontalBlock(Block var1) {
@@ -1932,6 +1966,7 @@ public class BlockModelGenerators {
       this.createNonTemplateModelBlock(Blocks.LAVA);
       this.createNonTemplateModelBlock(Blocks.SLIME_BLOCK);
       this.registerSimpleFlatItemModel(Items.CHAIN);
+      Items.COPPER_CHAIN.waxedMapping().forEach(this::createCopperChainItem);
       this.createCandleAndCandleCake(Blocks.WHITE_CANDLE, Blocks.WHITE_CANDLE_CAKE);
       this.createCandleAndCandleCake(Blocks.ORANGE_CANDLE, Blocks.ORANGE_CANDLE_CAKE);
       this.createCandleAndCandleCake(Blocks.MAGENTA_CANDLE, Blocks.MAGENTA_CANDLE_CAKE);
@@ -2117,7 +2152,8 @@ public class BlockModelGenerators {
       this.createDirtPath();
       this.createGrindstone();
       this.createHopper();
-      this.createIronBars();
+      this.createBarsAndItem(Blocks.IRON_BARS);
+      Blocks.COPPER_BARS.waxedMapping().forEach(this::createBarsAndItem);
       this.createLever();
       this.createLilyPad();
       this.createNetherPortalBlock();
@@ -2163,6 +2199,7 @@ public class BlockModelGenerators {
       this.createNonTemplateHorizontalBlock(Blocks.BIG_DRIPLEAF_STEM);
       this.createNormalTorch(Blocks.TORCH, Blocks.WALL_TORCH);
       this.createNormalTorch(Blocks.SOUL_TORCH, Blocks.SOUL_WALL_TORCH);
+      this.createNormalTorch(Blocks.COPPER_TORCH, Blocks.COPPER_WALL_TORCH);
       this.createCraftingTableLike(Blocks.CRAFTING_TABLE, Blocks.OAK_PLANKS, TextureMapping::craftingTable);
       this.createCraftingTableLike(Blocks.FLETCHING_TABLE, Blocks.BIRCH_PLANKS, TextureMapping::fletchingTable);
       this.createNyliumBlock(Blocks.CRIMSON_NYLIUM);
@@ -2172,7 +2209,9 @@ public class BlockModelGenerators {
       this.createCrafterBlock();
       this.createLantern(Blocks.LANTERN);
       this.createLantern(Blocks.SOUL_LANTERN);
-      this.createAxisAlignedPillarBlockCustomModel(Blocks.CHAIN, plainVariant(ModelLocationUtils.getModelLocation(Blocks.CHAIN)));
+      Blocks.COPPER_LANTERN.waxedMapping().forEach(this::createCopperLantern);
+      this.createAxisAlignedPillarBlockCustomModel(Blocks.IRON_CHAIN, plainVariant(TexturedModel.CHAIN.create(Blocks.IRON_CHAIN, this.modelOutput)));
+      Blocks.COPPER_CHAIN.waxedMapping().forEach(this::createCopperChain);
       this.createAxisAlignedPillarBlock(Blocks.BASALT, TexturedModel.COLUMN);
       this.createAxisAlignedPillarBlock(Blocks.POLISHED_BASALT, TexturedModel.COLUMN);
       this.createTrivialCube(Blocks.SMOOTH_BASALT);
@@ -2469,6 +2508,12 @@ public class BlockModelGenerators {
 
       this.itemModelOutput.accept(Items.LIGHT, ItemModelUtils.selectBlockItemProperty(LightBlock.LEVEL, var1, var2));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.LIGHT).with(var3));
+   }
+
+   private void createCopperChainItem(Item var1, Item var2) {
+      ResourceLocation var3 = this.createFlatItemModel(var1);
+      this.registerSimpleItemModel(var1, var3);
+      this.registerSimpleItemModel(var2, var3);
    }
 
    private void createCandleAndCandleCake(Block var1, Block var2) {

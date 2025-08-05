@@ -301,7 +301,7 @@ public class RealmsMainScreen extends RealmsScreen {
       LinearLayout var1 = LinearLayout.vertical().spacing(8);
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(ImageWidget.texture(130, 64, NO_REALMS_LOCATION, 130, 64));
-      FocusableTextWidget var2 = new FocusableTextWidget(308, NO_REALMS_TEXT, this.font, false, true, 4);
+      FocusableTextWidget var2 = new FocusableTextWidget(308, NO_REALMS_TEXT, this.font, false, false, 4);
       var1.addChild(var2);
       return var1;
    }

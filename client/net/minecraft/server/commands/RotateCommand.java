@@ -25,7 +25,9 @@ public class RotateCommand {
 
    private static int rotate(CommandSourceStack var0, Entity var1, Coordinates var2) {
       Vec2 var3 = var2.getRotation(var0);
-      var1.forceSetRotation(var3.y, var3.x);
+      float var4 = var2.isYRelative() ? var3.y - var1.getYRot() : var3.y;
+      float var5 = var2.isXRelative() ? var3.x - var1.getXRot() : var3.x;
+      var1.forceSetRotation(var4, var2.isYRelative(), var5, var2.isXRelative());
       var0.sendSuccess(() -> Component.translatable("commands.rotate.success", var1.getDisplayName()), true);
       return 1;
    }

@@ -38,7 +38,7 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
          ElytraModel var10 = var4.isBaby ? this.elytraBabyModel : this.elytraModel;
          var1.pushPose();
          var1.translate(0.0F, 0.0F, 0.125F);
-         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)var8.assetId().get(), var10, var4, var7, var1, var2, var3, var9, var4.outlineColor);
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)var8.assetId().get(), var10, var4, var7, var1, var2, var3, var9, var4.outlineColor, 0);
          var1.popPose();
       }
    }

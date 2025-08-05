@@ -256,6 +256,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.POLISHED_BASALT);
       this.dropSelf(Blocks.SMOOTH_BASALT);
       this.dropSelf(Blocks.SOUL_TORCH);
+      this.dropSelf(Blocks.COPPER_TORCH);
       this.dropSelf(Blocks.CARVED_PUMPKIN);
       this.dropSelf(Blocks.JACK_O_LANTERN);
       this.dropSelf(Blocks.REPEATER);
@@ -282,6 +283,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.CRACKED_STONE_BRICKS);
       this.dropSelf(Blocks.CHISELED_STONE_BRICKS);
       this.dropSelf(Blocks.IRON_BARS);
+      Blocks.COPPER_BARS.forEach((var1x) -> this.dropSelf(var1x));
       this.dropSelf(Blocks.OAK_FENCE_GATE);
       this.dropSelf(Blocks.MANGROVE_FENCE_GATE);
       this.dropSelf(Blocks.BAMBOO_FENCE_GATE);
@@ -543,7 +545,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.CHISELED_NETHER_BRICKS);
       this.dropSelf(Blocks.CRACKED_NETHER_BRICKS);
       this.dropSelf(Blocks.QUARTZ_BRICKS);
-      this.dropSelf(Blocks.CHAIN);
+      this.dropSelf(Blocks.IRON_CHAIN);
+      Blocks.COPPER_CHAIN.forEach((var1x) -> this.dropSelf(var1x));
       this.dropSelf(Blocks.WARPED_ROOTS);
       this.dropSelf(Blocks.CRIMSON_ROOTS);
       this.dropSelf(Blocks.MUD_BRICKS);
@@ -908,6 +911,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.BELL, this::createSingleItemTable);
       this.add(Blocks.LANTERN, this::createSingleItemTable);
       this.add(Blocks.SOUL_LANTERN, this::createSingleItemTable);
+      Blocks.COPPER_LANTERN.forEach((var1x) -> this.add(var1x, this::createSingleItemTable));
       this.add(Blocks.SHULKER_BOX, (var1x) -> this.createShulkerBoxDrop(var1x));
       this.add(Blocks.BLACK_SHULKER_BOX, (var1x) -> this.createShulkerBoxDrop(var1x));
       this.add(Blocks.BLUE_SHULKER_BOX, (var1x) -> this.createShulkerBoxDrop(var1x));

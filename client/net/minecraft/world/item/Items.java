@@ -425,6 +425,7 @@ public class Items {
    public static final Item POLISHED_BASALT;
    public static final Item SMOOTH_BASALT;
    public static final Item SOUL_TORCH;
+   public static final Item COPPER_TORCH;
    public static final Item GLOWSTONE;
    public static final Item INFESTED_STONE;
    public static final Item INFESTED_COBBLESTONE;
@@ -449,7 +450,9 @@ public class Items {
    public static final Item RED_MUSHROOM_BLOCK;
    public static final Item MUSHROOM_STEM;
    public static final Item IRON_BARS;
+   public static final WeatheringCopperItems COPPER_BARS;
    public static final Item CHAIN;
+   public static final WeatheringCopperItems COPPER_CHAIN;
    public static final Item GLASS_PANE;
    public static final Item MELON;
    public static final Item VINE;
@@ -1390,6 +1393,7 @@ public class Items {
    public static final Item BELL;
    public static final Item LANTERN;
    public static final Item SOUL_LANTERN;
+   public static final WeatheringCopperItems COPPER_LANTERN;
    public static final Item SWEET_BERRIES;
    public static final Item GLOW_BERRIES;
    public static final Item CAMPFIRE;
@@ -1965,6 +1969,7 @@ public class Items {
       POLISHED_BASALT = registerBlock(Blocks.POLISHED_BASALT);
       SMOOTH_BASALT = registerBlock(Blocks.SMOOTH_BASALT);
       SOUL_TORCH = registerBlock(Blocks.SOUL_TORCH, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.SOUL_WALL_TORCH, Direction.DOWN, var1)));
+      COPPER_TORCH = registerBlock(Blocks.COPPER_TORCH, (BiFunction)((var0, var1) -> new StandingAndWallBlockItem(var0, Blocks.COPPER_WALL_TORCH, Direction.DOWN, var1)));
       GLOWSTONE = registerBlock(Blocks.GLOWSTONE);
       INFESTED_STONE = registerBlock(Blocks.INFESTED_STONE);
       INFESTED_COBBLESTONE = registerBlock(Blocks.INFESTED_COBBLESTONE);
@@ -1989,7 +1994,9 @@ public class Items {
       RED_MUSHROOM_BLOCK = registerBlock(Blocks.RED_MUSHROOM_BLOCK);
       MUSHROOM_STEM = registerBlock(Blocks.MUSHROOM_STEM);
       IRON_BARS = registerBlock(Blocks.IRON_BARS);
-      CHAIN = registerBlock(Blocks.CHAIN);
+      COPPER_BARS = WeatheringCopperItems.create(Blocks.COPPER_BARS, Items::registerBlock);
+      CHAIN = registerBlock(Blocks.IRON_CHAIN);
+      COPPER_CHAIN = WeatheringCopperItems.create(Blocks.COPPER_CHAIN, Items::registerBlock);
       GLASS_PANE = registerBlock(Blocks.GLASS_PANE);
       MELON = registerBlock(Blocks.MELON);
       VINE = registerBlock(Blocks.VINE);
@@ -2930,6 +2937,7 @@ public class Items {
       BELL = registerBlock(Blocks.BELL);
       LANTERN = registerBlock(Blocks.LANTERN);
       SOUL_LANTERN = registerBlock(Blocks.SOUL_LANTERN);
+      COPPER_LANTERN = WeatheringCopperItems.create(Blocks.COPPER_LANTERN, Items::registerBlock);
       SWEET_BERRIES = registerItem("sweet_berries", createBlockItemWithCustomItemName(Blocks.SWEET_BERRY_BUSH), (new Item.Properties()).food(Foods.SWEET_BERRIES));
       GLOW_BERRIES = registerItem("glow_berries", createBlockItemWithCustomItemName(Blocks.CAVE_VINES), (new Item.Properties()).food(Foods.GLOW_BERRIES));
       CAMPFIRE = registerBlock(Blocks.CAMPFIRE, (UnaryOperator)((var0) -> var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));

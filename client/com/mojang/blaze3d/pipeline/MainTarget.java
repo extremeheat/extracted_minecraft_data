@@ -29,8 +29,6 @@ public class MainTarget extends RenderTarget {
          this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
          this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-         this.viewWidth = var3.width;
-         this.viewHeight = var3.height;
          this.width = var3.width;
          this.height = var3.height;
       } else {

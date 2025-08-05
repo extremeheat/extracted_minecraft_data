@@ -15,7 +15,7 @@ public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_UNIFORM = 128;
    public static final int USAGE_UNIFORM_TEXEL_BUFFER = 256;
    private final int usage;
-   public int size;
+   private final int size;
 
    public GpuBuffer(int var1, int var2) {
       super();

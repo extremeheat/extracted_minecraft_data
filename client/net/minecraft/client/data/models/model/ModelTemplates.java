@@ -128,6 +128,13 @@ public class ModelTemplates {
    public static final ModelTemplate CAMPFIRE;
    public static final ModelTemplate LANTERN;
    public static final ModelTemplate HANGING_LANTERN;
+   public static final ModelTemplate CHAIN;
+   public static final ModelTemplate BARS_CAP;
+   public static final ModelTemplate BARS_CAP_ALT;
+   public static final ModelTemplate BARS_POST;
+   public static final ModelTemplate BARS_POST_ENDS;
+   public static final ModelTemplate BARS_POST_SIDE;
+   public static final ModelTemplate BARS_POST_SIDE_ALT;
    public static final ModelTemplate TORCH;
    public static final ModelTemplate TORCH_UNLIT;
    public static final ModelTemplate WALL_TORCH;
@@ -322,6 +329,13 @@ public class ModelTemplates {
       CAMPFIRE = create("template_campfire", TextureSlot.FIRE, TextureSlot.LIT_LOG);
       LANTERN = create("template_lantern", TextureSlot.LANTERN);
       HANGING_LANTERN = create("template_hanging_lantern", "_hanging", TextureSlot.LANTERN);
+      CHAIN = create("template_chain", TextureSlot.TEXTURE);
+      BARS_CAP = create("template_bars_cap", "_cap", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_CAP_ALT = create("template_bars_cap_alt", "_cap_alt", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST = create("template_bars_post", "_post", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST_ENDS = create("template_bars_post_ends", "_post_ends", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST_SIDE = create("template_bars_side", "_side", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST_SIDE_ALT = create("template_bars_side_alt", "_side_alt", TextureSlot.BARS, TextureSlot.EDGE);
       TORCH = create("template_torch", TextureSlot.TORCH);
       TORCH_UNLIT = create("template_torch_unlit", TextureSlot.TORCH);
       WALL_TORCH = create("template_torch_wall", TextureSlot.TORCH);

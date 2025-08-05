@@ -17,7 +17,6 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -242,8 +241,8 @@ public class GlCommandEncoder implements CommandEncoder {
             int var4 = var2.remaining();
             if (var4 > var1.length()) {
                throw new IllegalArgumentException("Cannot write more data than the slice allows (attempting to write " + var4 + " bytes into a slice of length " + var1.length() + ")");
-            } else if (var1.length() + var1.offset() > var3.size) {
-               throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + var4 + " bytes at offset " + var1.offset() + " to " + var3.size + " size buffer)");
+            } else if (var1.length() + var1.offset() > var3.size()) {
+               throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + var4 + " bytes at offset " + var1.offset() + " to " + var3.size() + " size buffer)");
             } else {
                this.device.directStateAccess().bufferSubData(var3.handle, var1.offset(), var2, var3.usage());
             }
@@ -268,9 +267,9 @@ public class GlCommandEncoder implements CommandEncoder {
             throw new IllegalStateException("Buffer is not readable");
          } else if (var3 && (var4.usage() & 2) == 0) {
             throw new IllegalStateException("Buffer is not writable");
-         } else if (var1.offset() + var1.length() > var4.size) {
+         } else if (var1.offset() + var1.length() > var4.size()) {
             int var10002 = var1.length();
-            throw new IllegalArgumentException("Cannot map more data than this buffer can hold (attempting to map " + var10002 + " bytes at offset " + var1.offset() + " from " + var4.size + " size buffer)");
+            throw new IllegalArgumentException("Cannot map more data than this buffer can hold (attempting to map " + var10002 + " bytes at offset " + var1.offset() + " from " + var4.size() + " size buffer)");
          } else {
             int var5 = 0;
             if (var2) {
@@ -304,12 +303,12 @@ public class GlCommandEncoder implements CommandEncoder {
             } else if (var1.length() != var2.length()) {
                int var6 = var1.length();
                throw new IllegalArgumentException("Cannot copy from slice of size " + var6 + " to slice of size " + var2.length() + ", they must be equal");
-            } else if (var1.offset() + var1.length() > var3.size) {
+            } else if (var1.offset() + var1.length() > var3.size()) {
                int var5 = var1.length();
-               throw new IllegalArgumentException("Cannot copy more data than the source buffer holds (attempting to copy " + var5 + " bytes at offset " + var1.offset() + " from " + var3.size + " size buffer)");
-            } else if (var2.offset() + var2.length() > var4.size) {
+               throw new IllegalArgumentException("Cannot copy more data than the source buffer holds (attempting to copy " + var5 + " bytes at offset " + var1.offset() + " from " + var3.size() + " size buffer)");
+            } else if (var2.offset() + var2.length() > var4.size()) {
                int var10002 = var2.length();
-               throw new IllegalArgumentException("Cannot copy more data than the target buffer can hold (attempting to copy " + var10002 + " bytes at offset " + var2.offset() + " to " + var4.size + " size buffer)");
+               throw new IllegalArgumentException("Cannot copy more data than the target buffer can hold (attempting to copy " + var10002 + " bytes at offset " + var2.offset() + " to " + var4.size() + " size buffer)");
             } else {
                this.device.directStateAccess().copyBufferSubData(var3.handle, var4.handle, var1.offset(), var2.offset(), var1.length());
             }
@@ -373,12 +372,12 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   public void writeToTexture(GpuTexture var1, IntBuffer var2, NativeImage.Format var3, int var4, int var5, int var6, int var7, int var8, int var9) {
+   public void writeToTexture(GpuTexture var1, ByteBuffer var2, NativeImage.Format var3, int var4, int var5, int var6, int var7, int var8, int var9) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (var4 >= 0 && var4 < var1.getMipLevels()) {
-         if (var8 * var9 > var2.remaining()) {
-            throw new IllegalArgumentException("Copy would overrun the source buffer (remaining length of " + var2.remaining() + ", but copy is " + var8 + "x" + var9 + ")");
+         if (var8 * var9 * var3.components() > var2.remaining()) {
+            throw new IllegalArgumentException("Copy would overrun the source buffer (remaining length of " + var2.remaining() + ", but copy is " + var8 + "x" + var9 + " of format " + String.valueOf(var3) + ")");
          } else if (var6 + var8 <= var1.getWidth(var4) && var7 + var9 <= var1.getHeight(var4)) {
             if (var1.isClosed()) {
                throw new IllegalStateException("Destination texture is closed");

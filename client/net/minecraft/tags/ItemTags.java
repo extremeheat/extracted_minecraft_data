@@ -69,6 +69,9 @@ public final class ItemTags {
    public static final TagKey<Item> LIGHTNING_RODS = bind("lightning_rods");
    public static final TagKey<Item> COPPER_GOLEM_STATUES = bind("copper_golem_statues");
    public static final TagKey<Item> COPPER = bind("copper");
+   public static final TagKey<Item> CHAINS = bind("chains");
+   public static final TagKey<Item> LANTERNS = bind("lanterns");
+   public static final TagKey<Item> BARS = bind("bars");
    public static final TagKey<Item> SIGNS = bind("signs");
    public static final TagKey<Item> HANGING_SIGNS = bind("hanging_signs");
    public static final TagKey<Item> BEE_FOOD = bind("bee_food");

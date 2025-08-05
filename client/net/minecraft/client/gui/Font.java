@@ -16,10 +16,10 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
@@ -45,7 +45,7 @@ public class Font {
       this.splitter = new StringSplitter((var1x, var2) -> this.getGlyphSource(var2.getFont()).getGlyph(var1x).info().getAdvance(var2.isBold()));
    }
 
-   private GlyphSource getGlyphSource(ResourceLocation var1) {
+   private GlyphSource getGlyphSource(FontDescription var1) {
       return this.provider.glyphs(var1);
    }
 
@@ -381,7 +381,7 @@ public class Font {
    }
 
    public interface Provider {
-      GlyphSource glyphs(ResourceLocation var1);
+      GlyphSource glyphs(FontDescription var1);
 
       BakeableGlyph whiteGlyph();
    }

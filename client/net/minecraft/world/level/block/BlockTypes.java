@@ -258,7 +258,9 @@ public class BlockTypes {
       Registry.register(var0, (String)"wall", WallBlock.CODEC);
       Registry.register(var0, (String)"waterlily", WaterlilyBlock.CODEC);
       Registry.register(var0, (String)"waterlogged_transparent", WaterloggedTransparentBlock.CODEC);
+      Registry.register(var0, (String)"weathering_copper_bar", WeatheringCopperBarsBlock.CODEC);
       Registry.register(var0, (String)"weathering_copper_bulb", WeatheringCopperBulbBlock.CODEC);
+      Registry.register(var0, (String)"weathering_copper_chain", WeatheringCopperChainBlock.CODEC);
       Registry.register(var0, (String)"weathering_copper_chest", WeatheringCopperChestBlock.CODEC);
       Registry.register(var0, (String)"weathering_copper_door", WeatheringCopperDoorBlock.CODEC);
       Registry.register(var0, (String)"weathering_copper_full", WeatheringCopperFullBlock.CODEC);
@@ -267,6 +269,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"weathering_copper_slab", WeatheringCopperSlabBlock.CODEC);
       Registry.register(var0, (String)"weathering_copper_stair", WeatheringCopperStairBlock.CODEC);
       Registry.register(var0, (String)"weathering_copper_trap_door", WeatheringCopperTrapDoorBlock.CODEC);
+      Registry.register(var0, (String)"weathering_lantern", WeatheringLanternBlock.CODEC);
       Registry.register(var0, (String)"weathering_lightning_rod", WeatheringLightningRodBlock.CODEC);
       Registry.register(var0, (String)"web", WebBlock.CODEC);
       Registry.register(var0, (String)"weeping_vines_plant", WeepingVinesPlantBlock.CODEC);

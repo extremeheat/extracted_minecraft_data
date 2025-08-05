@@ -145,6 +145,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    public final S createRenderState(T var1, float var2) {
       EntityRenderState var3 = this.createRenderState();
       this.extractRenderState(var1, var3, var2);
+      this.finalizeRenderState(var1, var3);
       return (S)var3;
    }
 
@@ -189,10 +190,9 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          var2.nameTag = null;
       }
 
-      Level var25;
       label82: {
          var2.isDiscrete = var1.isDiscrete();
-         var25 = var1.level();
+         Level var25 = var1.level();
          if (var1 instanceof Leashable var28) {
             Entity var31 = var28.getLeashHolder();
             if (var31 instanceof Entity) {
@@ -267,7 +267,12 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       }
 
       var2.lightCoords = this.getPackedLightCoords(var1, var3);
-      this.extractShadow(var2, var29, var25);
+   }
+
+   protected void finalizeRenderState(T var1, S var2) {
+      Minecraft var3 = Minecraft.getInstance();
+      Level var4 = var1.level();
+      this.extractShadow(var2, var3, var4);
    }
 
    private void extractShadow(S var1, Minecraft var2, Level var3) {

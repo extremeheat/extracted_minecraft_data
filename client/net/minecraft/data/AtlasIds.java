@@ -1,4 +1,4 @@
-package net.minecraft.client.resources.model;
+package net.minecraft.data;
 
 import net.minecraft.resources.ResourceLocation;
 

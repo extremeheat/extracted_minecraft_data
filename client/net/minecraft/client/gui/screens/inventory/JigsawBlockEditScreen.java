@@ -138,10 +138,6 @@ public class JigsawBlockEditScreen extends Screen {
       this.setInitialFocus(this.poolEdit);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
-   }
-
    public static boolean isValidResourceLocation(String var0) {
       return ResourceLocation.tryParse(var0) != null;
    }
@@ -150,6 +146,10 @@ public class JigsawBlockEditScreen extends Screen {
       boolean var1 = isValidResourceLocation(this.nameEdit.getValue()) && isValidResourceLocation(this.targetEdit.getValue()) && isValidResourceLocation(this.poolEdit.getValue());
       this.doneButton.active = var1;
       this.generateButton.active = var1;
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    public void resize(Minecraft var1, int var2, int var3) {

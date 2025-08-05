@@ -89,7 +89,10 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    public void onClose() {
-      this.fadeOutStart = (float)Util.getMillis();
+      if (this.fadeOutStart == 0.0F) {
+         this.fadeOutStart = (float)Util.getMillis();
+      }
+
    }
 
    private void closeAndSetScreen(Screen var1) {

@@ -101,7 +101,9 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var3.submitModel(this.model, var1, var2, var7, var1.lightCoords, var8, var10, (TextureAtlasSprite)null, var1.outlineColor, 0);
       }
 
-      if (this.shouldRenderLayers(var1)) {
+      if (this.shouldRenderLayers(var1) && !this.layers.isEmpty()) {
+         this.model.setupAnim(var1);
+
          for(RenderLayer var14 : this.layers) {
             var14.submit(var2, var3, var1.lightCoords, var1, var1.yRot, var1.xRot);
          }

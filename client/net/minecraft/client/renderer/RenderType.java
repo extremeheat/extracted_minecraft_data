@@ -20,6 +20,7 @@ import net.minecraft.Util;
 import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public abstract class RenderType extends RenderStateShard {
@@ -666,7 +667,7 @@ public abstract class RenderType extends RenderStateShard {
 
       public void draw(MeshData var1) {
          this.setupRenderState();
-         GpuBufferSlice var2 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
+         GpuBufferSlice var2 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
          MeshData var3 = var1;
 
          try {

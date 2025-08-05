@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
+import net.minecraft.network.chat.contents.ObjectContents;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.ScoreContents;
 import net.minecraft.network.chat.contents.SelectorContents;
@@ -93,7 +94,7 @@ public class ComponentSerialization {
    }
 
    private static Codec<Component> createCodec(Codec<Component> var0) {
-      ComponentContents.Type[] var1 = new ComponentContents.Type[]{PlainTextContents.TYPE, TranslatableContents.TYPE, KeybindContents.TYPE, ScoreContents.TYPE, SelectorContents.TYPE, NbtContents.TYPE};
+      ComponentContents.Type[] var1 = new ComponentContents.Type[]{PlainTextContents.TYPE, TranslatableContents.TYPE, KeybindContents.TYPE, ScoreContents.TYPE, SelectorContents.TYPE, NbtContents.TYPE, ObjectContents.TYPE};
       MapCodec var2 = createLegacyComponentMatcher(var1, ComponentContents.Type::codec, ComponentContents::type, "type");
       Codec var3 = RecordCodecBuilder.create((var2x) -> var2x.group(var2.forGetter(Component::getContents), ExtraCodecs.nonEmptyList(var0.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::getSiblings), Style.Serializer.MAP_CODEC.forGetter(Component::getStyle)).apply(var2x, MutableComponent::new));
       return Codec.either(Codec.either(Codec.STRING, ExtraCodecs.nonEmptyList(var0.listOf())), var3).xmap((var0x) -> (Component)var0x.map((var0) -> (Component)var0.map(Component::literal, ComponentSerialization::createFromList), (var0) -> var0), (var0x) -> {

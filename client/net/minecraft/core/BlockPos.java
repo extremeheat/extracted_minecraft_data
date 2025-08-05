@@ -1,6 +1,7 @@
 package net.minecraft.core;
 
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
@@ -475,6 +476,90 @@ public class BlockPos extends Vec3i {
       }
 
       return var7;
+   }
+
+   public static Iterable<BlockPos> betweenCornersInDirection(AABB var0, Vec3 var1) {
+      Vec3 var2 = var0.getMinPosition();
+      int var3 = Mth.floor(var2.x());
+      int var4 = Mth.floor(var2.y());
+      int var5 = Mth.floor(var2.z());
+      Vec3 var6 = var0.getMaxPosition();
+      int var7 = Mth.floor(var6.x());
+      int var8 = Mth.floor(var6.y());
+      int var9 = Mth.floor(var6.z());
+      return betweenCornersInDirection(var3, var4, var5, var7, var8, var9, var1);
+   }
+
+   public static Iterable<BlockPos> betweenCornersInDirection(BlockPos var0, BlockPos var1, Vec3 var2) {
+      return betweenCornersInDirection(var0.getX(), var0.getY(), var0.getZ(), var1.getX(), var1.getY(), var1.getZ(), var2);
+   }
+
+   public static Iterable<BlockPos> betweenCornersInDirection(int var0, int var1, int var2, int var3, int var4, int var5, Vec3 var6) {
+      int var7 = Math.min(var0, var3);
+      int var8 = Math.min(var1, var4);
+      int var9 = Math.min(var2, var5);
+      int var10 = Math.max(var0, var3);
+      int var11 = Math.max(var1, var4);
+      int var12 = Math.max(var2, var5);
+      int var13 = var10 - var7;
+      int var14 = var11 - var8;
+      int var15 = var12 - var9;
+      int var16 = var6.x >= 0.0 ? var7 : var10;
+      int var17 = var6.y >= 0.0 ? var8 : var11;
+      int var18 = var6.z >= 0.0 ? var9 : var12;
+      ImmutableList var19 = Direction.axisStepOrder(var6);
+      Direction.Axis var20 = (Direction.Axis)var19.get(0);
+      Direction.Axis var21 = (Direction.Axis)var19.get(1);
+      Direction.Axis var22 = (Direction.Axis)var19.get(2);
+      Direction var23 = var6.get(var20) >= 0.0 ? var20.getPositive() : var20.getNegative();
+      Direction var24 = var6.get(var21) >= 0.0 ? var21.getPositive() : var21.getNegative();
+      Direction var25 = var6.get(var22) >= 0.0 ? var22.getPositive() : var22.getNegative();
+      int var26 = var20.choose(var13, var14, var15);
+      int var27 = var21.choose(var13, var14, var15);
+      int var28 = var22.choose(var13, var14, var15);
+      return () -> new AbstractIterator<BlockPos>() {
+            private final MutableBlockPos cursor = new MutableBlockPos();
+            private int firstIndex;
+            private int secondIndex;
+            private int thirdIndex;
+            private boolean end;
+            private final int firstDirX = var23.getStepX();
+            private final int firstDirY = var23.getStepY();
+            private final int firstDirZ = var23.getStepZ();
+            private final int secondDirX = var24.getStepX();
+            private final int secondDirY = var24.getStepY();
+            private final int secondDirZ = var24.getStepZ();
+            private final int thirdDirX = var25.getStepX();
+            private final int thirdDirY = var25.getStepY();
+            private final int thirdDirZ = var25.getStepZ();
+
+            protected BlockPos computeNext() {
+               if (this.end) {
+                  return (BlockPos)this.endOfData();
+               } else {
+                  this.cursor.set(var16 + this.firstDirX * this.firstIndex + this.secondDirX * this.secondIndex + this.thirdDirX * this.thirdIndex, var17 + this.firstDirY * this.firstIndex + this.secondDirY * this.secondIndex + this.thirdDirY * this.thirdIndex, var18 + this.firstDirZ * this.firstIndex + this.secondDirZ * this.secondIndex + this.thirdDirZ * this.thirdIndex);
+                  if (this.thirdIndex < var28) {
+                     ++this.thirdIndex;
+                  } else if (this.secondIndex < var27) {
+                     ++this.secondIndex;
+                     this.thirdIndex = 0;
+                  } else if (this.firstIndex < var26) {
+                     ++this.firstIndex;
+                     this.thirdIndex = 0;
+                     this.secondIndex = 0;
+                  } else {
+                     this.end = true;
+                  }
+
+                  return this.cursor;
+               }
+            }
+
+            // $FF: synthetic method
+            protected Object computeNext() {
+               return this.computeNext();
+            }
+         };
    }
 
    // $FF: synthetic method

@@ -15,17 +15,17 @@ import net.minecraft.client.gui.font.providers.GlyphProviderType;
 import net.minecraft.util.ExtraCodecs;
 
 public class SpaceProvider implements GlyphProvider {
-   private final Int2ObjectMap<GlyphInfo.SpaceGlyphInfo> glyphs;
+   private final Int2ObjectMap<GlyphInfo.EmptyStitched> glyphs;
 
    public SpaceProvider(Map<Integer, Float> var1) {
       super();
       this.glyphs = new Int2ObjectOpenHashMap(var1.size());
-      var1.forEach((var1x, var2) -> this.glyphs.put(var1x, (GlyphInfo.SpaceGlyphInfo)() -> var2));
+      var1.forEach((var1x, var2) -> this.glyphs.put(var1x, (GlyphInfo.EmptyStitched)() -> var2));
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
-      return (GlyphInfo)this.glyphs.get(var1);
+   public GlyphInfo.Stitched getGlyph(int var1) {
+      return (GlyphInfo.Stitched)this.glyphs.get(var1);
    }
 
    public IntSet getSupportedGlyphs() {

@@ -5,7 +5,6 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MapRenderer;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -13,6 +12,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
@@ -44,7 +44,7 @@ public interface EntityRendererProvider<T extends Entity> {
          this.equipmentAssets = var7;
          this.font = var9;
          this.atlasManager = var8;
-         this.equipmentRenderer = new EquipmentLayerRenderer(var7, var8.getAtlas(Sheets.ARMOR_TRIMS_SHEET));
+         this.equipmentRenderer = new EquipmentLayerRenderer(var7, var8.getAtlasOrThrow(AtlasIds.ARMOR_TRIMS));
       }
 
       public EntityRenderDispatcher getEntityRenderDispatcher() {
@@ -84,7 +84,7 @@ public interface EntityRendererProvider<T extends Entity> {
       }
 
       public TextureAtlas getAtlas(ResourceLocation var1) {
-         return this.atlasManager.getAtlas(var1);
+         return this.atlasManager.getAtlasOrThrow(var1);
       }
 
       public ModelPart bakeLayer(ModelLayerLocation var1) {

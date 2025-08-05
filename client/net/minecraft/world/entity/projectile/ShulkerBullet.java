@@ -318,9 +318,6 @@ public class ShulkerBullet extends Projectile {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      double var2 = var1.getXa();
-      double var4 = var1.getYa();
-      double var6 = var1.getZa();
-      this.setDeltaMovement(var2, var4, var6);
+      this.setDeltaMovement(var1.getMovement());
    }
 }

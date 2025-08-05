@@ -99,11 +99,11 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
       return this.compareTo((PackFormat)var1);
    }
 
-   public static record IntermediaryFormat(Optional<PackFormat> min, Optional<PackFormat> max, Optional<Integer> format, Optional<List<Integer>> supported) {
-      static final MapCodec<IntermediaryFormat> PACK_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PackFormat.BOTTOM_CODEC.optionalFieldOf("min_format").forGetter(IntermediaryFormat::min), PackFormat.TOP_CODEC.optionalFieldOf("max_format").forGetter(IntermediaryFormat::max), Codec.INT.optionalFieldOf("pack_format").forGetter(IntermediaryFormat::format), Codec.INT.listOf().optionalFieldOf("supported_formats").forGetter(IntermediaryFormat::supported)).apply(var0, IntermediaryFormat::new));
-      public static final MapCodec<IntermediaryFormat> OVERLAY_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PackFormat.BOTTOM_CODEC.optionalFieldOf("min_format").forGetter(IntermediaryFormat::min), PackFormat.TOP_CODEC.optionalFieldOf("max_format").forGetter(IntermediaryFormat::max), Codec.INT.listOf().optionalFieldOf("formats").forGetter(IntermediaryFormat::supported)).apply(var0, (var0x, var1, var2) -> new IntermediaryFormat(var0x, var1, var0x.map(PackFormat::major), var2)));
+   public static record IntermediaryFormat(Optional<PackFormat> min, Optional<PackFormat> max, Optional<Integer> format, Optional<InclusiveRange<Integer>> supported) {
+      static final MapCodec<IntermediaryFormat> PACK_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PackFormat.BOTTOM_CODEC.optionalFieldOf("min_format").forGetter(IntermediaryFormat::min), PackFormat.TOP_CODEC.optionalFieldOf("max_format").forGetter(IntermediaryFormat::max), Codec.INT.optionalFieldOf("pack_format").forGetter(IntermediaryFormat::format), InclusiveRange.codec(Codec.INT).optionalFieldOf("supported_formats").forGetter(IntermediaryFormat::supported)).apply(var0, IntermediaryFormat::new));
+      public static final MapCodec<IntermediaryFormat> OVERLAY_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PackFormat.BOTTOM_CODEC.optionalFieldOf("min_format").forGetter(IntermediaryFormat::min), PackFormat.TOP_CODEC.optionalFieldOf("max_format").forGetter(IntermediaryFormat::max), InclusiveRange.codec(Codec.INT).optionalFieldOf("formats").forGetter(IntermediaryFormat::supported)).apply(var0, (var0x, var1, var2) -> new IntermediaryFormat(var0x, var1, var0x.map(PackFormat::major), var2)));
 
-      public IntermediaryFormat(Optional<PackFormat> var1, Optional<PackFormat> var2, Optional<Integer> var3, Optional<List<Integer>> var4) {
+      public IntermediaryFormat(Optional<PackFormat> var1, Optional<PackFormat> var2, Optional<Integer> var3, Optional<InclusiveRange<Integer>> var4) {
          super();
          this.min = var1;
          this.max = var2;
@@ -113,14 +113,14 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
 
       public static IntermediaryFormat fromRange(InclusiveRange<PackFormat> var0, int var1) {
          InclusiveRange var2 = var0.map(PackFormat::major);
-         return new IntermediaryFormat(Optional.of((PackFormat)var0.minInclusive()), Optional.of((PackFormat)var0.maxInclusive()), var2.isValueInRange(var1) ? Optional.of((Integer)var2.minInclusive()) : Optional.empty(), var2.isValueInRange(var1) ? Optional.of(List.of((Integer)var2.minInclusive(), (Integer)var2.maxInclusive())) : Optional.empty());
+         return new IntermediaryFormat(Optional.of((PackFormat)var0.minInclusive()), Optional.of((PackFormat)var0.maxInclusive()), var2.isValueInRange(var1) ? Optional.of((Integer)var2.minInclusive()) : Optional.empty(), var2.isValueInRange(var1) ? Optional.of(new InclusiveRange((Integer)var2.minInclusive(), (Integer)var2.maxInclusive())) : Optional.empty());
       }
 
       public int effectiveMinMajorVersion() {
          if (this.min.isPresent()) {
-            return this.supported.isPresent() ? Math.min(((PackFormat)this.min.get()).major(), (Integer)((List)this.supported.get()).getFirst()) : ((PackFormat)this.min.get()).major();
+            return this.supported.isPresent() ? Math.min(((PackFormat)this.min.get()).major(), (Integer)((InclusiveRange)this.supported.get()).minInclusive()) : ((PackFormat)this.min.get()).major();
          } else {
-            return this.supported.isPresent() ? (Integer)((List)this.supported.get()).getFirst() : 2147483647;
+            return this.supported.isPresent() ? (Integer)((InclusiveRange)this.supported.get()).minInclusive() : 2147483647;
          }
       }
 
@@ -163,17 +163,13 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
                   return DataResult.error(() -> var4 + " declares support for format " + var6 + ", but game versions supporting formats 17 to " + var1 + " require a " + var5 + " field. Add \"" + var5 + "\": [" + var6 + ", " + var1 + "] or require a version greater or equal to " + (var1 + 1) + ".0.");
                }
 
-               List var8 = (List)this.supported.get();
-               if (var8.size() != 2) {
-                  return DataResult.error(() -> var4 + " has invalid " + var5 + ", should be a list of two versions");
+               InclusiveRange var8 = (InclusiveRange)this.supported.get();
+               if ((Integer)var8.minInclusive() != var6) {
+                  return DataResult.error(() -> var4 + " version declaration mismatch between " + var5 + " (from " + String.valueOf(var8.minInclusive()) + ") and min_format (" + String.valueOf(this.min.get()) + ")");
                }
 
-               if ((Integer)var8.getFirst() != var6) {
-                  return DataResult.error(() -> var4 + " version declaration mismatch between " + var5 + " (from " + String.valueOf(var8.getFirst()) + ") and min_format (" + String.valueOf(this.min.get()) + ")");
-               }
-
-               if ((Integer)var8.getLast() != var7 && (Integer)var8.getLast() != var1) {
-                  return DataResult.error(() -> var4 + " version declaration mismatch between " + var5 + " (up to " + String.valueOf(var8.getLast()) + ") and max_format (" + String.valueOf(this.max.get()) + ")");
+               if ((Integer)var8.maxInclusive() != var7 && (Integer)var8.maxInclusive() != var1) {
+                  return DataResult.error(() -> var4 + " version declaration mismatch between " + var5 + " (up to " + String.valueOf(var8.maxInclusive()) + ") and max_format (" + String.valueOf(this.max.get()) + ")");
                }
 
                if (var2) {
@@ -193,28 +189,24 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
       }
 
       private DataResult<InclusiveRange<PackFormat>> validateOldFormat(int var1, boolean var2, String var3, String var4) {
-         List var5 = (List)this.supported.get();
-         if (var5.size() != 2) {
-            return DataResult.error(() -> var3 + " has invalid " + var4 + ", should be a list of two versions");
+         InclusiveRange var5 = (InclusiveRange)this.supported.get();
+         int var6 = (Integer)var5.minInclusive();
+         int var7 = (Integer)var5.maxInclusive();
+         if (var7 > var1) {
+            return DataResult.error(() -> var3 + " declares support for version newer than " + var1 + ", but is missing mandatory fields min_format and max_format");
          } else {
-            int var6 = (Integer)var5.getFirst();
-            int var7 = (Integer)var5.getLast();
-            if (var7 > var1) {
-               return DataResult.error(() -> var3 + " declares support for version newer than " + var1 + ", but is missing mandatory fields min_format and max_format");
-            } else {
-               if (var2) {
-                  if (!this.format.isPresent()) {
-                     return DataResult.error(() -> var3 + " declares support for formats up to " + var1 + ", but game versions supporting formats 17 to " + var1 + " require a pack_format field. Add \"pack_format\": " + var6 + " or require a version greater or equal to " + (var1 + 1) + ".0.");
-                  }
-
-                  String var8 = this.validatePackFormatForRange(var6, var7);
-                  if (var8 != null) {
-                     return DataResult.error(() -> var8);
-                  }
+            if (var2) {
+               if (!this.format.isPresent()) {
+                  return DataResult.error(() -> var3 + " declares support for formats up to " + var1 + ", but game versions supporting formats 17 to " + var1 + " require a pack_format field. Add \"pack_format\": " + var6 + " or require a version greater or equal to " + (var1 + 1) + ".0.");
                }
 
-               return DataResult.success((new InclusiveRange(var6, var7)).map(PackFormat::of));
+               String var8 = this.validatePackFormatForRange(var6, var7);
+               if (var8 != null) {
+                  return DataResult.error(() -> var8);
+               }
             }
+
+            return DataResult.success((new InclusiveRange(var6, var7)).map(PackFormat::of));
          }
       }
 

@@ -121,7 +121,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       }
    }
 
-   private void release() {
+   protected void release() {
       this.clickCount = 0;
       this.setDown(false);
    }

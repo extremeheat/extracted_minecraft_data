@@ -13,7 +13,7 @@ public class AllMissingGlyphProvider implements GlyphProvider {
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
+   public GlyphInfo.Stitched getGlyph(int var1) {
       return SpecialGlyphs.MISSING;
    }
 

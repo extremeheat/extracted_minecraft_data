@@ -185,7 +185,7 @@ public class BookViewScreen extends Screen {
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
+      super.renderBackground(var1, var2, var3, var4);
       var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
@@ -242,6 +242,10 @@ public class BookViewScreen extends Screen {
    }
 
    protected void closeContainerOnServer() {
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    @Nullable

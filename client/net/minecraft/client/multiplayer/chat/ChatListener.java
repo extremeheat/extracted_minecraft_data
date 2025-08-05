@@ -161,7 +161,7 @@ public class ChatListener {
             }
          }
 
-         this.logPlayerMessage(var2, var1, var4, var7);
+         this.logPlayerMessage(var2, var4, var7);
          this.previousMessageTime = Util.getMillis();
          return true;
       } else {
@@ -177,9 +177,9 @@ public class ChatListener {
       return this.isSenderLocalPlayer(var1.sender()) ? ChatTrustLevel.SECURE : ChatTrustLevel.evaluate(var1, var2, var3);
    }
 
-   private void logPlayerMessage(PlayerChatMessage var1, ChatType.Bound var2, GameProfile var3, ChatTrustLevel var4) {
-      ChatLog var5 = this.minecraft.getReportingContext().chatLog();
-      var5.push(LoggedChatMessage.player(var3, var1, var4));
+   private void logPlayerMessage(PlayerChatMessage var1, GameProfile var2, ChatTrustLevel var3) {
+      ChatLog var4 = this.minecraft.getReportingContext().chatLog();
+      var4.push(LoggedChatMessage.player(var2, var1, var3));
    }
 
    private void logSystemMessage(Component var1, Instant var2) {

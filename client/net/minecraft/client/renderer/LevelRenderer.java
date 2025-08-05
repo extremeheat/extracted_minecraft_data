@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
@@ -114,7 +113,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    public static final int HALF_SECTION_SIZE = 8;
    public static final int NEARBY_SECTION_DISTANCE_IN_BLOCKS = 32;
    private static final int MINIMUM_TRANSPARENT_SORT_COUNT = 15;
-   private static final Comparator<Entity> ENTITY_COMPARATOR = Comparator.comparing((var0) -> var0.getType().hashCode());
    private final Minecraft minecraft;
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -410,6 +408,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public void renderLevel(GraphicsResourceAllocator var1, DeltaTracker var2, boolean var3, Camera var4, Matrix4f var5, Matrix4f var6, GpuBufferSlice var7, Vector4f var8, boolean var9) {
       float var10 = var2.getGameTimeDeltaPartialTick(false);
+      this.levelRenderState.reset();
       this.blockEntityRenderDispatcher.prepare(this.level, var4, this.minecraft.hitResult);
       this.entityRenderDispatcher.prepare(var4, this.minecraft.crosshairPickEntity);
       final ProfilerFiller var11 = Profiler.get();
@@ -432,7 +431,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
 
       var11.popPush("extractEntities");
-      this.levelRenderState.reset();
       this.extractVisibleEntities(var4, var20, var2, this.levelRenderState);
       var11.popPush("terrain_setup");
       this.setupRender(var4, var20, var19, this.minecraft.player.isSpectator());
@@ -502,7 +500,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             var11.pop();
          }
       });
-      this.levelRenderState.reset();
       this.targets.clear();
       var21.popMatrix();
       var11.pop();

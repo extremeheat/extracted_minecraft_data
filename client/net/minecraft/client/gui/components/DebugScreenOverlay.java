@@ -128,7 +128,7 @@ public class DebugScreenOverlay {
    }
 
    public void render(GuiGraphics var1) {
-      if (this.minecraft.isGameLoadFinished()) {
+      if (this.minecraft.isGameLoadFinished() && (!this.minecraft.options.hideGui || this.minecraft.screen != null)) {
          Collection var2 = this.minecraft.debugEntries.getCurrentlyEnabled();
          if (!var2.isEmpty()) {
             var1.nextStratum();
@@ -337,7 +337,7 @@ public class DebugScreenOverlay {
 
    public boolean showDebugScreen() {
       DebugScreenEntryList var1 = this.minecraft.debugEntries;
-      return (var1.isF3Visible() || !var1.getCurrentlyEnabled().isEmpty()) && !this.minecraft.options.hideGui;
+      return (var1.isF3Visible() || !var1.getCurrentlyEnabled().isEmpty()) && (!this.minecraft.options.hideGui || this.minecraft.screen != null);
    }
 
    public boolean showProfilerChart() {
