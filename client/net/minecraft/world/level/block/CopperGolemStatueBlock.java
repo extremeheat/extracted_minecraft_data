@@ -97,7 +97,7 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
 
    void updatePose(Level var1, BlockState var2, BlockPos var3, Player var4) {
       var1.playSound((Entity)null, var3, SoundEvents.COPPER_GOLEM_BECOME_STATUE, SoundSource.BLOCKS);
-      var1.setBlock(var3, (BlockState)var2.setValue(BlockStateProperties.COPPER_GOLEM_POSE, ((Pose)var2.getValue(BlockStateProperties.COPPER_GOLEM_POSE)).getNextPose()), 3);
+      var1.setBlock(var3, (BlockState)var2.setValue(POSE, ((Pose)var2.getValue(POSE)).getNextPose()), 3);
       var1.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
    }
 
@@ -118,7 +118,7 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
    }
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return ((Pose)var1.getValue(BlockStateProperties.COPPER_GOLEM_POSE)).ordinal() + 1;
+      return ((Pose)var1.getValue(POSE)).ordinal() + 1;
    }
 
    protected FluidState getFluidState(BlockState var1) {

@@ -1,6 +1,8 @@
 package net.minecraft.client.sounds;
 
 import java.util.concurrent.locks.LockSupport;
+import net.minecraft.CrashReport;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.thread.BlockableEventLoop;
 
 public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
@@ -15,6 +17,7 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
       Thread var1 = new Thread(this::run);
       var1.setDaemon(true);
       var1.setName("Sound engine");
+      var1.setUncaughtExceptionHandler((var0, var1x) -> Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var1x, "Uncaught exception on thread: " + var0.getName())));
       var1.start();
       return var1;
    }

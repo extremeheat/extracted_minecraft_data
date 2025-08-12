@@ -4,12 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 
@@ -99,6 +102,10 @@ public final class WeightedList<E> {
 
    public static <E> Codec<WeightedList<E>> nonEmptyCodec(MapCodec<E> var0) {
       return ExtraCodecs.nonEmptyList(Weighted.codec(var0).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
+   }
+
+   public static <E, B extends ByteBuf> StreamCodec<B, WeightedList<E>> streamCodec(StreamCodec<B, E> var0) {
+      return Weighted.streamCodec(var0).apply(ByteBufCodecs.list()).map(WeightedList::of, WeightedList::unwrap);
    }
 
    public boolean contains(E var1) {

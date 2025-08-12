@@ -100,16 +100,24 @@ public class MinecartFurnace extends AbstractMinecart {
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(ItemTags.FURNACE_MINECART_FUEL) && this.fuel + 3600 <= 32000) {
+      if (this.addFuel(var1.position(), var3)) {
          var3.consume(1, var1);
-         this.fuel += 3600;
-      }
-
-      if (this.fuel > 0) {
-         this.push = this.position().subtract(var1.position()).horizontal();
       }
 
       return InteractionResult.SUCCESS;
+   }
+
+   public boolean addFuel(Vec3 var1, ItemStack var2) {
+      if (var2.is(ItemTags.FURNACE_MINECART_FUEL) && this.fuel + 3600 <= 32000) {
+         this.fuel += 3600;
+         if (this.fuel > 0) {
+            this.push = this.position().subtract(var1).horizontal();
+         }
+
+         return true;
+      } else {
+         return false;
+      }
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {

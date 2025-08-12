@@ -205,7 +205,7 @@ public class Creeper extends Monster {
             if (!var3.isDamageableItem()) {
                var3.shrink(1);
             } else {
-               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
             }
          }
 

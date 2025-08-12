@@ -253,7 +253,7 @@ public class ItemModelGenerators {
    }
 
    private static ItemModel.Unbaked createFlatModelDispatch(ItemModel.Unbaked var0, ItemModel.Unbaked var1) {
-      return ItemModelUtils.select(new DisplayContext(), var1, ItemModelUtils.when(List.of(ItemDisplayContext.GUI, ItemDisplayContext.GROUND, ItemDisplayContext.FIXED), var0));
+      return ItemModelUtils.select(new DisplayContext(), var1, ItemModelUtils.when(List.of(ItemDisplayContext.GUI, ItemDisplayContext.GROUND, ItemDisplayContext.FIXED, ItemDisplayContext.ON_SHELF), var0));
    }
 
    private void generateSpyglass(Item var1) {

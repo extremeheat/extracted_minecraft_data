@@ -3,6 +3,7 @@ package net.minecraft.client.gui;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -86,10 +87,12 @@ public class GuiGraphics {
    private final GuiRenderState guiRenderState;
    @Nullable
    private Runnable deferredTooltip;
+   private final List<OutlineBox> deferredOutlines;
 
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
       super();
       this.scissorStack = new ScissorStack();
+      this.deferredOutlines = new ArrayList();
       this.minecraft = var1;
       this.pose = var2;
       AtlasManager var4 = var1.getAtlasManager();
@@ -260,11 +263,8 @@ public class GuiGraphics {
       this.drawString(var1, var2, var3, var4, var6, true);
    }
 
-   public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
-      this.fill(var1, var2, var1 + var3, var2 + 1, var5);
-      this.fill(var1, var2 + var4 - 1, var1 + var3, var2 + var4, var5);
-      this.fill(var1, var2 + 1, var1 + 1, var2 + var4 - 1, var5);
-      this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
+   public void submitOutline(int var1, int var2, int var3, int var4, int var5) {
+      this.deferredOutlines.add(new OutlineBox(var1, var2, var3, var4, var5));
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6) {
@@ -574,7 +574,17 @@ public class GuiGraphics {
       this.pose.popMatrix();
    }
 
-   public void renderDeferredTooltip() {
+   public void renderDeferredElements() {
+      if (!this.deferredOutlines.isEmpty()) {
+         this.nextStratum();
+
+         for(OutlineBox var2 : this.deferredOutlines) {
+            var2.render(this);
+         }
+
+         this.deferredOutlines.clear();
+      }
+
       if (this.deferredTooltip != null) {
          this.nextStratum();
          this.deferredTooltip.run();
@@ -769,6 +779,24 @@ public class GuiGraphics {
 
       public boolean containsPoint(int var1, int var2) {
          return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(var1, var2);
+      }
+   }
+
+   static record OutlineBox(int x, int y, int width, int height, int color) {
+      OutlineBox(int var1, int var2, int var3, int var4, int var5) {
+         super();
+         this.x = var1;
+         this.y = var2;
+         this.width = var3;
+         this.height = var4;
+         this.color = var5;
+      }
+
+      public void render(GuiGraphics var1) {
+         var1.fill(this.x, this.y, this.x + this.width, this.y + 1, this.color);
+         var1.fill(this.x, this.y + this.height - 1, this.x + this.width, this.y + this.height, this.color);
+         var1.fill(this.x, this.y + 1, this.x + 1, this.y + this.height - 1, this.color);
+         var1.fill(this.x + this.width - 1, this.y + 1, this.x + this.width, this.y + this.height - 1, this.color);
       }
    }
 }

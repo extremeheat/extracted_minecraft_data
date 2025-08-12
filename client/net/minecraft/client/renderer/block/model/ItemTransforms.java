@@ -8,10 +8,10 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import net.minecraft.world.item.ItemDisplayContext;
 
-public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform thirdPersonRightHand, ItemTransform firstPersonLeftHand, ItemTransform firstPersonRightHand, ItemTransform head, ItemTransform gui, ItemTransform ground, ItemTransform fixed) {
+public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform thirdPersonRightHand, ItemTransform firstPersonLeftHand, ItemTransform firstPersonRightHand, ItemTransform head, ItemTransform gui, ItemTransform ground, ItemTransform fixed, ItemTransform fixedFromBottom) {
    public static final ItemTransforms NO_TRANSFORMS;
 
-   public ItemTransforms(ItemTransform var1, ItemTransform var2, ItemTransform var3, ItemTransform var4, ItemTransform var5, ItemTransform var6, ItemTransform var7, ItemTransform var8) {
+   public ItemTransforms(ItemTransform var1, ItemTransform var2, ItemTransform var3, ItemTransform var4, ItemTransform var5, ItemTransform var6, ItemTransform var7, ItemTransform var8, ItemTransform var9) {
       super();
       this.thirdPersonLeftHand = var1;
       this.thirdPersonRightHand = var2;
@@ -21,6 +21,7 @@ public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform th
       this.gui = var6;
       this.ground = var7;
       this.fixed = var8;
+      this.fixedFromBottom = var9;
    }
 
    public ItemTransform getTransform(ItemDisplayContext var1) {
@@ -34,6 +35,7 @@ public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform th
          case GUI -> var10000 = this.gui;
          case GROUND -> var10000 = this.ground;
          case FIXED -> var10000 = this.fixed;
+         case ON_SHELF -> var10000 = this.fixedFromBottom;
          default -> var10000 = ItemTransform.NO_TRANSFORM;
       }
 
@@ -41,7 +43,7 @@ public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform th
    }
 
    static {
-      NO_TRANSFORMS = new ItemTransforms(ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM);
+      NO_TRANSFORMS = new ItemTransforms(ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM);
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemTransforms> {
@@ -67,7 +69,8 @@ public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform th
          ItemTransform var10 = this.getTransform(var3, var4, ItemDisplayContext.GUI);
          ItemTransform var11 = this.getTransform(var3, var4, ItemDisplayContext.GROUND);
          ItemTransform var12 = this.getTransform(var3, var4, ItemDisplayContext.FIXED);
-         return new ItemTransforms(var6, var5, var8, var7, var9, var10, var11, var12);
+         ItemTransform var13 = this.getTransform(var3, var4, ItemDisplayContext.ON_SHELF);
+         return new ItemTransforms(var6, var5, var8, var7, var9, var10, var11, var12, var13);
       }
 
       private ItemTransform getTransform(JsonDeserializationContext var1, JsonObject var2, ItemDisplayContext var3) {

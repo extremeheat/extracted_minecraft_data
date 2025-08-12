@@ -26,8 +26,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -48,11 +48,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.CopperGolemStatueBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-public class CopperGolem extends AbstractGolem implements ContainerUser {
+public class CopperGolem extends AbstractGolem implements ContainerUser, Shearable {
    private static final long IGNORE_WEATHERING_TICK = -2L;
    private static final long UNSET_WEATHERING_TICK = -1L;
    private static final int WEATHERING_TICK_FROM = 504000;
@@ -199,7 +200,16 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
             }
          }
 
-         if (var4.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
+         if (var4.is(Items.SHEARS) && this.readyForShearing()) {
+            if (var3 instanceof ServerLevel) {
+               ServerLevel var7 = (ServerLevel)var3;
+               this.shear(var7, SoundSource.PLAYERS, var4);
+               this.gameEvent(GameEvent.SHEAR, var1);
+               var4.hurtAndBreak(1, var1, (InteractionHand)var2);
+            }
+
+            return InteractionResult.SUCCESS;
+         } else if (var4.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
             var3.levelEvent(this, 3003, this.blockPosition(), 0);
             this.nextWeatheringTick = -2L;
             this.usePlayerItem(var1, var2, var4);
@@ -208,7 +218,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
             var3.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
             var3.levelEvent(this, 3004, this.blockPosition(), 0);
             this.nextWeatheringTick = -1L;
-            var4.hurtAndBreak(1, var1, (EquipmentSlot)LivingEntity.getSlotForHand(var2));
+            var4.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
             return InteractionResult.SUCCESS;
          } else {
             if (var4.is(ItemTags.AXES)) {
@@ -218,7 +228,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
                   var3.levelEvent(var1, 3005, this.blockPosition(), 0);
                   this.nextWeatheringTick = -1L;
                   this.entityData.set(DATA_WEATHER_STATE, var6.previous(), true);
-                  var4.hurtAndBreak(1, var1, (EquipmentSlot)LivingEntity.getSlotForHand(var2));
+                  var4.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
                   return InteractionResult.SUCCESS;
                }
             }
@@ -366,6 +376,22 @@ public class CopperGolem extends AbstractGolem implements ContainerUser {
 
    public double getContainerInteractionRange() {
       return 3.0;
+   }
+
+   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
+      var1.playSound((Entity)null, this, SoundEvents.COPPER_GOLEM_SHEAR, var2, 1.0F, 1.0F);
+      ItemStack var4 = this.getItemBySlot(EquipmentSlot.HEAD);
+      this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+      this.spawnAtLocation(var1, var4, 1.5F);
+   }
+
+   public boolean readyForShearing() {
+      return this.isAlive() && this.getItemBySlot(EquipmentSlot.HEAD).is(ItemTags.SHEARABLE_FROM_COPPER_GOLEM);
+   }
+
+   protected void dropEquipment(ServerLevel var1) {
+      super.dropEquipment(var1);
+      this.dropPreservedEquipment(var1);
    }
 
    static {

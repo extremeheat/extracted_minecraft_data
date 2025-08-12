@@ -46,6 +46,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -83,6 +84,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
@@ -1077,7 +1079,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.chunkSource;
    }
 
-   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15) {
+   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16) {
       Explosion.BlockInteraction var10000;
       switch (var12) {
          case NONE -> var10000 = Explosion.BlockInteraction.KEEP;
@@ -1088,16 +1090,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      Explosion.BlockInteraction var16 = var10000;
-      Vec3 var17 = new Vec3(var4, var6, var8);
-      ServerExplosion var18 = new ServerExplosion(this, var1, var2, var3, var17, var10, var11, var16);
-      var18.explode();
-      ParticleOptions var19 = var18.isSmall() ? var13 : var14;
+      Explosion.BlockInteraction var17 = var10000;
+      Vec3 var18 = new Vec3(var4, var6, var8);
+      ServerExplosion var19 = new ServerExplosion(this, var1, var2, var3, var18, var10, var11, var17);
+      int var20 = var19.explode();
+      ParticleOptions var21 = var19.isSmall() ? var13 : var14;
 
-      for(ServerPlayer var21 : this.players) {
-         if (var21.distanceToSqr(var17) < 4096.0) {
-            Optional var22 = Optional.ofNullable((Vec3)var18.getHitPlayers().get(var21));
-            var21.connection.send(new ClientboundExplodePacket(var17, var22, var19, var15));
+      for(ServerPlayer var23 : this.players) {
+         if (var23.distanceToSqr(var18) < 4096.0) {
+            Optional var24 = Optional.ofNullable((Vec3)var19.getHitPlayers().get(var23));
+            var23.connection.send(new ClientboundExplodePacket(var18, var10, var20, var24, var21, var16, var15));
          }
       }
 

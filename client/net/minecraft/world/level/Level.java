@@ -22,6 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -40,6 +41,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
@@ -100,6 +102,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public static final int TICKS_PER_DAY = 24000;
    public static final int MAX_ENTITY_SPAWN_Y = 20000000;
    public static final int MIN_ENTITY_SPAWN_Y = -20000000;
+   private static final WeightedList<ExplosionParticleInfo> DEFAULT_EXPLOSION_BLOCK_PARTICLES;
    protected final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList();
    protected final NeighborUpdater neighborUpdater;
    private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
@@ -472,22 +475,22 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    }
 
    public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, ExplosionInteraction var9) {
-      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
    public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, ExplosionInteraction var10) {
-      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
    public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, Vec3 var4, float var5, boolean var6, ExplosionInteraction var7) {
-      this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
    public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12) {
-      this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public abstract void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15);
+   public abstract void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16);
 
    public abstract String gatherChunkSourceStats();
 
@@ -890,6 +893,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       OVERWORLD = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("overworld"));
       NETHER = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_nether"));
       END = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_end"));
+      DEFAULT_EXPLOSION_BLOCK_PARTICLES = WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build();
    }
 
    public static enum ExplosionInteraction implements StringRepresentable {

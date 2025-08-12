@@ -32,6 +32,7 @@ import org.joml.Vector4f;
 
 public class SkyRenderer implements AutoCloseable {
    private static final ResourceLocation SUN_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/sun.png");
+   private static final ResourceLocation END_LIGHT_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/end_flash.png");
    private static final ResourceLocation MOON_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/moon_phases.png");
    public static final ResourceLocation END_SKY_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/end_sky.png");
    private static final float SKY_DISC_RADIUS = 512.0F;
@@ -171,6 +172,20 @@ public class SkyRenderer implements AutoCloseable {
       var6.addVertex(var8, 30.0F, 100.0F, -30.0F).setUv(1.0F, 0.0F).setColor(var7);
       var6.addVertex(var8, 30.0F, 100.0F, 30.0F).setUv(1.0F, 1.0F).setColor(var7);
       var6.addVertex(var8, -30.0F, 100.0F, 30.0F).setUv(0.0F, 1.0F).setColor(var7);
+   }
+
+   public void renderEndFlash(MultiBufferSource var1, PoseStack var2, float var3, float var4, float var5) {
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var5));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F - var4));
+      float var6 = 60.0F;
+      float var7 = 100.0F;
+      VertexConsumer var8 = var1.getBuffer(RenderType.celestial(END_LIGHT_LOCATION));
+      Matrix4f var9 = var2.last().pose();
+      int var10 = ARGB.color(var3, -1);
+      var8.addVertex(var9, -60.0F, 100.0F, -60.0F).setUv(0.0F, 0.0F).setColor(var10);
+      var8.addVertex(var9, 60.0F, 100.0F, -60.0F).setUv(1.0F, 0.0F).setColor(var10);
+      var8.addVertex(var9, 60.0F, 100.0F, 60.0F).setUv(1.0F, 1.0F).setColor(var10);
+      var8.addVertex(var9, -60.0F, 100.0F, 60.0F).setUv(0.0F, 1.0F).setColor(var10);
    }
 
    private void renderMoon(int var1, float var2, MultiBufferSource var3, PoseStack var4) {

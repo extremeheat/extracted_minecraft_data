@@ -10,10 +10,8 @@ import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
@@ -841,7 +839,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.oPortalEffectIntensity = this.portalEffectIntensity;
       float var2 = 0.0F;
       if (var1 && this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
-         if (this.minecraft.screen != null && !this.minecraft.screen.isPauseScreen() && !(this.minecraft.screen instanceof DeathScreen) && !(this.minecraft.screen instanceof WinScreen)) {
+         if (this.minecraft.screen != null && !this.minecraft.screen.isAllowedInPortal()) {
             if (this.minecraft.screen instanceof AbstractContainerScreen) {
                this.closeContainer();
             }

@@ -51,7 +51,7 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       }
 
       if (this.isFocused() || this.alwaysShowBorder) {
-         var1.renderOutline(var5, var6, var7, var8, var9);
+         var1.submitOutline(var5, var6, var7, var8, var9);
       }
 
       super.renderWidget(var1, var2, var3, var4);

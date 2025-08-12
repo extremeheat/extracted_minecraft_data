@@ -46,6 +46,10 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    public void updatePlayerList(Collection<UUID> var1, double var2, boolean var4) {
       HashMap var5 = new HashMap();
       this.addOnlinePlayers(var1, var5);
+      if (var4) {
+         this.addSeenPlayers(var5);
+      }
+
       this.updatePlayersFromChatLog(var5, var4);
       this.updateFiltersAndScroll(var5.values(), var2);
    }
@@ -56,15 +60,32 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
       for(UUID var5 : var1) {
          PlayerInfo var6 = var3.getPlayerInfo(var5);
          if (var6 != null) {
-            boolean var7 = var6.hasVerifiableChat();
-            Minecraft var10004 = this.minecraft;
-            SocialInteractionsScreen var10005 = this.socialInteractionsScreen;
-            String var10007 = var6.getProfile().getName();
-            Objects.requireNonNull(var6);
-            var2.put(var5, new PlayerEntry(var10004, var10005, var5, var10007, var6::getSkin, var7));
+            PlayerEntry var7 = this.makePlayerEntry(var5, var6);
+            var2.put(var5, var7);
          }
       }
 
+   }
+
+   private void addSeenPlayers(Map<UUID, PlayerEntry> var1) {
+      Map var2 = this.minecraft.player.connection.getSeenPlayers();
+
+      for(Map.Entry var4 : var2.entrySet()) {
+         var1.computeIfAbsent((UUID)var4.getKey(), (var2x) -> {
+            PlayerEntry var3 = this.makePlayerEntry(var2x, (PlayerInfo)var4.getValue());
+            var3.setRemoved(true);
+            return var3;
+         });
+      }
+
+   }
+
+   private PlayerEntry makePlayerEntry(UUID var1, PlayerInfo var2) {
+      Minecraft var10002 = this.minecraft;
+      SocialInteractionsScreen var10003 = this.socialInteractionsScreen;
+      String var10005 = var2.getProfile().getName();
+      Objects.requireNonNull(var2);
+      return new PlayerEntry(var10002, var10003, var1, var10005, var2::getSkin, var2.hasVerifiableChat());
    }
 
    private void updatePlayersFromChatLog(Map<UUID, PlayerEntry> var1, boolean var2) {

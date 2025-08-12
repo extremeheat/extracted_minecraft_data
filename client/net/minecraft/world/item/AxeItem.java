@@ -15,7 +15,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -52,7 +51,7 @@ public class AxeItem extends Item {
             var2.setBlock(var3, (BlockState)var5.get(), 11);
             var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, (BlockState)var5.get()));
             if (var4 != null) {
-               var6.hurtAndBreak(1, var4, (EquipmentSlot)LivingEntity.getSlotForHand(var1.getHand()));
+               var6.hurtAndBreak(1, var4, (EquipmentSlot)var1.getHand().asEquipmentSlot());
             }
 
             return InteractionResult.SUCCESS;

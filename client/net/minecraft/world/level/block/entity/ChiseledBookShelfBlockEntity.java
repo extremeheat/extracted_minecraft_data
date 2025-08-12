@@ -94,6 +94,16 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements ListBac
 
    }
 
+   public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
+      return var1.hasAnyMatching((var2x) -> {
+         if (var2x.isEmpty()) {
+            return true;
+         } else {
+            return ItemStack.isSameItemSameComponents(var3, var2x) && var2x.getCount() + var3.getCount() <= var1.getMaxStackSize(var2x);
+         }
+      });
+   }
+
    public NonNullList<ItemStack> getItems() {
       return this.items;
    }

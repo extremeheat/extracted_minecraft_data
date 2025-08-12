@@ -347,6 +347,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       return false;
    }
 
+   public boolean canInteractWithLevel() {
+      return this.isAlive() && !this.isRemoved() && !this.isSpectator();
+   }
+
    public final void unRide() {
       if (this.isVehicle()) {
          this.ejectPassengers();
@@ -706,6 +710,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
    public void move(MoverType var1, Vec3 var2) {
       if (this.noPhysics) {
          this.setPos(this.getX() + var2.x, this.getY() + var2.y, this.getZ() + var2.z);
+         this.horizontalCollision = false;
+         this.verticalCollision = false;
+         this.verticalCollisionBelow = false;
+         this.minorHorizontalCollision = false;
       } else {
          if (var1 == MoverType.PISTON) {
             var2 = this.limitPistonMovement(var2);
@@ -2240,7 +2248,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
          ItemStack var7 = var4.getItemBySlot(var6);
          Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
          if (var8 != null && var8.canBeSheared() && (!EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || var1.isCreative())) {
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)LivingEntity.getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
             Vec3 var9 = this.dimensions.attachments().getAverage(EntityAttachment.PASSENGER);
             var4.setItemSlotAndDropWhenKilled(var6, ItemStack.EMPTY);
             this.gameEvent(GameEvent.SHEAR, var1);

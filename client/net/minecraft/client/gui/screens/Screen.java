@@ -107,7 +107,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.renderBackground(var1, var2, var3, var4);
       var1.nextStratum();
       this.render(var1, var2, var3, var4);
-      var1.renderDeferredTooltip();
+      var1.renderDeferredElements();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -238,6 +238,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
       if (var1 instanceof NarratableEntry) {
          this.narratables.remove((NarratableEntry)var1);
+      }
+
+      if (this.getFocused() == var1) {
+         this.clearFocus();
       }
 
       this.children.remove(var1);
@@ -517,6 +521,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected boolean panoramaShouldSpin() {
       return true;
+   }
+
+   public boolean isAllowedInPortal() {
+      return this.isPauseScreen();
    }
 
    public static boolean hasControlDown() {

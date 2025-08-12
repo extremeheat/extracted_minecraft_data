@@ -233,7 +233,7 @@ public class ServerExplosion implements Explosion {
 
    }
 
-   public void explode() {
+   public int explode() {
       this.level.gameEvent(this.source, GameEvent.EXPLODE, this.center);
       List var1 = this.calculateExplodedPositions();
       this.hurtEntities();
@@ -248,6 +248,7 @@ public class ServerExplosion implements Explosion {
          this.createFire(var1);
       }
 
+      return var1.size();
    }
 
    private static void addOrAppendStack(List<StackCollector> var0, ItemStack var1, BlockPos var2) {

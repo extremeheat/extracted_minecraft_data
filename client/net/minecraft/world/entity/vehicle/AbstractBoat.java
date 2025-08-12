@@ -33,8 +33,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.WaterAnimal;
-import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -262,7 +260,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
          for(Entity var11 : var8) {
             if (!var11.hasPassenger(this)) {
-               if (var9 && this.getPassengers().size() < this.getMaxPassengers() && !var11.isPassenger() && this.hasEnoughSpaceFor(var11) && var11 instanceof LivingEntity && !(var11 instanceof WaterAnimal) && !(var11 instanceof Player) && !(var11 instanceof Creaking)) {
+               if (var9 && this.getPassengers().size() < this.getMaxPassengers() && !var11.isPassenger() && this.hasEnoughSpaceFor(var11) && var11 instanceof LivingEntity && !var11.getType().is(EntityTypeTags.CANNOT_BE_PUSHED_ONTO_BOATS)) {
                   var11.startRiding(this);
                } else {
                   this.push(var11);

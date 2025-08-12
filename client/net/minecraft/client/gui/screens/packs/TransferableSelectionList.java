@@ -185,7 +185,7 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
          }
 
          var1.drawString(this.minecraft.font, (FormattedCharSequence)var16, var4 + 32 + 2, var3 + 1, -1);
-         var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, -8355712);
+         var13.render(var1, MultiLineLabel.Align.LEFT, var4 + 32 + 2, var3 + 12, 10, true, -8355712);
       }
 
       public String getPackId() {

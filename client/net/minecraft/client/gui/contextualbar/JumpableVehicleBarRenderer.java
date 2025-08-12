@@ -19,7 +19,7 @@ public class JumpableVehicleBarRenderer implements ContextualBarRenderer {
    public JumpableVehicleBarRenderer(Minecraft var1) {
       super();
       this.minecraft = var1;
-      this.playerJumpableVehicle = ((LocalPlayer)Objects.requireNonNull(var1.player)).jumpableVehicle();
+      this.playerJumpableVehicle = (PlayerRideableJumping)Objects.requireNonNull(((LocalPlayer)Objects.requireNonNull(var1.player)).jumpableVehicle());
    }
 
    public void renderBackground(GuiGraphics var1, DeltaTracker var2) {

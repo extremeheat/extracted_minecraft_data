@@ -13,9 +13,14 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.CopperGolemRenderState;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemState;
+import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 
 public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implements ArmedModel<CopperGolemRenderState> {
@@ -146,6 +151,26 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       } else {
          var3.scale(0.55F, 0.55F, 0.55F);
          var3.translate(-0.125F, 0.3125F, -0.1875F);
+      }
+
+   }
+
+   public void applyBlockOnHeadTransform(BlockState var1, PoseStack var2) {
+      this.root.translateAndRotate(var2);
+      this.body.translateAndRotate(var2);
+      this.head.translateAndRotate(var2);
+      if (var1.getBlock() instanceof AbstractSkullBlock) {
+         var2.scale(1.001F, 1.001F, 1.001F);
+         var2.translate(-0.5, 0.8125, 0.4325);
+      } else {
+         var2.scale(0.999F, 0.999F, 0.999F);
+         var2.translate(0.5, 0.0, -0.5);
+      }
+
+      if (!Block.isFaceFull(var1.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO), Direction.DOWN)) {
+         var2.translate(0.0, -0.75, 0.0);
+      } else {
+         var2.translate(0.0, 0.0625, 0.0);
       }
 
    }

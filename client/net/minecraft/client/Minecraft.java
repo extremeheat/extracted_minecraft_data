@@ -74,6 +74,7 @@ import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
@@ -345,7 +346,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private Connection pendingConnection;
    private boolean isLocalServer;
    @Nullable
-   public Entity cameraEntity;
+   private Entity cameraEntity;
    @Nullable
    public Entity crosshairPickEntity;
    @Nullable
@@ -1027,7 +1028,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.levelSource;
    }
 
-   private void openChatScreen(String var1) {
+   public void openChatScreen(ChatComponent.ChatMethod var1) {
       ChatStatus var2 = this.getChatStatus();
       if (!var2.isChatAllowed(this.isLocalServer())) {
          if (this.gui.isShowingChatDisabledByPlayer()) {
@@ -1046,7 +1047,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.gui.setChatDisabledByPlayerShown(var2 == Minecraft.ChatStatus.DISABLED_BY_PROFILE);
          }
       } else {
-         this.setScreen(new ChatScreen(var1));
+         this.gui.getChat().openScreen(var1, ChatScreen::new);
       }
 
    }
@@ -1062,36 +1063,40 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.setLastInputType(InputType.NONE);
       }
 
-      if (var1 == null && this.clientLevelTeardownInProgress) {
-         throw new IllegalStateException("Trying to return to in-game GUI during disconnection");
-      } else {
-         if (var1 == null && this.level == null) {
+      if (var1 == null) {
+         if (this.clientLevelTeardownInProgress) {
+            throw new IllegalStateException("Trying to return to in-game GUI during disconnection");
+         }
+
+         if (this.level == null) {
             var1 = new TitleScreen();
-         } else if (var1 == null && this.player.isDeadOrDying()) {
+         } else if (this.player.isDeadOrDying()) {
             if (this.player.shouldShowDeathScreen()) {
                var1 = new DeathScreen((Component)null, this.level.getLevelData().isHardcore());
             } else {
                this.player.respawn();
             }
-         }
-
-         this.screen = (Screen)var1;
-         if (this.screen != null) {
-            this.screen.added();
-         }
-
-         if (var1 != null) {
-            this.mouseHandler.releaseMouse();
-            KeyMapping.releaseAll();
-            ((Screen)var1).init(this, this.window.getGuiScaledWidth(), this.window.getGuiScaledHeight());
-            this.noRender = false;
          } else {
-            this.soundManager.resume();
-            this.mouseHandler.grabMouse();
+            var1 = this.gui.getChat().restoreChatScreen();
          }
-
-         this.updateTitle();
       }
+
+      this.screen = (Screen)var1;
+      if (this.screen != null) {
+         this.screen.added();
+      }
+
+      if (var1 != null) {
+         this.mouseHandler.releaseMouse();
+         KeyMapping.releaseAll();
+         ((Screen)var1).init(this, this.window.getGuiScaledWidth(), this.window.getGuiScaledHeight());
+         this.noRender = false;
+      } else {
+         this.soundManager.resume();
+         this.mouseHandler.grabMouse();
+      }
+
+      this.updateTitle();
    }
 
    public void setOverlay(@Nullable Overlay var1) {
@@ -1677,7 +1682,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          if (this.player.isDeadOrDying() && !(this.screen instanceof DeathScreen)) {
             this.setScreen((Screen)null);
          } else if (this.player.isSleeping() && this.level != null) {
-            this.setScreen(new InBedChatScreen());
+            this.gui.getChat().openScreen(ChatComponent.ChatMethod.MESSAGE, InBedChatScreen::new);
          }
       } else {
          Screen var3 = this.screen;
@@ -1867,11 +1872,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       while(this.options.keyChat.consumeClick()) {
-         this.openChatScreen("");
+         this.openChatScreen(ChatComponent.ChatMethod.MESSAGE);
       }
 
       if (this.screen == null && this.overlay == null && this.options.keyCommand.consumeClick()) {
-         this.openChatScreen("/");
+         this.openChatScreen(ChatComponent.ChatMethod.COMMAND);
       }
 
       boolean var5 = false;
@@ -2090,7 +2095,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       ProfilerFiller var2 = Profiler.get();
       var2.push("forcedTick");
       this.soundManager.stop();
-      this.cameraEntity = null;
+      this.setCameraEntity((Entity)null);
       this.pendingConnection = null;
       this.setScreen(var1);
       this.runTick(false);
@@ -2167,6 +2172,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public final boolean isDemo() {
       return this.demo;
+   }
+
+   public final boolean canSwitchGameMode() {
+      return this.player != null && this.gameMode != null;
    }
 
    @Nullable
@@ -2441,7 +2450,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.cameraEntity;
    }
 
-   public void setCameraEntity(Entity var1) {
+   public void setCameraEntity(@Nullable Entity var1) {
       this.cameraEntity = var1;
       this.gameRenderer.checkEntityPostEffect(var1);
    }

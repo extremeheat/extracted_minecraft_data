@@ -2538,7 +2538,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             this.getCombatTracker().recheckStatus();
          }
 
-         if (this.isSleeping() && !this.checkBedExists()) {
+         if (this.isSleeping() && (!this.canInteractWithLevel() || !this.checkBedExists())) {
             this.stopSleeping();
          }
       }
@@ -3546,10 +3546,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
       }));
       EnchantmentHelper.stopLocationBasedEffects(var1, this, var2);
-   }
-
-   public static EquipmentSlot getSlotForHand(InteractionHand var0) {
-      return var0 == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
    }
 
    public final boolean canEquipWithDispenser(ItemStack var1) {

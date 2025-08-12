@@ -84,7 +84,7 @@ public class ReportReasonSelectionScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.fill(this.descriptionLeft(), this.descriptionTop(), this.descriptionRight(), this.descriptionBottom(), -16777216);
-      var1.renderOutline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
+      var1.submitOutline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
       var1.drawString(this.font, (Component)REASON_DESCRIPTION, this.descriptionLeft() + 4, this.descriptionTop() + 4, -1);
       ReasonSelectionList.Entry var5 = (ReasonSelectionList.Entry)this.reasonSelectionList.getSelected();
       if (var5 != null) {

@@ -60,10 +60,15 @@ public enum GameType implements StringRepresentable {
    }
 
    public void updatePlayerAbilities(Abilities var1) {
+      this.updatePlayerAbilities(var1, false);
+   }
+
+   public void updatePlayerAbilities(Abilities var1, boolean var2) {
       if (this == CREATIVE) {
          var1.mayfly = true;
          var1.instabuild = true;
          var1.invulnerable = true;
+         var1.flying = var2;
       } else if (this == SPECTATOR) {
          var1.mayfly = true;
          var1.instabuild = false;

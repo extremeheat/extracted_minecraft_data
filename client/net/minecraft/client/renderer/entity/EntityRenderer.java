@@ -150,7 +150,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    }
 
    public void extractRenderState(T var1, S var2, float var3) {
-      label95: {
+      label97: {
          var2.entityType = var1.getType();
          var2.x = Mth.lerp((double)var3, var1.xOld, var1.getX());
          var2.y = Mth.lerp((double)var3, var1.yOld, var1.getY());
@@ -164,15 +164,15 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
             Entity var6 = var1.getVehicle();
             if (var6 instanceof AbstractMinecart) {
                AbstractMinecart var4 = (AbstractMinecart)var6;
-               MinecartBehavior var26 = var4.getBehavior();
-               if (var26 instanceof NewMinecartBehavior) {
-                  NewMinecartBehavior var5 = (NewMinecartBehavior)var26;
+               MinecartBehavior var27 = var4.getBehavior();
+               if (var27 instanceof NewMinecartBehavior) {
+                  NewMinecartBehavior var5 = (NewMinecartBehavior)var27;
                   if (var5.cartHasPosRotLerp()) {
-                     double var27 = Mth.lerp((double)var3, var4.xOld, var4.getX());
+                     double var28 = Mth.lerp((double)var3, var4.xOld, var4.getX());
                      double var8 = Mth.lerp((double)var3, var4.yOld, var4.getY());
                      double var10 = Mth.lerp((double)var3, var4.zOld, var4.getZ());
-                     var2.passengerOffset = var5.getCartLerpPosition(var3).subtract(new Vec3(var27, var8, var10));
-                     break label95;
+                     var2.passengerOffset = var5.getCartLerpPosition(var3).subtract(new Vec3(var28, var8, var10));
+                     break label97;
                   }
                }
             }
@@ -181,73 +181,75 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          var2.passengerOffset = null;
       }
 
-      var2.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(var1);
-      boolean var24 = var2.distanceToCameraSq < 4096.0 && this.shouldShowName(var1, var2.distanceToCameraSq);
-      if (var24) {
-         var2.nameTag = this.getNameTag(var1);
-         var2.nameTagAttachment = var1.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, var1.getYRot(var3));
-      } else {
-         var2.nameTag = null;
+      if (this.entityRenderDispatcher.camera != null) {
+         var2.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(var1);
+         boolean var23 = var2.distanceToCameraSq < 4096.0 && this.shouldShowName(var1, var2.distanceToCameraSq);
+         if (var23) {
+            var2.nameTag = this.getNameTag(var1);
+            var2.nameTagAttachment = var1.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, var1.getYRot(var3));
+         } else {
+            var2.nameTag = null;
+         }
       }
 
-      label82: {
+      label83: {
          var2.isDiscrete = var1.isDiscrete();
-         Level var25 = var1.level();
-         if (var1 instanceof Leashable var28) {
-            Entity var31 = var28.getLeashHolder();
-            if (var31 instanceof Entity) {
-               float var32 = var1.getPreciseBodyRotation(var3) * 0.017453292F;
-               Vec3 var9 = var28.getLeashOffset(var3);
-               BlockPos var33 = BlockPos.containing(var1.getEyePosition(var3));
-               BlockPos var11 = BlockPos.containing(var31.getEyePosition(var3));
-               int var12 = this.getBlockLightLevel(var1, var33);
-               int var13 = this.entityRenderDispatcher.getRenderer(var31).getBlockLightLevel(var31, var11);
-               int var14 = var25.getBrightness(LightLayer.SKY, var33);
-               int var15 = var25.getBrightness(LightLayer.SKY, var11);
-               boolean var16 = var31.supportQuadLeashAsHolder() && var28.supportQuadLeash();
-               int var17 = var16 ? 4 : 1;
-               if (var2.leashStates == null || var2.leashStates.size() != var17) {
-                  var2.leashStates = new ArrayList(var17);
+         Level var24 = var1.level();
+         if (var1 instanceof Leashable var25) {
+            Entity var7 = var25.getLeashHolder();
+            if (var7 instanceof Entity) {
+               float var31 = var1.getPreciseBodyRotation(var3) * 0.017453292F;
+               Vec3 var32 = var25.getLeashOffset(var3);
+               BlockPos var9 = BlockPos.containing(var1.getEyePosition(var3));
+               BlockPos var33 = BlockPos.containing(var7.getEyePosition(var3));
+               int var11 = this.getBlockLightLevel(var1, var9);
+               int var12 = this.entityRenderDispatcher.getRenderer(var7).getBlockLightLevel(var7, var33);
+               int var13 = var24.getBrightness(LightLayer.SKY, var9);
+               int var14 = var24.getBrightness(LightLayer.SKY, var33);
+               boolean var15 = var7.supportQuadLeashAsHolder() && var25.supportQuadLeash();
+               int var16 = var15 ? 4 : 1;
+               if (var2.leashStates == null || var2.leashStates.size() != var16) {
+                  var2.leashStates = new ArrayList(var16);
 
-                  for(int var18 = 0; var18 < var17; ++var18) {
+                  for(int var17 = 0; var17 < var16; ++var17) {
                      var2.leashStates.add(new EntityRenderState.LeashState());
                   }
                }
 
-               if (var16) {
-                  float var34 = var31.getPreciseBodyRotation(var3) * 0.017453292F;
-                  Vec3 var19 = var31.getPosition(var3);
-                  Vec3[] var20 = var28.getQuadLeashOffsets();
-                  Vec3[] var21 = var31.getQuadLeashHolderOffsets();
-                  int var22 = 0;
+               if (var15) {
+                  float var34 = var7.getPreciseBodyRotation(var3) * 0.017453292F;
+                  Vec3 var18 = var7.getPosition(var3);
+                  Vec3[] var19 = var25.getQuadLeashOffsets();
+                  Vec3[] var20 = var7.getQuadLeashHolderOffsets();
+                  int var21 = 0;
 
                   while(true) {
-                     if (var22 >= var17) {
-                        break label82;
+                     if (var21 >= var16) {
+                        break label83;
                      }
 
-                     EntityRenderState.LeashState var23 = (EntityRenderState.LeashState)var2.leashStates.get(var22);
-                     var23.offset = var20[var22].yRot(-var32);
-                     var23.start = var1.getPosition(var3).add(var23.offset);
-                     var23.end = var19.add(var21[var22].yRot(-var34));
-                     var23.startBlockLight = var12;
-                     var23.endBlockLight = var13;
-                     var23.startSkyLight = var14;
-                     var23.endSkyLight = var15;
-                     var23.slack = false;
-                     ++var22;
+                     EntityRenderState.LeashState var22 = (EntityRenderState.LeashState)var2.leashStates.get(var21);
+                     var22.offset = var19[var21].yRot(-var31);
+                     var22.start = var1.getPosition(var3).add(var22.offset);
+                     var22.end = var18.add(var20[var21].yRot(-var34));
+                     var22.startBlockLight = var11;
+                     var22.endBlockLight = var12;
+                     var22.startSkyLight = var13;
+                     var22.endSkyLight = var14;
+                     var22.slack = false;
+                     ++var21;
                   }
                } else {
-                  Vec3 var35 = var9.yRot(-var32);
+                  Vec3 var35 = var32.yRot(-var31);
                   EntityRenderState.LeashState var36 = (EntityRenderState.LeashState)var2.leashStates.getFirst();
                   var36.offset = var35;
                   var36.start = var1.getPosition(var3).add(var35);
-                  var36.end = var31.getRopeHoldPosition(var3);
-                  var36.startBlockLight = var12;
-                  var36.endBlockLight = var13;
-                  var36.startSkyLight = var14;
-                  var36.endSkyLight = var15;
-                  break label82;
+                  var36.end = var7.getRopeHoldPosition(var3);
+                  var36.startBlockLight = var11;
+                  var36.endBlockLight = var12;
+                  var36.startSkyLight = var13;
+                  var36.endSkyLight = var14;
+                  break label83;
                }
             }
          }
@@ -256,10 +258,10 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       }
 
       var2.displayFireAnimation = var1.displayFireAnimation();
-      Minecraft var29 = Minecraft.getInstance();
-      boolean var30 = var29.shouldEntityAppearGlowing(var1);
+      Minecraft var26 = Minecraft.getInstance();
+      boolean var30 = var26.shouldEntityAppearGlowing(var1);
       var2.outlineColor = var30 ? ARGB.opaque(var1.getTeamColor()) : 0;
-      if (var29.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES) && !var2.isInvisible && !var29.showOnlyReducedInfo()) {
+      if (var26.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES) && !var2.isInvisible && !var26.showOnlyReducedInfo()) {
          this.extractHitboxes(var1, var2, var3);
       } else {
          var2.hitboxesRenderState = null;

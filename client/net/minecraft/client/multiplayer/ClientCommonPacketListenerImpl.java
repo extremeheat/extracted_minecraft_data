@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.ServerboundPacketListener;
@@ -58,6 +60,7 @@ import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
@@ -89,6 +92,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final Map<ResourceLocation, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
    private ServerLinks serverLinks;
+   protected final Map<UUID, PlayerInfo> seenPlayers;
+   protected boolean seenInsecureChatWarning;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super();
@@ -101,6 +106,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.serverCookies = var3.serverCookies();
       this.customReportDetails = var3.customReportDetails();
       this.serverLinks = var3.serverLinks();
+      this.seenPlayers = new HashMap(var3.seenPlayers());
+      this.seenInsecureChatWarning = var3.seenInsecureChatWarning();
    }
 
    public ServerLinks serverLinks() {
@@ -316,7 +323,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          this.connection.setReadOnly();
          this.connection.handleDisconnection();
          ServerAddress var2 = new ServerAddress(var1.host(), var1.port());
-         ConnectScreen.startConnecting((Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new), this.minecraft, var2, this.serverData, false, new TransferState(this.serverCookies));
+         ConnectScreen.startConnecting((Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new), this.minecraft, var2, this.serverData, false, new TransferState(this.serverCookies, this.seenPlayers, this.seenInsecureChatWarning));
       }
    }
 
@@ -454,6 +461,24 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
             this.url = var2;
             this.hash = var3;
          }
+      }
+   }
+
+   protected abstract class CommonDialogAccess implements DialogConnectionAccess {
+      protected CommonDialogAccess() {
+         super();
+      }
+
+      public void openDialog(Holder<Dialog> var1, @Nullable Screen var2) {
+         ClientCommonPacketListenerImpl.this.showDialog(var1, this, var2);
+      }
+
+      public void sendCustomAction(ResourceLocation var1, Optional<Tag> var2) {
+         ClientCommonPacketListenerImpl.this.send(new ServerboundCustomClickActionPacket(var1, var2));
+      }
+
+      public ServerLinks serverLinks() {
+         return ClientCommonPacketListenerImpl.this.serverLinks();
       }
    }
 }

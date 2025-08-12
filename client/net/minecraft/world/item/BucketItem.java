@@ -106,57 +106,60 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       } else {
          Block var7;
          boolean var8;
+         boolean var9;
          boolean var10000;
-         label82: {
-            var14 = var2.getBlockState(var3);
-            var7 = var14.getBlock();
-            var8 = var14.canBeReplaced(this.content);
-            if (!var14.isAir() && !var8) {
-               label80: {
+         label106: {
+            var16 = var2.getBlockState(var3);
+            var7 = var16.getBlock();
+            var8 = var16.canBeReplaced(this.content);
+            var9 = var1 != null && var1.isShiftKeyDown();
+            if (!var8) {
+               label103: {
                   if (var7 instanceof LiquidBlockContainer) {
-                     LiquidBlockContainer var10 = (LiquidBlockContainer)var7;
-                     if (var10.canPlaceLiquid(var1, var2, var3, var14, this.content)) {
-                        break label80;
+                     LiquidBlockContainer var11 = (LiquidBlockContainer)var7;
+                     if (var11.canPlaceLiquid(var1, var2, var3, var16, this.content)) {
+                        break label103;
                      }
                   }
 
                   var10000 = false;
-                  break label82;
+                  break label106;
                }
             }
 
             var10000 = true;
          }
 
-         boolean var9 = var10000;
-         if (!var9) {
+         boolean var10 = var10000;
+         boolean var17 = var16.isAir() || var10 && (!var9 || var4 == null);
+         if (!var17) {
             return var4 != null && this.emptyContents(var1, var2, var4.getBlockPos().relative(var4.getDirection()), (BlockHitResult)null);
          } else if (var2.dimensionType().ultraWarm() && this.content.is(FluidTags.WATER)) {
-            int var16 = var3.getX();
-            int var11 = var3.getY();
-            int var12 = var3.getZ();
+            int var18 = var3.getX();
+            int var13 = var3.getY();
+            int var14 = var3.getZ();
             var2.playSound(var1, (BlockPos)var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
-            for(int var13 = 0; var13 < 8; ++var13) {
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var16 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0);
+            for(int var15 = 0; var15 < 8; ++var15) {
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var18 + Math.random(), (double)var13 + Math.random(), (double)var14 + Math.random(), 0.0, 0.0, 0.0);
             }
 
             return true;
          } else {
             if (var7 instanceof LiquidBlockContainer) {
-               LiquidBlockContainer var15 = (LiquidBlockContainer)var7;
+               LiquidBlockContainer var12 = (LiquidBlockContainer)var7;
                if (this.content == Fluids.WATER) {
-                  var15.placeLiquid(var2, var3, var14, var5.getSource(false));
+                  var12.placeLiquid(var2, var3, var16, var5.getSource(false));
                   this.playEmptySound(var1, var2, var3);
                   return true;
                }
             }
 
-            if (!var2.isClientSide() && var8 && !var14.liquid()) {
+            if (!var2.isClientSide() && var8 && !var16.liquid()) {
                var2.destroyBlock(var3, true);
             }
 
-            if (!var2.setBlock(var3, this.content.defaultFluidState().createLegacyBlock(), 11) && !var14.getFluidState().isSource()) {
+            if (!var2.setBlock(var3, this.content.defaultFluidState().createLegacyBlock(), 11) && !var16.getFluidState().isSource()) {
                return false;
             } else {
                this.playEmptySound(var1, var2, var3);

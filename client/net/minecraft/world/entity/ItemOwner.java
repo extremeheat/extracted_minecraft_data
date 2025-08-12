@@ -1,7 +1,6 @@
 package net.minecraft.world.entity;
 
 import javax.annotation.Nullable;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -17,16 +16,32 @@ public interface ItemOwner {
       return null;
    }
 
-   static ItemOwner custom(Vec3 var0, Direction var1, Level var2) {
-      return new CustomOwner(var0, Direction.getYRot(var1), var2);
+   static ItemOwner offsetFromOwner(ItemOwner var0, Vec3 var1) {
+      return new OffsetFromOwner(var0, var1);
    }
 
-   public static record CustomOwner(Vec3 position, float getVisualRotationYInDegrees, Level level) implements ItemOwner {
-      public CustomOwner(Vec3 var1, float var2, Level var3) {
+   public static record OffsetFromOwner(ItemOwner owner, Vec3 offset) implements ItemOwner {
+      public OffsetFromOwner(ItemOwner var1, Vec3 var2) {
          super();
-         this.position = var1;
-         this.getVisualRotationYInDegrees = var2;
-         this.level = var3;
+         this.owner = var1;
+         this.offset = var2;
+      }
+
+      public Level level() {
+         return this.owner.level();
+      }
+
+      public Vec3 position() {
+         return this.owner.position().add(this.offset);
+      }
+
+      public float getVisualRotationYInDegrees() {
+         return this.owner.getVisualRotationYInDegrees();
+      }
+
+      @Nullable
+      public LivingEntity asLivingEntity() {
+         return this.owner.asLivingEntity();
       }
    }
 }

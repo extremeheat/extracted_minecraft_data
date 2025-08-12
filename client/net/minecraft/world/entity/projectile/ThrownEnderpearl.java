@@ -177,14 +177,14 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       if (var2 instanceof ServerLevel var1) {
          int var3;
          Entity var4;
-         label37: {
+         label39: {
             var7 = SectionPos.blockToSectionCoord(this.position().x());
             var3 = SectionPos.blockToSectionCoord(this.position().z());
             var4 = this.owner != null ? findOwnerInAnyDimension(var1, this.owner.getUUID()) : null;
             if (var4 instanceof ServerPlayer var5) {
-               if (!var4.isAlive() && var5.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+               if (!var4.isAlive() && !var5.wonGame && var5.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
                   this.discard();
-                  break label37;
+                  break label39;
                }
             }
 

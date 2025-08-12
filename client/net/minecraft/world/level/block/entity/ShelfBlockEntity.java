@@ -2,6 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -14,17 +15,21 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ShelfBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-public class ShelfBlockEntity extends BlockEntity implements ListBackedContainer {
+public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBackedContainer {
    public static final int MAX_ITEMS = 3;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final NonNullList<ItemStack> items;
@@ -73,8 +78,11 @@ public class ShelfBlockEntity extends BlockEntity implements ListBackedContainer
 
    public void setChanged(Holder.Reference<GameEvent> var1) {
       super.setChanged();
-      this.level.gameEvent(var1, this.worldPosition, GameEvent.Context.of(this.getBlockState()));
-      this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+      if (this.level != null) {
+         this.level.gameEvent(var1, this.worldPosition, GameEvent.Context.of(this.getBlockState()));
+         this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+      }
+
    }
 
    public void setChanged() {
@@ -93,6 +101,18 @@ public class ShelfBlockEntity extends BlockEntity implements ListBackedContainer
 
    public void removeComponentsFromTag(ValueOutput var1) {
       var1.discard("Items");
+   }
+
+   public Level level() {
+      return this.level;
+   }
+
+   public Vec3 position() {
+      return this.getBlockPos().getCenter();
+   }
+
+   public float getVisualRotationYInDegrees() {
+      return ((Direction)this.getBlockState().getValue(ShelfBlock.FACING)).getOpposite().toYRot();
    }
 
    // $FF: synthetic method

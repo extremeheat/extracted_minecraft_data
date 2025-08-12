@@ -76,7 +76,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
             ServerLevel var4 = (ServerLevel)var5;
             this.shear(var4, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
          }
 
          return InteractionResult.SUCCESS;

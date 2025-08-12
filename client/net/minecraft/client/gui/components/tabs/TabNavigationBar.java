@@ -70,15 +70,15 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    public void setFocused(boolean var1) {
       super.setFocused(var1);
       if (this.getFocused() != null) {
-         this.getFocused().setFocused(var1);
+         this.setFocused((GuiEventListener)null);
       }
 
    }
 
    public void setFocused(@Nullable GuiEventListener var1) {
+      super.setFocused(var1);
       if (var1 instanceof TabButton var2) {
          if (var2.isActive()) {
-            super.setFocused(var1);
             this.tabManager.setCurrentTab(var2.tab(), true);
          }
       }

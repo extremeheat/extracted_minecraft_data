@@ -52,6 +52,7 @@ import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProvider
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -98,6 +99,10 @@ public class EnderMan extends Monster implements NeutralMob {
       this.targetSelector.addGoal(2, new HurtByTargetGoal(this, new Class[0]));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Endermite.class, true, false));
       this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal(this, false));
+   }
+
+   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
+      return 0.0F;
    }
 
    public static AttributeSupplier.Builder createAttributes() {

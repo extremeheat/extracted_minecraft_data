@@ -14,7 +14,8 @@ public enum ItemDisplayContext implements StringRepresentable {
    HEAD(5, "head"),
    GUI(6, "gui"),
    GROUND(7, "ground"),
-   FIXED(8, "fixed");
+   FIXED(8, "fixed"),
+   ON_SHELF(9, "on_shelf");
 
    public static final Codec<ItemDisplayContext> CODEC = StringRepresentable.<ItemDisplayContext>fromEnum(ItemDisplayContext::values);
    public static final IntFunction<ItemDisplayContext> BY_ID = ByIdMap.<ItemDisplayContext>continuous(ItemDisplayContext::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
@@ -44,6 +45,6 @@ public enum ItemDisplayContext implements StringRepresentable {
 
    // $FF: synthetic method
    private static ItemDisplayContext[] $values() {
-      return new ItemDisplayContext[]{NONE, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, HEAD, GUI, GROUND, FIXED};
+      return new ItemDisplayContext[]{NONE, THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, HEAD, GUI, GROUND, FIXED, ON_SHELF};
    }
 }

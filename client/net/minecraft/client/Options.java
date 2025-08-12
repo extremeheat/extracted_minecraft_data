@@ -197,6 +197,8 @@ public class Options {
    private final OptionInstance<Boolean> showAutosaveIndicator;
    private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE;
    private final OptionInstance<Boolean> onlyShowSecureChat;
+   private static final Component CHAT_TOOLTIP_SAVE_DRAFTS;
+   private final OptionInstance<Boolean> saveChatDrafts;
    public final KeyMapping keyUp;
    public final KeyMapping keyLeft;
    public final KeyMapping keyDown;
@@ -589,6 +591,10 @@ public class Options {
       return this.onlyShowSecureChat;
    }
 
+   public OptionInstance<Boolean> saveChatDrafts() {
+      return this.saveChatDrafts;
+   }
+
    public OptionInstance<Integer> fov() {
       return this.fov;
    }
@@ -835,6 +841,7 @@ public class Options {
       this.hideMatchedNames = OptionInstance.createBoolean("options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true);
       this.showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
       this.onlyShowSecureChat = OptionInstance.createBoolean("options.onlyShowSecureChat", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_ONLY_SHOW_SECURE), false);
+      this.saveChatDrafts = OptionInstance.createBoolean("options.chat.drafts", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_SAVE_DRAFTS), false);
       this.keyUp = new KeyMapping("key.forward", 87, "key.categories.movement");
       this.keyLeft = new KeyMapping("key.left", 65, "key.categories.movement");
       this.keyDown = new KeyMapping("key.back", 83, "key.categories.movement");
@@ -1073,6 +1080,7 @@ public class Options {
       var1.process("showAutosaveIndicator", this.showAutosaveIndicator);
       var1.process("allowServerListing", this.allowServerListing);
       var1.process("onlyShowSecureChat", this.onlyShowSecureChat);
+      var1.process("saveChatDrafts", this.saveChatDrafts);
       var1.process("panoramaScrollSpeed", this.panoramaSpeed);
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
@@ -1490,6 +1498,7 @@ public class Options {
       SPRINT_WINDOW_TOOLTIP = Component.translatable("options.sprintWindow.tooltip");
       CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
       CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
+      CHAT_TOOLTIP_SAVE_DRAFTS = Component.translatable("options.chat.drafts.tooltip");
       TELEMETRY_TOOLTIP = Component.translatable("options.telemetry.button.tooltip", Component.translatable("options.telemetry.state.minimal"), Component.translatable("options.telemetry.state.all"));
       ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT = Component.translatable("options.screenEffectScale.tooltip");
       ACCESSIBILITY_TOOLTIP_FOV_EFFECT = Component.translatable("options.fovEffectScale.tooltip");

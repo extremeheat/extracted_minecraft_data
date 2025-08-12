@@ -296,7 +296,7 @@ public class Armadillo extends Animal {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BRUSH) && this.brushOffScute(var1, var3)) {
-         var3.hurtAndBreak(16, var1, (EquipmentSlot)getSlotForHand(var2));
+         var3.hurtAndBreak(16, var1, (EquipmentSlot)var2.asEquipmentSlot());
          return InteractionResult.SUCCESS;
       } else {
          return (InteractionResult)(this.isScared() ? InteractionResult.FAIL : super.mobInteract(var1, var2));

@@ -397,6 +397,8 @@ public abstract class RenderType extends RenderStateShard {
       return false;
    }
 
+   public abstract RenderPipeline pipeline();
+
    public boolean affectsCrumbling() {
       return this.affectsCrumbling;
    }
@@ -663,6 +665,10 @@ public abstract class RenderType extends RenderStateShard {
 
       public VertexFormat.Mode mode() {
          return this.renderPipeline.getVertexFormatMode();
+      }
+
+      public RenderPipeline pipeline() {
+         return this.renderPipeline;
       }
 
       public void draw(MeshData var1) {

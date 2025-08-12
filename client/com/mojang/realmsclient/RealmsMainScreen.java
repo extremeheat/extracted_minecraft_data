@@ -925,7 +925,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public void renderBack(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          super.renderBack(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
-         var1.renderOutline(var4 - 2, var3 - 2, var5, 36 * this.frameItemHeight - 2, -12303292);
+         var1.submitOutline(var4 - 2, var3 - 2, var5, 36 * this.frameItemHeight - 2, -12303292);
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {

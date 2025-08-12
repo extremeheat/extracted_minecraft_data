@@ -984,6 +984,17 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                RenderSystem.setShaderFog(var4);
                if (var7 == DimensionSpecialEffects.SkyType.END) {
                   this.skyRenderer.renderEndSky();
+                  EndFlashState var17 = this.level.endFlashState();
+                  if (var17 != null) {
+                     float var18 = var17.getIntensity(var3);
+                     if (var18 > 1.0E-5F) {
+                        PoseStack var19 = new PoseStack();
+                        MultiBufferSource.BufferSource var20 = this.renderBuffers.bufferSource();
+                        this.skyRenderer.renderEndFlash(var20, var19, var18, var17.getXAngle(), var17.getYAngle());
+                        var20.endBatch();
+                     }
+
+                  }
                } else {
                   PoseStack var5 = new PoseStack();
                   float var6x = this.level.getSunAngle(var3);

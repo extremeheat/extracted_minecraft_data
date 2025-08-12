@@ -200,6 +200,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
    public void clearPostEffect() {
       this.postEffectId = null;
+      this.effectActive = false;
    }
 
    public void togglePostEffect() {
@@ -207,13 +208,27 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    }
 
    public void checkEntityPostEffect(@Nullable Entity var1) {
-      this.postEffectId = null;
-      if (var1 instanceof Creeper) {
-         this.setPostEffect(ResourceLocation.withDefaultNamespace("creeper"));
-      } else if (var1 instanceof Spider) {
-         this.setPostEffect(ResourceLocation.withDefaultNamespace("spider"));
-      } else if (var1 instanceof EnderMan) {
-         this.setPostEffect(ResourceLocation.withDefaultNamespace("invert"));
+      byte var3 = 0;
+      //$FF: var3->value
+      //0->net/minecraft/world/entity/monster/Creeper
+      //1->net/minecraft/world/entity/monster/Spider
+      //2->net/minecraft/world/entity/monster/EnderMan
+      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+         case -1:
+         default:
+            this.clearPostEffect();
+            break;
+         case 0:
+            Creeper var4 = (Creeper)var1;
+            this.setPostEffect(ResourceLocation.withDefaultNamespace("creeper"));
+            break;
+         case 1:
+            Spider var5 = (Spider)var1;
+            this.setPostEffect(ResourceLocation.withDefaultNamespace("spider"));
+            break;
+         case 2:
+            EnderMan var6 = (EnderMan)var1;
+            this.setPostEffect(ResourceLocation.withDefaultNamespace("invert"));
       }
 
    }

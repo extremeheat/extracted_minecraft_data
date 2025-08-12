@@ -56,6 +56,7 @@ public class GameModeSwitcherScreen extends Screen {
 
    protected void init() {
       super.init();
+      this.slots.clear();
       this.currentlyHovered = this.previousHovered;
 
       for(int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; ++var1) {
@@ -99,7 +100,7 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    private static void switchToHoveredGameMode(Minecraft var0, GameModeIcon var1) {
-      if (var0.gameMode != null && var0.player != null) {
+      if (var0.canSwitchGameMode()) {
          GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
          if (var0.player.hasPermissions(2) && var1 != var2) {
             var0.player.connection.send(new ServerboundChangeGameModePacket(var1.mode));

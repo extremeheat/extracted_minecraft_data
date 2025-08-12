@@ -12,7 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class ConfirmLinkScreen extends ConfirmScreen {
-   private static final Component COPY_BUTTON_TEXT = Component.translatable("chat.copy");
    private static final Component WARNING_TEXT = Component.translatable("chat.link.warning").withColor(-13108);
    private static final int BUTTON_WIDTH = 100;
    private final String url;
@@ -59,7 +58,7 @@ public class ConfirmLinkScreen extends ConfirmScreen {
 
    protected void addButtons(LinearLayout var1) {
       this.yesButton = (Button)var1.addChild(Button.builder(this.yesButtonComponent, (var1x) -> this.callback.accept(true)).width(100).build());
-      var1.addChild(Button.builder(COPY_BUTTON_TEXT, (var1x) -> {
+      var1.addChild(Button.builder(CommonComponents.GUI_COPY_TO_CLIPBOARD, (var1x) -> {
          this.copyToClipboard();
          this.callback.accept(false);
       }).width(100).build());

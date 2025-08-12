@@ -1,7 +1,8 @@
 package net.minecraft.client.gui.components;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -49,7 +50,7 @@ public class EditBox extends AbstractWidget {
    @Nullable
    private Consumer<String> responder;
    private Predicate<String> filter;
-   private BiFunction<String, Integer, FormattedCharSequence> formatter;
+   private final List<TextFormatter> formatters;
    @Nullable
    private Component hint;
    private long focusedTime;
@@ -76,7 +77,7 @@ public class EditBox extends AbstractWidget {
       this.textColor = -2039584;
       this.textColorUneditable = -9408400;
       this.filter = Objects::nonNull;
-      this.formatter = (var0, var1x) -> FormattedCharSequence.forward(var0, Style.EMPTY);
+      this.formatters = new ArrayList();
       this.focusedTime = Util.getMillis();
       this.font = var1;
       if (var6 != null) {
@@ -90,8 +91,8 @@ public class EditBox extends AbstractWidget {
       this.responder = var1;
    }
 
-   public void setFormatter(BiFunction<String, Integer, FormattedCharSequence> var1) {
-      this.formatter = var1;
+   public void addFormatter(TextFormatter var1) {
+      this.formatters.add(var1);
    }
 
    protected MutableComponent createNarrationMessage() {
@@ -397,7 +398,7 @@ public class EditBox extends AbstractWidget {
          int var11 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
          if (!var7.isEmpty()) {
             String var12 = var8 ? var7.substring(0, var6) : var7;
-            FormattedCharSequence var13 = (FormattedCharSequence)this.formatter.apply(var12, this.displayPos);
+            FormattedCharSequence var13 = this.applyFormat(var12, this.displayPos);
             var1.drawString(this.font, var13, var10, this.textY, var15, this.textShadow);
             var10 += this.font.width(var13) + 1;
          }
@@ -412,7 +413,7 @@ public class EditBox extends AbstractWidget {
          }
 
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
-            var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var10, this.textY, var15, this.textShadow);
+            var1.drawString(this.font, this.applyFormat(var7.substring(var6), this.cursorPos), var10, this.textY, var15, this.textShadow);
          }
 
          if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
@@ -446,6 +447,17 @@ public class EditBox extends AbstractWidget {
          }
 
       }
+   }
+
+   private FormattedCharSequence applyFormat(String var1, int var2) {
+      for(TextFormatter var4 : this.formatters) {
+         FormattedCharSequence var5 = var4.format(var1, var2);
+         if (var5 != null) {
+            return var5;
+         }
+      }
+
+      return FormattedCharSequence.forward(var1, Style.EMPTY);
    }
 
    private void updateTextPosition() {
@@ -576,5 +588,11 @@ public class EditBox extends AbstractWidget {
 
    public void setHint(Component var1) {
       this.hint = var1;
+   }
+
+   @FunctionalInterface
+   public interface TextFormatter {
+      @Nullable
+      FormattedCharSequence format(String var1, int var2);
    }
 }

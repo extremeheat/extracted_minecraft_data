@@ -118,7 +118,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
             ServerLevel var8 = (ServerLevel)var11;
             this.shear(var8, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
          }
 
          return InteractionResult.SUCCESS;

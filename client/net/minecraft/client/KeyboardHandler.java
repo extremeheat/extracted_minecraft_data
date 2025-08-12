@@ -284,7 +284,7 @@ public class KeyboardHandler {
                VersionCommand.dumpVersion(this::showDebugChat);
                return true;
             case 293:
-               if (this.minecraft.player != null && this.minecraft.player.hasPermissions(2)) {
+               if (this.minecraft.canSwitchGameMode() && this.minecraft.player.hasPermissions(2)) {
                   this.minecraft.setScreen(new GameModeSwitcherScreen());
                } else {
                   this.debugFeedbackTranslated("debug.gamemodes.error");

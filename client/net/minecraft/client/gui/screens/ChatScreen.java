@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -23,12 +25,16 @@ public class ChatScreen extends Screen {
    private String historyBuffer = "";
    private int historyPos = -1;
    protected EditBox input;
-   private String initial;
+   protected String initial;
+   protected boolean isDraft;
+   protected ExitReason exitReason;
    CommandSuggestions commandSuggestions;
 
-   public ChatScreen(String var1) {
+   public ChatScreen(String var1, boolean var2) {
       super(Component.translatable("chat_screen.title"));
+      this.exitReason = ChatScreen.ExitReason.INTERRUPTED;
       this.initial = var1;
+      this.isDraft = var2;
    }
 
    protected void init() {
@@ -42,10 +48,12 @@ public class ChatScreen extends Screen {
       this.input.setBordered(false);
       this.input.setValue(this.initial);
       this.input.setResponder(this::onEdited);
+      this.input.addFormatter(this::formatChat);
       this.input.setCanLoseFocus(false);
       this.addRenderableWidget(this.input);
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.input, this.font, false, false, 1, 10, true, -805306368);
       this.commandSuggestions.setAllowHiding(false);
+      this.commandSuggestions.setAllowSuggestions(false);
       this.commandSuggestions.updateCommandInfo();
    }
 
@@ -54,49 +62,71 @@ public class ChatScreen extends Screen {
    }
 
    public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.input.getValue();
+      this.initial = this.input.getValue();
       this.init(var1, var2, var3);
-      this.setChatLine(var4);
-      this.commandSuggestions.updateCommandInfo();
+   }
+
+   public void onClose() {
+      this.exitReason = ChatScreen.ExitReason.INTENTIONAL;
+      super.onClose();
    }
 
    public void removed() {
       this.minecraft.gui.getChat().resetChatScroll();
+      this.initial = this.input.getValue();
+      if (!this.shouldDiscardDraft() && !StringUtils.isBlank(this.initial)) {
+         if (!this.isDraft) {
+            this.minecraft.gui.getChat().saveAsDraft(this.initial);
+         }
+      } else {
+         this.minecraft.gui.getChat().discardDraft();
+      }
+
+   }
+
+   protected boolean shouldDiscardDraft() {
+      return this.exitReason != ChatScreen.ExitReason.INTERRUPTED && (this.exitReason != ChatScreen.ExitReason.INTENTIONAL || !(Boolean)this.minecraft.options.saveChatDrafts().get());
    }
 
    private void onEdited(String var1) {
-      String var2 = this.input.getValue();
-      this.commandSuggestions.setAllowSuggestions(!var2.equals(this.initial));
+      this.commandSuggestions.setAllowSuggestions(true);
       this.commandSuggestions.updateCommandInfo();
+      this.isDraft = false;
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.commandSuggestions.keyPressed(var1, var2, var3)) {
          return true;
+      } else if (this.isDraft && var1 == 259) {
+         this.input.setValue("");
+         this.isDraft = false;
+         return true;
       } else if (super.keyPressed(var1, var2, var3)) {
          return true;
-      } else if (var1 == 256) {
-         this.minecraft.setScreen((Screen)null);
-         return true;
-      } else if (var1 != 257 && var1 != 335) {
-         if (var1 == 265) {
-            this.moveInHistory(-1);
-            return true;
-         } else if (var1 == 264) {
-            this.moveInHistory(1);
-            return true;
-         } else if (var1 == 266) {
-            this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
-            return true;
-         } else if (var1 == 267) {
-            this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
-            return true;
-         } else {
-            return false;
-         }
       } else {
-         this.handleChatInput(this.input.getValue(), true);
-         this.minecraft.setScreen((Screen)null);
+         switch (var1) {
+            case 257:
+            case 335:
+               this.handleChatInput(this.input.getValue(), true);
+               this.exitReason = ChatScreen.ExitReason.DONE;
+               this.minecraft.setScreen((Screen)null);
+               break;
+            case 264:
+               this.moveInHistory(1);
+               break;
+            case 265:
+               this.moveInHistory(-1);
+               break;
+            case 266:
+               this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
+               break;
+            case 267:
+               this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
+               break;
+            default:
+               return false;
+         }
+
          return true;
       }
    }
@@ -136,7 +166,7 @@ public class ChatScreen extends Screen {
       }
    }
 
-   protected void insertText(String var1, boolean var2) {
+   public void insertText(String var1, boolean var2) {
       if (var2) {
          this.input.setValue(var1);
       } else {
@@ -165,6 +195,11 @@ public class ChatScreen extends Screen {
       }
    }
 
+   @Nullable
+   private FormattedCharSequence formatChat(String var1, int var2) {
+      return this.isDraft ? FormattedCharSequence.forward(var1, Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(true)) : null;
+   }
+
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
       this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
@@ -189,8 +224,8 @@ public class ChatScreen extends Screen {
       return false;
    }
 
-   private void setChatLine(String var1) {
-      this.input.setValue(var1);
+   public boolean isAllowedInPortal() {
+      return true;
    }
 
    protected void updateNarrationState(NarrationElementOutput var1) {
@@ -226,5 +261,24 @@ public class ChatScreen extends Screen {
 
    public String normalizeChatMessage(String var1) {
       return StringUtil.trimChatMessage(StringUtils.normalizeSpace(var1.trim()));
+   }
+
+   protected static enum ExitReason {
+      INTENTIONAL,
+      INTERRUPTED,
+      DONE;
+
+      private ExitReason() {
+      }
+
+      // $FF: synthetic method
+      private static ExitReason[] $values() {
+         return new ExitReason[]{INTENTIONAL, INTERRUPTED, DONE};
+      }
+   }
+
+   @FunctionalInterface
+   public interface ChatConstructor<T extends ChatScreen> {
+      T create(String var1, boolean var2);
    }
 }

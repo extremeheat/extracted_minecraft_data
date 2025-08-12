@@ -400,6 +400,7 @@ public class SoundEvents {
    public static final SoundEvent COPPER_GOLEM_STATUE_STEP = register("block.copper_golem_statue.step");
    public static final SoundEvent COPPER_GOLEM_STATUE_FALL = register("block.copper_golem_statue.fall");
    public static final SoundEvent COPPER_GOLEM_SPAWN = register("entity.copper_golem.spawn");
+   public static final SoundEvent COPPER_GOLEM_SHEAR = register("entity.copper_golem.shear");
    public static final SoundEvent COPPER_GRATE_BREAK = register("block.copper_grate.break");
    public static final SoundEvent COPPER_GRATE_STEP = register("block.copper_grate.step");
    public static final SoundEvent COPPER_GRATE_PLACE = register("block.copper_grate.place");
@@ -1645,6 +1646,7 @@ public class SoundEvents {
    public static final SoundEvent WAXED_HANGING_SIGN_INTERACT_FAIL = register("block.hanging_sign.waxed_interact_fail");
    public static final SoundEvent WAXED_SIGN_INTERACT_FAIL = register("block.sign.waxed_interact_fail");
    public static final SoundEvent WATER_AMBIENT = register("block.water.ambient");
+   public static final SoundEvent WEATHER_END_FLASH = register("weather.end_flash");
    public static final SoundEvent WEATHER_RAIN = register("weather.rain");
    public static final SoundEvent WEATHER_RAIN_ABOVE = register("weather.rain.above");
    public static final SoundEvent WET_GRASS_BREAK = register("block.wet_grass.break");

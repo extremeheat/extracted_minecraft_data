@@ -109,20 +109,17 @@ public class ItemRenderer {
 
    }
 
+   public AABB getBoundingBox(ItemStack var1, ItemDisplayContext var2, @Nullable Level var3, @Nullable ItemOwner var4, int var5) {
+      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var1, var2, var3, var4, var5);
+      return this.scratchItemStackRenderState.getModelBoundingBox();
+   }
+
    public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
       this.renderStatic((ItemOwner)null, var1, var2, var5, var6, var7, var3, var4, var8);
    }
 
    public void renderStatic(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
       this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
-      this.scratchItemStackRenderState.render(var4, var5, var7, var8);
-   }
-
-   public void renderUpwardsFrom(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
-      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
-      AABB var10 = this.scratchItemStackRenderState.getModelBoundingBox();
-      double var11 = -var10.minY;
-      var4.translate(0.0, var11, 0.0);
       this.scratchItemStackRenderState.render(var4, var5, var7, var8);
    }
 }

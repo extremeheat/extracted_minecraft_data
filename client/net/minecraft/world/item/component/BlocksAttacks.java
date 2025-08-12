@@ -68,7 +68,7 @@ public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale,
 
          int var7 = this.itemDamage.apply(var5);
          if (var7 > 0) {
-            var2.hurtAndBreak(var7, var3, LivingEntity.getSlotForHand(var4));
+            var2.hurtAndBreak(var7, var3, var4.asEquipmentSlot());
          }
 
       }

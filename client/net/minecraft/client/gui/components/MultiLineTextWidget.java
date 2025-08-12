@@ -79,15 +79,16 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       byte var8 = 9;
       int var9 = this.getColor();
       if (this.centered) {
-         var5.renderCentered(var1, var6 + this.getWidth() / 2, var7, var8, var9);
+         int var10 = var6 + this.getWidth() / 2;
+         var5.render(var1, MultiLineLabel.Align.CENTER, var10, var7, var8, true, var9);
       } else {
-         var5.renderLeftAligned(var1, var6, var7, var8, var9);
+         var5.render(var1, MultiLineLabel.Align.LEFT, var6, var7, var8, true, var9);
       }
 
       if (this.allowHoverComponents) {
-         Style var10 = this.getComponentStyleAt((double)var2, (double)var3);
+         Style var11 = this.getComponentStyleAt((double)var2, (double)var3);
          if (this.isHovered()) {
-            var1.renderComponentHoverEffect(this.getFont(), var10, var2, var3);
+            var1.renderComponentHoverEffect(this.getFont(), var11, var2, var3);
          }
       }
 
@@ -100,7 +101,12 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       int var7 = this.getY();
       Objects.requireNonNull(this.getFont());
       byte var8 = 9;
-      return this.centered ? var5.getStyleAtCentered(var6 + this.getWidth() / 2, var7, var8, var1, var3) : var5.getStyleAtLeftAligned(var6, var7, var8, var1, var3);
+      if (this.centered) {
+         int var9 = var6 + this.getWidth() / 2;
+         return var5.getStyle(MultiLineLabel.Align.CENTER, var9, var7, var8, var1, var3);
+      } else {
+         return var5.getStyle(MultiLineLabel.Align.LEFT, var6, var7, var8, var1, var3);
+      }
    }
 
    public void onClick(double var1, double var3, boolean var5) {

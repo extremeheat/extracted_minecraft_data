@@ -83,7 +83,7 @@ public class CommandSuggestions {
       this.suggestionLineLimit = var8;
       this.anchorToBottom = var9;
       this.fillColor = var10;
-      var3.setFormatter(this::formatChat);
+      var3.addFormatter(this::formatChat);
    }
 
    public void setAllowSuggestions(boolean var1) {
@@ -295,8 +295,9 @@ public class CommandSuggestions {
       }
    }
 
+   @Nullable
    private FormattedCharSequence formatChat(String var1, int var2) {
-      return this.currentParse != null ? formatText(this.currentParse, var1, var2) : FormattedCharSequence.forward(var1, Style.EMPTY);
+      return this.currentParse != null ? formatText(this.currentParse, var1, var2) : null;
    }
 
    @Nullable

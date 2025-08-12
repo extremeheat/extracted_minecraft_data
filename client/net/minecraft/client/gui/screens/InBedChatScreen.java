@@ -9,8 +9,8 @@ import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 public class InBedChatScreen extends ChatScreen {
    private Button leaveBedButton;
 
-   public InBedChatScreen() {
-      super("");
+   public InBedChatScreen(String var1, boolean var2) {
+      super(var1, var2);
    }
 
    protected void init() {
@@ -58,10 +58,13 @@ public class InBedChatScreen extends ChatScreen {
    }
 
    public void onPlayerWokeUp() {
-      if (this.input.getValue().isEmpty()) {
-         this.minecraft.setScreen((Screen)null);
+      String var1 = this.input.getValue();
+      if (!this.isDraft && !var1.isEmpty()) {
+         this.exitReason = ChatScreen.ExitReason.DONE;
+         this.minecraft.setScreen(new ChatScreen(var1, false));
       } else {
-         this.minecraft.setScreen(new ChatScreen(this.input.getValue()));
+         this.exitReason = ChatScreen.ExitReason.INTERRUPTED;
+         this.minecraft.setScreen((Screen)null);
       }
 
    }

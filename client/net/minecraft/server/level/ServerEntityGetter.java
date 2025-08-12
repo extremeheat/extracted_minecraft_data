@@ -3,6 +3,8 @@ package net.minecraft.server.level;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
@@ -30,6 +32,24 @@ public interface ServerEntityGetter extends EntityGetter {
    @Nullable
    default <T extends LivingEntity> T getNearestEntity(Class<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
       return (T)this.getNearestEntity(this.getEntitiesOfClass(var1, var10, (var0) -> true), var2, var3, var4, var6, var8);
+   }
+
+   @Nullable
+   default LivingEntity getNearestEntity(TagKey<EntityType<?>> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
+      double var11 = 1.7976931348623157E308;
+      LivingEntity var13 = null;
+
+      for(LivingEntity var15 : this.getEntitiesOfClass(LivingEntity.class, var10, (var1x) -> var1x.getType().is(var1))) {
+         if (var2.test(this.getLevel(), var3, var15)) {
+            double var16 = var15.distanceToSqr(var4, var6, var8);
+            if (var16 < var11) {
+               var11 = var16;
+               var13 = var15;
+            }
+         }
+      }
+
+      return var13;
    }
 
    @Nullable

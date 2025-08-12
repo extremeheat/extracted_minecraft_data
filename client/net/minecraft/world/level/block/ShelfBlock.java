@@ -53,6 +53,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<SideChainPart> SIDE_CHAIN_PART;
    public static final BooleanProperty WATERLOGGED;
+   public static final BooleanProperty ALIGN_ITEMS_TO_BOTTOM;
    private static final Map<Direction, VoxelShape> SHAPES;
 
    public MapCodec<ShelfBlock> codec() {
@@ -61,7 +62,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
 
    public ShelfBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED)).setValue(WATERLOGGED, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED)).setValue(WATERLOGGED, false)).setValue(ALIGN_ITEMS_TO_BOTTOM, false));
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -82,7 +83,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, POWERED, SIDE_CHAIN_PART, WATERLOGGED);
+      var1.add(FACING, POWERED, SIDE_CHAIN_PART, WATERLOGGED, ALIGN_ITEMS_TO_BOTTOM);
    }
 
    protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
@@ -263,6 +264,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       FACING = BlockStateProperties.HORIZONTAL_FACING;
       SIDE_CHAIN_PART = BlockStateProperties.SIDE_CHAIN_PART;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
+      ALIGN_ITEMS_TO_BOTTOM = BlockStateProperties.ALIGN_ITEMS_TO_BOTTOM;
       SHAPES = Shapes.rotateHorizontal(Shapes.or(Block.box(0.0, 12.0, 11.0, 16.0, 16.0, 13.0), Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0), Block.box(0.0, 0.0, 11.0, 16.0, 4.0, 13.0)));
    }
 }

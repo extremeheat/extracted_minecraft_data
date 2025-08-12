@@ -11,7 +11,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -48,7 +47,7 @@ public class PumpkinBlock extends Block {
          });
          var3.playSound((Entity)null, (BlockPos)var4, SoundEvents.PUMPKIN_CARVE, SoundSource.BLOCKS, 1.0F, 1.0F);
          var3.setBlock(var4, (BlockState)Blocks.CARVED_PUMPKIN.defaultBlockState().setValue(CarvedPumpkinBlock.FACING, var10), 11);
-         var1.hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var6));
+         var1.hurtAndBreak(1, var5, (EquipmentSlot)var6.asEquipmentSlot());
          var3.gameEvent(var5, GameEvent.SHEAR, var4);
          var5.awardStat(Stats.ITEM_USED.get(Items.SHEARS));
          return InteractionResult.SUCCESS;

@@ -3,6 +3,7 @@ package net.minecraft.world.effect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +21,7 @@ class WindChargedMobEffect extends MobEffect {
          double var7 = var2.getY() + (double)(var2.getBbHeight() / 2.0F);
          double var9 = var2.getZ();
          float var11 = 3.0F + var2.getRandom().nextFloat() * 2.0F;
-         var1.explode(var2, (DamageSource)null, AbstractWindCharge.EXPLOSION_DAMAGE_CALCULATOR, var5, var7, var9, var11, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
+         var1.explode(var2, (DamageSource)null, AbstractWindCharge.EXPLOSION_DAMAGE_CALCULATOR, var5, var7, var9, var11, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, WeightedList.of(), SoundEvents.BREEZE_WIND_CHARGE_BURST);
       }
 
    }

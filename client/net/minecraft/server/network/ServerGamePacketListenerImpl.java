@@ -1363,7 +1363,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleChat(ServerboundChatPacket var1) {
       Optional var2 = this.unpackAndApplyLastSeen(var1.lastSeenMessages());
       if (!var2.isEmpty()) {
-         this.tryHandleChat(var1.message(), () -> {
+         this.tryHandleChat(var1.message(), false, () -> {
             PlayerChatMessage var3;
             try {
                var3 = this.getSignedMessage(var1, (LastSeenMessages)var2.get());
@@ -1383,7 +1383,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleChatCommand(ServerboundChatCommandPacket var1) {
-      this.tryHandleChat(var1.command(), () -> {
+      this.tryHandleChat(var1.command(), true, () -> {
          this.performUnsignedChatCommand(var1.command());
          this.detectRateSpam();
       });
@@ -1402,7 +1402,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleSignedChatCommand(ServerboundChatCommandSignedPacket var1) {
       Optional var2 = this.unpackAndApplyLastSeen(var1.lastSeenMessages());
       if (!var2.isEmpty()) {
-         this.tryHandleChat(var1.command(), () -> {
+         this.tryHandleChat(var1.command(), true, () -> {
             this.performSignedChatCommand(var1, (LastSeenMessages)var2.get());
             this.detectRateSpam();
          });
@@ -1482,14 +1482,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       return var2.parse(var1, this.player.createCommandSourceStack());
    }
 
-   private void tryHandleChat(String var1, Runnable var2) {
+   private void tryHandleChat(String var1, boolean var2, Runnable var3) {
       if (isChatMessageIllegal(var1)) {
          this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
-      } else if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
+      } else if (!var2 && this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
          this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
       } else {
          this.player.resetLastActionTime();
-         this.server.execute(var2);
+         this.server.execute(var3);
       }
    }
 

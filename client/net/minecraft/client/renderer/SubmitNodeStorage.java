@@ -28,6 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 
 public class SubmitNodeStorage implements SubmitNodeCollector {
    private final List<ShadowSubmit> shadowSubmits = new ArrayList();
@@ -41,7 +42,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
    private final List<FallingBlockSubmit> fallingBlockSubmits = new ArrayList();
    private final List<BlockModelSubmit> blockModelSubmits = new ArrayList();
    private final List<ItemSubmit> itemSubmits = new ArrayList();
-   private final Int2ObjectAVLTreeMap<Map<RenderType, List<ModelSubmit<?>>>> modelSubmits = new Int2ObjectAVLTreeMap();
+   private final Int2ObjectAVLTreeMap<Map<RenderType, List<ModelSubmit<?>>>> opaqueModelSubmits = new Int2ObjectAVLTreeMap();
+   private final List<TranslucentModelSubmit<?>> translucentModelSubmits = new ArrayList();
    private final Set<ModelSubmitBucket> usedModelSubmitBuckets = new ObjectOpenHashSet();
    private final Map<RenderType, List<CustomGeometrySubmit>> customGeometrySubmits = new HashMap();
    private final Set<RenderType> customGeometrySubmitsUsage = new ObjectOpenHashSet();
@@ -94,7 +96,14 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
    }
 
    public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, int var10) {
-      ((List)((Map)this.modelSubmits.computeIfAbsent(var10, (var0) -> new HashMap())).computeIfAbsent(var4, (var0) -> new ArrayList())).add(new ModelSubmit(var3.last().copy(), var1, var2, var5, var6, var7, var8, var9));
+      ModelSubmit var11 = new ModelSubmit(var3.last().copy(), var1, var2, var5, var6, var7, var8, var9);
+      if (var4.pipeline().getBlendFunction().isEmpty()) {
+         ((List)((Map)this.opaqueModelSubmits.computeIfAbsent(var10, (var0) -> new HashMap())).computeIfAbsent(var4, (var0) -> new ArrayList())).add(var11);
+      } else {
+         Vector3f var12 = var3.last().pose().transformPosition(new Vector3f());
+         this.translucentModelSubmits.add(new TranslucentModelSubmit(var11, var4, var10, var12));
+      }
+
    }
 
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4) {
@@ -162,8 +171,12 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       return this.itemSubmits;
    }
 
-   public Int2ObjectAVLTreeMap<Map<RenderType, List<ModelSubmit<?>>>> getModelSubmits() {
-      return this.modelSubmits;
+   public Int2ObjectAVLTreeMap<Map<RenderType, List<ModelSubmit<?>>>> getOpaqueModelSubmits() {
+      return this.opaqueModelSubmits;
+   }
+
+   public List<TranslucentModelSubmit<?>> getTranslucentModelSubmits() {
+      return this.translucentModelSubmits;
    }
 
    public Map<RenderType, List<CustomGeometrySubmit>> getCustomGeometrySubmits() {
@@ -182,7 +195,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.fallingBlockSubmits.clear();
       this.blockModelSubmits.clear();
       this.itemSubmits.clear();
-      ObjectBidirectionalIterator var1 = this.modelSubmits.int2ObjectEntrySet().iterator();
+      this.translucentModelSubmits.clear();
+      ObjectBidirectionalIterator var1 = this.opaqueModelSubmits.int2ObjectEntrySet().iterator();
 
       while(var1.hasNext()) {
          Int2ObjectMap.Entry var2 = (Int2ObjectMap.Entry)var1.next();
@@ -207,7 +221,7 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
    }
 
    public void endFrame() {
-      this.modelSubmits.int2ObjectEntrySet().removeIf((var1) -> {
+      this.opaqueModelSubmits.int2ObjectEntrySet().removeIf((var1) -> {
          int var2 = var1.getIntKey();
          Map var3 = (Map)var1.getValue();
          var3.keySet().removeIf((var2x) -> !this.usedModelSubmitBuckets.contains(new ModelSubmitBucket(var2x, var2)));
@@ -293,6 +307,16 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
          this.tintedColor = var6;
          this.sprite = var7;
          this.outlineColor = var8;
+      }
+   }
+
+   public static record TranslucentModelSubmit<S>(ModelSubmit<S> modelSubmit, RenderType renderType, int order, Vector3f position) {
+      public TranslucentModelSubmit(ModelSubmit<S> var1, RenderType var2, int var3, Vector3f var4) {
+         super();
+         this.modelSubmit = var1;
+         this.renderType = var2;
+         this.order = var3;
+         this.position = var4;
       }
    }
 

@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -33,6 +34,7 @@ public class ServerPlayerGameMode {
    private GameType gameModeForPlayer;
    @Nullable
    private GameType previousGameModeForPlayer;
+   private boolean previousFlying;
    private boolean isDestroyingBlock;
    private int destroyProgressStart;
    private BlockPos destroyPos;
@@ -56,7 +58,7 @@ public class ServerPlayerGameMode {
       if (var1 == this.gameModeForPlayer) {
          return false;
       } else {
-         this.setGameModeForPlayer(var1, this.previousGameModeForPlayer);
+         this.setGameModeForPlayer(var1, this.gameModeForPlayer);
          this.player.onUpdateAbilities();
          this.level.getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
@@ -71,7 +73,10 @@ public class ServerPlayerGameMode {
    protected void setGameModeForPlayer(GameType var1, @Nullable GameType var2) {
       this.previousGameModeForPlayer = var2;
       this.gameModeForPlayer = var1;
-      var1.updatePlayerAbilities(this.player.getAbilities());
+      Abilities var3 = this.player.getAbilities();
+      boolean var4 = var3.flying;
+      var1.updatePlayerAbilities(var3, this.previousFlying);
+      this.previousFlying = var4;
    }
 
    public GameType getGameModeForPlayer() {

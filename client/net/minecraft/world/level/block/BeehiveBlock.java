@@ -24,7 +24,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -139,7 +138,7 @@ public class BeehiveBlock extends BaseEntityBlock {
                if (var1.is(Items.SHEARS)) {
                   dropHoneycomb(var11, var1, var2, var3.getBlockEntity(var4), var5, var4);
                   var3.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  var1.hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var6));
+                  var1.hurtAndBreak(1, var5, (EquipmentSlot)var6.asEquipmentSlot());
                   var9 = true;
                   var3.gameEvent(var5, GameEvent.SHEAR, var4);
                   break label40;

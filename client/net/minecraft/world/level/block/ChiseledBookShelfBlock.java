@@ -29,12 +29,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class ChiseledBookShelfBlock extends BaseEntityBlock implements SelectableSlotContainer {
    public static final MapCodec<ChiseledBookShelfBlock> CODEC = simpleCodec(ChiseledBookShelfBlock::new);
+   public static final EnumProperty<Direction> FACING;
+   public static final BooleanProperty SLOT_0_OCCUPIED;
+   public static final BooleanProperty SLOT_1_OCCUPIED;
+   public static final BooleanProperty SLOT_2_OCCUPIED;
+   public static final BooleanProperty SLOT_3_OCCUPIED;
+   public static final BooleanProperty SLOT_4_OCCUPIED;
+   public static final BooleanProperty SLOT_5_OCCUPIED;
    private static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final int BOOKS_PER_ROW = 3;
    public static final List<BooleanProperty> SLOT_OCCUPIED_PROPERTIES;
@@ -53,7 +61,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
 
    public ChiseledBookShelfBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      BlockState var2 = (BlockState)((BlockState)this.stateDefinition.any()).setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH);
+      BlockState var2 = (BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH);
 
       for(BooleanProperty var4 : SLOT_OCCUPIED_PROPERTIES) {
          var2 = (BlockState)var2.setValue(var4, false);
@@ -68,7 +76,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
          if (!var1.is(ItemTags.BOOKSHELF_BOOKS)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
-            OptionalInt var10 = this.getHitSlot(var7, (Direction)var2.getValue(HorizontalDirectionalBlock.FACING));
+            OptionalInt var10 = this.getHitSlot(var7, (Direction)var2.getValue(FACING));
             if (var10.isEmpty()) {
                return InteractionResult.PASS;
             } else if ((Boolean)var2.getValue((Property)SLOT_OCCUPIED_PROPERTIES.get(var10.getAsInt()))) {
@@ -86,7 +94,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var7 = var2.getBlockEntity(var3);
       if (var7 instanceof ChiseledBookShelfBlockEntity var6) {
-         OptionalInt var8 = this.getHitSlot(var5, (Direction)var1.getValue(HorizontalDirectionalBlock.FACING));
+         OptionalInt var8 = this.getHitSlot(var5, (Direction)var1.getValue(FACING));
          if (var8.isEmpty()) {
             return InteractionResult.PASS;
          } else if (!(Boolean)var1.getValue((Property)SLOT_OCCUPIED_PROPERTIES.get(var8.getAsInt()))) {
@@ -128,7 +136,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HorizontalDirectionalBlock.FACING);
+      var1.add(FACING);
       List var10000 = SLOT_OCCUPIED_PROPERTIES;
       Objects.requireNonNull(var1);
       var10000.forEach((var1x) -> var1.add(var1x));
@@ -139,15 +147,15 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, var1.getHorizontalDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(HorizontalDirectionalBlock.FACING, var2.rotate((Direction)var1.getValue(HorizontalDirectionalBlock.FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
    public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(HorizontalDirectionalBlock.FACING)));
+      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
    }
 
    protected boolean hasAnalogOutputSignal(BlockState var1) {
@@ -169,6 +177,13 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock implements Selectabl
    }
 
    static {
-      SLOT_OCCUPIED_PROPERTIES = List.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_0_OCCUPIED, BlockStateProperties.CHISELED_BOOKSHELF_SLOT_1_OCCUPIED, BlockStateProperties.CHISELED_BOOKSHELF_SLOT_2_OCCUPIED, BlockStateProperties.CHISELED_BOOKSHELF_SLOT_3_OCCUPIED, BlockStateProperties.CHISELED_BOOKSHELF_SLOT_4_OCCUPIED, BlockStateProperties.CHISELED_BOOKSHELF_SLOT_5_OCCUPIED);
+      FACING = HorizontalDirectionalBlock.FACING;
+      SLOT_0_OCCUPIED = BlockStateProperties.SLOT_0_OCCUPIED;
+      SLOT_1_OCCUPIED = BlockStateProperties.SLOT_1_OCCUPIED;
+      SLOT_2_OCCUPIED = BlockStateProperties.SLOT_2_OCCUPIED;
+      SLOT_3_OCCUPIED = BlockStateProperties.SLOT_3_OCCUPIED;
+      SLOT_4_OCCUPIED = BlockStateProperties.SLOT_4_OCCUPIED;
+      SLOT_5_OCCUPIED = BlockStateProperties.SLOT_5_OCCUPIED;
+      SLOT_OCCUPIED_PROPERTIES = List.of(SLOT_0_OCCUPIED, SLOT_1_OCCUPIED, SLOT_2_OCCUPIED, SLOT_3_OCCUPIED, SLOT_4_OCCUPIED, SLOT_5_OCCUPIED);
    }
 }

@@ -146,6 +146,10 @@ public class DeathScreen extends Screen {
       return false;
    }
 
+   public boolean isAllowedInPortal() {
+      return true;
+   }
+
    public void tick() {
       super.tick();
       ++this.delayTicker;

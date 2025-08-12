@@ -100,7 +100,12 @@ public class ChatSelectionScreen extends Screen {
       int var7 = var5.maxReportedMessageCount();
       MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
       var1.drawCenteredString(this.font, (Component)var8, this.width / 2, 26, -1);
-      this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
+      int var9 = this.chatSelectionList.getFooterTop();
+      MultiLineLabel var10000 = this.contextInfoLabel;
+      MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
+      int var10003 = this.width / 2;
+      Objects.requireNonNull(this.font);
+      var10000.render(var1, var10002, var10003, var9, 9, true, -1);
    }
 
    public void onClose() {

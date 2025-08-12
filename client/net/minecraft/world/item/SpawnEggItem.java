@@ -18,6 +18,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -58,11 +59,11 @@ public class SpawnEggItem extends Item {
          BlockEntity var8 = var2.getBlockEntity(var4);
          if (var8 instanceof Spawner) {
             Spawner var9 = (Spawner)var8;
-            EntityType var11 = this.getType(var3);
-            if (var11 == null) {
+            EntityType var10 = this.getType(var3);
+            if (var10 == null) {
                return InteractionResult.FAIL;
             } else {
-               var9.setEntityId(var11, var2.getRandom());
+               var9.setEntityId(var10, var2.getRandom());
                var2.sendBlockUpdated(var4, var6, var6, 3);
                var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
                var3.shrink(1);
@@ -76,18 +77,24 @@ public class SpawnEggItem extends Item {
                var7 = var4.relative(var5);
             }
 
-            EntityType var10 = this.getType(var3);
-            if (var10 == null) {
-               return InteractionResult.FAIL;
-            } else {
-               if (var10.spawn((ServerLevel)var2, var3, var1.getPlayer(), var7, EntitySpawnReason.SPAWN_ITEM_USE, true, !Objects.equals(var4, var7) && var5 == Direction.UP) != null) {
-                  var3.shrink(1);
-                  var2.gameEvent(var1.getPlayer(), GameEvent.ENTITY_PLACE, var4);
-               }
-
-               return InteractionResult.SUCCESS;
-            }
+            return this.spawnMob(var1.getPlayer(), var3, var2, var7, true, !Objects.equals(var4, var7) && var5 == Direction.UP);
          }
+      }
+   }
+
+   private InteractionResult spawnMob(@Nullable LivingEntity var1, ItemStack var2, Level var3, BlockPos var4, boolean var5, boolean var6) {
+      EntityType var7 = this.getType(var2);
+      if (var7 == null) {
+         return InteractionResult.FAIL;
+      } else if (!var7.isAllowedInPeaceful() && var3.getDifficulty() == Difficulty.PEACEFUL) {
+         return InteractionResult.FAIL;
+      } else {
+         if (var7.spawn((ServerLevel)var3, var2, var1, var4, EntitySpawnReason.SPAWN_ITEM_USE, var5, var6) != null) {
+            var2.consume(1, var1);
+            var3.gameEvent(var1, GameEvent.ENTITY_PLACE, var4);
+         }
+
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -102,22 +109,12 @@ public class SpawnEggItem extends Item {
          if (!(var1.getBlockState(var7).getBlock() instanceof LiquidBlock)) {
             return InteractionResult.PASS;
          } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var5.getDirection(), var4)) {
-            EntityType var8 = this.getType(var4);
-            if (var8 == null) {
-               return InteractionResult.FAIL;
-            } else if (!var8.isAllowedInPeaceful() && var1.getDifficulty() == Difficulty.PEACEFUL) {
-               return InteractionResult.FAIL;
-            } else {
-               Entity var9 = var8.spawn(var6, var4, var2, var7, EntitySpawnReason.SPAWN_ITEM_USE, false, false);
-               if (var9 == null) {
-                  return InteractionResult.PASS;
-               } else {
-                  var4.consume(1, var2);
-                  var2.awardStat(Stats.ITEM_USED.get(this));
-                  var1.gameEvent(var2, GameEvent.ENTITY_PLACE, var9.position());
-                  return InteractionResult.SUCCESS;
-               }
+            InteractionResult var8 = this.spawnMob(var2, var4, var1, var7, false, false);
+            if (var8 == InteractionResult.SUCCESS) {
+               var2.awardStat(Stats.ITEM_USED.get(this));
             }
+
+            return var8;
          } else {
             return InteractionResult.FAIL;
          }

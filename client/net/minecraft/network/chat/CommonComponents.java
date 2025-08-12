@@ -18,6 +18,7 @@ public class CommonComponents {
    public static final Component GUI_TO_TITLE = Component.translatable("gui.toTitle");
    public static final Component GUI_ACKNOWLEDGE = Component.translatable("gui.acknowledge");
    public static final Component GUI_OPEN_IN_BROWSER = Component.translatable("chat.link.open");
+   public static final Component GUI_COPY_TO_CLIPBOARD = Component.translatable("chat.copy");
    public static final Component GUI_COPY_LINK_TO_CLIPBOARD = Component.translatable("gui.copy_link_to_clipboard");
    public static final Component GUI_DISCONNECT = Component.translatable("menu.disconnect");
    public static final Component GUI_RETURN_TO_MENU = Component.translatable("menu.returnToMenu");

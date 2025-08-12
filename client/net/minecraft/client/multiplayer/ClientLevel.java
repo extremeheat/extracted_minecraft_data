@@ -30,9 +30,11 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.EndFlashState;
 import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.resources.sounds.DirectionalSoundInstance;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
@@ -40,6 +42,7 @@ import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,6 +51,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ARGB;
@@ -57,6 +61,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
@@ -121,6 +126,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final ClientLevelData clientLevelData;
    private final DimensionSpecialEffects effects;
    private final TickRateManager tickRateManager;
+   @Nullable
+   private final EndFlashState endFlashState;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    final List<EnderDragonPart> dragonParts = Lists.newArrayList();
@@ -138,6 +145,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private final Set<BlockEntity> globallyRenderedBlockEntities = new ReferenceOpenHashSet();
+   private final ClientExplosionTracker explosionTracker = new ClientExplosionTracker();
    private final int seaLevel;
    private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
@@ -205,6 +213,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.seaLevel = var11;
       this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var7);
       this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
+      this.endFlashState = this.effects.hasEndFlashes() ? new EndFlashState() : null;
       this.setDefaultSpawnPos(new BlockPos(8, 64, 8), 0.0F);
       this.serverSimulationDistance = var6;
       this.updateSkyBrightness();
@@ -234,6 +243,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.effects;
    }
 
+   @Nullable
+   public EndFlashState endFlashState() {
+      return this.endFlashState;
+   }
+
    public void tick(BooleanSupplier var1) {
       this.getWorldBorder().tick();
       this.updateSkyBrightness();
@@ -244,6 +258,15 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       if (this.skyFlashTime > 0) {
          this.setSkyFlashTime(this.skyFlashTime - 1);
       }
+
+      if (this.endFlashState != null) {
+         this.endFlashState.tick(this.getGameTime());
+         if (this.endFlashState.shouldProduceSoundThisTick()) {
+            this.minecraft.getSoundManager().play(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()));
+         }
+      }
+
+      this.explosionTracker.tick(this);
 
       try (Zone var2 = Profiler.get().zone("blocks")) {
          this.chunkSource.tick(var1, true);
@@ -817,7 +840,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.connection.fuelValues();
    }
 
-   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15) {
+   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16) {
    }
 
    public int getSeaLevel() {
@@ -830,6 +853,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public void registerForCleaning(CacheSlot<ClientLevel, ?> var1) {
       this.connection.registerForCleaning(var1);
+   }
+
+   public void trackExplosionEffects(Vec3 var1, float var2, int var3, WeightedList<ExplosionParticleInfo> var4) {
+      this.explosionTracker.track(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method

@@ -218,13 +218,22 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             }
          }
 
+         int var3 = -1;
+         if (this.tabNavigationBar != null) {
+            var3 = this.tabNavigationBar.getTabs().indexOf(this.tabManager.getCurrentTab());
+         }
+
          if (this.tabNavigationBar != null) {
             this.removeWidget(this.tabNavigationBar);
          }
 
          this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build();
+         this.setFocused(this.tabNavigationBar);
+         if (var3 != -1) {
+            this.tabNavigationBar.selectTab(var3, false);
+         }
+
          this.addRenderableWidget(this.tabNavigationBar);
-         this.tabNavigationBar.selectTab(0, false);
          this.tabNavigationBar.setTabActiveState(3, !this.serverData.expired);
          if (this.serverData.expired) {
             this.tabNavigationBar.setTabTooltip(3, Tooltip.create(Component.translatable("mco.configure.world.settings.expired")));

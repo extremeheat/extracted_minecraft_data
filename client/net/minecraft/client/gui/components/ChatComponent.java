@@ -14,6 +14,7 @@ import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
@@ -42,6 +43,10 @@ public class ChatComponent {
    private final List<GuiMessage.Line> trimmedMessages = Lists.newArrayList();
    private int chatScrollbarPos;
    private boolean newMessageSinceScroll;
+   @Nullable
+   private Draft latestDraft;
+   @Nullable
+   private ChatScreen preservedScreen;
    private final List<DelayedMessageDeletion> messageDeletionQueue = new ArrayList();
 
    public ChatComponent(Minecraft var1) {
@@ -492,6 +497,38 @@ public class ChatComponent {
       return (int)(9.0 * ((Double)this.minecraft.options.chatLineSpacing().get() + 1.0));
    }
 
+   public void saveAsDraft(String var1) {
+      boolean var2 = var1.startsWith("/");
+      this.latestDraft = new Draft(var1, var2 ? ChatComponent.ChatMethod.COMMAND : ChatComponent.ChatMethod.MESSAGE);
+   }
+
+   public void discardDraft() {
+      this.latestDraft = null;
+   }
+
+   public <T extends ChatScreen> T createScreen(ChatMethod var1, ChatScreen.ChatConstructor<T> var2) {
+      return (T)(this.latestDraft != null && var1.isDraftRestorable(this.latestDraft) ? var2.create(this.latestDraft.text(), true) : var2.create(var1.prefix(), false));
+   }
+
+   public void openScreen(ChatMethod var1, ChatScreen.ChatConstructor<?> var2) {
+      this.minecraft.setScreen(this.createScreen(var1, var2));
+   }
+
+   public void preserveCurrentChatScreen() {
+      Screen var2 = this.minecraft.screen;
+      if (var2 instanceof ChatScreen var1) {
+         this.preservedScreen = var1;
+      }
+
+   }
+
+   @Nullable
+   public ChatScreen restoreChatScreen() {
+      ChatScreen var1 = this.preservedScreen;
+      this.preservedScreen = null;
+      return var1;
+   }
+
    public State storeState() {
       return new State(List.copyOf(this.allMessages), List.copyOf(this.recentChat), List.copyOf(this.messageDeletionQueue));
    }
@@ -528,6 +565,46 @@ public class ChatComponent {
          this.messages = var1;
          this.history = var2;
          this.delayedMessageDeletions = var3;
+      }
+   }
+
+   public static record Draft(String text, ChatMethod chatMethod) {
+      final ChatMethod chatMethod;
+
+      public Draft(String var1, ChatMethod var2) {
+         super();
+         this.text = var1;
+         this.chatMethod = var2;
+      }
+   }
+
+   public static enum ChatMethod {
+      MESSAGE("") {
+         public boolean isDraftRestorable(Draft var1) {
+            return true;
+         }
+      },
+      COMMAND("/") {
+         public boolean isDraftRestorable(Draft var1) {
+            return this == var1.chatMethod;
+         }
+      };
+
+      private final String prefix;
+
+      ChatMethod(final String var3) {
+         this.prefix = var3;
+      }
+
+      public String prefix() {
+         return this.prefix;
+      }
+
+      public abstract boolean isDraftRestorable(Draft var1);
+
+      // $FF: synthetic method
+      private static ChatMethod[] $values() {
+         return new ChatMethod[]{MESSAGE, COMMAND};
       }
    }
 

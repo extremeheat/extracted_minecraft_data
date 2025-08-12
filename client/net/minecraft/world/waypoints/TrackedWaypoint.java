@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 
 public abstract class TrackedWaypoint implements Waypoint {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static StreamCodec<ByteBuf, TrackedWaypoint> STREAM_CODEC = StreamCodec.<ByteBuf, TrackedWaypoint>ofMember(TrackedWaypoint::write, TrackedWaypoint::read);
+   public static final StreamCodec<ByteBuf, TrackedWaypoint> STREAM_CODEC = StreamCodec.<ByteBuf, TrackedWaypoint>ofMember(TrackedWaypoint::write, TrackedWaypoint::read);
    protected final Either<UUID, String> identifier;
    private final Waypoint.Icon icon;
    private final Type type;
@@ -73,9 +73,9 @@ public abstract class TrackedWaypoint implements Waypoint {
       return new EmptyWaypoint(var0);
    }
 
-   public abstract double yawAngleToCamera(Level var1, Camera var2);
+   public abstract double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3);
 
-   public abstract PitchDirection pitchDirectionToCamera(Level var1, Projector var2);
+   public abstract PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3);
 
    public abstract double distanceSquared(Entity var1);
 
@@ -130,11 +130,11 @@ public abstract class TrackedWaypoint implements Waypoint {
       public void writeContents(ByteBuf var1) {
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2) {
+      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
          return 0.0 / 0.0;
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
          return TrackedWaypoint.PitchDirection.NONE;
       }
 
@@ -171,33 +171,33 @@ public abstract class TrackedWaypoint implements Waypoint {
          VarInt.write(var1, this.vector.getZ());
       }
 
-      private Vec3 position(Level var1) {
+      private Vec3 position(Level var1, PartialTickSupplier var2) {
          Optional var10000 = this.identifier.left();
          Objects.requireNonNull(var1);
-         return (Vec3)var10000.map(var1::getEntity).map((var1x) -> var1x.blockPosition().distManhattan(this.vector) > 3 ? null : var1x.getEyePosition()).orElseGet(() -> Vec3.atCenterOf(this.vector));
+         return (Vec3)var10000.map(var1::getEntity).map((var2x) -> var2x.blockPosition().distManhattan(this.vector) > 3 ? null : var2x.getEyePosition(var2.apply(var2x))).orElseGet(() -> Vec3.atCenterOf(this.vector));
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2) {
-         Vec3 var3 = var2.position().subtract(this.position(var1)).rotateClockwise90();
-         float var4 = (float)Mth.atan2(var3.z(), var3.x()) * 57.295776F;
-         return (double)Mth.degreesDifference(var2.yaw(), var4);
+      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
+         Vec3 var4 = var2.position().subtract(this.position(var1, var3)).rotateClockwise90();
+         float var5 = (float)Mth.atan2(var4.z(), var4.x()) * 57.295776F;
+         return (double)Mth.degreesDifference(var2.yaw(), var5);
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
-         Vec3 var3 = var2.projectPointToScreen(this.position(var1));
-         boolean var4 = var3.z > 1.0;
-         double var5 = var4 ? -var3.y : var3.y;
-         if (var5 < -1.0) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
+         Vec3 var4 = var2.projectPointToScreen(this.position(var1, var3));
+         boolean var5 = var4.z > 1.0;
+         double var6 = var5 ? -var4.y : var4.y;
+         if (var6 < -1.0) {
             return TrackedWaypoint.PitchDirection.DOWN;
-         } else if (var5 > 1.0) {
+         } else if (var6 > 1.0) {
             return TrackedWaypoint.PitchDirection.UP;
          } else {
-            if (var4) {
-               if (var3.y > 0.0) {
+            if (var5) {
+               if (var4.y > 0.0) {
                   return TrackedWaypoint.PitchDirection.UP;
                }
 
-               if (var3.y < 0.0) {
+               if (var4.y < 0.0) {
                   return TrackedWaypoint.PitchDirection.DOWN;
                }
             }
@@ -242,19 +242,19 @@ public abstract class TrackedWaypoint implements Waypoint {
          return Vec3.atCenterOf(this.chunkPos.getMiddleBlockPosition((int)var1));
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2) {
-         Vec3 var3 = var2.position();
-         Vec3 var4 = var3.subtract(this.position(var3.y())).rotateClockwise90();
-         float var5 = (float)Mth.atan2(var4.z(), var4.x()) * 57.295776F;
-         return (double)Mth.degreesDifference(var2.yaw(), var5);
+      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
+         Vec3 var4 = var2.position();
+         Vec3 var5 = var4.subtract(this.position(var4.y())).rotateClockwise90();
+         float var6 = (float)Mth.atan2(var5.z(), var5.x()) * 57.295776F;
+         return (double)Mth.degreesDifference(var2.yaw(), var6);
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
-         double var3 = var2.projectHorizonToScreen();
-         if (var3 < -1.0) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
+         double var4 = var2.projectHorizonToScreen();
+         if (var4 < -1.0) {
             return TrackedWaypoint.PitchDirection.DOWN;
          } else {
-            return var3 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
+            return var4 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
          }
       }
 
@@ -289,16 +289,16 @@ public abstract class TrackedWaypoint implements Waypoint {
          var1.writeFloat(this.angle);
       }
 
-      public double yawAngleToCamera(Level var1, Camera var2) {
+      public double yawAngleToCamera(Level var1, Camera var2, PartialTickSupplier var3) {
          return (double)Mth.degreesDifference(var2.yaw(), this.angle * 57.295776F);
       }
 
-      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2) {
-         double var3 = var2.projectHorizonToScreen();
-         if (var3 < -1.0) {
+      public PitchDirection pitchDirectionToCamera(Level var1, Projector var2, PartialTickSupplier var3) {
+         double var4 = var2.projectHorizonToScreen();
+         if (var4 < -1.0) {
             return TrackedWaypoint.PitchDirection.DOWN;
          } else {
-            return var3 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
+            return var4 > 1.0 ? TrackedWaypoint.PitchDirection.UP : TrackedWaypoint.PitchDirection.NONE;
          }
       }
 

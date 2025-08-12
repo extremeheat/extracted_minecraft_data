@@ -317,6 +317,10 @@ public class WinScreen extends Screen {
       return !this.poem;
    }
 
+   public boolean isAllowedInPortal() {
+      return true;
+   }
+
    public void removed() {
       this.minecraft.getMusicManager().stopPlaying(Musics.CREDITS);
    }
