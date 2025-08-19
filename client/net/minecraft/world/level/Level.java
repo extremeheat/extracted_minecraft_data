@@ -72,8 +72,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
-import net.minecraft.world.level.entity.UUIDLookup;
-import net.minecraft.world.level.entity.UniquelyIdentifyable;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -90,7 +88,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 
-public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCloseable {
+public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
    public static final ResourceKey<Level> OVERWORLD;
    public static final ResourceKey<Level> NETHER;
@@ -643,6 +641,16 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       return (Entity)this.getEntities().get(var1);
    }
 
+   @Nullable
+   public Entity getEntityInAnyDimension(UUID var1) {
+      return this.getEntity(var1);
+   }
+
+   @Nullable
+   public Player getPlayerInAnyDimension(UUID var1) {
+      return this.getPlayerByUUID(var1);
+   }
+
    public abstract Collection<EnderDragonPart> dragonParts();
 
    public void blockEntityChanged(BlockPos var1) {
@@ -880,12 +888,6 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    // $FF: synthetic method
    public ChunkAccess getChunk(final int var1, final int var2) {
       return this.getChunk(var1, var2);
-   }
-
-   // $FF: synthetic method
-   @Nullable
-   public UniquelyIdentifyable getEntity(final UUID var1) {
-      return this.getEntity(var1);
    }
 
    static {

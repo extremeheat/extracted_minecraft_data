@@ -186,8 +186,8 @@ public class DebugOptionsScreen extends Screen {
          this.category = var2;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawCenteredString(DebugOptionsScreen.this.minecraft.font, (Component)this.category, var4 + var5 / 2, var3 + 5, -1);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         var1.drawCenteredString(DebugOptionsScreen.this.minecraft.font, (Component)this.category, this.getContentX() + this.getContentWidth() / 2, this.getContentY() + 5, -1);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -265,22 +265,24 @@ public class DebugOptionsScreen extends Screen {
          return this.children;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawString(DebugOptionsScreen.this.minecraft.font, this.name, var4, var3 + 5, this.isAllowed ? -1 : -8355712);
-         int var11 = var4 + var5 - this.never.getWidth() - this.f3.getWidth() - this.always.getWidth();
-         if (!this.isAllowed && var9 && var7 < var11) {
-            var1.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, var7, var8);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         int var6 = this.getContentX();
+         int var7 = this.getContentY();
+         var1.drawString(DebugOptionsScreen.this.minecraft.font, this.name, var6, var7 + 5, this.isAllowed ? -1 : -8355712);
+         int var8 = var6 + this.getContentWidth() - this.never.getWidth() - this.f3.getWidth() - this.always.getWidth();
+         if (!this.isAllowed && var4 && var2 < var8) {
+            var1.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, var2, var3);
          }
 
-         this.never.setX(var11);
+         this.never.setX(var8);
          this.f3.setX(this.never.getX() + this.never.getWidth());
          this.always.setX(this.f3.getX() + this.f3.getWidth());
-         this.always.setY(var3);
-         this.f3.setY(var3);
-         this.never.setY(var3);
-         this.always.render(var1, var7, var8, var10);
-         this.f3.render(var1, var7, var8, var10);
-         this.never.render(var1, var7, var8, var10);
+         this.always.setY(var7);
+         this.f3.setY(var7);
+         this.never.setY(var7);
+         this.always.render(var1, var2, var3, var5);
+         this.f3.render(var1, var2, var3, var5);
+         this.never.render(var1, var2, var3, var5);
       }
 
       public void refreshEntry() {

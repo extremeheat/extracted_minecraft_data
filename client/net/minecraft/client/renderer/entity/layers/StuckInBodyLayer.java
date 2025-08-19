@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -36,7 +37,7 @@ public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderL
       float var10 = (float)(Math.atan2((double)var5, (double)var8) * 57.2957763671875);
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var9 - 90.0F));
       var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var10));
-      var2.submitModel(this.model, this.modelState, var1, this.model.renderType(this.texture), var3, OverlayTexture.NO_OVERLAY, var7);
+      var2.submitModel(this.model, this.modelState, var1, this.model.renderType(this.texture), var3, OverlayTexture.NO_OVERLAY, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, PlayerRenderState var4, float var5, float var6) {

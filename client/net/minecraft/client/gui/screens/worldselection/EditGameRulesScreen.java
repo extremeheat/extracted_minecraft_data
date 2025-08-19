@@ -114,8 +114,8 @@ public class EditGameRulesScreen extends Screen {
          this.label = var2;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawCenteredString(EditGameRulesScreen.this.minecraft.font, (Component)this.label, var4 + var5 / 2, var3 + 5, -1);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         var1.drawCenteredString(EditGameRulesScreen.this.minecraft.font, (Component)this.label, this.getContentXMiddle(), this.getContentY() + 5, -1);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -172,11 +172,11 @@ public class EditGameRulesScreen extends Screen {
          this.children.add(this.checkbox);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         this.renderLabel(var1, var3, var4);
-         this.checkbox.setX(var4 + var5 - 45);
-         this.checkbox.setY(var3);
-         this.checkbox.render(var1, var7, var8, var10);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         this.renderLabel(var1, this.getContentY(), this.getContentX());
+         this.checkbox.setX(this.getContentRight() - 45);
+         this.checkbox.setY(this.getContentY());
+         this.checkbox.render(var1, var2, var3, var5);
       }
    }
 
@@ -200,11 +200,11 @@ public class EditGameRulesScreen extends Screen {
          this.children.add(this.input);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         this.renderLabel(var1, var3, var4);
-         this.input.setX(var4 + var5 - 45);
-         this.input.setY(var3);
-         this.input.render(var1, var7, var8, var10);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         this.renderLabel(var1, this.getContentY(), this.getContentX());
+         this.input.setX(this.getContentRight() - 45);
+         this.input.setY(this.getContentY());
+         this.input.render(var1, var2, var3, var5);
       }
    }
 

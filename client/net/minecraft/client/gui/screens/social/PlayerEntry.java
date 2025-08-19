@@ -133,42 +133,46 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       return !this.reportingEnabled ? Tooltip.create(REPORT_DISABLED_TOOLTIP) : Tooltip.create(REPORT_PLAYER_TOOLTIP, Component.translatable("gui.socialInteractions.narration.report", this.playerName));
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-      int var11 = var4 + 4;
-      int var12 = var3 + (var6 - 24) / 2;
-      int var13 = var11 + 24 + 4;
-      Component var15 = this.getStatusComponent();
-      int var14;
-      if (var15 == CommonComponents.EMPTY) {
-         var1.fill(var4, var3, var4 + var5, var3 + var6, BG_FILL);
+   public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+      int var6 = this.getContentX() + 4;
+      int var7 = this.getContentY() + (this.getContentHeight() - 24) / 2;
+      int var8 = var6 + 24 + 4;
+      Component var10 = this.getStatusComponent();
+      int var9;
+      if (var10 == CommonComponents.EMPTY) {
+         var1.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL);
+         int var10000 = this.getContentY();
+         int var10001 = this.getContentHeight();
          Objects.requireNonNull(this.minecraft.font);
-         var14 = var3 + (var6 - 9) / 2;
+         var9 = var10000 + (var10001 - 9) / 2;
       } else {
-         var1.fill(var4, var3, var4 + var5, var3 + var6, BG_FILL_REMOVED);
+         var1.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL_REMOVED);
+         int var12 = this.getContentY();
+         int var13 = this.getContentHeight();
          Objects.requireNonNull(this.minecraft.font);
          Objects.requireNonNull(this.minecraft.font);
-         var14 = var3 + (var6 - (9 + 9)) / 2;
-         var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR);
+         var9 = var12 + (var13 - (9 + 9)) / 2;
+         var1.drawString(this.minecraft.font, var10, var8, var9 + 12, PLAYER_STATUS_COLOR);
       }
 
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var11, var12, 24);
-      var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR);
+      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var6, var7, 24);
+      var1.drawString(this.minecraft.font, this.playerName, var8, var9, PLAYERNAME_COLOR);
       if (this.isRemoved) {
-         var1.fill(var11, var12, var11 + 24, var12 + 24, SKIN_SHADE);
+         var1.fill(var6, var7, var6 + 24, var7 + 24, SKIN_SHADE);
       }
 
       if (this.hideButton != null && this.showButton != null && this.reportButton != null) {
-         float var16 = this.tooltipHoverTime;
-         this.hideButton.setX(var4 + (var5 - this.hideButton.getWidth() - 4) - 20 - 4);
-         this.hideButton.setY(var3 + (var6 - this.hideButton.getHeight()) / 2);
-         this.hideButton.render(var1, var7, var8, var10);
-         this.showButton.setX(var4 + (var5 - this.showButton.getWidth() - 4) - 20 - 4);
-         this.showButton.setY(var3 + (var6 - this.showButton.getHeight()) / 2);
-         this.showButton.render(var1, var7, var8, var10);
-         this.reportButton.setX(var4 + (var5 - this.showButton.getWidth() - 4));
-         this.reportButton.setY(var3 + (var6 - this.showButton.getHeight()) / 2);
-         this.reportButton.render(var1, var7, var8, var10);
-         if (var16 == this.tooltipHoverTime) {
+         float var11 = this.tooltipHoverTime;
+         this.hideButton.setX(this.getContentX() + (this.getContentWidth() - this.hideButton.getWidth() - 4) - 20 - 4);
+         this.hideButton.setY(this.getContentY() + (this.getContentHeight() - this.hideButton.getHeight()) / 2);
+         this.hideButton.render(var1, var2, var3, var5);
+         this.showButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4) - 20 - 4);
+         this.showButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
+         this.showButton.render(var1, var2, var3, var5);
+         this.reportButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4));
+         this.reportButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
+         this.reportButton.render(var1, var2, var3, var5);
+         if (var11 == this.tooltipHoverTime) {
             this.tooltipHoverTime = 0.0F;
          }
       }

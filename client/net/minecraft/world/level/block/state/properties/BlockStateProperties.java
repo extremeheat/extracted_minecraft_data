@@ -43,7 +43,6 @@ public class BlockStateProperties {
    public static final BooleanProperty TRIGGERED = BooleanProperty.create("triggered");
    public static final BooleanProperty UNSTABLE = BooleanProperty.create("unstable");
    public static final BooleanProperty WATERLOGGED = BooleanProperty.create("waterlogged");
-   public static final BooleanProperty ALIGN_ITEMS_TO_BOTTOM = BooleanProperty.create("align_items_to_bottom");
    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS;
    public static final EnumProperty<Direction.Axis> AXIS;
    public static final BooleanProperty UP;

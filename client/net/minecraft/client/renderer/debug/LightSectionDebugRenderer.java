@@ -76,7 +76,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       float var13 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var3);
       float var14 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var5);
       float var15 = (float)((double)SectionPos.sectionToBlockCoord(var11) - var7);
-      ShapeRenderer.renderFace(var0, var1, var2, var13, var14, var15, var13 + 16.0F, var14 + 16.0F, var15 + 16.0F, var12.x(), var12.y(), var12.z(), var12.w());
+      ShapeRenderer.renderFace(var0.last().pose(), var1, var2, var13, var14, var15, var13 + 16.0F, var14 + 16.0F, var15 + 16.0F, var12.x(), var12.y(), var12.z(), var12.w());
    }
 
    private static void renderEdge(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, int var8, int var9, int var10, int var11, int var12, int var13, Vector4f var14) {

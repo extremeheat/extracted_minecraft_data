@@ -213,7 +213,7 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
       private @Nullable String validatePackFormatForRange(int var1, int var2) {
          int var3 = (Integer)this.format.get();
          if (var3 >= var1 && var3 <= var2) {
-            return var3 < 16 ? "Multi-version packs cannot support minimum version of less than 16, since this will leave versions in range unable to load pack." : null;
+            return var3 < 15 ? "Multi-version packs cannot support minimum version of less than 15, since this will leave versions in range unable to load pack." : null;
          } else {
             return "Pack declared support for versions " + var1 + " to " + var2 + " but declared main format is " + var3;
          }

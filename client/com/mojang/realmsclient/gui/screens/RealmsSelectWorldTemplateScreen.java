@@ -105,7 +105,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    protected void repositionElements() {
-      this.worldTemplateList.setSize(this.width, this.height - this.layout.getFooterHeight() - this.getHeaderHeight());
+      this.worldTemplateList.updateSize(this.width, this.layout);
       this.layout.arrangeElements();
    }
 
@@ -328,35 +328,35 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          return super.mouseClicked(var1, var3, var5, var6);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.blit(RenderPipelines.GUI_TEXTURED, RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
-         boolean var11 = true;
-         int var12 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         var1.blit(RenderPipelines.GUI_TEXTURED, RealmsTextureManager.worldTemplate(this.template.id, this.template.image), this.getContentX() + 1, this.getContentY() + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, this.getContentX(), this.getContentY() + 1, 40, 40);
+         boolean var6 = true;
+         int var7 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version);
          if (this.websiteButton != null) {
-            this.websiteButton.setPosition(var4 + var5 - var12 - this.websiteButton.getWidth() - 10, var3);
-            this.websiteButton.render(var1, var7, var8, var10);
+            this.websiteButton.setPosition(this.getContentRight() - var7 - this.websiteButton.getWidth() - 10, this.getContentY());
+            this.websiteButton.render(var1, var2, var3, var5);
          }
 
          if (this.trailerButton != null) {
-            this.trailerButton.setPosition(var4 + var5 - var12 - this.trailerButton.getWidth() * 2 - 15, var3);
-            this.trailerButton.render(var1, var7, var8, var10);
+            this.trailerButton.setPosition(this.getContentRight() - var7 - this.trailerButton.getWidth() * 2 - 15, this.getContentY());
+            this.trailerButton.render(var1, var2, var3, var5);
          }
 
-         int var13 = var4 + 45 + 20;
-         int var14 = var3 + 5;
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, (String)this.template.name, var13, var14, -1);
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, var4 + var5 - var12 - 5, var14, -9671572);
+         int var8 = this.getContentX() + 45 + 20;
+         int var9 = this.getContentY() + 5;
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, (String)this.template.name, var8, var9, -1);
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, this.getContentRight() - var7 - 5, var9, -9671572);
          Font var10001 = RealmsSelectWorldTemplateScreen.this.font;
          String var10002 = this.template.author;
          Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
-         var1.drawString(var10001, var10002, var13, var14 + 9 + 5, -6250336);
+         var1.drawString(var10001, var10002, var8, var9 + 9 + 5, -6250336);
          if (!this.template.recommendedPlayers.isBlank()) {
             var10001 = RealmsSelectWorldTemplateScreen.this.font;
             var10002 = this.template.recommendedPlayers;
-            int var10004 = var3 + var6;
+            int var10004 = this.getContentBottom();
             Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
-            var1.drawString(var10001, var10002, var13, var10004 - 9 / 2 - 5, -11776948);
+            var1.drawString(var10001, var10002, var8, var10004 - 9 / 2 - 5, -11776948);
          }
 
       }

@@ -8,11 +8,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.RandomSource;
@@ -115,9 +114,9 @@ public class ItemStackRenderState {
 
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, int var4) {
-      for(int var5 = 0; var5 < this.activeLayerCount; ++var5) {
-         this.layers[var5].render(var1, var2, var3, var4);
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, int var5) {
+      for(int var6 = 0; var6 < this.activeLayerCount; ++var6) {
+         this.layers[var6].submit(var1, var2, var3, var4, var5);
       }
 
    }
@@ -242,13 +241,13 @@ public class ItemStackRenderState {
          return this.tintLayers;
       }
 
-      void render(PoseStack var1, MultiBufferSource var2, int var3, int var4) {
+      void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, int var5) {
          var1.pushPose();
          this.transform.apply(ItemStackRenderState.this.displayContext.leftHand(), var1.last());
          if (this.specialRenderer != null) {
-            this.specialRenderer.render(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.foilType != ItemStackRenderState.FoilType.NONE);
+            this.specialRenderer.submit(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.foilType != ItemStackRenderState.FoilType.NONE);
          } else if (this.renderType != null) {
-            ItemRenderer.renderItem(ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.tintLayers, this.quads, this.renderType, this.foilType);
+            var2.submitItem(var1, ItemStackRenderState.this.displayContext, var3, var4, var5, this.tintLayers, this.quads, this.renderType, this.foilType);
          }
 
          var1.popPose();

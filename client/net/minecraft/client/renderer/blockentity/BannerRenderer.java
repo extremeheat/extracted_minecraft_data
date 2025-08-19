@@ -3,20 +3,23 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BannerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Unit;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.WallBannerBlock;
@@ -54,61 +57,62 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       this.wallFlagModel = new BannerFlagModel(var1.bakeLayer(ModelLayers.WALL_BANNER_FLAG));
    }
 
-   public void render(BannerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      BlockState var11 = var1.getBlockState();
-      BannerModel var8;
-      BannerFlagModel var9;
-      float var10;
-      if (var11.getBlock() instanceof BannerBlock) {
-         var10 = -RotationSegment.convertToDegrees((Integer)var11.getValue(BannerBlock.ROTATION));
-         var8 = this.standingModel;
-         var9 = this.standingFlagModel;
+   public void submit(BannerBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      BlockState var12 = var1.getBlockState();
+      BannerModel var9;
+      BannerFlagModel var10;
+      float var11;
+      if (var12.getBlock() instanceof BannerBlock) {
+         var11 = -RotationSegment.convertToDegrees((Integer)var12.getValue(BannerBlock.ROTATION));
+         var9 = this.standingModel;
+         var10 = this.standingFlagModel;
       } else {
-         var10 = -((Direction)var11.getValue(WallBannerBlock.FACING)).toYRot();
-         var8 = this.wallModel;
-         var9 = this.wallFlagModel;
+         var11 = -((Direction)var12.getValue(WallBannerBlock.FACING)).toYRot();
+         var9 = this.wallModel;
+         var10 = this.wallFlagModel;
       }
 
-      long var12 = var1.getLevel().getGameTime();
-      BlockPos var14 = var1.getBlockPos();
-      float var15 = ((float)Math.floorMod((long)(var14.getX() * 7 + var14.getY() * 9 + var14.getZ() * 13) + var12, 100L) + var2) / 100.0F;
-      renderBanner(this.materials, var3, var4, var5, var6, var10, var8, var9, var15, var1.getBaseColor(), var1.getPatterns());
+      long var13 = var1.getLevel().getGameTime();
+      BlockPos var15 = var1.getBlockPos();
+      float var16 = ((float)Math.floorMod((long)(var15.getX() * 7 + var15.getY() * 9 + var15.getZ() * 13) + var13, 100L) + var2) / 100.0F;
+      submitBanner(this.materials, var3, var8, var4, var5, var11, var9, var10, var16, var1.getBaseColor(), var1.getPatterns(), var7);
    }
 
-   public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {
-      renderBanner(this.materials, var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6);
+   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {
+      submitBanner(this.materials, var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   private static void renderBanner(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10) {
+   private static void submitBanner(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10, @Nullable ModelFeatureRenderer.CrumblingOverlay var11) {
       var1.pushPose();
       var1.translate(0.5F, 0.0F, 0.5F);
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
       var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      var6.renderToBuffer(var1, ModelBakery.BANNER_BASE.buffer(var0, var2, RenderType::entitySolid), var3, var4);
+      Material var12 = ModelBakery.BANNER_BASE;
+      var2.submitModel(var6, Unit.INSTANCE, var1, var12.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var12), 0, var11);
       var7.setupAnim(var8);
-      renderPatterns(var0, var1, var2, var3, var4, var7.root(), ModelBakery.BANNER_BASE, true, var9, var10);
+      submitPatterns(var0, var1, var2, var3, var4, var7.root(), var12, true, var9, var10);
       var1.popPose();
    }
 
-   public static void renderPatterns(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9) {
-      renderPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, false, true);
+   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9) {
+      submitPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, false, true);
    }
 
-   public static void renderPatterns(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, boolean var10, boolean var11) {
-      var5.render(var1, var6.buffer(var0, var2, RenderType::entitySolid, var11, var10), var3, var4);
-      renderPatternLayer(var0, var1, var2, var3, var4, var5, var7 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var8);
+   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, boolean var10, boolean var11) {
+      var2.submitModelPart(var5, var1, var6.renderType(RenderType::entitySolid), var3, var4, var0.get(var6), var11, var10);
+      submitPatternLayer(var0, var1, var2, var3, var4, var5, var7 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var8);
 
       for(int var12 = 0; var12 < 16 && var12 < var9.layers().size(); ++var12) {
          BannerPatternLayers.Layer var13 = (BannerPatternLayers.Layer)var9.layers().get(var12);
          Material var14 = var7 ? Sheets.getBannerMaterial(var13.pattern()) : Sheets.getShieldMaterial(var13.pattern());
-         renderPatternLayer(var0, var1, var2, var3, var4, var5, var14, var13.color());
+         submitPatternLayer(var0, var1, var2, var3, var4, var5, var14, var13.color());
       }
 
    }
 
-   private static void renderPatternLayer(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, ModelPart var5, Material var6, DyeColor var7) {
+   private static void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, DyeColor var7) {
       int var8 = var7.getTextureDiffuseColor();
-      var5.render(var1, var6.buffer(var0, var2, RenderType::entityNoOutline), var3, var4, var8);
+      var2.submitModelPart(var5, var1, var6.renderType(RenderType::entityNoOutline), var3, var4, var0.get(var6), var8);
    }
 
    public void getExtents(Set<Vector3f> var1) {

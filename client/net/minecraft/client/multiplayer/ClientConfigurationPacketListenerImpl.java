@@ -9,20 +9,24 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.dialog.DialogConnectionAccess;
+import net.minecraft.client.gui.screens.multiplayer.CodeOfConductScreen;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.TickablePacketListener;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.configuration.ClientConfigurationPacketListener;
+import net.minecraft.network.protocol.configuration.ClientboundCodeOfConductPacket;
 import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
 import net.minecraft.network.protocol.configuration.ClientboundResetChatPacket;
 import net.minecraft.network.protocol.configuration.ClientboundSelectKnownPacks;
 import net.minecraft.network.protocol.configuration.ClientboundUpdateEnabledFeaturesPacket;
+import net.minecraft.network.protocol.configuration.ServerboundAcceptCodeOfConductPacket;
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
@@ -102,6 +106,25 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
             return (T)var1.apply(var2);
          }
       }
+   }
+
+   public void handleCodeOfConduct(ClientboundCodeOfConductPacket var1) {
+      String var2 = var1.codeOfConduct();
+      if (this.serverData != null && this.serverData.hasAcceptedCodeOfConduct(var2)) {
+         this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
+      } else {
+         Screen var3 = this.minecraft.screen;
+         this.minecraft.execute(() -> this.minecraft.setScreen(new CodeOfConductScreen(this.serverData, var2, (var2x) -> {
+               if (var2x) {
+                  this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
+                  this.minecraft.setScreen(var3);
+               } else {
+                  this.minecraft.disconnectFromWorld(Component.translatable("multiplayer.disconnect.code_of_conduct"));
+               }
+
+            })));
+      }
+
    }
 
    public void handleConfigurationFinished(ClientboundFinishConfigurationPacket var1) {

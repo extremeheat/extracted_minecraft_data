@@ -1,29 +1,25 @@
 package net.minecraft.client.gui.spectator;
 
-import com.mojang.authlib.GameProfile;
-import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
 import net.minecraft.util.ARGB;
 
 public class PlayerMenuItem implements SpectatorMenuItem {
-   private final GameProfile profile;
-   private final Supplier<PlayerSkin> skin;
+   private final PlayerInfo playerInfo;
    private final Component name;
 
-   public PlayerMenuItem(GameProfile var1) {
+   public PlayerMenuItem(PlayerInfo var1) {
       super();
-      this.profile = var1;
-      this.skin = Minecraft.getInstance().getSkinManager().lookupInsecure(var1);
-      this.name = Component.literal(var1.getName());
+      this.playerInfo = var1;
+      this.name = Component.literal(var1.getProfile().getName());
    }
 
    public void selectItem(SpectatorMenu var1) {
-      Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.profile.getId()));
+      Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.playerInfo.getProfile().getId()));
    }
 
    public Component getName() {
@@ -31,7 +27,7 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    }
 
    public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), 2, 2, 12, ARGB.white(var3));
+      PlayerFaceRenderer.draw(var1, this.playerInfo.getSkin(), 2, 2, 12, ARGB.white(var3));
    }
 
    public boolean isEnabled() {

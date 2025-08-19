@@ -117,6 +117,7 @@ public class ChatSelectionScreen extends Screen {
    }
 
    public class ChatSelectionList extends ObjectSelectionList<Entry> implements ChatSelectionLogFiller.Output {
+      public static final int ITEM_HEIGHT = 16;
       @Nullable
       private Heading previousHeading;
 
@@ -165,18 +166,17 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public int getMaxVisibleEntries() {
-         return Mth.positiveCeilDiv(this.height, this.itemHeight);
+         return Mth.positiveCeilDiv(this.height, 16);
       }
 
-      protected void renderItem(GuiGraphics var1, int var2, int var3, float var4, int var5, int var6, int var7, int var8, int var9) {
-         Entry var10 = (Entry)this.getEntry(var5);
-         if (this.shouldHighlightEntry(var10)) {
-            boolean var11 = this.getSelected() == var10;
-            int var12 = this.isFocused() && var11 ? -1 : -8355712;
-            this.renderSelection(var1, var7, var8, var9, var12, -16777216);
+      protected void renderItem(GuiGraphics var1, int var2, int var3, float var4, Entry var5) {
+         if (this.shouldHighlightEntry(var5)) {
+            boolean var6 = this.getSelected() == var5;
+            int var7 = this.isFocused() && var6 ? -1 : -8355712;
+            this.renderSelection(var1, var5, var7);
          }
 
-         var10.render(var1, var5, var7, var6, var8, var9, var2, var3, this.getHovered() == var10, var4);
+         var5.renderContent(var1, var2, var3, this.getHovered() == var5, var4);
       }
 
       private boolean shouldHighlightEntry(Entry var1) {
@@ -295,22 +295,23 @@ public class ChatSelectionScreen extends Screen {
             this.narration = var4;
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
             if (this.isSelected() && this.canReport) {
-               this.renderSelectedCheckmark(var1, var3, var4, var6);
+               this.renderSelectedCheckmark(var1, this.getContentY(), this.getContentX(), this.getContentHeight());
             }
 
-            int var11 = var4 + this.getTextIndent();
-            int var10000 = var3 + 1;
+            int var6 = this.getContentX() + this.getTextIndent();
+            int var10000 = this.getContentY() + 1;
+            int var10001 = this.getContentHeight();
             Objects.requireNonNull(ChatSelectionScreen.this.font);
-            int var12 = var10000 + (var6 - 9) / 2;
-            var1.drawString(ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var11, var12, this.canReport ? -1 : -1593835521);
-            if (this.hoverText != null && var9) {
-               var1.setTooltipForNextFrame(this.hoverText, var7, var8);
+            int var7 = var10000 + (var10001 - 9) / 2;
+            var1.drawString(ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var6, var7, this.canReport ? -1 : -1593835521);
+            if (this.hoverText != null && var4) {
+               var1.setTooltipForNextFrame(this.hoverText, var2, var3);
             }
 
-            int var13 = ChatSelectionScreen.this.font.width(this.text);
-            this.renderTag(var1, var11 + var13 + 4, var3, var6, var7, var8);
+            int var8 = ChatSelectionScreen.this.font.width(this.text);
+            this.renderTag(var1, var6 + var8 + 4, this.getContentY(), this.getContentHeight(), var2, var3);
          }
 
          private void renderTag(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
@@ -385,17 +386,18 @@ public class ChatSelectionScreen extends Screen {
             super();
             this.heading = var3;
             this.canReport = var4;
-            this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(var2);
+            this.skin = ChatSelectionList.this.minecraft.getSkinManager().createLookup(var2, true);
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            int var11 = var4 - 12 + 4;
-            int var12 = var3 + (var6 - 12) / 2;
-            PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), var11, var12, 12);
-            int var10000 = var3 + 1;
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            int var6 = this.getContentX() - 12 + 4;
+            int var7 = this.getContentY() + (this.getContentHeight() - 12) / 2;
+            PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), var6, var7, 12);
+            int var10000 = this.getContentY() + 1;
+            int var10001 = this.getContentHeight();
             Objects.requireNonNull(ChatSelectionScreen.this.font);
-            int var13 = var10000 + (var6 - 9) / 2;
-            var1.drawString(ChatSelectionScreen.this.font, this.heading, var11 + 12 + 4, var13, this.canReport ? -1 : -1593835521);
+            int var8 = var10000 + (var10001 - 9) / 2;
+            var1.drawString(ChatSelectionScreen.this.font, this.heading, var6 + 12 + 4, var8, this.canReport ? -1 : -1593835521);
          }
       }
 
@@ -407,14 +409,14 @@ public class ChatSelectionScreen extends Screen {
             this.text = var2;
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            int var11 = var3 + var6 / 2;
-            int var12 = var4 + var5 - 8;
-            int var13 = ChatSelectionScreen.this.font.width((FormattedText)this.text);
-            int var14 = (var4 + var12 - var13) / 2;
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            int var6 = this.getContentYMiddle();
+            int var7 = this.getContentRight() - 8;
+            int var8 = ChatSelectionScreen.this.font.width((FormattedText)this.text);
+            int var9 = (this.getContentX() + var7 - var8) / 2;
             Objects.requireNonNull(ChatSelectionScreen.this.font);
-            int var15 = var11 - 9 / 2;
-            var1.drawString(ChatSelectionScreen.this.font, this.text, var14, var15, -6250336);
+            int var10 = var6 - 9 / 2;
+            var1.drawString(ChatSelectionScreen.this.font, this.text, var9, var10, -6250336);
          }
 
          public Component getNarration() {
@@ -427,7 +429,7 @@ public class ChatSelectionScreen extends Screen {
             super();
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          }
       }
    }

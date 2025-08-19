@@ -294,7 +294,11 @@ public class KeyboardHandler {
             case 294:
                if (this.minecraft.screen instanceof DebugOptionsScreen) {
                   this.minecraft.screen.onClose();
-               } else {
+               } else if (this.minecraft.canInterruptScreen()) {
+                  if (this.minecraft.screen != null) {
+                     this.minecraft.screen.onClose();
+                  }
+
                   this.minecraft.setScreen(new DebugOptionsScreen());
                }
 

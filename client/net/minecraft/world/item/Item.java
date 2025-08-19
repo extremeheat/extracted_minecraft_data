@@ -154,9 +154,6 @@ public class Item implements FeatureElement, ItemLike {
    public void onDestroyed(ItemEntity var1) {
    }
 
-   public void verifyComponentsAfterLoad(ItemStack var1) {
-   }
-
    public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
       Tool var6 = (Tool)var1.get(DataComponents.TOOL);
       if (var6 != null && !var6.canDestroyBlocksInCreative()) {

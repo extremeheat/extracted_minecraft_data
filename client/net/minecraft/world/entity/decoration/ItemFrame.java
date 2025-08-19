@@ -104,11 +104,14 @@ public class ItemFrame extends HangingEntity {
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
       float var3 = 0.46875F;
       Vec3 var4 = Vec3.atCenterOf(var1).relative(var2, -0.46875);
-      Direction.Axis var5 = var2.getAxis();
-      double var6 = var5 == Direction.Axis.X ? 0.0625 : 0.75;
-      double var8 = var5 == Direction.Axis.Y ? 0.0625 : 0.75;
-      double var10 = var5 == Direction.Axis.Z ? 0.0625 : 0.75;
-      return AABB.ofSize(var4, var6, var8, var10);
+      boolean var5 = this.hasFramedMap();
+      float var6 = var5 ? 1.0F : 0.75F;
+      float var7 = var5 ? 1.0F : 0.75F;
+      Direction.Axis var8 = var2.getAxis();
+      double var9 = var8 == Direction.Axis.X ? 0.0625 : (double)var6;
+      double var11 = var8 == Direction.Axis.Y ? 0.0625 : (double)var7;
+      double var13 = var8 == Direction.Axis.Z ? 0.0625 : (double)var6;
+      return AABB.ofSize(var4, var9, var11, var13);
    }
 
    public boolean survives() {
@@ -118,7 +121,18 @@ public class ItemFrame extends HangingEntity {
          return false;
       } else {
          BlockState var1 = this.level().getBlockState(this.pos.relative(this.getDirection().getOpposite()));
-         return var1.isSolid() || this.getDirection().getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
+         return var1.isSolid() || this.getDirection().getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY.and((var1x) -> {
+            boolean var10000;
+            if (var1x instanceof ItemFrame var2) {
+               if (var2.getDirection() != this.getDirection()) {
+                  var10000 = false;
+                  return var10000;
+               }
+            }
+
+            var10000 = true;
+            return var10000;
+         })).isEmpty() : false;
       }
    }
 

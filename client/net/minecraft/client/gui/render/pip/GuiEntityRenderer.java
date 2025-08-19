@@ -13,12 +13,10 @@ import org.joml.Vector3f;
 
 public class GuiEntityRenderer extends PictureInPictureRenderer<GuiEntityRenderState> {
    private final EntityRenderDispatcher entityRenderDispatcher;
-   private final FeatureRenderDispatcher featureRenderDispatcher;
 
-   public GuiEntityRenderer(MultiBufferSource.BufferSource var1, EntityRenderDispatcher var2, FeatureRenderDispatcher var3) {
+   public GuiEntityRenderer(MultiBufferSource.BufferSource var1, EntityRenderDispatcher var2) {
       super(var1);
       this.entityRenderDispatcher = var2;
-      this.featureRenderDispatcher = var3;
    }
 
    public Class<GuiEntityRenderState> getRenderStateClass() {
@@ -35,8 +33,9 @@ public class GuiEntityRenderer extends PictureInPictureRenderer<GuiEntityRenderS
          this.entityRenderDispatcher.overrideCameraOrientation(var4.conjugate(new Quaternionf()).rotateY(3.1415927F));
       }
 
-      this.entityRenderDispatcher.submit(var1.renderState(), 0.0, 0.0, 0.0, var2, this.featureRenderDispatcher.getSubmitNodeStorage());
-      this.featureRenderDispatcher.renderAllFeatures();
+      FeatureRenderDispatcher var5 = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+      this.entityRenderDispatcher.submit(var1.renderState(), 0.0, 0.0, 0.0, var2, var5.getSubmitNodeStorage());
+      var5.renderAllFeatures();
    }
 
    protected float getTranslateY(int var1, int var2) {

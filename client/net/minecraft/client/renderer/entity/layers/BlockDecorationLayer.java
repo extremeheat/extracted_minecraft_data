@@ -10,7 +10,9 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 
@@ -30,13 +32,17 @@ public class BlockDecorationLayer<S extends EntityRenderState, M extends EntityM
          BlockState var8 = (BlockState)var7.get();
          var1.pushPose();
          this.transform.accept(var8, var1);
-         if (var8.getBlock() instanceof AbstractSkullBlock) {
-            var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
+         if (!(var8.getBlock() instanceof AbstractSkullBlock) && !(var8.getBlock() instanceof AbstractBannerBlock)) {
+            if (var8.getBlock() instanceof CopperGolemStatueBlock) {
+               var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+            } else {
+               var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+            }
          } else {
-            var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+            var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(180.0F));
          }
 
-         var2.submitBlock(var1, var8, var3, OverlayTexture.NO_OVERLAY);
+         var2.submitBlock(var1, var8, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          var1.popPose();
       }
    }

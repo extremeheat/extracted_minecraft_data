@@ -5,6 +5,7 @@ import java.util.function.BooleanSupplier;
 
 public class ToggleKeyMapping extends KeyMapping {
    private final BooleanSupplier needsToggle;
+   private boolean releasedByScreenWhenDown;
 
    public ToggleKeyMapping(String var1, int var2, String var3, BooleanSupplier var4) {
       this(var1, InputConstants.Type.KEYSYM, var2, var3, var4);
@@ -31,7 +32,17 @@ public class ToggleKeyMapping extends KeyMapping {
    }
 
    protected void release() {
+      if (this.isDown() || this.releasedByScreenWhenDown) {
+         this.releasedByScreenWhenDown = true;
+      }
+
       this.reset();
+   }
+
+   public boolean shouldRestoreStateOnScreenClosed() {
+      boolean var1 = this.key.getType() == InputConstants.Type.KEYSYM && this.releasedByScreenWhenDown;
+      this.releasedByScreenWhenDown = false;
+      return var1;
    }
 
    protected void reset() {

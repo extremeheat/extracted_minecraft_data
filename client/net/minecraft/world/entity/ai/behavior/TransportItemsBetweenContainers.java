@@ -226,7 +226,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    }
 
    private boolean targetHasNotChanged(Level var1, TransportItemTarget var2) {
-      return var2.blockEntity.equals(var1.getBlockEntity(var2.pos)) && var2.state.getBlock().equals(var1.getBlockState(var2.pos).getBlock());
+      return var2.blockEntity.equals(var1.getBlockEntity(var2.pos));
    }
 
    private List<TransportItemTarget> getConnectedTargets(TransportItemTarget var1, Level var2) {

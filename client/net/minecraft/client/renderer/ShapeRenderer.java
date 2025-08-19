@@ -23,46 +23,45 @@ public class ShapeRenderer {
       });
    }
 
-   public static void renderLineBox(PoseStack var0, VertexConsumer var1, AABB var2, float var3, float var4, float var5, float var6) {
+   public static void renderLineBox(PoseStack.Pose var0, VertexConsumer var1, AABB var2, float var3, float var4, float var5, float var6) {
       renderLineBox(var0, var1, var2.minX, var2.minY, var2.minZ, var2.maxX, var2.maxY, var2.maxZ, var3, var4, var5, var6, var3, var4, var5);
    }
 
-   public static void renderLineBox(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17) {
+   public static void renderLineBox(PoseStack.Pose var0, VertexConsumer var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17) {
       renderLineBox(var0, var1, var2, var4, var6, var8, var10, var12, var14, var15, var16, var17, var14, var15, var16);
    }
 
-   public static void renderLineBox(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17, float var18, float var19, float var20) {
-      PoseStack.Pose var21 = var0.last();
-      float var22 = (float)var2;
-      float var23 = (float)var4;
-      float var24 = (float)var6;
-      float var25 = (float)var8;
-      float var26 = (float)var10;
-      float var27 = (float)var12;
-      var1.addVertex(var21, var22, var23, var24).setColor(var14, var19, var20, var17).setNormal(var21, 1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var25, var23, var24).setColor(var14, var19, var20, var17).setNormal(var21, 1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var22, var23, var24).setColor(var18, var15, var20, var17).setNormal(var21, 0.0F, 1.0F, 0.0F);
-      var1.addVertex(var21, var22, var26, var24).setColor(var18, var15, var20, var17).setNormal(var21, 0.0F, 1.0F, 0.0F);
-      var1.addVertex(var21, var22, var23, var24).setColor(var18, var19, var16, var17).setNormal(var21, 0.0F, 0.0F, 1.0F);
-      var1.addVertex(var21, var22, var23, var27).setColor(var18, var19, var16, var17).setNormal(var21, 0.0F, 0.0F, 1.0F);
-      var1.addVertex(var21, var25, var23, var24).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 1.0F, 0.0F);
-      var1.addVertex(var21, var25, var26, var24).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 1.0F, 0.0F);
-      var1.addVertex(var21, var25, var26, var24).setColor(var14, var15, var16, var17).setNormal(var21, -1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var22, var26, var24).setColor(var14, var15, var16, var17).setNormal(var21, -1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var22, var26, var24).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 0.0F, 1.0F);
-      var1.addVertex(var21, var22, var26, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 0.0F, 1.0F);
-      var1.addVertex(var21, var22, var26, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, -1.0F, 0.0F);
-      var1.addVertex(var21, var22, var23, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, -1.0F, 0.0F);
-      var1.addVertex(var21, var22, var23, var27).setColor(var14, var15, var16, var17).setNormal(var21, 1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var25, var23, var27).setColor(var14, var15, var16, var17).setNormal(var21, 1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var25, var23, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 0.0F, -1.0F);
-      var1.addVertex(var21, var25, var23, var24).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 0.0F, -1.0F);
-      var1.addVertex(var21, var22, var26, var27).setColor(var14, var15, var16, var17).setNormal(var21, 1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var25, var26, var27).setColor(var14, var15, var16, var17).setNormal(var21, 1.0F, 0.0F, 0.0F);
-      var1.addVertex(var21, var25, var23, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 1.0F, 0.0F);
-      var1.addVertex(var21, var25, var26, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 1.0F, 0.0F);
-      var1.addVertex(var21, var25, var26, var24).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 0.0F, 1.0F);
-      var1.addVertex(var21, var25, var26, var27).setColor(var14, var15, var16, var17).setNormal(var21, 0.0F, 0.0F, 1.0F);
+   public static void renderLineBox(PoseStack.Pose var0, VertexConsumer var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17, float var18, float var19, float var20) {
+      float var21 = (float)var2;
+      float var22 = (float)var4;
+      float var23 = (float)var6;
+      float var24 = (float)var8;
+      float var25 = (float)var10;
+      float var26 = (float)var12;
+      var1.addVertex(var0, var21, var22, var23).setColor(var14, var19, var20, var17).setNormal(var0, 1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var24, var22, var23).setColor(var14, var19, var20, var17).setNormal(var0, 1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var21, var22, var23).setColor(var18, var15, var20, var17).setNormal(var0, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var0, var21, var25, var23).setColor(var18, var15, var20, var17).setNormal(var0, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var0, var21, var22, var23).setColor(var18, var19, var16, var17).setNormal(var0, 0.0F, 0.0F, 1.0F);
+      var1.addVertex(var0, var21, var22, var26).setColor(var18, var19, var16, var17).setNormal(var0, 0.0F, 0.0F, 1.0F);
+      var1.addVertex(var0, var24, var22, var23).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var0, var24, var25, var23).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var0, var24, var25, var23).setColor(var14, var15, var16, var17).setNormal(var0, -1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var21, var25, var23).setColor(var14, var15, var16, var17).setNormal(var0, -1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var21, var25, var23).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 0.0F, 1.0F);
+      var1.addVertex(var0, var21, var25, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 0.0F, 1.0F);
+      var1.addVertex(var0, var21, var25, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, -1.0F, 0.0F);
+      var1.addVertex(var0, var21, var22, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, -1.0F, 0.0F);
+      var1.addVertex(var0, var21, var22, var26).setColor(var14, var15, var16, var17).setNormal(var0, 1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var24, var22, var26).setColor(var14, var15, var16, var17).setNormal(var0, 1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var24, var22, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 0.0F, -1.0F);
+      var1.addVertex(var0, var24, var22, var23).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 0.0F, -1.0F);
+      var1.addVertex(var0, var21, var25, var26).setColor(var14, var15, var16, var17).setNormal(var0, 1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var24, var25, var26).setColor(var14, var15, var16, var17).setNormal(var0, 1.0F, 0.0F, 0.0F);
+      var1.addVertex(var0, var24, var22, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var0, var24, var25, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var0, var24, var25, var23).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 0.0F, 1.0F);
+      var1.addVertex(var0, var24, var25, var26).setColor(var14, var15, var16, var17).setNormal(var0, 0.0F, 0.0F, 1.0F);
    }
 
    public static void addChainedFilledBoxVertices(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17) {
@@ -103,44 +102,43 @@ public class ShapeRenderer {
       var1.addVertex(var12, var5, var6, var7).setColor(var8, var9, var10, var11);
    }
 
-   public static void renderFace(PoseStack var0, VertexConsumer var1, Direction var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {
-      Matrix4f var13 = var0.last().pose();
+   public static void renderFace(Matrix4f var0, VertexConsumer var1, Direction var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {
       switch (var2) {
          case DOWN:
-            var1.addVertex(var13, var3, var4, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var4, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var4, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var4, var8).setColor(var9, var10, var11, var12);
             break;
          case UP:
-            var1.addVertex(var13, var3, var7, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var7, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var7, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var7, var5).setColor(var9, var10, var11, var12);
             break;
          case NORTH:
-            var1.addVertex(var13, var3, var4, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var7, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var7, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var4, var5).setColor(var9, var10, var11, var12);
             break;
          case SOUTH:
-            var1.addVertex(var13, var3, var4, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var4, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var7, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var7, var8).setColor(var9, var10, var11, var12);
             break;
          case WEST:
-            var1.addVertex(var13, var3, var4, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var4, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var7, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var3, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var3, var7, var5).setColor(var9, var10, var11, var12);
             break;
          case EAST:
-            var1.addVertex(var13, var6, var4, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var7, var5).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var7, var8).setColor(var9, var10, var11, var12);
-            var1.addVertex(var13, var6, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var0, var6, var4, var8).setColor(var9, var10, var11, var12);
       }
 
    }

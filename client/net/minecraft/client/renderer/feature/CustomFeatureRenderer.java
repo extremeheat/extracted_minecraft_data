@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 
 public class CustomFeatureRenderer {
@@ -12,7 +13,7 @@ public class CustomFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeStorage var1, MultiBufferSource.BufferSource var2) {
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2) {
       for(Map.Entry var4 : var1.getCustomGeometrySubmits().entrySet()) {
          VertexConsumer var5 = var2.getBuffer((RenderType)var4.getKey());
 

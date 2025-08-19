@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
@@ -45,7 +46,7 @@ public class WindCharge extends AbstractWindCharge {
 
    }
 
-   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
+   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable EntityReference<Entity> var3, boolean var4) {
       return this.noDeflectTicks > 0 ? false : super.deflect(var1, var2, var3, var4);
    }
 

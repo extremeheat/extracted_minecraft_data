@@ -10,6 +10,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.TriState;
 import net.minecraft.world.entity.player.Abilities;
 import org.jetbrains.annotations.Contract;
 
@@ -60,15 +61,17 @@ public enum GameType implements StringRepresentable {
    }
 
    public void updatePlayerAbilities(Abilities var1) {
-      this.updatePlayerAbilities(var1, false);
+      this.updatePlayerAbilities(var1, TriState.DEFAULT);
    }
 
-   public void updatePlayerAbilities(Abilities var1, boolean var2) {
+   public void updatePlayerAbilities(Abilities var1, TriState var2) {
       if (this == CREATIVE) {
          var1.mayfly = true;
          var1.instabuild = true;
          var1.invulnerable = true;
-         var1.flying = var2;
+         if (var2 != TriState.DEFAULT) {
+            var1.flying = var2 == TriState.TRUE;
+         }
       } else if (this == SPECTATOR) {
          var1.mayfly = true;
          var1.instabuild = false;

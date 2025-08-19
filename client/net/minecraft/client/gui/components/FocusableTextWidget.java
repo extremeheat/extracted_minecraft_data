@@ -11,7 +11,7 @@ import net.minecraft.util.ARGB;
 public class FocusableTextWidget extends MultiLineTextWidget {
    public static final int DEFAULT_PADDING = 4;
    private final boolean alwaysShowBorder;
-   private final boolean fillBackground;
+   private final BackgroundFill backgroundFill;
    private final int padding;
 
    public FocusableTextWidget(int var1, Component var2, Font var3) {
@@ -19,16 +19,16 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    public FocusableTextWidget(int var1, Component var2, Font var3, int var4) {
-      this(var1, var2, var3, true, true, var4);
+      this(var1, var2, var3, true, FocusableTextWidget.BackgroundFill.ALWAYS, var4);
    }
 
-   public FocusableTextWidget(int var1, Component var2, Font var3, boolean var4, boolean var5, int var6) {
+   public FocusableTextWidget(int var1, Component var2, Font var3, boolean var4, BackgroundFill var5, int var6) {
       super(var2, var3);
       this.setMaxWidth(var1);
       this.setCentered(true);
       this.active = true;
       this.alwaysShowBorder = var4;
-      this.fillBackground = var5;
+      this.backgroundFill = var5;
       this.padding = var6;
    }
 
@@ -46,8 +46,15 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       int var7 = this.getWidth() + this.padding * 2;
       int var8 = this.getHeight() + this.padding * 2;
       int var9 = ARGB.color(this.alpha, this.alwaysShowBorder ? (this.isFocused() ? -1 : -6250336) : -1);
-      if (this.fillBackground) {
-         var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, ARGB.color(this.alpha, -16777216));
+      switch (this.backgroundFill.ordinal()) {
+         case 0:
+            var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, ARGB.color(this.alpha, -16777216));
+            break;
+         case 1:
+            if (this.isFocused()) {
+               var1.fill(var5 + 1, var6, var5 + var7, var6 + var8, ARGB.color(this.alpha, -16777216));
+            }
+         case 2:
       }
 
       if (this.isFocused() || this.alwaysShowBorder) {
@@ -58,5 +65,19 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    public void playDownSound(SoundManager var1) {
+   }
+
+   public static enum BackgroundFill {
+      ALWAYS,
+      ON_FOCUS,
+      NEVER;
+
+      private BackgroundFill() {
+      }
+
+      // $FF: synthetic method
+      private static BackgroundFill[] $values() {
+         return new BackgroundFill[]{ALWAYS, ON_FOCUS, NEVER};
+      }
    }
 }

@@ -1,12 +1,13 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.LecternBlock;
@@ -30,18 +31,16 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity> 
       this.bookState.open = 1.2F;
    }
 
-   public void render(LecternBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      BlockState var8 = var1.getBlockState();
-      if ((Boolean)var8.getValue(LecternBlock.HAS_BOOK)) {
+   public void submit(LecternBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      BlockState var9 = var1.getBlockState();
+      if ((Boolean)var9.getValue(LecternBlock.HAS_BOOK)) {
          var3.pushPose();
          var3.translate(0.5F, 1.0625F, 0.5F);
-         float var9 = ((Direction)var8.getValue(LecternBlock.FACING)).getClockWise().toYRot();
-         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var9));
+         float var10 = ((Direction)var9.getValue(LecternBlock.FACING)).getClockWise().toYRot();
+         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var10));
          var3.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
          var3.translate(0.0F, -0.125F, 0.0F);
-         this.bookModel.setupAnim(this.bookState);
-         VertexConsumer var10 = EnchantTableRenderer.BOOK_LOCATION.buffer(this.materials, var4, RenderType::entitySolid);
-         this.bookModel.renderToBuffer(var3, var10, var5, var6);
+         var8.submitModel(this.bookModel, this.bookState, var3, EnchantTableRenderer.BOOK_LOCATION.renderType(RenderType::entitySolid), var4, var5, -1, this.materials.get(EnchantTableRenderer.BOOK_LOCATION), 0, var7);
          var3.popPose();
       }
    }

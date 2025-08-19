@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -19,7 +20,7 @@ public abstract class EnergySwirlLayer<S extends EntityRenderState, M extends En
       if (this.isPowered(var4)) {
          float var7 = var4.ageInTicks;
          EntityModel var8 = this.model();
-         var2.submitModel(var8, var4, var1, RenderType.energySwirl(this.getTextureLocation(), this.xOffset(var7) % 1.0F, var7 * 0.01F % 1.0F), var3, OverlayTexture.NO_OVERLAY, -8355712, (TextureAtlasSprite)null, var4.outlineColor, 1);
+         var2.order(1).submitModel(var8, var4, var1, RenderType.energySwirl(this.getTextureLocation(), this.xOffset(var7) % 1.0F, var7 * 0.01F % 1.0F), var3, OverlayTexture.NO_OVERLAY, -8355712, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 

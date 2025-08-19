@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -1196,6 +1197,30 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    @Nullable
    public Entity getEntity(int var1) {
       return (Entity)this.getEntities().get(var1);
+   }
+
+   @Nullable
+   public Entity getEntityInAnyDimension(UUID var1) {
+      Entity var2 = this.getEntity(var1);
+      if (var2 != null) {
+         return var2;
+      } else {
+         for(ServerLevel var4 : this.getServer().getAllLevels()) {
+            if (var4 != this) {
+               Entity var5 = var4.getEntity(var1);
+               if (var5 != null) {
+                  return var5;
+               }
+            }
+         }
+
+         return null;
+      }
+   }
+
+   @Nullable
+   public Player getPlayerInAnyDimension(UUID var1) {
+      return this.getServer().getPlayerList().getPlayer(var1);
    }
 
    /** @deprecated */

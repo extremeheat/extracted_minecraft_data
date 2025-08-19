@@ -38,7 +38,7 @@ public class RealmsCreateWorldFlow {
    }
 
    public static void createWorld(Minecraft var0, Screen var1, Screen var2, int var3, RealmsServer var4, @Nullable RealmCreationTask var5) {
-      CreateWorldScreen.openFresh(var0, var1, (var6, var7, var8, var9) -> {
+      CreateWorldScreen.openFresh(var0, () -> var0.setScreen(var1), (var6, var7, var8, var9) -> {
          Path var10;
          try {
             var10 = createTemporaryWorldFolder(var7, var8, var9);
@@ -52,7 +52,7 @@ public class RealmsCreateWorldFlow {
          RealmsSlot var12 = new RealmsSlot(var3, var11, List.of(RealmsSetting.hardcoreSetting(var8.getLevelSettings().hardcore())));
          RealmsWorldUpload var13 = new RealmsWorldUpload(var10, var12, var0.getUser(), var4.id, RealmsWorldUploadStatusTracker.noOp());
          Objects.requireNonNull(var13);
-         var0.forceSetScreen(new AlertScreen(var13::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));
+         var0.setScreenAndShow(new AlertScreen(var13::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false));
          if (var5 != null) {
             var5.run();
          }
@@ -65,7 +65,7 @@ public class RealmsCreateWorldFlow {
                }
 
                if (var6x instanceof RealmsUploadCanceledException) {
-                  var0.forceSetScreen(var2);
+                  var0.setScreenAndShow(var2);
                } else {
                   if (var6x instanceof RealmsUploadFailedException) {
                      RealmsUploadFailedException var8 = (RealmsUploadFailedException)var6x;
@@ -74,7 +74,7 @@ public class RealmsCreateWorldFlow {
                      LOGGER.warn("Failed to create realms world {}", var6x.getMessage());
                   }
 
-                  var0.forceSetScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
+                  var0.setScreenAndShow(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
                }
             } else {
                if (var1 instanceof RealmsConfigureWorldScreen) {
@@ -85,7 +85,7 @@ public class RealmsCreateWorldFlow {
                if (var5 != null) {
                   RealmsMainScreen.play(var4, var1, true);
                } else {
-                  var0.forceSetScreen(var1);
+                  var0.setScreenAndShow(var1);
                }
 
                RealmsMainScreen.refreshServerList();

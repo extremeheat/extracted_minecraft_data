@@ -8,13 +8,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
@@ -84,23 +82,21 @@ public class CopperGolemAi {
 
    private static TransportItemsBetweenContainers.OnTargetReachedInteraction onReachedTargetInteraction(CopperGolemState var0, @Nullable SoundEvent var1) {
       return (var2, var3, var4) -> {
-         BlockEntity var7 = var3.blockEntity();
-         if (var7 instanceof ChestBlockEntity var5) {
-            if (var2 instanceof CopperGolem var6) {
-               if (var4 == 1) {
-                  var5.startOpen(var6);
-                  var6.setOpenedChestPos(var3.pos());
-                  var6.setState(var0);
-               }
+         if (var2 instanceof CopperGolem var5) {
+            Container var6 = var3.container();
+            if (var4 == 1) {
+               var6.startOpen(var5);
+               var5.setOpenedChestPos(var3.pos());
+               var5.setState(var0);
+            }
 
-               if (var4 == 9 && var1 != null) {
-                  var6.level().playSound((Entity)null, (BlockPos)var6.blockPosition(), var1, SoundSource.NEUTRAL, 1.0F, 1.0F);
-               }
+            if (var4 == 9 && var1 != null) {
+               var5.playSound(var1);
+            }
 
-               if (var4 == 60) {
-                  var5.stopOpen(var6);
-                  var6.clearOpenedChestPos();
-               }
+            if (var4 == 60) {
+               var6.stopOpen(var5);
+               var5.clearOpenedChestPos();
             }
          }
 

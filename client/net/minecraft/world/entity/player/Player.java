@@ -70,6 +70,7 @@ import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEquipment;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -1055,7 +1056,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
             this.resetAttackStrengthTicker();
             if (var1.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var1 instanceof Projectile) {
                Projectile var7 = (Projectile)var1;
-               if (var7.deflect(ProjectileDeflection.AIM_DEFLECT, this, this, true)) {
+               if (var7.deflect(ProjectileDeflection.AIM_DEFLECT, this, EntityReference.of(this), true)) {
                   this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource());
                   return;
                }

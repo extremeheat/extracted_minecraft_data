@@ -1,11 +1,12 @@
 package net.minecraft.client.gui.font;
 
-import com.mojang.blaze3d.font.SheetGlyphInfo;
+import com.mojang.blaze3d.font.GlyphBitmap;
+import com.mojang.blaze3d.font.GlyphInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
+import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 
@@ -35,23 +36,23 @@ public class GlyphStitcher implements AutoCloseable {
    }
 
    @Nullable
-   public BakedGlyph stitch(SheetGlyphInfo var1) {
-      for(FontTexture var3 : this.textures) {
-         BakedGlyph var4 = var3.add(var1);
-         if (var4 != null) {
-            return var4;
+   public BakedSheetGlyph stitch(GlyphInfo var1, GlyphBitmap var2) {
+      for(FontTexture var4 : this.textures) {
+         BakedSheetGlyph var5 = var4.add(var1, var2);
+         if (var5 != null) {
+            return var5;
          }
       }
 
-      int var7 = this.textures.size();
-      ResourceLocation var8 = this.textureName(var7);
-      boolean var9 = var1.isColored();
-      GlyphRenderTypes var5 = var9 ? GlyphRenderTypes.createForColorTexture(var8) : GlyphRenderTypes.createForIntensityTexture(var8);
-      Objects.requireNonNull(var8);
-      FontTexture var6 = new FontTexture(var8::toString, var5, var9);
-      this.textures.add(var6);
-      this.textureManager.register(var8, var6);
-      return var6.add(var1);
+      int var8 = this.textures.size();
+      ResourceLocation var9 = this.textureName(var8);
+      boolean var10 = var2.isColored();
+      GlyphRenderTypes var6 = var10 ? GlyphRenderTypes.createForColorTexture(var9) : GlyphRenderTypes.createForIntensityTexture(var9);
+      Objects.requireNonNull(var9);
+      FontTexture var7 = new FontTexture(var9::toString, var6, var10);
+      this.textures.add(var7);
+      this.textureManager.register(var9, var7);
+      return var7.add(var1, var2);
    }
 
    private ResourceLocation textureName(int var1) {

@@ -5,6 +5,7 @@ import net.minecraft.client.model.LeashKnotModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
@@ -21,7 +22,7 @@ public class LeashKnotRenderer extends EntityRenderer<LeashFenceKnotEntity, Enti
    public void submit(EntityRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       var2.scale(-1.0F, -1.0F, 1.0F);
-      var3.submitModel(this.model, var1, var2, this.model.renderType(KNOT_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+      var3.submitModel(this.model, var1, var2, this.model.renderType(KNOT_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
       super.submit(var1, var2, var3);
    }

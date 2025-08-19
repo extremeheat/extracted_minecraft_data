@@ -80,7 +80,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Nullable
    public Entity getOwner() {
-      return (Entity)EntityReference.get(this.thrower, this.level(), Entity.class);
+      return EntityReference.getEntity(this.thrower, this.level());
    }
 
    public void restoreFrom(Entity var1) {
@@ -374,7 +374,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public void setThrower(Entity var1) {
-      this.thrower = new EntityReference<Entity>(var1);
+      this.thrower = EntityReference.of(var1);
    }
 
    public int getAge() {

@@ -130,7 +130,7 @@ class SwitchGrid {
 
       LabeledSwitch build(Builder var1, GridLayout var2, int var3) {
          var1.increaseRow();
-         StringWidget var4 = (new StringWidget(this.label, Minecraft.getInstance().font)).alignLeft();
+         StringWidget var4 = new StringWidget(this.label, Minecraft.getInstance().font);
          var2.addChild(var4, var1.rowCount, var3, var2.newCellSettings().align(0.0F, 0.5F).paddingLeft(var1.paddingLeft));
          Optional var5 = var1.infoUnderneath;
          CycleButton.Builder var6 = CycleButton.onOffBuilder(this.stateSupplier.getAsBoolean());

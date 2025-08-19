@@ -12,10 +12,12 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -39,8 +41,9 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    private final ItemRenderer itemRenderer;
    private final EntityRenderDispatcher entityRenderer;
    private final MaterialSet materials;
+   private final PlayerSkinRenderCache playerSkinRenderCache;
 
-   public BlockEntityRenderDispatcher(Font var1, Supplier<EntityModelSet> var2, BlockRenderDispatcher var3, ItemModelResolver var4, ItemRenderer var5, EntityRenderDispatcher var6, MaterialSet var7) {
+   public BlockEntityRenderDispatcher(Font var1, Supplier<EntityModelSet> var2, BlockRenderDispatcher var3, ItemModelResolver var4, ItemRenderer var5, EntityRenderDispatcher var6, MaterialSet var7, PlayerSkinRenderCache var8) {
       super();
       this.itemRenderer = var5;
       this.itemModelResolver = var4;
@@ -49,6 +52,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       this.entityModelSet = var2;
       this.blockRenderDispatcher = var3;
       this.materials = var7;
+      this.playerSkinRenderCache = var8;
    }
 
    @Nullable
@@ -65,34 +69,25 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       this.cameraHitResult = var3;
    }
 
-   public <E extends BlockEntity> void render(E var1, float var2, PoseStack var3, MultiBufferSource var4) {
-      BlockEntityRenderer var5 = this.getRenderer(var1);
-      if (var5 != null) {
+   public <E extends BlockEntity> void submit(E var1, float var2, PoseStack var3, @Nullable ModelFeatureRenderer.CrumblingOverlay var4, SubmitNodeCollector var5) {
+      BlockEntityRenderer var6 = this.getRenderer(var1);
+      if (var6 != null) {
          if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
-            if (var5.shouldRender(var1, this.camera.getPosition())) {
+            if (var6.shouldRender(var1, this.camera.getPosition())) {
                try {
-                  setupAndRender(var5, var1, var2, var3, var4, this.camera.getPosition());
-               } catch (Throwable var9) {
-                  CrashReport var7 = CrashReport.forThrowable(var9, "Rendering Block Entity");
-                  CrashReportCategory var8 = var7.addCategory("Block Entity Details");
-                  var1.fillCrashReportCategory(var8);
-                  throw new ReportedException(var7);
+                  Vec3 var7 = this.camera.getPosition();
+                  Level var11 = var1.getLevel();
+                  int var12 = var11 != null ? LevelRenderer.getLightColor(var11, var1.getBlockPos()) : 15728880;
+                  var6.submit(var1, var2, var3, var12, OverlayTexture.NO_OVERLAY, var7, var4, var5);
+               } catch (Throwable var10) {
+                  CrashReport var8 = CrashReport.forThrowable(var10, "Rendering Block Entity");
+                  CrashReportCategory var9 = var8.addCategory("Block Entity Details");
+                  var1.fillCrashReportCategory(var9);
+                  throw new ReportedException(var8);
                }
             }
          }
       }
-   }
-
-   private static <T extends BlockEntity> void setupAndRender(BlockEntityRenderer<T> var0, T var1, float var2, PoseStack var3, MultiBufferSource var4, Vec3 var5) {
-      Level var7 = var1.getLevel();
-      int var6;
-      if (var7 != null) {
-         var6 = LevelRenderer.getLightColor(var7, var1.getBlockPos());
-      } else {
-         var6 = 15728880;
-      }
-
-      var0.render(var1, var2, var3, var4, var6, OverlayTexture.NO_OVERLAY, var5);
    }
 
    public void setLevel(@Nullable Level var1) {
@@ -104,7 +99,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font, this.materials);
+      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font, this.materials, this.playerSkinRenderCache);
       this.renderers = BlockEntityRenderers.createEntityRenderers(var2);
    }
 }

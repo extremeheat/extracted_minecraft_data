@@ -27,7 +27,7 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
 
    public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, M var3, float var4, CustomHeadLayer.Transforms var5) {
       super(var1, var2, var3, var4);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var5));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache(), var5));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
       this.addLayer(new ItemInHandLayer(this));
    }

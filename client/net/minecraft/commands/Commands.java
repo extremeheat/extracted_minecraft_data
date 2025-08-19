@@ -71,6 +71,7 @@ import net.minecraft.server.commands.EmoteCommands;
 import net.minecraft.server.commands.EnchantCommand;
 import net.minecraft.server.commands.ExecuteCommand;
 import net.minecraft.server.commands.ExperienceCommand;
+import net.minecraft.server.commands.FetchProfileCommand;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.commands.FillCommand;
 import net.minecraft.server.commands.ForceLoadCommand;
@@ -223,6 +224,7 @@ public class Commands {
       RandomCommand.register(this.dispatcher);
       ReloadCommand.register(this.dispatcher);
       RecipeCommand.register(this.dispatcher);
+      FetchProfileCommand.register(this.dispatcher);
       ReturnCommand.register(this.dispatcher);
       RideCommand.register(this.dispatcher);
       RotateCommand.register(this.dispatcher);

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.ParrotRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.ParrotRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.animal.Parrot;
 
@@ -44,7 +45,7 @@ public class ParrotOnShoulderLayer extends RenderLayer<PlayerRenderState, Player
       var9.walkAnimationSpeed = var4.walkAnimationSpeed;
       var9.yRot = var6;
       var9.xRot = var7;
-      var2.submitModel(this.model, var9, var1, this.model.renderType(ParrotRenderer.getVariantTexture(var5)), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
+      var2.submitModel(this.model, var9, var1, this.model.renderType(ParrotRenderer.getVariantTexture(var5)), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var1.popPose();
    }
 }

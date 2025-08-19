@@ -165,7 +165,7 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    public void setOwner(Mob var1) {
-      this.owner = new EntityReference<Mob>(var1);
+      this.owner = EntityReference.of(var1);
    }
 
    public void setLimitedLife(int var1) {

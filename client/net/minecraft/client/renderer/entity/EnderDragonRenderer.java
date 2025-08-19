@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -61,13 +62,13 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       int var6 = OverlayTexture.pack(0.0F, var1.hasRedOverlay);
       if (var1.deathTime > 0.0F) {
          int var7 = ARGB.white(var1.deathTime / 200.0F);
-         var3.submitModel(this.model, var1, var2, RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var7, (TextureAtlasSprite)null, var1.outlineColor, 0);
-         var3.submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var6, -1, (TextureAtlasSprite)null, var1.outlineColor, 1);
+         var3.order(0).submitModel(this.model, var1, var2, RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var7, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var3.order(1).submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var6, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
-         var3.submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var6, -1, (TextureAtlasSprite)null, var1.outlineColor, 0);
+         var3.order(0).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var6, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
-      var3.submitModel(this.model, var1, var2, EYES, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+      var3.submitModel(this.model, var1, var2, EYES, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       if (var1.deathTime > 0.0F) {
          float var8 = var1.deathTime / 200.0F;
          var2.pushPose();

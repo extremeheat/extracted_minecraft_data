@@ -18,8 +18,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemState;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 
@@ -30,6 +32,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    private final ModelPart head;
    private final ModelPart body;
    private final ModelPart rightArm;
+   private final ModelPart leftArm;
    private final KeyframeAnimation walkAnimation;
    private final KeyframeAnimation walkWithItemAnimation;
    private final KeyframeAnimation idleAnimation;
@@ -43,6 +46,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       this.body = var1.getChild("body");
       this.head = this.body.getChild("head");
       this.rightArm = this.body.getChild("right_arm");
+      this.leftArm = this.body.getChild("left_arm");
       this.walkAnimation = CopperGolemAnimation.COPPER_GOLEM_WALK.bake(var1);
       this.walkWithItemAnimation = CopperGolemAnimation.COPPER_GOLEM_WALK_ITEM.bake(var1);
       this.idleAnimation = CopperGolemAnimation.COPPER_GOLEM_IDLE.bake(var1);
@@ -97,7 +101,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    public static LayerDefinition createStarPoseBodyLayer() {
       MeshDefinition var0 = (new MeshDefinition()).transformed((var0x) -> var0x.translated(0.0F, 0.0F, 0.0F));
       PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 15).addBox(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(-1.0F, -5.0F, 0.0F));
+      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 15).addBox(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -5.0F, 0.0F));
       var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -5.0F, -5.0F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.0F)).texOffs(56, 0).addBox(-1.0F, -2.0F, -6.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(37, 8).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(37, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.0F, 0.0F));
       PartDefinition var3 = var2.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offset(-4.0F, -6.0F, 0.0F));
       var3.addOrReplaceChild("right_arm_r1", CubeListBuilder.create().texOffs(36, 16).addBox(-1.5F, -5.0F, -2.0F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 1.9199F));
@@ -105,9 +109,9 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       PartDefinition var4 = var2.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offset(4.0F, -6.0F, 0.0F));
       var4.addOrReplaceChild("left_arm_r1", CubeListBuilder.create().texOffs(50, 16).addBox(-1.5F, -5.0F, -2.0F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-1.0F, 1.0F, 0.0F, 0.0F, 0.0F, -1.9199F));
       PartDefinition var5 = var1.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offset(-3.0F, -5.0F, 0.0F));
-      var5.addOrReplaceChild("right_leg_r1", CubeListBuilder.create().texOffs(0, 27).addBox(-2.0F, -2.5F, -2.0F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-0.65F, 2.0F, 0.01F, 0.0F, 0.0F, 0.2618F));
+      var5.addOrReplaceChild("right_leg_r1", CubeListBuilder.create().texOffs(0, 27).addBox(-2.0F, -2.5F, -2.0F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.35F, 2.0F, 0.01F, 0.0F, 0.0F, 0.2618F));
       PartDefinition var6 = var1.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offset(1.0F, -5.0F, 0.0F));
-      var6.addOrReplaceChild("left_leg_r1", CubeListBuilder.create().texOffs(16, 27).addBox(-2.0F, -2.5F, -2.0F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.65F, 2.0F, 0.0F, 0.0F, 0.0F, -0.2618F));
+      var6.addOrReplaceChild("left_leg_r1", CubeListBuilder.create().texOffs(16, 27).addBox(-2.0F, -2.5F, -2.0F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.65F, 2.0F, 0.0F, 0.0F, 0.0F, -0.2618F));
       return LayerDefinition.create(var0, 64, 64);
    }
 
@@ -128,10 +132,11 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       super.setupAnim(var1);
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
-      if (var1.rightHandItem.isEmpty()) {
+      if (var1.rightHandItem.isEmpty() && var1.leftHandItem.isEmpty()) {
          this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);
       } else {
          this.walkWithItemAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);
+         this.poseHeldItemArmsIfStill();
       }
 
       this.idleAnimation.apply(var1.idleAnimationState, var1.ageInTicks);
@@ -144,9 +149,10 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    public void translateToHand(CopperGolemRenderState var1, HumanoidArm var2, PoseStack var3) {
       this.root.translateAndRotate(var3);
       this.body.translateAndRotate(var3);
-      this.rightArm.translateAndRotate(var3);
+      ModelPart var4 = var2 == HumanoidArm.RIGHT ? this.rightArm : this.leftArm;
+      var4.translateAndRotate(var3);
       if (var1.copperGolemState.equals(CopperGolemState.IDLE)) {
-         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
+         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var2 == HumanoidArm.RIGHT ? -90.0F : 90.0F));
          var3.translate(0.0F, 0.0F, 0.125F);
       } else {
          var3.scale(0.55F, 0.55F, 0.55F);
@@ -162,6 +168,10 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       if (var1.getBlock() instanceof AbstractSkullBlock) {
          var2.scale(1.001F, 1.001F, 1.001F);
          var2.translate(-0.5, 0.8125, 0.4325);
+      } else if (var1.getBlock() instanceof AbstractBannerBlock) {
+         var2.translate(-0.5, 0.0, 0.5);
+      } else if (var1.getBlock() instanceof CopperGolemStatueBlock) {
+         var2.translate(0.5, -1.5625, 0.5);
       } else {
          var2.scale(0.999F, 0.999F, 0.999F);
          var2.translate(0.5, 0.0, -0.5);
@@ -173,5 +183,14 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
          var2.translate(0.0, 0.0625, 0.0);
       }
 
+   }
+
+   private void poseHeldItemArmsIfStill() {
+      this.rightArm.xRot = Math.min(this.rightArm.xRot, -0.87266463F);
+      this.leftArm.xRot = Math.min(this.leftArm.xRot, -0.87266463F);
+      this.rightArm.yRot = Math.min(this.rightArm.yRot, -0.1134464F);
+      this.leftArm.yRot = Math.max(this.leftArm.yRot, 0.1134464F);
+      this.rightArm.zRot = Math.min(this.rightArm.zRot, -0.064577185F);
+      this.leftArm.zRot = Math.max(this.leftArm.zRot, 0.064577185F);
    }
 }

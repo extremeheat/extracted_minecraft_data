@@ -39,15 +39,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.CopperGolemStatueBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -177,7 +178,9 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    public void tick() {
       super.tick();
       if (this.level().isClientSide()) {
-         this.setupAnimationStates();
+         if (!this.isNoAi()) {
+            this.setupAnimationStates();
+         }
       } else {
          this.updateWeathering((ServerLevel)this.level(), this.level().getRandom(), this.level().getDayTime());
       }
@@ -185,56 +188,53 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      Level var3 = this.level();
-      if (var3.isClientSide()) {
+      ItemStack var3 = var1.getItemInHand(var2);
+      if (var3.isEmpty()) {
+         ItemStack var4 = this.getMainHandItem();
+         if (!var4.isEmpty()) {
+            BehaviorUtils.throwItem(this, var4, var1.position());
+            this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            return InteractionResult.SUCCESS;
+         }
+      }
+
+      Level var6 = this.level();
+      if (var6.isClientSide()) {
+         return InteractionResult.CONSUME;
+      } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
+         if (var6 instanceof ServerLevel) {
+            ServerLevel var7 = (ServerLevel)var6;
+            this.shear(var7, SoundSource.PLAYERS, var3);
+            this.gameEvent(GameEvent.SHEAR, var1);
+            var3.hurtAndBreak(1, var1, (InteractionHand)var2);
+         }
+
          return InteractionResult.SUCCESS;
+      } else if (var3.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
+         var6.levelEvent(this, 3003, this.blockPosition(), 0);
+         this.nextWeatheringTick = -2L;
+         this.usePlayerItem(var1, var2, var3);
+         return InteractionResult.SUCCESS_SERVER;
+      } else if (var3.is(ItemTags.AXES) && this.nextWeatheringTick == -2L) {
+         var6.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+         var6.levelEvent(this, 3004, this.blockPosition(), 0);
+         this.nextWeatheringTick = -1L;
+         var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
+         return InteractionResult.SUCCESS_SERVER;
       } else {
-         ItemStack var4 = var1.getItemInHand(var2);
-         if (var4.isEmpty()) {
-            ItemStack var5 = this.getMainHandItem();
-            if (!var5.isEmpty()) {
-               this.swing(InteractionHand.MAIN_HAND);
-               BehaviorUtils.throwItem(this, var5, var1.position());
-               this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-               return InteractionResult.SUCCESS;
+         if (var3.is(ItemTags.AXES)) {
+            WeatheringCopper.WeatherState var5 = this.getWeatherState();
+            if (var5 != WeatheringCopper.WeatherState.UNAFFECTED) {
+               var6.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+               var6.levelEvent(var1, 3005, this.blockPosition(), 0);
+               this.nextWeatheringTick = -1L;
+               this.entityData.set(DATA_WEATHER_STATE, var5.previous(), true);
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
+               return InteractionResult.SUCCESS_SERVER;
             }
          }
 
-         if (var4.is(Items.SHEARS) && this.readyForShearing()) {
-            if (var3 instanceof ServerLevel) {
-               ServerLevel var7 = (ServerLevel)var3;
-               this.shear(var7, SoundSource.PLAYERS, var4);
-               this.gameEvent(GameEvent.SHEAR, var1);
-               var4.hurtAndBreak(1, var1, (InteractionHand)var2);
-            }
-
-            return InteractionResult.SUCCESS;
-         } else if (var4.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
-            var3.levelEvent(this, 3003, this.blockPosition(), 0);
-            this.nextWeatheringTick = -2L;
-            this.usePlayerItem(var1, var2, var4);
-            return InteractionResult.SUCCESS;
-         } else if (var4.is(ItemTags.AXES) && this.nextWeatheringTick == -2L) {
-            var3.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
-            var3.levelEvent(this, 3004, this.blockPosition(), 0);
-            this.nextWeatheringTick = -1L;
-            var4.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
-            return InteractionResult.SUCCESS;
-         } else {
-            if (var4.is(ItemTags.AXES)) {
-               WeatheringCopper.WeatherState var6 = this.getWeatherState();
-               if (var6 != WeatheringCopper.WeatherState.UNAFFECTED) {
-                  var3.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
-                  var3.levelEvent(var1, 3005, this.blockPosition(), 0);
-                  this.nextWeatheringTick = -1L;
-                  this.entityData.set(DATA_WEATHER_STATE, var6.previous(), true);
-                  var4.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
-                  return InteractionResult.SUCCESS;
-               }
-            }
-
-            return super.mobInteract(var1, var2);
-         }
+         return super.mobInteract(var1, var2);
       }
    }
 
@@ -272,7 +272,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          var3.createStatue(this);
          this.dropPreservedEquipment(var1);
          this.discard();
-         var1.playSound((Entity)null, this.blockPosition(), SoundEvents.COPPER_GOLEM_BECOME_STATUE, SoundSource.BLOCKS);
+         this.playSound(SoundEvents.COPPER_GOLEM_BECOME_STATUE);
       }
 
    }
@@ -330,24 +330,27 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    }
 
-   public void spawn(LevelAccessor var1, WeatheringCopper.WeatherState var2) {
-      this.setWeatherState(var2);
-      this.playSpawnSound(var1);
+   public void spawn(WeatheringCopper.WeatherState var1) {
+      this.setWeatherState(var1);
+      this.playSpawnSound();
       this.getBrain().setMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, 60);
    }
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.playSpawnSound(var1);
+      this.playSpawnSound();
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   public void playSpawnSound(LevelAccessor var1) {
-      var1.playSound((Entity)null, this.blockPosition(), SoundEvents.COPPER_GOLEM_SPAWN, SoundSource.NEUTRAL);
+   public void playSpawnSound() {
+      this.playSound(SoundEvents.COPPER_GOLEM_SPAWN);
    }
 
    private void playHeadSpinSound() {
-      this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getSpinHeadSound(), this.getSoundSource(), 1.0F, 1.0F, false);
+      if (!this.isSilent()) {
+         this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getSpinHeadSound(), this.getSoundSource(), 1.0F, 1.0F, false);
+      }
+
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
@@ -371,7 +374,12 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    public boolean hasContainerOpen(ContainerOpenersCounter var1, BlockPos var2) {
-      return this.openedChestPos != null && this.openedChestPos.equals(var2);
+      if (this.openedChestPos == null) {
+         return false;
+      } else {
+         BlockState var3 = this.level().getBlockState(this.openedChestPos);
+         return this.openedChestPos.equals(var2) || var3.getBlock() instanceof ChestBlock && var3.getValue(ChestBlock.TYPE) != ChestType.SINGLE && ChestBlock.getConnectedBlockPos(this.openedChestPos, var3).equals(var2);
+      }
    }
 
    public double getContainerInteractionRange() {

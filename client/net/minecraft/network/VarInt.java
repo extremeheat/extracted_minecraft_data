@@ -3,7 +3,7 @@ package net.minecraft.network;
 import io.netty.buffer.ByteBuf;
 
 public class VarInt {
-   private static final int MAX_VARINT_SIZE = 5;
+   public static final int MAX_VARINT_SIZE = 5;
    private static final int DATA_BITS_MASK = 127;
    private static final int CONTINUATION_BIT_MASK = 128;
    private static final int DATA_BITS_PER_BYTE = 7;

@@ -65,7 +65,7 @@ public class GameProfileArgument implements ArgumentType<Result> {
 
          String var3 = var0.getString().substring(var2, var0.getCursor());
          return (var1x) -> {
-            Optional var2 = var1x.getServer().nameToIdCache().get(var3);
+            Optional var2 = var1x.getServer().services().nameToIdCache().get(var3);
             SimpleCommandExceptionType var10001 = ERROR_UNKNOWN_PLAYER;
             Objects.requireNonNull(var10001);
             return Collections.singleton((NameAndId)var2.orElseThrow(var10001::create));

@@ -469,7 +469,7 @@ public abstract class AbstractArrow extends Projectile {
          }
       } else {
          var2.setRemainingFireTicks(var10);
-         this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
+         this.deflect(ProjectileDeflection.REVERSE, var2, this.owner, false);
          this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
          Level var21 = this.level();
          if (var21 instanceof ServerLevel) {
@@ -550,6 +550,7 @@ public abstract class AbstractArrow extends Projectile {
       EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> this.firedFromWeapon = null);
    }
 
+   @Nullable
    public ItemStack getWeaponItem() {
       return this.firedFromWeapon;
    }

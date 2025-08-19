@@ -29,4 +29,9 @@ public abstract class AbstractStringWidget extends AbstractWidget {
    protected final int getColor() {
       return ARGB.color(this.alpha, this.color);
    }
+
+   public void setMessage(Component var1) {
+      super.setMessage(var1);
+      this.setWidth(this.getFont().width(var1.getVisualOrderText()));
+   }
 }

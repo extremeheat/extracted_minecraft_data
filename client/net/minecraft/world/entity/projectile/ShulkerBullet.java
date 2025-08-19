@@ -54,7 +54,7 @@ public class ShulkerBullet extends Projectile {
       this.setOwner(var2);
       Vec3 var5 = var2.getBoundingBox().getCenter();
       this.snapTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
-      this.finalTarget = new EntityReference<Entity>(var3);
+      this.finalTarget = EntityReference.of(var3);
       this.currentMoveDirection = Direction.UP;
       this.selectNextMoveDirection(var4, var3);
    }
@@ -185,7 +185,7 @@ public class ShulkerBullet extends Projectile {
 
    public void tick() {
       super.tick();
-      Entity var1 = !this.level().isClientSide() ? (Entity)EntityReference.get(this.finalTarget, this.level(), Entity.class) : null;
+      Entity var1 = !this.level().isClientSide() ? EntityReference.getEntity(this.finalTarget, this.level()) : null;
       HitResult var2 = null;
       if (!this.level().isClientSide()) {
          if (var1 == null) {

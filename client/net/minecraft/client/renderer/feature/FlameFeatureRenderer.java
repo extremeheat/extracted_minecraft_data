@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -16,7 +17,7 @@ public class FlameFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeStorage var1, MultiBufferSource.BufferSource var2, AtlasManager var3) {
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, AtlasManager var3) {
       for(SubmitNodeStorage.FlameSubmit var5 : var1.getFlameSubmits()) {
          this.renderFlame(var5.pose(), var2, var5.entityRenderState(), var5.rotation(), var3);
       }

@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +31,7 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
       var2.pushPose();
       var2.scale(2.0F, 2.0F, 2.0F);
       var2.translate(0.0F, -0.5F, 0.0F);
-      var3.submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+      var3.submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
       Vec3 var4 = var1.beamOffset;
       if (var4 != null) {

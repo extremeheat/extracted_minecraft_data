@@ -79,7 +79,7 @@ public class WorldOpenFlows {
    }
 
    public void createFreshLevel(String var1, LevelSettings var2, WorldOptions var3, Function<HolderLookup.Provider, WorldDimensions> var4, Screen var5) {
-      this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
+      this.minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
       LevelStorageSource.LevelStorageAccess var6 = this.createWorldAccess(var1);
       if (var6 != null) {
          PackRepository var7 = ServerPacksSource.createPackRepository(var6);
@@ -212,7 +212,7 @@ public class WorldOpenFlows {
    }
 
    public void openWorld(String var1, Runnable var2) {
-      this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
+      this.minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
       LevelStorageSource.LevelStorageAccess var3 = this.createWorldAccess(var1);
       if (var3 != null) {
          this.openWorldLoadLevelData(var3, var2);
@@ -220,7 +220,7 @@ public class WorldOpenFlows {
    }
 
    private void openWorldLoadLevelData(LevelStorageSource.LevelStorageAccess var1, Runnable var2) {
-      this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
+      this.minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
 
       Dynamic var3;
       LevelSummary var4;
@@ -286,7 +286,7 @@ public class WorldOpenFlows {
    }
 
    private void openWorldLoadLevelStem(LevelStorageSource.LevelStorageAccess var1, Dynamic<?> var2, boolean var3, Runnable var4) {
-      this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("selectWorld.resource_load")));
+      this.minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("selectWorld.resource_load")));
       PackRepository var5 = ServerPacksSource.createPackRepository(var1);
 
       WorldStem var6;

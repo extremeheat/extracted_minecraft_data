@@ -35,7 +35,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    private final String name;
    private final InputConstants.Key defaultKey;
    private final String category;
-   private InputConstants.Key key;
+   protected InputConstants.Key key;
    private boolean isDown;
    private int clickCount;
 
@@ -67,6 +67,17 @@ public class KeyMapping implements Comparable<KeyMapping> {
    public static void releaseAll() {
       for(KeyMapping var1 : ALL.values()) {
          var1.release();
+      }
+
+   }
+
+   public static void restoreToggleStatesOnScreenClosed() {
+      for(KeyMapping var1 : ALL.values()) {
+         if (var1 instanceof ToggleKeyMapping var2) {
+            if (var2.shouldRestoreStateOnScreenClosed()) {
+               var2.setDown(true);
+            }
+         }
       }
 
    }

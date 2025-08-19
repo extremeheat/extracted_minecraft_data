@@ -4,10 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OutlineBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.entity.state.FallingBlockRenderState;
+import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,25 +22,34 @@ public class BlockFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeStorage var1, MultiBufferSource.BufferSource var2, BlockRenderDispatcher var3) {
-      for(SubmitNodeStorage.FallingBlockSubmit var5 : var1.getFallingBlockSubmits()) {
-         FallingBlockRenderState var6 = var5.fallingBlockRenderState();
-         BlockState var7 = var6.blockState;
-         List var8 = var3.getBlockModel(var7).collectParts(RandomSource.create(var7.getSeed(var6.startBlockPos)));
-         PoseStack var9 = new PoseStack();
-         var9.mulPose((Matrix4fc)var5.pose());
-         var3.getModelRenderer().tesselateBlock(var6, var8, var7, var6.blockPos, var9, var2.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var7)), false, OverlayTexture.NO_OVERLAY);
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, BlockRenderDispatcher var3, OutlineBufferSource var4) {
+      for(SubmitNodeStorage.MovingBlockSubmit var6 : var1.getMovingBlockSubmits()) {
+         MovingBlockRenderState var7 = var6.movingBlockRenderState();
+         BlockState var8 = var7.blockState;
+         List var9 = var3.getBlockModel(var8).collectParts(RandomSource.create(var8.getSeed(var7.randomSeedPos)));
+         PoseStack var10 = new PoseStack();
+         var10.mulPose((Matrix4fc)var6.pose());
+         var3.getModelRenderer().tesselateBlock(var7, var9, var8, var7.blockPos, var10, var2.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var8)), false, OverlayTexture.NO_OVERLAY);
       }
 
-      for(SubmitNodeStorage.BlockSubmit var12 : var1.getBlockSubmits()) {
+      for(SubmitNodeStorage.BlockSubmit var13 : var1.getBlockSubmits()) {
          this.poseStack.pushPose();
-         this.poseStack.last().set(var12.pose());
-         var3.renderSingleBlock(var12.state(), this.poseStack, var2, var12.lightCoords(), var12.overlayCoords());
+         this.poseStack.last().set(var13.pose());
+         var3.renderSingleBlock(var13.state(), this.poseStack, var2, var13.lightCoords(), var13.overlayCoords());
+         if (var13.outlineColor() != 0) {
+            var4.setColor(var13.outlineColor());
+            var3.renderSingleBlock(var13.state(), this.poseStack, var4, var13.lightCoords(), var13.overlayCoords());
+         }
+
          this.poseStack.popPose();
       }
 
-      for(SubmitNodeStorage.BlockModelSubmit var13 : var1.getBlockModelSubmits()) {
-         ModelBlockRenderer.renderModel(var13.pose(), var2.getBuffer(var13.renderType()), var13.model(), var13.r(), var13.g(), var13.b(), var13.lightCoords(), var13.overlayCoords());
+      for(SubmitNodeStorage.BlockModelSubmit var14 : var1.getBlockModelSubmits()) {
+         ModelBlockRenderer.renderModel(var14.pose(), var2.getBuffer(var14.renderType()), var14.model(), var14.r(), var14.g(), var14.b(), var14.lightCoords(), var14.overlayCoords());
+         if (var14.outlineColor() != 0) {
+            var4.setColor(var14.outlineColor());
+            ModelBlockRenderer.renderModel(var14.pose(), var4.getBuffer(var14.renderType()), var14.model(), var14.r(), var14.g(), var14.b(), var14.lightCoords(), var14.overlayCoords());
+         }
       }
 
    }

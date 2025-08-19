@@ -26,7 +26,7 @@ public class PandaHoldsItemLayer extends RenderLayer<PandaRenderState, PandaMode
 
          var1.pushPose();
          var1.translate(0.1F, var9, var8);
-         var2.submitItem(var1, var7, var3, OverlayTexture.NO_OVERLAY);
+         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          var1.popPose();
       }
    }

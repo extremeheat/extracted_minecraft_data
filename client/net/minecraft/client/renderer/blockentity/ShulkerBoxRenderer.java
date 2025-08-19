@@ -1,16 +1,17 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -40,28 +41,28 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.model = new ShulkerBoxModel(var1.bakeLayer(ModelLayers.SHULKER_BOX));
    }
 
-   public void render(ShulkerBoxBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      Direction var8 = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
-      DyeColor var9 = var1.getColor();
-      Material var10;
-      if (var9 == null) {
-         var10 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+   public void submit(ShulkerBoxBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      Direction var9 = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
+      DyeColor var10 = var1.getColor();
+      Material var11;
+      if (var10 == null) {
+         var11 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         var10 = Sheets.getShulkerBoxMaterial(var9);
+         var11 = Sheets.getShulkerBoxMaterial(var10);
       }
 
-      float var11 = var1.getProgress(var2);
-      this.render(var3, var4, var5, var6, var8, var11, var10);
+      float var12 = var1.getProgress(var2);
+      this.submit(var3, var8, var4, var5, var9, var12, var7, var11);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, Direction var5, float var6, Material var7) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8) {
       var1.pushPose();
       this.prepareModel(var1, var5, var6);
-      MaterialSet var10001 = this.materials;
-      ShulkerBoxModel var10003 = this.model;
-      Objects.requireNonNull(var10003);
-      VertexConsumer var8 = var7.buffer(var10001, var2, var10003::renderType);
-      this.model.renderToBuffer(var1, var8, var3, var4);
+      ShulkerBoxModel var10001 = this.model;
+      Float var10002 = var6;
+      ShulkerBoxModel var10005 = this.model;
+      Objects.requireNonNull(var10005);
+      var2.submitModel(var10001, var10002, var1, var8.renderType(var10005::renderType), var3, var4, -1, this.materials.get(var8), 0, var7);
       var1.popPose();
    }
 

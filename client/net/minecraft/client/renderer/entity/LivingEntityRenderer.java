@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -98,7 +99,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          int var8 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1));
          int var9 = var6 ? 654311423 : -1;
          int var10 = ARGB.multiply(var9, this.getModelTint(var1));
-         var3.submitModel(this.model, var1, var2, var7, var1.lightCoords, var8, var10, (TextureAtlasSprite)null, var1.outlineColor, 0);
+         var3.submitModel(this.model, var1, var2, var7, var1.lightCoords, var8, var10, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       if (this.shouldRenderLayers(var1) && !this.layers.isEmpty()) {

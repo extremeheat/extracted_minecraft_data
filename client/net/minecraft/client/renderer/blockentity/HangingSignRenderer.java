@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Arrays;
 import java.util.Map;
@@ -16,12 +15,15 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -84,13 +86,13 @@ public class HangingSignRenderer extends AbstractSignRenderer {
       return TEXT_OFFSET;
    }
 
-   public static void renderInHand(MaterialSet var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, Model.Simple var5, Material var6) {
+   public static void submitSpecial(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model.Simple var5, Material var6) {
       var1.pushPose();
       translateBase(var1, 0.0F);
       var1.scale(1.0F, -1.0F, -1.0F);
+      Unit var10002 = Unit.INSTANCE;
       Objects.requireNonNull(var5);
-      VertexConsumer var7 = var6.buffer(var0, var2, var5::renderType);
-      var5.renderToBuffer(var1, var7, var3, var4);
+      var2.submitModel(var5, var10002, var1, var6.renderType(var5::renderType), var3, var4, -1, var0.get(var6), OverlayTexture.NO_OVERLAY, (ModelFeatureRenderer.CrumblingOverlay)null);
       var1.popPose();
    }
 

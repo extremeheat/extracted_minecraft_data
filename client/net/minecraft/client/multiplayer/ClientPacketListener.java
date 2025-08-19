@@ -801,7 +801,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Set var3 = Relative.union(Relative.DELTA, Relative.rotation(var1.relativeY(), var1.relativeX()));
       PositionMoveRotation var4 = PositionMoveRotation.of((Entity)var2);
       PositionMoveRotation var5 = PositionMoveRotation.calculateAbsolute(var4, var4.withRotation(var1.yRot(), var1.xRot()), var3);
-      ((Player)var2).setDeltaMovement(var5.deltaMovement());
       ((Player)var2).setYRot(var5.yRot());
       ((Player)var2).setXRot(var5.xRot());
       ((Player)var2).setOldRot();
@@ -1477,7 +1476,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var4.update(this.levelLoadTracker, var3);
       } else {
          this.minecraft.gui.getChat().preserveCurrentChatScreen();
-         this.minecraft.setScreen(new LevelLoadingScreen(this.levelLoadTracker, var3));
+         this.minecraft.setScreenAndShow(new LevelLoadingScreen(this.levelLoadTracker, var3));
       }
 
    }
@@ -1869,7 +1868,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    private void initializeChatSession(ClientboundPlayerInfoUpdatePacket.Entry var1, PlayerInfo var2) {
       GameProfile var3 = var2.getProfile();
-      SignatureValidator var4 = this.minecraft.getProfileKeySignatureValidator();
+      SignatureValidator var4 = this.minecraft.services().profileKeySignatureValidator();
       if (var4 == null) {
          LOGGER.warn("Ignoring chat session from {} due to missing Services public key", var3.getName());
          var2.clearChatSession(this.enforcesSecureChat());
@@ -1891,7 +1890,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private boolean enforcesSecureChat() {
-      return this.minecraft.canValidateProfileKeys() && this.serverEnforcesSecureChat;
+      return this.minecraft.services().canValidateProfileKeys() && this.serverEnforcesSecureChat;
    }
 
    public void handlePlayerAbilities(ClientboundPlayerAbilitiesPacket var1) {
@@ -2360,6 +2359,17 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public Map<UUID, PlayerInfo> getSeenPlayers() {
       return this.seenPlayers;
+   }
+
+   @Nullable
+   public PlayerInfo getPlayerInfoIgnoreCase(String var1) {
+      for(PlayerInfo var3 : this.playerInfoMap.values()) {
+         if (var3.getProfile().getName().equalsIgnoreCase(var1)) {
+            return var3;
+         }
+      }
+
+      return null;
    }
 
    public GameProfile getLocalGameProfile() {

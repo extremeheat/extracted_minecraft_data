@@ -15,7 +15,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.item.component.TypedEntityData;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -53,18 +52,18 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
             var2.loadInto(var3);
          }
 
-         return this.initCopperGolem(var1, var3, this.level);
+         return this.initCopperGolem(var1, var3);
       } else {
          return null;
       }
    }
 
-   private CopperGolem initCopperGolem(BlockState var1, CopperGolem var2, Level var3) {
-      BlockPos var4 = this.getBlockPos();
-      var2.snapTo(var4.getCenter().x, (double)var4.getY(), var4.getCenter().z, ((Direction)var1.getValue(CopperGolemStatueBlock.FACING)).toYRot(), 0.0F);
+   private CopperGolem initCopperGolem(BlockState var1, CopperGolem var2) {
+      BlockPos var3 = this.getBlockPos();
+      var2.snapTo(var3.getCenter().x, (double)var3.getY(), var3.getCenter().z, ((Direction)var1.getValue(CopperGolemStatueBlock.FACING)).toYRot(), 0.0F);
       var2.yHeadRot = var2.getYRot();
       var2.yBodyRot = var2.getYRot();
-      var2.playSpawnSound(var3);
+      var2.playSpawnSound();
       return var2;
    }
 

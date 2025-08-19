@@ -20,9 +20,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class AxeItem extends Item {
@@ -80,6 +82,12 @@ public class AxeItem extends Item {
             if (var7.isPresent()) {
                var1.playSound(var3, (BlockPos)var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
                var1.levelEvent(var3, 3004, var2, 0);
+               if (var4.getBlock() instanceof ChestBlock && var4.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+                  BlockPos var8 = ChestBlock.getConnectedBlockPos(var2, var4);
+                  var1.gameEvent(GameEvent.BLOCK_CHANGE, var8, GameEvent.Context.of(var3, var1.getBlockState(var8)));
+                  var1.levelEvent(var3, 3004, var8, 0);
+               }
+
                return var7;
             } else {
                return Optional.empty();

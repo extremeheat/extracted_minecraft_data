@@ -1931,7 +1931,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             this.disconnect(ProfilePublicKey.EXPIRED_PROFILE_PUBLIC_KEY);
          } else {
             try {
-               SignatureValidator var5 = this.server.getProfileKeySignatureValidator();
+               SignatureValidator var5 = this.server.services().profileKeySignatureValidator();
                if (var5 == null) {
                   LOGGER.warn("Ignoring chat session from {} due to missing Services public key", this.player.getGameProfile().getName());
                   return;

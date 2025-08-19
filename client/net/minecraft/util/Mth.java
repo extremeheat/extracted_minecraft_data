@@ -93,6 +93,11 @@ public class Mth {
       return var0 > (double)var2 ? var2 + 1 : var2;
    }
 
+   public static long ceilLong(double var0) {
+      long var2 = (long)var0;
+      return var0 > (double)var2 ? var2 + 1L : var2;
+   }
+
    public static int clamp(int var0, int var1, int var2) {
       return Math.min(Math.max(var0, var1), var2);
    }
@@ -126,15 +131,7 @@ public class Mth {
    }
 
    public static double absMax(double var0, double var2) {
-      if (var0 < 0.0) {
-         var0 = -var0;
-      }
-
-      if (var2 < 0.0) {
-         var2 = -var2;
-      }
-
-      return Math.max(var0, var2);
+      return Math.max(Math.abs(var0), Math.abs(var2));
    }
 
    public static int floorDiv(int var0, int var1) {

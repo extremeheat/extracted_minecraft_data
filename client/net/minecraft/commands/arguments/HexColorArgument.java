@@ -7,7 +7,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -36,12 +35,16 @@ public class HexColorArgument implements ArgumentType<Integer> {
       String var2 = var1.readUnquotedString();
       Integer var10000;
       switch (var2.length()) {
-         case 3 -> var10000 = ARGB.color(Integer.valueOf(MessageFormat.format("{0}{0}", var2.charAt(0)), 16), Integer.valueOf(MessageFormat.format("{0}{0}", var2.charAt(1)), 16), Integer.valueOf(MessageFormat.format("{0}{0}", var2.charAt(2)), 16));
-         case 6 -> var10000 = ARGB.color(Integer.valueOf(var2.substring(0, 2), 16), Integer.valueOf(var2.substring(2, 4), 16), Integer.valueOf(var2.substring(4, 6), 16));
+         case 3 -> var10000 = ARGB.color(duplicateDigit(Integer.parseInt(var2, 0, 1, 16)), duplicateDigit(Integer.parseInt(var2, 1, 2, 16)), duplicateDigit(Integer.parseInt(var2, 2, 3, 16)));
+         case 6 -> var10000 = ARGB.color(Integer.parseInt(var2, 0, 2, 16), Integer.parseInt(var2, 2, 4, 16), Integer.parseInt(var2, 4, 6, 16));
          default -> throw ERROR_INVALID_HEX.createWithContext(var1, var2);
       }
 
       return var10000;
+   }
+
+   private static int duplicateDigit(int var0) {
+      return var0 * 17;
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {

@@ -3,6 +3,10 @@ package net.minecraft.client.gui.components;
 import net.minecraft.resources.ResourceLocation;
 
 public record WidgetSprites(ResourceLocation enabled, ResourceLocation disabled, ResourceLocation enabledFocused, ResourceLocation disabledFocused) {
+   public WidgetSprites(ResourceLocation var1) {
+      this(var1, var1, var1, var1);
+   }
+
    public WidgetSprites(ResourceLocation var1, ResourceLocation var2) {
       this(var1, var1, var2, var2);
    }

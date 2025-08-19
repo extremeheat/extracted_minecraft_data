@@ -144,7 +144,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    }
 
    public void setOwner(@Nullable LivingEntity var1) {
-      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(var1).map(EntityReference::new));
+      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(var1).map(EntityReference::of));
    }
 
    public void setOwnerReference(@Nullable EntityReference<LivingEntity> var1) {

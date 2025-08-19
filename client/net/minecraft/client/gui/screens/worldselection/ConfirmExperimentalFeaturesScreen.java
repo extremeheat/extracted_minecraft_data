@@ -138,13 +138,14 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
             this.splitMessage = var4;
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.drawString(DetailsScreen.this.minecraft.font, (Component)this.packId, var4, var3, -1);
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            var1.drawString(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
             MultiLineLabel var10000 = this.splitMessage;
             MultiLineLabel.Align var10002 = MultiLineLabel.Align.LEFT;
-            int var10004 = var3 + 12;
+            int var10003 = this.getContentX();
+            int var10004 = this.getContentY() + 12;
             Objects.requireNonNull(DetailsScreen.this.font);
-            var10000.render(var1, var10002, var4, var10004, 9, true, -1);
+            var10000.render(var1, var10002, var10003, var10004, 9, true, -1);
          }
 
          public Component getNarration() {

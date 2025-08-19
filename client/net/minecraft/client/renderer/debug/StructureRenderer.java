@@ -36,7 +36,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
       if (this.postMainBoxes.containsKey(var10)) {
          for(BoundingBox var14 : ((Map)this.postMainBoxes.get(var10)).values()) {
             if (var11.closerThan(var14.getCenter(), 500.0)) {
-               ShapeRenderer.renderLineBox(var1, var12, (double)var14.minX() - var3, (double)var14.minY() - var5, (double)var14.minZ() - var7, (double)(var14.maxX() + 1) - var3, (double)(var14.maxY() + 1) - var5, (double)(var14.maxZ() + 1) - var7, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
+               ShapeRenderer.renderLineBox(var1.last(), var12, (double)var14.minX() - var3, (double)var14.minY() - var5, (double)var14.minZ() - var7, (double)(var14.maxX() + 1) - var3, (double)(var14.maxY() + 1) - var5, (double)(var14.maxZ() + 1) - var7, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F);
             }
          }
       }
@@ -47,9 +47,9 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
             BoundingBox var16 = var15.boundingBox();
             if (var11.closerThan(var16.getCenter(), 500.0)) {
                if (var15.isStart()) {
-                  ShapeRenderer.renderLineBox(var1, var12, (double)var16.minX() - var3, (double)var16.minY() - var5, (double)var16.minZ() - var7, (double)(var16.maxX() + 1) - var3, (double)(var16.maxY() + 1) - var5, (double)(var16.maxZ() + 1) - var7, 0.0F, 1.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0.0F);
+                  ShapeRenderer.renderLineBox(var1.last(), var12, (double)var16.minX() - var3, (double)var16.minY() - var5, (double)var16.minZ() - var7, (double)(var16.maxX() + 1) - var3, (double)(var16.maxY() + 1) - var5, (double)(var16.maxZ() + 1) - var7, 0.0F, 1.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0.0F);
                } else {
-                  ShapeRenderer.renderLineBox(var1, var12, (double)var16.minX() - var3, (double)var16.minY() - var5, (double)var16.minZ() - var7, (double)(var16.maxX() + 1) - var3, (double)(var16.maxY() + 1) - var5, (double)(var16.maxZ() + 1) - var7, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F);
+                  ShapeRenderer.renderLineBox(var1.last(), var12, (double)var16.minX() - var3, (double)var16.minY() - var5, (double)var16.minZ() - var7, (double)(var16.maxX() + 1) - var3, (double)(var16.maxY() + 1) - var5, (double)(var16.maxZ() + 1) - var7, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F);
                }
             }
          }

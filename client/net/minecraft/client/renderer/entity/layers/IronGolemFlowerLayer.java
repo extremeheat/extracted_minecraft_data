@@ -31,7 +31,7 @@ public class IronGolemFlowerLayer extends RenderLayer<IronGolemRenderState, Iron
          var1.scale(0.5F, 0.5F, 0.5F);
          var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
          var1.translate(-0.5F, -0.5F, -0.5F);
-         var2.submitBlock(var1, Blocks.POPPY.defaultBlockState(), var3, OverlayTexture.NO_OVERLAY);
+         var2.submitBlock(var1, Blocks.POPPY.defaultBlockState(), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          var1.popPose();
       }
    }

@@ -67,7 +67,11 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return var4.isAbove(SHAPE_STABLE, var3, true) && (Integer)var1.getValue(LEVEL) == 0 && var4.canStandOnFluid(var2.getFluidState(var3.above()), var1.getFluidState()) ? SHAPE_STABLE : Shapes.empty();
+      if (var4.alwaysCollideWithFluid()) {
+         return Shapes.block();
+      } else {
+         return var4.isAbove(SHAPE_STABLE, var3, true) && (Integer)var1.getValue(LEVEL) == 0 && var4.canStandOnFluid(var2.getFluidState(var3.above()), var1.getFluidState()) ? SHAPE_STABLE : Shapes.empty();
+      }
    }
 
    protected boolean isRandomlyTicking(BlockState var1) {

@@ -8,8 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MaterialMapper;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -30,8 +30,8 @@ public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
       this.material = var3;
    }
 
-   public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      HangingSignRenderer.renderInHand(this.materials, var2, var3, var4, var5, this.model, this.material);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
+      HangingSignRenderer.submitSpecial(this.materials, var2, var3, var4, var5, this.model, this.material);
    }
 
    public void getExtents(Set<Vector3f> var1) {

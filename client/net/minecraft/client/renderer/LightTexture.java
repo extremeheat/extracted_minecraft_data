@@ -91,7 +91,7 @@ public class LightTexture implements AutoCloseable {
             if (var3.effects().hasEndFlashes()) {
                var6 = new Vector3f(0.99F, 1.12F, 1.0F);
                EndFlashState var7 = var3.endFlashState();
-               if (var7 != null) {
+               if (var7 != null && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
                   var5 = var7.getIntensity(var1);
                } else {
                   var5 = 0.0F;

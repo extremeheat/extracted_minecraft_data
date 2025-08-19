@@ -16,7 +16,7 @@ public class WanderingTraderRenderer extends MobRenderer<WanderingTrader, Villag
 
    public WanderingTraderRenderer(EntityRendererProvider.Context var1) {
       super(var1, new VillagerModel(var1.bakeLayer(ModelLayers.WANDERING_TRADER)), 0.5F);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
       this.addLayer(new CrossedArmsItemLayer(this));
    }
 

@@ -334,7 +334,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    public static boolean isNightOrRaining(Level var0) {
-      return var0.dimensionType().hasSkyLight() && (var0.isDarkOutside() || var0.isRaining());
+      return var0.dimensionType().hasSkyLight() && var0.dimension() != Level.END && (var0.isDarkOutside() || var0.isRaining());
    }
 
    public void setStayOutOfHiveCountdown(int var1) {

@@ -1,16 +1,14 @@
 package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -37,19 +35,18 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       return var1.immutableComponents();
    }
 
-   public void render(@Nullable DataComponentMap var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, boolean var7) {
+   public void submit(@Nullable DataComponentMap var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7) {
       BannerPatternLayers var8 = var1 != null ? (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
       DyeColor var9 = var1 != null ? (DyeColor)var1.get(DataComponents.BASE_COLOR) : null;
       boolean var10 = !var8.layers().isEmpty() || var9 != null;
       var3.pushPose();
       var3.scale(1.0F, -1.0F, -1.0F);
       Material var11 = var10 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
-      VertexConsumer var12 = this.materials.get(var11).wrap(ItemRenderer.getFoilBuffer(var4, this.model.renderType(var11.atlasLocation()), var2 == ItemDisplayContext.GUI, var7));
-      this.model.handle().render(var3, var12, var5, var6);
+      var4.submitModelPart(this.model.handle(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11));
       if (var10) {
-         BannerRenderer.renderPatterns(this.materials, var3, var4, var5, var6, this.model.plate(), var11, false, (DyeColor)Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, var7, false);
+         BannerRenderer.submitPatterns(this.materials, var3, var4, var5, var6, this.model.plate(), var11, false, (DyeColor)Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, var7, false);
       } else {
-         this.model.plate().render(var3, var12, var5, var6);
+         var4.submitModelPart(this.model.plate(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11));
       }
 
       var3.popPose();

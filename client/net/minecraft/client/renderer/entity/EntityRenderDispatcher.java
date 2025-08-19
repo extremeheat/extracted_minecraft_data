@@ -16,6 +16,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -52,17 +53,19 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    public final Options options;
    private final Supplier<EntityModelSet> entityModels;
    private final EquipmentAssetManager equipmentAssets;
+   private final PlayerSkinRenderCache playerSkinRenderCache;
 
    public <E extends Entity> int getPackedLightCoords(E var1, float var2) {
       return this.getRenderer(var1).getPackedLightCoords(var1, var2);
    }
 
-   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, ItemRenderer var4, MapRenderer var5, BlockRenderDispatcher var6, AtlasManager var7, Font var8, Options var9, Supplier<EntityModelSet> var10, EquipmentAssetManager var11) {
+   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, ItemRenderer var4, MapRenderer var5, BlockRenderDispatcher var6, AtlasManager var7, Font var8, Options var9, Supplier<EntityModelSet> var10, EquipmentAssetManager var11, PlayerSkinRenderCache var12) {
       super();
       this.textureManager = var2;
       this.itemModelResolver = var3;
       this.mapRenderer = var5;
       this.atlasManager = var7;
+      this.playerSkinRenderCache = var12;
       this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var4, var3);
       this.blockRenderDispatcher = var6;
       this.font = var8;
@@ -189,7 +192,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemModelResolver, this.mapRenderer, this.blockRenderDispatcher, var1, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font);
+      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemModelResolver, this.mapRenderer, this.blockRenderDispatcher, var1, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font, this.playerSkinRenderCache);
       this.renderers = EntityRenderers.createEntityRenderers(var2);
       this.playerRenderers = EntityRenderers.createPlayerRenderers(var2);
    }

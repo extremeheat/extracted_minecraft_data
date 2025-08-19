@@ -4,7 +4,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class EndFlashState {
-   private static final float INTENSITY_THRESHOLD_FOR_SOUND = 0.1F;
+   public static final int SOUND_DELAY_IN_TICKS = 30;
    private static final int FLASH_INTERVAL_IN_TICKS = 600;
    private static final int MAX_FLASH_OFFSET_IN_TICKS = 200;
    private static final int MIN_FLASH_DURATION_IN_TICKS = 100;
@@ -58,7 +58,7 @@ public class EndFlashState {
       return Mth.lerp(var1, this.oldIntensity, this.intensity);
    }
 
-   public boolean shouldProduceSoundThisTick() {
-      return this.intensity > 0.1F && this.oldIntensity <= 0.1F;
+   public boolean flashStartedThisTick() {
+      return this.intensity > 0.0F && this.oldIntensity <= 0.0F;
    }
 }

@@ -17,7 +17,6 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.dialog.body.DialogBodyHandlers;
 import net.minecraft.commands.Commands;
@@ -236,7 +235,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
       private WarningScreen(Minecraft var1, MutableObject<Screen> var2) {
          super((var2x) -> {
             if (var2x) {
-               PauseScreen.disconnectFromWorld(var1, DialogScreen.DISCONNECT);
+               var1.disconnectFromWorld(DialogScreen.DISCONNECT);
             } else {
                var1.setScreen((Screen)var2.getValue());
             }

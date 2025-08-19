@@ -32,7 +32,9 @@ import org.slf4j.Logger;
 public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBackedContainer {
    public static final int MAX_ITEMS = 3;
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final String ALIGN_ITEMS_TO_BOTTOM_TAG = "align_items_to_bottom";
    private final NonNullList<ItemStack> items;
+   private boolean alignItemsToBottom;
 
    public ShelfBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SHELF, var1, var2);
@@ -43,11 +45,13 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
       super.loadAdditional(var1);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items);
+      this.alignItemsToBottom = var1.getBooleanOr("align_items_to_bottom", false);
    }
 
    protected void saveAdditional(ValueOutput var1) {
       super.saveAdditional(var1);
       ContainerHelper.saveAllItems(var1, this.items, true);
+      var1.putBoolean("align_items_to_bottom", this.alignItemsToBottom);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -58,6 +62,7 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
       try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
          TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
          ContainerHelper.saveAllItems(var3, this.items, true);
+         var3.putBoolean("align_items_to_bottom", this.alignItemsToBottom);
          return var3.buildResult();
       }
    }
@@ -113,6 +118,10 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
 
    public float getVisualRotationYInDegrees() {
       return ((Direction)this.getBlockState().getValue(ShelfBlock.FACING)).getOpposite().toYRot();
+   }
+
+   public boolean getAlignItemsToBottom() {
+      return this.alignItemsToBottom;
    }
 
    // $FF: synthetic method

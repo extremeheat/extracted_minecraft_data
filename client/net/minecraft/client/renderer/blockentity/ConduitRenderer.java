@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -12,9 +12,11 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MaterialMapper;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.util.Mth;
@@ -77,53 +79,55 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
       return LayerDefinition.create(var0, 32, 16);
    }
 
-   public void render(ConduitBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      float var8 = (float)var1.tickCount + var2;
+   public void submit(ConduitBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      float var9 = (float)var1.tickCount + var2;
       if (!var1.isActive()) {
-         float var17 = var1.getActiveRotation(0.0F);
-         VertexConsumer var19 = SHELL_TEXTURE.buffer(this.materials, var4, RenderType::entitySolid);
+         float var21 = var1.getActiveRotation(0.0F);
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose((Quaternionfc)(new Quaternionf()).rotationY(var17 * 0.017453292F));
-         this.shell.render(var3, var19, var5, var6);
+         var3.mulPose((Quaternionfc)(new Quaternionf()).rotationY(var21 * 0.017453292F));
+         var8.submitModelPart(this.shell, var3, SHELL_TEXTURE.renderType(RenderType::entitySolid), var4, var5, this.materials.get(SHELL_TEXTURE));
          var3.popPose();
       } else {
-         float var9 = var1.getActiveRotation(var2) * 57.295776F;
-         float var10 = Mth.sin(var8 * 0.1F) / 2.0F + 0.5F;
-         var10 = var10 * var10 + var10;
+         float var10 = var1.getActiveRotation(var2) * 57.295776F;
+         float var11 = Mth.sin(var9 * 0.1F) / 2.0F + 0.5F;
+         var11 = var11 * var11 + var11;
          var3.pushPose();
-         var3.translate(0.5F, 0.3F + var10 * 0.2F, 0.5F);
-         Vector3f var11 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
-         var3.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(var9 * 0.017453292F, var11));
-         this.cage.render(var3, ACTIVE_SHELL_TEXTURE.buffer(this.materials, var4, RenderType::entityCutoutNoCull), var5, var6);
+         var3.translate(0.5F, 0.3F + var11 * 0.2F, 0.5F);
+         Vector3f var12 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
+         var3.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(var10 * 0.017453292F, var12));
+         var8.submitModelPart(this.cage, var3, ACTIVE_SHELL_TEXTURE.renderType(RenderType::entityCutoutNoCull), var4, var5, this.materials.get(ACTIVE_SHELL_TEXTURE));
          var3.popPose();
-         int var12 = var1.tickCount / 66 % 3;
+         int var13 = var1.tickCount / 66 % 3;
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
-         if (var12 == 1) {
+         if (var13 == 1) {
             var3.mulPose((Quaternionfc)(new Quaternionf()).rotationX(1.5707964F));
-         } else if (var12 == 2) {
+         } else if (var13 == 2) {
             var3.mulPose((Quaternionfc)(new Quaternionf()).rotationZ(1.5707964F));
          }
 
-         VertexConsumer var13 = (var12 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE).buffer(this.materials, var4, RenderType::entityCutoutNoCull);
-         this.wind.render(var3, var13, var5, var6);
+         Material var14 = var13 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE;
+         RenderType var15 = var14.renderType(RenderType::entityCutoutNoCull);
+         TextureAtlasSprite var16 = this.materials.get(var14);
+         var8.submitModelPart(this.wind, var3, var15, var4, var5, var16);
          var3.popPose();
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
          var3.scale(0.875F, 0.875F, 0.875F);
          var3.mulPose((Quaternionfc)(new Quaternionf()).rotationXYZ(3.1415927F, 0.0F, 3.1415927F));
-         this.wind.render(var3, var13, var5, var6);
+         var8.submitModelPart(this.wind, var3, var15, var4, var5, var16);
          var3.popPose();
-         Camera var14 = this.renderer.camera;
+         Camera var17 = this.renderer.camera;
          var3.pushPose();
-         var3.translate(0.5F, 0.3F + var10 * 0.2F, 0.5F);
+         var3.translate(0.5F, 0.3F + var11 * 0.2F, 0.5F);
          var3.scale(0.5F, 0.5F, 0.5F);
-         float var15 = -var14.getYRot();
-         var3.mulPose((Quaternionfc)(new Quaternionf()).rotationYXZ(var15 * 0.017453292F, var14.getXRot() * 0.017453292F, 3.1415927F));
-         float var16 = 1.3333334F;
+         float var18 = -var17.getYRot();
+         var3.mulPose((Quaternionfc)(new Quaternionf()).rotationYXZ(var18 * 0.017453292F, var17.getXRot() * 0.017453292F, 3.1415927F));
+         float var19 = 1.3333334F;
          var3.scale(1.3333334F, 1.3333334F, 1.3333334F);
-         this.eye.render(var3, (var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE).buffer(this.materials, var4, RenderType::entityCutoutNoCull), var5, var6);
+         Material var20 = var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE;
+         var8.submitModelPart(this.eye, var3, var20.renderType(RenderType::entityCutoutNoCull), var4, var5, this.materials.get(var20));
          var3.popPose();
       }
    }

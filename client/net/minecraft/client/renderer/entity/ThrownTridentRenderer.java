@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -32,7 +33,7 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
       List var4 = ItemRenderer.getFoilRenderTypes(this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
 
       for(int var5 = 0; var5 < var4.size(); ++var5) {
-         var3.submitModel(this.model, Unit.INSTANCE, var2, (RenderType)var4.get(var5), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var1.outlineColor, var5);
+         var3.order(var5).submitModel(this.model, Unit.INSTANCE, var2, (RenderType)var4.get(var5), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       var2.popPose();

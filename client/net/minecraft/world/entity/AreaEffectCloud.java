@@ -316,12 +316,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    public void setOwner(@Nullable LivingEntity var1) {
-      this.owner = var1 != null ? new EntityReference(var1) : null;
+      this.owner = EntityReference.of(var1);
    }
 
    @Nullable
    public LivingEntity getOwner() {
-      return (LivingEntity)EntityReference.get(this.owner, this.level(), LivingEntity.class);
+      return EntityReference.getLivingEntity(this.owner, this.level());
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {

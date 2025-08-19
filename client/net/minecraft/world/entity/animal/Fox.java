@@ -354,7 +354,7 @@ public class Fox extends Animal {
    }
 
    void addTrustedEntity(LivingEntity var1) {
-      this.addTrustedEntity(new EntityReference(var1));
+      this.addTrustedEntity(EntityReference.of(var1));
    }
 
    private void addTrustedEntity(EntityReference<LivingEntity> var1) {

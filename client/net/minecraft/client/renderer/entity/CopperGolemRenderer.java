@@ -25,7 +25,7 @@ import net.minecraft.world.item.component.BlockItemStateProperties;
 public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRenderState, CopperGolemModel> {
    public CopperGolemRenderer(EntityRendererProvider.Context var1) {
       super(var1, new CopperGolemModel(var1.bakeLayer(ModelLayers.COPPER_GOLEM)), 0.5F);
-      this.addLayer(new LivingEntityEmissiveLayer(this, getEyeTextureLocationProvider(), (var0, var1x) -> 1.0F, new CopperGolemModel(var1.bakeLayer(ModelLayers.COPPER_GOLEM)), RenderType::eyes, true));
+      this.addLayer(new LivingEntityEmissiveLayer(this, getEyeTextureLocationProvider(), (var0, var1x) -> 1.0F, new CopperGolemModel(var1.bakeLayer(ModelLayers.COPPER_GOLEM)), RenderType::eyes, false));
       this.addLayer(new ItemInHandLayer(this));
       Function var10004 = (var0) -> var0.blockOnHead;
       CopperGolemModel var10005 = this.model;

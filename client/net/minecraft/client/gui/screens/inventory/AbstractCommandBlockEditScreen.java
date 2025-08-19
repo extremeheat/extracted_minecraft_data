@@ -41,14 +41,7 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    abstract int getPreviousY();
 
    protected void init() {
-      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build());
-      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build());
       boolean var1 = this.getCommandBlock().isTrackOutput();
-      this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X")).withInitialValue(var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
-         BaseCommandBlock var3 = this.getCommandBlock();
-         var3.setTrackOutput(var2);
-         this.updatePreviousOutput(var2);
-      }));
       this.commandEdit = new EditBox(this.font, this.width / 2 - 150, 50, 300, 20, Component.translatable("advMode.command")) {
          protected MutableComponent createNarrationMessage() {
             return super.createNarrationMessage().append(AbstractCommandBlockEditScreen.this.commandSuggestions.getNarrationMessage());
@@ -62,10 +55,21 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.previousEdit.setEditable(false);
       this.previousEdit.setValue("-");
       this.addWidget(this.previousEdit);
+      this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X")).withInitialValue(var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
+         BaseCommandBlock var3 = this.getCommandBlock();
+         var3.setTrackOutput(var2);
+         this.updatePreviousOutput(var2);
+      }));
+      this.addExtraControls();
+      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build());
+      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build());
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.commandEdit, this.font, true, true, 0, 7, false, -2147483648);
       this.commandSuggestions.setAllowSuggestions(true);
       this.commandSuggestions.updateCommandInfo();
       this.updatePreviousOutput(var1);
+   }
+
+   protected void addExtraControls() {
    }
 
    protected void setInitialFocus() {

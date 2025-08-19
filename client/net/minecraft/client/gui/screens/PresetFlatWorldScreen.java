@@ -269,9 +269,9 @@ public class PresetFlatWorldScreen extends Screen {
             this.name = (Component)var2.unwrapKey().map((var0) -> Component.translatable(var0.location().toLanguageKey("flat_world_preset"))).orElse(PresetFlatWorldScreen.UNKNOWN_PRESET);
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            this.blitSlot(var1, var4, var3, (Item)this.preset.displayItem().value());
-            var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, var4 + 18 + 5, var3 + 6, -1);
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            this.blitSlot(var1, this.getContentX(), this.getContentY(), (Item)this.preset.displayItem().value());
+            var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, this.getContentX() + 18 + 5, this.getContentY() + 6, -1);
          }
 
          public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {

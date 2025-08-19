@@ -3,6 +3,8 @@ package net.minecraft.server.network;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -21,6 +23,7 @@ import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.configuration.ClientboundUpdateEnabledFeaturesPacket;
 import net.minecraft.network.protocol.configuration.ServerConfigurationPacketListener;
+import net.minecraft.network.protocol.configuration.ServerboundAcceptCodeOfConductPacket;
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
@@ -29,6 +32,7 @@ import net.minecraft.server.ServerLinks;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.network.config.JoinWorldTask;
 import net.minecraft.server.network.config.PrepareSpawnTask;
+import net.minecraft.server.network.config.ServerCodeOfConductConfigurationTask;
 import net.minecraft.server.network.config.ServerResourcePackConfigurationTask;
 import net.minecraft.server.network.config.SynchronizeRegistriesTask;
 import net.minecraft.server.players.NameAndId;
@@ -99,7 +103,23 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    private void addOptionalTasks() {
-      this.server.getServerResourcePack().ifPresent((var1) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1)));
+      Map var1 = this.server.getCodeOfConducts();
+      if (!var1.isEmpty()) {
+         this.configurationTasks.add(new ServerCodeOfConductConfigurationTask(() -> {
+            String var2 = (String)var1.get(this.clientInformation.language().toLowerCase(Locale.ROOT));
+            if (var2 == null) {
+               var2 = (String)var1.get("en_us");
+            }
+
+            if (var2 == null) {
+               var2 = (String)var1.values().iterator().next();
+            }
+
+            return var2;
+         }));
+      }
+
+      this.server.getServerResourcePack().ifPresent((var1x) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1x)));
    }
 
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
@@ -122,6 +142,10 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
          this.synchronizeRegistriesTask.handleResponse(var1.knownPacks(), this::send);
          this.finishCurrentTask(SynchronizeRegistriesTask.TYPE);
       }
+   }
+
+   public void handleAcceptCodeOfConduct(ServerboundAcceptCodeOfConductPacket var1) {
+      this.finishCurrentTask(ServerCodeOfConductConfigurationTask.TYPE);
    }
 
    public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {

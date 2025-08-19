@@ -1,6 +1,5 @@
 package net.minecraft.network.codec;
 
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -21,12 +20,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
+import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.IdMap;
@@ -407,31 +406,8 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, GameProfile> GAME_PROFILE = new StreamCodec<ByteBuf, GameProfile>() {
-      public GameProfile decode(ByteBuf var1) {
-         UUID var2 = (UUID)UUIDUtil.STREAM_CODEC.decode(var1);
-         String var3 = Utf8String.read(var1, 16);
-         GameProfile var4 = new GameProfile(var2, var3);
-         var4.getProperties().putAll((Multimap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(var1));
-         return var4;
-      }
-
-      public void encode(ByteBuf var1, GameProfile var2) {
-         UUIDUtil.STREAM_CODEC.encode(var1, var2.getId());
-         Utf8String.write(var1, var2.getName(), 16);
-         ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(var1, var2.getProperties());
-      }
-
-      // $FF: synthetic method
-      public void encode(final Object var1, final Object var2) {
-         this.encode((ByteBuf)var1, (GameProfile)var2);
-      }
-
-      // $FF: synthetic method
-      public Object decode(final Object var1) {
-         return this.decode((ByteBuf)var1);
-      }
-   };
+   StreamCodec<ByteBuf, String> PLAYER_NAME = stringUtf8(16);
+   StreamCodec<ByteBuf, GameProfile> GAME_PROFILE = StreamCodec.composite(UUIDUtil.STREAM_CODEC, GameProfile::getId, PLAYER_NAME, GameProfile::getName, GAME_PROFILE_PROPERTIES, GameProfile::getProperties, Util::createGameProfile);
    StreamCodec<ByteBuf, Integer> RGB_COLOR = new StreamCodec<ByteBuf, Integer>() {
       public Integer decode(ByteBuf var1) {
          return ARGB.color(var1.readByte() & 255, var1.readByte() & 255, var1.readByte() & 255);

@@ -4,10 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -28,27 +30,27 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       super();
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      long var8 = var1.getLevel().getGameTime();
-      float var10 = (float)var7.subtract(var1.getBlockPos().getCenter()).horizontalDistance();
-      LocalPlayer var11 = Minecraft.getInstance().player;
-      float var12 = var11 != null && var11.isScoping() ? 1.0F : Math.max(1.0F, var10 / 96.0F);
-      List var13 = ((BeaconBeamOwner)var1).getBeamSections();
-      int var14 = 0;
+   public void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      long var9 = var1.getLevel().getGameTime();
+      float var11 = (float)var6.subtract(var1.getBlockPos().getCenter()).horizontalDistance();
+      LocalPlayer var12 = Minecraft.getInstance().player;
+      float var13 = var12 != null && var12.isScoping() ? 1.0F : Math.max(1.0F, var11 / 96.0F);
+      List var14 = ((BeaconBeamOwner)var1).getBeamSections();
+      int var15 = 0;
 
-      for(int var15 = 0; var15 < var13.size(); ++var15) {
-         BeaconBeamOwner.Section var16 = (BeaconBeamOwner.Section)var13.get(var15);
-         renderBeaconBeam(var3, var4, var2, var12, var8, var14, var15 == var13.size() - 1 ? 2048 : var16.getHeight(), var16.getColor());
-         var14 += var16.getHeight();
+      for(int var16 = 0; var16 < var14.size(); ++var16) {
+         BeaconBeamOwner.Section var17 = (BeaconBeamOwner.Section)var14.get(var16);
+         submitBeaconBeam(var3, var8, var2, var13, var9, var15, var16 == var14.size() - 1 ? 2048 : var17.getHeight(), var17.getColor());
+         var15 += var17.getHeight();
       }
 
    }
 
-   private static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, float var2, float var3, long var4, int var6, int var7, int var8) {
-      renderBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var4, var6, var7, var8, 0.2F * var3, 0.25F * var3);
+   private static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, float var2, float var3, long var4, int var6, int var7, int var8) {
+      submitBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var4, var6, var7, var8, 0.2F * var3, 0.25F * var3);
    }
 
-   public static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, ResourceLocation var2, float var3, float var4, long var5, int var7, int var8, int var9, float var10, float var11) {
+   public static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, ResourceLocation var2, float var3, float var4, long var5, int var7, int var8, int var9, float var10, float var11) {
       int var12 = var7 + var8;
       var0.pushPose();
       var0.translate(0.5, 0.0, 0.5);
@@ -67,7 +69,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       float var25 = 1.0F;
       float var26 = -1.0F + var15;
       float var27 = (float)var8 * var4 * (0.5F / var10) + var26;
-      renderPart(var0, var1.getBuffer(RenderType.beaconBeam(var2, false)), var9, var7, var12, 0.0F, var10, var10, 0.0F, var20, 0.0F, 0.0F, var23, 0.0F, 1.0F, var27, var26);
+      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, false), (var9x, var10x) -> renderPart(var9x, var10x, var9, var7, var12, 0.0F, var10, var10, 0.0F, var20, 0.0F, 0.0F, var23, 0.0F, 1.0F, var27, var26));
       var0.popPose();
       var16 = -var11;
       float var17 = -var11;
@@ -77,16 +79,15 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       var25 = 1.0F;
       var26 = -1.0F + var15;
       var27 = (float)var8 * var4 + var26;
-      renderPart(var0, var1.getBuffer(RenderType.beaconBeam(var2, true)), ARGB.color(32, var9), var7, var12, var16, var17, var11, var19, var20, var11, var11, var11, 0.0F, 1.0F, var27, var26);
+      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, true), (var13x, var14x) -> renderPart(var13x, var14x, ARGB.color(32, var9), var7, var12, var16, var17, var11, var19, var20, var11, var11, var11, 0.0F, 1.0F, var27, var26));
       var0.popPose();
    }
 
-   private static void renderPart(PoseStack var0, VertexConsumer var1, int var2, int var3, int var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, float var13, float var14, float var15, float var16) {
-      PoseStack.Pose var17 = var0.last();
-      renderQuad(var17, var1, var2, var3, var4, var5, var6, var7, var8, var13, var14, var15, var16);
-      renderQuad(var17, var1, var2, var3, var4, var11, var12, var9, var10, var13, var14, var15, var16);
-      renderQuad(var17, var1, var2, var3, var4, var7, var8, var11, var12, var13, var14, var15, var16);
-      renderQuad(var17, var1, var2, var3, var4, var9, var10, var5, var6, var13, var14, var15, var16);
+   private static void renderPart(PoseStack.Pose var0, VertexConsumer var1, int var2, int var3, int var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, float var13, float var14, float var15, float var16) {
+      renderQuad(var0, var1, var2, var3, var4, var5, var6, var7, var8, var13, var14, var15, var16);
+      renderQuad(var0, var1, var2, var3, var4, var11, var12, var9, var10, var13, var14, var15, var16);
+      renderQuad(var0, var1, var2, var3, var4, var7, var8, var11, var12, var13, var14, var15, var16);
+      renderQuad(var0, var1, var2, var3, var4, var9, var10, var5, var6, var13, var14, var15, var16);
    }
 
    private static void renderQuad(PoseStack.Pose var0, VertexConsumer var1, int var2, int var3, int var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {

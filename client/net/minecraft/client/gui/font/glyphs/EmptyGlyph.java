@@ -1,18 +1,33 @@
 package net.minecraft.client.gui.font.glyphs;
 
-import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.gui.font.GlyphRenderTypes;
-import net.minecraft.resources.ResourceLocation;
-import org.joml.Matrix4f;
+import com.mojang.blaze3d.font.GlyphInfo;
+import com.mojang.blaze3d.font.UnbakedGlyph;
+import javax.annotation.Nullable;
+import net.minecraft.client.gui.font.TextRenderable;
+import net.minecraft.network.chat.Style;
 
-public class EmptyGlyph extends BakedGlyph {
-   public static final EmptyGlyph INSTANCE = new EmptyGlyph();
+public class EmptyGlyph implements UnbakedGlyph {
+   final GlyphInfo info;
 
-   public EmptyGlyph() {
-      super(GlyphRenderTypes.createForColorTexture(ResourceLocation.withDefaultNamespace("")), (GpuTextureView)null, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+   public EmptyGlyph(float var1) {
+      super();
+      this.info = GlyphInfo.simple(var1);
    }
 
-   public void renderChar(BakedGlyph.GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4, boolean var5) {
+   public GlyphInfo info() {
+      return this.info;
+   }
+
+   public BakedGlyph bake(UnbakedGlyph.Stitcher var1) {
+      return new BakedGlyph() {
+         public GlyphInfo info() {
+            return EmptyGlyph.this.info;
+         }
+
+         @Nullable
+         public TextRenderable createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
+            return null;
+         }
+      };
    }
 }

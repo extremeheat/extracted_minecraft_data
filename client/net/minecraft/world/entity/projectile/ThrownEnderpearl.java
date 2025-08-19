@@ -71,7 +71,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var1 = (ServerLevel)var2;
-            return this.owner.getEntity((var1x) -> findOwnerInAnyDimension(var1, var1x), Entity.class);
+            return (Entity)this.owner.getEntity(var1, Entity.class);
          }
       }
 
@@ -79,22 +79,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    @Nullable
-   private static Entity findOwnerInAnyDimension(ServerLevel var0, UUID var1) {
-      Entity var2 = var0.getEntity(var1);
-      if (var2 != null) {
-         return var2;
-      } else {
-         for(ServerLevel var4 : var0.getServer().getAllLevels()) {
-            if (var4 != var0) {
-               var2 = var4.getEntity(var1);
-               if (var2 != null) {
-                  return var2;
-               }
-            }
-         }
-
-         return var0.getServer().getPlayerList().getPlayer(var1);
-      }
+   private static Entity findOwnerIncludingDeadPlayer(ServerLevel var0, UUID var1) {
+      Entity var2 = var0.getEntityInAnyDimension(var1);
+      return (Entity)(var2 != null ? var2 : var0.getServer().getPlayerList().getPlayer(var1));
    }
 
    protected void onHitEntity(EntityHitResult var1) {
@@ -180,7 +167,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          label39: {
             var7 = SectionPos.blockToSectionCoord(this.position().x());
             var3 = SectionPos.blockToSectionCoord(this.position().z());
-            var4 = this.owner != null ? findOwnerInAnyDimension(var1, this.owner.getUUID()) : null;
+            var4 = this.owner != null ? findOwnerIncludingDeadPlayer(var1, this.owner.getUUID()) : null;
             if (var4 instanceof ServerPlayer var5) {
                if (!var4.isAlive() && !var5.wonGame && var5.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
                   this.discard();

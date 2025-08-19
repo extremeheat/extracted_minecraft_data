@@ -45,7 +45,7 @@ public class SkullBlockEntity extends BlockEntity {
 
    protected void loadAdditional(ValueInput var1) {
       super.loadAdditional(var1);
-      this.setOwner((ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null));
+      this.owner = (ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null);
       this.noteBlockSound = (ResourceLocation)var1.read("note_block_sound", ResourceLocation.CODEC).orElse((Object)null);
       this.customName = parseCustomNameSafe(var1, "custom_name");
    }
@@ -82,28 +82,9 @@ public class SkullBlockEntity extends BlockEntity {
       return this.saveCustomOnly(var1);
    }
 
-   public void setOwner(@Nullable ResolvableProfile var1) {
-      synchronized(this) {
-         this.owner = var1;
-      }
-
-      this.updateOwnerProfile();
-   }
-
-   private void updateOwnerProfile() {
-      if (this.owner != null && !this.owner.isResolved()) {
-         this.owner.resolve().thenAcceptAsync((var1) -> {
-            this.owner = var1;
-            this.setChanged();
-         }, ResolvableProfile.CHECKED_MAIN_THREAD_EXECUTOR);
-      } else {
-         this.setChanged();
-      }
-   }
-
    protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
-      this.setOwner((ResolvableProfile)var1.get(DataComponents.PROFILE));
+      this.owner = (ResolvableProfile)var1.get(DataComponents.PROFILE);
       this.noteBlockSound = (ResourceLocation)var1.get(DataComponents.NOTE_BLOCK_SOUND);
       this.customName = (Component)var1.get(DataComponents.CUSTOM_NAME);
    }

@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SpecialBlockModelRenderer;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockModel;
@@ -53,6 +54,7 @@ public class ModelManager implements PreparableReloadListener {
    private Map<ResourceLocation, ItemModel> bakedItemStackModels = Map.of();
    private Map<ResourceLocation, ClientItem.Properties> itemProperties = Map.of();
    private final AtlasManager atlasManager;
+   private final PlayerSkinRenderCache playerSkinRenderCache;
    private final BlockModelShaper blockModelShaper;
    private final BlockColors blockColors;
    private EntityModelSet entityModelSet;
@@ -60,13 +62,14 @@ public class ModelManager implements PreparableReloadListener {
    private ModelBakery.MissingModels missingModels;
    private Object2IntMap<BlockState> modelGroups;
 
-   public ModelManager(BlockColors var1, AtlasManager var2) {
+   public ModelManager(BlockColors var1, AtlasManager var2, PlayerSkinRenderCache var3) {
       super();
       this.entityModelSet = EntityModelSet.EMPTY;
       this.specialBlockModelRenderer = SpecialBlockModelRenderer.EMPTY;
       this.modelGroups = Object2IntMaps.emptyMap();
       this.blockColors = var1;
       this.atlasManager = var2;
+      this.playerSkinRenderCache = var3;
       this.blockModelShaper = new BlockModelShaper(this);
    }
 
@@ -89,7 +92,7 @@ public class ModelManager implements PreparableReloadListener {
    public final CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
       ResourceManager var5 = var1.resourceManager();
       CompletableFuture var6 = CompletableFuture.supplyAsync(EntityModelSet::vanilla, var2);
-      CompletableFuture var7 = var6.thenApplyAsync((var1x) -> SpecialBlockModelRenderer.vanilla(new SpecialModelRenderer.BakingContext.Simple(var1x, this.atlasManager)), var2);
+      CompletableFuture var7 = var6.thenApplyAsync((var1x) -> SpecialBlockModelRenderer.vanilla(new SpecialModelRenderer.BakingContext.Simple(var1x, this.atlasManager, this.playerSkinRenderCache)), var2);
       CompletableFuture var8 = loadBlockModels(var5, var2);
       CompletableFuture var9 = BlockStateModelLoader.loadBlockStates(var5, var2);
       CompletableFuture var10 = ClientItemInfoLoader.scheduleLoad(var5, var2);
@@ -105,7 +108,7 @@ public class ModelManager implements PreparableReloadListener {
             LOGGER.debug("Unreferenced models: \n{}", var14.stream().sorted().map((var0) -> "\t" + String.valueOf(var0) + "\n").collect(Collectors.joining()));
          }
 
-         ModelBakery var15 = new ModelBakery((EntityModelSet)var6.join(), this.atlasManager, ((BlockStateModelLoader.LoadedModels)var9.join()).models(), ((ClientItemInfoLoader.LoadedClientInfos)var10.join()).contents(), var12x.models(), var12x.missing());
+         ModelBakery var15 = new ModelBakery((EntityModelSet)var6.join(), this.atlasManager, this.playerSkinRenderCache, ((BlockStateModelLoader.LoadedModels)var9.join()).models(), ((ClientItemInfoLoader.LoadedClientInfos)var10.join()).contents(), var12x.models(), var12x.missing());
          return loadModels(var11x, var15, var13x, (EntityModelSet)var6.join(), (SpecialBlockModelRenderer)var7.join(), var2);
       }, var2);
       Objects.requireNonNull(var3);

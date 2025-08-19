@@ -1,12 +1,13 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.BellModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
@@ -24,12 +25,12 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
       this.model = new BellModel(var1.bakeLayer(ModelLayers.BELL));
    }
 
-   public void render(BellBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      VertexConsumer var8 = BELL_RESOURCE_LOCATION.buffer(this.materials, var4, RenderType::entitySolid);
+   public void submit(BellBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
       this.modelState.ticks = (float)var1.ticks + var2;
       this.modelState.shakeDirection = var1.shaking ? var1.clickDirection : null;
       this.model.setupAnim(this.modelState);
-      this.model.renderToBuffer(var3, var8, var5, var6);
+      RenderType var9 = BELL_RESOURCE_LOCATION.renderType(RenderType::entitySolid);
+      var8.submitModel(this.model, this.modelState, var3, var9, var4, var5, -1, this.materials.get(BELL_RESOURCE_LOCATION), 0, var7);
    }
 
    static {

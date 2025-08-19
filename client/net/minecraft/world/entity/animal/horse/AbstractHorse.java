@@ -186,7 +186,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    public void setOwner(@Nullable LivingEntity var1) {
-      this.owner = var1 != null ? new EntityReference(var1) : null;
+      this.owner = EntityReference.of(var1);
    }
 
    public void setTamed(boolean var1) {

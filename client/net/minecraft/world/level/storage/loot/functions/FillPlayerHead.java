@@ -35,7 +35,7 @@ public class FillPlayerHead extends LootItemConditionalFunction {
          Object var4 = var2.getOptionalParameter(this.entityTarget.getParam());
          if (var4 instanceof Player) {
             Player var3 = (Player)var4;
-            var1.set(DataComponents.PROFILE, new ResolvableProfile(var3.getGameProfile()));
+            var1.set(DataComponents.PROFILE, ResolvableProfile.createResolved(var3.getGameProfile()));
          }
       }
 

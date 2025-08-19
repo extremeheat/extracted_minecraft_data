@@ -7,8 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.GameProfileRepository;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.jtracy.DiscontinuousFrame;
 import com.mojang.jtracy.TracyClient;
@@ -111,7 +109,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.ServerOpListEntry;
-import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.Crypt;
@@ -121,7 +118,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.SampleLogger;
@@ -1308,6 +1304,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.isDemo = var1;
    }
 
+   public Map<String, String> getCodeOfConducts() {
+      return Map.of();
+   }
+
    public Optional<ServerResourcePackInfo> getServerResourcePack() {
       return Optional.empty();
    }
@@ -1430,21 +1430,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.playerIdleTimeout = var1;
    }
 
-   public MinecraftSessionService getSessionService() {
-      return this.services.sessionService();
-   }
-
-   @Nullable
-   public SignatureValidator getProfileKeySignatureValidator() {
-      return this.services.profileKeySignatureValidator();
-   }
-
-   public GameProfileRepository getProfileRepository() {
-      return this.services.profileRepository();
-   }
-
-   public UserNameToIdResolver nameToIdCache() {
-      return this.services.nameToIdCache();
+   public Services services() {
+      return this.services;
    }
 
    @Nullable

@@ -62,7 +62,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private Button playButton;
    @Nullable
    private TabNavigationBar tabNavigationBar;
-   private final HeaderAndFooterLayout layout;
+   final HeaderAndFooterLayout layout;
 
    public RealmsConfigureWorldScreen(RealmsMainScreen var1, long var2, @Nullable RealmsServer var4, @Nullable PreferredRegionsDto var5) {
       super(Component.empty());

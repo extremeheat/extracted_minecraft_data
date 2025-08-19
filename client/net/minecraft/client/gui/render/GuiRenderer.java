@@ -39,12 +39,11 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
+import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.gui.render.state.BlitRenderState;
-import net.minecraft.client.gui.render.state.GlyphEffectRenderState;
 import net.minecraft.client.gui.render.state.GlyphRenderState;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
@@ -55,6 +54,8 @@ import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
@@ -91,6 +92,8 @@ public class GuiRenderer implements AutoCloseable {
    private final CachedOrthoProjectionMatrixBuffer guiProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("gui", 1000.0F, 11000.0F, true);
    private final CachedOrthoProjectionMatrixBuffer itemsProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("items", -1000.0F, 1000.0F, true);
    private final MultiBufferSource.BufferSource bufferSource;
+   private final SubmitNodeCollector submitNodeCollector;
+   private final FeatureRenderDispatcher featureRenderDispatcher;
    private final Map<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> pictureInPictureRenderers;
    @Nullable
    private GpuTexture itemsAtlas;
@@ -113,17 +116,19 @@ public class GuiRenderer implements AutoCloseable {
    @Nullable
    private BufferBuilder bufferBuilder = null;
 
-   public GuiRenderer(GuiRenderState var1, MultiBufferSource.BufferSource var2, List<PictureInPictureRenderer<?>> var3) {
+   public GuiRenderer(GuiRenderState var1, MultiBufferSource.BufferSource var2, SubmitNodeCollector var3, FeatureRenderDispatcher var4, List<PictureInPictureRenderer<?>> var5) {
       super();
       this.renderState = var1;
       this.bufferSource = var2;
-      ImmutableMap.Builder var4 = ImmutableMap.builder();
+      this.submitNodeCollector = var3;
+      this.featureRenderDispatcher = var4;
+      ImmutableMap.Builder var6 = ImmutableMap.builder();
 
-      for(PictureInPictureRenderer var6 : var3) {
-         var4.put(var6.getRenderStateClass(), var6);
+      for(PictureInPictureRenderer var8 : var5) {
+         var6.put(var8.getRenderStateClass(), var8);
       }
 
-      this.pictureInPictureRenderers = var4.buildOrThrow();
+      this.pictureInPictureRenderers = var6.buildOrThrow();
    }
 
    public void incrementFrameNumber() {
@@ -252,16 +257,17 @@ public class GuiRenderer implements AutoCloseable {
          final Matrix3x2f var2 = var1.pose;
          final ScreenRectangle var3 = var1.scissor;
          var1.ensurePrepared().visit(new Font.GlyphVisitor() {
-            public void acceptGlyph(BakedGlyph.GlyphInstance var1) {
-               if (var1.glyph().textureView() != null) {
-                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
-               }
-
+            public void acceptGlyph(TextRenderable var1) {
+               this.accept(var1);
             }
 
-            public void acceptEffect(BakedGlyph var1, BakedGlyph.Effect var2x) {
+            public void acceptEffect(TextRenderable var1) {
+               this.accept(var1);
+            }
+
+            private void accept(TextRenderable var1) {
                if (var1.textureView() != null) {
-                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphEffectRenderState(var2, var1, var2x, var3));
+                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
                }
 
             }
@@ -371,7 +377,8 @@ public class GuiRenderer implements AutoCloseable {
       }
 
       RenderSystem.enableScissorForRenderTypeDraws(var3, this.itemsAtlas.getHeight(0) - var4 - var5, var5, var5);
-      var1.render(var2, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
+      var1.submit(var2, this.submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      this.featureRenderDispatcher.renderAllFeatures();
       this.bufferSource.endBatch();
       RenderSystem.disableScissorForRenderTypeDraws();
       var2.popPose();

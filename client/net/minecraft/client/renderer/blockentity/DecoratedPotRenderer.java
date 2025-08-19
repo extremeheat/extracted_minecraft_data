@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -15,10 +15,12 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
@@ -105,52 +107,49 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return Sheets.DECORATED_POT_SIDE;
    }
 
-   public void render(DecoratedPotBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+   public void submit(DecoratedPotBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
       var3.pushPose();
-      Direction var8 = var1.getDirection();
+      Direction var9 = var1.getDirection();
       var3.translate(0.5, 0.0, 0.5);
-      var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var8.toYRot()));
+      var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var9.toYRot()));
       var3.translate(-0.5, 0.0, -0.5);
-      DecoratedPotBlockEntity.WobbleStyle var9 = var1.lastWobbleStyle;
-      if (var9 != null && var1.getLevel() != null) {
-         float var10 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var9.duration;
-         if (var10 >= 0.0F && var10 <= 1.0F) {
-            if (var9 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-               float var11 = 0.015625F;
-               float var12 = var10 * 6.2831855F;
-               float var13 = -1.5F * (Mth.cos(var12) + 0.5F) * Mth.sin(var12 / 2.0F);
-               var3.rotateAround(Axis.XP.rotation(var13 * 0.015625F), 0.5F, 0.0F, 0.5F);
-               float var14 = Mth.sin(var12);
-               var3.rotateAround(Axis.ZP.rotation(var14 * 0.015625F), 0.5F, 0.0F, 0.5F);
+      DecoratedPotBlockEntity.WobbleStyle var10 = var1.lastWobbleStyle;
+      if (var10 != null && var1.getLevel() != null) {
+         float var11 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var10.duration;
+         if (var11 >= 0.0F && var11 <= 1.0F) {
+            if (var10 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
+               float var12 = 0.015625F;
+               float var13 = var11 * 6.2831855F;
+               float var14 = -1.5F * (Mth.cos(var13) + 0.5F) * Mth.sin(var13 / 2.0F);
+               var3.rotateAround(Axis.XP.rotation(var14 * 0.015625F), 0.5F, 0.0F, 0.5F);
+               float var15 = Mth.sin(var13);
+               var3.rotateAround(Axis.ZP.rotation(var15 * 0.015625F), 0.5F, 0.0F, 0.5F);
             } else {
-               float var15 = Mth.sin(-var10 * 3.0F * 3.1415927F) * 0.125F;
-               float var16 = 1.0F - var10;
-               var3.rotateAround(Axis.YP.rotation(var15 * var16), 0.5F, 0.0F, 0.5F);
+               float var16 = Mth.sin(-var11 * 3.0F * 3.1415927F) * 0.125F;
+               float var17 = 1.0F - var11;
+               var3.rotateAround(Axis.YP.rotation(var16 * var17), 0.5F, 0.0F, 0.5F);
             }
          }
       }
 
-      this.render(var3, var4, var5, var6, var1.getDecorations());
+      this.submit(var3, var8, var4, var5, var1.getDecorations());
       var3.popPose();
    }
 
-   public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
-      this.render(var1, var2, var3, var4, var5);
-   }
-
-   private void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
-      VertexConsumer var6 = Sheets.DECORATED_POT_BASE.buffer(this.materials, var2, RenderType::entitySolid);
-      this.neck.render(var1, var6, var3, var4);
-      this.top.render(var1, var6, var3, var4);
-      this.bottom.render(var1, var6, var3, var4);
-      this.renderSide(this.frontSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.front()));
-      this.renderSide(this.backSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.back()));
-      this.renderSide(this.leftSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.left()));
-      this.renderSide(this.rightSide, this.materials, var1, var2, var3, var4, getSideMaterial(var5.right()));
-   }
-
-   private void renderSide(ModelPart var1, MaterialSet var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Material var7) {
-      var1.render(var3, var7.buffer(var2, var4, RenderType::entitySolid), var5, var6);
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, PotDecorations var5) {
+      RenderType var6 = Sheets.DECORATED_POT_BASE.renderType(RenderType::entitySolid);
+      TextureAtlasSprite var7 = this.materials.get(Sheets.DECORATED_POT_BASE);
+      var2.submitModelPart(this.neck, var1, var6, var3, var4, var7);
+      var2.submitModelPart(this.top, var1, var6, var3, var4, var7);
+      var2.submitModelPart(this.bottom, var1, var6, var3, var4, var7);
+      Material var8 = getSideMaterial(var5.front());
+      var2.submitModelPart(this.frontSide, var1, var8.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var8));
+      Material var9 = getSideMaterial(var5.back());
+      var2.submitModelPart(this.backSide, var1, var9.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var9));
+      Material var10 = getSideMaterial(var5.left());
+      var2.submitModelPart(this.leftSide, var1, var10.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var10));
+      Material var11 = getSideMaterial(var5.right());
+      var2.submitModelPart(this.rightSide, var1, var11.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var11));
    }
 
    public void getExtents(Set<Vector3f> var1) {

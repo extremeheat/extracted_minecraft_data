@@ -2829,7 +2829,7 @@ public class Items {
       PUMPKIN_PIE = registerItem("pumpkin_pie", (new Item.Properties()).food(Foods.PUMPKIN_PIE));
       FIREWORK_ROCKET = registerItem("firework_rocket", FireworkRocketItem::new, (new Item.Properties()).component(DataComponents.FIREWORKS, new Fireworks(1, List.of())));
       FIREWORK_STAR = registerItem("firework_star");
-      ENCHANTED_BOOK = registerItem("enchanted_book", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
+      ENCHANTED_BOOK = registerItem("enchanted_book", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       NETHER_BRICK = registerItem("nether_brick");
       RESIN_BRICK = registerItem("resin_brick", (new Item.Properties()).trimMaterial(TrimMaterials.RESIN));
       PRISMARINE_SHARD = registerItem("prismarine_shard");

@@ -143,7 +143,7 @@ public abstract class PlayerList {
 
    public void placeNewPlayer(Connection var1, ServerPlayer var2, CommonListenerCookie var3) {
       NameAndId var4 = var2.nameAndId();
-      UserNameToIdResolver var5 = this.server.nameToIdCache();
+      UserNameToIdResolver var5 = this.server.services().nameToIdCache();
       Optional var7 = var5.get(var4.id());
       String var6 = (String)var7.map(NameAndId::name).orElse(var4.name());
       var5.add(var4);

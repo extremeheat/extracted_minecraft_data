@@ -22,7 +22,9 @@ import net.minecraft.world.inventory.LoomMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
@@ -115,34 +117,38 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
 
       if (this.displayPatterns) {
-         int var25 = var5 + 60;
-         int var26 = var6 + 13;
-         List var27 = (this.menu).getSelectablePatterns();
+         int var26 = var5 + 60;
+         int var27 = var6 + 13;
+         List var28 = (this.menu).getSelectablePatterns();
 
          label64:
          for(int var16 = 0; var16 < 4; ++var16) {
             for(int var17 = 0; var17 < 4; ++var17) {
                int var18 = var16 + this.startRow;
                int var19 = var18 * 4 + var17;
-               if (var19 >= var27.size()) {
+               if (var19 >= var28.size()) {
                   break label64;
                }
 
-               int var20 = var25 + var17 * 14;
-               int var21 = var26 + var16 * 14;
-               boolean var22 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
-               ResourceLocation var23;
+               int var20 = var26 + var17 * 14;
+               int var21 = var27 + var16 * 14;
+               Holder var22 = (Holder)var28.get(var19);
+               boolean var23 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
+               ResourceLocation var24;
                if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
-                  var23 = PATTERN_SELECTED_SPRITE;
-               } else if (var22) {
-                  var23 = PATTERN_HIGHLIGHTED_SPRITE;
+                  var24 = PATTERN_SELECTED_SPRITE;
+               } else if (var23) {
+                  var24 = PATTERN_HIGHLIGHTED_SPRITE;
+                  DyeColor var25 = ((DyeItem)this.dyeStack.getItem()).getDyeColor();
+                  String var10001 = ((BannerPattern)var22.value()).translationKey();
+                  var1.setTooltipForNextFrame(Component.translatable(var10001 + "." + var25.getName()), var3, var4);
                } else {
-                  var23 = PATTERN_SPRITE;
+                  var24 = PATTERN_SPRITE;
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var23, var20, var21, 14, 14);
-               TextureAtlasSprite var24 = var1.getSprite(Sheets.getBannerMaterial((Holder)var27.get(var19)));
-               this.renderBannerOnButton(var1, var20, var21, var24);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var24, var20, var21, 14, 14);
+               TextureAtlasSprite var29 = var1.getSprite(Sheets.getBannerMaterial(var22));
+               this.renderBannerOnButton(var1, var20, var21, var29);
             }
          }
       }

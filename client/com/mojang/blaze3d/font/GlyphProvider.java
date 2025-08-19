@@ -11,7 +11,7 @@ public interface GlyphProvider extends AutoCloseable {
    }
 
    @Nullable
-   default GlyphInfo.Stitched getGlyph(int var1) {
+   default UnbakedGlyph getGlyph(int var1) {
       return null;
    }
 

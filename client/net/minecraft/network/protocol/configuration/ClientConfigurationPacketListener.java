@@ -8,6 +8,8 @@ public interface ClientConfigurationPacketListener extends ClientCommonPacketLis
       return ConnectionProtocol.CONFIGURATION;
    }
 
+   void handleCodeOfConduct(ClientboundCodeOfConductPacket var1);
+
    void handleConfigurationFinished(ClientboundFinishConfigurationPacket var1);
 
    void handleRegistryData(ClientboundRegistryDataPacket var1);

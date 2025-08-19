@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -34,7 +35,7 @@ public class ServerPlayerGameMode {
    private GameType gameModeForPlayer;
    @Nullable
    private GameType previousGameModeForPlayer;
-   private boolean previousFlying;
+   private TriState previousFlying;
    private boolean isDestroyingBlock;
    private int destroyProgressStart;
    private BlockPos destroyPos;
@@ -47,6 +48,7 @@ public class ServerPlayerGameMode {
    public ServerPlayerGameMode(ServerPlayer var1) {
       super();
       this.gameModeForPlayer = GameType.DEFAULT_MODE;
+      this.previousFlying = TriState.DEFAULT;
       this.destroyPos = BlockPos.ZERO;
       this.delayedDestroyPos = BlockPos.ZERO;
       this.lastSentState = -1;
@@ -58,7 +60,9 @@ public class ServerPlayerGameMode {
       if (var1 == this.gameModeForPlayer) {
          return false;
       } else {
-         this.setGameModeForPlayer(var1, this.gameModeForPlayer);
+         boolean var2 = this.player.getAbilities().flying;
+         this.setGameModeForPlayer(var1, this.gameModeForPlayer, this.previousFlying);
+         this.previousFlying = var2 ? TriState.TRUE : TriState.FALSE;
          this.player.onUpdateAbilities();
          this.level.getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
@@ -71,12 +75,14 @@ public class ServerPlayerGameMode {
    }
 
    protected void setGameModeForPlayer(GameType var1, @Nullable GameType var2) {
+      this.setGameModeForPlayer(var1, var2, TriState.DEFAULT);
+   }
+
+   protected void setGameModeForPlayer(GameType var1, @Nullable GameType var2, TriState var3) {
       this.previousGameModeForPlayer = var2;
       this.gameModeForPlayer = var1;
-      Abilities var3 = this.player.getAbilities();
-      boolean var4 = var3.flying;
-      var1.updatePlayerAbilities(var3, this.previousFlying);
-      this.previousFlying = var4;
+      Abilities var4 = this.player.getAbilities();
+      var1.updatePlayerAbilities(var4, var3);
    }
 
    public GameType getGameModeForPlayer() {

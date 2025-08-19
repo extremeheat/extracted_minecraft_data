@@ -188,7 +188,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
             String var1 = (String)Objects.requireNonNull(ServerLoginPacketListenerImpl.this.requestedUsername, "Player name not initialized");
 
             try {
-               ProfileResult var2x = ServerLoginPacketListenerImpl.this.server.getSessionService().hasJoinedServer(var1, var2, this.getAddress());
+               ProfileResult var2x = ServerLoginPacketListenerImpl.this.server.services().sessionService().hasJoinedServer(var1, var2, this.getAddress());
                if (var2x != null) {
                   GameProfile var3 = var2x.profile();
                   ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.getName(), var3.getId());

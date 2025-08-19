@@ -1,7 +1,9 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -15,9 +17,9 @@ public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlo
       this.box = new BlockEntityWithBoundingBoxRenderer<TestInstanceBlockEntity>(var1);
    }
 
-   public void render(TestInstanceBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      this.beacon.render(var1, var2, var3, var4, var5, var6, var7);
-      this.box.render(var1, var2, var3, var4, var5, var6, var7);
+   public void submit(TestInstanceBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      this.beacon.submit(var1, var2, var3, var4, var5, var6, var7, var8);
+      this.box.submit(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    public boolean shouldRenderOffScreen() {

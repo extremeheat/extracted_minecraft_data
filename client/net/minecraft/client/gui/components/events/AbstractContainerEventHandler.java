@@ -25,14 +25,16 @@ public abstract class AbstractContainerEventHandler implements ContainerEventHan
    }
 
    public void setFocused(@Nullable GuiEventListener var1) {
-      if (this.focused != null) {
-         this.focused.setFocused(false);
-      }
+      if (this.focused != var1) {
+         if (this.focused != null) {
+            this.focused.setFocused(false);
+         }
 
-      if (var1 != null) {
-         var1.setFocused(true);
-      }
+         if (var1 != null) {
+            var1.setFocused(true);
+         }
 
-      this.focused = var1;
+         this.focused = var1;
+      }
    }
 }

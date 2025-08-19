@@ -38,7 +38,7 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGo
             int var10 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
             var1.translate(-0.5F, -0.5F, -0.5F);
             RenderType var11 = var4.appearsGlowing() && var4.isInvisible ? RenderType.outline(TextureAtlas.LOCATION_BLOCKS) : ItemBlockRenderTypes.getRenderType(var8);
-            var2.submitBlockModel(var1, var11, var9, 0.0F, 0.0F, 0.0F, var3, var10);
+            var2.submitBlockModel(var1, var11, var9, 0.0F, 0.0F, 0.0F, var3, var10, var4.outlineColor);
             var1.popPose();
          }
       }

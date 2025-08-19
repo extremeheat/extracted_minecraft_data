@@ -2,7 +2,7 @@ package com.mojang.blaze3d.font;
 
 import com.mojang.blaze3d.textures.GpuTexture;
 
-public interface SheetGlyphInfo {
+public interface GlyphBitmap {
    int getPixelWidth();
 
    int getPixelHeight();

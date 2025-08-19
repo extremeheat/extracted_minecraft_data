@@ -12,9 +12,11 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
@@ -36,13 +38,15 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    private static final int PADDING = 8;
    final RealmsConfigureWorldScreen configurationScreen;
    final Minecraft minecraft;
+   final Font font;
    RealmsServer serverData;
-   private final InvitedObjectSelectionList invitedList;
+   final InvitedObjectSelectionList invitedList;
 
    RealmsPlayersTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3) {
       super(TITLE);
       this.configurationScreen = var1;
       this.minecraft = var2;
+      this.font = var1.getFont();
       this.serverData = var3;
       GridLayout.RowHelper var4 = this.layout.spacing(8).createRowHelper(1);
       this.invitedList = (InvitedObjectSelectionList)var4.addChild(new InvitedObjectSelectionList(var1.width, this.calculateListHeight()), LayoutSettings.defaults().alignVerticallyTop().alignHorizontallyCenter());
@@ -55,34 +59,36 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
    }
 
    public void doLayout(ScreenRectangle var1) {
-      this.invitedList.setSize(this.configurationScreen.width, this.calculateListHeight());
+      this.invitedList.updateSizeAndPosition(this.configurationScreen.width, this.calculateListHeight(), this.configurationScreen.layout.getHeaderHeight());
       super.doLayout(var1);
    }
 
    public void updateData(RealmsServer var1) {
       this.serverData = var1;
-      this.invitedList.children().clear();
-
-      for(PlayerInfo var3 : var1.players) {
-         this.invitedList.children().add(new Entry(var3));
-      }
-
+      this.invitedList.updateList(var1);
    }
 
    class InvitedObjectSelectionList extends ContainerObjectSelectionList<Entry> {
-      private static final int ITEM_HEIGHT = 36;
+      private static final int PLAYER_ENTRY_HEIGHT = 36;
 
       public InvitedObjectSelectionList(final int var2, final int var3) {
-         Minecraft var10001 = Minecraft.getInstance();
-         int var10004 = RealmsPlayersTab.this.configurationScreen.getHeaderHeight();
-         Objects.requireNonNull(RealmsPlayersTab.this.configurationScreen.getFont());
-         super(var10001, var2, var3, var10004, 36, (int)(9.0F * 1.5F));
+         super(Minecraft.getInstance(), var2, var3, RealmsPlayersTab.this.configurationScreen.getHeaderHeight(), 36);
       }
 
-      protected void renderHeader(GuiGraphics var1, int var2, int var3) {
-         String var4 = RealmsPlayersTab.this.serverData.players != null ? Integer.toString(RealmsPlayersTab.this.serverData.players.size()) : "0";
-         MutableComponent var5 = Component.translatable("mco.configure.world.invited.number", var4).withStyle(ChatFormatting.UNDERLINE);
-         var1.drawString(RealmsPlayersTab.this.configurationScreen.getFont(), (Component)var5, var2 + this.getRowWidth() / 2 - RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)var5) / 2, var3, -1);
+      void updateList(RealmsServer var1) {
+         this.clearEntries();
+         this.populateList(var1);
+      }
+
+      private void populateList(RealmsServer var1) {
+         HeaderEntry var10001 = RealmsPlayersTab.this.new HeaderEntry(RealmsPlayersTab.this.font);
+         Objects.requireNonNull(RealmsPlayersTab.this.font);
+         this.addEntry(var10001, (int)(9.0F * 1.5F));
+
+         for(PlayerEntry var3 : var1.players.stream().map((var1x) -> RealmsPlayersTab.this.new PlayerEntry(var1x)).toList()) {
+            this.addEntry(var3);
+         }
+
       }
 
       protected void renderListBackground(GuiGraphics var1) {
@@ -96,7 +102,13 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
       }
    }
 
-   class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+   abstract static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+      Entry() {
+         super();
+      }
+   }
+
+   class PlayerEntry extends Entry {
       protected static final int SKIN_FACE_SIZE = 32;
       private static final Component NORMAL_USER_TEXT = Component.translatable("mco.configure.world.invites.normal.tooltip");
       private static final Component OP_TEXT = Component.translatable("mco.configure.world.invites.ops.tooltip");
@@ -111,13 +123,13 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
       private final Button makeOpButton;
       private final Button removeOpButton;
 
-      public Entry(final PlayerInfo var2) {
+      public PlayerEntry(final PlayerInfo var2) {
          super();
          this.playerInfo = var2;
          int var3 = RealmsPlayersTab.this.serverData.players.indexOf(this.playerInfo);
-         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, (var2x) -> this.op(var3), false).sprite(MAKE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)NORMAL_USER_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", OP_TEXT))).build();
-         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, (var2x) -> this.deop(var3), false).sprite(REMOVE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)OP_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT))).build();
-         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, (var2x) -> this.uninvite(var3), false).sprite(REMOVE_PLAYER_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)REMOVE_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get())).build();
+         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, (var2x) -> this.op(var3), false).sprite((ResourceLocation)MAKE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)NORMAL_USER_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", OP_TEXT))).build();
+         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, (var2x) -> this.deop(var3), false).sprite((ResourceLocation)REMOVE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)OP_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT))).build();
+         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, (var2x) -> this.uninvite(var3), false).sprite((ResourceLocation)REMOVE_PLAYER_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)REMOVE_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get())).build();
          this.updateOpButtons();
       }
 
@@ -180,31 +192,67 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
          return ImmutableList.of(this.activeOpButton(), this.removeButton);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11;
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         int var6;
          if (!this.playerInfo.getAccepted()) {
-            var11 = -6250336;
+            var6 = -6250336;
          } else if (this.playerInfo.getOnline()) {
-            var11 = -16711936;
+            var6 = -16711936;
          } else {
-            var11 = -1;
+            var6 = -1;
          }
 
-         int var12 = var3 + var6 / 2 - 16;
-         RealmsUtil.renderPlayerFace(var1, var4, var12, 32, this.playerInfo.getUuid());
-         int var10000 = var3 + var6 / 2;
-         Objects.requireNonNull(RealmsPlayersTab.this.configurationScreen.getFont());
-         int var13 = var10000 - 9 / 2;
-         var1.drawString(RealmsPlayersTab.this.configurationScreen.getFont(), this.playerInfo.getName(), var4 + 8 + 32, var13, var11);
-         int var14 = var3 + var6 / 2 - 10;
-         int var15 = var4 + var5 - this.removeButton.getWidth();
-         this.removeButton.setPosition(var15, var14);
-         this.removeButton.render(var1, var7, var8, var10);
-         int var16 = var15 - this.activeOpButton().getWidth() - 8;
-         this.makeOpButton.setPosition(var16, var14);
-         this.makeOpButton.render(var1, var7, var8, var10);
-         this.removeOpButton.setPosition(var16, var14);
-         this.removeOpButton.render(var1, var7, var8, var10);
+         int var7 = this.getContentYMiddle() - 16;
+         RealmsUtil.renderPlayerFace(var1, this.getContentX(), var7, 32, this.playerInfo.getUuid());
+         int var10000 = this.getContentYMiddle();
+         Objects.requireNonNull(RealmsPlayersTab.this.font);
+         int var8 = var10000 - 9 / 2;
+         var1.drawString(RealmsPlayersTab.this.font, this.playerInfo.getName(), this.getContentX() + 8 + 32, var8, var6);
+         int var9 = this.getContentYMiddle() - 10;
+         int var10 = this.getContentRight() - this.removeButton.getWidth();
+         this.removeButton.setPosition(var10, var9);
+         this.removeButton.render(var1, var2, var3, var5);
+         int var11 = var10 - this.activeOpButton().getWidth() - 8;
+         this.makeOpButton.setPosition(var11, var9);
+         this.makeOpButton.render(var1, var2, var3, var5);
+         this.removeOpButton.setPosition(var11, var9);
+         this.removeOpButton.render(var1, var2, var3, var5);
+      }
+   }
+
+   class HeaderEntry extends Entry {
+      private final Font font;
+      private String cachedNumberOfInvites = "";
+      private final FocusableTextWidget invitedWidget;
+
+      public HeaderEntry(final Font var2) {
+         super();
+         this.font = var2;
+         this.invitedWidget = new FocusableTextWidget(RealmsPlayersTab.this.invitedList.getRowWidth(), Component.translatable("mco.configure.world.invited.number", "").withStyle(ChatFormatting.UNDERLINE), var2, false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
+      }
+
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         String var6 = RealmsPlayersTab.this.serverData.players != null ? Integer.toString(RealmsPlayersTab.this.serverData.players.size()) : "0";
+         if (!var6.equals(this.cachedNumberOfInvites)) {
+            this.cachedNumberOfInvites = var6;
+            MutableComponent var7 = Component.translatable("mco.configure.world.invited.number", var6);
+            this.invitedWidget.setMessage(var7.withStyle(ChatFormatting.UNDERLINE));
+         }
+
+         FocusableTextWidget var10000 = this.invitedWidget;
+         int var10001 = this.getX() + this.getWidth() / 2 - this.font.width((FormattedText)this.invitedWidget.getMessage()) / 2;
+         int var10002 = this.getY() + this.getHeight() / 2;
+         Objects.requireNonNull(this.font);
+         var10000.setPosition(var10001, var10002 - 9 / 2);
+         this.invitedWidget.render(var1, var2, var3, var5);
+      }
+
+      public List<? extends NarratableEntry> narratables() {
+         return List.of(this.invitedWidget);
+      }
+
+      public List<? extends GuiEventListener> children() {
+         return List.of(this.invitedWidget);
       }
    }
 }

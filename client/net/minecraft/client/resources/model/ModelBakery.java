@@ -12,6 +12,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
@@ -45,19 +46,21 @@ public class ModelBakery {
    static final Logger LOGGER;
    private final EntityModelSet entityModelSet;
    private final MaterialSet materials;
+   private final PlayerSkinRenderCache playerSkinRenderCache;
    private final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels;
    private final Map<ResourceLocation, ClientItem> clientInfos;
    final Map<ResourceLocation, ResolvedModel> resolvedModels;
    final ResolvedModel missingModel;
 
-   public ModelBakery(EntityModelSet var1, MaterialSet var2, Map<BlockState, BlockStateModel.UnbakedRoot> var3, Map<ResourceLocation, ClientItem> var4, Map<ResourceLocation, ResolvedModel> var5, ResolvedModel var6) {
+   public ModelBakery(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3, Map<BlockState, BlockStateModel.UnbakedRoot> var4, Map<ResourceLocation, ClientItem> var5, Map<ResourceLocation, ResolvedModel> var6, ResolvedModel var7) {
       super();
       this.entityModelSet = var1;
       this.materials = var2;
-      this.unbakedBlockStateModels = var3;
-      this.clientInfos = var4;
-      this.resolvedModels = var5;
-      this.missingModel = var6;
+      this.playerSkinRenderCache = var3;
+      this.unbakedBlockStateModels = var4;
+      this.clientInfos = var5;
+      this.resolvedModels = var6;
+      this.missingModel = var7;
    }
 
    public CompletableFuture<BakingResult> bakeModels(SpriteGetter var1, Executor var2) {
@@ -73,7 +76,7 @@ public class ModelBakery {
       }, var2);
       CompletableFuture var6 = ParallelMapTransform.schedule(this.clientInfos, (var3x, var4x) -> {
          try {
-            return var4x.model().bake(new ItemModel.BakingContext(var4, this.entityModelSet, this.materials, var3.item, var4x.registrySwapper()));
+            return var4x.model().bake(new ItemModel.BakingContext(var4, this.entityModelSet, this.materials, this.playerSkinRenderCache, var3.item, var4x.registrySwapper()));
          } catch (Exception var6) {
             LOGGER.warn("Unable to bake item model: '{}'", var3x, var6);
             return null;

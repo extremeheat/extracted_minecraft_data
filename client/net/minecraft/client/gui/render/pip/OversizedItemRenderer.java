@@ -10,6 +10,8 @@ import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
@@ -56,7 +58,10 @@ public class OversizedItemRenderer extends PictureInPictureRenderer<OversizedIte
          Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
       }
 
-      var9.render(var2, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
+      FeatureRenderDispatcher var11 = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+      SubmitNodeStorage var12 = var11.getSubmitNodeStorage();
+      var9.submit(var2, var12, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      var11.renderAllFeatures();
       this.modelOnTextureIdentity = var9.getModelIdentity();
    }
 

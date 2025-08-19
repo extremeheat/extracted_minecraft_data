@@ -20,7 +20,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -99,7 +98,6 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
          float var10 = (float)(var8 >> 8 & 255) / 255.0F;
          float var11 = (float)(var8 & 255) / 255.0F;
          ModelBlockRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var7, var9, var10, var11, var4, var5);
-         ((SpecialBlockModelRenderer)this.specialBlockModelRenderer.get()).renderByBlock(var1.getBlock(), ItemDisplayContext.NONE, var2, var3, var4, var5);
       }
    }
 

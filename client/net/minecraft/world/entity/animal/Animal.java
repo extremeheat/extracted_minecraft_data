@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -160,7 +159,7 @@ public abstract class Animal extends AgeableMob {
    public void setInLove(@Nullable Player var1) {
       this.inLove = 600;
       if (var1 instanceof ServerPlayer var2) {
-         this.loveCause = new EntityReference<ServerPlayer>(var2);
+         this.loveCause = EntityReference.of(var2);
       }
 
       this.level().broadcastEntityEvent(this, (byte)18);
@@ -176,10 +175,7 @@ public abstract class Animal extends AgeableMob {
 
    @Nullable
    public ServerPlayer getLoveCause() {
-      EntityReference var10000 = this.loveCause;
-      Level var10001 = this.level();
-      Objects.requireNonNull(var10001);
-      return (ServerPlayer)EntityReference.get(var10000, var10001::getPlayerByUUID, ServerPlayer.class);
+      return (ServerPlayer)EntityReference.get(this.loveCause, this.level(), ServerPlayer.class);
    }
 
    public boolean isInLove() {

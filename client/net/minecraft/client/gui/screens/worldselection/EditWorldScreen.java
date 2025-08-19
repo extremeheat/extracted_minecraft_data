@@ -20,6 +20,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
+import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.NbtException;
@@ -119,6 +120,16 @@ public class EditWorldScreen extends Screen {
    protected void repositionElements() {
       this.layout.arrangeElements();
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
+   }
+
+   public boolean keyPressed(int var1, int var2, int var3) {
+      if (this.nameEdit.isFocused() && CommonInputs.confirm(var1)) {
+         this.onRename(this.nameEdit.getValue());
+         this.onClose();
+         return true;
+      } else {
+         return super.keyPressed(var1, var2, var3);
+      }
    }
 
    public void onClose() {

@@ -1,8 +1,10 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
@@ -18,14 +20,14 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
       this.entityRenderer = var1.entityRenderer();
    }
 
-   public void render(TrialSpawnerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      Level var8 = var1.getLevel();
-      if (var8 != null) {
-         TrialSpawner var9 = var1.getTrialSpawner();
-         TrialSpawnerStateData var10 = var9.getStateData();
-         Entity var11 = var10.getOrCreateDisplayEntity(var9, var8, var9.getState());
-         if (var11 != null) {
-            SpawnerRenderer.renderEntityInSpawner(var2, var3, var4, var11, this.entityRenderer, var10.getOSpin(), var10.getSpin());
+   public void submit(TrialSpawnerBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      Level var9 = var1.getLevel();
+      if (var9 != null) {
+         TrialSpawner var10 = var1.getTrialSpawner();
+         TrialSpawnerStateData var11 = var10.getStateData();
+         Entity var12 = var11.getOrCreateDisplayEntity(var10, var9, var10.getState());
+         if (var12 != null) {
+            SpawnerRenderer.submitEntityInSpawner(var2, var3, var8, var12, this.entityRenderer, var11.getOSpin(), var11.getSpin());
          }
 
       }

@@ -10,6 +10,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
@@ -36,7 +37,7 @@ public class BoatRenderer extends AbstractBoatRenderer {
 
    protected void submitTypeAdditions(BoatRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4) {
       if (!var1.isUnderWater) {
-         var3.submitModel(this.waterPatchModel, Unit.INSTANCE, var2, this.waterPatchModel.renderType(this.texture), var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+         var3.submitModel(this.waterPatchModel, Unit.INSTANCE, var2, this.waterPatchModel.renderType(this.texture), var4, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
    }

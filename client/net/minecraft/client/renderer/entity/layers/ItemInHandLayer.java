@@ -30,7 +30,7 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
          var4.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
          boolean var7 = var3 == HumanoidArm.LEFT;
          var4.translate((float)(var7 ? -1 : 1) / 16.0F, 0.125F, -0.625F);
-         var5.submitItem(var4, var2, var6, OverlayTexture.NO_OVERLAY);
+         var2.submit(var4, var5, var6, OverlayTexture.NO_OVERLAY, var1.outlineColor);
          var4.popPose();
       }
    }

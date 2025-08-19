@@ -1,16 +1,18 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Calendar;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.ChestModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
@@ -48,48 +50,44 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       return var0.get(2) + 1 == 12 && var0.get(5) >= 24 && var0.get(5) <= 26;
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      Level var8 = var1.getLevel();
-      boolean var9 = var8 != null;
-      BlockState var10 = var9 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
-      ChestType var11 = var10.hasProperty(ChestBlock.TYPE) ? (ChestType)var10.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
-      Block var12 = var10.getBlock();
-      if (var12 instanceof AbstractChestBlock var13) {
-         boolean var14 = var11 != ChestType.SINGLE;
+   public void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      Level var9 = var1.getLevel();
+      boolean var10 = var9 != null;
+      BlockState var11 = var10 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
+      ChestType var12 = var11.hasProperty(ChestBlock.TYPE) ? (ChestType)var11.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
+      Block var13 = var11.getBlock();
+      if (var13 instanceof AbstractChestBlock var14) {
+         boolean var15 = var12 != ChestType.SINGLE;
          var3.pushPose();
-         float var15 = ((Direction)var10.getValue(ChestBlock.FACING)).toYRot();
+         float var16 = ((Direction)var11.getValue(ChestBlock.FACING)).toYRot();
          var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var15));
+         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var16));
          var3.translate(-0.5F, -0.5F, -0.5F);
-         DoubleBlockCombiner.NeighborCombineResult var16;
-         if (var9) {
-            var16 = var13.combine(var10, var8, var1.getBlockPos(), true);
+         DoubleBlockCombiner.NeighborCombineResult var17;
+         if (var10) {
+            var17 = var14.combine(var11, var9, var1.getBlockPos(), true);
          } else {
-            var16 = DoubleBlockCombiner.Combiner::acceptNone;
+            var17 = DoubleBlockCombiner.Combiner::acceptNone;
          }
 
-         float var17 = ((Float2FloatFunction)var16.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var2);
-         var17 = 1.0F - var17;
-         var17 = 1.0F - var17 * var17 * var17;
-         int var18 = ((Int2IntFunction)var16.apply(new BrightnessCombiner())).applyAsInt(var5);
-         Material var19 = Sheets.chooseMaterial(var1, var11, this.xmasTextures);
-         VertexConsumer var20 = var19.buffer(this.materials, var4, RenderType::entityCutout);
-         if (var14) {
-            if (var11 == ChestType.LEFT) {
-               this.render(var3, var20, this.doubleLeftModel, var17, var18, var6);
+         float var18 = ((Float2FloatFunction)var17.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var2);
+         var18 = 1.0F - var18;
+         var18 = 1.0F - var18 * var18 * var18;
+         int var19 = ((Int2IntFunction)var17.apply(new BrightnessCombiner())).applyAsInt(var4);
+         Material var20 = Sheets.chooseMaterial(var1, var12, this.xmasTextures);
+         RenderType var21 = var20.renderType(RenderType::entityCutout);
+         TextureAtlasSprite var22 = this.materials.get(var20);
+         if (var15) {
+            if (var12 == ChestType.LEFT) {
+               var8.submitModel(this.doubleLeftModel, var18, var3, var21, var4, var5, -1, var22, 0, var7);
             } else {
-               this.render(var3, var20, this.doubleRightModel, var17, var18, var6);
+               var8.submitModel(this.doubleRightModel, var18, var3, var21, var4, var5, -1, var22, 0, var7);
             }
          } else {
-            this.render(var3, var20, this.singleModel, var17, var18, var6);
+            var8.submitModel(this.singleModel, var18, var3, var21, var19, var5, -1, var22, 0, var7);
          }
 
          var3.popPose();
       }
-   }
-
-   private void render(PoseStack var1, VertexConsumer var2, ChestModel var3, float var4, int var5, int var6) {
-      var3.setupAnim(var4);
-      var3.renderToBuffer(var1, var2, var5, var6);
    }
 }

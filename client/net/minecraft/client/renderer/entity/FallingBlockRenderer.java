@@ -25,11 +25,11 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
    }
 
    public void submit(FallingBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      BlockState var4 = var1.blockState;
+      BlockState var4 = var1.movingBlockRenderState.blockState;
       if (var4.getRenderShape() == RenderShape.MODEL) {
          var2.pushPose();
          var2.translate(-0.5, 0.0, -0.5);
-         var3.submitFallingBlock(var2, var1);
+         var3.submitMovingBlock(var2, var1.movingBlockRenderState);
          var2.popPose();
          super.submit(var1, var2, var3);
       }
@@ -42,11 +42,11 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
    public void extractRenderState(FallingBlockEntity var1, FallingBlockRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       BlockPos var4 = BlockPos.containing(var1.getX(), var1.getBoundingBox().maxY, var1.getZ());
-      var2.startBlockPos = var1.getStartPos();
-      var2.blockPos = var4;
-      var2.blockState = var1.getBlockState();
-      var2.biome = var1.level().getBiome(var4);
-      var2.level = var1.level();
+      var2.movingBlockRenderState.randomSeedPos = var1.getStartPos();
+      var2.movingBlockRenderState.blockPos = var4;
+      var2.movingBlockRenderState.blockState = var1.getBlockState();
+      var2.movingBlockRenderState.biome = var1.level().getBiome(var4);
+      var2.movingBlockRenderState.level = var1.level();
    }
 
    // $FF: synthetic method

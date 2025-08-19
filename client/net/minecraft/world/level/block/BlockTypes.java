@@ -107,7 +107,6 @@ public class BlockTypes {
       Registry.register(var0, (String)"fence_gate", FenceGateBlock.CODEC);
       Registry.register(var0, (String)"fire", FireBlock.CODEC);
       Registry.register(var0, (String)"firefly_bush", FireflyBushBlock.CODEC);
-      Registry.register(var0, (String)"fletching_table", FletchingTableBlock.CODEC);
       Registry.register(var0, (String)"flower", FlowerBlock.CODEC);
       Registry.register(var0, (String)"flower_pot", FlowerPotBlock.CODEC);
       Registry.register(var0, (String)"frogspawn", FrogspawnBlock.CODEC);

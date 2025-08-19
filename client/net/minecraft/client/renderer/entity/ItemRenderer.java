@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -114,12 +115,12 @@ public class ItemRenderer {
       return this.scratchItemStackRenderState.getModelBoundingBox();
    }
 
-   public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
-      this.renderStatic((ItemOwner)null, var1, var2, var5, var6, var7, var3, var4, var8);
-   }
-
-   public void renderStatic(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, @Nullable Level var6, int var7, int var8, int var9) {
-      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var2, var3, var6, var1, var9);
-      this.scratchItemStackRenderState.render(var4, var5, var7, var8);
+   public void renderUpwardsFrom(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, SubmitNodeCollector var5, @Nullable Level var6, int var7, int var8, int var9) {
+      ItemStackRenderState var10 = new ItemStackRenderState();
+      this.resolver.updateForTopItem(var10, var2, var3, var6, var1, var9);
+      AABB var11 = var10.getModelBoundingBox();
+      double var12 = -var11.minY;
+      var4.translate(0.0, var12, 0.0);
+      var10.submit(var4, var5, var7, var8, 0);
    }
 }

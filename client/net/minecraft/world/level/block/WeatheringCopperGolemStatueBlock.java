@@ -8,6 +8,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -51,6 +52,7 @@ public class WeatheringCopperGolemStatueBlock extends CopperGolemStatueBlock imp
 
          if (this.getAge().equals(WeatheringCopper.WeatherState.UNAFFECTED)) {
             CopperGolem var10 = var8.removeStatue(var2);
+            var1.hurtAndBreak(1, var5, (EquipmentSlot)var6.asEquipmentSlot());
             if (var10 != null) {
                var3.addFreshEntity(var10);
                var3.removeBlock(var4, false);

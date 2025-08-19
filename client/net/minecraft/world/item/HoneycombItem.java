@@ -15,9 +15,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class HoneycombItem extends Item implements SignApplicator {
@@ -32,17 +34,23 @@ public class HoneycombItem extends Item implements SignApplicator {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      return (InteractionResult)getWaxed(var4).map((var3x) -> {
-         Player var4 = var1.getPlayer();
-         ItemStack var5 = var1.getItemInHand();
-         if (var4 instanceof ServerPlayer var6) {
-            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var6, var3, var5);
+      return (InteractionResult)getWaxed(var4).map((var4x) -> {
+         Player var5 = var1.getPlayer();
+         ItemStack var6 = var1.getItemInHand();
+         if (var5 instanceof ServerPlayer var7) {
+            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var7, var3, var6);
          }
 
-         var5.shrink(1);
-         var2.setBlock(var3, var3x, 11);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var3x));
-         var2.levelEvent(var4, 3003, var3, 0);
+         var6.shrink(1);
+         var2.setBlock(var3, var4x, 11);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5, var4x));
+         var2.levelEvent(var5, 3003, var3, 0);
+         if (var4.getBlock() instanceof ChestBlock && var4.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+            BlockPos var8 = ChestBlock.getConnectedBlockPos(var3, var4);
+            var2.gameEvent(GameEvent.BLOCK_CHANGE, var8, GameEvent.Context.of(var5, var2.getBlockState(var8)));
+            var2.levelEvent(var5, 3003, var8, 0);
+         }
+
          return InteractionResult.SUCCESS;
       }).orElse(InteractionResult.PASS);
    }

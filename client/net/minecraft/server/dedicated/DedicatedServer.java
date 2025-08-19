@@ -1,5 +1,6 @@
 package net.minecraft.server.dedicated;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
@@ -13,12 +14,15 @@ import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
@@ -54,7 +58,6 @@ import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -81,6 +84,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    @Nullable
    private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
    private final ServerLinks serverLinks;
+   private final Map<String, String> codeOfConductTexts;
 
    public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7) {
       super(var1, var2, var3, var4, Proxy.NO_PROXY, var6, var7, LoggingLevelLoadListener.forDedicatedServer());
@@ -88,6 +92,60 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.rconConsoleSource = new RconConsoleSource(this);
       this.serverTextFilter = ServerTextFilter.createFromConfig(var5.getProperties());
       this.serverLinks = createServerLinks(var5);
+      if (var5.getProperties().codeOfConduct) {
+         this.codeOfConductTexts = readCodeOfConducts();
+      } else {
+         this.codeOfConductTexts = Map.of();
+      }
+
+   }
+
+   private static Map<String, String> readCodeOfConducts() {
+      Path var0 = Path.of("codeofconduct");
+      if (!Files.isDirectory(var0, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
+         throw new IllegalArgumentException("Code of Conduct folder does not exist: " + String.valueOf(var0));
+      } else {
+         try {
+            ImmutableMap.Builder var1 = ImmutableMap.builder();
+            Stream var2 = Files.list(var0);
+
+            try {
+               for(Path var4 : var2.toList()) {
+                  String var5 = var4.getFileName().toString();
+                  if (var5.endsWith(".txt")) {
+                     String var6 = var5.substring(0, var5.length() - 4).toLowerCase(Locale.ROOT);
+                     if (!var4.toRealPath().getParent().equals(var0.toAbsolutePath())) {
+                        throw new IllegalArgumentException("Failed to read Code of Conduct file \"" + var5 + "\" because it links to a file outside the allowed directory");
+                     }
+
+                     try {
+                        var1.put(var6, Files.readString(var4));
+                     } catch (IOException var9) {
+                        throw new IllegalArgumentException("Failed to read Code of Conduct file " + var5, var9);
+                     }
+                  }
+               }
+            } catch (Throwable var10) {
+               if (var2 != null) {
+                  try {
+                     var2.close();
+                  } catch (Throwable var8) {
+                     var10.addSuppressed(var8);
+                  }
+               }
+
+               throw var10;
+            }
+
+            if (var2 != null) {
+               var2.close();
+            }
+
+            return var1.build();
+         } catch (IOException var11) {
+            throw new IllegalArgumentException("Failed to read Code of Conduct folder", var11);
+         }
+      }
    }
 
    public boolean initServer() throws IOException {
@@ -160,7 +218,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       }
 
       if (this.convertOldUsers()) {
-         this.nameToIdCache().save();
+         this.services.nameToIdCache().save();
       }
 
       if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
@@ -170,7 +228,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.debugSampleSubscriptionTracker = new DebugSampleSubscriptionTracker(this.getPlayerList());
          this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSampleSubscriptionTracker, RemoteDebugSampleType.TICK_TIME);
          long var4 = Util.getNanos();
-         ResolvableProfile.setupResolver(this.services, this);
          this.services.nameToIdCache().resolveOfflineUsers(!this.usesAuthentication());
          LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
          this.loadLevel();
@@ -505,7 +562,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    public void stopServer() {
       super.stopServer();
       Util.shutdownExecutors();
-      ResolvableProfile.clearResolver();
    }
 
    public boolean isSingleplayerOwner(NameAndId var1) {
@@ -583,6 +639,10 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
             return Optional.empty();
          }
       }
+   }
+
+   public Map<String, String> getCodeOfConducts() {
+      return this.codeOfConductTexts;
    }
 
    // $FF: synthetic method

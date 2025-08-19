@@ -1,10 +1,5 @@
 package com.mojang.blaze3d.font;
 
-import javax.annotation.Nullable;
-import net.minecraft.client.gui.font.GlyphStitcher;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
-
 public interface GlyphInfo {
    float getAdvance();
 
@@ -20,14 +15,7 @@ public interface GlyphInfo {
       return 1.0F;
    }
 
-   public interface EmptyStitched extends Stitched {
-      default BakedGlyph bake(GlyphStitcher var1) {
-         return EmptyGlyph.INSTANCE;
-      }
-   }
-
-   public interface Stitched extends GlyphInfo {
-      @Nullable
-      BakedGlyph bake(GlyphStitcher var1);
+   static GlyphInfo simple(float var0) {
+      return () -> var0;
    }
 }

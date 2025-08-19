@@ -129,7 +129,7 @@ public class TitleScreen extends Screen {
 
    private int createTestWorldButton(int var1, int var2) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (var1x) -> CreateWorldScreen.testWorld(this.minecraft, this)).bounds(this.width / 2 - 100, var1 += var2, 200, 20).build());
+         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (var1x) -> CreateWorldScreen.testWorld(this.minecraft, () -> this.minecraft.setScreen(this))).bounds(this.width / 2 - 100, var1 += var2, 200, 20).build());
       }
 
       return var1;
@@ -283,5 +283,9 @@ public class TitleScreen extends Screen {
       }
 
       this.minecraft.setScreen(this);
+   }
+
+   public boolean canInterruptWithAnotherScreen() {
+      return true;
    }
 }

@@ -24,6 +24,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
+import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.particle.FireworkParticles;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -261,8 +262,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
       if (this.endFlashState != null) {
          this.endFlashState.tick(this.getGameTime());
-         if (this.endFlashState.shouldProduceSoundThisTick()) {
-            this.minecraft.getSoundManager().play(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()));
+         if (this.endFlashState.flashStartedThisTick() && !(this.minecraft.screen instanceof WinScreen)) {
+            this.minecraft.getSoundManager().playDelayed(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()), 30);
          }
       }
 

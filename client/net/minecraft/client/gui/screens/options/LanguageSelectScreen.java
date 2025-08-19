@@ -97,11 +97,11 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             this.language = var3.toComponent();
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
             Font var10001 = LanguageSelectScreen.this.font;
             Component var10002 = this.language;
             int var10003 = LanguageSelectionList.this.width / 2;
-            int var10004 = var3 + var6 / 2;
+            int var10004 = this.getContentYMiddle();
             Objects.requireNonNull(LanguageSelectScreen.this.font);
             var1.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
          }

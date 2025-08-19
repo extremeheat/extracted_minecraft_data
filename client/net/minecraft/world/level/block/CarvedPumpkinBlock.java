@@ -91,7 +91,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
          if (var6 != null) {
             spawnGolemInWorld(var1, var8, var6, var8.getBlock(0, 0, 0).getPos());
             this.replaceCopperBlockWithChest(var1, var8);
-            var6.spawn(var1, this.getWeatherStateFromPattern(var8));
+            var6.spawn(this.getWeatherStateFromPattern(var8));
          }
       }
 

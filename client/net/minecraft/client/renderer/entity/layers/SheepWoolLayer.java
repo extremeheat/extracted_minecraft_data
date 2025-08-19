@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.SheepRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 
@@ -30,7 +31,7 @@ public class SheepWoolLayer extends RenderLayer<SheepRenderState, SheepModel> {
          EntityModel var7 = var4.isBaby ? this.babyModel : this.adultModel;
          if (var4.isInvisible) {
             if (var4.appearsGlowing()) {
-               var2.submitModel(var7, var4, var1, RenderType.outline(SHEEP_WOOL_LOCATION), var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), -16777216, (TextureAtlasSprite)null, var4.outlineColor, 0);
+               var2.submitModel(var7, var4, var1, RenderType.outline(SHEEP_WOOL_LOCATION), var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), -16777216, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
             }
 
          } else {

@@ -5,14 +5,15 @@ import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
 public interface SpecialModelRenderer<T> {
-   void render(@Nullable T var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, boolean var7);
+   void submit(@Nullable T var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7);
 
    void getExtents(Set<Vector3f> var1);
 
@@ -24,11 +25,14 @@ public interface SpecialModelRenderer<T> {
 
       MaterialSet materials();
 
-      public static record Simple(EntityModelSet entityModelSet, MaterialSet materials) implements BakingContext {
-         public Simple(EntityModelSet var1, MaterialSet var2) {
+      PlayerSkinRenderCache playerSkinRenderCache();
+
+      public static record Simple(EntityModelSet entityModelSet, MaterialSet materials, PlayerSkinRenderCache playerSkinRenderCache) implements BakingContext {
+         public Simple(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3) {
             super();
             this.entityModelSet = var1;
             this.materials = var2;
+            this.playerSkinRenderCache = var3;
          }
       }
    }

@@ -33,7 +33,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
    boolean canReport(UUID var1);
 
    public static record Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) implements LoggedChatMessage {
-      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new));
+      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.AUTHLIB_GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new));
       private static final DateTimeFormatter TIME_FORMATTER;
 
       public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {

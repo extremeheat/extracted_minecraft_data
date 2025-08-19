@@ -27,14 +27,11 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.ContainerEventHandler;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -109,19 +106,17 @@ public class PackSelectionScreen extends Screen {
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
       this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
-      this.reload();
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
+      this.reload();
    }
 
    protected void repositionElements() {
       this.layout.arrangeElements();
-      this.availablePackList.updateSize(200, this.layout);
-      this.availablePackList.setX(this.width / 2 - 15 - 200);
-      this.selectedPackList.updateSize(200, this.layout);
-      this.selectedPackList.setX(this.width / 2 + 15);
+      this.availablePackList.updateSizeAndPosition(200, this.layout.getContentHeight(), this.width / 2 - 15 - 200, this.layout.getHeaderHeight());
+      this.selectedPackList.updateSizeAndPosition(200, this.layout.getContentHeight(), this.width / 2 + 15, this.layout.getHeaderHeight());
    }
 
    public void tick() {
@@ -142,30 +137,10 @@ public class PackSelectionScreen extends Screen {
 
    }
 
-   private void populateLists() {
-      this.updateList(this.selectedPackList, this.model.getSelected());
-      this.updateList(this.availablePackList, this.model.getUnselected());
+   private void populateLists(@Nullable PackSelectionModel.EntryBase var1) {
+      this.selectedPackList.updateList(this.model.getSelected(), var1);
+      this.availablePackList.updateList(this.model.getUnselected(), var1);
       this.doneButton.active = !this.selectedPackList.children().isEmpty();
-   }
-
-   private void updateList(TransferableSelectionList var1, Stream<PackSelectionModel.Entry> var2) {
-      var1.children().clear();
-      TransferableSelectionList.PackEntry var3 = (TransferableSelectionList.PackEntry)var1.getSelected();
-      String var4 = var3 == null ? "" : var3.getPackId();
-      var1.setSelected((AbstractSelectionList.Entry)null);
-      var2.forEach((var3x) -> {
-         TransferableSelectionList.PackEntry var4x = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
-         var1.children().add(var4x);
-         if (var3x.getId().equals(var4)) {
-            var1.setSelected(var4x);
-         }
-
-      });
-   }
-
-   public void updateFocus(TransferableSelectionList var1) {
-      TransferableSelectionList var2 = this.selectedPackList == var1 ? this.availablePackList : this.selectedPackList;
-      this.changeFocus(ComponentPath.path((GuiEventListener)var2.getFirstElement(), (ContainerEventHandler[])(var2, this)));
    }
 
    public void clearSelected() {
@@ -175,7 +150,7 @@ public class PackSelectionScreen extends Screen {
 
    private void reload() {
       this.model.findNewPacks();
-      this.populateLists();
+      this.populateLists((PackSelectionModel.EntryBase)null);
       this.ticksToReload = 0L;
       this.packIcons.clear();
    }

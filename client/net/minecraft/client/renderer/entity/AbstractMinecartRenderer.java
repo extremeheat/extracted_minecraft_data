@@ -7,6 +7,7 @@ import net.minecraft.client.model.MinecartModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -61,7 +62,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       }
 
       var2.scale(-1.0F, -1.0F, 1.0F);
-      var3.submitModel(this.model, var1, var2, this.model.renderType(MINECART_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+      var3.submitModel(this.model, var1, var2, this.model.renderType(MINECART_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
    }
 
@@ -153,7 +154,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
    }
 
    protected void submitMinecartContents(S var1, BlockState var2, PoseStack var3, SubmitNodeCollector var4, int var5) {
-      var4.submitBlock(var3, var2, var5, OverlayTexture.NO_OVERLAY);
+      var4.submitBlock(var3, var2, var5, OverlayTexture.NO_OVERLAY, var1.outlineColor);
    }
 
    protected AABB getBoundingBoxForCulling(T var1) {

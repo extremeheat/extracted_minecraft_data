@@ -61,7 +61,7 @@ public class IronBarsBlock extends CrossCollisionBlock {
    }
 
    protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
-      if (var2.is(this)) {
+      if (var2.is(this) || var2.is(BlockTags.BARS) && var1.is(BlockTags.BARS)) {
          if (!var3.getAxis().isHorizontal()) {
             return true;
          }

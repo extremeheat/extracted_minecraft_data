@@ -71,7 +71,7 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
       double var21 = var15 + 1.0 + 4.0 * var10;
       double var23 = var17 + 1.0 + 4.0 * var10;
       double var25 = var19 + 1.0 + 4.0 * var10;
-      ShapeRenderer.renderLineBox(var2, var9.getBuffer(RenderType.lines()), var15, var17, var19, var21, var23, var25, var12, var13, var14, 0.4F);
+      ShapeRenderer.renderLineBox(var2.last(), var9.getBuffer(RenderType.lines()), var15, var17, var19, var21, var23, var25, var12, var13, var14, 0.4F);
       DebugRenderer.renderVoxelShape(var2, var9.getBuffer(RenderType.lines()), this.minecraft.level.getBlockState(var1).getCollisionShape(this.minecraft.level, var1, CollisionContext.empty()).move((Vec3i)var1), -var3, -var5, -var7, var12, var13, var14, 1.0F, false);
    }
 }

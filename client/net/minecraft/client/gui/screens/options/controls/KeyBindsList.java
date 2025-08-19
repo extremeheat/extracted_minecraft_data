@@ -2,24 +2,19 @@ package net.minecraft.client.gui.screens.options.controls;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -77,43 +72,28 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
    }
 
    public class CategoryEntry extends Entry {
-      final Component name;
-      private final int width;
+      private final FocusableTextWidget categoryName;
 
       public CategoryEntry(final Component var2) {
          super();
-         this.name = var2;
-         this.width = KeyBindsList.this.minecraft.font.width((FormattedText)this.name);
+         this.categoryName = new FocusableTextWidget(KeyBindsList.this.getRowWidth(), var2, KeyBindsList.this.minecraft.font, false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         Font var10001 = KeyBindsList.this.minecraft.font;
-         Component var10002 = this.name;
-         int var10003 = KeyBindsList.this.width / 2 - this.width / 2;
-         int var10004 = var3 + var6;
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         FocusableTextWidget var10000 = this.categoryName;
+         int var10001 = KeyBindsList.this.width / 2 - this.categoryName.getWidth() / 2;
+         int var10002 = this.getContentBottom();
          Objects.requireNonNull(KeyBindsList.this.minecraft.font);
-         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 - 1, -1);
-      }
-
-      @Nullable
-      public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-         return null;
+         var10000.setPosition(var10001, var10002 - 9 - 1);
+         this.categoryName.render(var1, var2, var3, var5);
       }
 
       public List<? extends GuiEventListener> children() {
-         return Collections.emptyList();
+         return List.of(this.categoryName);
       }
 
       public List<? extends NarratableEntry> narratables() {
-         return ImmutableList.of(new NarratableEntry() {
-            public NarratableEntry.NarrationPriority narrationPriority() {
-               return NarratableEntry.NarrationPriority.HOVERED;
-            }
-
-            public void updateNarration(NarrationElementOutput var1) {
-               var1.add(NarratedElementType.TITLE, CategoryEntry.this.name);
-            }
-         });
+         return List.of(this.categoryName);
       }
 
       protected void refreshEntry() {
@@ -144,23 +124,24 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.refreshEntry();
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
-         int var12 = var3 - 2;
-         this.resetButton.setPosition(var11, var12);
-         this.resetButton.render(var1, var7, var8, var10);
-         int var13 = var11 - 5 - this.changeButton.getWidth();
-         this.changeButton.setPosition(var13, var12);
-         this.changeButton.render(var1, var7, var8, var10);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         int var6 = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
+         int var7 = this.getContentY() - 2;
+         this.resetButton.setPosition(var6, var7);
+         this.resetButton.render(var1, var2, var3, var5);
+         int var8 = var6 - 5 - this.changeButton.getWidth();
+         this.changeButton.setPosition(var8, var7);
+         this.changeButton.render(var1, var2, var3, var5);
          Font var10001 = KeyBindsList.this.minecraft.font;
          Component var10002 = this.name;
-         int var10004 = var3 + var6 / 2;
+         int var10003 = this.getContentX();
+         int var10004 = this.getContentYMiddle();
          Objects.requireNonNull(KeyBindsList.this.minecraft.font);
-         var1.drawString(var10001, (Component)var10002, var4, var10004 - 9 / 2, -1);
+         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
          if (this.hasCollision) {
-            boolean var14 = true;
-            int var15 = this.changeButton.getX() - 6;
-            var1.fill(var15, var3 - 1, var15 + 3, var3 + var6, -65536);
+            boolean var9 = true;
+            int var10 = this.changeButton.getX() - 6;
+            var1.fill(var10, this.getContentY() - 1, var10 + 3, this.getContentBottom(), -65536);
          }
 
       }

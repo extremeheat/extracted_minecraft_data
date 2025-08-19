@@ -245,7 +245,6 @@ public final class ItemStack implements DataComponentHolder {
       this.item = var1.asItem();
       this.count = var2;
       this.components = var3;
-      this.getItem().verifyComponentsAfterLoad(this);
    }
 
    private ItemStack(@Nullable Void var1) {
@@ -743,19 +742,16 @@ public final class ItemStack implements DataComponentHolder {
       if (var3.isPresent()) {
          LOGGER.error("Failed to apply component patch '{}' to item: '{}'", var1, ((DataResult.Error)var3.get()).message());
          this.components.restorePatch(var2);
-      } else {
-         this.getItem().verifyComponentsAfterLoad(this);
       }
+
    }
 
    public void applyComponents(DataComponentPatch var1) {
       this.components.applyPatch(var1);
-      this.getItem().verifyComponentsAfterLoad(this);
    }
 
    public void applyComponents(DataComponentMap var1) {
       this.components.setAll(var1);
-      this.getItem().verifyComponentsAfterLoad(this);
    }
 
    public Component getHoverName() {
@@ -836,6 +832,7 @@ public final class ItemStack implements DataComponentHolder {
       this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.DYED_COLOR, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.PROFILE, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.LORE, var1, var2, var5, var4);
       this.addAttributeTooltips(var5, var2, var3);
       if (this.has(DataComponents.UNBREAKABLE) && var2.shows(DataComponents.UNBREAKABLE)) {

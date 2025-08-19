@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.feature;
 import java.util.Comparator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.network.chat.Component;
 
@@ -11,7 +12,7 @@ public class NameTagFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeStorage var1, MultiBufferSource.BufferSource var2, Font var3) {
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, Font var3) {
       var1.getNameTagSubmitsSeethrough().sort(Comparator.comparing(SubmitNodeStorage.NameTagSubmit::distanceToCameraSq).reversed());
 
       for(SubmitNodeStorage.NameTagSubmit var5 : var1.getNameTagSubmitsSeethrough()) {

@@ -71,7 +71,7 @@ public class MapRenderer {
                var2.translate((float)var8.x / 2.0F + 64.0F - var11 * var12 / 2.0F, (float)var8.y / 2.0F + 64.0F + 4.0F, -0.025F);
                var2.scale(var12, var12, -1.0F);
                var2.translate(0.0F, 0.0F, 0.1F);
-               var3.submitText(var2, 0.0F, 0.0F, var8.name.getVisualOrderText(), false, Font.DisplayMode.NORMAL, var5, -1, -2147483648);
+               var3.order(1).submitText(var2, 0.0F, 0.0F, var8.name.getVisualOrderText(), false, Font.DisplayMode.NORMAL, var5, -1, -2147483648, 0);
                var2.popPose();
             }
 

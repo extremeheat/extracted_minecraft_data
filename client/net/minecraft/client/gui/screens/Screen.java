@@ -731,6 +731,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return false;
    }
 
+   public boolean canInterruptWithAnotherScreen() {
+      return this.shouldCloseOnEsc();
+   }
+
    public ScreenRectangle getRectangle() {
       return new ScreenRectangle(0, 0, this.width, this.height);
    }

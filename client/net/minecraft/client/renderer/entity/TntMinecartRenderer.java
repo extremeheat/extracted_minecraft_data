@@ -26,18 +26,18 @@ public class TntMinecartRenderer extends AbstractMinecartRenderer<MinecartTNT, M
          var3.scale(var8, var8, var8);
       }
 
-      submitWhiteSolidBlock(var2, var3, var4, var5, var6 > -1.0F && (int)var6 / 5 % 2 == 0);
+      submitWhiteSolidBlock(var2, var3, var4, var5, var6 > -1.0F && (int)var6 / 5 % 2 == 0, var1.outlineColor);
    }
 
-   public static void submitWhiteSolidBlock(BlockState var0, PoseStack var1, SubmitNodeCollector var2, int var3, boolean var4) {
-      int var5;
+   public static void submitWhiteSolidBlock(BlockState var0, PoseStack var1, SubmitNodeCollector var2, int var3, boolean var4, int var5) {
+      int var6;
       if (var4) {
-         var5 = OverlayTexture.pack(OverlayTexture.u(1.0F), 10);
+         var6 = OverlayTexture.pack(OverlayTexture.u(1.0F), 10);
       } else {
-         var5 = OverlayTexture.NO_OVERLAY;
+         var6 = OverlayTexture.NO_OVERLAY;
       }
 
-      var2.submitBlock(var1, var0, var3, var5);
+      var2.submitBlock(var1, var0, var3, var6, var5);
    }
 
    public MinecartTntRenderState createRenderState() {

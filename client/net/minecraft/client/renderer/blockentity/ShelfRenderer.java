@@ -3,8 +3,10 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.HashCommon;
-import net.minecraft.client.renderer.MultiBufferSource;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.ItemOwner;
@@ -26,24 +28,24 @@ public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity> {
       this.itemRenderer = var1.itemRenderer();
    }
 
-   public void render(ShelfBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      Direction var8 = (Direction)var1.getBlockState().getValue(ShelfBlock.FACING);
-      NonNullList var9 = var1.getItems();
-      int var10 = HashCommon.long2int(var1.getBlockPos().asLong());
-      float var11 = var8.getAxis().isHorizontal() ? -var8.toYRot() : 180.0F;
+   public void submit(ShelfBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      Direction var9 = (Direction)var1.getBlockState().getValue(ShelfBlock.FACING);
+      NonNullList var10 = var1.getItems();
+      int var11 = HashCommon.long2int(var1.getBlockPos().asLong());
+      float var12 = var9.getAxis().isHorizontal() ? -var9.toYRot() : 180.0F;
 
-      for(int var12 = 0; var12 < var9.size(); ++var12) {
-         ItemStack var13 = (ItemStack)var9.get(var12);
-         if (!var13.isEmpty()) {
-            this.renderItem(var1, var3, var4, var5, var6, var12, var11, var13, var10);
+      for(int var13 = 0; var13 < var10.size(); ++var13) {
+         ItemStack var14 = (ItemStack)var10.get(var13);
+         if (!var14.isEmpty()) {
+            this.submitItem(var1, var3, var8, var4, var5, var13, var12, var14, var11);
          }
       }
 
    }
 
-   private void renderItem(ShelfBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, int var6, float var7, ItemStack var8, int var9) {
+   private void submitItem(ShelfBlockEntity var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, int var6, float var7, ItemStack var8, int var9) {
       float var10 = (float)(var6 - 1) * 0.3125F;
-      Boolean var11 = (Boolean)var1.getBlockState().getValueOrElse(ShelfBlock.ALIGN_ITEMS_TO_BOTTOM, false);
+      boolean var11 = var1.getAlignItemsToBottom();
       Vec3 var12 = new Vec3((double)var10, var11 ? -0.125 : 0.0, -0.25);
       var2.pushPose();
       var2.translate(0.5F, 0.5F, 0.5F);
@@ -52,10 +54,10 @@ public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity> {
       var2.scale(0.25F, 0.25F, 0.25F);
       if (!var11) {
          AABB var13 = this.itemRenderer.getBoundingBox(var8, ItemDisplayContext.ON_SHELF, var1.getLevel(), var1, var9 + var6);
-         var2.translate(0.0, -(var13.minY + var13.maxY) / 2.0, 0.0);
+         var2.translate(0.0, -(var13.maxY - var13.minY) / 2.0, 0.0);
       }
 
-      this.itemRenderer.renderStatic(ItemOwner.offsetFromOwner(var1, var12.yRot(var7 * 0.017453292F)), var8, ItemDisplayContext.ON_SHELF, var2, var3, var1.getLevel(), var4, var5, var9 + var6);
+      this.itemRenderer.renderUpwardsFrom(ItemOwner.offsetFromOwner(var1, var12.yRot(var7 * 0.017453292F)), var8, ItemDisplayContext.ON_SHELF, var2, var3, var1.getLevel(), var4, var5, var9 + var6);
       var2.popPose();
    }
 }

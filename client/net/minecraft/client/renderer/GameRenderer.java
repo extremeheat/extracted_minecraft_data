@@ -156,8 +156,8 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       MultiBufferSource.BufferSource var5 = var3.bufferSource();
       AtlasManager var6 = var1.getAtlasManager();
       this.submitNodeStorage = new SubmitNodeStorage();
-      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.submitNodeStorage, var4, var5, var6, var3.outlineBufferSource(), var1.font);
-      this.guiRenderer = new GuiRenderer(this.guiRenderState, var5, List.of(new GuiEntityRenderer(var5, var1.getEntityRenderDispatcher(), this.featureRenderDispatcher), new GuiSkinRenderer(var5), new GuiBookModelRenderer(var5), new GuiBannerResultRenderer(var5, var6), new GuiSignRenderer(var5, var6), new GuiProfilerChartRenderer(var5)));
+      this.featureRenderDispatcher = new FeatureRenderDispatcher(this.submitNodeStorage, var4, var5, var6, var3.outlineBufferSource(), var3.crumblingBufferSource(), var1.font);
+      this.guiRenderer = new GuiRenderer(this.guiRenderState, var5, this.submitNodeStorage, this.featureRenderDispatcher, List.of(new GuiEntityRenderer(var5, var1.getEntityRenderDispatcher()), new GuiSkinRenderer(var5), new GuiBookModelRenderer(var5), new GuiBannerResultRenderer(var5, var6), new GuiSignRenderer(var5, var6), new GuiProfilerChartRenderer(var5)));
       this.screenEffectRenderer = new ScreenEffectRenderer(var1, var6, var5);
    }
 
@@ -470,6 +470,8 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
    private void renderItemInHand(float var1, boolean var2, Matrix4f var3) {
       if (!this.panoramicMode) {
+         this.featureRenderDispatcher.renderAllFeatures();
+         this.renderBuffers.bufferSource().endBatch();
          PoseStack var4 = new PoseStack();
          var4.pushPose();
          var4.mulPose((Matrix4fc)var3.invert(new Matrix4f()));
@@ -482,7 +484,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
          if (this.minecraft.options.getCameraType().isFirstPerson() && !var2 && !this.minecraft.options.hideGui && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
             this.lightTexture.turnOnLightLayer();
-            this.itemInHandRenderer.renderHandsWithItems(var1, var4, this.renderBuffers.bufferSource(), this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var1));
+            this.itemInHandRenderer.renderHandsWithItems(var1, var4, this.minecraft.gameRenderer.getSubmitNodeStorage(), this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var1));
             this.lightTexture.turnOffLightLayer();
          }
 
@@ -746,7 +748,8 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       this.renderItemInHand(var2, var23, var19);
       var4.popPush("screen effects");
       MultiBufferSource.BufferSource var24 = this.renderBuffers.bufferSource();
-      this.screenEffectRenderer.renderScreenEffect(var23, var2);
+      this.screenEffectRenderer.renderScreenEffect(var23, var2, this.submitNodeStorage);
+      this.featureRenderDispatcher.renderAllFeatures();
       var24.endBatch();
       var4.pop();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));

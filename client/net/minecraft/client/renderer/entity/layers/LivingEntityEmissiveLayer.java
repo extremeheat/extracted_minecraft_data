@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -34,7 +35,7 @@ public class LivingEntityEmissiveLayer<S extends LivingEntityRenderState, M exte
          if (!(var7 <= 1.0E-5F)) {
             int var8 = ARGB.white(var7);
             RenderType var9 = (RenderType)this.bufferProvider.apply((ResourceLocation)this.textureProvider.apply(var4));
-            var2.submitModel(this.model, var4, var1, var9, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), var8, (TextureAtlasSprite)null, var4.outlineColor, 1);
+            var2.order(1).submitModel(this.model, var4, var1, var9, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), var8, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          }
       }
    }

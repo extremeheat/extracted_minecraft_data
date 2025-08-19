@@ -93,7 +93,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
          PlayerEntry var6;
          if (var2) {
             var6 = (PlayerEntry)var1.computeIfAbsent(var5.getId(), (var2x) -> {
-               PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().lookupInsecure(var5), true);
+               PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().createLookup(var5, true), true);
                var3.setRemoved(true);
                return var3;
             });

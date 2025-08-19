@@ -36,7 +36,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GlyphSource;
-import net.minecraft.client.gui.font.glyphs.BakeableGlyph;
+import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.AtlasManager;
@@ -392,7 +392,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       @Nullable
       private volatile CachedEntry lastEntry;
       @Nullable
-      private volatile BakeableGlyph whiteGlyph;
+      private volatile EffectGlyph whiteGlyph;
 
       CachedFontProvider(final boolean var2) {
          super();
@@ -442,12 +442,14 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          }
       }
 
-      public BakeableGlyph whiteGlyph() {
-         if (this.whiteGlyph == null) {
-            this.whiteGlyph = FontManager.this.getFontSetRaw(FontDescription.DEFAULT.id()).whiteGlyph();
+      public EffectGlyph effect() {
+         EffectGlyph var1 = this.whiteGlyph;
+         if (var1 == null) {
+            var1 = FontManager.this.getFontSetRaw(FontDescription.DEFAULT.id()).whiteGlyph();
+            this.whiteGlyph = var1;
          }
 
-         return (BakeableGlyph)Objects.requireNonNull(this.whiteGlyph);
+         return var1;
       }
 
       static record CachedEntry(FontDescription description, GlyphSource source) {

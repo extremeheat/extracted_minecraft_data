@@ -22,10 +22,10 @@ public class PackSelectionModel {
    final List<Pack> selected;
    final List<Pack> unselected;
    final Function<Pack, ResourceLocation> iconGetter;
-   final Runnable onListChanged;
+   final Consumer<EntryBase> onListChanged;
    private final Consumer<PackRepository> output;
 
-   public PackSelectionModel(Runnable var1, Function<Pack, ResourceLocation> var2, PackRepository var3, Consumer<PackRepository> var4) {
+   public PackSelectionModel(Consumer<EntryBase> var1, Function<Pack, ResourceLocation> var2, PackRepository var3, Consumer<PackRepository> var4) {
       super();
       this.onListChanged = var1;
       this.iconGetter = var2;
@@ -106,7 +106,7 @@ public class PackSelectionModel {
       boolean canMoveDown();
    }
 
-   abstract class EntryBase implements Entry {
+   public abstract class EntryBase implements Entry {
       private final Pack pack;
 
       public EntryBase(final Pack var2) {
@@ -153,7 +153,7 @@ public class PackSelectionModel {
       protected void toggleSelection() {
          this.getSelfList().remove(this.pack);
          this.pack.getDefaultPosition().insert(this.getOtherList(), this.pack, Pack::selectionConfig, true);
-         PackSelectionModel.this.onListChanged.run();
+         PackSelectionModel.this.onListChanged.accept(this);
          PackSelectionModel.this.updateRepoSelectedList();
          this.updateHighContrastOptionInstance();
       }
@@ -171,7 +171,7 @@ public class PackSelectionModel {
          int var3 = var2.indexOf(this.pack);
          var2.remove(var3);
          var2.add(var3 + var1, this.pack);
-         PackSelectionModel.this.onListChanged.run();
+         PackSelectionModel.this.onListChanged.accept(this);
       }
 
       public boolean canMoveUp() {

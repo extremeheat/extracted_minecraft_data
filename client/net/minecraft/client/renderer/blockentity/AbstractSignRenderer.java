@@ -1,21 +1,24 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.SignBlock;
@@ -50,35 +53,34 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
 
    protected abstract void translateSign(PoseStack var1, float var2, BlockState var3);
 
-   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      BlockState var8 = var1.getBlockState();
-      SignBlock var9 = (SignBlock)var8.getBlock();
-      Model.Simple var10 = this.getSignModel(var8, var9.type());
-      this.renderSignWithText(var1, var3, var4, var5, var6, var8, var9, var9.type(), var10);
+   public void submit(SignBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      BlockState var9 = var1.getBlockState();
+      SignBlock var10 = (SignBlock)var9.getBlock();
+      Model.Simple var11 = this.getSignModel(var9, var10.type());
+      this.submitSignWithText(var1, var3, var4, var5, var9, var10, var10.type(), var11, var7, var8);
    }
 
-   private void renderSignWithText(SignBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, BlockState var6, SignBlock var7, WoodType var8, Model.Simple var9) {
+   private void submitSignWithText(SignBlockEntity var1, PoseStack var2, int var3, int var4, BlockState var5, SignBlock var6, WoodType var7, Model.Simple var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9, SubmitNodeCollector var10) {
       var2.pushPose();
-      this.translateSign(var2, -var7.getYRotationDegrees(var6), var6);
-      this.renderSign(var2, var3, var4, var5, var8, var9);
-      this.renderSignText(var1.getBlockPos(), var1.getFrontText(), var2, var3, var4, var1.getTextLineHeight(), var1.getMaxTextLineWidth(), true);
-      this.renderSignText(var1.getBlockPos(), var1.getBackText(), var2, var3, var4, var1.getTextLineHeight(), var1.getMaxTextLineWidth(), false);
+      this.translateSign(var2, -var6.getYRotationDegrees(var5), var5);
+      this.submitSign(var2, var3, var4, var7, var8, var9, var10);
+      this.submitSignText(var1.getBlockPos(), var1.getFrontText(), var2, var10, var3, var1.getTextLineHeight(), var1.getMaxTextLineWidth(), true);
+      this.submitSignText(var1.getBlockPos(), var1.getBackText(), var2, var10, var3, var1.getTextLineHeight(), var1.getMaxTextLineWidth(), false);
       var2.popPose();
    }
 
-   protected void renderSign(PoseStack var1, MultiBufferSource var2, int var3, int var4, WoodType var5, Model.Simple var6) {
+   protected void submitSign(PoseStack var1, int var2, int var3, WoodType var4, Model.Simple var5, @Nullable ModelFeatureRenderer.CrumblingOverlay var6, SubmitNodeCollector var7) {
       var1.pushPose();
-      float var7 = this.getSignModelRenderScale();
-      var1.scale(var7, -var7, -var7);
-      Material var8 = this.getSignMaterial(var5);
-      MaterialSet var10001 = this.materials;
-      Objects.requireNonNull(var6);
-      VertexConsumer var9 = var8.buffer(var10001, var2, var6::renderType);
-      var6.renderToBuffer(var1, var9, var3, var4);
+      float var8 = this.getSignModelRenderScale();
+      var1.scale(var8, -var8, -var8);
+      Material var9 = this.getSignMaterial(var4);
+      Objects.requireNonNull(var5);
+      RenderType var10 = var9.renderType(var5::renderType);
+      var7.submitModel(var5, Unit.INSTANCE, var1, var10, var2, var3, -1, this.materials.get(var9), 0, var6);
       var1.popPose();
    }
 
-   private void renderSignText(BlockPos var1, SignText var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, int var7, boolean var8) {
+   private void submitSignText(BlockPos var1, SignText var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, int var7, boolean var8) {
       var3.pushPose();
       this.translateSignText(var3, var8, this.getTextOffset());
       int var9 = getDarkColor(var2);
@@ -103,11 +105,7 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
       for(int var15 = 0; var15 < 4; ++var15) {
          FormattedCharSequence var16 = var11[var15];
          float var17 = (float)(-this.font.width(var16) / 2);
-         if (var13) {
-            this.font.drawInBatch8xOutline(var16, var17, (float)(var15 * var6 - var10), var12, var9, var3.last().pose(), var4, var14);
-         } else {
-            this.font.drawInBatch((FormattedCharSequence)var16, var17, (float)(var15 * var6 - var10), var12, false, var3.last().pose(), var4, Font.DisplayMode.POLYGON_OFFSET, 0, var14);
-         }
+         var4.submitText(var3, var17, (float)(var15 * var6 - var10), var16, false, Font.DisplayMode.POLYGON_OFFSET, var14, var12, 0, var13 ? var9 : 0);
       }
 
       var3.popPose();

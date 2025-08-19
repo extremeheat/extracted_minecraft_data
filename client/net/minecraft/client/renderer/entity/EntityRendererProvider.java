@@ -5,6 +5,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -32,8 +33,9 @@ public interface EntityRendererProvider<T extends Entity> {
       private final Font font;
       private final EquipmentLayerRenderer equipmentRenderer;
       private final AtlasManager atlasManager;
+      private final PlayerSkinRenderCache playerSkinRenderCache;
 
-      public Context(EntityRenderDispatcher var1, ItemModelResolver var2, MapRenderer var3, BlockRenderDispatcher var4, ResourceManager var5, EntityModelSet var6, EquipmentAssetManager var7, AtlasManager var8, Font var9) {
+      public Context(EntityRenderDispatcher var1, ItemModelResolver var2, MapRenderer var3, BlockRenderDispatcher var4, ResourceManager var5, EntityModelSet var6, EquipmentAssetManager var7, AtlasManager var8, Font var9, PlayerSkinRenderCache var10) {
          super();
          this.entityRenderDispatcher = var1;
          this.itemModelResolver = var2;
@@ -44,6 +46,7 @@ public interface EntityRendererProvider<T extends Entity> {
          this.equipmentAssets = var7;
          this.font = var9;
          this.atlasManager = var8;
+         this.playerSkinRenderCache = var10;
          this.equipmentRenderer = new EquipmentLayerRenderer(var7, var8.getAtlasOrThrow(AtlasIds.ARMOR_TRIMS));
       }
 
@@ -93,6 +96,10 @@ public interface EntityRendererProvider<T extends Entity> {
 
       public Font getFont() {
          return this.font;
+      }
+
+      public PlayerSkinRenderCache getPlayerSkinRenderCache() {
+         return this.playerSkinRenderCache;
       }
    }
 }

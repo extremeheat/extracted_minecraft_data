@@ -21,10 +21,6 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
       super(var1, var2, var3, var4, var5);
    }
 
-   public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
-      super(var1, var2, var3, var4, var5, var6);
-   }
-
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.getItemCount() == 0) {
@@ -89,7 +85,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
       return this.isFocused() ? NarratableEntry.NarrationPriority.FOCUSED : super.narrationPriority();
    }
 
-   protected boolean isSelectedItem(int var1) {
+   protected boolean entriesCanBeSelected() {
       return false;
    }
 

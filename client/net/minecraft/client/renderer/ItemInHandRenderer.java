@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -12,6 +11,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
@@ -30,7 +30,6 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import org.joml.Matrix4f;
 import org.joml.Quaternionfc;
 
 public class ItemInHandRenderer {
@@ -128,9 +127,11 @@ public class ItemInHandRenderer {
       this.itemModelResolver = var4;
    }
 
-   public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, MultiBufferSource var5, int var6) {
+   public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, SubmitNodeCollector var5, int var6) {
       if (!var2.isEmpty()) {
-         this.itemRenderer.renderStatic(var1, var2, var3, var4, var5, var1.level(), var6, OverlayTexture.NO_OVERLAY, var1.getId() + var3.ordinal());
+         ItemStackRenderState var7 = new ItemStackRenderState();
+         this.itemModelResolver.updateForTopItem(var7, var2, var3, var1.level(), var1, var1.getId() + var3.ordinal());
+         var7.submit(var4, var5, var6, OverlayTexture.NO_OVERLAY, 0);
       }
    }
 
@@ -141,7 +142,7 @@ public class ItemInHandRenderer {
       return var2;
    }
 
-   private void renderMapHand(PoseStack var1, MultiBufferSource var2, int var3, HumanoidArm var4) {
+   private void renderMapHand(PoseStack var1, SubmitNodeCollector var2, int var3, HumanoidArm var4) {
       PlayerRenderer var5 = (PlayerRenderer)this.entityRenderDispatcher.getRenderer(this.minecraft.player);
       var1.pushPose();
       float var6 = var4 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
@@ -159,7 +160,7 @@ public class ItemInHandRenderer {
       var1.popPose();
    }
 
-   private void renderOneHandedMap(PoseStack var1, MultiBufferSource var2, int var3, float var4, HumanoidArm var5, float var6, ItemStack var7) {
+   private void renderOneHandedMap(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, HumanoidArm var5, float var6, ItemStack var7) {
       float var8 = var5 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
       var1.translate(var8 * 0.125F, -0.125F, 0.0F);
       if (!this.minecraft.player.isInvisible()) {
@@ -183,7 +184,7 @@ public class ItemInHandRenderer {
       var1.popPose();
    }
 
-   private void renderTwoHandedMap(PoseStack var1, MultiBufferSource var2, int var3, float var4, float var5, float var6) {
+   private void renderTwoHandedMap(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, float var6) {
       float var7 = Mth.sqrt(var6);
       float var8 = -0.2F * Mth.sin(var6 * 3.1415927F);
       float var9 = -0.4F * Mth.sin(var7 * 3.1415927F);
@@ -205,7 +206,7 @@ public class ItemInHandRenderer {
       this.renderMap(var1, var2, var3, this.mainHandItem);
    }
 
-   private void renderMap(PoseStack var1, MultiBufferSource var2, int var3, ItemStack var4) {
+   private void renderMap(PoseStack var1, SubmitNodeCollector var2, int var3, ItemStack var4) {
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
       var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
       var1.scale(0.38F, 0.38F, 0.38F);
@@ -213,21 +214,22 @@ public class ItemInHandRenderer {
       var1.scale(0.0078125F, 0.0078125F, 0.0078125F);
       MapId var5 = (MapId)var4.get(DataComponents.MAP_ID);
       MapItemSavedData var6 = MapItem.getSavedData((MapId)var5, this.minecraft.level);
-      VertexConsumer var7 = var2.getBuffer(var6 == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD);
-      Matrix4f var8 = var1.last().pose();
-      var7.addVertex(var8, -7.0F, 135.0F, 0.0F).setColor(-1).setUv(0.0F, 1.0F).setLight(var3);
-      var7.addVertex(var8, 135.0F, 135.0F, 0.0F).setColor(-1).setUv(1.0F, 1.0F).setLight(var3);
-      var7.addVertex(var8, 135.0F, -7.0F, 0.0F).setColor(-1).setUv(1.0F, 0.0F).setLight(var3);
-      var7.addVertex(var8, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(var3);
+      RenderType var7 = var6 == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD;
+      var2.submitCustomGeometry(var1, var7, (var1x, var2x) -> {
+         var2x.addVertex(var1x, -7.0F, 135.0F, 0.0F).setColor(-1).setUv(0.0F, 1.0F).setLight(var3);
+         var2x.addVertex(var1x, 135.0F, 135.0F, 0.0F).setColor(-1).setUv(1.0F, 1.0F).setLight(var3);
+         var2x.addVertex(var1x, 135.0F, -7.0F, 0.0F).setColor(-1).setUv(1.0F, 0.0F).setLight(var3);
+         var2x.addVertex(var1x, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(var3);
+      });
       if (var6 != null) {
-         MapRenderer var9 = this.minecraft.getMapRenderer();
-         var9.extractRenderState(var5, var6, this.mapRenderState);
-         var9.render(this.mapRenderState, var1, this.minecraft.gameRenderer.getSubmitNodeStorage(), false, var3);
+         MapRenderer var8 = this.minecraft.getMapRenderer();
+         var8.extractRenderState(var5, var6, this.mapRenderState);
+         var8.render(this.mapRenderState, var1, var2, false, var3);
       }
 
    }
 
-   private void renderPlayerArm(PoseStack var1, MultiBufferSource var2, int var3, float var4, float var5, HumanoidArm var6) {
+   private void renderPlayerArm(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, HumanoidArm var6) {
       boolean var7 = var6 != HumanoidArm.LEFT;
       float var8 = var7 ? 1.0F : -1.0F;
       float var9 = Mth.sqrt(var5);
@@ -314,7 +316,7 @@ public class ItemInHandRenderer {
       var1.translate((float)var4 * 0.56F, -0.52F + var3 * -0.6F, -0.72F);
    }
 
-   public void renderHandsWithItems(float var1, PoseStack var2, MultiBufferSource.BufferSource var3, LocalPlayer var4, int var5) {
+   public void renderHandsWithItems(float var1, PoseStack var2, SubmitNodeCollector var3, LocalPlayer var4, int var5) {
       float var6 = var4.getAttackAnim(var1);
       InteractionHand var7 = (InteractionHand)MoreObjects.firstNonNull(var4.swingingArm, InteractionHand.MAIN_HAND);
       float var8 = var4.getXRot(var1);
@@ -336,7 +338,7 @@ public class ItemInHandRenderer {
       }
 
       this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-      var3.endBatch();
+      this.minecraft.renderBuffers().bufferSource().endBatch();
    }
 
    @VisibleForTesting
@@ -368,7 +370,7 @@ public class ItemInHandRenderer {
       return var0.is(Items.CROSSBOW) && CrossbowItem.isCharged(var0);
    }
 
-   private void renderArmWithItem(AbstractClientPlayer var1, float var2, float var3, InteractionHand var4, float var5, ItemStack var6, float var7, PoseStack var8, MultiBufferSource var9, int var10) {
+   private void renderArmWithItem(AbstractClientPlayer var1, float var2, float var3, InteractionHand var4, float var5, ItemStack var6, float var7, PoseStack var8, SubmitNodeCollector var9, int var10) {
       if (!var1.isScoping()) {
          boolean var11 = var4 == InteractionHand.MAIN_HAND;
          HumanoidArm var12 = var11 ? var1.getMainArm() : var1.getMainArm().getOpposite();

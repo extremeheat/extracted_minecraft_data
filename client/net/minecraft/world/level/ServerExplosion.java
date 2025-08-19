@@ -11,17 +11,20 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
@@ -193,12 +196,17 @@ public class ServerExplosion implements Explosion {
                   var13 *= var26;
                   var15 *= var26;
                   var17 *= var26;
-                  Vec3 var36 = new Vec3(var13, var15, var17);
-                  var10.push(var36);
-                  if (var10 instanceof Player) {
-                     Player var29 = (Player)var10;
-                     if (!var29.isSpectator() && (!var29.isCreative() || !var29.getAbilities().flying)) {
-                        this.hitPlayers.put(var29, var36);
+                  Vec3 var37 = new Vec3(var13, var15, var17);
+                  if (var10.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var10 instanceof Projectile) {
+                     Projectile var29 = (Projectile)var10;
+                     var29.deflect((var1x, var2x, var3x) -> var1x.push(var37), this.damageSource.getDirectEntity(), EntityReference.of(this.damageSource.getEntity()), false);
+                  } else {
+                     var10.push(var37);
+                     if (var10 instanceof Player) {
+                        Player var30 = (Player)var10;
+                        if (!var30.isSpectator() && (!var30.isCreative() || !var30.getAbilities().flying)) {
+                           this.hitPlayers.put(var30, var37);
+                        }
                      }
                   }
 

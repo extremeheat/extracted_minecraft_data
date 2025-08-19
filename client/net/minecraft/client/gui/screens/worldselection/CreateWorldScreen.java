@@ -107,8 +107,7 @@ public class CreateWorldScreen extends Screen {
    private boolean recreated;
    private final DirectoryValidator packValidator;
    private final CreateWorldCallback createWorldCallback;
-   @Nullable
-   private final Screen lastScreen;
+   private final Runnable onClose;
    @Nullable
    private Path tempDataPackDir;
    @Nullable
@@ -116,23 +115,23 @@ public class CreateWorldScreen extends Screen {
    @Nullable
    private TabNavigationBar tabNavigationBar;
 
-   public static void openFresh(Minecraft var0, @Nullable Screen var1) {
+   public static void openFresh(Minecraft var0, Runnable var1) {
       openFresh(var0, var1, (var0x, var1x, var2, var3) -> var0x.createNewWorld(var1x, var2));
    }
 
-   public static void openFresh(Minecraft var0, @Nullable Screen var1, CreateWorldCallback var2) {
+   public static void openFresh(Minecraft var0, Runnable var1, CreateWorldCallback var2) {
       WorldCreationContextMapper var3 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings(), var1x, var0x, var2x.dataConfiguration());
       Function var4 = (var0x) -> new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen()));
       openCreateWorldScreen(var0, var1, var4, var3, WorldPresets.NORMAL, var2);
    }
 
-   public static void testWorld(Minecraft var0, @Nullable Screen var1) {
+   public static void testWorld(Minecraft var0, Runnable var1) {
       WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings().options(), var2x.worldGenSettings().dimensions(), var1x, var0x, var2x.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, Set.of(GameRules.RULE_DAYLIGHT, GameRules.RULE_WEATHER_CYCLE, GameRules.RULE_DOMOBSPAWNING), FlatLevelGeneratorPresets.REDSTONE_READY));
       Function var3 = (var0x) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(var0x.datapackWorldgen()));
       openCreateWorldScreen(var0, var1, var3, var2, WorldPresets.FLAT, (var0x, var1x, var2x, var3x) -> var0x.createNewWorld(var1x, var2x));
    }
 
-   private static void openCreateWorldScreen(Minecraft var0, @Nullable Screen var1, Function<WorldLoader.DataLoadContext, WorldGenSettings> var2, WorldCreationContextMapper var3, ResourceKey<WorldPreset> var4, CreateWorldCallback var5) {
+   private static void openCreateWorldScreen(Minecraft var0, Runnable var1, Function<WorldLoader.DataLoadContext, WorldGenSettings> var2, WorldCreationContextMapper var3, ResourceKey<WorldPreset> var4, CreateWorldCallback var5) {
       queueLoadScreen(var0, PREPARING_WORLD_DATA);
       PackRepository var6 = new PackRepository(new RepositorySource[]{new ServerPacksSource(var0.directoryValidator())});
       WorldDataConfiguration var7 = SharedConstants.IS_RUNNING_IN_IDE ? new WorldDataConfiguration(new DataPackConfig(List.of("vanilla", "tests"), List.of()), FeatureFlags.DEFAULT_FLAGS) : WorldDataConfiguration.DEFAULT;
@@ -146,7 +145,7 @@ public class CreateWorldScreen extends Screen {
       var0.setScreen(new CreateWorldScreen(var0, var1, (WorldCreationContext)var9.join(), Optional.of(var4), OptionalLong.empty(), var5));
    }
 
-   public static CreateWorldScreen createFromExisting(Minecraft var0, @Nullable Screen var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4) {
+   public static CreateWorldScreen createFromExisting(Minecraft var0, Runnable var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4) {
       CreateWorldScreen var5 = new CreateWorldScreen(var0, var1, var3, WorldPresets.fromSettings(var3.selectedDimensions()), OptionalLong.of(var3.options().seed()), (var0x, var1x, var2x, var3x) -> var0x.createNewWorld(var1x, var2x));
       var5.recreated = true;
       var5.uiState.setName(var2.levelName());
@@ -165,9 +164,9 @@ public class CreateWorldScreen extends Screen {
       return var5;
    }
 
-   private CreateWorldScreen(Minecraft var1, @Nullable Screen var2, WorldCreationContext var3, Optional<ResourceKey<WorldPreset>> var4, OptionalLong var5, CreateWorldCallback var6) {
+   private CreateWorldScreen(Minecraft var1, Runnable var2, WorldCreationContext var3, Optional<ResourceKey<WorldPreset>> var4, OptionalLong var5, CreateWorldCallback var6) {
       super(Component.translatable("selectWorld.create"));
-      this.lastScreen = var2;
+      this.onClose = var2;
       this.packValidator = var1.directoryValidator();
       this.createWorldCallback = var6;
       this.uiState = new WorldCreationUiState(var1.getLevelSource().getBaseDir(), var3, var4, var5);
@@ -208,7 +207,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    private static void queueLoadScreen(Minecraft var0, Component var1) {
-      var0.forceSetScreen(new GenericMessageScreen(var1));
+      var0.setScreenAndShow(new GenericMessageScreen(var1));
    }
 
    private void onCreate() {
@@ -276,7 +275,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    public void popScreen() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.onClose.run();
       this.removeTempDataPackDir();
    }
 
@@ -346,7 +345,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    private void applyNewPackConfig(PackRepository var1, WorldDataConfiguration var2, Consumer<WorldDataConfiguration> var3) {
-      this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("dataPack.validation.working")));
+      this.minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("dataPack.validation.working")));
       WorldLoader.InitConfig var4 = createDefaultLoadConfig(var1, var2);
       CompletableFuture var10000 = WorldLoader.load(var4, (var1x) -> {
          if (var1x.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).listElements().findAny().isEmpty()) {

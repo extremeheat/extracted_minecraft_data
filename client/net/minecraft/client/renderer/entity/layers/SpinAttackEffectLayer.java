@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
@@ -22,7 +23,7 @@ public class SpinAttackEffectLayer extends RenderLayer<PlayerRenderState, Player
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, PlayerRenderState var4, float var5, float var6) {
       if (var4.isAutoSpinAttack) {
-         var2.submitModel(this.model, var4, var1, this.model.renderType(TEXTURE), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
+         var2.submitModel(this.model, var4, var1, this.model.renderType(TEXTURE), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.feature;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -19,7 +20,7 @@ public class ShadowFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeStorage var1, MultiBufferSource.BufferSource var2) {
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2) {
       VertexConsumer var3 = var2.getBuffer(SHADOW_RENDER_TYPE);
 
       for(SubmitNodeStorage.ShadowSubmit var5 : var1.getShadowSubmits()) {

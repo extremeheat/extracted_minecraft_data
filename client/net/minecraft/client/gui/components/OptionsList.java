@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -80,18 +79,6 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
 
    }
 
-   public Optional<GuiEventListener> getMouseOver(double var1, double var3) {
-      for(Entry var6 : this.children()) {
-         for(GuiEventListener var8 : var6.children()) {
-            if (var8.isMouseOver(var1, var3)) {
-               return Optional.of(var8);
-            }
-         }
-      }
-
-      return Optional.empty();
-   }
-
    protected static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
       private final List<AbstractWidget> children;
       private final Screen screen;
@@ -111,14 +98,14 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
          return var1 == null ? new Entry(ImmutableList.of(var0), var2) : new Entry(ImmutableList.of(var0, var1), var2);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = 0;
-         int var12 = this.screen.width / 2 - 155;
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         int var6 = 0;
+         int var7 = this.screen.width / 2 - 155;
 
-         for(AbstractWidget var14 : this.children) {
-            var14.setPosition(var12 + var11, var3);
-            var14.render(var1, var7, var8, var10);
-            var11 += 160;
+         for(AbstractWidget var9 : this.children) {
+            var9.setPosition(var7 + var6, this.getContentY());
+            var9.render(var1, var2, var3, var5);
+            var6 += 160;
          }
 
       }

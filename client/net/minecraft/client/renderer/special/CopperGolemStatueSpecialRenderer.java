@@ -1,37 +1,35 @@
 package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
-import net.minecraft.client.model.CopperGolemModel;
+import net.minecraft.client.model.CopperGolemStatueModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.WeatheringCopper;
-import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRenderer {
-   private final CopperGolemModel model;
+   private final CopperGolemStatueModel model;
    private final ResourceLocation texture;
 
-   public CopperGolemStatueSpecialRenderer(CopperGolemModel var1, ResourceLocation var2) {
+   public CopperGolemStatueSpecialRenderer(CopperGolemStatueModel var1, ResourceLocation var2) {
       super();
       this.model = var1;
       this.texture = var2;
    }
 
-   public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      VertexConsumer var7 = var3.getBuffer(RenderType.entityCutoutNoCull(this.texture));
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
       this.positionModel(var2);
-      this.model.renderToBuffer(var2, var7, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, Direction.SOUTH, var2, RenderType.entityCutoutNoCull(this.texture), var4, var5, -1, (TextureAtlasSprite)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {
@@ -41,8 +39,8 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
    }
 
    private void positionModel(PoseStack var1) {
-      var1.translate(0.5F, 0.0F, 0.5F);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+      var1.translate(0.5F, 1.5F, 0.5F);
+      var1.scale(-1.0F, -1.0F, 1.0F);
    }
 
    public static record Unbaked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {
@@ -62,7 +60,7 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       }
 
       public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         CopperGolemModel var2 = new CopperGolemModel(var1.entityModelSet().bakeLayer(ModelLayers.COPPER_GOLEM));
+         CopperGolemStatueModel var2 = new CopperGolemStatueModel(var1.entityModelSet().bakeLayer(ModelLayers.COPPER_GOLEM));
          return new CopperGolemStatueSpecialRenderer(var2, this.texture);
       }
    }

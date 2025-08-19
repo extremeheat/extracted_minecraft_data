@@ -32,11 +32,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.util.StringUtil;
 import org.slf4j.Logger;
 
@@ -47,7 +45,6 @@ public class CachedUserNameToIdResolver implements UserNameToIdResolver {
    private boolean resolveOfflineUsers = true;
    private final Map<String, GameProfileInfo> profilesByName = new ConcurrentHashMap();
    private final Map<UUID, GameProfileInfo> profilesByUUID = new ConcurrentHashMap();
-   private final Map<String, CompletableFuture<Optional<NameAndId>>> requests = new ConcurrentHashMap();
    private final GameProfileRepository profileRepository;
    private final Gson gson = (new GsonBuilder()).create();
    private final File file;
@@ -133,18 +130,6 @@ public class CachedUserNameToIdResolver implements UserNameToIdResolver {
       }
 
       return var5;
-   }
-
-   public CompletableFuture<Optional<NameAndId>> getAsync(String var1) {
-      CompletableFuture var2 = (CompletableFuture)this.requests.get(var1);
-      if (var2 != null) {
-         return var2;
-      } else {
-         CompletableFuture var3 = CompletableFuture.supplyAsync(() -> this.get(var1), Util.backgroundExecutor().forName("getProfile"));
-         this.requests.put(var1, var3);
-         var3.whenComplete((var3x, var4) -> this.requests.remove(var1, var3));
-         return var3;
-      }
    }
 
    public Optional<NameAndId> get(UUID var1) {

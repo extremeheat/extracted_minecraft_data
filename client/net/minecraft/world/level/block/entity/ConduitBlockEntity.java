@@ -81,7 +81,7 @@ public class ConduitBlockEntity extends BlockEntity {
          updateHunting(var3, var6);
       }
 
-      LivingEntity var7 = (LivingEntity)EntityReference.get(var3.destroyTarget, var0, LivingEntity.class);
+      LivingEntity var7 = EntityReference.getLivingEntity(var3.destroyTarget, var0);
       animationTick(var0, var1, var6, var7, var3.tickCount);
       if (var3.isActive()) {
          ++var3.activeRotation;
@@ -182,7 +182,7 @@ public class ConduitBlockEntity extends BlockEntity {
 
    private static void updateAndAttackTarget(ServerLevel var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3, boolean var4) {
       EntityReference var5 = updateDestroyTarget(var3.destroyTarget, var0, var1, var4);
-      LivingEntity var6 = (LivingEntity)EntityReference.get(var5, var0, LivingEntity.class);
+      LivingEntity var6 = EntityReference.getLivingEntity(var5, var0);
       if (var6 != null) {
          var0.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
          var6.hurtServer(var0, var0.damageSources().magic(), 4.0F);
@@ -202,7 +202,7 @@ public class ConduitBlockEntity extends BlockEntity {
       } else if (var0 == null) {
          return selectNewTarget(var1, var2);
       } else {
-         LivingEntity var4 = (LivingEntity)EntityReference.get(var0, var1, LivingEntity.class);
+         LivingEntity var4 = EntityReference.getLivingEntity(var0, var1);
          return var4 != null && var4.isAlive() && var2.closerThan(var4.blockPosition(), 8.0) ? var0 : null;
       }
    }
@@ -210,7 +210,7 @@ public class ConduitBlockEntity extends BlockEntity {
    @Nullable
    private static EntityReference<LivingEntity> selectNewTarget(ServerLevel var0, BlockPos var1) {
       List var2 = var0.getEntitiesOfClass(LivingEntity.class, getDestroyRangeAABB(var1), (var0x) -> var0x instanceof Enemy && var0x.isInWaterOrRain());
-      return var2.isEmpty() ? null : new EntityReference((LivingEntity)Util.getRandom(var2, var0.random));
+      return var2.isEmpty() ? null : EntityReference.of((LivingEntity)Util.getRandom(var2, var0.random));
    }
 
    private static AABB getDestroyRangeAABB(BlockPos var0) {

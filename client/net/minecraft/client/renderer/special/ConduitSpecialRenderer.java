@@ -1,13 +1,12 @@
 package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -23,11 +22,10 @@ public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
       this.model = var2;
    }
 
-   public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      VertexConsumer var7 = ConduitRenderer.SHELL_TEXTURE.buffer(this.materials, var3, RenderType::entitySolid);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
       var2.pushPose();
       var2.translate(0.5F, 0.5F, 0.5F);
-      this.model.render(var2, var7, var4, var5);
+      var3.submitModelPart(this.model, var2, ConduitRenderer.SHELL_TEXTURE.renderType(RenderType::entitySolid), var4, var5, this.materials.get(ConduitRenderer.SHELL_TEXTURE));
       var2.popPose();
    }
 

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
@@ -49,7 +50,7 @@ public class CapeLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
                   var1.translate(0.0F, -0.053125F, 0.06875F);
                }
 
-               var2.submitModel(this.model, var4, var1, RenderType.entitySolid(var7.capeTexture()), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
+               var2.submitModel(this.model, var4, var1, RenderType.entitySolid(var7.capeTexture()), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
                var1.popPose();
             }
          }

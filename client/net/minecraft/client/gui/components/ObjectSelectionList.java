@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.NarrationSupplier;
@@ -17,10 +18,6 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
       super(var1, var2, var3, var4, var5);
    }
 
-   public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
-      super(var1, var2, var3, var4, var5, var6);
-   }
-
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.getItemCount() == 0) {
@@ -31,6 +28,7 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
          if (var3 != null) {
             return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var3));
          } else {
+            this.setFocused((GuiEventListener)null);
             this.setSelected((AbstractSelectionList.Entry)null);
             return null;
          }

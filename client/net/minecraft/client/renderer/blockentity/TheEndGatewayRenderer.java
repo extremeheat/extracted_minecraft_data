@@ -1,8 +1,10 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
@@ -16,18 +18,18 @@ public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlo
       super(var1);
    }
 
-   public void render(TheEndGatewayBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+   public void submit(TheEndGatewayBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
       if (var1.isSpawning() || var1.isCoolingDown()) {
-         float var8 = var1.isSpawning() ? var1.getSpawnPercent(var2) : var1.getCooldownPercent(var2);
-         double var9 = var1.isSpawning() ? (double)var1.getLevel().getMaxY() : 50.0;
-         var8 = Mth.sin(var8 * 3.1415927F);
-         int var11 = Mth.floor((double)var8 * var9);
-         int var12 = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();
-         long var13 = var1.getLevel().getGameTime();
-         BeaconRenderer.renderBeaconBeam(var3, var4, BEAM_LOCATION, var2, var8, var13, -var11, var11 * 2, var12, 0.15F, 0.175F);
+         float var9 = var1.isSpawning() ? var1.getSpawnPercent(var2) : var1.getCooldownPercent(var2);
+         double var10 = var1.isSpawning() ? (double)var1.getLevel().getMaxY() : 50.0;
+         var9 = Mth.sin(var9 * 3.1415927F);
+         int var12 = Mth.floor((double)var9 * var10);
+         int var13 = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();
+         long var14 = var1.getLevel().getGameTime();
+         BeaconRenderer.submitBeaconBeam(var3, var8, BEAM_LOCATION, var2, var9, var14, -var12, var12 * 2, var13, 0.15F, 0.175F);
       }
 
-      super.render(var1, var2, var3, var4, var5, var6, var7);
+      super.submit(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected float getOffsetUp() {

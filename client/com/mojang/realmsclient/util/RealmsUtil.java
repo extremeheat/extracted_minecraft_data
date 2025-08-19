@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.util;
 
-import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.exception.RealmsServiceException;
@@ -15,9 +14,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.slf4j.Logger;
 
 public class RealmsUtil {
@@ -56,10 +55,8 @@ public class RealmsUtil {
    }
 
    public static void renderPlayerFace(GuiGraphics var0, int var1, int var2, int var3, UUID var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      ProfileResult var6 = var5.getMinecraftSessionService().fetchProfile(var4, false);
-      PlayerSkin var7 = var6 != null ? var5.getSkinManager().getInsecureSkin(var6.profile()) : DefaultPlayerSkin.get(var4);
-      PlayerFaceRenderer.draw(var0, var7, var1, var2, var3);
+      PlayerSkinRenderCache.RenderInfo var5 = Minecraft.getInstance().playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(var4));
+      PlayerFaceRenderer.draw(var0, var5.playerSkin(), var1, var2, var3);
    }
 
    public static <T> CompletableFuture<T> supplyAsync(RealmsIoFunction<T> var0, @Nullable Consumer<RealmsServiceException> var1) {

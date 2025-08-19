@@ -36,7 +36,7 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       var2.pushPose();
       var2.scale(this.scale, this.scale, this.scale);
       var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
-      var3.submitItem(var2, var1.item, var1.lightCoords, OverlayTexture.NO_OVERLAY);
+      var1.item.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       var2.popPose();
       super.submit(var1, var2, var3);
    }

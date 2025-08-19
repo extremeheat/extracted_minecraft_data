@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -98,8 +99,8 @@ public class ExtraCodecs {
    private static final Codec<Property> PROPERTY;
    public static final Codec<PropertyMap> PROPERTY_MAP;
    public static final Codec<String> PLAYER_NAME;
-   private static final MapCodec<GameProfile> GAME_PROFILE_WITHOUT_PROPERTIES;
-   public static final Codec<GameProfile> GAME_PROFILE;
+   public static final Codec<GameProfile> AUTHLIB_GAME_PROFILE;
+   public static final Codec<GameProfile> STORED_GAME_PROFILE;
    public static final Codec<String> NON_EMPTY_STRING;
    public static final Codec<Integer> CODEPOINT;
    public static final Codec<String> RESOURCE_PATH_CODEC;
@@ -349,6 +350,10 @@ public class ExtraCodecs {
       return var0.xmap(toOptionalLong, fromOptionalLong);
    }
 
+   private static Codec<GameProfile> gameProfileCodec(Codec<UUID> var0) {
+      return RecordCodecBuilder.create((var1) -> var1.group(var0.fieldOf("id").forGetter(GameProfile::getId), PLAYER_NAME.fieldOf("name").forGetter(GameProfile::getName), PROPERTY_MAP.optionalFieldOf("properties", new PropertyMap()).forGetter(GameProfile::getProperties)).apply(var1, Util::createGameProfile));
+   }
+
    public static <K, V> Codec<Map<K, V>> sizeLimitedMap(Codec<Map<K, V>> var0, int var1) {
       return var0.validate((var1x) -> var1x.size() > var1 ? DataResult.error(() -> {
             int var10000 = var1x.size();
@@ -501,11 +506,8 @@ public class ExtraCodecs {
          return var1;
       }, (var0) -> Either.right(var0.values().stream().toList()));
       PLAYER_NAME = Codec.string(0, 16).validate((var0) -> StringUtil.isValidPlayerName(var0) ? DataResult.success(var0) : DataResult.error(() -> "Player name contained disallowed characters: '" + var0 + "'"));
-      GAME_PROFILE_WITHOUT_PROPERTIES = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.AUTHLIB_CODEC.fieldOf("id").forGetter(GameProfile::getId), PLAYER_NAME.fieldOf("name").forGetter(GameProfile::getName)).apply(var0, GameProfile::new));
-      GAME_PROFILE = RecordCodecBuilder.create((var0) -> var0.group(GAME_PROFILE_WITHOUT_PROPERTIES.forGetter(Function.identity()), PROPERTY_MAP.lenientOptionalFieldOf("properties", new PropertyMap()).forGetter(GameProfile::getProperties)).apply(var0, (var0x, var1) -> {
-            var1.forEach((var1x, var2) -> var0x.getProperties().put(var1x, var2));
-            return var0x;
-         }));
+      AUTHLIB_GAME_PROFILE = gameProfileCodec(UUIDUtil.AUTHLIB_CODEC);
+      STORED_GAME_PROFILE = gameProfileCodec(UUIDUtil.CODEC);
       NON_EMPTY_STRING = Codec.STRING.validate((var0) -> var0.isEmpty() ? DataResult.error(() -> "Expected non-empty string") : DataResult.success(var0));
       CODEPOINT = Codec.STRING.comapFlatMap((var0) -> {
          int[] var1 = var0.codePoints().toArray();

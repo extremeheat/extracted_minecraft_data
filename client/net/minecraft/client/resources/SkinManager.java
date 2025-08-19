@@ -8,7 +8,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.SignatureState;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTextures;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import com.mojang.authlib.properties.Property;
 import com.mojang.logging.LogUtils;
@@ -26,19 +25,20 @@ import net.minecraft.Optionull;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SkinTextureDownloader;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.Services;
 import org.slf4j.Logger;
 
 public class SkinManager {
    static final Logger LOGGER = LogUtils.getLogger();
-   private final MinecraftSessionService sessionService;
+   private final Services services;
    private final LoadingCache<CacheKey, CompletableFuture<Optional<PlayerSkin>>> skinCache;
    private final TextureCache skinTextures;
    private final TextureCache capeTextures;
    private final TextureCache elytraTextures;
 
-   public SkinManager(Path var1, final MinecraftSessionService var2, final Executor var3) {
+   public SkinManager(Path var1, final Services var2, final Executor var3) {
       super();
-      this.sessionService = var2;
+      this.services = var2;
       this.skinTextures = new TextureCache(var1, Type.SKIN);
       this.capeTextures = new TextureCache(var1, Type.CAPE);
       this.elytraTextures = new TextureCache(var1, Type.ELYTRA);
@@ -49,7 +49,7 @@ public class SkinManager {
                if (var2x == null) {
                   return MinecraftProfileTextures.EMPTY;
                } else {
-                  MinecraftProfileTextures var3x = var2.unpackTextures(var2x);
+                  MinecraftProfileTextures var3x = var2.sessionService().unpackTextures(var2x);
                   if (var3x.signatureState() == SignatureState.INVALID) {
                      SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
                   }
@@ -72,24 +72,20 @@ public class SkinManager {
       });
    }
 
-   public Supplier<PlayerSkin> lookupInsecure(GameProfile var1) {
-      CompletableFuture var2 = this.getOrLoad(var1);
-      PlayerSkin var3 = DefaultPlayerSkin.get(var1);
-      return () -> (PlayerSkin)((Optional)var2.getNow(Optional.empty())).orElse(var3);
+   public Supplier<PlayerSkin> createLookup(GameProfile var1, boolean var2) {
+      CompletableFuture var3 = this.get(var1);
+      PlayerSkin var4 = DefaultPlayerSkin.get(var1);
+      Optional var5 = (Optional)var3.getNow((Object)null);
+      if (var5 != null) {
+         PlayerSkin var6 = (PlayerSkin)var5.filter((var1x) -> !var2 || var1x.secure()).orElse(var4);
+         return () -> var6;
+      } else {
+         return () -> (PlayerSkin)((Optional)var3.getNow(Optional.empty())).filter((var1) -> !var2 || var1.secure()).orElse(var4);
+      }
    }
 
-   public PlayerSkin getInsecureSkin(GameProfile var1) {
-      PlayerSkin var2 = this.getInsecureSkin(var1, (PlayerSkin)null);
-      return var2 != null ? var2 : DefaultPlayerSkin.get(var1);
-   }
-
-   @Nullable
-   public PlayerSkin getInsecureSkin(GameProfile var1, @Nullable PlayerSkin var2) {
-      return (PlayerSkin)((Optional)this.getOrLoad(var1).getNow(Optional.empty())).orElse(var2);
-   }
-
-   public CompletableFuture<Optional<PlayerSkin>> getOrLoad(GameProfile var1) {
-      Property var2 = this.sessionService.getPackedTextures(var1);
+   public CompletableFuture<Optional<PlayerSkin>> get(GameProfile var1) {
+      Property var2 = this.services.sessionService().getPackedTextures(var1);
       return (CompletableFuture)this.skinCache.getUnchecked(new CacheKey(var1.getId(), var2));
    }
 
@@ -112,6 +108,11 @@ public class SkinManager {
       MinecraftProfileTexture var9 = var2.elytra();
       CompletableFuture var10 = var9 != null ? this.elytraTextures.getOrLoad(var9) : CompletableFuture.completedFuture((Object)null);
       return CompletableFuture.allOf(var4, var8, var10).thenApply((var6x) -> new PlayerSkin((ResourceLocation)var4.join(), var11, (ResourceLocation)var8.join(), (ResourceLocation)var10.join(), var5, var2.signatureState() == SignatureState.SIGNED));
+   }
+
+   // $FF: synthetic method
+   private static PlayerSkin lambda$createLookup$0(PlayerSkin var0) {
+      return var0;
    }
 
    static class TextureCache {

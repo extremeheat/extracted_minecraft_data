@@ -5,5 +5,5 @@ import javax.annotation.Nullable;
 
 public interface UUIDLookup<IdentifiedType extends UniquelyIdentifyable> {
    @Nullable
-   IdentifiedType getEntity(UUID var1);
+   IdentifiedType lookup(UUID var1);
 }

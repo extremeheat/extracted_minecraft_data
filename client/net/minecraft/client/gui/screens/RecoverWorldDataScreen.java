@@ -72,7 +72,7 @@ public class RecoverWorldDataScreen extends Screen {
       Exception var2 = this.collectIssue(this.storageAccess, false);
       Exception var3 = this.collectIssue(this.storageAccess, true);
       if (var2 != null && var3 == null) {
-         var1.forceSetScreen(new GenericMessageScreen(Component.translatable("recover_world.restoring")));
+         var1.setScreenAndShow(new GenericMessageScreen(Component.translatable("recover_world.restoring")));
          EditWorldScreen.makeBackupAndShowToast(this.storageAccess);
          if (this.storageAccess.restoreLevelDataFromOld()) {
             var1.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));

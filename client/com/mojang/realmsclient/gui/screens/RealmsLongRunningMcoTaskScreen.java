@@ -58,6 +58,10 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       }
    }
 
+   public boolean canInterruptWithAnotherScreen() {
+      return false;
+   }
+
    public void tick() {
       super.tick();
       if (this.loadingDotsWidget != null) {

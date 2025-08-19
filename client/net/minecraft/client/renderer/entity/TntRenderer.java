@@ -32,7 +32,7 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
       var2.translate(-0.5F, -0.5F, 0.5F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
       if (var1.blockState != null) {
-         TntMinecartRenderer.submitWhiteSolidBlock(var1.blockState, var2, var3, var1.lightCoords, (int)var4 / 5 % 2 == 0);
+         TntMinecartRenderer.submitWhiteSolidBlock(var1.blockState, var2, var3, var1.lightCoords, (int)var4 / 5 % 2 == 0, var1.outlineColor);
       }
 
       var2.popPose();

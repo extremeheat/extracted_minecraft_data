@@ -58,7 +58,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.xo = var2;
       this.yo = var4;
       this.zo = var6;
-      this.owner = var8 != null ? new EntityReference(var8) : null;
+      this.owner = EntityReference.of(var8);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -133,7 +133,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    @Nullable
    public LivingEntity getOwner() {
-      return (LivingEntity)EntityReference.get(this.owner, this.level(), LivingEntity.class);
+      return EntityReference.getLivingEntity(this.owner, this.level());
    }
 
    public void restoreFrom(Entity var1) {

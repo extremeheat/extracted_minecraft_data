@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.state.HitboxRenderState;
@@ -20,7 +21,7 @@ public class HitboxFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeStorage var1, MultiBufferSource.BufferSource var2) {
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2) {
       for(SubmitNodeStorage.HitboxSubmit var4 : var1.getHitboxSubmits()) {
          VertexConsumer var5 = var2.getBuffer(RenderType.lines());
          PoseStack var6 = new PoseStack();
@@ -57,7 +58,7 @@ public class HitboxFeatureRenderer {
    private static void renderHitbox(PoseStack var0, VertexConsumer var1, HitboxRenderState var2) {
       var0.pushPose();
       var0.translate(var2.offsetX(), var2.offsetY(), var2.offsetZ());
-      ShapeRenderer.renderLineBox(var0, var1, var2.x0(), var2.y0(), var2.z0(), var2.x1(), var2.y1(), var2.z1(), var2.red(), var2.green(), var2.blue(), 1.0F);
+      ShapeRenderer.renderLineBox(var0.last(), var1, var2.x0(), var2.y0(), var2.z0(), var2.x1(), var2.y1(), var2.z1(), var2.red(), var2.green(), var2.blue(), 1.0F);
       var0.popPose();
    }
 }

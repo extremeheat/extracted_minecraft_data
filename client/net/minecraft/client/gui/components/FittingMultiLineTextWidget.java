@@ -31,6 +31,13 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
       return this.multilineWidget.getHeight();
    }
 
+   public void minimizeHeight() {
+      if (!this.showingScrollBar()) {
+         this.setHeight(this.getInnerHeight() + this.totalInnerPadding());
+      }
+
+   }
+
    protected double scrollRate() {
       Objects.requireNonNull(this.font);
       return 9.0;

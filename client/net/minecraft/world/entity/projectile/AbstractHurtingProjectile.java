@@ -162,9 +162,9 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       this.hasImpulse = true;
    }
 
-   protected void onDeflection(@Nullable Entity var1, boolean var2) {
-      super.onDeflection(var1, var2);
-      if (var2) {
+   protected void onDeflection(boolean var1) {
+      super.onDeflection(var1);
+      if (var1) {
          this.accelerationPower = 0.1;
       } else {
          this.accelerationPower *= 0.5;

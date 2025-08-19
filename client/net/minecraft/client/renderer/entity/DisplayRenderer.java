@@ -158,7 +158,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       }
 
       public void submitInner(BlockDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
-         var3.submitBlock(var2, var1.blockRenderState.blockState(), var4, OverlayTexture.NO_OVERLAY);
+         var3.submitBlock(var2, var1.blockRenderState.blockState(), var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       }
 
       // $FF: synthetic method
@@ -208,7 +208,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       public void submitInner(ItemDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
          if (!var1.item.isEmpty()) {
             var2.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
-            var3.submitItem(var2, var1.item, var4, OverlayTexture.NO_OVERLAY);
+            var1.item.submit(var2, var3, var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
          }
       }
 
@@ -311,7 +311,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
             }
 
             float var23 = var10000;
-            var3.submitText(var2, var23, var24, var22.contents(), var10, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, var4, var12 << 24 | 16777215, 0);
+            var3.submitText(var2, var23, var24, var22.contents(), var10, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, var4, var12 << 24 | 16777215, 0, 0);
             var24 += (float)var18;
          }
 

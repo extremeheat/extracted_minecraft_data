@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -12,25 +13,33 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.LoadingDotsWidget;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.ItemDisplayWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.tabs.GridLayoutTab;
+import net.minecraft.client.gui.components.tabs.LoadingTab;
+import net.minecraft.client.gui.components.tabs.TabManager;
+import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
-import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
@@ -38,6 +47,7 @@ import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
@@ -54,18 +64,13 @@ public class StatsScreen extends Screen {
    private static final Component MOBS_BUTTON = Component.translatable("stat.mobsButton");
    protected final Screen lastScreen;
    private static final int LIST_WIDTH = 280;
-   private static final int PADDING = 5;
-   private static final int FOOTER_HEIGHT = 58;
-   private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 33, 58);
+   final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   private final TabManager tabManager = new TabManager((var1x) -> {
+      AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
+   }, (var1x) -> this.removeWidget(var1x));
    @Nullable
-   private GeneralStatisticsList statsList;
-   @Nullable
-   ItemStatisticsList itemStatsList;
-   @Nullable
-   private MobsStatisticsList mobsStatsList;
+   private TabNavigationBar tabNavigationBar;
    final StatsCounter stats;
-   @Nullable
-   private ObjectSelectionList<?> activeList;
    private boolean isLoading = true;
 
    public StatsScreen(Screen var1, StatsCounter var2) {
@@ -75,75 +80,96 @@ public class StatsScreen extends Screen {
    }
 
    protected void init() {
-      this.layout.addToContents(new LoadingDotsWidget(this.font, PENDING_TEXT));
-      this.minecraft.getConnection().send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.REQUEST_STATS));
-   }
-
-   public void initLists() {
-      this.statsList = new GeneralStatisticsList(this.minecraft);
-      this.itemStatsList = new ItemStatisticsList(this.minecraft);
-      this.mobsStatsList = new MobsStatisticsList(this.minecraft);
-   }
-
-   public void initButtons() {
-      HeaderAndFooterLayout var1 = new HeaderAndFooterLayout(this, 33, 58);
-      var1.addTitleHeader(TITLE, this.font);
-      LinearLayout var2 = ((LinearLayout)var1.addToFooter(LinearLayout.vertical())).spacing(5);
-      var2.defaultCellSetting().alignHorizontallyCenter();
-      LinearLayout var3 = ((LinearLayout)var2.addChild(LinearLayout.horizontal())).spacing(5);
-      var3.addChild(Button.builder(GENERAL_BUTTON, (var1x) -> this.setActiveList(this.statsList)).width(120).build());
-      Button var4 = (Button)var3.addChild(Button.builder(ITEMS_BUTTON, (var1x) -> this.setActiveList(this.itemStatsList)).width(120).build());
-      Button var5 = (Button)var3.addChild(Button.builder(MOBS_BUTTON, (var1x) -> this.setActiveList(this.mobsStatsList)).width(120).build());
-      var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
-      if (this.itemStatsList != null && this.itemStatsList.children().isEmpty()) {
-         var4.active = false;
-      }
-
-      if (this.mobsStatsList != null && this.mobsStatsList.children().isEmpty()) {
-         var5.active = false;
-      }
-
-      this.layout = var1;
+      Component var1 = PENDING_TEXT;
+      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), GENERAL_BUTTON, var1), new LoadingTab(this.getFont(), ITEMS_BUTTON, var1), new LoadingTab(this.getFont(), MOBS_BUTTON, var1)).build();
+      this.addRenderableWidget(this.tabNavigationBar);
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
+      this.tabNavigationBar.setTabActiveState(0, true);
+      this.tabNavigationBar.setTabActiveState(1, false);
+      this.tabNavigationBar.setTabActiveState(2, false);
       this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
+         var1x.setTabOrderGroup(1);
+         this.addRenderableWidget(var1x);
       });
+      this.tabNavigationBar.selectTab(0, false);
       this.repositionElements();
-   }
-
-   protected void repositionElements() {
-      this.layout.arrangeElements();
-      if (this.activeList != null) {
-         this.activeList.updateSize(this.width, this.layout);
-      }
-
-   }
-
-   public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.getConnection().send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.REQUEST_STATS));
    }
 
    public void onStatsUpdated() {
       if (this.isLoading) {
-         this.initLists();
-         this.setActiveList(this.statsList);
-         this.initButtons();
-         this.setInitialFocus();
+         if (this.tabNavigationBar != null) {
+            this.removeWidget(this.tabNavigationBar);
+         }
+
+         this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new StatisticsTab(GENERAL_BUTTON, new GeneralStatisticsList(this.minecraft)), new StatisticsTab(ITEMS_BUTTON, new ItemStatisticsList(this.minecraft)), new StatisticsTab(MOBS_BUTTON, new MobsStatisticsList(this.minecraft))).build();
+         this.setFocused(this.tabNavigationBar);
+         this.addRenderableWidget(this.tabNavigationBar);
+         this.setTabActiveStateAndTooltip(1);
+         this.setTabActiveStateAndTooltip(2);
+         this.tabNavigationBar.selectTab(0, false);
+         this.repositionElements();
          this.isLoading = false;
       }
 
    }
 
-   public void setActiveList(@Nullable ObjectSelectionList<?> var1) {
-      if (this.activeList != null) {
-         this.removeWidget(this.activeList);
-      }
+   private void setTabActiveStateAndTooltip(int var1) {
+      if (this.tabNavigationBar != null) {
+         boolean var10000;
+         label20: {
+            Object var4 = this.tabNavigationBar.getTabs().get(var1);
+            if (var4 instanceof StatisticsTab) {
+               StatisticsTab var3 = (StatisticsTab)var4;
+               if (!var3.list.children().isEmpty()) {
+                  var10000 = true;
+                  break label20;
+               }
+            }
 
-      if (var1 != null) {
-         this.addRenderableWidget(var1);
-         this.activeList = var1;
-         this.repositionElements();
-      }
+            var10000 = false;
+         }
 
+         boolean var2 = var10000;
+         this.tabNavigationBar.setTabActiveState(var1, var2);
+         if (var2) {
+            this.tabNavigationBar.setTabTooltip(var1, (Tooltip)null);
+         } else {
+            this.tabNavigationBar.setTabTooltip(var1, Tooltip.create(Component.translatable("gui.stats.none_found")));
+         }
+
+      }
+   }
+
+   protected void repositionElements() {
+      if (this.tabNavigationBar != null) {
+         this.tabNavigationBar.setWidth(this.width);
+         this.tabNavigationBar.arrangeElements();
+         int var1 = this.tabNavigationBar.getRectangle().bottom();
+         ScreenRectangle var2 = new ScreenRectangle(0, var1, this.width, this.height - this.layout.getFooterHeight() - var1);
+         this.tabNavigationBar.getTabs().forEach((var1x) -> var1x.visitChildren((var1) -> var1.setHeight(var2.height())));
+         this.tabManager.setTabArea(var2);
+         this.layout.setHeaderHeight(var1);
+         this.layout.arrangeElements();
+      }
+   }
+
+   public boolean keyPressed(int var1, int var2, int var3) {
+      return this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+   }
+
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
+      var1.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
+   }
+
+   protected void renderMenuBackground(GuiGraphics var1) {
+      var1.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
+      this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
+   }
+
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    static String getTranslationKey(Stat<ResourceLocation> var0) {
@@ -151,9 +177,24 @@ public class StatsScreen extends Screen {
       return "stat." + var10000.replace(':', '.');
    }
 
+   class StatisticsTab extends GridLayoutTab {
+      protected final AbstractSelectionList<?> list;
+
+      public StatisticsTab(final Component var2, final AbstractSelectionList<?> var3) {
+         super(var2);
+         this.layout.addChild(var3, 1, 1);
+         this.list = var3;
+      }
+
+      public void doLayout(ScreenRectangle var1) {
+         this.list.updateSizeAndPosition(StatsScreen.this.width, StatsScreen.this.layout.getContentHeight(), StatsScreen.this.layout.getHeaderHeight());
+         super.doLayout(var1);
+      }
+   }
+
    class GeneralStatisticsList extends ObjectSelectionList<Entry> {
       public GeneralStatisticsList(final Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
+         super(var2, StatsScreen.this.width, StatsScreen.this.layout.getContentHeight(), 33, 14);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
          var3.sort(Comparator.comparing((var0) -> I18n.get(StatsScreen.getTranslationKey(var0))));
          ObjectListIterator var4 = var3.iterator();
@@ -167,6 +208,12 @@ public class StatsScreen extends Screen {
 
       public int getRowWidth() {
          return 280;
+      }
+
+      protected void renderListBackground(GuiGraphics var1) {
+      }
+
+      protected void renderListSeparators(GuiGraphics var1) {
       }
 
       class Entry extends ObjectSelectionList.Entry<Entry> {
@@ -183,14 +230,15 @@ public class StatsScreen extends Screen {
             return this.stat.format(StatsScreen.this.stats.getValue(this.stat));
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            int var10000 = var3 + var6 / 2;
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(StatsScreen.this.font);
-            int var11 = var10000 - 9 / 2;
-            int var12 = var2 % 2 == 0 ? -1 : -4539718;
-            var1.drawString(StatsScreen.this.font, this.statDisplay, var4 + 2, var11, var12);
-            String var13 = this.getValueText();
-            var1.drawString(StatsScreen.this.font, var13, var4 + var5 - StatsScreen.this.font.width(var13) - 4, var11, var12);
+            int var6 = var10000 - 9 / 2;
+            int var7 = GeneralStatisticsList.this.children().indexOf(this);
+            int var8 = var7 % 2 == 0 ? -1 : -4539718;
+            var1.drawString(StatsScreen.this.font, this.statDisplay, this.getContentX() + 2, var6, var8);
+            String var9 = this.getValueText();
+            var1.drawString(StatsScreen.this.font, var9, this.getContentRight() - StatsScreen.this.font.width(var9) - 4, var6, var8);
          }
 
          public Component getNarration() {
@@ -199,24 +247,22 @@ public class StatsScreen extends Screen {
       }
    }
 
-   class ItemStatisticsList extends ObjectSelectionList<ItemRow> {
+   class ItemStatisticsList extends ContainerObjectSelectionList<Entry> {
       private static final int SLOT_BG_SIZE = 18;
       private static final int SLOT_STAT_HEIGHT = 22;
       private static final int SLOT_BG_Y = 1;
       private static final int SORT_NONE = 0;
       private static final int SORT_DOWN = -1;
       private static final int SORT_UP = 1;
-      private final ResourceLocation[] iconSprites = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("statistics/block_mined"), ResourceLocation.withDefaultNamespace("statistics/item_broken"), ResourceLocation.withDefaultNamespace("statistics/item_crafted"), ResourceLocation.withDefaultNamespace("statistics/item_used"), ResourceLocation.withDefaultNamespace("statistics/item_picked_up"), ResourceLocation.withDefaultNamespace("statistics/item_dropped")};
       protected final List<StatType<Block>> blockColumns = Lists.newArrayList();
       protected final List<StatType<Item>> itemColumns;
       protected final Comparator<ItemRow> itemStatSorter = new ItemRowComparator();
       @Nullable
       protected StatType<?> sortColumn;
-      protected int headerPressed = -1;
       protected int sortOrder;
 
       public ItemStatisticsList(final Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22, 22);
+         super(var2, StatsScreen.this.width, StatsScreen.this.layout.getContentHeight(), 33, 22);
          this.blockColumns.add(Stats.BLOCK_MINED);
          this.itemColumns = Lists.newArrayList(new StatType[]{Stats.ITEM_BROKEN, Stats.ITEM_CRAFTED, Stats.ITEM_USED, Stats.ITEM_PICKED_UP, Stats.ITEM_DROPPED});
          Set var3 = Sets.newIdentityHashSet();
@@ -250,111 +296,38 @@ public class StatsScreen extends Screen {
          }
 
          var3.remove(Items.AIR);
+         if (!var3.isEmpty()) {
+            this.addEntry(new HeaderEntry());
 
-         for(Item var12 : var3) {
-            this.addEntry(new ItemRow(var12));
+            for(Item var12 : var3) {
+               this.addEntry(new ItemRow(var12));
+            }
          }
 
+      }
+
+      protected void renderListBackground(GuiGraphics var1) {
       }
 
       int getColumnX(int var1) {
          return 75 + 40 * var1;
       }
 
-      protected void renderHeader(GuiGraphics var1, int var2, int var3) {
-         if (!this.minecraft.mouseHandler.isLeftPressed()) {
-            this.headerPressed = -1;
-         }
-
-         for(int var4 = 0; var4 < this.iconSprites.length; ++var4) {
-            ResourceLocation var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 18, 18);
-         }
-
-         if (this.sortColumn != null) {
-            int var6 = this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
-            ResourceLocation var8 = this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var2 + var6, var3 + 1, 18, 18);
-         }
-
-         for(int var7 = 0; var7 < this.iconSprites.length; ++var7) {
-            int var9 = this.headerPressed == var7 ? 1 : 0;
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 18, 18);
-         }
-
-      }
-
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         boolean var7 = super.mouseClicked(var1, var3, var5, var6);
-         return !var7 && this.clickedHeader((int)(var1 - ((double)this.getX() + (double)this.width / 2.0 - (double)this.getRowWidth() / 2.0)), (int)(var3 - (double)this.getY()) + (int)this.scrollAmount() - 4) ? true : var7;
-      }
-
-      protected boolean clickedHeader(int var1, int var2) {
-         this.headerPressed = -1;
-
-         for(int var3 = 0; var3 < this.iconSprites.length; ++var3) {
-            int var4 = var1 - this.getColumnX(var3);
-            if (var4 >= -36 && var4 <= 0) {
-               this.headerPressed = var3;
-               break;
-            }
-         }
-
-         if (this.headerPressed >= 0) {
-            this.sortByColumn(this.getColumn(this.headerPressed));
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            return true;
-         } else {
-            return false;
-         }
-      }
-
       public int getRowWidth() {
          return 280;
       }
 
-      private StatType<?> getColumn(int var1) {
+      StatType<?> getColumn(int var1) {
          return var1 < this.blockColumns.size() ? (StatType)this.blockColumns.get(var1) : (StatType)this.itemColumns.get(var1 - this.blockColumns.size());
       }
 
-      private int getColumnIndex(StatType<?> var1) {
+      int getColumnIndex(StatType<?> var1) {
          int var2 = this.blockColumns.indexOf(var1);
          if (var2 >= 0) {
             return var2;
          } else {
             int var3 = this.itemColumns.indexOf(var1);
             return var3 >= 0 ? var3 + this.blockColumns.size() : -1;
-         }
-      }
-
-      protected void renderDecorations(GuiGraphics var1, int var2, int var3) {
-         if (var3 >= this.getY() && var3 <= this.getBottom()) {
-            ItemRow var4 = (ItemRow)this.getHovered();
-            int var5 = this.getRowLeft();
-            if (var4 != null) {
-               if (var2 < var5 || var2 > var5 + 18) {
-                  return;
-               }
-
-               Item var6 = var4.getItem();
-               var1.setTooltipForNextFrame(StatsScreen.this.font, var6.getName(), var2, var3, (ResourceLocation)var6.components().get(DataComponents.TOOLTIP_STYLE));
-            } else {
-               Component var10 = null;
-               int var7 = var2 - var5;
-
-               for(int var8 = 0; var8 < this.iconSprites.length; ++var8) {
-                  int var9 = this.getColumnX(var8);
-                  if (var7 >= var9 - 18 && var7 <= var9) {
-                     var10 = this.getColumn(var8).getDisplayName();
-                     break;
-                  }
-               }
-
-               if (var10 != null) {
-                  var1.setTooltipForNextFrame(StatsScreen.this.font, var10, var2, var3);
-               }
-            }
-
          }
       }
 
@@ -369,7 +342,32 @@ public class StatsScreen extends Screen {
             this.sortOrder = 0;
          }
 
-         this.children().sort(this.itemStatSorter);
+         this.sortItems(this.itemStatSorter);
+      }
+
+      protected void sortItems(Comparator<ItemRow> var1) {
+         List var2 = this.getItemRows();
+         var2.sort(var1);
+         this.clearEntriesExcept((Entry)this.children().getFirst());
+
+         for(ItemRow var4 : var2) {
+            this.addEntry(var4);
+         }
+
+      }
+
+      private List<ItemRow> getItemRows() {
+         ArrayList var1 = new ArrayList();
+         this.children().forEach((var1x) -> {
+            if (var1x instanceof ItemRow var2) {
+               var1.add(var2);
+            }
+
+         });
+         return var1;
+      }
+
+      protected void renderListSeparators(GuiGraphics var1) {
       }
 
       class ItemRowComparator implements Comparator<ItemRow> {
@@ -404,45 +402,53 @@ public class StatsScreen extends Screen {
          }
       }
 
-      class ItemRow extends ObjectSelectionList.Entry<ItemRow> {
+      abstract static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+         Entry() {
+            super();
+         }
+      }
+
+      class ItemRow extends Entry {
          private final Item item;
+         private final ItemRowWidget itemRowWidget;
 
          ItemRow(final Item var2) {
             super();
             this.item = var2;
+            this.itemRowWidget = new ItemRowWidget(var2.getDefaultInstance());
          }
 
-         public Item getItem() {
+         protected Item getItem() {
             return this.item;
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)StatsScreen.SLOT_SPRITE, var4, var3, 18, 18);
-            var1.renderFakeItem(this.item.getDefaultInstance(), var4 + 1, var3 + 1);
-            if (StatsScreen.this.itemStatsList != null) {
-               for(int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {
-                  Item var14 = this.item;
-                  Stat var12;
-                  if (var14 instanceof BlockItem) {
-                     BlockItem var13 = (BlockItem)var14;
-                     var12 = ((StatType)StatsScreen.this.itemStatsList.blockColumns.get(var11)).get(var13.getBlock());
-                  } else {
-                     var12 = null;
-                  }
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            this.itemRowWidget.setPosition(this.getContentX(), this.getContentY());
+            this.itemRowWidget.render(var1, var2, var3, var5);
+            ItemStatisticsList var6 = ItemStatisticsList.this;
+            int var7 = var6.children().indexOf(this);
 
-                  int var10003 = var4 + ItemStatisticsList.this.getColumnX(var11);
-                  int var10004 = var3 + var6 / 2;
-                  Objects.requireNonNull(StatsScreen.this.font);
-                  this.renderStat(var1, var12, var10003, var10004 - 9 / 2, var2 % 2 == 0);
+            for(int var8 = 0; var8 < var6.blockColumns.size(); ++var8) {
+               Item var11 = this.item;
+               Stat var9;
+               if (var11 instanceof BlockItem var10) {
+                  var9 = ((StatType)var6.blockColumns.get(var8)).get(var10.getBlock());
+               } else {
+                  var9 = null;
                }
 
-               for(int var15 = 0; var15 < StatsScreen.this.itemStatsList.itemColumns.size(); ++var15) {
-                  Stat var10002 = ((StatType)StatsScreen.this.itemStatsList.itemColumns.get(var15)).get(this.item);
-                  int var16 = var4 + ItemStatisticsList.this.getColumnX(var15 + StatsScreen.this.itemStatsList.blockColumns.size());
-                  int var17 = var3 + var6 / 2;
-                  Objects.requireNonNull(StatsScreen.this.font);
-                  this.renderStat(var1, var10002, var16, var17 - 9 / 2, var2 % 2 == 0);
-               }
+               int var10003 = this.getContentX() + ItemStatisticsList.this.getColumnX(var8);
+               int var10004 = this.getContentYMiddle();
+               Objects.requireNonNull(StatsScreen.this.font);
+               this.renderStat(var1, var9, var10003, var10004 - 9 / 2, var7 % 2 == 0);
+            }
+
+            for(int var12 = 0; var12 < var6.itemColumns.size(); ++var12) {
+               Stat var10002 = ((StatType)var6.itemColumns.get(var12)).get(this.item);
+               int var13 = this.getContentX() + ItemStatisticsList.this.getColumnX(var12 + var6.blockColumns.size());
+               int var14 = this.getContentYMiddle();
+               Objects.requireNonNull(StatsScreen.this.font);
+               this.renderStat(var1, var10002, var13, var14 - 9 / 2, var7 % 2 == 0);
             }
 
          }
@@ -452,8 +458,99 @@ public class StatsScreen extends Screen {
             var1.drawString(StatsScreen.this.font, (Component)var6, var3 - StatsScreen.this.font.width((FormattedText)var6), var4, var5 ? -1 : -4539718);
          }
 
-         public Component getNarration() {
-            return Component.translatable("narrator.select", this.item.getName());
+         public List<? extends NarratableEntry> narratables() {
+            return List.of(this.itemRowWidget);
+         }
+
+         public List<? extends GuiEventListener> children() {
+            return List.of(this.itemRowWidget);
+         }
+
+         class ItemRowWidget extends ItemDisplayWidget {
+            ItemRowWidget(final ItemStack var2) {
+               super(ItemStatisticsList.this.minecraft, 1, 1, 18, 18, var2.getHoverName(), var2, false, true);
+            }
+
+            protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)StatsScreen.SLOT_SPRITE, ItemRow.this.getContentX(), ItemRow.this.getContentY(), 18, 18);
+               super.renderWidget(var1, var2, var3, var4);
+            }
+
+            protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
+               super.renderTooltip(var1, ItemRow.this.getContentX() + 18, ItemRow.this.getContentY() + 18);
+            }
+         }
+      }
+
+      class HeaderEntry extends Entry {
+         private static final ResourceLocation BLOCK_MINED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/block_mined");
+         private static final ResourceLocation ITEM_BROKEN_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_broken");
+         private static final ResourceLocation ITEM_CRAFTED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_crafted");
+         private static final ResourceLocation ITEM_USED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_used");
+         private static final ResourceLocation ITEM_PICKED_UP_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_picked_up");
+         private static final ResourceLocation ITEM_DROPPED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_dropped");
+         private final StatSortButton blockMined;
+         private final StatSortButton itemBroken;
+         private final StatSortButton itemCrafted;
+         private final StatSortButton itemUsed;
+         private final StatSortButton itemPickedUp;
+         private final StatSortButton itemDropped;
+         private final List<AbstractWidget> children = new ArrayList();
+
+         HeaderEntry() {
+            super();
+            this.blockMined = new StatSortButton(0, BLOCK_MINED_SPRITE);
+            this.itemBroken = new StatSortButton(1, ITEM_BROKEN_SPRITE);
+            this.itemCrafted = new StatSortButton(2, ITEM_CRAFTED_SPRITE);
+            this.itemUsed = new StatSortButton(3, ITEM_USED_SPRITE);
+            this.itemPickedUp = new StatSortButton(4, ITEM_PICKED_UP_SPRITE);
+            this.itemDropped = new StatSortButton(5, ITEM_DROPPED_SPRITE);
+            this.children.addAll(List.of(this.blockMined, this.itemBroken, this.itemCrafted, this.itemUsed, this.itemPickedUp, this.itemDropped));
+         }
+
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            this.blockMined.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(0) - 18, this.getContentY() + 1);
+            this.blockMined.render(var1, var2, var3, var5);
+            this.itemBroken.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(1) - 18, this.getContentY() + 1);
+            this.itemBroken.render(var1, var2, var3, var5);
+            this.itemCrafted.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(2) - 18, this.getContentY() + 1);
+            this.itemCrafted.render(var1, var2, var3, var5);
+            this.itemUsed.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(3) - 18, this.getContentY() + 1);
+            this.itemUsed.render(var1, var2, var3, var5);
+            this.itemPickedUp.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(4) - 18, this.getContentY() + 1);
+            this.itemPickedUp.render(var1, var2, var3, var5);
+            this.itemDropped.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(5) - 18, this.getContentY() + 1);
+            this.itemDropped.render(var1, var2, var3, var5);
+            if (ItemStatisticsList.this.sortColumn != null) {
+               int var6 = ItemStatisticsList.this.getColumnX(ItemStatisticsList.this.getColumnIndex(ItemStatisticsList.this.sortColumn)) - 36;
+               ResourceLocation var7 = ItemStatisticsList.this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var7, this.getContentX() + var6, this.getContentY() + 1, 18, 18);
+            }
+
+         }
+
+         public List<? extends GuiEventListener> children() {
+            return this.children;
+         }
+
+         public List<? extends NarratableEntry> narratables() {
+            return this.children;
+         }
+
+         class StatSortButton extends ImageButton {
+            private final ResourceLocation sprite;
+
+            StatSortButton(final int var2, final ResourceLocation var3) {
+               super(18, 18, new WidgetSprites(StatsScreen.HEADER_SPRITE, StatsScreen.SLOT_SPRITE), (var2x) -> ItemStatisticsList.this.sortByColumn(ItemStatisticsList.this.getColumn(var2)), ItemStatisticsList.this.getColumn(var2).getDisplayName());
+               this.sprite = var3;
+               this.setTooltip(Tooltip.create(this.getMessage()));
+            }
+
+            public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+               ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.width, this.height);
+            }
          }
       }
    }
@@ -461,7 +558,7 @@ public class StatsScreen extends Screen {
    class MobsStatisticsList extends ObjectSelectionList<MobRow> {
       public MobsStatisticsList(final Minecraft var2) {
          int var10002 = StatsScreen.this.width;
-         int var10003 = StatsScreen.this.height - 33 - 58;
+         int var10003 = StatsScreen.this.layout.getContentHeight();
          Objects.requireNonNull(StatsScreen.this.font);
          super(var2, var10002, var10003, 33, 9 * 4);
 
@@ -475,6 +572,12 @@ public class StatsScreen extends Screen {
 
       public int getRowWidth() {
          return 280;
+      }
+
+      protected void renderListBackground(GuiGraphics var1) {
+      }
+
+      protected void renderListSeparators(GuiGraphics var1) {
       }
 
       class MobRow extends ObjectSelectionList.Entry<MobRow> {
@@ -507,18 +610,18 @@ public class StatsScreen extends Screen {
 
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.drawString(StatsScreen.this.font, (Component)this.mobName, var4 + 2, var3 + 1, -1);
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            var1.drawString(StatsScreen.this.font, (Component)this.mobName, this.getContentX() + 2, this.getContentY() + 1, -1);
             Font var10001 = StatsScreen.this.font;
             Component var10002 = this.kills;
-            int var10003 = var4 + 2 + 10;
-            int var10004 = var3 + 1;
+            int var10003 = this.getContentX() + 2 + 10;
+            int var10004 = this.getContentY() + 1;
             Objects.requireNonNull(StatsScreen.this.font);
             var1.drawString(var10001, var10002, var10003, var10004 + 9, this.hasKills ? -4539718 : -8355712);
             var10001 = StatsScreen.this.font;
             var10002 = this.killedBy;
-            var10003 = var4 + 2 + 10;
-            var10004 = var3 + 1;
+            var10003 = this.getContentX() + 2 + 10;
+            var10004 = this.getContentY() + 1;
             Objects.requireNonNull(StatsScreen.this.font);
             var1.drawString(var10001, var10002, var10003, var10004 + 9 * 2, this.wasKilledBy ? -4539718 : -8355712);
          }

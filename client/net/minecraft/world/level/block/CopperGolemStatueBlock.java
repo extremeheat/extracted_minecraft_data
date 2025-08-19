@@ -137,7 +137,7 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
       FACING = BlockStateProperties.HORIZONTAL_FACING;
       POSE = BlockStateProperties.COPPER_GOLEM_POSE;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      SHAPE = Block.cube(10.0, 14.0, 10.0);
+      SHAPE = Block.column(10.0, 0.0, 14.0);
    }
 
    public static enum Pose implements StringRepresentable {

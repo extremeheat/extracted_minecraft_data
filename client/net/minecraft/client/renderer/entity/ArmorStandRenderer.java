@@ -31,7 +31,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ARMOR_STAND_ARMOR, var1.getModelSet(), ArmorStandArmorModel::new), ArmorModelSet.bake(ModelLayers.ARMOR_STAND_SMALL_ARMOR, var1.getModelSet(), ArmorStandArmorModel::new), var1.getEquipmentRenderer()));
       this.addLayer(new ItemInHandLayer(this));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
    }
 
    public ResourceLocation getTextureLocation(ArmorStandRenderState var1) {

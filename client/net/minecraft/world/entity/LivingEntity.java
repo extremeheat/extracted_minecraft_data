@@ -568,12 +568,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    @Nullable
    public LivingEntity getLastHurtByMob() {
-      return (LivingEntity)EntityReference.get(this.lastHurtByMob, this.level(), LivingEntity.class);
+      return EntityReference.getLivingEntity(this.lastHurtByMob, this.level());
    }
 
    @Nullable
    public Player getLastHurtByPlayer() {
-      return (Player)EntityReference.get(this.lastHurtByPlayer, this.level(), Player.class);
+      return EntityReference.getPlayer(this.lastHurtByPlayer, this.level());
    }
 
    public LivingEntity getLastAttacker() {
@@ -585,11 +585,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void setLastHurtByPlayer(Player var1, int var2) {
-      this.setLastHurtByPlayer(new EntityReference(var1), var2);
+      this.setLastHurtByPlayer(EntityReference.of(var1), var2);
    }
 
    public void setLastHurtByPlayer(UUID var1, int var2) {
-      this.setLastHurtByPlayer(new EntityReference(var1), var2);
+      this.setLastHurtByPlayer(EntityReference.of(var1), var2);
    }
 
    private void setLastHurtByPlayer(EntityReference<Player> var1, int var2) {
@@ -598,7 +598,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void setLastHurtByMob(@Nullable LivingEntity var1) {
-      this.lastHurtByMob = var1 != null ? new EntityReference(var1) : null;
+      this.lastHurtByMob = EntityReference.of(var1);
       this.lastHurtByMobTimestamp = this.tickCount;
    }
 
@@ -1337,7 +1337,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
       }
 
-      return (Player)EntityReference.get(this.lastHurtByPlayer, this.level(), Player.class);
+      return EntityReference.getPlayer(this.lastHurtByPlayer, this.level());
    }
 
    protected void blockUsingItem(ServerLevel var1, LivingEntity var2) {
@@ -1832,7 +1832,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    @Nullable
    public LivingEntity getKillCredit() {
       if (this.lastHurtByPlayer != null) {
-         return this.lastHurtByPlayer.getEntity(this.level(), Player.class);
+         return (LivingEntity)this.lastHurtByPlayer.getEntity(this.level(), Player.class);
       } else {
          return this.lastHurtByMob != null ? (LivingEntity)this.lastHurtByMob.getEntity(this.level(), LivingEntity.class) : null;
       }

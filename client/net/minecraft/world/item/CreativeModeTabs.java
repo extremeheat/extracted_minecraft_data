@@ -1699,6 +1699,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CAVE_SPIDER_SPAWN_EGG);
          var1.accept((ItemLike)Items.CHICKEN_SPAWN_EGG);
          var1.accept((ItemLike)Items.COD_SPAWN_EGG);
+         var1.accept((ItemLike)Items.COPPER_GOLEM_SPAWN_EGG);
          var1.accept((ItemLike)Items.COW_SPAWN_EGG);
          var1.accept((ItemLike)Items.CREAKING_SPAWN_EGG);
          var1.accept((ItemLike)Items.CREEPER_SPAWN_EGG);
@@ -1720,7 +1721,6 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.HORSE_SPAWN_EGG);
          var1.accept((ItemLike)Items.HUSK_SPAWN_EGG);
          var1.accept((ItemLike)Items.IRON_GOLEM_SPAWN_EGG);
-         var1.accept((ItemLike)Items.COPPER_GOLEM_SPAWN_EGG);
          var1.accept((ItemLike)Items.LLAMA_SPAWN_EGG);
          var1.accept((ItemLike)Items.MAGMA_CUBE_SPAWN_EGG);
          var1.accept((ItemLike)Items.MOOSHROOM_SPAWN_EGG);

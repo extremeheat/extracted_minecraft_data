@@ -9,7 +9,6 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
@@ -30,6 +29,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -63,7 +63,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       this.addLayer(new ArrowLayer(this, var1));
       this.addLayer(new Deadmau5EarsLayer(this, var1.getModelSet()));
       this.addLayer(new CapeLayer(this, var1.getModelSet(), var1.getEquipmentAssets()));
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
       this.addLayer(new ParrotOnShoulderLayer(this, var1.getModelSet()));
       this.addLayer(new SpinAttackEffectLayer(this, var1.getModelSet()));
@@ -252,15 +252,15 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       }
    }
 
-   public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
+   public void renderRightHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
       this.renderHand(var1, var2, var3, var4, (this.model).rightArm, var5);
    }
 
-   public void renderLeftHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
+   public void renderLeftHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
       this.renderHand(var1, var2, var3, var4, (this.model).leftArm, var5);
    }
 
-   private void renderHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
+   private void renderHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
       PlayerModel var7 = (PlayerModel)this.getModel();
       var5.resetPose();
       var5.visible = true;
@@ -268,7 +268,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var7.rightSleeve.visible = var6;
       var7.leftArm.zRot = -0.1F;
       var7.rightArm.zRot = 0.1F;
-      var5.render(var1, var2.getBuffer(RenderType.entityTranslucent(var4)), var3, OverlayTexture.NO_OVERLAY);
+      var2.submitModelPart(var5, var1, RenderType.entityTranslucent(var4), var3, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
    }
 
    protected void setupRotations(PlayerRenderState var1, PoseStack var2, float var3, float var4) {

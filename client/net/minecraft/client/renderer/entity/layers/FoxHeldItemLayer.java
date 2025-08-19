@@ -47,7 +47,7 @@ public class FoxHeldItemLayer extends RenderLayer<FoxRenderState, FoxModel> {
             var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
          }
 
-         var2.submitItem(var1, var7, var3, OverlayTexture.NO_OVERLAY);
+         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          var1.popPose();
       }
    }

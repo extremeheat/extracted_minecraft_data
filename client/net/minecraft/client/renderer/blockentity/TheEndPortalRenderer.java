@@ -2,8 +2,10 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
@@ -18,9 +20,8 @@ public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> implements 
       super();
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      Matrix4f var8 = var3.last().pose();
-      this.renderCube(var1, var8, var4.getBuffer(this.renderType()));
+   public void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+      var8.submitCustomGeometry(var3, this.renderType(), (var2x, var3x) -> this.renderCube(var1, var2x.pose(), var3x));
    }
 
    private void renderCube(T var1, Matrix4f var2, VertexConsumer var3) {

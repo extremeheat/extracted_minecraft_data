@@ -7,7 +7,6 @@ import com.mojang.authlib.exceptions.ForcedUsernameChangeException;
 import com.mojang.authlib.exceptions.InsufficientPrivilegesException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
 import com.mojang.authlib.exceptions.UserBannedException;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.logging.LogUtils;
 import java.math.BigInteger;
 import java.security.PublicKey;
@@ -154,7 +153,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    @Nullable
    private Component authenticateServer(String var1) {
       try {
-         this.getMinecraftSessionService().joinServer(this.minecraft.getUser().getProfileId(), this.minecraft.getUser().getAccessToken(), var1);
+         this.minecraft.services().sessionService().joinServer(this.minecraft.getUser().getProfileId(), this.minecraft.getUser().getAccessToken(), var1);
          return null;
       } catch (AuthenticationUnavailableException var3) {
          return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.serversUnavailable"));
@@ -167,10 +166,6 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       } catch (AuthenticationException var7) {
          return Component.translatable("disconnect.loginFailedInfo", var7.getMessage());
       }
-   }
-
-   private MinecraftSessionService getMinecraftSessionService() {
-      return this.minecraft.getMinecraftSessionService();
    }
 
    public void handleLoginFinished(ClientboundLoginFinishedPacket var1) {

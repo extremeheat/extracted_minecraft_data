@@ -8,12 +8,16 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.SkullBlock;
 import org.joml.Quaternionfc;
 
@@ -22,15 +26,17 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
    private static final float SKULL_SCALE = 1.1875F;
    private final Transforms transforms;
    private final Function<SkullBlock.Type, SkullModelBase> skullModels;
+   private final PlayerSkinRenderCache playerSkinRenderCache;
 
-   public CustomHeadLayer(RenderLayerParent<S, M> var1, EntityModelSet var2) {
-      this(var1, var2, CustomHeadLayer.Transforms.DEFAULT);
+   public CustomHeadLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, PlayerSkinRenderCache var3) {
+      this(var1, var2, var3, CustomHeadLayer.Transforms.DEFAULT);
    }
 
-   public CustomHeadLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, Transforms var3) {
+   public CustomHeadLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, PlayerSkinRenderCache var3, Transforms var4) {
       super(var1);
-      this.transforms = var3;
+      this.transforms = var4;
       this.skullModels = Util.memoize((Function)((var1x) -> SkullBlockRenderer.createModel(var2, var1x)));
+      this.playerSkinRenderCache = var3;
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
@@ -46,15 +52,26 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
             var1.translate(-0.5, 0.0, -0.5);
             SkullBlock.Type var8 = var4.wornHeadType;
             SkullModelBase var9 = (SkullModelBase)this.skullModels.apply(var8);
-            RenderType var10 = SkullBlockRenderer.getRenderType(var8, var4.wornHeadProfile);
-            SkullBlockRenderer.submitSkull(180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var9, var10, var4.outlineColor);
+            RenderType var10 = this.resolveSkullRenderType(var4, var8);
+            SkullBlockRenderer.submitSkull((Direction)null, 180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var9, var10, var4.outlineColor);
          } else {
             translateToHead(var1, this.transforms);
-            var2.submitItem(var1, var4.headItem, var3, OverlayTexture.NO_OVERLAY);
+            var4.headItem.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          }
 
          var1.popPose();
       }
+   }
+
+   private RenderType resolveSkullRenderType(LivingEntityRenderState var1, SkullBlock.Type var2) {
+      if (var2 == SkullBlock.Types.PLAYER) {
+         ResolvableProfile var3 = var1.wornHeadProfile;
+         if (var3 != null) {
+            return this.playerSkinRenderCache.getOrDefault(var3).renderType();
+         }
+      }
+
+      return SkullBlockRenderer.getSkullRenderType(var2, (ResourceLocation)null);
    }
 
    public static void translateToHead(PoseStack var0, Transforms var1) {

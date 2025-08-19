@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HappyGhastRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -27,7 +28,7 @@ public class RopesLayer<M extends HappyGhastModel> extends RenderLayer<HappyGhas
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, HappyGhastRenderState var4, float var5, float var6) {
       if (var4.isLeashHolder && var4.bodyItem.is(ItemTags.HARNESSES)) {
          HappyGhastModel var7 = var4.isBaby ? this.babyModel : this.adultModel;
-         var2.submitModel(var7, var4, var1, this.ropes, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
+         var2.submitModel(var7, var4, var1, this.ropes, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

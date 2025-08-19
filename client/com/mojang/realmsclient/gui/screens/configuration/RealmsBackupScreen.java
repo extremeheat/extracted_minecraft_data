@@ -229,28 +229,28 @@ public class RealmsBackupScreen extends RealmsScreen {
          return this.children;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = var3 + var6 / 2;
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         int var6 = this.getContentYMiddle();
          Objects.requireNonNull(RealmsBackupScreen.this.font);
-         int var12 = var11 - 9 - 2;
-         int var13 = var11 + 2;
-         int var14 = this.backup.isUploadedVersion() ? -8388737 : -1;
-         var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), var4, var12, var14);
-         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var13, -11776948);
-         int var15 = 0;
-         int var16 = var3 + var6 / 2 - 10;
+         int var7 = var6 - 9 - 2;
+         int var8 = var6 + 2;
+         int var9 = this.backup.isUploadedVersion() ? -8388737 : -1;
+         var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), this.getContentX(), var7, var9);
+         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), this.getContentX(), var8, -11776948);
+         int var10 = 0;
+         int var11 = this.getContentYMiddle() - 10;
          if (this.restoreButton != null) {
-            var15 += this.restoreButton.getWidth() + 8;
-            this.restoreButton.setX(var4 + var5 - var15);
-            this.restoreButton.setY(var16);
-            this.restoreButton.render(var1, var7, var8, var10);
+            var10 += this.restoreButton.getWidth() + 8;
+            this.restoreButton.setX(this.getContentRight() - var10);
+            this.restoreButton.setY(var11);
+            this.restoreButton.render(var1, var2, var3, var5);
          }
 
          if (this.changesButton != null) {
-            var15 += this.changesButton.getWidth() + 8;
-            this.changesButton.setX(var4 + var5 - var15);
-            this.changesButton.setY(var16);
-            this.changesButton.render(var1, var7, var8, var10);
+            var10 += this.changesButton.getWidth() + 8;
+            this.changesButton.setX(this.getContentRight() - var10);
+            this.changesButton.setY(var11);
+            this.changesButton.render(var1, var2, var3, var5);
          }
 
       }

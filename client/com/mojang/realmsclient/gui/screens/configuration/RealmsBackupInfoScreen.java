@@ -40,7 +40,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    }
 
    protected void repositionElements() {
-      this.backupInfoList.setSize(this.width, this.layout.getContentHeight());
+      this.backupInfoList.updateSize(this.width, this.layout);
       this.layout.arrangeElements();
    }
 
@@ -94,9 +94,9 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
          this.value = var3;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawString(RealmsBackupInfoScreen.this.font, this.translateKey(this.key), var4, var3, -6250336);
-         var1.drawString(RealmsBackupInfoScreen.this.font, (Component)RealmsBackupInfoScreen.this.checkForSpecificMetadata(this.key, this.value), var4, var3 + 12, -1);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         var1.drawString(RealmsBackupInfoScreen.this.font, this.translateKey(this.key), this.getContentX(), this.getContentY(), -6250336);
+         var1.drawString(RealmsBackupInfoScreen.this.font, (Component)RealmsBackupInfoScreen.this.checkForSpecificMetadata(this.key, this.value), this.getContentX(), this.getContentY() + 12, -1);
       }
 
       private Component translateKey(String var1) {

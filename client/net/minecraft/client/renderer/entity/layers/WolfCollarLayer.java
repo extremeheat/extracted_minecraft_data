@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +23,7 @@ public class WolfCollarLayer extends RenderLayer<WolfRenderState, WolfModel> {
       DyeColor var7 = var4.collarColor;
       if (var7 != null && !var4.isInvisible) {
          int var8 = var7.getTextureDiffuseColor();
-         var2.submitModel(this.getParentModel(), var4, var1, RenderType.entityCutoutNoCull(WOLF_COLLAR_LOCATION), var3, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var4.outlineColor, 1);
+         var2.order(1).submitModel(this.getParentModel(), var4, var1, RenderType.entityCutoutNoCull(WOLF_COLLAR_LOCATION), var3, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

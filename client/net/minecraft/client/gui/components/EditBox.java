@@ -28,7 +28,6 @@ public class EditBox extends AbstractWidget {
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
    private static final int CURSOR_INSERT_WIDTH = 1;
-   private static final int CURSOR_INSERT_COLOR = -3092272;
    private static final String CURSOR_APPEND_CHARACTER = "_";
    public static final int DEFAULT_TEXT_COLOR = -2039584;
    private static final int CURSOR_BLINK_INTERVAL_MS = 300;
@@ -440,7 +439,7 @@ public class EditBox extends AbstractWidget {
                int var19 = var17 + 1;
                int var20 = this.textY + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var17, var18, var19, var20 + 9, -3092272);
+               var1.fill(var17, var18, var19, var20 + 9, var15);
             } else {
                var1.drawString(this.font, "_", var17, this.textY, var15, this.textShadow);
             }

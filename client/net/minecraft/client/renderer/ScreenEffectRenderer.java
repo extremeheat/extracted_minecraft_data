@@ -7,6 +7,7 @@ import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -17,6 +18,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -54,55 +56,57 @@ public class ScreenEffectRenderer {
 
    }
 
-   public void renderScreenEffect(boolean var1, float var2) {
-      PoseStack var3 = new PoseStack();
-      LocalPlayer var4 = this.minecraft.player;
+   public void renderScreenEffect(boolean var1, float var2, SubmitNodeCollector var3) {
+      PoseStack var4 = new PoseStack();
+      LocalPlayer var5 = this.minecraft.player;
       if (this.minecraft.options.getCameraType().isFirstPerson() && !var1) {
-         if (!var4.noPhysics) {
-            BlockState var5 = getViewBlockingState(var4);
-            if (var5 != null) {
-               renderTex(this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(var5), var3, this.bufferSource);
+         if (!var5.noPhysics) {
+            BlockState var6 = getViewBlockingState(var5);
+            if (var6 != null) {
+               renderTex(this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(var6), var4, this.bufferSource);
             }
          }
 
          if (!this.minecraft.player.isSpectator()) {
             if (this.minecraft.player.isEyeInFluid(FluidTags.WATER)) {
-               renderWater(this.minecraft, var3, this.bufferSource);
+               renderWater(this.minecraft, var4, this.bufferSource);
             }
 
             if (this.minecraft.player.isOnFire()) {
-               TextureAtlasSprite var6 = this.materials.get(ModelBakery.FIRE_1);
-               renderFire(var3, this.bufferSource, var6);
+               TextureAtlasSprite var7 = this.materials.get(ModelBakery.FIRE_1);
+               renderFire(var4, this.bufferSource, var7);
             }
          }
       }
 
       if (!this.minecraft.options.hideGui) {
-         this.renderItemActivationAnimation(var3, var2);
+         this.renderItemActivationAnimation(var4, var2, var3);
       }
 
    }
 
-   private void renderItemActivationAnimation(PoseStack var1, float var2) {
+   private void renderItemActivationAnimation(PoseStack var1, float var2, SubmitNodeCollector var3) {
       if (this.itemActivationItem != null && this.itemActivationTicks > 0) {
-         int var3 = 40 - this.itemActivationTicks;
-         float var4 = ((float)var3 + var2) / 40.0F;
-         float var5 = var4 * var4;
-         float var6 = var4 * var5;
-         float var7 = 10.25F * var6 * var5 - 24.95F * var5 * var5 + 25.5F * var6 - 13.8F * var5 + 4.0F * var4;
-         float var8 = var7 * 3.1415927F;
-         float var9 = (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight();
-         float var10 = this.itemActivationOffX * 0.3F * var9;
-         float var11 = this.itemActivationOffY * 0.3F;
+         int var4 = 40 - this.itemActivationTicks;
+         float var5 = ((float)var4 + var2) / 40.0F;
+         float var6 = var5 * var5;
+         float var7 = var5 * var6;
+         float var8 = 10.25F * var7 * var6 - 24.95F * var6 * var6 + 25.5F * var7 - 13.8F * var6 + 4.0F * var5;
+         float var9 = var8 * 3.1415927F;
+         float var10 = (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight();
+         float var11 = this.itemActivationOffX * 0.3F * var10;
+         float var12 = this.itemActivationOffY * 0.3F;
          var1.pushPose();
-         var1.translate(var10 * Mth.abs(Mth.sin(var8 * 2.0F)), var11 * Mth.abs(Mth.sin(var8 * 2.0F)), -10.0F + 9.0F * Mth.sin(var8));
-         float var12 = 0.8F;
+         var1.translate(var11 * Mth.abs(Mth.sin(var9 * 2.0F)), var12 * Mth.abs(Mth.sin(var9 * 2.0F)), -10.0F + 9.0F * Mth.sin(var9));
+         float var13 = 0.8F;
          var1.scale(0.8F, 0.8F, 0.8F);
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
-         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
+         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var9))));
+         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
+         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
-         this.minecraft.getItemRenderer().renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var1, this.bufferSource, this.minecraft.level, 0);
+         ItemStackRenderState var14 = new ItemStackRenderState();
+         this.minecraft.getItemModelResolver().updateForTopItem(var14, this.itemActivationItem, ItemDisplayContext.FIXED, this.minecraft.level, (ItemOwner)null, 0);
+         var14.submit(var1, var3, 15728880, OverlayTexture.NO_OVERLAY, 0);
          var1.popPose();
       }
    }

@@ -3046,7 +3046,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       this.setYHeadRot(var8.yRot());
       this.setXRot(var8.xRot());
       this.setOldRot();
-      this.setDeltaMovement(var8.deltaMovement());
    }
 
    public void placePortalTicket(BlockPos var1) {

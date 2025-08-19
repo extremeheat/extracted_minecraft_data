@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.font;
 
-import com.mojang.blaze3d.font.SheetGlyphInfo;
+import com.mojang.blaze3d.font.GlyphBitmap;
+import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,7 +10,7 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
+import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
@@ -32,17 +33,17 @@ public class FontTexture extends AbstractTexture implements Dumpable {
    }
 
    @Nullable
-   public BakedGlyph add(SheetGlyphInfo var1) {
-      if (var1.isColored() != this.colored) {
+   public BakedSheetGlyph add(GlyphInfo var1, GlyphBitmap var2) {
+      if (var2.isColored() != this.colored) {
          return null;
       } else {
-         Node var2 = this.root.insert(var1);
-         if (var2 != null && this.texture != null && this.textureView != null) {
-            var1.upload(var2.x, var2.y, this.texture);
-            float var3 = 256.0F;
+         Node var3 = this.root.insert(var2);
+         if (var3 != null && this.texture != null && this.textureView != null) {
+            var2.upload(var3.x, var3.y, this.texture);
             float var4 = 256.0F;
-            float var5 = 0.01F;
-            return new BakedGlyph(this.renderTypes, this.textureView, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getTop(), var1.getBottom());
+            float var5 = 256.0F;
+            float var6 = 0.01F;
+            return new BakedSheetGlyph(var1, this.renderTypes, this.textureView, ((float)var3.x + 0.01F) / 256.0F, ((float)var3.x - 0.01F + (float)var2.getPixelWidth()) / 256.0F, ((float)var3.y + 0.01F) / 256.0F, ((float)var3.y - 0.01F + (float)var2.getPixelHeight()) / 256.0F, var2.getLeft(), var2.getRight(), var2.getTop(), var2.getBottom());
          } else {
             return null;
          }
@@ -76,7 +77,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       }
 
       @Nullable
-      Node insert(SheetGlyphInfo var1) {
+      Node insert(GlyphBitmap var1) {
          if (this.left != null && this.right != null) {
             Node var6 = this.left.insert(var1);
             if (var6 == null) {

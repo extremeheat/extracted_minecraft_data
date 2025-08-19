@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
@@ -34,7 +35,7 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
 
       var2.scale(-1.0F, -1.0F, 1.0F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-      var3.submitModel(this.model(), var1, var2, this.renderType(), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+      var3.submitModel(this.model(), var1, var2, this.renderType(), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       this.submitTypeAdditions(var1, var2, var3, var1.lightCoords);
       var2.popPose();
       super.submit(var1, var2, var3);

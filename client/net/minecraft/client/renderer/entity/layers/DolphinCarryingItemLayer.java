@@ -27,7 +27,7 @@ public class DolphinCarryingItemLayer extends RenderLayer<DolphinRenderState, Do
             var1.translate(0.0F, 1.0F + var10 * 0.8F, -1.0F + var10 * 0.2F);
          }
 
-         var2.submitItem(var1, var7, var3, OverlayTexture.NO_OVERLAY);
+         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          var1.popPose();
       }
    }

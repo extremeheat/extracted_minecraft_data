@@ -41,7 +41,7 @@ public class OctreeDebugRenderer {
 
       VertexConsumer var26 = var3.getBuffer(RenderType.lines());
       long var20 = var17 + 5L;
-      ShapeRenderer.renderLineBox(var2, var26, var14.deflate(0.1 * (double)var10).move(-var4, -var6, -var8), getColorComponent(var20, 0.3F), getColorComponent(var20, 0.8F), getColorComponent(var20, 0.5F), var11 ? 0.4F : 1.0F);
+      ShapeRenderer.renderLineBox(var2.last(), var26, var14.deflate(0.1 * (double)var10).move(-var4, -var6, -var8), getColorComponent(var20, 0.3F), getColorComponent(var20, 0.8F), getColorComponent(var20, 0.5F), var11 ? 0.4F : 1.0F);
    }
 
    private static float getColorComponent(long var0, float var2) {

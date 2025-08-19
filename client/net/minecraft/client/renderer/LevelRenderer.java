@@ -18,7 +18,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -64,6 +63,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
@@ -557,7 +557,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var23.endLastBatch();
          this.checkPoseStack(var25);
          var9.popPush("blockentities");
-         this.renderBlockEntities(var25, var23, var24, var3, var13x);
+         this.renderBlockEntities(var25, var3, var13x);
          this.featureRenderDispatcher.renderAllFeatures();
          var23.endLastBatch();
          this.checkPoseStack(var25);
@@ -731,52 +731,40 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void renderBlockEntities(PoseStack var1, MultiBufferSource.BufferSource var2, MultiBufferSource.BufferSource var3, Camera var4, float var5) {
-      Vec3 var6 = var4.getPosition();
-      double var7 = var6.x();
-      double var9 = var6.y();
-      double var11 = var6.z();
-      Iterator var13 = this.visibleSections.iterator();
+   private void renderBlockEntities(PoseStack var1, Camera var2, float var3) {
+      Vec3 var4 = var2.getPosition();
+      double var5 = var4.x();
+      double var7 = var4.y();
+      double var9 = var4.z();
+      Iterator var11 = this.visibleSections.iterator();
 
-      while(var13.hasNext()) {
-         SectionRenderDispatcher.RenderSection var14 = (SectionRenderDispatcher.RenderSection)var13.next();
-         List var15 = var14.getSectionMesh().getRenderableBlockEntities();
-         if (!var15.isEmpty()) {
-            for(BlockEntity var17 : var15) {
-               BlockPos var18 = var17.getBlockPos();
-               Object var19 = var2;
+      while(var11.hasNext()) {
+         SectionRenderDispatcher.RenderSection var12 = (SectionRenderDispatcher.RenderSection)var11.next();
+         List var13 = var12.getSectionMesh().getRenderableBlockEntities();
+         if (!var13.isEmpty()) {
+            for(BlockEntity var15 : var13) {
+               BlockPos var16 = var15.getBlockPos();
                var1.pushPose();
-               var1.translate((double)var18.getX() - var7, (double)var18.getY() - var9, (double)var18.getZ() - var11);
-               SortedSet var20 = (SortedSet)this.destructionProgress.get(var18.asLong());
-               if (var20 != null && !var20.isEmpty()) {
-                  int var21 = ((BlockDestructionProgress)var20.last()).getProgress();
-                  if (var21 >= 0) {
-                     PoseStack.Pose var22 = var1.last();
-                     SheetedDecalTextureGenerator var23 = new SheetedDecalTextureGenerator(var3.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var21)), var22, 1.0F);
-                     var19 = (var2x) -> {
-                        VertexConsumer var3 = var2.getBuffer(var2x);
-                        return var2x.affectsCrumbling() ? VertexMultiConsumer.create(var23, var3) : var3;
-                     };
-                  }
-               }
-
-               this.blockEntityRenderDispatcher.render(var17, var5, var1, (MultiBufferSource)var19);
+               var1.translate((double)var16.getX() - var5, (double)var16.getY() - var7, (double)var16.getZ() - var9);
+               SortedSet var17 = (SortedSet)this.destructionProgress.get(var16.asLong());
+               ModelFeatureRenderer.CrumblingOverlay var18 = var17 != null && !var17.isEmpty() ? new ModelFeatureRenderer.CrumblingOverlay(((BlockDestructionProgress)var17.last()).getProgress(), var1.last()) : null;
+               this.blockEntityRenderDispatcher.submit(var15, var3, var1, var18, this.submitNodeStorage);
                var1.popPose();
             }
          }
       }
 
-      var13 = this.level.getGloballyRenderedBlockEntities().iterator();
+      var11 = this.level.getGloballyRenderedBlockEntities().iterator();
 
-      while(var13.hasNext()) {
-         BlockEntity var25 = (BlockEntity)var13.next();
-         if (var25.isRemoved()) {
-            var13.remove();
+      while(var11.hasNext()) {
+         BlockEntity var20 = (BlockEntity)var11.next();
+         if (var20.isRemoved()) {
+            var11.remove();
          } else {
-            BlockPos var26 = var25.getBlockPos();
+            BlockPos var21 = var20.getBlockPos();
             var1.pushPose();
-            var1.translate((double)var26.getX() - var7, (double)var26.getY() - var9, (double)var26.getZ() - var11);
-            this.blockEntityRenderDispatcher.render(var25, var5, var1, var2);
+            var1.translate((double)var21.getX() - var5, (double)var21.getY() - var7, (double)var21.getZ() - var9);
+            this.blockEntityRenderDispatcher.submit(var20, var3, var1, (ModelFeatureRenderer.CrumblingOverlay)null, this.submitNodeStorage);
             var1.popPose();
          }
       }

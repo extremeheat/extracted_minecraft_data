@@ -71,7 +71,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          BlockStateModel var11 = this.blockRenderer.getBlockModel(var10);
          var2.pushPose();
          var2.translate(-0.5F, -0.5F, -0.5F);
-         var3.submitBlockModel(var2, RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), var11, 1.0F, 1.0F, 1.0F, var1.lightCoords, OverlayTexture.NO_OVERLAY);
+         var3.submitBlockModel(var2, RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), var11, 1.0F, 1.0F, 1.0F, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
          var2.popPose();
       }
 
@@ -95,7 +95,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var1.rotation * 360.0F / 8.0F));
          int var14 = this.getLightCoords(var1.isGlowFrame, 15728880, var1.lightCoords);
          var2.scale(0.5F, 0.5F, 0.5F);
-         var3.submitItem(var2, var1.item, var14, OverlayTexture.NO_OVERLAY);
+         var1.item.submit(var2, var3, var14, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       }
 
       var2.popPose();
