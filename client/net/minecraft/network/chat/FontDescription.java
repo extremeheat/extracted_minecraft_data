@@ -3,6 +3,7 @@ package net.minecraft.network.chat;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public interface FontDescription {
    Codec<FontDescription> CODEC = ResourceLocation.CODEC.flatComapMap(Resource::new, (var0) -> {
@@ -26,6 +27,14 @@ public interface FontDescription {
          super();
          this.atlasId = var1;
          this.spriteId = var2;
+      }
+   }
+
+   public static record PlayerSprite(ResolvableProfile profile, boolean hat) implements FontDescription {
+      public PlayerSprite(ResolvableProfile var1, boolean var2) {
+         super();
+         this.profile = var1;
+         this.hat = var2;
       }
    }
 }

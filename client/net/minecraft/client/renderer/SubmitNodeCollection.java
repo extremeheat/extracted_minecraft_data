@@ -119,9 +119,9 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9) {
+   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
       this.wasUsed = true;
-      ((List)this.modelPartSubmits.computeIfAbsent(var3, (var0) -> new ArrayList())).add(new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9));
+      ((List)this.modelPartSubmits.computeIfAbsent(var3, (var0) -> new ArrayList())).add(new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10));
    }
 
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {

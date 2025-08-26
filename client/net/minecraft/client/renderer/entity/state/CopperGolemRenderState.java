@@ -14,7 +14,7 @@ public class CopperGolemRenderState extends ArmedEntityRenderState {
    public final AnimationState interactionGetNoItem;
    public final AnimationState interactionDropItem;
    public final AnimationState interactionDropNoItem;
-   public Optional<BlockState> blockOnHead;
+   public Optional<BlockState> blockOnAntenna;
 
    public CopperGolemRenderState() {
       super();
@@ -25,6 +25,6 @@ public class CopperGolemRenderState extends ArmedEntityRenderState {
       this.interactionGetNoItem = new AnimationState();
       this.interactionDropItem = new AnimationState();
       this.interactionDropNoItem = new AnimationState();
-      this.blockOnHead = Optional.empty();
+      this.blockOnAntenna = Optional.empty();
    }
 }

@@ -81,23 +81,23 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       SkullBlock.Type var15 = ((AbstractSkullBlock)var10.getBlock()).getType();
       SkullModelBase var16 = (SkullModelBase)this.modelByType.apply(var15);
       RenderType var17 = this.resolveSkullRenderType(var15, var1);
-      submitSkull(var12, var14, var9, var3, var8, var4, var16, var17, 0);
+      submitSkull(var12, var14, var9, var3, var8, var4, var16, var17, 0, var7);
    }
 
-   public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8) {
+   public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
       var3.pushPose();
       if (var0 == null) {
          var3.translate(0.5F, 0.0F, 0.5F);
       } else {
-         float var9 = 0.25F;
+         float var10 = 0.25F;
          var3.translate(0.5F - (float)var0.getStepX() * 0.25F, 0.25F, 0.5F - (float)var0.getStepZ() * 0.25F);
       }
 
       var3.scale(-1.0F, -1.0F, 1.0F);
-      SkullModelBase.State var10 = new SkullModelBase.State();
-      var10.animationPos = var2;
-      var10.yRot = var1;
-      var4.submitModel(var6, var10, var3, var7, var5, OverlayTexture.NO_OVERLAY, var8, (ModelFeatureRenderer.CrumblingOverlay)null);
+      SkullModelBase.State var11 = new SkullModelBase.State();
+      var11.animationPos = var2;
+      var11.yRot = var1;
+      var4.submitModel(var6, var11, var3, var7, var5, OverlayTexture.NO_OVERLAY, var8, var9);
       var3.popPose();
    }
 

@@ -20,15 +20,19 @@ public abstract class NeedleDirectionHelper {
          var3 = var1.getEntityRepresentation();
       }
 
-      if (var2 == null && var3 != null) {
-         Level var6 = ((ItemOwner)var3).level();
-         if (var6 instanceof ClientLevel) {
-            ClientLevel var5 = (ClientLevel)var6;
-            var2 = var5;
+      if (var3 == null) {
+         return 0.0F;
+      } else {
+         if (var2 == null && var3 != null) {
+            Level var6 = ((ItemOwner)var3).level();
+            if (var6 instanceof ClientLevel) {
+               ClientLevel var5 = (ClientLevel)var6;
+               var2 = var5;
+            }
          }
-      }
 
-      return var2 == null ? 0.0F : this.calculate(var1, var2, var4, (ItemOwner)var3);
+         return var2 == null ? 0.0F : this.calculate(var1, var2, var4, (ItemOwner)var3);
+      }
    }
 
    protected abstract float calculate(ItemStack var1, ClientLevel var2, int var3, @Nullable ItemOwner var4);

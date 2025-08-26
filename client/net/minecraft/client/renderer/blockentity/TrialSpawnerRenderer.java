@@ -27,7 +27,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
          TrialSpawnerStateData var11 = var10.getStateData();
          Entity var12 = var11.getOrCreateDisplayEntity(var10, var9, var10.getState());
          if (var12 != null) {
-            SpawnerRenderer.submitEntityInSpawner(var2, var3, var8, var12, this.entityRenderer, var11.getOSpin(), var11.getSpin());
+            SpawnerRenderer.submitEntityInSpawner(var2, var3, var8, var12, this.entityRenderer, var11.getOSpin(), var11.getSpin(), var4);
          }
 
       }

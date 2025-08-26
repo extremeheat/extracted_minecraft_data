@@ -41,6 +41,7 @@ import net.minecraft.client.gui.render.pip.GuiProfilerChartRenderer;
 import net.minecraft.client.gui.render.pip.GuiSignRenderer;
 import net.minecraft.client.gui.render.pip.GuiSkinRenderer;
 import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
@@ -590,10 +591,14 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             }
          }
 
-         this.minecraft.gui.renderDebugOverlay(var8);
+         if (!(this.minecraft.screen instanceof DebugOptionsScreen)) {
+            this.minecraft.gui.renderDebugOverlay(var8);
+         }
+
          this.minecraft.gui.renderDeferredSubtitles();
          this.guiRenderer.render(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
          this.guiRenderer.incrementFrameNumber();
+         var8.applyCursor(this.minecraft.getWindow());
          this.submitNodeStorage.endFrame();
          this.resourcePool.endFrame();
       }

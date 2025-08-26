@@ -1,6 +1,5 @@
 package net.minecraft.network.protocol.status;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,10 +9,10 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.server.players.NameAndId;
 
 public record ServerStatus(Component description, Optional<Players> players, Optional<Version> version, Optional<Favicon> favicon, boolean enforcesSecureChat) {
    public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description), ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players), ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version), ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon), Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)).apply(var0, ServerStatus::new));
@@ -27,11 +26,10 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
       this.enforcesSecureChat = var5;
    }
 
-   public static record Players(int max, int online, List<GameProfile> sample) {
-      private static final Codec<GameProfile> PROFILE_CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(GameProfile::getId), Codec.STRING.fieldOf("name").forGetter(GameProfile::getName)).apply(var0, GameProfile::new));
-      public static final Codec<Players> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("max").forGetter(Players::max), Codec.INT.fieldOf("online").forGetter(Players::online), PROFILE_CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(Players::sample)).apply(var0, Players::new));
+   public static record Players(int max, int online, List<NameAndId> sample) {
+      public static final Codec<Players> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("max").forGetter(Players::max), Codec.INT.fieldOf("online").forGetter(Players::online), NameAndId.CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(Players::sample)).apply(var0, Players::new));
 
-      public Players(int var1, int var2, List<GameProfile> var3) {
+      public Players(int var1, int var2, List<NameAndId> var3) {
          super();
          this.max = var1;
          this.online = var2;

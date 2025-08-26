@@ -147,7 +147,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       boolean var5 = var1.isSecondaryUseActive();
       Direction var6 = var1.getClickedFace();
       if (var6.getAxis().isHorizontal() && var5) {
-         Direction var7 = this.candidatePartnerFacing(var1, var6.getOpposite());
+         Direction var7 = this.candidatePartnerFacing(var1.getLevel(), var1.getClickedPos(), var6.getOpposite());
          if (var7 != null && var7.getAxis() != var6.getAxis()) {
             var3 = var7;
             var2 = var7.getCounterClockWise() == var6.getOpposite() ? ChestType.RIGHT : ChestType.LEFT;
@@ -155,14 +155,18 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       }
 
       if (var2 == ChestType.SINGLE && !var5) {
-         if (var3 == this.candidatePartnerFacing(var1, var3.getClockWise())) {
-            var2 = ChestType.LEFT;
-         } else if (var3 == this.candidatePartnerFacing(var1, var3.getCounterClockWise())) {
-            var2 = ChestType.RIGHT;
-         }
+         var2 = this.getChestType(var1.getLevel(), var1.getClickedPos(), var3);
       }
 
       return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var3)).setValue(TYPE, var2)).setValue(WATERLOGGED, var4.getType() == Fluids.WATER);
+   }
+
+   protected ChestType getChestType(Level var1, BlockPos var2, Direction var3) {
+      if (var3 == this.candidatePartnerFacing(var1, var2, var3.getClockWise())) {
+         return ChestType.LEFT;
+      } else {
+         return var3 == this.candidatePartnerFacing(var1, var2, var3.getCounterClockWise()) ? ChestType.RIGHT : ChestType.SINGLE;
+      }
    }
 
    protected FluidState getFluidState(BlockState var1) {
@@ -170,9 +174,9 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Nullable
-   private Direction candidatePartnerFacing(BlockPlaceContext var1, Direction var2) {
-      BlockState var3 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var2));
-      return this.chestCanConnectTo(var3) && var3.getValue(TYPE) == ChestType.SINGLE ? (Direction)var3.getValue(FACING) : null;
+   private Direction candidatePartnerFacing(Level var1, BlockPos var2, Direction var3) {
+      BlockState var4 = var1.getBlockState(var2.relative(var3));
+      return this.chestCanConnectTo(var4) && var4.getValue(TYPE) == ChestType.SINGLE ? (Direction)var4.getValue(FACING) : null;
    }
 
    protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {

@@ -9,6 +9,7 @@ import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -44,9 +45,9 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       Material var11 = var10 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
       var4.submitModelPart(this.model.handle(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11));
       if (var10) {
-         BannerRenderer.submitPatterns(this.materials, var3, var4, var5, var6, this.model.plate(), var11, false, (DyeColor)Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, var7, false);
+         BannerRenderer.submitPatterns(this.materials, var3, var4, var5, var6, this.model.plate(), var11, false, (DyeColor)Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, var7, false, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
-         var4.submitModelPart(this.model.plate(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11));
+         var4.submitModelPart(this.model.plate(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11), false, var7, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       var3.popPose();

@@ -84,6 +84,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Boolean> IS_PANICKING;
    public static final MemoryModuleType<List<UUID>> UNREACHABLE_TONGUE_TARGETS;
    public static final MemoryModuleType<Set<GlobalPos>> VISITED_BLOCK_POSITIONS;
+   public static final MemoryModuleType<Set<GlobalPos>> UNREACHABLE_TRANSPORT_BLOCK_POSITIONS;
    public static final MemoryModuleType<Integer> TRANSPORT_ITEMS_COOLDOWN_TICKS;
    public static final MemoryModuleType<UUID> ANGRY_AT;
    public static final MemoryModuleType<Boolean> UNIVERSAL_ANGER;
@@ -217,6 +218,7 @@ public class MemoryModuleType<U> {
       IS_PANICKING = register("is_panicking", Codec.BOOL);
       UNREACHABLE_TONGUE_TARGETS = register("unreachable_tongue_targets");
       VISITED_BLOCK_POSITIONS = register("visited_block_positions", GlobalPos.CODEC.listOf().xmap(Sets::newHashSet, Lists::newArrayList));
+      UNREACHABLE_TRANSPORT_BLOCK_POSITIONS = register("unreachable_transport_block_positions", GlobalPos.CODEC.listOf().xmap(Sets::newHashSet, Lists::newArrayList));
       TRANSPORT_ITEMS_COOLDOWN_TICKS = register("transport_items_cooldown_ticks");
       ANGRY_AT = register("angry_at", UUIDUtil.CODEC);
       UNIVERSAL_ANGER = register("universal_anger", Codec.BOOL);

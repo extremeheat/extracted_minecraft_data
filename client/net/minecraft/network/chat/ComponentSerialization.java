@@ -14,6 +14,7 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,7 +32,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.util.StringRepresentable;
 
 public class ComponentSerialization {
    public static final Codec<Component> CODEC = Codec.recursive("Component", ComponentSerialization::createCodec);
@@ -85,22 +85,32 @@ public class ComponentSerialization {
       return var1;
    }
 
-   public static <T extends StringRepresentable, E> MapCodec<E> createLegacyComponentMatcher(T[] var0, Function<T, MapCodec<? extends E>> var1, Function<E, T> var2, String var3) {
-      FuzzyCodec var4 = new FuzzyCodec(Stream.of(var0).map(var1).toList(), (var2x) -> (MapEncoder)var1.apply((StringRepresentable)var2.apply(var2x)));
-      Codec var5 = StringRepresentable.fromValues(() -> var0);
-      MapCodec var6 = var5.dispatchMap(var3, var2, var1);
-      StrictEither var7 = new StrictEither(var3, var6, var4);
-      return ExtraCodecs.orCompressed(var7, var6);
+   public static <T> MapCodec<T> createLegacyComponentMatcher(ExtraCodecs.LateBoundIdMapper<String, MapCodec<? extends T>> var0, Function<T, MapCodec<? extends T>> var1, String var2) {
+      FuzzyCodec var3 = new FuzzyCodec(var0.values(), var1);
+      MapCodec var4 = var0.codec(Codec.STRING).dispatchMap(var2, var1, (var0x) -> var0x);
+      StrictEither var5 = new StrictEither(var2, var4, var3);
+      return ExtraCodecs.orCompressed(var5, var4);
    }
 
    private static Codec<Component> createCodec(Codec<Component> var0) {
-      ComponentContents.Type[] var1 = new ComponentContents.Type[]{PlainTextContents.TYPE, TranslatableContents.TYPE, KeybindContents.TYPE, ScoreContents.TYPE, SelectorContents.TYPE, NbtContents.TYPE, ObjectContents.TYPE};
-      MapCodec var2 = createLegacyComponentMatcher(var1, ComponentContents.Type::codec, ComponentContents::type, "type");
+      ExtraCodecs.LateBoundIdMapper var1 = new ExtraCodecs.LateBoundIdMapper();
+      bootstrap(var1);
+      MapCodec var2 = createLegacyComponentMatcher(var1, ComponentContents::codec, "type");
       Codec var3 = RecordCodecBuilder.create((var2x) -> var2x.group(var2.forGetter(Component::getContents), ExtraCodecs.nonEmptyList(var0.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::getSiblings), Style.Serializer.MAP_CODEC.forGetter(Component::getStyle)).apply(var2x, MutableComponent::new));
       return Codec.either(Codec.either(Codec.STRING, ExtraCodecs.nonEmptyList(var0.listOf())), var3).xmap((var0x) -> (Component)var0x.map((var0) -> (Component)var0.map(Component::literal, ComponentSerialization::createFromList), (var0) -> var0), (var0x) -> {
          String var1 = var0x.tryCollapseToString();
          return var1 != null ? Either.left(Either.left(var1)) : Either.right(var0x);
       });
+   }
+
+   private static void bootstrap(ExtraCodecs.LateBoundIdMapper<String, MapCodec<? extends ComponentContents>> var0) {
+      var0.put("text", PlainTextContents.MAP_CODEC);
+      var0.put("translatable", TranslatableContents.MAP_CODEC);
+      var0.put("keybind", KeybindContents.MAP_CODEC);
+      var0.put("score", ScoreContents.MAP_CODEC);
+      var0.put("selector", SelectorContents.MAP_CODEC);
+      var0.put("nbt", NbtContents.MAP_CODEC);
+      var0.put("object", ObjectContents.MAP_CODEC);
    }
 
    static {
@@ -137,10 +147,10 @@ public class ComponentSerialization {
    }
 
    static class FuzzyCodec<T> extends MapCodec<T> {
-      private final List<MapCodec<? extends T>> codecs;
-      private final Function<T, MapEncoder<? extends T>> encoderGetter;
+      private final Collection<MapCodec<? extends T>> codecs;
+      private final Function<T, ? extends MapEncoder<? extends T>> encoderGetter;
 
-      public FuzzyCodec(List<MapCodec<? extends T>> var1, Function<T, MapEncoder<? extends T>> var2) {
+      public FuzzyCodec(Collection<MapCodec<? extends T>> var1, Function<T, ? extends MapEncoder<? extends T>> var2) {
          super();
          this.codecs = var1;
          this.encoderGetter = var2;

@@ -189,7 +189,7 @@ public abstract class RecipeProvider {
    }
 
    protected void hangingSign(ItemLike var1, ItemLike var2) {
-      this.shaped(RecipeCategory.DECORATIONS, var1, 6).group("hanging_sign").define('#', var2).define('X', ItemTags.CHAINS).pattern("X X").pattern("###").pattern("###").unlockedBy("has_stripped_logs", this.has(var2)).save(this.output);
+      this.shaped(RecipeCategory.DECORATIONS, var1, 6).group("hanging_sign").define('#', var2).define('X', Items.IRON_CHAIN).pattern("X X").pattern("###").pattern("###").unlockedBy("has_stripped_logs", this.has(var2)).save(this.output);
    }
 
    protected void colorItemWithDye(List<Item> var1, List<Item> var2, String var3, RecipeCategory var4) {

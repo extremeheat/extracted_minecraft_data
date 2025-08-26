@@ -103,7 +103,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    }
 
    private boolean isPlayerAlreadyInWorld(GameProfile var1) {
-      return this.server.getPlayerList().getPlayer(var1.getId()) != null;
+      return this.server.getPlayerList().getPlayer(var1.id()) != null;
    }
 
    public void onDisconnect(DisconnectionDetails var1) {
@@ -120,7 +120,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       Validate.validState(StringUtil.isValidPlayerName(var1.name()), "Invalid characters in username", new Object[0]);
       this.requestedUsername = var1.name();
       GameProfile var2 = this.server.getSingleplayerProfile();
-      if (var2 != null && this.requestedUsername.equalsIgnoreCase(var2.getName())) {
+      if (var2 != null && this.requestedUsername.equalsIgnoreCase(var2.name())) {
          this.startClientVerification(var2);
       } else {
          if (this.server.usesAuthentication() && !this.connection.isMemoryConnection()) {
@@ -148,7 +148,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
             this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
          }
 
-         boolean var4 = var2.disconnectAllPlayersWithProfile(var1.getId());
+         boolean var4 = var2.disconnectAllPlayersWithProfile(var1.id());
          if (var4) {
             this.state = ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT;
          } else {
@@ -191,7 +191,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                ProfileResult var2x = ServerLoginPacketListenerImpl.this.server.services().sessionService().hasJoinedServer(var1, var2, this.getAddress());
                if (var2x != null) {
                   GameProfile var3 = var2x.profile();
-                  ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.getName(), var3.getId());
+                  ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.name(), var3.id());
                   ServerLoginPacketListenerImpl.this.startClientVerification(var3);
                } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Failed to verify username but will let them in anyway!");

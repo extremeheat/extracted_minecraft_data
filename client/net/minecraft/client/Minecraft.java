@@ -144,6 +144,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.texture.SkinTextureDownloader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.ClientPackSource;
@@ -480,8 +481,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       try {
          this.window.setIcon(this.vanillaPackResources, SharedConstants.getCurrentVersion().stable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
-      } catch (IOException var17) {
-         LOGGER.error("Couldn't set icon", var17);
+      } catch (IOException var18) {
+         LOGGER.error("Couldn't set icon", var18);
       }
 
       this.mouseHandler = new MouseHandler(this);
@@ -505,7 +506,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.textureManager);
       this.shaderManager = new ShaderManager(this.textureManager, this::triggerResourcePackRecovery);
       this.resourceManager.registerReloadListener(this.shaderManager);
-      this.skinManager = new SkinManager(var2.toPath().resolve("skins"), this.services, this);
+      SkinTextureDownloader var9 = new SkinTextureDownloader(this.proxy, this.textureManager, this);
+      this.skinManager = new SkinManager(var2.toPath().resolve("skins"), this.services, var9, this);
       this.levelSource = new LevelStorageSource(var3.resolve("saves"), var3.resolve("backups"), this.directoryValidator, this.fixerUpper);
       this.commandHistory = new CommandHistory(var3);
       this.musicManager = new MusicManager(this);
@@ -515,7 +517,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.splashManager);
       this.atlasManager = new AtlasManager(this.textureManager, (Integer)this.options.mipmapLevels().get());
       this.resourceManager.registerReloadListener(this.atlasManager);
-      this.fontManager = new FontManager(this.textureManager, this.atlasManager);
+      LocalPlayerResolver var10 = new LocalPlayerResolver(this, this.services.profileResolver());
+      this.playerSkinRenderCache = new PlayerSkinRenderCache(this.textureManager, this.skinManager, var10);
+      this.fontManager = new FontManager(this.textureManager, this.atlasManager, this.playerSkinRenderCache);
       this.font = this.fontManager.createFont();
       this.fontFilterFishy = this.fontManager.createFontFilterFishy();
       this.resourceManager.registerReloadListener(this.fontManager);
@@ -527,30 +531,28 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.setupDefaultState();
       this.window.setErrorSection("Post startup");
       this.blockColors = BlockColors.createDefault();
-      LocalPlayerResolver var9 = new LocalPlayerResolver(this, this.services.profileResolver());
-      this.playerSkinRenderCache = new PlayerSkinRenderCache(this.skinManager, var9);
       this.modelManager = new ModelManager(this.blockColors, this.atlasManager, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.modelManager);
-      EquipmentAssetManager var10 = new EquipmentAssetManager();
-      this.resourceManager.registerReloadListener(var10);
+      EquipmentAssetManager var11 = new EquipmentAssetManager();
+      this.resourceManager.registerReloadListener(var11);
       this.itemModelResolver = new ItemModelResolver(this.modelManager);
       this.itemRenderer = new ItemRenderer(this.itemModelResolver);
       this.mapTextureManager = new MapTextureManager(this.textureManager);
       this.mapRenderer = new MapRenderer(this.atlasManager, this.mapTextureManager);
 
       try {
-         int var11 = Runtime.getRuntime().availableProcessors();
+         int var12 = Runtime.getRuntime().availableProcessors();
          Tesselator.init();
-         this.renderBuffers = new RenderBuffers(var11);
-      } catch (OutOfMemoryError var16) {
+         this.renderBuffers = new RenderBuffers(var12);
+      } catch (OutOfMemoryError var17) {
          TinyFileDialogs.tinyfd_messageBox("Minecraft", "Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: " + String.valueOf(CommonLinks.GENERAL_HELP), "ok", "error", true);
-         throw new SilentInitException("Unable to allocate render buffers", var16);
+         throw new SilentInitException("Unable to allocate render buffers", var17);
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
       this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.atlasManager, this.modelManager.specialBlockModelRenderer(), this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
-      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), var10, this.playerSkinRenderCache);
+      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), var11, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
       this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
@@ -567,8 +569,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.regionalCompliancies);
       this.gui = new Gui(this);
       this.debugRenderer = new DebugRenderer(this);
-      RealmsClient var18 = RealmsClient.getOrCreate(this);
-      this.realmsDataFetcher = new RealmsDataFetcher(var18);
+      RealmsClient var19 = RealmsClient.getOrCreate(this);
+      this.realmsDataFetcher = new RealmsDataFetcher(var19);
       RenderSystem.setErrorCallback(this::onFullscreenError);
       if (this.mainRenderTarget.width == this.window.getWidth() && this.mainRenderTarget.height == this.window.getHeight()) {
          if ((Boolean)this.options.fullscreen().get() && !this.window.isFullscreen()) {
@@ -581,23 +583,24 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       } else {
          int var10002 = this.window.getWidth();
-         StringBuilder var12 = new StringBuilder("Recovering from unsupported resolution (" + var10002 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
+         StringBuilder var13 = new StringBuilder("Recovering from unsupported resolution (" + var10002 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
 
          try {
-            GpuDevice var13 = RenderSystem.getDevice();
-            List var14 = var13.getLastDebugMessages();
-            if (!var14.isEmpty()) {
-               var12.append("\n\nReported GL debug messages:\n").append(String.join("\n", var14));
+            GpuDevice var14 = RenderSystem.getDevice();
+            List var15 = var14.getLastDebugMessages();
+            if (!var15.isEmpty()) {
+               var13.append("\n\nReported GL debug messages:\n").append(String.join("\n", var15));
             }
-         } catch (Throwable var15) {
+         } catch (Throwable var16) {
          }
 
          this.window.setWindowed(this.mainRenderTarget.width, this.mainRenderTarget.height);
-         TinyFileDialogs.tinyfd_messageBox("Minecraft", var12.toString(), "ok", "error", false);
+         TinyFileDialogs.tinyfd_messageBox("Minecraft", var13.toString(), "ok", "error", false);
       }
 
       this.window.updateVsync((Boolean)this.options.enableVsync().get());
       this.window.updateRawMouseInput((Boolean)this.options.rawMouseInput().get());
+      this.window.setAllowCursorChanges((Boolean)this.options.allowCursorChanges().get());
       this.window.setDefaultErrorCallback();
       this.resizeDisplay();
       this.gameRenderer.preloadUiShader(this.vanillaPackResources.asProvider());
@@ -612,18 +615,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       LoadingOverlay.registerTextures(this.textureManager);
       this.gameRenderer.getPanorama().registerTextures(this.textureManager);
       this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
-      List var19 = this.resourcePackRepository.openAllSelected();
-      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var19);
-      ReloadInstance var20 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var19);
+      List var20 = this.resourcePackRepository.openAllSelected();
+      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var20);
+      ReloadInstance var21 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var20);
       GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS);
-      GameLoadCookie var21 = new GameLoadCookie(var18, var1.quickPlay);
-      this.setOverlay(new LoadingOverlay(this, var20, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var21), () -> {
+      GameLoadCookie var22 = new GameLoadCookie(var19, var1.quickPlay);
+      this.setOverlay(new LoadingOverlay(this, var21, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var22), () -> {
             if (SharedConstants.IS_RUNNING_IN_IDE) {
                this.selfTest();
             }
 
             this.reloadStateTracker.finishReload();
-            this.onResourceLoadFinished(var21);
+            this.onResourceLoadFinished(var22);
          }), false));
       this.quickPlayLog = QuickPlayLog.of(var1.quickPlay.logPath());
       this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
@@ -705,7 +708,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          GameProfile var5 = var4.profile();
          Set var6 = var4.actions();
          if (var6.contains(ProfileActionType.FORCED_NAME_CHANGE)) {
-            var1.add((Function)(var1x) -> BanNoticeScreens.createNameBan(var5.getName(), var1x));
+            var1.add((Function)(var1x) -> BanNoticeScreens.createNameBan(var5.name(), var1x));
          }
 
          if (var6.contains(ProfileActionType.USING_BANNED_SKIN)) {

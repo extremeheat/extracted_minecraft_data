@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +46,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
          var1.scale(this.transforms.horizontalScale(), 1.0F, this.transforms.horizontalScale());
          EntityModel var7 = this.getParentModel();
          var7.root().translateAndRotate(var1);
-         ((HeadedModel)var7).getHead().translateAndRotate(var1);
+         ((HeadedModel)var7).translateToHead(var1);
          if (var4.wornHeadType != null) {
             var1.translate(0.0F, this.transforms.skullYOffset(), 0.0F);
             var1.scale(1.1875F, -1.1875F, -1.1875F);
@@ -53,7 +54,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
             SkullBlock.Type var8 = var4.wornHeadType;
             SkullModelBase var9 = (SkullModelBase)this.skullModels.apply(var8);
             RenderType var10 = this.resolveSkullRenderType(var4, var8);
-            SkullBlockRenderer.submitSkull((Direction)null, 180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var9, var10, var4.outlineColor);
+            SkullBlockRenderer.submitSkull((Direction)null, 180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var9, var10, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          } else {
             translateToHead(var1, this.transforms);
             var4.headItem.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);

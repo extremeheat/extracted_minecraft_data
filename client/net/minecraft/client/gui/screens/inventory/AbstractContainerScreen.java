@@ -435,12 +435,15 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
                }
             }
          }
+
+         return true;
       } else if (this.isQuickCrafting && var10 != null && !var11.isEmpty() && (var11.getCount() > this.quickCraftSlots.size() || this.quickCraftingType == 2) && AbstractContainerMenu.canItemQuickReplace(var10, var11, true) && var10.mayPlace(var11) && this.menu.canDragTo(var10)) {
          this.quickCraftSlots.add(var10);
          this.recalculateQuickCraftRemaining();
+         return true;
+      } else {
+         return var10 == null && this.menu.getCarried().isEmpty() ? super.mouseDragged(var1, var3, var5, var6, var8) : true;
       }
-
-      return true;
    }
 
    public boolean mouseReleased(double var1, double var3, int var5) {

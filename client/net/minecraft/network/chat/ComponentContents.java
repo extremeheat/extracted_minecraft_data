@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 
 public interface ComponentContents {
@@ -21,17 +20,5 @@ public interface ComponentContents {
       return MutableComponent.create(this);
    }
 
-   Type<?> type();
-
-   public static record Type<T extends ComponentContents>(MapCodec<T> codec, String id) implements StringRepresentable {
-      public Type(MapCodec<T> var1, String var2) {
-         super();
-         this.codec = var1;
-         this.id = var2;
-      }
-
-      public String getSerializedName() {
-         return this.id;
-      }
-   }
+   MapCodec<? extends ComponentContents> codec();
 }

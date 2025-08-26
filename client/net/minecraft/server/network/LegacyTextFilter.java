@@ -57,8 +57,8 @@ public class LegacyTextFilter extends ServerTextFilter {
                JsonObject var3 = new JsonObject();
                var3.addProperty("server", var5);
                var3.addProperty("room", var6);
-               var3.addProperty("user_id", var2x.getId().toString());
-               var3.addProperty("user_display_name", var2x.getName());
+               var3.addProperty("user_id", var2x.id().toString());
+               var3.addProperty("user_display_name", var2x.name());
                return var3;
             };
             ServerTextFilter.MessageEncoder var16;
@@ -68,8 +68,8 @@ public class LegacyTextFilter extends ServerTextFilter {
                   var5x.addProperty("rule", var4);
                   var5x.addProperty("server", var5);
                   var5x.addProperty("room", var6);
-                  var5x.addProperty("player", var3x.getId().toString());
-                  var5x.addProperty("player_display_name", var3x.getName());
+                  var5x.addProperty("player", var3x.id().toString());
+                  var5x.addProperty("player_display_name", var3x.name());
                   var5x.addProperty("text", var4x);
                   var5x.addProperty("language", "*");
                   return var5x;
@@ -81,8 +81,8 @@ public class LegacyTextFilter extends ServerTextFilter {
                   var5x.addProperty("rule_id", var17);
                   var5x.addProperty("category", var5);
                   var5x.addProperty("subcategory", var6);
-                  var5x.addProperty("user_id", var3x.getId().toString());
-                  var5x.addProperty("user_display_name", var3x.getName());
+                  var5x.addProperty("user_id", var3x.id().toString());
+                  var5x.addProperty("user_display_name", var3x.name());
                   var5x.addProperty("text", var4x);
                   var5x.addProperty("language", "*");
                   return var5x;

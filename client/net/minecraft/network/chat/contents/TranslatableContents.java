@@ -31,8 +31,7 @@ public class TranslatableContents implements ComponentContents {
    public static final Object[] NO_ARGS = new Object[0];
    private static final Codec<Object> PRIMITIVE_ARG_CODEC;
    private static final Codec<Object> ARG_CODEC;
-   public static final MapCodec<TranslatableContents> CODEC;
-   public static final ComponentContents.Type<TranslatableContents> TYPE;
+   public static final MapCodec<TranslatableContents> MAP_CODEC;
    private static final FormattedText TEXT_PERCENT;
    private static final FormattedText TEXT_NULL;
    private final String key;
@@ -71,8 +70,8 @@ public class TranslatableContents implements ComponentContents {
       this.args = var3;
    }
 
-   public ComponentContents.Type<?> type() {
-      return TYPE;
+   public MapCodec<TranslatableContents> codec() {
+      return MAP_CODEC;
    }
 
    private void decompose() {
@@ -252,8 +251,7 @@ public class TranslatableContents implements ComponentContents {
 
          return var10000;
       });
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("translate").forGetter((var0x) -> var0x.key), Codec.STRING.lenientOptionalFieldOf("fallback").forGetter((var0x) -> Optional.ofNullable(var0x.fallback)), ARG_CODEC.listOf().optionalFieldOf("with").forGetter((var0x) -> adjustArgs(var0x.args))).apply(var0, TranslatableContents::create));
-      TYPE = new ComponentContents.Type<TranslatableContents>(CODEC, "translatable");
+      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("translate").forGetter((var0x) -> var0x.key), Codec.STRING.lenientOptionalFieldOf("fallback").forGetter((var0x) -> Optional.ofNullable(var0x.fallback)), ARG_CODEC.listOf().optionalFieldOf("with").forGetter((var0x) -> adjustArgs(var0x.args))).apply(var0, TranslatableContents::create));
       TEXT_PERCENT = FormattedText.of("%");
       TEXT_NULL = FormattedText.of("null");
       FORMAT_PATTERN = Pattern.compile("%(?:(\\d+)\\$)?([A-Za-z%]|$)");

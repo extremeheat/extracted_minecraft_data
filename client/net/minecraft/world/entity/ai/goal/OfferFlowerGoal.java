@@ -3,11 +3,11 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
@@ -53,9 +53,9 @@ public class OfferFlowerGoal extends Goal {
          LivingEntity var2 = this.entity;
          if (var2 instanceof Mob) {
             Mob var1 = (Mob)var2;
-            if (var1.getType().is(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT) && var1.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && this.getGolemBoundingBox().intersects(var1.getBoundingBox())) {
-               var1.setItemSlot(EquipmentSlot.HEAD, OFFER_ITEM.getDefaultInstance());
-               var1.setGuaranteedDrop(EquipmentSlot.HEAD);
+            if (var1.getType().is(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT) && var1.getItemBySlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA).isEmpty() && this.getGolemBoundingBox().intersects(var1.getBoundingBox())) {
+               var1.setItemSlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA, OFFER_ITEM.getDefaultInstance());
+               var1.setGuaranteedDrop(CopperGolem.EQUIPMENT_SLOT_ANTENNA);
             }
          }
       }

@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
 import org.joml.Matrix4f;
 
 public class AtlasGlyphProvider {
@@ -56,7 +55,7 @@ public class AtlasGlyphProvider {
       });
    }
 
-   static record Instance(GlyphRenderTypes renderTypes, GpuTextureView textureView, TextureAtlasSprite sprite, float x, float y, int color, int shadowColor, float shadowOffset) implements TextRenderable {
+   static record Instance(GlyphRenderTypes renderTypes, GpuTextureView textureView, TextureAtlasSprite sprite, float x, float y, int color, int shadowColor, float shadowOffset) implements PlainTextRenderable {
       Instance(GlyphRenderTypes var1, GpuTextureView var2, TextureAtlasSprite var3, float var4, float var5, int var6, int var7, float var8) {
          super();
          this.renderTypes = var1;
@@ -69,19 +68,7 @@ public class AtlasGlyphProvider {
          this.shadowOffset = var8;
       }
 
-      public void render(Matrix4f var1, VertexConsumer var2, int var3, boolean var4) {
-         float var5 = 0.0F;
-         if (this.shadowColor != 0) {
-            this.renderSprite(var1, var2, var3, this.x + this.shadowOffset, this.y + this.shadowOffset, 0.0F, this.shadowColor);
-            if (!var4) {
-               var5 += 0.03F;
-            }
-         }
-
-         this.renderSprite(var1, var2, var3, this.x, this.y, var5, this.color);
-      }
-
-      private void renderSprite(Matrix4f var1, VertexConsumer var2, int var3, float var4, float var5, float var6, int var7) {
+      public void renderSprite(Matrix4f var1, VertexConsumer var2, int var3, float var4, float var5, float var6, int var7) {
          float var8 = var4 + this.left();
          float var9 = var4 + this.right();
          float var10 = var5 + this.top();
@@ -114,21 +101,6 @@ public class AtlasGlyphProvider {
 
       public float bottom() {
          return 7.0F;
-      }
-   }
-
-   static record SingleSpriteSource(BakedGlyph glyph) implements GlyphSource {
-      SingleSpriteSource(BakedGlyph var1) {
-         super();
-         this.glyph = var1;
-      }
-
-      public BakedGlyph getGlyph(int var1) {
-         return this.glyph;
-      }
-
-      public BakedGlyph getRandomGlyph(RandomSource var1, int var2) {
-         return this.glyph;
       }
    }
 }

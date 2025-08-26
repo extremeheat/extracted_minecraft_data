@@ -1,11 +1,13 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -30,6 +32,8 @@ public class EditBox extends AbstractWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
    private static final String CURSOR_APPEND_CHARACTER = "_";
    public static final int DEFAULT_TEXT_COLOR = -2039584;
+   public static final Style DEFAULT_HINT_STYLE;
+   public static final Style SEARCH_HINT_STYLE;
    private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private String value;
@@ -372,10 +376,18 @@ public class EditBox extends AbstractWidget {
       }
    }
 
+   private void handleClick(double var1, boolean var3) {
+      int var4 = Math.min(Mth.floor(var1) - this.textX, this.getInnerWidth());
+      String var5 = this.value.substring(this.displayPos);
+      this.moveCursorTo(this.displayPos + this.font.plainSubstrByWidth(var5, var4).length(), var3);
+   }
+
    public void onClick(double var1, double var3, boolean var5) {
-      int var6 = Mth.floor(var1) - this.textX;
-      String var7 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-      this.moveCursorTo(this.font.plainSubstrByWidth(var7, var6).length() + this.displayPos, Screen.hasShiftDown());
+      this.handleClick(var1, Screen.hasShiftDown());
+   }
+
+   protected void onDrag(double var1, double var3, double var5, double var7) {
+      this.handleClick(var1, true);
    }
 
    public void playDownSound(SoundManager var1) {
@@ -443,6 +455,10 @@ public class EditBox extends AbstractWidget {
             } else {
                var1.drawString(this.font, "_", var17, this.textY, var15, this.textShadow);
             }
+         }
+
+         if (this.isHovered()) {
+            var1.requestCursor(this.isEditable() ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
          }
 
       }
@@ -586,7 +602,13 @@ public class EditBox extends AbstractWidget {
    }
 
    public void setHint(Component var1) {
-      this.hint = var1;
+      boolean var2 = var1.getStyle().equals(Style.EMPTY);
+      this.hint = (Component)(var2 ? var1.copy().withStyle(DEFAULT_HINT_STYLE) : var1);
+   }
+
+   static {
+      DEFAULT_HINT_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_GRAY);
+      SEARCH_HINT_STYLE = Style.EMPTY.applyFormats(ChatFormatting.GRAY, ChatFormatting.ITALIC);
    }
 
    @FunctionalInterface

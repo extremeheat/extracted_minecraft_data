@@ -14,7 +14,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4540;
+   public static final int WORLD_VERSION = 4542;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -23,19 +23,19 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 773;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 264;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 265;
    public static final int SNBT_NAG_VERSION = 4531;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 66;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 67;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 84;
+   public static final int DATA_PACK_FORMAT_MAJOR = 85;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
@@ -44,6 +44,7 @@ public class SharedConstants {
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
    public static final String DATA_VERSION_TAG = "DataVersion";
+   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "1.0.0";
    public static final boolean FIX_TNT_DUPE = false;
    public static final boolean FIX_SAND_DUPE = false;
    public static final boolean USE_DEBUG_FEATURES = false;
@@ -184,7 +185,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742088;
+      return 1073742089;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

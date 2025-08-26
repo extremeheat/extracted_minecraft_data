@@ -38,7 +38,7 @@ public class DebugConfigCommand {
       for(Connection var3 : var0.getConnection().getConnections()) {
          PacketListener var5 = var3.getPacketListener();
          if (var5 instanceof ServerConfigurationPacketListenerImpl var4) {
-            var1.add(var4.getOwner().getId().toString());
+            var1.add(var4.getOwner().id().toString());
          }
       }
 
@@ -49,8 +49,8 @@ public class DebugConfigCommand {
       GameProfile var2 = var1.getGameProfile();
       var1.connection.switchToConfig();
       var0.sendSuccess(() -> {
-         String var10000 = var2.getName();
-         return Component.literal("Switched player " + var10000 + "(" + String.valueOf(var2.getId()) + ") to config mode");
+         String var10000 = var2.name();
+         return Component.literal("Switched player " + var10000 + "(" + String.valueOf(var2.id()) + ") to config mode");
       }, false);
       return 1;
    }
@@ -60,7 +60,7 @@ public class DebugConfigCommand {
       for(Connection var3 : var0.getConnection().getConnections()) {
          PacketListener var5 = var3.getPacketListener();
          if (var5 instanceof ServerConfigurationPacketListenerImpl var4) {
-            if (var4.getOwner().getId().equals(var1)) {
+            if (var4.getOwner().id().equals(var1)) {
                return var4;
             }
          }

@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -119,6 +120,10 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return ((Pose)var1.getValue(POSE)).ordinal() + 1;
+   }
+
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      var2.updateNeighbourForOutputSignal(var3, var1.getBlock());
    }
 
    protected FluidState getFluidState(BlockState var1) {

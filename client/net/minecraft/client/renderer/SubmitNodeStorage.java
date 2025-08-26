@@ -63,8 +63,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitModel(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9) {
-      this.order(0).submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, var9);
+   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.CrumblingOverlay var10) {
+      this.order(0).submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
    }
 
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {
@@ -185,8 +185,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record ModelPartSubmit(PoseStack.Pose pose, ModelPart modelPart, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor) {
-      public ModelPartSubmit(PoseStack.Pose var1, ModelPart var2, int var3, int var4, @Nullable TextureAtlasSprite var5, boolean var6, boolean var7, int var8) {
+   public static record ModelPartSubmit(PoseStack.Pose pose, ModelPart modelPart, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+      public ModelPartSubmit(PoseStack.Pose var1, ModelPart var2, int var3, int var4, @Nullable TextureAtlasSprite var5, boolean var6, boolean var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
          super();
          this.pose = var1;
          this.modelPart = var2;
@@ -196,6 +196,7 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
          this.sheeted = var6;
          this.hasFoil = var7;
          this.tintedColor = var8;
+         this.crumblingOverlay = var9;
       }
    }
 

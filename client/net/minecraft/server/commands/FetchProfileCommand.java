@@ -17,8 +17,10 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.objects.PlayerSprite;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -34,13 +36,17 @@ public class FetchProfileCommand {
 
    private static void reportResolvedProfile(CommandSourceStack var0, GameProfile var1, String var2, Component var3) {
       ResolvableProfile var4 = ResolvableProfile.createResolved(var1);
-      ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, var4).ifSuccess((var3x) -> {
-         String var4 = var3x.toString();
-         var0.sendSuccess(() -> {
-            MutableComponent var3x = ComponentUtils.formatList(List.of(Component.translatable("commands.profile_fetch.copy_component").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.CopyToClipboard(var4)))), Component.translatable("commands.profile_fetch.give_item").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.RunCommand("give @s minecraft:player_head[profile=" + var4 + "]"))))), CommonComponents.SPACE, (var0) -> ComponentUtils.wrapInSquareBrackets(var0.withStyle(ChatFormatting.GREEN)));
-            return Component.translatable(var2, var3, var3x);
-         }, false);
-      }).ifError((var1x) -> var0.sendFailure(Component.translatable("commands.profile_fetch.failed_to_serialize", var1x.message())));
+      ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, var4).ifSuccess((var4x) -> {
+         String var5 = var4x.toString();
+         MutableComponent var6 = Component.object(new PlayerSprite(var4, true));
+         ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, var6).ifSuccess((var5x) -> {
+            String var6x = var5x.toString();
+            var0.sendSuccess(() -> {
+               MutableComponent var5x = ComponentUtils.formatList(List.of(Component.translatable("commands.fetchprofile.copy_text", var6.withStyle(ChatFormatting.WHITE)).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.CopyToClipboard(var6x)))), Component.translatable("commands.fetchprofile.copy_component").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.CopyToClipboard(var5)))), Component.translatable("commands.fetchprofile.give_item").withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.RunCommand("give @s minecraft:player_head[profile=" + var5 + "]"))))), CommonComponents.SPACE, (var0) -> ComponentUtils.wrapInSquareBrackets(var0.withStyle(ChatFormatting.GREEN)));
+               return Component.translatable(var2, var3, var5x);
+            }, false);
+         }).ifError((var1) -> var0.sendFailure(Component.translatable("commands.fetchprofile.failed_to_serialize", var1.message())));
+      }).ifError((var1x) -> var0.sendFailure(Component.translatable("commands.fetchprofile.failed_to_serialize", var1x.message())));
    }
 
    private static int resolveName(CommandSourceStack var0, String var1) {
@@ -49,7 +55,7 @@ public class FetchProfileCommand {
       Util.nonCriticalIoPool().execute(() -> {
          MutableComponent var4 = Component.literal(var1);
          Optional var5 = var3.fetchByName(var1);
-         var2.execute(() -> var5.ifPresentOrElse((var2) -> reportResolvedProfile(var0, var2, "commands.profile_fetch.name.success", var4), () -> var0.sendFailure(Component.translatable("commands.profile_fetch.name.failure", var4))));
+         var2.execute(() -> var5.ifPresentOrElse((var2) -> reportResolvedProfile(var0, var2, "commands.fetchprofile.name.success", var4), () -> var0.sendFailure(Component.translatable("commands.fetchprofile.name.failure", var4))));
       });
       return 1;
    }
@@ -60,7 +66,7 @@ public class FetchProfileCommand {
       Util.nonCriticalIoPool().execute(() -> {
          Component var4 = Component.translationArg(var1);
          Optional var5 = var3.fetchById(var1);
-         var2.execute(() -> var5.ifPresentOrElse((var2) -> reportResolvedProfile(var0, var2, "commands.profile_fetch.id.success", var4), () -> var0.sendFailure(Component.translatable("commands.profile_fetch.id.failure", var4))));
+         var2.execute(() -> var5.ifPresentOrElse((var2) -> reportResolvedProfile(var0, var2, "commands.fetchprofile.id.success", var4), () -> var0.sendFailure(Component.translatable("commands.fetchprofile.id.failure", var4))));
       });
       return 1;
    }

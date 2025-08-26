@@ -24,7 +24,7 @@ public class DefaultPlayerSkin {
    }
 
    public static PlayerSkin get(GameProfile var0) {
-      return get(var0.getId());
+      return get(var0.id());
    }
 
    private static PlayerSkin create(String var0, PlayerSkin.Model var1) {

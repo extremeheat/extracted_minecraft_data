@@ -1641,17 +1641,17 @@ public class BlockModelGenerators {
       this.registerSimpleItemModel(Blocks.SCULK_CATALYST, var4);
    }
 
-   private void createShelf(Block var1) {
-      TextureMapping var2 = (new TextureMapping()).put(TextureSlot.ALL, TextureMapping.getBlockTexture(var1));
-      MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
-      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_BODY, (Boolean)null, (SideChainPart)null);
-      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_UNPOWERED, false, (SideChainPart)null);
-      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_UNCONNECTED, true, SideChainPart.UNCONNECTED);
-      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_LEFT, true, SideChainPart.LEFT);
-      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_CENTER, true, SideChainPart.CENTER);
-      this.addShelfPart(var1, var2, var3, ModelTemplates.SHELF_RIGHT, true, SideChainPart.RIGHT);
-      this.blockStateOutput.accept(var3);
-      this.registerSimpleItemModel(var1, ModelTemplates.SHELF_INVENTORY.create(var1, var2, this.modelOutput));
+   private void createShelf(Block var1, Block var2) {
+      TextureMapping var3 = (new TextureMapping()).put(TextureSlot.ALL, TextureMapping.getBlockTexture(var1)).put(TextureSlot.PARTICLE, TextureMapping.getBlockTexture(var2));
+      MultiPartGenerator var4 = MultiPartGenerator.multiPart(var1);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_BODY, (Boolean)null, (SideChainPart)null);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_UNPOWERED, false, (SideChainPart)null);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_UNCONNECTED, true, SideChainPart.UNCONNECTED);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_LEFT, true, SideChainPart.LEFT);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_CENTER, true, SideChainPart.CENTER);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_RIGHT, true, SideChainPart.RIGHT);
+      this.blockStateOutput.accept(var4);
+      this.registerSimpleItemModel(var1, ModelTemplates.SHELF_INVENTORY.create(var1, var3, this.modelOutput));
    }
 
    private void addShelfPart(Block var1, TextureMapping var2, MultiPartGenerator var3, ModelTemplate var4, @Nullable Boolean var5, @Nullable SideChainPart var6) {
@@ -1966,7 +1966,7 @@ public class BlockModelGenerators {
       this.createNonTemplateModelBlock(Blocks.WATER);
       this.createNonTemplateModelBlock(Blocks.LAVA);
       this.createNonTemplateModelBlock(Blocks.SLIME_BLOCK);
-      this.registerSimpleFlatItemModel(Items.CHAIN);
+      this.registerSimpleFlatItemModel(Items.IRON_CHAIN);
       Items.COPPER_CHAIN.waxedMapping().forEach(this::createCopperChainItem);
       this.createCandleAndCandleCake(Blocks.WHITE_CANDLE, Blocks.WHITE_CANDLE_CAKE);
       this.createCandleAndCandleCake(Blocks.ORANGE_CANDLE, Blocks.ORANGE_CANDLE_CAKE);
@@ -2118,18 +2118,18 @@ public class BlockModelGenerators {
       this.createLightningRod(Blocks.OXIDIZED_LIGHTNING_ROD, Blocks.WAXED_OXIDIZED_LIGHTNING_ROD);
       this.createWeightedPressurePlate(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.GOLD_BLOCK);
       this.createWeightedPressurePlate(Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE, Blocks.IRON_BLOCK);
-      this.createShelf(Blocks.ACACIA_SHELF);
-      this.createShelf(Blocks.BAMBOO_SHELF);
-      this.createShelf(Blocks.BIRCH_SHELF);
-      this.createShelf(Blocks.CHERRY_SHELF);
-      this.createShelf(Blocks.CRIMSON_SHELF);
-      this.createShelf(Blocks.DARK_OAK_SHELF);
-      this.createShelf(Blocks.JUNGLE_SHELF);
-      this.createShelf(Blocks.MANGROVE_SHELF);
-      this.createShelf(Blocks.OAK_SHELF);
-      this.createShelf(Blocks.PALE_OAK_SHELF);
-      this.createShelf(Blocks.SPRUCE_SHELF);
-      this.createShelf(Blocks.WARPED_SHELF);
+      this.createShelf(Blocks.ACACIA_SHELF, Blocks.STRIPPED_ACACIA_LOG);
+      this.createShelf(Blocks.BAMBOO_SHELF, Blocks.STRIPPED_BAMBOO_BLOCK);
+      this.createShelf(Blocks.BIRCH_SHELF, Blocks.STRIPPED_BIRCH_LOG);
+      this.createShelf(Blocks.CHERRY_SHELF, Blocks.STRIPPED_CHERRY_LOG);
+      this.createShelf(Blocks.CRIMSON_SHELF, Blocks.STRIPPED_CRIMSON_STEM);
+      this.createShelf(Blocks.DARK_OAK_SHELF, Blocks.STRIPPED_DARK_OAK_LOG);
+      this.createShelf(Blocks.JUNGLE_SHELF, Blocks.STRIPPED_JUNGLE_LOG);
+      this.createShelf(Blocks.MANGROVE_SHELF, Blocks.STRIPPED_MANGROVE_LOG);
+      this.createShelf(Blocks.OAK_SHELF, Blocks.STRIPPED_OAK_LOG);
+      this.createShelf(Blocks.PALE_OAK_SHELF, Blocks.STRIPPED_PALE_OAK_LOG);
+      this.createShelf(Blocks.SPRUCE_SHELF, Blocks.STRIPPED_SPRUCE_LOG);
+      this.createShelf(Blocks.WARPED_SHELF, Blocks.STRIPPED_WARPED_STEM);
       this.createAmethystClusters();
       this.createBookshelf();
       this.createChiseledBookshelf();

@@ -47,7 +47,7 @@ public class FeatureRenderDispatcher {
          SubmitNodeCollection var2 = (SubmitNodeCollection)var1.next();
          this.shadowFeatureRenderer.render(var2, this.bufferSource);
          this.modelFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource, this.crumblingBufferSource);
-         this.modelPartFeatureRenderer.render(var2, this.bufferSource);
+         this.modelPartFeatureRenderer.render(var2, this.bufferSource, this.crumblingBufferSource);
          this.flameFeatureRenderer.render(var2, this.bufferSource, this.atlasManager);
          this.nameTagFeatureRenderer.render(var2, this.bufferSource, this.font);
          this.textFeatureRenderer.render(var2, this.bufferSource);

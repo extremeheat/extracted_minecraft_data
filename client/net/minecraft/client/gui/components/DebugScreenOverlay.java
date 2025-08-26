@@ -223,7 +223,12 @@ public class DebugScreenOverlay {
                boolean var21 = this.minecraft.getSingleplayerServer() != null;
                String var10001 = this.renderProfilerChart ? "visible" : "hidden";
                var17.add("Debug charts: [F3+1] Profiler " + var10001 + "; [F3+2] " + (var21 ? "FPS + TPS " : "FPS ") + (this.renderFpsCharts ? "visible" : "hidden") + "; [F3+3] " + (!this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping") + (this.renderNetworkCharts ? " visible" : " hidden"));
-               var17.add("For help: press F3 + Q. To edit: press F3 + F5");
+               boolean var26 = this.minecraft.screen == null || this.minecraft.gui.getChat().isChatFocused();
+               if (this.minecraft.level != null && var26 && this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
+                  var17.add("To edit: press F3 + F5. For help: press F3 + Q");
+               } else {
+                  var17.add("To edit: press F3 + F5");
+               }
             }
 
             this.renderLines(var1, var17, true);
@@ -232,11 +237,11 @@ public class DebugScreenOverlay {
             this.profilerPieChart.setBottomOffset(10);
             if (this.showFpsCharts()) {
                int var22 = var1.guiWidth();
-               int var26 = var22 / 2;
-               this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var26));
+               int var27 = var22 / 2;
+               this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var27));
                if (this.tickTimeLogger.size() > 0) {
-                  int var28 = this.tpsChart.getWidth(var26);
-                  this.tpsChart.drawChart(var1, var22 - var28, var28);
+                  int var29 = this.tpsChart.getWidth(var27);
+                  this.tpsChart.drawChart(var1, var22 - var29, var29);
                }
 
                this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
@@ -244,13 +249,13 @@ public class DebugScreenOverlay {
 
             if (this.showNetworkCharts() && this.minecraft.getConnection() != null) {
                int var23 = var1.guiWidth();
-               int var27 = var23 / 2;
+               int var28 = var23 / 2;
                if (!this.minecraft.isLocalServer()) {
-                  this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var27));
+                  this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var28));
                }
 
-               int var29 = this.pingChart.getWidth(var27);
-               this.pingChart.drawChart(var1, var23 - var29, var29);
+               int var30 = this.pingChart.getWidth(var28);
+               this.pingChart.drawChart(var1, var23 - var30, var30);
                this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
             }
 

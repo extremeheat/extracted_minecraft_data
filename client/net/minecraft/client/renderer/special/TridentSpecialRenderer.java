@@ -7,7 +7,7 @@ import net.minecraft.client.model.TridentModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.util.Unit;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
 
@@ -22,7 +22,7 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
    public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
       var2.pushPose();
       var2.scale(1.0F, -1.0F, -1.0F);
-      var3.submitModel(this.model, Unit.INSTANCE, var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var3.submitModelPart(this.model.root(), var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, (TextureAtlasSprite)null, false, var6, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
    }
 

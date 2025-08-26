@@ -8,7 +8,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -395,6 +394,10 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
    }
 
+   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+      return this.searchBox != null && this.searchBox.isFocused() ? this.searchBox.mouseDragged(var1, var3, var5, var6, var8) : false;
+   }
+
    private boolean tryPlaceRecipe(RecipeCollection var1, RecipeDisplayId var2) {
       if (!var1.isCraftable(var2) && var2.equals(this.lastPlacedRecipe)) {
          return false;
@@ -565,7 +568,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    }
 
    static {
-      SEARCH_HINT = Component.translatable("gui.recipebook.search_hint").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.GRAY);
+      SEARCH_HINT = Component.translatable("gui.recipebook.search_hint").withStyle(EditBox.SEARCH_HINT_STYLE);
       ALL_RECIPES_TOOLTIP = Component.translatable("gui.recipebook.toggleRecipes.all");
    }
 

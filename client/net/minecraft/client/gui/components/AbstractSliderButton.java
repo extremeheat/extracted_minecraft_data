@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.InputType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -25,6 +26,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    private static final int HANDLE_HALF_WIDTH = 4;
    protected double value;
    private boolean canChangeValue;
+   private boolean dragging;
 
    public AbstractSliderButton(int var1, int var2, int var3, int var4, Component var5, double var6) {
       super(var1, var2, var3, var4, var5);
@@ -65,9 +67,14 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
       int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
       this.renderScrollingString(var1, var5.font, 2, var6);
+      if (this.isHovered()) {
+         var1.requestCursor(this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND);
+      }
+
    }
 
    public void onClick(double var1, double var3, boolean var5) {
+      this.dragging = this.active;
       this.setValueFromMouse(var1);
    }
 
@@ -125,6 +132,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    }
 
    public void onRelease(double var1, double var3) {
+      this.dragging = false;
       super.playDownSound(Minecraft.getInstance().getSoundManager());
    }
 

@@ -12,6 +12,7 @@ import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -31,7 +32,7 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
-      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType, 0);
+      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {

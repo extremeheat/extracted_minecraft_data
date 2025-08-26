@@ -53,18 +53,11 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return RecordCodecBuilder.create((var2x) -> var2x.group(var1.mapResult(ExtraCodecs.orElsePartial(var3)).listOf().fieldOf("palette").forGetter(PalettedContainerRO.PackedData::paletteEntries), Codec.LONG_STREAM.lenientOptionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)).apply(var2x, PalettedContainerRO.PackedData::new)).comapFlatMap((var3x) -> var4.read(var0, var2, var3x), (var2x) -> var2x.pack(var0, var2));
    }
 
-   public PalettedContainer(IdMap<T> var1, Strategy var2, Configuration<T> var3, BitStorage var4, List<T> var5) {
+   private PalettedContainer(IdMap<T> var1, Strategy var2, Configuration var3, BitStorage var4, List<T> var5) {
       super();
       this.registry = var1;
       this.strategy = var2;
       this.data = new Data<T>(var3, var4, var3.factory().create(var3.bits(), var1, this, var5));
-   }
-
-   private PalettedContainer(IdMap<T> var1, Strategy var2, Data<T> var3) {
-      super();
-      this.registry = var1;
-      this.strategy = var2;
-      this.data = var3;
    }
 
    private PalettedContainer(PalettedContainer<T> var1) {
@@ -83,7 +76,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    }
 
    private Data<T> createOrReuseData(@Nullable Data<T> var1, int var2) {
-      Configuration var3 = this.strategy.getConfiguration(this.registry, var2);
+      Configuration var3 = this.strategy.getConfiguration(this.registry.size(), var2);
       return var1 != null && var3.equals(var1.configuration()) ? var1 : var3.createData(this.registry, this, this.strategy.size());
    }
 
@@ -180,37 +173,38 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
 
    private static <T> DataResult<PalettedContainer<T>> unpack(IdMap<T> var0, Strategy var1, PalettedContainerRO.PackedData<T> var2) {
       List var3 = var2.paletteEntries();
-      int var4 = var1.size();
-      int var5 = var1.calculateBitsForSerialization(var0, var3.size());
-      Configuration var6 = var1.getConfiguration(var0, var5);
-      Object var7;
-      if (var5 == 0) {
-         var7 = new ZeroBitStorage(var4);
+      int var4 = var0.size();
+      int var5 = var1.size();
+      int var6 = var1.calculateBitsForSerialization(var4, var3.size());
+      Configuration var7 = var1.getConfiguration(var4, var6);
+      Object var8;
+      if (var6 == 0) {
+         var8 = new ZeroBitStorage(var5);
       } else {
-         Optional var8 = var2.storage();
-         if (var8.isEmpty()) {
+         Optional var9 = var2.storage();
+         if (var9.isEmpty()) {
             return DataResult.error(() -> "Missing values for non-zero storage");
          }
 
-         long[] var9 = ((LongStream)var8.get()).toArray();
+         long[] var10 = ((LongStream)var9.get()).toArray();
 
          try {
-            if (var6.factory() == PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY) {
-               HashMapPalette var10 = new HashMapPalette(var0, var5, (var0x, var1x) -> 0, var3);
-               SimpleBitStorage var11 = new SimpleBitStorage(var5, var4, var9);
-               int[] var12 = new int[var4];
-               var11.unpack(var12);
-               swapPalette(var12, (var2x) -> var0.getId(var10.valueFor(var2x)));
-               var7 = new SimpleBitStorage(var6.bits(), var4, var12);
+            if (var7.factory() == PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY) {
+               HashMapPalette var11 = new HashMapPalette(var0, var6, (var0x, var1x) -> 0, var3);
+               SimpleBitStorage var12 = new SimpleBitStorage(var6, var5, var10);
+               int[] var13 = new int[var5];
+               var12.unpack(var13);
+               swapPalette(var13, (var2x) -> var0.getId(var11.valueFor(var2x)));
+               var8 = new SimpleBitStorage(var7.bits(), var5, var13);
             } else {
-               var7 = new SimpleBitStorage(var6.bits(), var4, var9);
+               var8 = new SimpleBitStorage(var7.bits(), var5, var10);
             }
-         } catch (SimpleBitStorage.InitializationException var13) {
-            return DataResult.error(() -> "Failed to read PalettedContainer: " + var13.getMessage());
+         } catch (SimpleBitStorage.InitializationException var14) {
+            return DataResult.error(() -> "Failed to read PalettedContainer: " + var14.getMessage());
          }
       }
 
-      return DataResult.success(new PalettedContainer(var0, var1, var6, (BitStorage)var7, var3));
+      return DataResult.success(new PalettedContainer(var0, var1, var7, (BitStorage)var8, var3));
    }
 
    public PalettedContainerRO.PackedData<T> pack(IdMap<T> var1, Strategy var2) {
@@ -223,7 +217,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
          int[] var5 = new int[var4];
          this.data.storage.unpack(var5);
          swapPalette(var5, (var2x) -> var3.idFor(this.data.palette.valueFor(var2x)));
-         int var6 = var2.calculateBitsForSerialization(var1, var3.getSize());
+         int var6 = var2.calculateBitsForSerialization(var1.size(), var3.getSize());
          Optional var7;
          if (var6 != 0) {
             SimpleBitStorage var8 = new SimpleBitStorage(var6, var4, var5);
@@ -240,7 +234,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return var12;
    }
 
-   private static <T> void swapPalette(int[] var0, IntUnaryOperator var1) {
+   private static void swapPalette(int[] var0, IntUnaryOperator var1) {
       int var2 = -1;
       int var3 = -1;
 
@@ -282,11 +276,11 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       }
    }
 
-   static record Data<T>(Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
+   static record Data<T>(Configuration configuration, BitStorage storage, Palette<T> palette) {
       final BitStorage storage;
       final Palette<T> palette;
 
-      Data(Configuration<T> var1, BitStorage var2, Palette<T> var3) {
+      Data(Configuration var1, BitStorage var2, Palette<T> var3) {
          super();
          this.configuration = var1;
          this.storage = var2;
@@ -316,14 +310,14 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       }
    }
 
-   static record Configuration<T>(Palette.Factory factory, int bits) {
+   static record Configuration(Palette.Factory factory, int bits) {
       Configuration(Palette.Factory var1, int var2) {
          super();
          this.factory = var1;
          this.bits = var2;
       }
 
-      public Data<T> createData(IdMap<T> var1, PaletteResize<T> var2, int var3) {
+      public <T> Data<T> createData(IdMap<T> var1, PaletteResize<T> var2, int var3) {
          Object var4 = this.bits == 0 ? new ZeroBitStorage(var3) : new SimpleBitStorage(this.bits, var3);
          Palette var5 = this.factory.create(this.bits, var1, var2, List.of());
          return new Data<T>(this, (BitStorage)var4, var5);
@@ -335,51 +329,17 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       public static final Palette.Factory LINEAR_PALETTE_FACTORY = LinearPalette::create;
       public static final Palette.Factory HASHMAP_PALETTE_FACTORY = HashMapPalette::create;
       static final Palette.Factory GLOBAL_PALETTE_FACTORY = GlobalPalette::create;
-      public static final Strategy SECTION_STATES = new Strategy(4) {
-         public <A> Configuration<A> getConfiguration(IdMap<A> var1, int var2) {
-            Configuration var10000;
-            switch (var2) {
-               case 0:
-                  var10000 = new Configuration(SINGLE_VALUE_PALETTE_FACTORY, var2);
-                  break;
-               case 1:
-               case 2:
-               case 3:
-               case 4:
-                  var10000 = new Configuration(LINEAR_PALETTE_FACTORY, 4);
-                  break;
-               case 5:
-               case 6:
-               case 7:
-               case 8:
-                  var10000 = new Configuration(HASHMAP_PALETTE_FACTORY, var2);
-                  break;
-               default:
-                  var10000 = new Configuration(PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY, Mth.ceillog2(var1.size()));
-            }
-
-            return var10000;
-         }
-      };
-      public static final Strategy SECTION_BIOMES = new Strategy(2) {
-         public <A> Configuration<A> getConfiguration(IdMap<A> var1, int var2) {
-            Configuration var10000;
-            switch (var2) {
-               case 0:
-                  var10000 = new Configuration(SINGLE_VALUE_PALETTE_FACTORY, var2);
-                  break;
-               case 1:
-               case 2:
-               case 3:
-                  var10000 = new Configuration(LINEAR_PALETTE_FACTORY, var2);
-                  break;
-               default:
-                  var10000 = new Configuration(PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY, Mth.ceillog2(var1.size()));
-            }
-
-            return var10000;
-         }
-      };
+      static final Configuration ZERO_BITS;
+      static final Configuration ONE_BIT_LINEAR;
+      static final Configuration TWO_BITS_LINEAR;
+      static final Configuration THREE_BITS_LINEAR;
+      static final Configuration FOUR_BITS_LINEAR;
+      static final Configuration FIVE_BITS_HASHMAP;
+      static final Configuration SIX_BITS_HASHMAP;
+      static final Configuration SEVEN_BITS_HASHMAP;
+      static final Configuration EIGHT_BITS_HASHMAP;
+      public static final Strategy SECTION_STATES;
+      public static final Strategy SECTION_BIOMES;
       private final int sizeBits;
 
       Strategy(int var1) {
@@ -395,12 +355,70 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
          return (var2 << this.sizeBits | var3) << this.sizeBits | var1;
       }
 
-      public abstract <A> Configuration<A> getConfiguration(IdMap<A> var1, int var2);
+      protected abstract Configuration getConfiguration(int var1, int var2);
 
-      <A> int calculateBitsForSerialization(IdMap<A> var1, int var2) {
+      int calculateBitsForSerialization(int var1, int var2) {
          int var3 = Mth.ceillog2(var2);
          Configuration var4 = this.getConfiguration(var1, var3);
          return var4.factory() == GLOBAL_PALETTE_FACTORY ? var3 : var4.bits();
+      }
+
+      static {
+         ZERO_BITS = new Configuration(SINGLE_VALUE_PALETTE_FACTORY, 0);
+         ONE_BIT_LINEAR = new Configuration(LINEAR_PALETTE_FACTORY, 1);
+         TWO_BITS_LINEAR = new Configuration(LINEAR_PALETTE_FACTORY, 2);
+         THREE_BITS_LINEAR = new Configuration(LINEAR_PALETTE_FACTORY, 3);
+         FOUR_BITS_LINEAR = new Configuration(LINEAR_PALETTE_FACTORY, 4);
+         FIVE_BITS_HASHMAP = new Configuration(HASHMAP_PALETTE_FACTORY, 5);
+         SIX_BITS_HASHMAP = new Configuration(HASHMAP_PALETTE_FACTORY, 6);
+         SEVEN_BITS_HASHMAP = new Configuration(HASHMAP_PALETTE_FACTORY, 7);
+         EIGHT_BITS_HASHMAP = new Configuration(HASHMAP_PALETTE_FACTORY, 8);
+         SECTION_STATES = new Strategy(4) {
+            public Configuration getConfiguration(int var1, int var2) {
+               Configuration var10000;
+               switch (var2) {
+                  case 0:
+                     var10000 = PalettedContainer.Strategy.ZERO_BITS;
+                     break;
+                  case 1:
+                  case 2:
+                  case 3:
+                  case 4:
+                     var10000 = PalettedContainer.Strategy.FOUR_BITS_LINEAR;
+                     break;
+                  case 5:
+                     var10000 = PalettedContainer.Strategy.FIVE_BITS_HASHMAP;
+                     break;
+                  case 6:
+                     var10000 = PalettedContainer.Strategy.SIX_BITS_HASHMAP;
+                     break;
+                  case 7:
+                     var10000 = PalettedContainer.Strategy.SEVEN_BITS_HASHMAP;
+                     break;
+                  case 8:
+                     var10000 = PalettedContainer.Strategy.EIGHT_BITS_HASHMAP;
+                     break;
+                  default:
+                     var10000 = new Configuration(PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY, Mth.ceillog2(var1));
+               }
+
+               return var10000;
+            }
+         };
+         SECTION_BIOMES = new Strategy(2) {
+            public Configuration getConfiguration(int var1, int var2) {
+               Configuration var10000;
+               switch (var2) {
+                  case 0 -> var10000 = PalettedContainer.Strategy.ZERO_BITS;
+                  case 1 -> var10000 = PalettedContainer.Strategy.ONE_BIT_LINEAR;
+                  case 2 -> var10000 = PalettedContainer.Strategy.TWO_BITS_LINEAR;
+                  case 3 -> var10000 = PalettedContainer.Strategy.THREE_BITS_LINEAR;
+                  default -> var10000 = new Configuration(PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY, Mth.ceillog2(var1));
+               }
+
+               return var10000;
+            }
+         };
       }
    }
 

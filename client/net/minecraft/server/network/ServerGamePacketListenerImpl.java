@@ -286,7 +286,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.keepConnectionAlive();
          this.chatSpamThrottler.tick();
          this.dropSpamThrottler.tick();
-         if (this.player.getLastActionTime() > 0L && this.server.getPlayerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.getPlayerIdleTimeout()) && !this.player.wonGame) {
+         if (this.player.getLastActionTime() > 0L && this.server.playerIdleTimeout() > 0 && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis((long)this.server.playerIdleTimeout()) && !this.player.wonGame) {
             this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
          }
 
@@ -485,7 +485,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             var2.setOnGroundWithMovement(var1.onGround(), var33);
             var2.doCheckFallDamage(var33.x, var33.y, var33.z, var1.onGround());
             this.player.checkMovementStatistics(var33.x, var33.y, var33.z);
-            this.clientVehicleIsFloating = var41 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isFlyingVehicle() && !var2.isNoGravity() && this.noBlocksAround(var2);
+            this.clientVehicleIsFloating = var41 >= -0.03125 && !var29 && !this.server.allowFlight() && !var2.isFlyingVehicle() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
             this.vehicleLastGoodY = var2.getY();
             this.vehicleLastGoodZ = var2.getZ();
@@ -1082,7 +1082,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isEntityCollidingWithAnythingNew(var2, this.player, var43, var5, var7, var9)) {
                            this.player.absSnapTo(var5, var7, var9, var3, var4);
                            boolean var34 = this.player.isAutoSpinAttack();
-                           this.clientIsFloating = var31 >= -0.03125 && !var30 && !this.player.isSpectator() && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
+                           this.clientIsFloating = var31 >= -0.03125 && !var30 && !this.player.isSpectator() && !this.server.allowFlight() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
                            this.player.level().getChunkSource().move(this.player);
                            Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                            this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
@@ -1266,7 +1266,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   this.send(new ClientboundBlockUpdatePacket(var2, var7));
                   this.send(new ClientboundBlockUpdatePacket(var2, var7.relative(var11)));
                } else {
-                  LOGGER.warn("Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.", new Object[]{this.player.getGameProfile().getName(), var6, var7});
+                  LOGGER.warn("Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.", new Object[]{this.player.getGameProfile().name(), var6, var7});
                }
             }
          }
@@ -1392,7 +1392,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private void performUnsignedChatCommand(String var1) {
       ParseResults var2 = this.parseCommand(var1);
       if (this.server.enforceSecureProfile() && SignableCommand.hasSignableArguments(var2)) {
-         LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", this.player.getGameProfile().getName(), var1);
+         LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", this.player.getGameProfile().name(), var1);
          this.player.sendSystemMessage(INVALID_COMMAND_SIGNATURE);
       } else {
          this.server.getCommands().performCommand(var2, var1);
@@ -1426,7 +1426,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private void handleMessageDecodeFailure(SignedMessageChain.DecodeException var1) {
-      LOGGER.warn("Failed to update secure chat state for {}: '{}'", this.player.getGameProfile().getName(), var1.getComponent().getString());
+      LOGGER.warn("Failed to update secure chat state for {}: '{}'", this.player.getGameProfile().name(), var1.getComponent().getString());
       this.player.sendSystemMessage(var1.getComponent().copy().withStyle(ChatFormatting.RED));
    }
 
@@ -1899,7 +1899,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (!this.player.hasPermissions(2) && !this.isSingleplayerOwner()) {
-         LOGGER.warn("Player {} tried to change difficulty to {} without required permissions", this.player.getGameProfile().getName(), var1.difficulty().getDisplayName());
+         LOGGER.warn("Player {} tried to change difficulty to {} without required permissions", this.player.getGameProfile().name(), var1.difficulty().getDisplayName());
       } else {
          this.server.setDifficulty(var1.difficulty(), false);
       }
@@ -1908,7 +1908,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleChangeGameMode(ServerboundChangeGameModePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.level());
       if (!this.player.hasPermissions(2)) {
-         LOGGER.warn("Player {} tried to change game mode to {} without required permissions", this.player.getGameProfile().getName(), var1.mode().getShortDisplayName());
+         LOGGER.warn("Player {} tried to change game mode to {} without required permissions", this.player.getGameProfile().name(), var1.mode().getShortDisplayName());
       } else {
          GameModeCommand.setGameMode(this.player, var1.mode());
       }
@@ -1933,7 +1933,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             try {
                SignatureValidator var5 = this.server.services().profileKeySignatureValidator();
                if (var5 == null) {
-                  LOGGER.warn("Ignoring chat session from {} due to missing Services public key", this.player.getGameProfile().getName());
+                  LOGGER.warn("Ignoring chat session from {} due to missing Services public key", this.player.getGameProfile().name());
                   return;
                }
 

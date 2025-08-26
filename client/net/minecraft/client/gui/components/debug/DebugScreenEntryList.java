@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components.debug;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -59,9 +60,10 @@ public class DebugScreenEntryList {
 
             this.profile = null;
          }
-      } catch (IOException var5) {
+      } catch (JsonSyntaxException | IOException var5) {
          LOGGER.error("Couldn't read debug profile file {}, resetting to default", this.debugProfileFile, var5);
          this.loadDefaultProfile();
+         this.save();
       }
 
       this.rebuildCurrentList();

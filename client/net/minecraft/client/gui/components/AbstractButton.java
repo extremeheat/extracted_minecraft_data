@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -24,6 +25,10 @@ public abstract class AbstractButton extends AbstractWidget {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
       int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
       this.renderString(var1, var5.font, var6);
+      if (this.isHovered()) {
+         var1.requestCursor(this.isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
+      }
+
    }
 
    public void renderString(GuiGraphics var1, Font var2, int var3) {

@@ -38,12 +38,12 @@ public class FontTexture extends AbstractTexture implements Dumpable {
          return null;
       } else {
          Node var3 = this.root.insert(var2);
-         if (var3 != null && this.texture != null && this.textureView != null) {
-            var2.upload(var3.x, var3.y, this.texture);
+         if (var3 != null) {
+            var2.upload(var3.x, var3.y, this.getTexture());
             float var4 = 256.0F;
             float var5 = 256.0F;
             float var6 = 0.01F;
-            return new BakedSheetGlyph(var1, this.renderTypes, this.textureView, ((float)var3.x + 0.01F) / 256.0F, ((float)var3.x - 0.01F + (float)var2.getPixelWidth()) / 256.0F, ((float)var3.y + 0.01F) / 256.0F, ((float)var3.y - 0.01F + (float)var2.getPixelHeight()) / 256.0F, var2.getLeft(), var2.getRight(), var2.getTop(), var2.getBottom());
+            return new BakedSheetGlyph(var1, this.renderTypes, this.getTextureView(), ((float)var3.x + 0.01F) / 256.0F, ((float)var3.x - 0.01F + (float)var2.getPixelWidth()) / 256.0F, ((float)var3.y + 0.01F) / 256.0F, ((float)var3.y - 0.01F + (float)var2.getPixelHeight()) / 256.0F, var2.getLeft(), var2.getRight(), var2.getTop(), var2.getBottom());
          } else {
             return null;
          }

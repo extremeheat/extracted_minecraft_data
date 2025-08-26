@@ -11,7 +11,6 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.RealmsTextureManager;
 import com.mojang.realmsclient.util.TextRenderingUtils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +25,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -47,11 +47,11 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    private static final Component TRAILER_BUTTON_NAME = Component.translatable("mco.template.button.trailer");
    private static final Component PUBLISHER_BUTTON_NAME = Component.translatable("mco.template.button.publisher");
    private static final int BUTTON_WIDTH = 100;
-   private static final int BUTTON_SPACING = 10;
-   private final HeaderAndFooterLayout layout;
+   final HeaderAndFooterLayout layout;
    final Consumer<WorldTemplate> callback;
    WorldTemplateList worldTemplateList;
    private final RealmsServer.WorldType worldType;
+   private final List<Component> subtitle;
    private Button selectButton;
    private Button trailerButton;
    private Button publisherButton;
@@ -60,15 +60,13 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    @Nullable
    String currentLink;
    @Nullable
-   private Component[] warning;
-   @Nullable
    List<TextRenderingUtils.Line> noTemplatesMessage;
 
-   public RealmsSelectWorldTemplateScreen(Component var1, Consumer<WorldTemplate> var2, RealmsServer.WorldType var3) {
-      this(var1, var2, var3, (WorldTemplatePaginatedList)null);
+   public RealmsSelectWorldTemplateScreen(Component var1, Consumer<WorldTemplate> var2, RealmsServer.WorldType var3, @Nullable WorldTemplatePaginatedList var4) {
+      this(var1, var2, var3, var4, List.of());
    }
 
-   public RealmsSelectWorldTemplateScreen(Component var1, Consumer<WorldTemplate> var2, RealmsServer.WorldType var3, @Nullable WorldTemplatePaginatedList var4) {
+   public RealmsSelectWorldTemplateScreen(Component var1, Consumer<WorldTemplate> var2, RealmsServer.WorldType var3, @Nullable WorldTemplatePaginatedList var4, List<Component> var5) {
       super(var1);
       this.layout = new HeaderAndFooterLayout(this);
       this.selectedTemplate = null;
@@ -82,21 +80,25 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          this.fetchTemplatesAsync(var4);
       }
 
-   }
-
-   public void setWarning(Component... var1) {
-      this.warning = var1;
+      this.subtitle = var5;
    }
 
    public void init() {
-      this.layout.addTitleHeader(this.title, this.font);
-      this.worldTemplateList = (WorldTemplateList)this.layout.addToContents(new WorldTemplateList(this.worldTemplateList.getTemplates()));
-      LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(10));
+      HeaderAndFooterLayout var10000 = this.layout;
+      int var10002 = this.subtitle.size();
+      Objects.requireNonNull(this.getFont());
+      var10000.setHeaderHeight(33 + var10002 * (9 + 4));
+      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
       var1.defaultCellSetting().alignHorizontallyCenter();
-      this.trailerButton = (Button)var1.addChild(Button.builder(TRAILER_BUTTON_NAME, (var1x) -> this.onTrailer()).width(100).build());
-      this.selectButton = (Button)var1.addChild(Button.builder(SELECT_BUTTON_NAME, (var1x) -> this.selectTemplate()).width(100).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).width(100).build());
-      this.publisherButton = (Button)var1.addChild(Button.builder(PUBLISHER_BUTTON_NAME, (var1x) -> this.onPublish()).width(100).build());
+      var1.addChild(new StringWidget(this.title, this.font));
+      this.subtitle.forEach((var2x) -> var1.addChild((new StringWidget(var2x, this.font)).setColor(-4539718)));
+      this.worldTemplateList = (WorldTemplateList)this.layout.addToContents(new WorldTemplateList(this.worldTemplateList.getTemplates()));
+      LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      var2.defaultCellSetting().alignHorizontallyCenter();
+      this.trailerButton = (Button)var2.addChild(Button.builder(TRAILER_BUTTON_NAME, (var1x) -> this.onTrailer()).width(100).build());
+      this.selectButton = (Button)var2.addChild(Button.builder(SELECT_BUTTON_NAME, (var1x) -> this.selectTemplate()).width(100).build());
+      var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).width(100).build());
+      this.publisherButton = (Button)var2.addChild(Button.builder(PUBLISHER_BUTTON_NAME, (var1x) -> this.onPublish()).width(100).build());
       this.updateButtonStates();
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
@@ -112,10 +114,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    public Component getNarrationMessage() {
       ArrayList var1 = Lists.newArrayListWithCapacity(2);
       var1.add(this.title);
-      if (this.warning != null) {
-         var1.addAll(Arrays.asList(this.warning));
-      }
-
+      var1.addAll(this.subtitle);
       return CommonComponents.joinLines((Collection)var1);
    }
 
@@ -206,13 +205,6 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          this.renderMultilineMessage(var1, var2, var3, this.noTemplatesMessage);
       }
 
-      if (this.warning != null) {
-         for(int var5 = 0; var5 < this.warning.length; ++var5) {
-            Component var6 = this.warning[var5];
-            var1.drawCenteredString(this.font, var6, this.width / 2, row(-1 + var5), -6250336);
-         }
-      }
-
    }
 
    private void renderMultilineMessage(GuiGraphics var1, int var2, int var3, List<TextRenderingUtils.Line> var4) {
@@ -238,17 +230,13 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
    }
 
-   int getHeaderHeight() {
-      return this.warning != null ? row(1) : 33;
-   }
-
    class WorldTemplateList extends ObjectSelectionList<Entry> {
       public WorldTemplateList() {
          this(Collections.emptyList());
       }
 
       public WorldTemplateList(final Iterable<WorldTemplate> var2) {
-         super(Minecraft.getInstance(), RealmsSelectWorldTemplateScreen.this.width, RealmsSelectWorldTemplateScreen.this.height - 33 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), 46);
+         super(Minecraft.getInstance(), RealmsSelectWorldTemplateScreen.this.width, RealmsSelectWorldTemplateScreen.this.layout.getContentHeight(), RealmsSelectWorldTemplateScreen.this.layout.getHeaderHeight(), 46);
          var2.forEach(this::addEntry);
       }
 
@@ -346,7 +334,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var8 = this.getContentX() + 45 + 20;
          int var9 = this.getContentY() + 5;
          var1.drawString(RealmsSelectWorldTemplateScreen.this.font, (String)this.template.name, var8, var9, -1);
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, this.getContentRight() - var7 - 5, var9, -9671572);
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, this.getContentRight() - var7 - 5, var9, -6250336);
          Font var10001 = RealmsSelectWorldTemplateScreen.this.font;
          String var10002 = this.template.author;
          Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
@@ -356,7 +344,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             var10002 = this.template.recommendedPlayers;
             int var10004 = this.getContentBottom();
             Objects.requireNonNull(RealmsSelectWorldTemplateScreen.this.font);
-            var1.drawString(var10001, var10002, var8, var10004 - 9 / 2 - 5, -11776948);
+            var1.drawString(var10001, var10002, var8, var10004 - 9 / 2 - 5, -8355712);
          }
 
       }

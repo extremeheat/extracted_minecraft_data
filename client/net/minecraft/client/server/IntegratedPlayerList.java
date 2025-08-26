@@ -22,7 +22,7 @@ public class IntegratedPlayerList extends PlayerList {
    private CompoundTag playerData;
 
    public IntegratedPlayerList(IntegratedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
-      super(var1, var2, var3, 8);
+      super(var1, var2, var3, var1.notificationManager());
       this.setViewDistance(10);
    }
 

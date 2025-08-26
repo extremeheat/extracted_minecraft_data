@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 
@@ -29,25 +30,34 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
    private final File file;
    private final Map<String, V> map = Maps.newHashMap();
+   protected final NotificationService notificationService;
 
-   public StoredUserList(File var1) {
+   public StoredUserList(File var1, NotificationService var2) {
       super();
       this.file = var1;
+      this.notificationService = var2;
    }
 
    public File getFile() {
       return this.file;
    }
 
-   public void add(V var1) {
-      this.map.put(this.getKeyForUser(var1.getUser()), var1);
+   public boolean add(V var1) {
+      String var2 = this.getKeyForUser(var1.getUser());
+      StoredUserEntry var3 = (StoredUserEntry)this.map.get(var2);
+      if (var1.equals(var3)) {
+         return false;
+      } else {
+         this.map.put(var2, var1);
 
-      try {
-         this.save();
-      } catch (IOException var3) {
-         LOGGER.warn("Could not save the list after adding a user.", var3);
+         try {
+            this.save();
+         } catch (IOException var5) {
+            LOGGER.warn("Could not save the list after adding a user.", var5);
+         }
+
+         return true;
       }
-
    }
 
    @Nullable
@@ -56,19 +66,34 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
       return (V)(this.map.get(this.getKeyForUser(var1)));
    }
 
-   public void remove(K var1) {
-      this.map.remove(this.getKeyForUser(var1));
+   public boolean remove(K var1) {
+      StoredUserEntry var2 = (StoredUserEntry)this.map.remove(this.getKeyForUser(var1));
+      if (var2 == null) {
+         return false;
+      } else {
+         try {
+            this.save();
+         } catch (IOException var4) {
+            LOGGER.warn("Could not save the list after removing a user.", var4);
+         }
+
+         return true;
+      }
+   }
+
+   public boolean remove(StoredUserEntry<K> var1) {
+      return this.remove(Objects.requireNonNull(var1.getUser()));
+   }
+
+   public void clear() {
+      this.map.clear();
 
       try {
          this.save();
-      } catch (IOException var3) {
-         LOGGER.warn("Could not save the list after removing a user.", var3);
+      } catch (IOException var2) {
+         LOGGER.warn("Could not save the list after removing a user.", var2);
       }
 
-   }
-
-   public void remove(StoredUserEntry<K> var1) {
-      this.remove(var1.getUser());
    }
 
    public String[] getUserList() {

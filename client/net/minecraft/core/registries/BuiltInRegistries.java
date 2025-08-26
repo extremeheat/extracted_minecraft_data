@@ -45,6 +45,10 @@ import net.minecraft.server.dialog.body.DialogBody;
 import net.minecraft.server.dialog.body.DialogBodyTypes;
 import net.minecraft.server.dialog.input.InputControl;
 import net.minecraft.server.dialog.input.InputControlTypes;
+import net.minecraft.server.jsonrpc.IncomingRpcMethod;
+import net.minecraft.server.jsonrpc.IncomingRpcMethods;
+import net.minecraft.server.jsonrpc.OutgoingRpcMethod;
+import net.minecraft.server.jsonrpc.OutgoingRpcMethods;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -228,6 +232,8 @@ public class BuiltInRegistries {
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
    public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
    public static final Registry<TicketType> TICKET_TYPE;
+   public static final Registry<IncomingRpcMethod> INCOMING_RPC_METHOD;
+   public static final Registry<OutgoingRpcMethod<?, ?>> OUTGOING_RPC_METHOD;
    public static final Registry<MapCodec<? extends TestEnvironmentDefinition>> TEST_ENVIRONMENT_DEFINITION_TYPE;
    public static final Registry<MapCodec<? extends GameTestInstance>> TEST_INSTANCE_TYPE;
    public static final Registry<MapCodec<? extends SpawnCondition>> SPAWN_CONDITION_TYPE;
@@ -395,6 +401,8 @@ public class BuiltInRegistries {
       SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
       RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
       TICKET_TYPE = registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
+      INCOMING_RPC_METHOD = registerSimple(Registries.INCOMING_RPC_METHOD, IncomingRpcMethods::bootstrap);
+      OUTGOING_RPC_METHOD = registerSimple(Registries.OUTGOING_RPC_METHOD, (var0) -> OutgoingRpcMethods.SERVER_STARTED);
       TEST_ENVIRONMENT_DEFINITION_TYPE = registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
       TEST_INSTANCE_TYPE = registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
       SPAWN_CONDITION_TYPE = registerSimple(Registries.SPAWN_CONDITION_TYPE, SpawnConditions::bootstrap);

@@ -159,7 +159,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          if (var1.isEmpty()) {
             switch (this.entryType.ordinal()) {
                case 0:
-                  CreateWorldScreen.openFresh(this.minecraft, (Runnable)null);
+                  CreateWorldScreen.openFresh(this.minecraft, () -> this.minecraft.setScreen((Screen)null));
                   break;
                case 1:
                   this.clearEntries();

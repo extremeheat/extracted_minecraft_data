@@ -19,9 +19,10 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.FaviconTexture;
-import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
@@ -155,25 +156,22 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       abstract boolean matches(Entry var1);
+
+      public abstract void join();
    }
 
    public static class LANHeader extends Entry {
       private final Minecraft minecraft = Minecraft.getInstance();
+      private final LoadingDotsWidget loadingDotsWidget;
 
       public LANHeader() {
          super();
+         this.loadingDotsWidget = new LoadingDotsWidget(this.minecraft.font, ServerSelectionList.SCANNING_LABEL);
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         int var10000 = this.getContentYMiddle();
-         Objects.requireNonNull(this.minecraft.font);
-         int var6 = var10000 - 9 / 2;
-         var1.drawString(this.minecraft.font, (Component)ServerSelectionList.SCANNING_LABEL, this.minecraft.screen.width / 2 - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, var6, -1);
-         String var7 = LoadingDotsText.get(Util.getMillis());
-         Font var10001 = this.minecraft.font;
-         int var10003 = this.minecraft.screen.width / 2 - this.minecraft.font.width(var7) / 2;
-         Objects.requireNonNull(this.minecraft.font);
-         var1.drawString(var10001, var7, var10003, var6 + 9, -8355712);
+         this.loadingDotsWidget.setPosition(this.getContentXMiddle() - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, this.getContentY());
+         this.loadingDotsWidget.render(var1, var2, var3, var5);
       }
 
       public Component getNarration() {
@@ -182,6 +180,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       boolean matches(Entry var1) {
          return var1 instanceof LANHeader;
+      }
+
+      public void join() {
       }
    }
 
@@ -213,14 +214,23 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
          if (var6) {
-            this.screen.joinSelectedServer();
+            this.join();
          }
 
          return super.mouseClicked(var1, var3, var5, var6);
       }
 
-      public LanServer getServerData() {
-         return this.serverData;
+      public boolean keyPressed(int var1, int var2, int var3) {
+         if (CommonInputs.selected(var1)) {
+            this.join();
+            return true;
+         } else {
+            return super.keyPressed(var1, var2, var3);
+         }
+      }
+
+      public void join() {
+         this.screen.join(new ServerData(this.serverData.getMotd(), this.serverData.getAddress(), ServerData.Type.LAN));
       }
 
       public Component getNarration() {
@@ -453,20 +463,29 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean keyPressed(int var1, int var2, int var3) {
-         if (Screen.hasShiftDown()) {
-            ServerSelectionList var4 = this.screen.serverSelectionList;
-            int var5 = var4.children().indexOf(this);
-            if (var5 == -1) {
-               return true;
+         if (CommonInputs.selected(var1)) {
+            this.join();
+            return true;
+         } else {
+            if (Screen.hasShiftDown()) {
+               ServerSelectionList var4 = this.screen.serverSelectionList;
+               int var5 = var4.children().indexOf(this);
+               if (var5 == -1) {
+                  return true;
+               }
+
+               if (var1 == 264 && var5 < this.screen.getServers().size() - 1 || var1 == 265 && var5 > 0) {
+                  this.swap(var5, var1 == 264 ? var5 + 1 : var5 - 1);
+                  return true;
+               }
             }
 
-            if (var1 == 264 && var5 < this.screen.getServers().size() - 1 || var1 == 265 && var5 > 0) {
-               this.swap(var5, var1 == 264 ? var5 + 1 : var5 - 1);
-               return true;
-            }
+            return super.keyPressed(var1, var2, var3);
          }
+      }
 
-         return super.keyPressed(var1, var2, var3);
+      public void join() {
+         this.screen.join(this.serverData);
       }
 
       private void swap(int var1, int var2) {
@@ -479,7 +498,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          double var9 = var3 - (double)this.getY();
          if (var7 <= 32.0) {
             if (var7 < 32.0 && var7 > 16.0 && this.canJoin()) {
-               this.screen.joinSelectedServer();
+               this.join();
                return true;
             }
 
@@ -496,7 +515,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          }
 
          if (var6) {
-            this.screen.joinSelectedServer();
+            this.join();
          }
 
          return super.mouseClicked(var1, var3, var5, var6);

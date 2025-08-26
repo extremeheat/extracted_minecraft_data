@@ -451,7 +451,7 @@ public class Items {
    public static final Item MUSHROOM_STEM;
    public static final Item IRON_BARS;
    public static final WeatheringCopperItems COPPER_BARS;
-   public static final Item CHAIN;
+   public static final Item IRON_CHAIN;
    public static final WeatheringCopperItems COPPER_CHAIN;
    public static final Item GLASS_PANE;
    public static final Item MELON;
@@ -1995,7 +1995,7 @@ public class Items {
       MUSHROOM_STEM = registerBlock(Blocks.MUSHROOM_STEM);
       IRON_BARS = registerBlock(Blocks.IRON_BARS);
       COPPER_BARS = WeatheringCopperItems.create(Blocks.COPPER_BARS, Items::registerBlock);
-      CHAIN = registerBlock(Blocks.IRON_CHAIN);
+      IRON_CHAIN = registerBlock(Blocks.IRON_CHAIN);
       COPPER_CHAIN = WeatheringCopperItems.create(Blocks.COPPER_CHAIN, Items::registerBlock);
       GLASS_PANE = registerBlock(Blocks.GLASS_PANE);
       MELON = registerBlock(Blocks.MELON);

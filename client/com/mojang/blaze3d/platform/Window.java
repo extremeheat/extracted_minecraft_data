@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.TracyFrameCapture;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -58,9 +59,12 @@ public final class Window implements AutoCloseable {
    private boolean vsync;
    private boolean iconified;
    private boolean minimized;
+   private boolean allowCursorChanges;
+   private CursorType currentCursor;
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
+      this.currentCursor = CursorType.DEFAULT;
       this.screenManager = var2;
       this.setBootErrorCallback();
       this.setErrorSection("Pre startup");
@@ -536,6 +540,19 @@ public final class Window implements AutoCloseable {
 
    public boolean isMinimized() {
       return this.minimized;
+   }
+
+   public void setAllowCursorChanges(boolean var1) {
+      this.allowCursorChanges = var1;
+   }
+
+   public void selectCursor(CursorType var1) {
+      CursorType var2 = this.allowCursorChanges ? var1 : CursorType.DEFAULT;
+      if (this.currentCursor != var2) {
+         this.currentCursor = var2;
+         var2.select(this);
+      }
+
    }
 
    public static class WindowInitFailed extends SilentInitException {

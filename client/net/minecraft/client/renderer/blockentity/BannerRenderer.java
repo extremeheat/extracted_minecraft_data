@@ -90,29 +90,29 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       Material var12 = ModelBakery.BANNER_BASE;
       var2.submitModel(var6, Unit.INSTANCE, var1, var12.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var12), 0, var11);
       var7.setupAnim(var8);
-      submitPatterns(var0, var1, var2, var3, var4, var7.root(), var12, true, var9, var10);
+      submitPatterns(var0, var1, var2, var3, var4, var7.root(), var12, true, var9, var10, var11);
       var1.popPose();
    }
 
-   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9) {
-      submitPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, false, true);
+   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
+      submitPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, false, true, var10);
    }
 
-   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, boolean var10, boolean var11) {
+   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, boolean var10, boolean var11, @Nullable ModelFeatureRenderer.CrumblingOverlay var12) {
       var2.submitModelPart(var5, var1, var6.renderType(RenderType::entitySolid), var3, var4, var0.get(var6), var11, var10);
-      submitPatternLayer(var0, var1, var2, var3, var4, var5, var7 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var8);
+      submitPatternLayer(var0, var1, var2, var3, var4, var5, var7 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var8, var12);
 
-      for(int var12 = 0; var12 < 16 && var12 < var9.layers().size(); ++var12) {
-         BannerPatternLayers.Layer var13 = (BannerPatternLayers.Layer)var9.layers().get(var12);
-         Material var14 = var7 ? Sheets.getBannerMaterial(var13.pattern()) : Sheets.getShieldMaterial(var13.pattern());
-         submitPatternLayer(var0, var1, var2, var3, var4, var5, var14, var13.color());
+      for(int var13 = 0; var13 < 16 && var13 < var9.layers().size(); ++var13) {
+         BannerPatternLayers.Layer var14 = (BannerPatternLayers.Layer)var9.layers().get(var13);
+         Material var15 = var7 ? Sheets.getBannerMaterial(var14.pattern()) : Sheets.getShieldMaterial(var14.pattern());
+         submitPatternLayer(var0, var1, var2, var3, var4, var5, var15, var14.color(), var12);
       }
 
    }
 
-   private static void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, DyeColor var7) {
-      int var8 = var7.getTextureDiffuseColor();
-      var2.submitModelPart(var5, var1, var6.renderType(RenderType::entityNoOutline), var3, var4, var0.get(var6), var8);
+   private static void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, DyeColor var7, @Nullable ModelFeatureRenderer.CrumblingOverlay var8) {
+      int var9 = var7.getTextureDiffuseColor();
+      var2.submitModelPart(var5, var1, var6.renderType(RenderType::entityNoOutline), var3, var4, var0.get(var6), var9, var8);
    }
 
    public void getExtents(Set<Vector3f> var1) {

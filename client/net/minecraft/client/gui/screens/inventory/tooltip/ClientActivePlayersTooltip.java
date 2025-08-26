@@ -22,7 +22,7 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
    }
 
    private static String getName(PlayerSkinRenderCache.RenderInfo var0) {
-      return var0.gameProfile().getName();
+      return var0.gameProfile().name();
    }
 
    public int getWidth(Font var1) {

@@ -1,5 +1,6 @@
 package net.minecraft.network.codec;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -25,7 +26,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.IdMap;
@@ -372,7 +372,7 @@ public interface ByteBufCodecs {
 
       public PropertyMap decode(ByteBuf var1) {
          int var2 = ByteBufCodecs.readCount(var1, 16);
-         PropertyMap var3 = new PropertyMap();
+         ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
 
          for(int var4 = 0; var4 < var2; ++var4) {
             String var5 = Utf8String.read(var1, 64);
@@ -382,7 +382,7 @@ public interface ByteBufCodecs {
             var3.put(var8.name(), var8);
          }
 
-         return var3;
+         return new PropertyMap(var3.build());
       }
 
       public void encode(ByteBuf var1, PropertyMap var2) {
@@ -407,7 +407,7 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, String> PLAYER_NAME = stringUtf8(16);
-   StreamCodec<ByteBuf, GameProfile> GAME_PROFILE = StreamCodec.composite(UUIDUtil.STREAM_CODEC, GameProfile::getId, PLAYER_NAME, GameProfile::getName, GAME_PROFILE_PROPERTIES, GameProfile::getProperties, Util::createGameProfile);
+   StreamCodec<ByteBuf, GameProfile> GAME_PROFILE = StreamCodec.composite(UUIDUtil.STREAM_CODEC, GameProfile::id, PLAYER_NAME, GameProfile::name, GAME_PROFILE_PROPERTIES, GameProfile::properties, GameProfile::new);
    StreamCodec<ByteBuf, Integer> RGB_COLOR = new StreamCodec<ByteBuf, Integer>() {
       public Integer decode(ByteBuf var1) {
          return ARGB.color(var1.readByte() & 255, var1.readByte() & 255, var1.readByte() & 255);

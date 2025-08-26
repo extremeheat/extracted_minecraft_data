@@ -209,7 +209,7 @@ public class ChatListener {
 
    private boolean isSenderLocalPlayer(UUID var1) {
       if (this.minecraft.isLocalServer() && this.minecraft.player != null) {
-         UUID var2 = this.minecraft.player.getGameProfile().getId();
+         UUID var2 = this.minecraft.player.getGameProfile().id();
          return var2.equals(var1);
       } else {
          return false;

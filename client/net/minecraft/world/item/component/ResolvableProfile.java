@@ -52,10 +52,10 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
       return this.partialProfile;
    }
 
-   static GameProfile createPartialProfile(Optional<String> var0, Optional<UUID> var1) {
-      String var2 = (String)var0.orElse("");
-      UUID var3 = (UUID)var1.orElseGet(() -> UUIDUtil.createOfflinePlayerUUID(var2));
-      return new GameProfile(var3, var2);
+   static GameProfile createPartialProfile(Optional<String> var0, Optional<UUID> var1, PropertyMap var2) {
+      String var3 = (String)var0.orElse("");
+      UUID var4 = (UUID)var1.orElseGet(() -> UUIDUtil.createOfflinePlayerUUID(var3));
+      return new GameProfile(var4, var3, var2);
    }
 
    public abstract Optional<String> name();
@@ -69,7 +69,7 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
       final Optional<String> name;
       final Optional<UUID> id;
       final PropertyMap properties;
-      private static final Codec<Partial> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.PLAYER_NAME.optionalFieldOf("name").forGetter(Partial::name), UUIDUtil.CODEC.optionalFieldOf("id").forGetter(Partial::id), ExtraCodecs.PROPERTY_MAP.optionalFieldOf("properties", new PropertyMap()).forGetter(Partial::properties)).apply(var0, Partial::new));
+      private static final Codec<Partial> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.PLAYER_NAME.optionalFieldOf("name").forGetter(Partial::name), UUIDUtil.CODEC.optionalFieldOf("id").forGetter(Partial::id), ExtraCodecs.PROPERTY_MAP.optionalFieldOf("properties", PropertyMap.EMPTY).forGetter(Partial::properties)).apply(var0, Partial::new));
       public static final Codec<Partial> CODEC;
       public static final StreamCodec<ByteBuf, Partial> STREAM_CODEC;
 
@@ -81,13 +81,11 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
       }
 
       private GameProfile createProfile() {
-         GameProfile var1 = ResolvableProfile.createPartialProfile(this.name, this.id);
-         var1.getProperties().putAll(this.properties);
-         return var1;
+         return ResolvableProfile.createPartialProfile(this.name, this.id, this.properties);
       }
 
       static {
-         CODEC = Codec.withAlternative(FULL_CODEC, ExtraCodecs.PLAYER_NAME, (var0) -> new Partial(Optional.of(var0), Optional.empty(), new PropertyMap()));
+         CODEC = Codec.withAlternative(FULL_CODEC, ExtraCodecs.PLAYER_NAME, (var0) -> new Partial(Optional.of(var0), Optional.empty(), PropertyMap.EMPTY));
          STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.PLAYER_NAME.apply(ByteBufCodecs::optional), Partial::name, UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional), Partial::id, ByteBufCodecs.GAME_PROFILE_PROPERTIES, Partial::properties, Partial::new);
       }
    }
@@ -109,7 +107,7 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
       }
 
       public Optional<String> name() {
-         return (Optional)this.contents.map((var0) -> Optional.of(var0.getName()), (var0) -> var0.name);
+         return (Optional)this.contents.map((var0) -> Optional.of(var0.name()), (var0) -> var0.name);
       }
 
       public boolean equals(Object var1) {
@@ -145,7 +143,7 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
       private final Either<String, UUID> nameOrId;
 
       Dynamic(Either<String, UUID> var1) {
-         super(ResolvableProfile.createPartialProfile(var1.left(), var1.right()));
+         super(ResolvableProfile.createPartialProfile(var1.left(), var1.right(), PropertyMap.EMPTY));
          this.nameOrId = var1;
       }
 
@@ -178,7 +176,7 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
       }
 
       protected Either<GameProfile, Partial> unpack() {
-         return Either.right(new Partial(this.nameOrId.left(), this.nameOrId.right(), new PropertyMap()));
+         return Either.right(new Partial(this.nameOrId.left(), this.nameOrId.right(), PropertyMap.EMPTY));
       }
 
       public CompletableFuture<GameProfile> resolveProfile(ProfileResolver var1) {

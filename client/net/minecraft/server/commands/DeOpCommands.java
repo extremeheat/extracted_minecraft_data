@@ -39,7 +39,7 @@ public class DeOpCommands {
       if (var3 == 0) {
          throw ERROR_NOT_OP.create();
       } else {
-         var0.getServer().kickUnlistedPlayers(var0);
+         var0.getServer().kickUnlistedPlayers();
          return var3;
       }
    }

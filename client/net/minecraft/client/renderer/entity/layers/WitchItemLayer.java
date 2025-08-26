@@ -15,7 +15,7 @@ public class WitchItemLayer extends CrossedArmsItemLayer<WitchRenderState, Witch
    protected void applyTranslation(WitchRenderState var1, PoseStack var2) {
       if (var1.isHoldingPotion) {
          ((WitchModel)this.getParentModel()).root().translateAndRotate(var2);
-         ((WitchModel)this.getParentModel()).getHead().translateAndRotate(var2);
+         ((WitchModel)this.getParentModel()).translateToHead(var2);
          ((WitchModel)this.getParentModel()).getNose().translateAndRotate(var2);
          var2.translate(0.0625F, 0.25F, 0.0F);
          var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));

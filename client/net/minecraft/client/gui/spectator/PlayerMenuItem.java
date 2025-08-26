@@ -15,11 +15,11 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    public PlayerMenuItem(PlayerInfo var1) {
       super();
       this.playerInfo = var1;
-      this.name = Component.literal(var1.getProfile().getName());
+      this.name = Component.literal(var1.getProfile().name());
    }
 
    public void selectItem(SpectatorMenu var1) {
-      Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.playerInfo.getProfile().getId()));
+      Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.playerInfo.getProfile().id()));
    }
 
    public Component getName() {

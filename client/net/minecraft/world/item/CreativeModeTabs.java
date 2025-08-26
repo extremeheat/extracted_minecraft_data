@@ -402,7 +402,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.IRON_DOOR);
          var1.accept((ItemLike)Items.IRON_TRAPDOOR);
          var1.accept((ItemLike)Items.HEAVY_WEIGHTED_PRESSURE_PLATE);
-         var1.accept((ItemLike)Items.CHAIN);
+         var1.accept((ItemLike)Items.IRON_CHAIN);
          var1.accept((ItemLike)Items.GOLD_BLOCK);
          var1.accept((ItemLike)Items.LIGHT_WEIGHTED_PRESSURE_PLATE);
          var1.accept((ItemLike)Items.REDSTONE_BLOCK);
@@ -954,7 +954,7 @@ public class CreativeModeTabs {
          WeatheringCopperItems var10000 = Items.COPPER_LANTERN;
          Objects.requireNonNull(var1);
          var10000.forEach(var1::accept);
-         var1.accept((ItemLike)Items.CHAIN);
+         var1.accept((ItemLike)Items.IRON_CHAIN);
          var10000 = Items.COPPER_CHAIN;
          Objects.requireNonNull(var1);
          var10000.forEach(var1::accept);
@@ -1197,14 +1197,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.STRING);
          var1.accept((ItemLike)Items.LECTERN);
          var1.accept((ItemLike)Items.DAYLIGHT_DETECTOR);
-         var1.accept((ItemLike)Items.LIGHTNING_ROD);
-         var1.accept((ItemLike)Items.EXPOSED_LIGHTNING_ROD);
-         var1.accept((ItemLike)Items.WEATHERED_LIGHTNING_ROD);
-         var1.accept((ItemLike)Items.OXIDIZED_LIGHTNING_ROD);
          var1.accept((ItemLike)Items.WAXED_LIGHTNING_ROD);
-         var1.accept((ItemLike)Items.WAXED_EXPOSED_LIGHTNING_ROD);
-         var1.accept((ItemLike)Items.WAXED_WEATHERED_LIGHTNING_ROD);
-         var1.accept((ItemLike)Items.WAXED_OXIDIZED_LIGHTNING_ROD);
          var1.accept((ItemLike)Items.PISTON);
          var1.accept((ItemLike)Items.STICKY_PISTON);
          var1.accept((ItemLike)Items.SLIME_BLOCK);
@@ -1214,6 +1207,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CRAFTER);
          var1.accept((ItemLike)Items.HOPPER);
          var1.accept((ItemLike)Items.CHEST);
+         var1.accept((ItemLike)Items.WAXED_COPPER_CHEST);
          var1.accept((ItemLike)Items.BARREL);
          var1.accept((ItemLike)Items.CHISELED_BOOKSHELF);
          var1.accept((ItemLike)Items.OAK_SHELF);
@@ -1528,8 +1522,8 @@ public class CreativeModeTabs {
       Registry.register(var0, (ResourceKey)INGREDIENTS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 3).title(Component.translatable("itemGroup.ingredients")).icon(() -> new ItemStack(Items.IRON_INGOT)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.COAL);
          var1.accept((ItemLike)Items.CHARCOAL);
-         var1.accept((ItemLike)Items.RAW_IRON);
          var1.accept((ItemLike)Items.RAW_COPPER);
+         var1.accept((ItemLike)Items.RAW_IRON);
          var1.accept((ItemLike)Items.RAW_GOLD);
          var1.accept((ItemLike)Items.EMERALD);
          var1.accept((ItemLike)Items.LAPIS_LAZULI);
@@ -1540,8 +1534,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.COPPER_NUGGET);
          var1.accept((ItemLike)Items.IRON_NUGGET);
          var1.accept((ItemLike)Items.GOLD_NUGGET);
-         var1.accept((ItemLike)Items.IRON_INGOT);
          var1.accept((ItemLike)Items.COPPER_INGOT);
+         var1.accept((ItemLike)Items.IRON_INGOT);
          var1.accept((ItemLike)Items.GOLD_INGOT);
          var1.accept((ItemLike)Items.NETHERITE_SCRAP);
          var1.accept((ItemLike)Items.NETHERITE_INGOT);

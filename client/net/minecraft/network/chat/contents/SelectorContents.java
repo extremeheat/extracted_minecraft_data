@@ -17,8 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.world.entity.Entity;
 
 public record SelectorContents(SelectorPattern selector, Optional<Component> separator) implements ComponentContents {
-   public static final MapCodec<SelectorContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(var0, SelectorContents::new));
-   public static final ComponentContents.Type<SelectorContents> TYPE;
+   public static final MapCodec<SelectorContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(var0, SelectorContents::new));
 
    public SelectorContents(SelectorPattern var1, Optional<Component> var2) {
       super();
@@ -26,8 +25,8 @@ public record SelectorContents(SelectorPattern selector, Optional<Component> sep
       this.separator = var2;
    }
 
-   public ComponentContents.Type<?> type() {
-      return TYPE;
+   public MapCodec<SelectorContents> codec() {
+      return MAP_CODEC;
    }
 
    public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
@@ -49,9 +48,5 @@ public record SelectorContents(SelectorPattern selector, Optional<Component> sep
 
    public String toString() {
       return "pattern{" + String.valueOf(this.selector) + "}";
-   }
-
-   static {
-      TYPE = new ComponentContents.Type<SelectorContents>(CODEC, "selector");
    }
 }

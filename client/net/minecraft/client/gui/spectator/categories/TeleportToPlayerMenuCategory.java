@@ -19,7 +19,7 @@ import net.minecraft.world.level.GameType;
 
 public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
    private static final ResourceLocation TELEPORT_TO_PLAYER_SPRITE = ResourceLocation.withDefaultNamespace("spectator/teleport_to_player");
-   private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing((var0) -> var0.getProfile().getId());
+   private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing((var0) -> var0.getProfile().id());
    private static final Component TELEPORT_TEXT = Component.translatable("spectatorMenu.teleport");
    private static final Component TELEPORT_PROMPT = Component.translatable("spectatorMenu.teleport.prompt");
    private final List<SpectatorMenuItem> items;

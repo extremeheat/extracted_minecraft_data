@@ -1346,6 +1346,7 @@ public class SoundEvents {
    public static final SoundEvent SHELF_PLACE_ITEM = register("block.shelf.place_item");
    public static final SoundEvent SHELF_SINGLE_SWAP = register("block.shelf.single_swap");
    public static final SoundEvent SHELF_STEP = register("block.shelf.step");
+   public static final SoundEvent SHELF_TAKE_ITEM = register("block.shelf.take_item");
    public static final Holder.Reference<SoundEvent> SHIELD_BLOCK = registerForHolder("item.shield.block");
    public static final Holder.Reference<SoundEvent> SHIELD_BREAK = registerForHolder("item.shield.break");
    public static final SoundEvent SHROOMLIGHT_BREAK = register("block.shroomlight.break");

@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Optionull;
-import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -97,10 +96,14 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
    }
 
    public static enum Action {
-      ADD_PLAYER((var0, var1) -> var0.profile = Util.createGameProfile(var0.profileId, (String)ByteBufCodecs.PLAYER_NAME.decode(var1), (PropertyMap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(var1)), (var0, var1) -> {
+      ADD_PLAYER((var0, var1) -> {
+         String var2 = (String)ByteBufCodecs.PLAYER_NAME.decode(var1);
+         PropertyMap var3 = (PropertyMap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(var1);
+         var0.profile = new GameProfile(var0.profileId, var2, var3);
+      }, (var0, var1) -> {
          GameProfile var2 = (GameProfile)Objects.requireNonNull(var1.profile());
-         ByteBufCodecs.PLAYER_NAME.encode(var0, var2.getName());
-         ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(var0, var2.getProperties());
+         ByteBufCodecs.PLAYER_NAME.encode(var0, var2.name());
+         ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(var0, var2.properties());
       }),
       INITIALIZE_CHAT((var0, var1) -> var0.chatSession = (RemoteChatSession.Data)var1.readNullable(RemoteChatSession.Data::read), (var0, var1) -> var0.writeNullable(var1.chatSession, RemoteChatSession.Data::write)),
       UPDATE_GAME_MODE((var0, var1) -> var0.gameMode = GameType.byId(var1.readVarInt()), (var0, var1) -> var0.writeVarInt(var1.gameMode().getId())),

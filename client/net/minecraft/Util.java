@@ -7,8 +7,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.Typed;
@@ -478,12 +476,6 @@ public class Util {
 
    public static int growByHalf(int var0, int var1) {
       return (int)Math.max(Math.min((long)var0 + (long)(var0 >> 1), 2147483639L), (long)var1);
-   }
-
-   public static GameProfile createGameProfile(UUID var0, String var1, PropertyMap var2) {
-      GameProfile var3 = new GameProfile(var0, var1);
-      var3.getProperties().putAll(var2);
-      return var3;
    }
 
    public static OS getPlatform() {

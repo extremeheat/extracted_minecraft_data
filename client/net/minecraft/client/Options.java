@@ -152,6 +152,8 @@ public class Options {
    private final OptionInstance<Integer> biomeBlendRadius;
    private final OptionInstance<Double> mouseWheelSensitivity;
    private final OptionInstance<Boolean> rawMouseInput;
+   private static final Component ALLOW_CURSOR_CHANGES_TOOLTIP;
+   private final OptionInstance<Boolean> allowCursorChanges;
    public int glDebugVerbosity;
    private final OptionInstance<Boolean> autoJump;
    private static final Component ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART;
@@ -436,6 +438,10 @@ public class Options {
 
    public OptionInstance<Boolean> rawMouseInput() {
       return this.rawMouseInput;
+   }
+
+   public OptionInstance<Boolean> allowCursorChanges() {
+      return this.allowCursorChanges;
    }
 
    public OptionInstance<Boolean> autoJump() {
@@ -785,6 +791,13 @@ public class Options {
          }
 
       });
+      this.allowCursorChanges = OptionInstance.createBoolean("options.allowCursorChanges", OptionInstance.cachedConstantTooltip(ALLOW_CURSOR_CHANGES_TOOLTIP), true, (var0) -> {
+         Window var1 = Minecraft.getInstance().getWindow();
+         if (var1 != null) {
+            var1.setAllowCursorChanges(var0);
+         }
+
+      });
       this.glDebugVerbosity = 1;
       this.autoJump = OptionInstance.createBoolean("options.autoJump", false);
       this.rotateWithMinecart = OptionInstance.createBoolean("options.rotateWithMinecart", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART), false);
@@ -1072,6 +1085,7 @@ public class Options {
       this.tutorialStep = (TutorialSteps)var1.process("tutorialStep", this.tutorialStep, TutorialSteps::getByName, TutorialSteps::getName);
       var1.process("mouseWheelSensitivity", this.mouseWheelSensitivity);
       var1.process("rawMouseInput", this.rawMouseInput);
+      var1.process("allowCursorChanges", this.allowCursorChanges);
       this.glDebugVerbosity = var1.process("glDebugVerbosity", this.glDebugVerbosity);
       this.skipMultiplayerWarning = var1.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
       var1.process("hideMatchedNames", this.hideMatchedNames);
@@ -1487,6 +1501,7 @@ public class Options {
       ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
       HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP = Component.translatable("options.accessibility.high_contrast_block_outline.tooltip");
       ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
+      ALLOW_CURSOR_CHANGES_TOOLTIP = Component.translatable("options.allowCursorChanges.tooltip");
       ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART = Component.translatable("options.rotateWithMinecart.tooltip");
       REALMS_NOTIFICATIONS_TOOLTIP = Component.translatable("options.realmsNotifications.tooltip");
       ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");

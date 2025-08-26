@@ -266,10 +266,7 @@ public class GuiRenderer implements AutoCloseable {
             }
 
             private void accept(TextRenderable var1) {
-               if (var1.textureView() != null) {
-                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
-               }
-
+               GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
             }
          });
       });

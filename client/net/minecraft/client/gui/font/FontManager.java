@@ -38,6 +38,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.network.chat.FontDescription;
@@ -65,12 +66,14 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    private final CachedFontProvider nonFishyGlyphs = new CachedFontProvider(true);
    private final AtlasManager atlasManager;
    private final Map<ResourceLocation, AtlasGlyphProvider> atlasProviders = new HashMap();
+   final PlayerGlyphProvider playerProvider;
 
-   public FontManager(TextureManager var1, AtlasManager var2) {
+   public FontManager(TextureManager var1, AtlasManager var2, PlayerSkinRenderCache var3) {
       super();
       this.textureManager = var1;
       this.atlasManager = var2;
       this.missingFontSet = this.createFontSet(MISSING_FONT, List.of(createFallbackProvider()), Set.of());
+      this.playerProvider = new PlayerGlyphProvider(var3);
    }
 
    private FontSet createFontSet(ResourceLocation var1, List<GlyphProvider.Conditional> var2, Set<FontOption> var3) {
@@ -415,6 +418,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          //$FF: var3->value
          //0->net/minecraft/network/chat/FontDescription$Resource
          //1->net/minecraft/network/chat/FontDescription$AtlasSprite
+         //2->net/minecraft/network/chat/FontDescription$PlayerSprite
          switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
             case 0:
                FontDescription.Resource var4 = (FontDescription.Resource)var1;
@@ -423,6 +427,10 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
             case 1:
                FontDescription.AtlasSprite var5 = (FontDescription.AtlasSprite)var1;
                var10000 = FontManager.this.getSpriteFont(var5);
+               break;
+            case 2:
+               FontDescription.PlayerSprite var6 = (FontDescription.PlayerSprite)var1;
+               var10000 = FontManager.this.playerProvider.sourceForPlayer(var6);
                break;
             default:
                var10000 = FontManager.this.missingFontSet.source(this.nonFishyOnly);

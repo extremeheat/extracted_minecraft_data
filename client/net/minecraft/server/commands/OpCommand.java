@@ -23,7 +23,7 @@ public class OpCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("op").requires(Commands.hasPermission(3))).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
          PlayerList var2 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
-         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().filter((var1x) -> !var2.isOp(var1x.nameAndId())).map((var0) -> var0.getGameProfile().getName()), var1);
+         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().filter((var1x) -> !var2.isOp(var1x.nameAndId())).map((var0) -> var0.getGameProfile().name()), var1);
       }).executes((var0x) -> opPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))));
    }
 

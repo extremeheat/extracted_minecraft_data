@@ -12,6 +12,7 @@ import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.players.StoredUserEntry;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +37,7 @@ public class WhitelistCommand {
    private static int reload(CommandSourceStack var0) {
       var0.getServer().getPlayerList().reloadWhiteList();
       var0.sendSuccess(() -> Component.translatable("commands.whitelist.reloaded"), true);
-      var0.getServer().kickUnlistedPlayers(var0);
+      var0.getServer().kickUnlistedPlayers();
       return 1;
    }
 
@@ -67,7 +68,7 @@ public class WhitelistCommand {
       for(NameAndId var5 : var1) {
          if (var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
-            var2.remove(var6);
+            var2.remove((StoredUserEntry)var6);
             var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", Component.literal(var5.name())), true);
             ++var3;
          }
@@ -76,29 +77,27 @@ public class WhitelistCommand {
       if (var3 == 0) {
          throw ERROR_NOT_WHITELISTED.create();
       } else {
-         var0.getServer().kickUnlistedPlayers(var0);
+         var0.getServer().kickUnlistedPlayers();
          return var3;
       }
    }
 
    private static int enableWhitelist(CommandSourceStack var0) throws CommandSyntaxException {
-      PlayerList var1 = var0.getServer().getPlayerList();
-      if (var1.isUsingWhitelist()) {
+      if (var0.getServer().isUsingWhitelist()) {
          throw ERROR_ALREADY_ENABLED.create();
       } else {
-         var1.setUsingWhiteList(true);
+         var0.getServer().setUsingWhitelist(true);
          var0.sendSuccess(() -> Component.translatable("commands.whitelist.enabled"), true);
-         var0.getServer().kickUnlistedPlayers(var0);
+         var0.getServer().kickUnlistedPlayers();
          return 1;
       }
    }
 
    private static int disableWhitelist(CommandSourceStack var0) throws CommandSyntaxException {
-      PlayerList var1 = var0.getServer().getPlayerList();
-      if (!var1.isUsingWhitelist()) {
+      if (!var0.getServer().isUsingWhitelist()) {
          throw ERROR_ALREADY_DISABLED.create();
       } else {
-         var1.setUsingWhiteList(false);
+         var0.getServer().setUsingWhitelist(false);
          var0.sendSuccess(() -> Component.translatable("commands.whitelist.disabled"), true);
          return 1;
       }

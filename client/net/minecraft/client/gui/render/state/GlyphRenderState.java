@@ -1,9 +1,7 @@
 package net.minecraft.client.gui.render.state;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -28,7 +26,7 @@ public record GlyphRenderState(Matrix3x2f pose, TextRenderable renderable, @Null
    }
 
    public TextureSetup textureSetup() {
-      return TextureSetup.singleTextureWithLightmap((GpuTextureView)Objects.requireNonNull(this.renderable.textureView()));
+      return TextureSetup.singleTextureWithLightmap(this.renderable.textureView());
    }
 
    @Nullable

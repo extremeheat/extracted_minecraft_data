@@ -195,7 +195,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.parrotOnLeftShoulder = getParrotOnShoulder(var1, true);
       var2.parrotOnRightShoulder = getParrotOnShoulder(var1, false);
       var2.id = var1.getId();
-      var2.name = var1.getGameProfile().getName();
+      var2.name = var1.getGameProfile().name();
       var2.heldOnHead.clear();
       if (var2.isUsingItem) {
          ItemStack var8 = var1.getItemInHand(var2.useItemHand);

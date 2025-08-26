@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 public class IntegratedServer extends MinecraftServer {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MIN_SIM_DISTANCE = 2;
+   public static final int MAX_PLAYERS = 8;
    private final Minecraft minecraft;
    private boolean paused = true;
    private int publishedPort = -1;
@@ -69,13 +70,11 @@ public class IntegratedServer extends MinecraftServer {
    public boolean initServer() {
       LOGGER.info("Starting integrated minecraft server version {}", SharedConstants.getCurrentVersion().name());
       this.setUsesAuthentication(true);
-      this.setPvpAllowed(true);
-      this.setFlightAllowed(true);
       this.initializeKeyPair();
       this.loadLevel();
       GameProfile var1 = this.getSingleplayerProfile();
       String var2 = this.getWorldData().getLevelName();
-      this.setMotd(var1 != null ? var1.getName() + " - " + var2 : var2);
+      this.setMotd(var1 != null ? var1.name() + " - " + var2 : var2);
       return true;
    }
 
@@ -239,11 +238,7 @@ public class IntegratedServer extends MinecraftServer {
       this.publishedGameType = null;
    }
 
-   public boolean isCommandBlockEnabled() {
-      return true;
-   }
-
-   public int getOperatorUserPermissionLevel() {
+   public int operatorUserPermissionLevel() {
       return 2;
    }
 
@@ -256,7 +251,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    public boolean isSingleplayerOwner(NameAndId var1) {
-      return this.getSingleplayerProfile() != null && var1.name().equalsIgnoreCase(this.getSingleplayerProfile().getName());
+      return this.getSingleplayerProfile() != null && var1.name().equalsIgnoreCase(this.getSingleplayerProfile().name());
    }
 
    public int getScaledTrackingDistance(int var1) {
@@ -312,6 +307,10 @@ public class IntegratedServer extends MinecraftServer {
       super.reportChunkSaveFailure(var1, var2, var3);
       this.warnOnLowDiskSpace();
       this.minecraft.execute(() -> SystemToast.onChunkSaveFailure(this.minecraft, var3));
+   }
+
+   public int getMaxPlayers() {
+      return 8;
    }
 
    // $FF: synthetic method

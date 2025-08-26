@@ -99,6 +99,7 @@ import net.minecraft.server.level.progress.ChunkLoadStatusView;
 import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.network.ServerConnectionListener;
 import net.minecraft.server.network.TextFilter;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -200,7 +201,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final int MAX_TICK_LATENCY = 3;
    public static final int ABSOLUTE_MAX_WORLD_SIZE = 29999984;
    public static final LevelSettings DEMO_SETTINGS;
-   public static final GameProfile ANONYMOUS_PLAYER_PROFILE;
+   private static final NameAndId ANONYMOUS_PLAYER_PROFILE;
    protected final LevelStorageSource.LevelStorageAccess storageSource;
    protected final PlayerDataStorage playerDataStorage;
    private final List<Runnable> tickables = Lists.newArrayList();
@@ -231,8 +232,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected final Proxy proxy;
    private boolean onlineMode;
    private boolean preventProxyConnections;
-   private boolean pvp;
-   private boolean allowFlight;
    @Nullable
    private String motd;
    private int playerIdleTimeout;
@@ -246,6 +245,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private volatile boolean isReady;
    private long lastOverloadWarningNanos;
    protected final Services services;
+   private final NotificationManager notificationManager;
    private long lastServerStatus;
    private final Thread serverThread;
    private long lastTickNanos;
@@ -262,6 +262,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final CustomBossEvents customBossEvents;
    private final ServerFunctionManager functionManager;
    private boolean enforceWhitelist;
+   private boolean usingWhitelist;
    private float smoothedTickTimeMillis;
    private final Executor executor;
    @Nullable
@@ -336,6 +337,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.resources.managers.getRecipeManager().finalizeRecipeLoading(this.worldData.enabledFeatures());
          this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
+         this.notificationManager = new NotificationManager();
       }
    }
 
@@ -551,7 +553,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.worldData.isHardcore();
    }
 
-   public abstract int getOperatorUserPermissionLevel();
+   public abstract int operatorUserPermissionLevel();
 
    public abstract int getFunctionCompilationLevel();
 
@@ -855,6 +857,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       super.managedBlock(() -> throwIfFatalException() && var1.getAsBoolean());
    }
 
+   public NotificationManager notificationManager() {
+      return this.notificationManager;
+   }
+
    protected void waitUntilNextTick() {
       this.runAllTasks();
       this.waitingForNextTick = true;
@@ -950,7 +956,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public void tickServer(BooleanSupplier var1) {
       long var2 = Util.getNanos();
-      int var4 = this.pauseWhileEmptySeconds() * 20;
+      int var4 = this.pauseWhenEmptySeconds() * 20;
       if (var4 > 0) {
          if (this.playerList.getPlayerCount() == 0 && !this.tickRateManager.isSprinting()) {
             ++this.emptyTicks;
@@ -960,7 +966,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
          if (this.emptyTicks >= var4) {
             if (this.emptyTicks == var4) {
-               LOGGER.info("Server empty for {} seconds, pausing", this.pauseWhileEmptySeconds());
+               LOGGER.info("Server empty for {} seconds, pausing", this.pauseWhenEmptySeconds());
                this.autoSave();
             }
 
@@ -1038,7 +1044,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    private ServerStatus buildServerStatus() {
       ServerStatus.Players var1 = this.buildPlayerStatus();
-      return new ServerStatus(Component.nullToEmpty(this.motd), Optional.of(var1), Optional.of(ServerStatus.Version.current()), Optional.ofNullable(this.statusIcon), this.enforceSecureProfile());
+      return new ServerStatus(Component.nullToEmpty(this.getMotd()), Optional.of(var1), Optional.of(ServerStatus.Version.current()), Optional.ofNullable(this.statusIcon), this.enforceSecureProfile());
    }
 
    private ServerStatus.Players buildPlayerStatus() {
@@ -1053,7 +1059,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
          for(int var6 = 0; var6 < var3; ++var6) {
             ServerPlayer var7 = (ServerPlayer)var1.get(var5 + var6);
-            var4.add(var7.allowsListing() ? var7.getGameProfile() : ANONYMOUS_PLAYER_PROFILE);
+            var4.add(var7.allowsListing() ? var7.nameAndId() : ANONYMOUS_PLAYER_PROFILE);
          }
 
          Util.shuffle(var4, this.random);
@@ -1136,8 +1142,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var1.pop();
    }
 
-   public boolean isLevelEnabled(Level var1) {
-      return true;
+   public boolean isAllowedToEnterPortal(Level var1) {
+      return var1.dimension() == Level.NETHER ? this.getGameRules().getBoolean(GameRules.RULE_ALLOW_NETHER) : true;
    }
 
    public void addTickable(Runnable var1) {
@@ -1179,10 +1185,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public int getPlayerCount() {
       return this.playerList.getPlayerCount();
-   }
-
-   public int getMaxPlayers() {
-      return this.playerList.getMaxPlayers();
    }
 
    public String[] getPlayerNames() {
@@ -1292,8 +1294,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var1.connection.send(new ClientboundChangeDifficultyPacket(var2.getDifficulty(), var2.isDifficultyLocked()));
    }
 
-   public boolean isSpawningMonsters() {
-      return this.worldData.getDifficulty() != Difficulty.PEACEFUL;
+   protected boolean isSpawningMonsters() {
+      return this.worldData.getDifficulty() != Difficulty.PEACEFUL && this.getGameRules().getBoolean(GameRules.RULE_SPAWN_MONSTERS);
    }
 
    public boolean isDemo() {
@@ -1339,22 +1341,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public abstract boolean isEpollEnabled();
 
    public boolean isPvpAllowed() {
-      return this.pvp;
+      return this.getGameRules().getBoolean(GameRules.RULE_PVP);
    }
 
-   public void setPvpAllowed(boolean var1) {
-      this.pvp = var1;
+   public boolean allowFlight() {
+      return true;
    }
 
-   public boolean isFlightAllowed() {
-      return this.allowFlight;
+   public boolean isCommandBlockEnabled() {
+      return this.getGameRules().getBoolean(GameRules.ENABLE_COMMAND_BLOCKS);
    }
-
-   public void setFlightAllowed(boolean var1) {
-      this.allowFlight = var1;
-   }
-
-   public abstract boolean isCommandBlockEnabled();
 
    public String getMotd() {
       return this.motd;
@@ -1382,6 +1378,22 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.worldData.setGameType(var1);
    }
 
+   public int enforceGameTypeForPlayers(@Nullable GameType var1) {
+      if (var1 == null) {
+         return 0;
+      } else {
+         int var2 = 0;
+
+         for(ServerPlayer var4 : this.getPlayerList().getPlayers()) {
+            if (var4.setGameMode(var1)) {
+               ++var2;
+            }
+         }
+
+         return var2;
+      }
+   }
+
    public ServerConnectionListener getConnection() {
       return this.connection;
    }
@@ -1402,10 +1414,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.tickCount;
    }
 
-   public int getSpawnProtectionRadius() {
-      return 16;
-   }
-
    public boolean isUnderSpawnProtection(ServerLevel var1, BlockPos var2, Player var3) {
       return false;
    }
@@ -1422,7 +1430,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.proxy;
    }
 
-   public int getPlayerIdleTimeout() {
+   public int playerIdleTimeout() {
       return this.playerIdleTimeout;
    }
 
@@ -1616,14 +1624,14 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return new DataPackConfig(var3, var4);
    }
 
-   public void kickUnlistedPlayers(CommandSourceStack var1) {
-      if (this.isEnforceWhitelist()) {
-         PlayerList var2 = var1.getServer().getPlayerList();
-         UserWhiteList var3 = var2.getWhiteList();
+   public void kickUnlistedPlayers() {
+      if (this.isEnforceWhitelist() && this.isUsingWhitelist()) {
+         PlayerList var1 = this.getPlayerList();
+         UserWhiteList var2 = var1.getWhiteList();
 
-         for(ServerPlayer var6 : Lists.newArrayList(var2.getPlayers())) {
-            if (!var3.isWhiteListed(var6.nameAndId())) {
-               var6.connection.disconnect(Component.translatable("multiplayer.disconnect.not_whitelisted"));
+         for(ServerPlayer var5 : Lists.newArrayList(var1.getPlayers())) {
+            if (!var2.isWhiteListed(var5.nameAndId())) {
+               var5.connection.disconnect(Component.translatable("multiplayer.disconnect.not_whitelisted"));
             }
          }
 
@@ -1685,6 +1693,14 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.enforceWhitelist = var1;
    }
 
+   public boolean isUsingWhitelist() {
+      return this.usingWhitelist;
+   }
+
+   public void setUsingWhitelist(boolean var1) {
+      this.usingWhitelist = var1;
+   }
+
    public float getCurrentSmoothedTickTime() {
       return this.smoothedTickTimeMillis;
    }
@@ -1711,7 +1727,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          } else if (this.isSingleplayer()) {
             return this.getPlayerList().isAllowCommandsForAllPlayers() ? 4 : 0;
          } else {
-            return this.getOperatorUserPermissionLevel();
+            return this.operatorUserPermissionLevel();
          }
       } else {
          return 0;
@@ -2057,6 +2073,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.levelLoadListener;
    }
 
+   public boolean setAutoSave(boolean var1) {
+      boolean var2 = false;
+
+      for(ServerLevel var4 : this.getAllLevels()) {
+         if (var4 != null && var4.noSave == var1) {
+            var4.noSave = !var1;
+            var2 = true;
+         }
+      }
+
+      return var2;
+   }
+
+   public boolean isAutoSave() {
+      for(ServerLevel var2 : this.getAllLevels()) {
+         if (var2 != null && !var2.noSave) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   public void onGameRuleChanged(String var1, GameRules.Value<?> var2) {
+      this.notificationManager().onGameRuleChanged(var1, var2);
+   }
+
    public boolean acceptsTransfers() {
       return false;
    }
@@ -2120,7 +2163,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return ServerLinks.EMPTY;
    }
 
-   protected int pauseWhileEmptySeconds() {
+   protected int pauseWhenEmptySeconds() {
       return 0;
    }
 
@@ -2145,7 +2188,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       STATUS_EXPIRE_TIME_NANOS = 5L * TimeUtil.NANOSECONDS_PER_SECOND;
       PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, false, Difficulty.NORMAL, false, new GameRules(FeatureFlags.DEFAULT_FLAGS), WorldDataConfiguration.DEFAULT);
-      ANONYMOUS_PLAYER_PROFILE = new GameProfile(Util.NIL_UUID, "Anonymous Player");
+      ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");
       fatalException = new AtomicReference();
    }
 

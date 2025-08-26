@@ -1,4 +1,4 @@
-package net.minecraft.network.chat.contents;
+package net.minecraft.network.chat.contents.data;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,8 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public record StorageDataSource(ResourceLocation id) implements DataSource {
-   public static final MapCodec<StorageDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new));
-   public static final DataSource.Type<StorageDataSource> TYPE;
+   public static final MapCodec<StorageDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new));
 
    public StorageDataSource(ResourceLocation var1) {
       super();
@@ -21,15 +20,11 @@ public record StorageDataSource(ResourceLocation id) implements DataSource {
       return Stream.of(var2);
    }
 
-   public DataSource.Type<?> type() {
-      return TYPE;
+   public MapCodec<StorageDataSource> codec() {
+      return MAP_CODEC;
    }
 
    public String toString() {
       return "storage=" + String.valueOf(this.id);
-   }
-
-   static {
-      TYPE = new DataSource.Type<StorageDataSource>(SUB_CODEC, "storage");
    }
 }

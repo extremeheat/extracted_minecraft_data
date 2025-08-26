@@ -595,7 +595,7 @@ public class CreateWorldScreen extends Screen {
       private static final Component GENERATE_STRUCTURES_INFO = Component.translatable("selectWorld.mapFeatures.info");
       private static final Component BONUS_CHEST = Component.translatable("selectWorld.bonusItems");
       private static final Component SEED_LABEL = Component.translatable("selectWorld.enterSeed");
-      static final Component SEED_EMPTY_HINT;
+      static final Component SEED_EMPTY_HINT = Component.translatable("selectWorld.seedInfo");
       private static final int WORLD_TAB_WIDTH = 310;
       private final EditBox seedEdit;
       private final Button customizeTypeButton;
@@ -669,10 +669,6 @@ public class CreateWorldScreen extends Screen {
 
       private static MutableComponent createTypeButtonNarration(CycleButton<WorldCreationUiState.WorldTypeEntry> var0) {
          return ((WorldCreationUiState.WorldTypeEntry)var0.getValue()).isAmplified() ? CommonComponents.joinForNarration(var0.createDefaultNarrationMessage(), AMPLIFIED_HELP_TEXT) : var0.createDefaultNarrationMessage();
-      }
-
-      static {
-         SEED_EMPTY_HINT = Component.translatable("selectWorld.seedInfo").withStyle(ChatFormatting.DARK_GRAY);
       }
    }
 

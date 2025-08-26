@@ -7,6 +7,7 @@ import net.minecraft.client.model.CopperGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.layers.BlockDecorationLayer;
+import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.LivingEntityEmissiveLayer;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
@@ -15,7 +16,6 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.BlockItem;
@@ -27,10 +27,11 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
       super(var1, new CopperGolemModel(var1.bakeLayer(ModelLayers.COPPER_GOLEM)), 0.5F);
       this.addLayer(new LivingEntityEmissiveLayer(this, getEyeTextureLocationProvider(), (var0, var1x) -> 1.0F, new CopperGolemModel(var1.bakeLayer(ModelLayers.COPPER_GOLEM)), RenderType::eyes, false));
       this.addLayer(new ItemInHandLayer(this));
-      Function var10004 = (var0) -> var0.blockOnHead;
+      Function var10004 = (var0) -> var0.blockOnAntenna;
       CopperGolemModel var10005 = this.model;
       Objects.requireNonNull(var10005);
-      this.addLayer(new BlockDecorationLayer(this, var10004, var10005::applyBlockOnHeadTransform));
+      this.addLayer(new BlockDecorationLayer(this, var10004, var10005::applyBlockOnAntennaTransform));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
    }
 
    public ResourceLocation getTextureLocation(CopperGolemRenderState var1) {
@@ -55,7 +56,7 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
       var2.interactionGetNoItem.copyFrom(var1.getInteractionGetNoItemAnimationState());
       var2.interactionDropItem.copyFrom(var1.getInteractionDropItemAnimationState());
       var2.interactionDropNoItem.copyFrom(var1.getInteractionDropNoItemAnimationState());
-      var2.blockOnHead = Optional.of(var1.getItemBySlot(EquipmentSlot.HEAD)).flatMap((var0) -> {
+      var2.blockOnAntenna = Optional.of(var1.getItemBySlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA)).flatMap((var0) -> {
          Item var2 = var0.getItem();
          if (var2 instanceof BlockItem var1) {
             BlockItemStateProperties var3 = (BlockItemStateProperties)var0.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);

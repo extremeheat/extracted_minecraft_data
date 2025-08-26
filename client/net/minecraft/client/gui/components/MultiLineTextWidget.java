@@ -85,11 +85,9 @@ public class MultiLineTextWidget extends AbstractStringWidget {
          var5.render(var1, MultiLineLabel.Align.LEFT, var6, var7, var8, true, var9);
       }
 
-      if (this.allowHoverComponents) {
+      if (this.isHovered() && this.allowHoverComponents) {
          Style var11 = this.getComponentStyleAt((double)var2, (double)var3);
-         if (this.isHovered()) {
-            var1.renderComponentHoverEffect(this.getFont(), var11, var2, var3);
-         }
+         var1.renderComponentHoverEffect(this.getFont(), var11, var2, var3);
       }
 
    }

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -61,7 +60,7 @@ public class ShareToLanScreen extends Screen {
       this.portEdit = new EditBox(this.font, this.width / 2 - 75, 160, 150, 20, Component.translatable("lanServer.port"));
       this.portEdit.setResponder((var2x) -> {
          Component var3 = this.tryParsePort(var2x);
-         this.portEdit.setHint(Component.literal("" + this.port).withStyle(ChatFormatting.DARK_GRAY));
+         this.portEdit.setHint(Component.literal("" + this.port));
          if (var3 == null) {
             this.portEdit.setTextColor(-2039584);
             this.portEdit.setTooltip((Tooltip)null);
@@ -73,7 +72,7 @@ public class ShareToLanScreen extends Screen {
          }
 
       });
-      this.portEdit.setHint(Component.literal("" + this.port).withStyle(ChatFormatting.DARK_GRAY));
+      this.portEdit.setHint(Component.literal("" + this.port));
       this.addRenderableWidget(this.portEdit);
       this.addRenderableWidget(var2);
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());

@@ -155,7 +155,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
 
       try {
          PlayerList var2 = this.server.getPlayerList();
-         if (var2.getPlayer(this.gameProfile.getId()) != null) {
+         if (var2.getPlayer(this.gameProfile.id()) != null) {
             this.disconnect(PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
             return;
          }

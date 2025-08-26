@@ -58,7 +58,7 @@ public class ModelFeatureRenderer {
          var6.renderToBuffer(this.poseStack, var1.sprite() == null ? var8 : var1.sprite().wrap(var8), var1.lightCoords(), var1.overlayCoords(), var1.tintedColor());
       }
 
-      if (var1.crumblingOverlay() != null && var2.affectsCrumbling() && var1.crumblingOverlay().progress() != 0) {
+      if (var1.crumblingOverlay() != null && var2.affectsCrumbling()) {
          SheetedDecalTextureGenerator var9 = new SheetedDecalTextureGenerator(var5.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var1.crumblingOverlay().progress())), var1.crumblingOverlay().cameraPose(), 1.0F);
          var6.renderToBuffer(this.poseStack, (VertexConsumer)(var1.sprite() == null ? var9 : var1.sprite().wrap(var9)), var1.lightCoords(), var1.overlayCoords(), var1.tintedColor());
       }

@@ -88,6 +88,10 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       }
    }
 
+   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+      return this.recipeBookComponent.mouseDragged(var1, var3, var5, var6, var8) ? true : super.mouseDragged(var1, var3, var5, var6, var8);
+   }
+
    protected boolean isHovering(int var1, int var2, int var3, int var4, double var5, double var7) {
       return (!this.widthTooNarrow || !this.recipeBookComponent.isVisible()) && super.isHovering(var1, var2, var3, var4, var5, var7);
    }

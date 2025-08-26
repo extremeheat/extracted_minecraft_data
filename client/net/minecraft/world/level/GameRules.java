@@ -93,6 +93,10 @@ public class GameRules {
    public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
    public static final Key<BooleanValue> RULE_TNT_EXPLODES;
    public static final Key<BooleanValue> RULE_LOCATOR_BAR;
+   public static final Key<BooleanValue> RULE_PVP;
+   public static final Key<BooleanValue> RULE_ALLOW_NETHER;
+   public static final Key<BooleanValue> RULE_SPAWN_MONSTERS;
+   public static final Key<BooleanValue> ENABLE_COMMAND_BLOCKS;
    private final Map<Key<?>, Value<?>> rules;
    private final FeatureFlagSet enabledFeatures;
 
@@ -123,7 +127,7 @@ public class GameRules {
       this((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> ((Type)var0.getValue()).createRule())), var1);
    }
 
-   private static Stream<Map.Entry<Key<?>, Type<?>>> availableRules(FeatureFlagSet var0) {
+   public static Stream<Map.Entry<Key<?>, Type<?>>> availableRules(FeatureFlagSet var0) {
       return GAME_RULE_TYPES.entrySet().stream().filter((var1) -> ((Type)var1.getValue()).requiredFeatures.isSubsetOf(var0));
    }
 
@@ -273,6 +277,10 @@ public class GameRules {
             }
 
          })));
+      RULE_PVP = register("pvp", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
+      RULE_ALLOW_NETHER = register("allowEnteringNetherUsingPortals", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
+      RULE_SPAWN_MONSTERS = register("spawnMonsters", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true));
+      ENABLE_COMMAND_BLOCKS = register("enableCommandBlocks", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
    }
 
    public static enum Category {

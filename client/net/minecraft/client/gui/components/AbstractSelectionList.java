@@ -218,7 +218,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.renderListItems(var1, var2, var3, var4);
       var1.disableScissor();
       this.renderListSeparators(var1);
-      this.renderScrollbar(var1);
+      this.renderScrollbar(var1, var2, var3);
    }
 
    protected void renderListSeparators(GuiGraphics var1) {

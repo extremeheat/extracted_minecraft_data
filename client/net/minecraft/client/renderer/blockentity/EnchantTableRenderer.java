@@ -20,7 +20,6 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
    public static final Material BOOK_LOCATION;
    private final MaterialSet materials;
    private final BookModel bookModel;
-   private final BookModel.State bookState = new BookModel.State();
 
    public EnchantTableRenderer(BlockEntityRendererProvider.Context var1) {
       super();
@@ -49,11 +48,8 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       float var13 = Mth.frac(var12 + 0.25F) * 1.6F - 0.3F;
       float var14 = Mth.frac(var12 + 0.75F) * 1.6F - 0.3F;
       float var15 = Mth.lerp(var2, var1.oOpen, var1.open);
-      this.bookState.animationPos = var9;
-      this.bookState.pageFlip1 = Mth.clamp(var13, 0.0F, 1.0F);
-      this.bookState.pageFlip2 = Mth.clamp(var14, 0.0F, 1.0F);
-      this.bookState.open = var15;
-      var8.submitModel(this.bookModel, this.bookState, var3, BOOK_LOCATION.renderType(RenderType::entitySolid), var4, var5, -1, this.materials.get(BOOK_LOCATION), 0, var7);
+      BookModel.State var16 = new BookModel.State(var9, Mth.clamp(var13, 0.0F, 1.0F), Mth.clamp(var14, 0.0F, 1.0F), var15);
+      var8.submitModel(this.bookModel, var16, var3, BOOK_LOCATION.renderType(RenderType::entitySolid), var4, var5, -1, this.materials.get(BOOK_LOCATION), 0, var7);
       var3.popPose();
    }
 

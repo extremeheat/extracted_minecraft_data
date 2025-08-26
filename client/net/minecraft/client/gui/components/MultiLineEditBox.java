@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.Util;
@@ -185,6 +186,10 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                   var11 += 9;
                }
             }
+         }
+
+         if (this.isHovered()) {
+            var1.requestCursor(CursorTypes.IBEAM);
          }
 
       }

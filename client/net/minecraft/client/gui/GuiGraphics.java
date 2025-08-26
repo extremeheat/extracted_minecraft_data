@@ -1,6 +1,9 @@
 package net.minecraft.client.gui;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.platform.cursor.CursorType;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -85,6 +88,7 @@ public class GuiGraphics {
    private final MaterialSet materials;
    private final TextureAtlas guiSprites;
    private final GuiRenderState guiRenderState;
+   private CursorType pendingCursor;
    @Nullable
    private Runnable deferredTooltip;
    private final List<OutlineBox> deferredOutlines;
@@ -92,6 +96,7 @@ public class GuiGraphics {
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
       super();
       this.scissorStack = new ScissorStack();
+      this.pendingCursor = CursorType.DEFAULT;
       this.deferredOutlines = new ArrayList();
       this.minecraft = var1;
       this.pose = var2;
@@ -103,6 +108,14 @@ public class GuiGraphics {
 
    public GuiGraphics(Minecraft var1, GuiRenderState var2) {
       this(var1, new Matrix3x2fStack(16), var2);
+   }
+
+   public void requestCursor(CursorType var1) {
+      this.pendingCursor = var1;
+   }
+
+   public void applyCursor(Window var1) {
+      var1.selectCursor(this.pendingCursor);
    }
 
    public int guiWidth() {
@@ -623,56 +636,62 @@ public class GuiGraphics {
    }
 
    public void renderComponentHoverEffect(Font var1, @Nullable Style var2, int var3, int var4) {
-      if (var2 != null && var2.getHoverEvent() != null) {
-         HoverEvent.ShowText var10000 = var2.getHoverEvent();
-         Objects.requireNonNull(var10000);
-         HoverEvent var5 = var10000;
-         byte var6 = 0;
-         //$FF: var6->value
-         //0->net/minecraft/network/chat/HoverEvent$ShowItem
-         //1->net/minecraft/network/chat/HoverEvent$ShowEntity
-         //2->net/minecraft/network/chat/HoverEvent$ShowText
-         switch (var5.typeSwitch<invokedynamic>(var5, var6)) {
-            case 0:
-               HoverEvent.ShowItem var7 = (HoverEvent.ShowItem)var5;
-               HoverEvent.ShowItem var23 = var7;
+      if (var2 != null) {
+         if (var2.getClickEvent() != null) {
+            this.requestCursor(CursorTypes.POINTING_HAND);
+         }
 
-               try {
-                  var24 = var23.item();
-               } catch (Throwable var16) {
-                  throw new MatchException(var16.toString(), var16);
-               }
+         if (var2.getHoverEvent() != null) {
+            HoverEvent.ShowText var10000 = var2.getHoverEvent();
+            Objects.requireNonNull(var10000);
+            HoverEvent var5 = var10000;
+            byte var6 = 0;
+            //$FF: var6->value
+            //0->net/minecraft/network/chat/HoverEvent$ShowItem
+            //1->net/minecraft/network/chat/HoverEvent$ShowEntity
+            //2->net/minecraft/network/chat/HoverEvent$ShowText
+            switch (var5.typeSwitch<invokedynamic>(var5, var6)) {
+               case 0:
+                  HoverEvent.ShowItem var7 = (HoverEvent.ShowItem)var5;
+                  HoverEvent.ShowItem var23 = var7;
 
-               ItemStack var17 = var24;
-               this.setTooltipForNextFrame(var1, var17, var3, var4);
-               break;
-            case 1:
-               HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
-               HoverEvent.ShowEntity var21 = var9;
+                  try {
+                     var24 = var23.item();
+                  } catch (Throwable var16) {
+                     throw new MatchException(var16.toString(), var16);
+                  }
 
-               try {
-                  var22 = var21.entity();
-               } catch (Throwable var15) {
-                  throw new MatchException(var15.toString(), var15);
-               }
+                  ItemStack var17 = var24;
+                  this.setTooltipForNextFrame(var1, var17, var3, var4);
+                  break;
+               case 1:
+                  HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
+                  HoverEvent.ShowEntity var21 = var9;
 
-               HoverEvent.EntityTooltipInfo var18 = var22;
-               if (this.minecraft.options.advancedItemTooltips) {
-                  this.setComponentTooltipForNextFrame(var1, var18.getTooltipLines(), var3, var4);
-               }
-               break;
-            case 2:
-               HoverEvent.ShowText var11 = (HoverEvent.ShowText)var5;
-               var10000 = var11;
+                  try {
+                     var22 = var21.entity();
+                  } catch (Throwable var15) {
+                     throw new MatchException(var15.toString(), var15);
+                  }
 
-               try {
-                  var20 = var10000.value();
-               } catch (Throwable var14) {
-                  throw new MatchException(var14.toString(), var14);
-               }
+                  HoverEvent.EntityTooltipInfo var18 = var22;
+                  if (this.minecraft.options.advancedItemTooltips) {
+                     this.setComponentTooltipForNextFrame(var1, var18.getTooltipLines(), var3, var4);
+                  }
+                  break;
+               case 2:
+                  HoverEvent.ShowText var11 = (HoverEvent.ShowText)var5;
+                  var10000 = var11;
 
-               Component var13 = var20;
-               this.setTooltipForNextFrame(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+                  try {
+                     var20 = var10000.value();
+                  } catch (Throwable var14) {
+                     throw new MatchException(var14.toString(), var14);
+                  }
+
+                  Component var13 = var20;
+                  this.setTooltipForNextFrame(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+            }
          }
 
       }

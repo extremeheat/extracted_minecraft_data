@@ -12,13 +12,15 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.selector.SelectorPattern;
-import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
+import net.minecraft.network.chat.contents.ObjectContents;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.ScoreContents;
 import net.minecraft.network.chat.contents.SelectorContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.contents.data.DataSource;
+import net.minecraft.network.chat.contents.objects.ObjectInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
@@ -186,6 +188,10 @@ public interface Component extends Message, FormattedText {
 
    static MutableComponent selector(SelectorPattern var0, Optional<Component> var1) {
       return MutableComponent.create(new SelectorContents(var0, var1));
+   }
+
+   static MutableComponent object(ObjectInfo var0) {
+      return MutableComponent.create(new ObjectContents(var0));
    }
 
    static Component translationArg(Date var0) {

@@ -50,6 +50,7 @@ import net.minecraft.world.level.block.entity.CopperGolemStatueBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -73,12 +74,16 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    private final AnimationState interactionGetNoItemAnimationState = new AnimationState();
    private final AnimationState interactionDropItemAnimationState = new AnimationState();
    private final AnimationState interactionDropNoItemAnimationState = new AnimationState();
+   public static final EquipmentSlot EQUIPMENT_SLOT_ANTENNA;
 
    public CopperGolem(EntityType<? extends AbstractGolem> var1, Level var2) {
       super(var1, var2);
       this.getNavigation().setRequiredPathLength(48.0F);
       this.setPersistenceRequired();
       this.setState(CopperGolemState.IDLE);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
+      this.setPathfindingMalus(PathType.DANGER_OTHER, 16.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -226,7 +231,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
             WeatheringCopper.WeatherState var5 = this.getWeatherState();
             if (var5 != WeatheringCopper.WeatherState.UNAFFECTED) {
                var6.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
-               var6.levelEvent(var1, 3005, this.blockPosition(), 0);
+               var6.levelEvent(this, 3005, this.blockPosition(), 0);
                this.nextWeatheringTick = -1L;
                this.entityData.set(DATA_WEATHER_STATE, var5.previous(), true);
                var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
@@ -388,13 +393,13 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
       var1.playSound((Entity)null, this, SoundEvents.COPPER_GOLEM_SHEAR, var2, 1.0F, 1.0F);
-      ItemStack var4 = this.getItemBySlot(EquipmentSlot.HEAD);
-      this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+      ItemStack var4 = this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA);
+      this.setItemSlot(EQUIPMENT_SLOT_ANTENNA, ItemStack.EMPTY);
       this.spawnAtLocation(var1, var4, 1.5F);
    }
 
    public boolean readyForShearing() {
-      return this.isAlive() && this.getItemBySlot(EquipmentSlot.HEAD).is(ItemTags.SHEARABLE_FROM_COPPER_GOLEM);
+      return this.isAlive() && this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA).is(ItemTags.SHEARABLE_FROM_COPPER_GOLEM);
    }
 
    protected void dropEquipment(ServerLevel var1) {
@@ -402,8 +407,14 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       this.dropPreservedEquipment(var1);
    }
 
+   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
+      super.actuallyHurt(var1, var2, var3);
+      this.setState(CopperGolemState.IDLE);
+   }
+
    static {
       DATA_WEATHER_STATE = SynchedEntityData.<WeatheringCopper.WeatherState>defineId(CopperGolem.class, EntityDataSerializers.WEATHERING_COPPER_STATE);
       COPPER_GOLEM_STATE = SynchedEntityData.<CopperGolemState>defineId(CopperGolem.class, EntityDataSerializers.COPPER_GOLEM_STATE);
+      EQUIPMENT_SLOT_ANTENNA = EquipmentSlot.SADDLE;
    }
 }

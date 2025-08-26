@@ -166,6 +166,10 @@ public class ChatScreen extends Screen {
       }
    }
 
+   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+      return this.input.mouseDragged(var1, var3, var5, var6, var8) ? true : super.mouseDragged(var1, var3, var5, var6, var8);
+   }
+
    public void insertText(String var1, boolean var2) {
       if (var2) {
          this.input.setValue(var1);
@@ -210,9 +214,7 @@ public class ChatScreen extends Screen {
          var1.setTooltipForNextFrame(this.font, this.font.split(var5.text(), 210), var2, var3);
       } else {
          Style var6 = this.getComponentStyleAt((double)var2, (double)var3);
-         if (var6 != null && var6.getHoverEvent() != null) {
-            var1.renderComponentHoverEffect(this.font, var6, var2, var3);
-         }
+         var1.renderComponentHoverEffect(this.font, var6, var2, var3);
       }
 
    }

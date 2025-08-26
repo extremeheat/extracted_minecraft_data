@@ -64,8 +64,8 @@ public class PlayerSafetyServiceTextFilter extends ServerTextFilter {
 
       ServerTextFilter.MessageEncoder var17 = (var2x, var3x) -> {
          JsonObject var4 = new JsonObject();
-         var4.addProperty("userId", var2x.getId().toString());
-         var4.addProperty("userDisplayName", var2x.getName());
+         var4.addProperty("userId", var2x.id().toString());
+         var4.addProperty("userDisplayName", var2x.name());
          var4.addProperty("server", var5);
          var4.addProperty("room", var8);
          var4.addProperty("area", "JavaChatRealms");

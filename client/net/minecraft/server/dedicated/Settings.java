@@ -204,6 +204,10 @@ public abstract class Settings<T extends Settings<T>> {
       return this.<Integer>getMutable(var1, wrapNumberDeserializer(Integer::parseInt), var2);
    }
 
+   protected Settings<T>.MutableValue<String> getMutable(String var1, String var2) {
+      return this.<String>getMutable(var1, String::new, var2);
+   }
+
    protected int get(String var1, UnaryOperator<Integer> var2, int var3) {
       return (Integer)this.get(var1, wrapNumberDeserializer(Integer::parseInt), var2, Objects::toString, var3);
    }

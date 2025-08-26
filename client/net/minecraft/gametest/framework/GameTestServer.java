@@ -37,6 +37,7 @@ import net.minecraft.server.WorldLoader;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.LoggingLevelLoadListener;
+import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
@@ -112,7 +113,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    public boolean initServer() {
-      this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, 1) {
+      this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {
       });
       this.loadLevel();
       ServerLevel var1 = this.overworld();
@@ -249,7 +250,7 @@ public class GameTestServer extends MinecraftServer {
       return false;
    }
 
-   public int getOperatorUserPermissionLevel() {
+   public int operatorUserPermissionLevel() {
       return 0;
    }
 
@@ -287,6 +288,10 @@ public class GameTestServer extends MinecraftServer {
 
    public boolean isSingleplayerOwner(NameAndId var1) {
       return false;
+   }
+
+   public int getMaxPlayers() {
+      return 1;
    }
 
    static {

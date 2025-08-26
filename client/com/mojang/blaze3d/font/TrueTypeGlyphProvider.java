@@ -173,7 +173,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          super();
          this.width = var4;
          this.height = var5;
-         this.info = GlyphInfo.simple(var6);
+         this.info = GlyphInfo.simple(var6 / TrueTypeGlyphProvider.this.oversample);
          this.bearingX = var2 / TrueTypeGlyphProvider.this.oversample;
          this.bearingY = var3 / TrueTypeGlyphProvider.this.oversample;
          this.index = var7;

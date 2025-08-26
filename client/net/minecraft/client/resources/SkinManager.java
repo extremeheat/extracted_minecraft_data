@@ -31,14 +31,16 @@ import org.slf4j.Logger;
 public class SkinManager {
    static final Logger LOGGER = LogUtils.getLogger();
    private final Services services;
+   final SkinTextureDownloader skinTextureDownloader;
    private final LoadingCache<CacheKey, CompletableFuture<Optional<PlayerSkin>>> skinCache;
    private final TextureCache skinTextures;
    private final TextureCache capeTextures;
    private final TextureCache elytraTextures;
 
-   public SkinManager(Path var1, final Services var2, final Executor var3) {
+   public SkinManager(Path var1, final Services var2, SkinTextureDownloader var3, final Executor var4) {
       super();
       this.services = var2;
+      this.skinTextureDownloader = var3;
       this.skinTextures = new TextureCache(var1, Type.SKIN);
       this.capeTextures = new TextureCache(var1, Type.CAPE);
       this.elytraTextures = new TextureCache(var1, Type.ELYTRA);
@@ -49,14 +51,14 @@ public class SkinManager {
                if (var2x == null) {
                   return MinecraftProfileTextures.EMPTY;
                } else {
-                  MinecraftProfileTextures var3x = var2.sessionService().unpackTextures(var2x);
-                  if (var3x.signatureState() == SignatureState.INVALID) {
+                  MinecraftProfileTextures var3 = var2.sessionService().unpackTextures(var2x);
+                  if (var3.signatureState() == SignatureState.INVALID) {
                      SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
                   }
 
-                  return var3x;
+                  return var3;
                }
-            }, Util.backgroundExecutor().forName("unpackSkinTextures")).thenComposeAsync((var2x) -> SkinManager.this.registerTextures(var1.profileId(), var2x), var3).handle((var1x, var2x) -> {
+            }, Util.backgroundExecutor().forName("unpackSkinTextures")).thenComposeAsync((var2x) -> SkinManager.this.registerTextures(var1.profileId(), var2x), var4).handle((var1x, var2x) -> {
                if (var2x != null) {
                   SkinManager.LOGGER.warn("Failed to load texture for profile {}", var1.profileId, var2x);
                }
@@ -86,7 +88,7 @@ public class SkinManager {
 
    public CompletableFuture<Optional<PlayerSkin>> get(GameProfile var1) {
       Property var2 = this.services.sessionService().getPackedTextures(var1);
-      return (CompletableFuture)this.skinCache.getUnchecked(new CacheKey(var1.getId(), var2));
+      return (CompletableFuture)this.skinCache.getUnchecked(new CacheKey(var1.id(), var2));
    }
 
    CompletableFuture<PlayerSkin> registerTextures(UUID var1, MinecraftProfileTextures var2) {
@@ -115,15 +117,15 @@ public class SkinManager {
       return var0;
    }
 
-   static class TextureCache {
+   class TextureCache {
       private final Path root;
       private final MinecraftProfileTexture.Type type;
       private final Map<String, CompletableFuture<ResourceLocation>> textures = new Object2ObjectOpenHashMap();
 
-      TextureCache(Path var1, MinecraftProfileTexture.Type var2) {
+      TextureCache(final Path var2, final MinecraftProfileTexture.Type var3) {
          super();
-         this.root = var1;
-         this.type = var2;
+         this.root = var2;
+         this.type = var3;
       }
 
       public CompletableFuture<ResourceLocation> getOrLoad(MinecraftProfileTexture var1) {
@@ -141,7 +143,7 @@ public class SkinManager {
          String var2 = Hashing.sha1().hashUnencodedChars(var1.getHash()).toString();
          ResourceLocation var3 = this.getTextureLocation(var2);
          Path var4 = this.root.resolve(var2.length() > 2 ? var2.substring(0, 2) : "xx").resolve(var2);
-         return SkinTextureDownloader.downloadAndRegisterSkin(var3, var4, var1.getUrl(), this.type == Type.SKIN);
+         return SkinManager.this.skinTextureDownloader.downloadAndRegisterSkin(var3, var4, var1.getUrl(), this.type == Type.SKIN);
       }
 
       private ResourceLocation getTextureLocation(String var1) {

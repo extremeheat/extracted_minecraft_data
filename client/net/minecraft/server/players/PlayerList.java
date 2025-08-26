@@ -71,6 +71,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerStatsCounter;
@@ -116,29 +117,24 @@ public abstract class PlayerList {
    private final IpBanList ipBans;
    private final ServerOpList ops;
    private final UserWhiteList whitelist;
-   private final Map<UUID, ServerStatsCounter> stats;
-   private final Map<UUID, PlayerAdvancements> advancements;
+   private final Map<UUID, ServerStatsCounter> stats = Maps.newHashMap();
+   private final Map<UUID, PlayerAdvancements> advancements = Maps.newHashMap();
    private final PlayerDataStorage playerIo;
-   private boolean doWhiteList;
    private final LayeredRegistryAccess<RegistryLayer> registries;
-   protected final int maxPlayers;
    private int viewDistance;
    private int simulationDistance;
    private boolean allowCommandsForAllPlayers;
    private int sendAllPlayerInfoIn;
 
-   public PlayerList(MinecraftServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3, int var4) {
+   public PlayerList(MinecraftServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3, NotificationService var4) {
       super();
-      this.bans = new UserBanList(USERBANLIST_FILE);
-      this.ipBans = new IpBanList(IPBANLIST_FILE);
-      this.ops = new ServerOpList(OPLIST_FILE);
-      this.whitelist = new UserWhiteList(WHITELIST_FILE);
-      this.stats = Maps.newHashMap();
-      this.advancements = Maps.newHashMap();
       this.server = var1;
       this.registries = var2;
-      this.maxPlayers = var4;
       this.playerIo = var3;
+      this.whitelist = new UserWhiteList(WHITELIST_FILE, var4);
+      this.ops = new ServerOpList(OPLIST_FILE, var4);
+      this.bans = new UserBanList(USERBANLIST_FILE, var4);
+      this.ipBans = new IpBanList(IPBANLIST_FILE, var4);
    }
 
    public void placeNewPlayer(Connection var1, ServerPlayer var2, CommonListenerCookie var3) {
@@ -157,7 +153,7 @@ public abstract class PlayerList {
       boolean var13 = var12.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
       boolean var14 = var12.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);
       boolean var15 = var12.getBoolean(GameRules.RULE_LIMITED_CRAFTING);
-      var11.send(new ClientboundLoginPacket(var2.getId(), var10.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.viewDistance, this.simulationDistance, var14, !var13, var15, var2.createCommonSpawnInfo(var8), this.server.enforceSecureProfile()));
+      var11.send(new ClientboundLoginPacket(var2.getId(), var10.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.getViewDistance(), this.getSimulationDistance(), var14, !var13, var15, var2.createCommonSpawnInfo(var8), this.server.enforceSecureProfile()));
       var11.send(new ClientboundChangeDifficultyPacket(var10.getDifficulty(), var10.isDifficultyLocked()));
       var11.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
       var11.send(new ClientboundSetHeldSlotPacket(var2.getInventory().getSelectedSlot()));
@@ -169,7 +165,7 @@ public abstract class PlayerList {
       this.updateEntireScoreboard(var8.getScoreboard(), var2);
       this.server.invalidateStatus();
       MutableComponent var17;
-      if (var2.getGameProfile().getName().equalsIgnoreCase(var6)) {
+      if (var2.getGameProfile().name().equalsIgnoreCase(var6)) {
          var17 = Component.translatable("multiplayer.player.joined", var2.getDisplayName());
       } else {
          var17 = Component.translatable("multiplayer.player.joined.renamed", var2.getDisplayName(), var6);
@@ -191,6 +187,7 @@ public abstract class PlayerList {
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendActivePlayerEffects(var2);
       var2.initInventoryMenu();
+      this.server.notificationManager().playerJoined(var2);
    }
 
    protected void updateEntireScoreboard(ServerScoreboard var1, ServerPlayer var2) {
@@ -296,6 +293,7 @@ public abstract class PlayerList {
          this.playersByUUID.remove(var6);
          this.stats.remove(var6);
          this.advancements.remove(var6);
+         this.server.notificationManager().playerLeft(var1);
       }
 
       this.broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(var1.getUUID())));
@@ -322,7 +320,7 @@ public abstract class PlayerList {
 
          return var4;
       } else {
-         return this.players.size() >= this.maxPlayers && !this.canBypassPlayerLimit(var2) ? Component.translatable("multiplayer.disconnect.server_full") : null;
+         return this.players.size() >= this.getMaxPlayers() && !this.canBypassPlayerLimit(var2) ? Component.translatable("multiplayer.disconnect.server_full") : null;
       }
    }
 
@@ -474,7 +472,7 @@ public abstract class PlayerList {
       String[] var1 = new String[this.players.size()];
 
       for(int var2 = 0; var2 < this.players.size(); ++var2) {
-         var1[var2] = ((ServerPlayer)this.players.get(var2)).getGameProfile().getName();
+         var1[var2] = ((ServerPlayer)this.players.get(var2)).getGameProfile().name();
       }
 
       return var1;
@@ -489,19 +487,24 @@ public abstract class PlayerList {
    }
 
    public void op(NameAndId var1) {
-      this.ops.add(new ServerOpListEntry(var1, this.server.getOperatorUserPermissionLevel(), this.ops.canBypassPlayerLimit(var1)));
-      ServerPlayer var2 = this.getPlayer(var1.id());
-      if (var2 != null) {
-         this.sendPlayerPermissionLevel(var2);
+      this.op(var1, Optional.empty(), Optional.empty());
+   }
+
+   public void op(NameAndId var1, Optional<Integer> var2, Optional<Boolean> var3) {
+      this.ops.add(new ServerOpListEntry(var1, (Integer)var2.orElse(this.server.operatorUserPermissionLevel()), (Boolean)var3.orElse(this.ops.canBypassPlayerLimit(var1))));
+      ServerPlayer var4 = this.getPlayer(var1.id());
+      if (var4 != null) {
+         this.sendPlayerPermissionLevel(var4);
       }
 
    }
 
    public void deop(NameAndId var1) {
-      this.ops.remove(var1);
-      ServerPlayer var2 = this.getPlayer(var1.id());
-      if (var2 != null) {
-         this.sendPlayerPermissionLevel(var2);
+      if (this.ops.remove(var1)) {
+         ServerPlayer var2 = this.getPlayer(var1.id());
+         if (var2 != null) {
+            this.sendPlayerPermissionLevel(var2);
+         }
       }
 
    }
@@ -524,7 +527,7 @@ public abstract class PlayerList {
    }
 
    public boolean isWhiteListed(NameAndId var1) {
-      return !this.doWhiteList || this.ops.contains(var1) || this.whitelist.contains(var1);
+      return !this.isUsingWhitelist() || this.ops.contains(var1) || this.whitelist.contains(var1);
    }
 
    public boolean isOp(NameAndId var1) {
@@ -537,7 +540,7 @@ public abstract class PlayerList {
 
       for(int var3 = 0; var3 < var2; ++var3) {
          ServerPlayer var4 = (ServerPlayer)this.players.get(var3);
-         if (var4.getGameProfile().getName().equalsIgnoreCase(var1)) {
+         if (var4.getGameProfile().name().equalsIgnoreCase(var1)) {
             return var4;
          }
       }
@@ -612,15 +615,11 @@ public abstract class PlayerList {
    }
 
    public int getMaxPlayers() {
-      return this.maxPlayers;
+      return this.server.getMaxPlayers();
    }
 
    public boolean isUsingWhitelist() {
-      return this.doWhiteList;
-   }
-
-   public void setUsingWhiteList(boolean var1) {
-      this.doWhiteList = var1;
+      return this.server.isUsingWhitelist();
    }
 
    public List<ServerPlayer> getPlayersWithAddress(String var1) {
@@ -776,6 +775,17 @@ public abstract class PlayerList {
    @Nullable
    public ServerPlayer getPlayer(UUID var1) {
       return (ServerPlayer)this.playersByUUID.get(var1);
+   }
+
+   @Nullable
+   public ServerPlayer getPlayer(String var1) {
+      for(ServerPlayer var3 : this.players) {
+         if (var3.getGameProfile().name().equalsIgnoreCase(var1)) {
+            return var3;
+         }
+      }
+
+      return null;
    }
 
    public boolean canBypassPlayerLimit(NameAndId var1) {

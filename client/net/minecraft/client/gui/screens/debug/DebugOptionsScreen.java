@@ -80,6 +80,11 @@ public class DebugOptionsScreen extends Screen {
       this.repositionElements();
    }
 
+   public void renderBlurredBackground(GuiGraphics var1) {
+      this.minecraft.gui.renderDebugOverlay(var1);
+      super.renderBlurredBackground(var1);
+   }
+
    protected void setInitialFocus() {
       this.setInitialFocus(this.searchBox);
    }
@@ -116,7 +121,7 @@ public class DebugOptionsScreen extends Screen {
    static {
       DISABLED_TEXT = CommonComponents.OPTION_OFF;
       NOT_ALLOWED_TOOLTIP = Component.translatable("debug.options.notAllowed.tooltip");
-      SEARCH = Component.translatable("debug.options.search");
+      SEARCH = Component.translatable("debug.options.search").withStyle(EditBox.SEARCH_HINT_STYLE);
    }
 
    class OptionList extends ContainerObjectSelectionList<AbstractOptionEntry> {

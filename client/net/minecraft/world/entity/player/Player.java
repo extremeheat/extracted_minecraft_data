@@ -217,7 +217,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       this.lastDeathLocation = Optional.empty();
       this.ignoreFallDamageFromCurrentImpulse = false;
       this.currentImpulseContextResetGraceTime = 0;
-      this.setUUID(var2.getId());
+      this.setUUID(var2.id());
       this.gameProfile = var2;
       this.inventory = new Inventory(this, this.equipment);
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide(), this);
@@ -736,7 +736,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
 
    protected void readAdditionalSaveData(ValueInput var1) {
       super.readAdditionalSaveData(var1);
-      this.setUUID(this.gameProfile.getId());
+      this.setUUID(this.gameProfile.id());
       this.inventory.load(var1.listOrEmpty("Inventory", ItemStackWithSlot.CODEC));
       this.inventory.setSelectedSlot(var1.getIntOr("SelectedItemSlot", 0));
       this.sleepCounter = var1.getShortOr("SleepTimer", (short)0);
@@ -1073,7 +1073,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
                }
 
                var2 += var3.getItem().getAttackDamageBonus(var1, var2, var4);
-               boolean var9 = var26 && this.fallDistance > 0.0 && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
+               boolean var9 = var26 && this.fallDistance > 0.0 && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.isMobilityRestricted() && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
                if (var9) {
                   var2 *= 1.5F;
                }
@@ -1622,7 +1622,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    }
 
    public Component getName() {
-      return Component.literal(this.gameProfile.getName());
+      return Component.literal(this.gameProfile.name());
    }
 
    public PlayerEnderChestContainer getEnderChestInventory() {
@@ -1717,12 +1717,12 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    }
 
    private MutableComponent decorateDisplayNameComponent(MutableComponent var1) {
-      String var2 = this.getGameProfile().getName();
+      String var2 = this.getGameProfile().name();
       return var1.withStyle((UnaryOperator)((var2x) -> var2x.withClickEvent(new ClickEvent.SuggestCommand("/tell " + var2 + " ")).withHoverEvent(this.createHoverEvent()).withInsertion(var2)));
    }
 
    public String getScoreboardName() {
-      return this.getGameProfile().getName();
+      return this.getGameProfile().name();
    }
 
    protected void internalSetAbsorptionAmount(float var1) {
@@ -1932,6 +1932,10 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    public void animateHurt(float var1) {
       super.animateHurt(var1);
       this.hurtDir = var1;
+   }
+
+   public boolean isMobilityRestricted() {
+      return this.hasEffect(MobEffects.BLINDNESS);
    }
 
    public boolean canSprint() {

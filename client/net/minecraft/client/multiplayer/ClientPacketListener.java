@@ -1870,7 +1870,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       GameProfile var3 = var2.getProfile();
       SignatureValidator var4 = this.minecraft.services().profileKeySignatureValidator();
       if (var4 == null) {
-         LOGGER.warn("Ignoring chat session from {} due to missing Services public key", var3.getName());
+         LOGGER.warn("Ignoring chat session from {} due to missing Services public key", var3.name());
          var2.clearChatSession(this.enforcesSecureChat());
       } else {
          RemoteChatSession.Data var5 = var1.chatSession();
@@ -1879,7 +1879,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                RemoteChatSession var6 = var5.validate(var3, var4);
                var2.setChatSession(var6);
             } catch (ProfilePublicKey.ValidationException var7) {
-               LOGGER.error("Failed to validate profile key for player: '{}'", var3.getName(), var7);
+               LOGGER.error("Failed to validate profile key for player: '{}'", var3.name(), var7);
                var2.clearChatSession(this.enforcesSecureChat());
             }
          } else {
@@ -2349,7 +2349,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Nullable
    public PlayerInfo getPlayerInfo(String var1) {
       for(PlayerInfo var3 : this.playerInfoMap.values()) {
-         if (var3.getProfile().getName().equals(var1)) {
+         if (var3.getProfile().name().equals(var1)) {
             return var3;
          }
       }
@@ -2364,7 +2364,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Nullable
    public PlayerInfo getPlayerInfoIgnoreCase(String var1) {
       for(PlayerInfo var3 : this.playerInfoMap.values()) {
-         if (var3.getProfile().getName().equalsIgnoreCase(var1)) {
+         if (var3.getProfile().name().equalsIgnoreCase(var1)) {
             return var3;
          }
       }
@@ -2562,10 +2562,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void setKeyPair(ProfileKeyPair var1) {
-      if (this.minecraft.isLocalPlayer(this.localGameProfile.getId())) {
+      if (this.minecraft.isLocalPlayer(this.localGameProfile.id())) {
          if (this.chatSession == null || !this.chatSession.keyPair().equals(var1)) {
             this.chatSession = LocalChatSession.create(var1);
-            this.signedMessageEncoder = this.chatSession.createMessageEncoder(this.localGameProfile.getId());
+            this.signedMessageEncoder = this.chatSession.createMessageEncoder(this.localGameProfile.id());
             this.send(new ServerboundChatSessionUpdatePacket(this.chatSession.asRemote().asData()));
          }
       }

@@ -1457,6 +1457,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       return this.wasEyeInWater && this.isInWater();
    }
 
+   public boolean isInShallowWater() {
+      return this.isInWater() && !this.isUnderWater();
+   }
+
    public boolean isInClouds() {
       Optional var1 = this.level.dimensionType().cloudHeight();
       if (var1.isEmpty()) {
@@ -2518,7 +2522,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
                TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
                if (var3 != null) {
                   ServerLevel var4 = var3.newLevel();
-                  if (var1.getServer().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
+                  if (var1.getServer().isAllowedToEnterPortal(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
                      this.teleport(var3);
                   }
                }

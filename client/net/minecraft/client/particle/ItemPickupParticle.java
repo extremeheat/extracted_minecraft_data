@@ -34,6 +34,7 @@ public class ItemPickupParticle extends Particle {
       this.target = var4;
       this.entityRenderDispatcher = var1;
       this.itemRenderState = var1.extractEntity(var3, 1.0F);
+      this.itemRenderState.outlineColor = 0;
       this.updatePosition();
       this.saveOldPosition();
    }

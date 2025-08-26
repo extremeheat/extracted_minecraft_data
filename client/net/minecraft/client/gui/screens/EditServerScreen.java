@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 public class EditServerScreen extends Screen {
    private static final Component NAME_LABEL = Component.translatable("addServer.enterName");
    private static final Component IP_LABEL = Component.translatable("addServer.enterIp");
+   private static final Component DEFAULT_SERVER_NAME = Component.translatable("selectServer.defaultName");
    private Button addButton;
    private final BooleanConsumer callback;
    private final ServerData serverData;
@@ -31,6 +32,7 @@ public class EditServerScreen extends Screen {
    protected void init() {
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, Component.translatable("addServer.enterName"));
       this.nameEdit.setValue(this.serverData.name);
+      this.nameEdit.setHint(DEFAULT_SERVER_NAME);
       this.nameEdit.setResponder((var1) -> this.updateAddButtonStatus());
       this.addWidget(this.nameEdit);
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, Component.translatable("addServer.enterIp"));
@@ -57,7 +59,8 @@ public class EditServerScreen extends Screen {
    }
 
    private void onAdd() {
-      this.serverData.name = this.nameEdit.getValue();
+      String var1 = this.nameEdit.getValue();
+      this.serverData.name = var1.isEmpty() ? DEFAULT_SERVER_NAME.getString() : var1;
       this.serverData.ip = this.ipEdit.getValue();
       this.callback.accept(true);
    }
@@ -67,7 +70,7 @@ public class EditServerScreen extends Screen {
    }
 
    private void updateAddButtonStatus() {
-      this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue()) && !this.nameEdit.getValue().isEmpty();
+      this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

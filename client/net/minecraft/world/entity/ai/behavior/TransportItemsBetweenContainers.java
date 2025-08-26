@@ -5,13 +5,11 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -24,6 +22,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
@@ -32,6 +31,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.function.TriConsumer;
 
@@ -40,10 +41,11 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private static final int VISITED_POSITIONS_MEMORY_TIME = 6000;
    private static final int TRANSPORTED_ITEM_MAX_STACK_SIZE = 16;
    private static final int MAX_VISITED_POSITIONS = 10;
+   private static final int MAX_UNREACHABLE_POSITIONS = 50;
    private static final int IDLE_COOLDOWN = 140;
    private static final double CLOSE_ENOUGH_TO_START_QUEUING_DISTANCE = 3.0;
    private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_DISTANCE = 0.2;
-   private static final double CLOSE_ENOUGH_TO_GIVE_UP_UNREACHABLE_TARGET_DISTANCE = 0.5;
+   private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_PATH_END_DISTANCE = 1.0;
    private final float speedModifier;
    private final int horizontalSearchDistance;
    private final int verticalSearchDistance;
@@ -60,7 +62,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private int ticksSinceReachingTarget;
 
    public TransportItemsBetweenContainers(float var1, Predicate<BlockState> var2, Predicate<BlockState> var3, int var4, int var5, Map<ContainerInteractionState, OnTargetReachedInteraction> var6, Consumer<PathfinderMob> var7, Predicate<TransportItemTarget> var8) {
-      super(ImmutableMap.of(MemoryModuleType.VISITED_BLOCK_POSITIONS, MemoryStatus.REGISTERED, MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT));
+      super(ImmutableMap.of(MemoryModuleType.VISITED_BLOCK_POSITIONS, MemoryStatus.REGISTERED, MemoryModuleType.UNREACHABLE_TRANSPORT_BLOCK_POSITIONS, MemoryStatus.REGISTERED, MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT));
       this.speedModifier = var1;
       this.sourceBlockType = var2;
       this.destinationBlockType = var3;
@@ -72,8 +74,12 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       this.state = TransportItemsBetweenContainers.TransportItemState.TRAVELLING;
    }
 
+   protected boolean checkExtraStartConditions(ServerLevel var1, PathfinderMob var2) {
+      return !var2.isLeashed();
+   }
+
    protected boolean canStillUse(ServerLevel var1, PathfinderMob var2, long var3) {
-      return var2.getBrain().getMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS).isEmpty() && !var2.isPanicking();
+      return var2.getBrain().getMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS).isEmpty() && !var2.isPanicking() && !var2.isLeashed();
    }
 
    protected boolean timedOut(long var1) {
@@ -102,13 +108,12 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    private void tryEnsureTargetPosExists(ServerLevel var1, PathfinderMob var2) {
       if (!this.hasValidTarget(var1, var2)) {
-         this.stopTargetingCurrentTarget();
+         this.stopTargetingCurrentTarget(var2);
          Optional var3 = this.getTargetBlockPosition(var1, var2);
          if (var3.isPresent()) {
             this.target = (TransportItemTarget)var3.get();
             this.onStartTravelling(var2);
             this.setVisitedBlockPos(var2, var1, this.target.pos);
-            this.walkTowardsTarget(var2);
          } else {
             this.enterCooldownAfterNoMatchingTargetFound(var2);
          }
@@ -124,12 +129,10 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    }
 
    protected void onTravelToTarget(TransportItemTarget var1, Level var2, PathfinderMob var3) {
-      if (this.isWithinTargetDistance(3.0, var1, var2, var3, false) && this.isAnotherMobInteractingWithTarget(var1, var2)) {
+      if (this.isWithinTargetDistance(3.0, var1, var2, var3) && this.isAnotherMobInteractingWithTarget(var1, var2)) {
          this.startQueuing(var3);
-      } else if (this.isWithinTargetDistance(0.2, var1, var2, var3, false)) {
+      } else if (this.isWithinTargetDistance(getInteractionRange(var3), var1, var2, var3)) {
          this.startOnReachedTargetInteraction(var1, var3);
-      } else if (this.shouldGiveUpOnCurrentTarget(var1, var2, var3)) {
-         this.stopTargetingCurrentTarget();
       } else {
          this.walkTowardsTarget(var3);
       }
@@ -140,7 +143,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       ++this.ticksSinceReachingTarget;
       this.onTargetInteraction(var1, var2);
       if (this.ticksSinceReachingTarget >= 60) {
-         this.doReachedTargetInteraction(var2, var1.container, this::pickUpItems, (var1x, var2x) -> this.stopTargetingCurrentTarget(), this::putDownItem, (var1x, var2x) -> this.stopTargetingCurrentTarget());
+         this.doReachedTargetInteraction(var2, var1.container, this::pickUpItems, (var2x, var3) -> this.stopTargetingCurrentTarget(var2), this::putDownItem, (var2x, var3) -> this.stopTargetingCurrentTarget(var2));
          this.onStartTravelling(var2);
       }
 
@@ -213,16 +216,28 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private Optional<TransportItemTarget> getTargetBlockPosition(ServerLevel var1, PathfinderMob var2) {
       AABB var3 = this.getTargetSearchArea(var2);
       Set var4 = getVisitedPositions(var2);
-      BlockPos var5 = var2.blockPosition();
-      return ChunkPos.rangeClosed(new ChunkPos(var5), Math.floorDiv(this.horizontalSearchDistance, 16) + 1).flatMap((var1x) -> var1.getChunk(var1x.x, var1x.z).getBlockEntities().entrySet().stream()).flatMap((var5x) -> this.isTargetValidToPick(var2, var1, (BlockPos)var5x.getKey(), (BlockEntity)var5x.getValue(), var4, var3).stream()).min(Comparator.comparing((var1x) -> var1x.pos.distToCenterSqr((double)var5.getX(), (double)var5.getY(), (double)var5.getZ())));
+      Set var5 = getUnreachablePositions(var2);
+      BlockPos var6 = var2.blockPosition();
+      return ChunkPos.rangeClosed(new ChunkPos(var6), Math.floorDiv(this.horizontalSearchDistance, 16) + 1).flatMap((var1x) -> var1.getChunk(var1x.x, var1x.z).getBlockEntities().entrySet().stream()).sorted(Comparator.comparing((var1x) -> ((BlockPos)var1x.getKey()).distToCenterSqr((double)var6.getX(), (double)var6.getY(), (double)var6.getZ()))).flatMap((var6x) -> this.isTargetValidToPick(var2, var1, (BlockPos)var6x.getKey(), (BlockEntity)var6x.getValue(), var4, var5, var3).stream()).findFirst();
    }
 
-   private Optional<TransportItemTarget> isTargetValidToPick(PathfinderMob var1, Level var2, BlockPos var3, BlockEntity var4, Set<GlobalPos> var5, AABB var6) {
-      return TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(var3, var4, var2).filter((var5x) -> this.isWantedBlock(var1, var5x.state) && !this.isPositionAlreadyVisited(var5, var5x, var2) && var6.contains((double)var5x.pos.getX(), (double)var5x.pos.getY(), (double)var5x.pos.getZ()));
+   private Optional<TransportItemTarget> isTargetValidToPick(PathfinderMob var1, Level var2, BlockPos var3, BlockEntity var4, Set<GlobalPos> var5, Set<GlobalPos> var6, AABB var7) {
+      return TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(var3, var4, var2).filter((var6x) -> this.isWantedBlock(var1, var6x.state) && !this.isPositionAlreadyVisited(var5, var6, var6x, var2) && var7.contains((double)var6x.pos.getX(), (double)var6x.pos.getY(), (double)var6x.pos.getZ()));
    }
 
    private boolean hasValidTarget(Level var1, PathfinderMob var2) {
-      return this.target != null && this.isWantedBlock(var2, this.target.state) && this.targetHasNotChanged(var1, this.target);
+      boolean var3 = this.target != null && this.isWantedBlock(var2, this.target.state) && this.targetHasNotChanged(var1, this.target);
+      if (var3) {
+         Path var4 = var2.getNavigation().getPath();
+         BlockPos var5 = var4 != null && var4.getEndNode() != null ? var4.getEndNode().asBlockPos() : var2.blockPosition();
+         if (var4 == null || this.targetIsReachableFromPosition(var1, var5, this.target, var2)) {
+            return true;
+         }
+
+         this.markVisitedBlockPosAsUnreachable(var2, var1, this.target.pos);
+      }
+
+      return false;
    }
 
    private boolean targetHasNotChanged(Level var1, TransportItemTarget var2) {
@@ -246,10 +261,16 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       return (Set)var0.getBrain().getMemory(MemoryModuleType.VISITED_BLOCK_POSITIONS).map(HashSet::new).orElseGet(HashSet::new);
    }
 
-   private boolean isPositionAlreadyVisited(Set<GlobalPos> var1, TransportItemTarget var2, Level var3) {
-      Stream var10000 = this.getConnectedTargets(var2, var3).stream().map((var1x) -> new GlobalPos(var3.dimension(), var1x.pos));
-      Objects.requireNonNull(var1);
-      return var10000.anyMatch(var1::contains);
+   private static Set<GlobalPos> getUnreachablePositions(PathfinderMob var0) {
+      return (Set)var0.getBrain().getMemory(MemoryModuleType.UNREACHABLE_TRANSPORT_BLOCK_POSITIONS).map(HashSet::new).orElseGet(HashSet::new);
+   }
+
+   private boolean isPositionAlreadyVisited(Set<GlobalPos> var1, Set<GlobalPos> var2, TransportItemTarget var3, Level var4) {
+      return this.getConnectedTargets(var3, var4).stream().map((var1x) -> new GlobalPos(var4.dimension(), var1x.pos)).anyMatch((var2x) -> var1.contains(var2x) || var2.contains(var2x));
+   }
+
+   private static boolean hasFinishedPath(PathfinderMob var0) {
+      return var0.getNavigation().getPath() != null && var0.getNavigation().getPath().isDone();
    }
 
    protected void setVisitedBlockPos(PathfinderMob var1, Level var2, BlockPos var3) {
@@ -263,18 +284,37 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    }
 
+   protected void markVisitedBlockPosAsUnreachable(PathfinderMob var1, Level var2, BlockPos var3) {
+      Set var4 = getVisitedPositions(var1);
+      var4.remove(new GlobalPos(var2.dimension(), var3));
+      Set var5 = getUnreachablePositions(var1);
+      var5.add(new GlobalPos(var2.dimension(), var3));
+      if (var5.size() > 50) {
+         this.enterCooldownAfterNoMatchingTargetFound(var1);
+      } else {
+         var1.getBrain().setMemoryWithExpiry(MemoryModuleType.VISITED_BLOCK_POSITIONS, var4, 6000L);
+         var1.getBrain().setMemoryWithExpiry(MemoryModuleType.UNREACHABLE_TRANSPORT_BLOCK_POSITIONS, var5, 6000L);
+      }
+
+   }
+
    private boolean isWantedBlock(PathfinderMob var1, BlockState var2) {
       return isPickingUpItems(var1) ? this.sourceBlockType.test(var2) : this.destinationBlockType.test(var2);
    }
 
-   private boolean isWithinTargetDistance(double var1, TransportItemTarget var3, Level var4, PathfinderMob var5, boolean var6) {
-      return var3.state.getCollisionShape(var4, var3.pos).bounds().inflate(var1, 0.0, var1).move(new Vec3(0.0, var6 ? -1.0 : 0.5, 0.0)).move(var3.pos).intersects(var5.getBoundingBox());
+   private static double getInteractionRange(PathfinderMob var0) {
+      return hasFinishedPath(var0) ? 1.0 : 0.2;
    }
 
-   private boolean shouldGiveUpOnCurrentTarget(TransportItemTarget var1, Level var2, PathfinderMob var3) {
-      Path var4 = var3.getNavigation().getPath();
-      boolean var5 = var4 != null && var4.isDone() && !var4.canReach();
-      return var5 || this.isWithinTargetDistance(0.5, var1, var2, var3, true);
+   private boolean isWithinTargetDistance(double var1, TransportItemTarget var3, Level var4, PathfinderMob var5) {
+      return var3.state.getCollisionShape(var4, var3.pos).bounds().inflate(var1, 0.5, var1).move(var3.pos).intersects(var5.getBoundingBox());
+   }
+
+   private boolean targetIsReachableFromPosition(Level var1, BlockPos var2, TransportItemTarget var3, PathfinderMob var4) {
+      boolean var5 = var2.distChessboard(var3.pos) <= 1;
+      BlockHitResult var6 = var1.clip(new ClipContext(new Vec3(var2.getCenter().x, (double)((float)var2.getY() + var4.getEyeHeight()), var2.getCenter().z), var3.pos.getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var4));
+      boolean var7 = var6.getType() == HitResult.Type.BLOCK && var6.getBlockPos().equals(var3.pos);
+      return var5 && var7;
    }
 
    private boolean isAnotherMobInteractingWithTarget(TransportItemTarget var1, Level var2) {
@@ -317,7 +357,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       if (var3.isEmpty()) {
          this.clearMemoriesAfterMatchingTargetFound(var1);
       } else {
-         this.stopTargetingCurrentTarget();
+         this.stopTargetingCurrentTarget(var1);
       }
 
    }
@@ -364,20 +404,24 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       return var3;
    }
 
-   protected void stopTargetingCurrentTarget() {
+   protected void stopTargetingCurrentTarget(PathfinderMob var1) {
       this.ticksSinceReachingTarget = 0;
       this.target = null;
+      var1.getNavigation().stop();
+      var1.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
    }
 
    protected void clearMemoriesAfterMatchingTargetFound(PathfinderMob var1) {
+      this.stopTargetingCurrentTarget(var1);
       var1.getBrain().eraseMemory(MemoryModuleType.VISITED_BLOCK_POSITIONS);
-      this.stopTargetingCurrentTarget();
+      var1.getBrain().eraseMemory(MemoryModuleType.UNREACHABLE_TRANSPORT_BLOCK_POSITIONS);
    }
 
    private void enterCooldownAfterNoMatchingTargetFound(PathfinderMob var1) {
-      this.stopTargetingCurrentTarget();
-      var1.getBrain().eraseMemory(MemoryModuleType.VISITED_BLOCK_POSITIONS);
+      this.stopTargetingCurrentTarget(var1);
       var1.getBrain().setMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, 140);
+      var1.getBrain().eraseMemory(MemoryModuleType.VISITED_BLOCK_POSITIONS);
+      var1.getBrain().eraseMemory(MemoryModuleType.UNREACHABLE_TRANSPORT_BLOCK_POSITIONS);
    }
 
    protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {

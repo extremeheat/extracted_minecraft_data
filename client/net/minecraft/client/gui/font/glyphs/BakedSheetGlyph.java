@@ -4,7 +4,6 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.GlyphRenderTypes;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -16,7 +15,6 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
    public static final float Z_FIGHTER = 0.001F;
    private final GlyphInfo info;
    final GlyphRenderTypes renderTypes;
-   @Nullable
    final GpuTextureView textureView;
    private final float u0;
    private final float u1;
@@ -27,7 +25,7 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
    private final float up;
    private final float down;
 
-   public BakedSheetGlyph(GlyphInfo var1, GlyphRenderTypes var2, @Nullable GpuTextureView var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11) {
+   public BakedSheetGlyph(GlyphInfo var1, GlyphRenderTypes var2, GpuTextureView var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11) {
       super();
       this.info = var1;
       this.renderTypes = var2;
@@ -187,7 +185,6 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
          return this.glyph.renderTypes.select(var1);
       }
 
-      @Nullable
       public GpuTextureView textureView() {
          return this.glyph.textureView;
       }
@@ -246,7 +243,6 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
          return this.glyph.renderTypes.select(var1);
       }
 
-      @Nullable
       public GpuTextureView textureView() {
          return this.glyph.textureView;
       }

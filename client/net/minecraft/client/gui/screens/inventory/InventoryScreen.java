@@ -117,6 +117,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       var12.lightCoords = 15728880;
       var12.hitboxesRenderState = null;
       var12.shadowPieces.clear();
+      var12.outlineColor = 0;
       var0.submitEntityRenderState(var12, var5, var6, var7, var8, var1, var2, var3, var4);
    }
 

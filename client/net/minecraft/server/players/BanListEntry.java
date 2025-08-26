@@ -5,12 +5,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 
 public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    public static final SimpleDateFormat DATE_FORMAT;
    public static final String EXPIRES_NEVER = "forever";
+   public static final String DEFAULT_BAN_REASON = "Banned by an operator.";
    protected final Date created;
    protected final String source;
    @Nullable
@@ -77,6 +79,17 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       var1.addProperty("source", this.source);
       var1.addProperty("expires", this.expires == null ? "forever" : DATE_FORMAT.format(this.expires));
       var1.addProperty("reason", this.reason);
+   }
+
+   public boolean equals(Object var1) {
+      if (this == var1) {
+         return true;
+      } else if (var1 != null && this.getClass() == var1.getClass()) {
+         BanListEntry var2 = (BanListEntry)var1;
+         return Objects.equals(this.source, var2.source) && Objects.equals(this.expires, var2.expires) && Objects.equals(this.reason, var2.reason) && Objects.equals(this.getUser(), var2.getUser());
+      } else {
+         return false;
+      }
    }
 
    static {

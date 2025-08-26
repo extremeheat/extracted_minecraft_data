@@ -200,7 +200,8 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
       BlockInWorld var3 = var2.getBlock(0, 1, 0);
       BlockInWorld var4 = var2.getBlock(0, 0, 0);
       Direction var5 = (Direction)var4.getState().getValue(FACING);
-      var1.setBlock(var3.getPos(), (BlockState)CopperChestBlock.getFromCopperBlock(var3.getState().getBlock()).defaultBlockState().setValue(CopperChestBlock.FACING, var5), 2);
+      BlockState var6 = CopperChestBlock.getFromCopperBlock(var3.getState().getBlock(), var5, var1, var3.getPos());
+      var1.setBlock(var3.getPos(), var6, 2);
    }
 
    static {

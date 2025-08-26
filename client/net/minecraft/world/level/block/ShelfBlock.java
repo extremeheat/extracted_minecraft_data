@@ -138,21 +138,21 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
             }
 
             Inventory var10 = var5.getInventory();
-            if ((Boolean)var2.getValue(POWERED)) {
-               ItemStack var13 = var10.getSelectedItem();
-               this.swapHotbar(var3, var4, var10);
-               this.playSound(var3, var4, SoundEvents.SHELF_MULTI_SWAP);
-               return var13 == var10.getSelectedItem() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS.heldItemTransformedTo(var10.getSelectedItem());
+            if (!(Boolean)var2.getValue(POWERED)) {
+               boolean var13 = swapSingleItem(var1, var5, var8, var12.getAsInt(), var10);
+               if (var13) {
+                  this.playSound(var3, var4, var1.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
+               } else if (!var1.isEmpty()) {
+                  this.playSound(var3, var4, SoundEvents.SHELF_PLACE_ITEM);
+               }
+
+               return InteractionResult.SUCCESS.heldItemTransformedTo(var1);
             }
 
-            boolean var11 = swapSingleItem(var1, var5, var8, var12.getAsInt(), var10);
-            if (var11 && !var1.isEmpty()) {
-               this.playSound(var3, var4, SoundEvents.SHELF_SINGLE_SWAP);
-            } else if (var11 || !var1.isEmpty()) {
-               this.playSound(var3, var4, SoundEvents.SHELF_PLACE_ITEM);
-            }
-
-            return InteractionResult.SUCCESS.heldItemTransformedTo(var1);
+            ItemStack var11 = var10.getSelectedItem();
+            this.swapHotbar(var3, var4, var10);
+            this.playSound(var3, var4, SoundEvents.SHELF_MULTI_SWAP);
+            return var11 == var10.getSelectedItem() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS.heldItemTransformedTo(var10.getSelectedItem());
          }
       }
 

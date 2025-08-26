@@ -60,14 +60,18 @@ public class BookModel extends Model<State> {
       this.flipPage2.x = Mth.sin(var2);
    }
 
-   public static class State {
-      public float animationPos;
-      public float pageFlip1;
-      public float pageFlip2;
-      public float open;
+   public static record State(float animationPos, float pageFlip1, float pageFlip2, float open) {
+      final float animationPos;
+      final float pageFlip1;
+      final float pageFlip2;
+      final float open;
 
-      public State() {
+      public State(float var1, float var2, float var3, float var4) {
          super();
+         this.animationPos = var1;
+         this.pageFlip1 = var2;
+         this.pageFlip2 = var3;
+         this.open = var4;
       }
    }
 }

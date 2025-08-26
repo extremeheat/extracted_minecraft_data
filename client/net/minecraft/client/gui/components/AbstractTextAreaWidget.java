@@ -56,7 +56,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
          this.renderContents(var1, var2, var3, var4);
          var1.pose().popMatrix();
          var1.disableScissor();
-         this.renderScrollbar(var1);
+         this.renderScrollbar(var1, var2, var3);
          if (this.showDecorations) {
             this.renderDecorations(var1);
          }

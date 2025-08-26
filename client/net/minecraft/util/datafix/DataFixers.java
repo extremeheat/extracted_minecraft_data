@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.util.datafix.fixes.AbstractArrowPickupFix;
+import net.minecraft.util.datafix.fixes.AddFieldFix;
 import net.minecraft.util.datafix.fixes.AddFlagIfNotPresentFix;
 import net.minecraft.util.datafix.fixes.AddNewChoices;
 import net.minecraft.util.datafix.fixes.AdvancementsFix;
@@ -862,9 +863,9 @@ public class DataFixers {
       Map var175 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var174, "Rename british shorthair", References.ENTITY, "minecraft:cat", var175));
       var0.addFixer(new CriteriaRenameFix(var174, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var175.getOrDefault(var1x, var1x)));
-      Set var284 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var284);
-      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var284::contains));
+      Set var285 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var285);
+      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var285::contains));
       Schema var176 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var176));
       Schema var177 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1094,6 +1095,8 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var276, "Added Happy Ghast", References.ENTITY));
       Schema var277 = var0.addSchema(4424, SAME_NAMESPACED);
       var0.addFixer(new FeatureFlagRemoveFix(var277, "Remove Locator Bar experimental feature flag", Set.of("minecraft:locator_bar")));
+      var0.addFixer(new AddFieldFix(var277, References.PLAYER, "style", (var0x) -> var0x.createString("minecraft:default"), new String[]{"locator_bar_icon"}));
+      var0.addFixer(new AddFieldFix(var277, References.ENTITY, "style", (var0x) -> var0x.createString("minecraft:default"), new String[]{"locator_bar_icon"}));
       Schema var278 = var0.addSchema(4531, V4531::new);
       var0.addFixer(new AddNewChoices(var278, "Added Copper Golem", References.ENTITY));
       Schema var279 = var0.addSchema(4532, V4532::new);
@@ -1104,6 +1107,9 @@ public class DataFixers {
       var0.addFixer(new CopperGolemWeatherStateFix(var281));
       Schema var282 = var0.addSchema(4537, SAME_NAMESPACED);
       var0.addFixer(new ChunkDeleteLightFix(var282));
+      Schema var283 = var0.addSchema(4541, SAME_NAMESPACED);
+      var0.addFixer(BlockRenameFix.create(var283, "Rename chain to iron_chain", createRenamer("minecraft:chain", "minecraft:iron_chain")));
+      var0.addFixer(ItemRenameFix.create(var283, "Rename chain to iron_chain", createRenamer("minecraft:chain", "minecraft:iron_chain")));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

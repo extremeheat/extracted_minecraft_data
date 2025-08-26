@@ -1,7 +1,9 @@
 package net.minecraft.world.level;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -22,8 +24,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class BaseCommandBlock implements CommandSource {
-   private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
+public abstract class BaseCommandBlock {
    private static final Component DEFAULT_NAME = Component.literal("@");
    private static final int NO_LAST_EXECUTION = -1;
    private long lastExecution = -1L;
@@ -31,7 +32,7 @@ public abstract class BaseCommandBlock implements CommandSource {
    private int successCount;
    private boolean trackOutput = true;
    @Nullable
-   private Component lastOutput;
+   Component lastOutput;
    private String command = "";
    @Nullable
    private Component customName;
@@ -109,15 +110,19 @@ public abstract class BaseCommandBlock implements CommandSource {
             if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
                try {
                   this.lastOutput = null;
-                  CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
-                     if (var1x) {
-                        ++this.successCount;
-                     }
 
-                  });
-                  var2.getCommands().performPrefixedCommand(var3, this.command);
-               } catch (Throwable var6) {
-                  CrashReport var4 = CrashReport.forThrowable(var6, "Executing command block");
+                  try (CloseableCommandBlockSource var3 = this.createSource()) {
+                     CommandSource var9 = (CommandSource)Objects.requireNonNullElse(var3, CommandSource.NULL);
+                     CommandSourceStack var10 = this.createCommandSourceStack(var9).withCallback((var1x, var2x) -> {
+                        if (var1x) {
+                           ++this.successCount;
+                        }
+
+                     });
+                     var2.getCommands().performPrefixedCommand(var10, this.command);
+                  }
+               } catch (Throwable var8) {
+                  CrashReport var4 = CrashReport.forThrowable(var8, "Executing command block");
                   CrashReportCategory var5 = var4.addCategory("Command to be executed");
                   var5.setDetail("Command", this::getCommand);
                   var5.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
@@ -138,6 +143,11 @@ public abstract class BaseCommandBlock implements CommandSource {
       }
    }
 
+   @Nullable
+   private CloseableCommandBlockSource createSource() {
+      return this.trackOutput ? new CloseableCommandBlockSource() : null;
+   }
+
    public Component getName() {
       return this.customName != null ? this.customName : DEFAULT_NAME;
    }
@@ -149,16 +159,6 @@ public abstract class BaseCommandBlock implements CommandSource {
 
    public void setCustomName(@Nullable Component var1) {
       this.customName = var1;
-   }
-
-   public void sendSystemMessage(Component var1) {
-      if (this.trackOutput) {
-         SimpleDateFormat var10001 = TIME_FORMAT;
-         Date var10002 = new Date();
-         this.lastOutput = Component.literal("[" + var10001.format(var10002) + "] ").append(var1);
-         this.onUpdated();
-      }
-
    }
 
    public abstract ServerLevel getLevel();
@@ -191,19 +191,45 @@ public abstract class BaseCommandBlock implements CommandSource {
 
    public abstract Vec3 getPosition();
 
-   public abstract CommandSourceStack createCommandSourceStack();
-
-   public boolean acceptsSuccess() {
-      return this.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK) && this.trackOutput;
-   }
-
-   public boolean acceptsFailure() {
-      return this.trackOutput;
-   }
-
-   public boolean shouldInformAdmins() {
-      return this.getLevel().getGameRules().getBoolean(GameRules.RULE_COMMANDBLOCKOUTPUT);
-   }
+   public abstract CommandSourceStack createCommandSourceStack(CommandSource var1);
 
    public abstract boolean isValid();
+
+   protected class CloseableCommandBlockSource implements CommandSource, AutoCloseable {
+      private static final DateTimeFormatter TIME_FORMAT;
+      private boolean closed;
+
+      protected CloseableCommandBlockSource() {
+         super();
+      }
+
+      public boolean acceptsSuccess() {
+         return !this.closed && BaseCommandBlock.this.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+      }
+
+      public boolean acceptsFailure() {
+         return !this.closed;
+      }
+
+      public boolean shouldInformAdmins() {
+         return !this.closed && BaseCommandBlock.this.getLevel().getGameRules().getBoolean(GameRules.RULE_COMMANDBLOCKOUTPUT);
+      }
+
+      public void sendSystemMessage(Component var1) {
+         if (!this.closed) {
+            DateTimeFormatter var10001 = TIME_FORMAT;
+            BaseCommandBlock.this.lastOutput = Component.literal("[" + var10001.format(ZonedDateTime.now()) + "] ").append(var1);
+            BaseCommandBlock.this.onUpdated();
+         }
+
+      }
+
+      public void close() throws Exception {
+         this.closed = true;
+      }
+
+      static {
+         TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ROOT);
+      }
+   }
 }

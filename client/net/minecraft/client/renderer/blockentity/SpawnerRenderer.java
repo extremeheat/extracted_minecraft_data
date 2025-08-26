@@ -29,28 +29,29 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
          BaseSpawner var10 = var1.getSpawner();
          Entity var11 = var10.getOrCreateDisplayEntity(var9, var1.getBlockPos());
          if (var11 != null) {
-            submitEntityInSpawner(var2, var3, var8, var11, this.entityRenderer, var10.getoSpin(), var10.getSpin());
+            submitEntityInSpawner(var2, var3, var8, var11, this.entityRenderer, var10.getoSpin(), var10.getSpin(), var4);
          }
 
       }
    }
 
-   public static void submitEntityInSpawner(float var0, PoseStack var1, SubmitNodeCollector var2, Entity var3, EntityRenderDispatcher var4, double var5, double var7) {
+   public static void submitEntityInSpawner(float var0, PoseStack var1, SubmitNodeCollector var2, Entity var3, EntityRenderDispatcher var4, double var5, double var7, int var9) {
       var1.pushPose();
       var1.translate(0.5F, 0.0F, 0.5F);
-      float var9 = 0.53125F;
-      float var10 = Math.max(var3.getBbWidth(), var3.getBbHeight());
-      if ((double)var10 > 1.0) {
-         var9 /= var10;
+      float var10 = 0.53125F;
+      float var11 = Math.max(var3.getBbWidth(), var3.getBbHeight());
+      if ((double)var11 > 1.0) {
+         var10 /= var11;
       }
 
       var1.translate(0.0F, 0.4F, 0.0F);
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)Mth.lerp((double)var0, var5, var7) * 10.0F));
       var1.translate(0.0F, -0.2F, 0.0F);
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-30.0F));
-      var1.scale(var9, var9, var9);
-      EntityRenderState var11 = var4.extractEntity(var3, var0);
-      var4.submit(var11, 0.0, 0.0, 0.0, var1, var2);
+      var1.scale(var10, var10, var10);
+      EntityRenderState var12 = var4.extractEntity(var3, var0);
+      var12.lightCoords = var9;
+      var4.submit(var12, 0.0, 0.0, 0.0, var1, var2);
       var1.popPose();
    }
 }

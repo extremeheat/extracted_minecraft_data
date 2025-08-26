@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.social;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -83,40 +83,40 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    private PlayerEntry makePlayerEntry(UUID var1, PlayerInfo var2) {
       Minecraft var10002 = this.minecraft;
       SocialInteractionsScreen var10003 = this.socialInteractionsScreen;
-      String var10005 = var2.getProfile().getName();
+      String var10005 = var2.getProfile().name();
       Objects.requireNonNull(var2);
       return new PlayerEntry(var10002, var10003, var1, var10005, var2::getSkin, var2.hasVerifiableChat());
    }
 
    private void updatePlayersFromChatLog(Map<UUID, PlayerEntry> var1, boolean var2) {
-      for(GameProfile var5 : collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog())) {
-         PlayerEntry var6;
+      Map var3 = collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog());
+      var3.forEach((var3x, var4) -> {
+         PlayerEntry var5;
          if (var2) {
-            var6 = (PlayerEntry)var1.computeIfAbsent(var5.getId(), (var2x) -> {
-               PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().createLookup(var5, true), true);
+            var5 = (PlayerEntry)var1.computeIfAbsent(var3x, (var2x) -> {
+               PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var4.id(), var4.name(), this.minecraft.getSkinManager().createLookup(var4, true), true);
                var3.setRemoved(true);
                return var3;
             });
          } else {
-            var6 = (PlayerEntry)var1.get(var5.getId());
-            if (var6 == null) {
-               continue;
+            var5 = (PlayerEntry)var1.get(var3x);
+            if (var5 == null) {
+               return;
             }
          }
 
-         var6.setHasRecentMessages(true);
-      }
-
+         var5.setHasRecentMessages(true);
+      });
    }
 
-   private static Collection<GameProfile> collectProfilesFromChatLog(ChatLog var0) {
-      ObjectLinkedOpenHashSet var1 = new ObjectLinkedOpenHashSet();
+   private static Map<UUID, GameProfile> collectProfilesFromChatLog(ChatLog var0) {
+      Object2ObjectLinkedOpenHashMap var1 = new Object2ObjectLinkedOpenHashMap();
 
       for(int var2 = var0.end(); var2 >= var0.start(); --var2) {
          LoggedChatEvent var3 = var0.lookup(var2);
          if (var3 instanceof LoggedChatMessage.Player var4) {
             if (var4.message().hasSignature()) {
-               var1.add(var4.profile());
+               var1.put(var4.profileId(), var4.profile());
             }
          }
       }
@@ -173,7 +173,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    public void addPlayer(PlayerInfo var1, SocialInteractionsScreen.Page var2) {
-      UUID var3 = var1.getProfile().getId();
+      UUID var3 = var1.getProfile().id();
 
       for(PlayerEntry var5 : this.players) {
          if (var5.getPlayerId().equals(var3)) {
@@ -182,12 +182,12 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
          }
       }
 
-      if ((var2 == SocialInteractionsScreen.Page.ALL || this.minecraft.getPlayerSocialManager().shouldHideMessageFrom(var3)) && (Strings.isNullOrEmpty(this.filter) || var1.getProfile().getName().toLowerCase(Locale.ROOT).contains(this.filter))) {
+      if ((var2 == SocialInteractionsScreen.Page.ALL || this.minecraft.getPlayerSocialManager().shouldHideMessageFrom(var3)) && (Strings.isNullOrEmpty(this.filter) || var1.getProfile().name().toLowerCase(Locale.ROOT).contains(this.filter))) {
          boolean var6 = var1.hasVerifiableChat();
          Minecraft var10002 = this.minecraft;
          SocialInteractionsScreen var10003 = this.socialInteractionsScreen;
-         UUID var10004 = var1.getProfile().getId();
-         String var10005 = var1.getProfile().getName();
+         UUID var10004 = var1.getProfile().id();
+         String var10005 = var1.getProfile().name();
          Objects.requireNonNull(var1);
          PlayerEntry var7 = new PlayerEntry(var10002, var10003, var10004, var10005, var1::getSkin, var6);
          this.addEntry(var7);
